@@ -1,6 +1,10 @@
 #ifndef LIPID_ENUMS_H
 #define LIPID_ENUMS_H
 
+#include <vector>
+#include <map>
+
+using namespace std;
 
 enum LipidCategory {UNDEFINED_CATEGORY, 
     GL, // SLM:000117142 Glycerolipids
