@@ -21,7 +21,7 @@ FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBo
     }
 }
 
-string FattyAcid::FattyAcid(LipidFaBondType lipid_FA_bond_type){
+string FattyAcid::suffix(LipidFaBondType lipid_FA_bond_type){
     switch(lipid_FA_bond_type){
         case (ETHER_PLASMANYL): return "a";
         case (ETHER_PLASMENYL): return "p";

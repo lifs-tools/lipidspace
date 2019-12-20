@@ -34,4 +34,12 @@ public:
 };
 
 
+class RuntimeException : Exception {
+public:
+    RuntimeException(string message) : Exception(message){
+        
+    }
+};
+
+
 #endif /* LIPID_EXCEPTIONS_H */
