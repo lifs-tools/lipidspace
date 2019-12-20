@@ -3,7 +3,7 @@
 
 #include <string>
 #include "FattyAcid.h"
-#include "LipidSpecies.h"
+#include "LipidEnums.h"
 #include "MolecularFattyAcid.h"
 #include <typeinfo>
 

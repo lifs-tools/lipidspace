@@ -1,7 +1,7 @@
 #include "LipidSpecies.h"
 
     
-LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category = UNDEFINED_CATEGORY, LipidClass lipid_class = null, LipidSpeciesInfo *lipid_species_info = null){
+LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass *lipid_class, LipidSpeciesInfo *lipid_species_info){
     /*
     self.head_group = head_group.strip(" ")
     self.lipid_category = lipid_category if lipid_category != None else LipidClass.get_category(self.head_group)
@@ -12,7 +12,7 @@ LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category = U
         */  
 }
 
-string LipidSpecies::string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL){
+string LipidSpecies::get_lipid_string(LipidLevel level){
     /*
     if level == None:
         if self.info != None:
@@ -38,4 +38,5 @@ string LipidSpecies::string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL)
     else:
         raise RuntimeException("LipidSpecies does not know how to create a lipid string for level %s" + level)
         */
+    return "";
 }

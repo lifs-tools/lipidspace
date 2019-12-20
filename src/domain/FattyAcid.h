@@ -3,10 +3,9 @@
 
 #include <string>
 #include "LipidExceptions.h"
+#include "LipidEnums.h"
 
 using namespace std;
-
-enum LipidFaBondType { UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL};
 
 class FattyAcid {
 public:
