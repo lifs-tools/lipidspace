@@ -1,11 +1,26 @@
-from pygoslin.domain.LipidMolecularSubspecies import LipidMolecularSubspecies
-from pygoslin.domain.LipidFaBondType import LipidFaBondType
-from pygoslin.domain.LipidSpeciesInfo import LipidSpeciesInfo
-from pygoslin.domain.LipidLevel import LipidLevel
+#ifndef LIPID_STRUCTURAL_SUBSPECIES_H
+#define LIPID_STRUCTURAL_SUBSPECIES_H
 
-class LipidStructuralSubspecies(LipidMolecularSubspecies):
+#include <string>
+#include "LipidExceptions.h"
+#include "LipidSpeciesInfo.h"
+#include "LipidEnums.h"
+#include "LipidMolecularSubspecies.h"
+#include <sstream>
+#include <vector>
+#include "FattyAcid.h"
+#include <map>
 
+using namespace std;
 
+class LipidStructuralSubspecies : LipidMolecularSubspecies {
+public:
+    LipidSpeciesInfo *info;
+    
+    LipidStructuralSubspecies(string head_group, vector<FattyAcid*> fa);
+    ~LipidStructuralSubspecies();
+    string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
+    
     def __init__(self, head_group, fa = []):
         super().__init__(head_group)
         num_carbon = 0
@@ -45,3 +60,7 @@ class LipidStructuralSubspecies(LipidMolecularSubspecies):
             
         else:
             raise RuntimeException("LipidStructuralSubspecies does not know how to create a lipid string for level %s")
+            
+};
+
+#endif /* LIPID_STRUCTURAL_SUBSPECIES_H */
