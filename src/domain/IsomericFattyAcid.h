@@ -1,5 +1,5 @@
-#ifndef LIPID_ADDUCT_Y
-#define LIPID_ADDUCT_Y
+#ifndef ISOMERIC_FATTY_ACID_H
+#define ISOMERIC_FATTY_ACID_H
 
 #include "StructuralFattyAcid.h"
 #include <string>
@@ -17,4 +17,4 @@ public:
     ~IsomericFattyAcid();
 };
 
-#endif /* LIPID_ADDUCT_Y */
+#endif /* ISOMERIC_FATTY_ACID_H */

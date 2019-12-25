@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "LipidEnums.h"
 #include "LipidExceptions.h"
 #include "LipidSpeciesInfo.h"
 
@@ -23,7 +24,7 @@ public:
     LipidSpeciesInfo info;
     bool use_head_group;
     
-    LipidSpecies(string _head_group, LipidCategory _lipid_category = UNDEFINED_CATEGORY, LipidClass lipid_class = UNKNOWN_CLASS, LipidSpeciesInfo *lipid_species_info = NULL);
+    LipidSpecies(string _head_group, LipidCategory _lipid_category = UNDEFINED_CATEGORY, LipidClass lipid_class = UNDEFINED_CLASS, LipidSpeciesInfo *lipid_species_info = NULL);
     ~LipidSpecies();
     string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
     

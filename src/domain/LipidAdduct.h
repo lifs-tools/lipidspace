@@ -1,10 +1,13 @@
-#ifndef LIPID_ADDUCT_Y
-#define LIPID_ADDUCT_Y
+#ifndef LIPID_ADDUCT_H
+#define LIPID_ADDUCT_H
 
 #include "MolecularFattyAcid.h"
 #include <string>
 #include "LipidExceptions.h"
 #include "LipidEnums.h"
+#include "LipidSpecies.h"
+#include "Adduct.h"
+#include "Fragment.h"
 #include <sstream>
 
 using namespace std;
@@ -18,8 +21,8 @@ public:
     
     LipidAdduct();
     ~LipidAdduct();
-    string get_lipid_string(LipidLevel level = NULL);
-    string get_lipid_fragment_string(LipidLevel level = NULL);
+    string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
+    string get_lipid_fragment_string(LipidLevel level = UNDEFINED_LEVEL);
 };
 
-#endif /* LIPID_ADDUCT_Y */
+#endif /* LIPID_ADDUCT_H */

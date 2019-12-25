@@ -1,5 +1,5 @@
-#ifndef ADDUCT_H
-#define ADDUCT_H
+#ifndef LIPID_ISOMERIC_SUBSPECIES_H
+#define LIPID_ISOMERIC_SUBSPECIES_H
 
 #include <string>
 #include "LipidExceptions.h"
@@ -11,10 +11,10 @@ using namespace std;
 
 class LipidIsomericSubspecies : LipidStructuralSubspecies {
 
-    LipidIsomericSubspecies(string head_group, vector<fattyAcid*>* fa);
+    LipidIsomericSubspecies(string head_group, vector<FattyAcid*>* fa = NULL);
     string build_lipid_isomeric_substructure_name();
     string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
             
 };
 
-#endif /* ADDUCT_H*/
+#endif /* LIPID_ISOMERIC_SUBSPECIES_H */

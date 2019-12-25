@@ -1,10 +1,10 @@
 #include "LipidIsomericSubspecies.h"
 
-LipidIsomericSubspecies::LipidIsomericSubspecies(string head_group, vector<FattyAcid*>* _fa = NULL) : LipidStructuralSubspecies(head_group){
+LipidIsomericSubspecies::LipidIsomericSubspecies(string head_group, vector<FattyAcid*>* _fa) : LipidStructuralSubspecies(head_group){
     int num_carbon = 0;
     int num_hydroxyl = 0;
     int num_double_bonds = 0;
-    lipid_FA_bond_type = UNDEFINED_FA;
+    LipidFaBondType lipid_FA_bond_type = UNDEFINED_FA;
     if (fa.length > 0){
         lipid_FA_bond_type = ESTER;
     }

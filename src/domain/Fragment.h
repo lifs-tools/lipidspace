@@ -1,5 +1,5 @@
-#ifndef LIPID_ENUMS_H
-#define LIPID_ENUMS_H
+#ifndef FRAGMENT_H
+#define FRAGMENT_H
 
 #include <string>
 
@@ -14,4 +14,4 @@ public:
         
 };
 
-#endif /* LIPID_ENUMS_H */
+#endif /* FRAGMENT_H */

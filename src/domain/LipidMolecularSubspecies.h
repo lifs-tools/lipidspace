@@ -1,9 +1,10 @@
-#ifndef LIPID_ADDUCT_Y
-#define LIPID_ADDUCT_Y
+#ifndef LIPID_MOLECULAR_SUBSPECIES_H
+#define LIPID_MOLECULAR_SUBSPECIES_H
 
 #include "MolecularFattyAcid.h"
 #include <string>
 #include "LipidExceptions.h"
+#include "LipidSpecies.h"
 #include "LipidEnums.h"
 #include <sstream>
 
@@ -20,4 +21,4 @@ public:
     string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
 };
 
-#endif /* LIPID_ADDUCT_Y */
+#endif /* LIPID_MOLECULAR_SUBSPECIES_H */
