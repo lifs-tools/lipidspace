@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sstream>
 #include "LipidEnums.h"
 #include "LipidExceptions.h"
 #include "LipidSpeciesInfo.h"
@@ -30,7 +31,8 @@ public:
     
     static LipidCategory get_category(string _head_group);
     static LipidClass get_class(string _head_group);
-    static string get_lipid_class(LipidClass lipid_class);
+    static string get_class_string(LipidClass lipid_class);
+    static string get_category_string(LipidCategory lipid_category);
 };
             
 #endif /* LIPID_SPECIES_H */
