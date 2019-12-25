@@ -19,10 +19,10 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
             num_carbon += fas->num_carbon;
             num_hydroxyl += fas->num_hydroxyl;
             num_double_bonds += fas->num_double_bonds;
-            if (lipid_FA_bond_type == LipidFaBondType.ESTER && (fas->lipid_FA_bond_type == LipidFaBondType.ETHER_PLASMANYL || fas->lipid_FA_bond_type == LipidFaBondType.ETHER_PLASMENYL)){
+            if (lipid_FA_bond_type == ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL)){
                 lipid_FA_bond_type = fas.lipid_FA_bond_type;
             }
-            else if (lipid_FA_bond_type != LipidFaBondType.ESTER && (fas->lipid_FA_bond_type == LipidFaBondType.ETHER_PLASMANYL || fas->lipid_FA_bond_type == LipidFaBondType.ETHER_PLASMENYL)){
+            else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL)){
                 stringstream ss;
                 ss << "Only one FA can define an ether bond to the head group! Tried to add " << lipid_FA_bond_type << " over existing " << lipid_FA_bond_type;
                 string error_message;
@@ -32,16 +32,11 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
         }
     }
             
-    info = new LipidSpeciesInfo();
-    info->level = LipidLevel.STRUCTURAL_SUBSPECIES;
-    info->num_carbon = num_carbon;
-    info->num_hydroxyl = num_hydroxyl;
-    info->num_double_bonds = num_double_bonds;
-    info->lipid_FA_bond_type = lipid_FA_bond_type;
-}
-
-LipidStructuralSubspecies::~LipidStructuralSubspecies(){
-    delete info;
+    info.level = LipidLevel.STRUCTURAL_SUBSPECIES;
+    info.num_carbon = num_carbon;
+    info.num_hydroxyl = num_hydroxyl;
+    info.num_double_bonds = num_double_bonds;
+    info.lipid_FA_bond_type = lipid_FA_bond_type;
 }
 
 LipidStructuralSubspecies::string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL){
