@@ -7,7 +7,7 @@
 
 using namespace std;
 
-class MolecularFattyAcid : FattyAcid {
+class MolecularFattyAcid : public FattyAcid {
 
 public:
     int num_double_bonds;

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-class LipidMolecularSubspecies : LipidSpecies {
+class LipidMolecularSubspecies : public LipidSpecies {
 public:
     map<string, FattyAcid*> fa;
     vector<FattyAcid*> fa_list;

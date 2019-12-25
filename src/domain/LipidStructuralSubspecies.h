@@ -4,6 +4,7 @@
 #include <string>
 #include "LipidExceptions.h"
 #include "LipidSpeciesInfo.h"
+#include "StructuralFattyAcid.h"
 #include "LipidEnums.h"
 #include "LipidMolecularSubspecies.h"
 #include <sstream>
@@ -13,7 +14,7 @@
 
 using namespace std;
 
-class LipidStructuralSubspecies : LipidMolecularSubspecies {
+class LipidStructuralSubspecies : public LipidMolecularSubspecies {
 public:
     
     LipidStructuralSubspecies(string head_group, vector<FattyAcid*> *_fa = NULL);

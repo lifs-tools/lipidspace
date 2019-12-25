@@ -61,3 +61,7 @@ LipidCategory LipidSpecies::get_category(string _head_group){
 LipidClass LipidSpecies::get_class(string _head_group){
     return UNDEFINED_CLASS;
 }
+
+string LipidSpecies::get_lipid_class(LipidClass lipid_class){
+    return "";
+}

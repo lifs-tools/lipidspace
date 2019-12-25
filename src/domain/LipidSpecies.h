@@ -30,6 +30,7 @@ public:
     
     static LipidCategory get_category(string _head_group);
     static LipidClass get_class(string _head_group);
+    static string get_lipid_class(LipidClass lipid_class);
 };
             
 #endif /* LIPID_SPECIES_H */

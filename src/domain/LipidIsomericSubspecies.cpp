@@ -1,17 +1,17 @@
 #include "LipidIsomericSubspecies.h"
 
-LipidIsomericSubspecies::LipidIsomericSubspecies(string head_group, vector<FattyAcid*>* _fa) : LipidStructuralSubspecies(head_group){
+LipidIsomericSubspecies::LipidIsomericSubspecies(string head_group, vector<FattyAcid*> *_fa) : LipidStructuralSubspecies(head_group) {
     int num_carbon = 0;
     int num_hydroxyl = 0;
     int num_double_bonds = 0;
     LipidFaBondType lipid_FA_bond_type = UNDEFINED_FA;
-    if (fa.length > 0){
+    if (_fa->size() > 0){
         lipid_FA_bond_type = ESTER;
     }
     
     if (_fa) {
         for (int i = 0; i < _fa->size(); ++i){
-            IsomericFattyAcid *fas = _fa->at(i);
+            IsomericFattyAcid *fas = (IsomericFattyAcid*)_fa->at(i);
             if (fa.find(fas->name) != fa.end()){
                 throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");
             }

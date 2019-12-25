@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class IsomericFattyAcid : StructuralFattyAcid {
+class IsomericFattyAcid : public StructuralFattyAcid {
 public:
     map<int, string>* double_bond_positions;
     
