@@ -2,9 +2,9 @@
 #define LIPID_ISOMERIC_SUBSPECIES_H
 
 #include <string>
-#include "LipidExceptions.h"
-#include "LipidStructuralSubspecies.h"
-#include "IsomericFattyAcid.h"
+#include "cppgoslin/domain/LipidExceptions.h"
+#include "cppgoslin/domain/LipidStructuralSubspecies.h"
+#include "cppgoslin/domain/IsomericFattyAcid.h"
 #include <sstream>
 #include <vector>
 

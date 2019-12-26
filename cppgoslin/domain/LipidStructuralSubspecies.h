@@ -2,14 +2,14 @@
 #define LIPID_STRUCTURAL_SUBSPECIES_H
 
 #include <string>
-#include "LipidExceptions.h"
-#include "LipidSpeciesInfo.h"
-#include "StructuralFattyAcid.h"
-#include "LipidEnums.h"
-#include "LipidMolecularSubspecies.h"
+#include "cppgoslin/domain/LipidExceptions.h"
+#include "cppgoslin/domain/LipidSpeciesInfo.h"
+#include "cppgoslin/domain/StructuralFattyAcid.h"
+#include "cppgoslin/domain/LipidEnums.h"
+#include "cppgoslin/domain/LipidMolecularSubspecies.h"
 #include <sstream>
 #include <vector>
-#include "FattyAcid.h"
+#include "cppgoslin/domain/FattyAcid.h"
 #include <map>
 
 using namespace std;

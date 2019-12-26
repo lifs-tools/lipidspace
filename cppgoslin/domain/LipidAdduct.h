@@ -1,13 +1,13 @@
 #ifndef LIPID_ADDUCT_H
 #define LIPID_ADDUCT_H
 
-#include "MolecularFattyAcid.h"
+#include "cppgoslin/domain/MolecularFattyAcid.h"
 #include <string>
-#include "LipidExceptions.h"
-#include "LipidEnums.h"
-#include "LipidSpecies.h"
-#include "Adduct.h"
-#include "Fragment.h"
+#include "cppgoslin/domain/LipidExceptions.h"
+#include "cppgoslin/domain/LipidEnums.h"
+#include "cppgoslin/domain/LipidSpecies.h"
+#include "cppgoslin/domain/Adduct.h"
+#include "cppgoslin/domain/Fragment.h"
 #include <sstream>
 
 using namespace std;

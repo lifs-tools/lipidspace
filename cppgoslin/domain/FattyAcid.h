@@ -2,8 +2,8 @@
 #define FATTY_ACID_H
 
 #include <string>
-#include "LipidExceptions.h"
-#include "LipidEnums.h"
+#include "cppgoslin/domain/LipidExceptions.h"
+#include "cppgoslin/domain/LipidEnums.h"
 
 using namespace std;
 

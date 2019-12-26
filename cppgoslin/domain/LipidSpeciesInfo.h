@@ -2,9 +2,9 @@
 #define LIPID_SPECIES_INFO_H
 
 #include <string>
-#include "FattyAcid.h"
-#include "LipidEnums.h"
-#include "MolecularFattyAcid.h"
+#include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/LipidEnums.h"
+#include "cppgoslin/domain/MolecularFattyAcid.h"
 #include <typeinfo>
 
 using namespace std;

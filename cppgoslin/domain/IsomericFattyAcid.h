@@ -1,9 +1,9 @@
 #ifndef ISOMERIC_FATTY_ACID_H
 #define ISOMERIC_FATTY_ACID_H
 
-#include "StructuralFattyAcid.h"
+#include "cppgoslin/domain/StructuralFattyAcid.h"
 #include <string>
-#include "LipidEnums.h"
+#include "cppgoslin/domain/LipidEnums.h"
 #include <map>
 
 using namespace std;

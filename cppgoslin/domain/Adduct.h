@@ -2,7 +2,7 @@
 #define ADDUCT_H
 
 #include <string>
-#include "LipidExceptions.h"
+#include "cppgoslin/domain/LipidExceptions.h"
 #include <sstream>
 
 using namespace std;

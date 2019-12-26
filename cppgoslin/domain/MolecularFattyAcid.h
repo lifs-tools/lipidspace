@@ -1,9 +1,9 @@
 #ifndef MOLECULAR_FATTY_ACID_H
 #define MOLECULAR_FATTY_ACID_H
 
-#include "FattyAcid.h"
+#include "cppgoslin/domain/FattyAcid.h"
 #include <string>
-#include "LipidExceptions.h"
+#include "cppgoslin/domain/LipidExceptions.h"
 
 using namespace std;
 

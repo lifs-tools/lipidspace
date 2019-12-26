@@ -5,9 +5,9 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include "LipidEnums.h"
-#include "LipidExceptions.h"
-#include "LipidSpeciesInfo.h"
+#include "cppgoslin/domain/LipidEnums.h"
+#include "cppgoslin/domain/LipidExceptions.h"
+#include "cppgoslin/domain/LipidSpeciesInfo.h"
 
 
 using namespace std;
