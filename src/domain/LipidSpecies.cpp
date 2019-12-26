@@ -62,18 +62,47 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
     }
 }
 
+
 LipidCategory LipidSpecies::get_category(string _head_group){
-    return UNDEFINED_CATEGORY;
+    if (!StringCategory.size()){
+        for (const auto& kvp : lipid_classes){
+            LipidCategory category = kvp.second.lipid_category;
+            for (auto hg : kvp.second.synonyms){
+                StringCategory.insert(pair<string, LipidCategory>(hg, category));
+            }
+        }
+    }
+    
+    
+    if (StringCategory.find(_head_group) == StringCategory.end()){
+        throw RuntimeException("Lipid with head group '" + _head_group + "' not found.");
+    }
+    return StringCategory.at(_head_group);
 }
+
 
 LipidClass LipidSpecies::get_class(string _head_group){
-    return UNDEFINED_CLASS;
+    if (!StringClass.size()){
+        for (const auto& kvp : lipid_classes){
+            LipidClass l_class = kvp.first;
+            for (auto hg : kvp.second.synonyms){
+                StringClass.insert(pair<string, LipidClass>(hg, l_class));
+            }
+        }
+    }
+    
+    if (StringClass.find(_head_group) == StringClass.end()){
+        throw RuntimeException("Lipid with head group '" + _head_group + "' not found.");
+    }
+    return StringClass.at(_head_group);
 }
 
-string LipidSpecies::get_class_string(LipidClass lipid_class){
-    return "";
+
+string LipidSpecies::get_class_string(LipidClass _lipid_class){
+    return ClassString.at(_lipid_class);
 }
 
-string LipidSpecies::get_category_string(LipidCategory lipid_category){
-    return "";
+
+string LipidSpecies::get_category_string(LipidCategory _lipid_category){
+    return CategoryString.at(_lipid_category);
 }

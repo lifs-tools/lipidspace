@@ -15,6 +15,20 @@ enum LipidCategory {UNDEFINED_CATEGORY,
     SL // Saccharolipids
 };
 
+
+
+static const map<LipidCategory, string> CategoryString = {
+    {GL, "GL"},
+    {GP, "GP"},
+    {SP, "SP"},
+    {ST, "ST"},
+    {FA, "FA"},
+    {SL, "SL"}};
+
+    
+    
+
+
 enum LipidLevel {UNDEFINED_LEVEL,
     CATEGORY, // Mediators, Glycerolipids, Glycerophospholipids, Sphingolipids, Steroids, Prenols
     CLASS, // Glyerophospholipids -> Glycerophosphoinositols (PI)
@@ -192,6 +206,11 @@ static const ClassMap lipid_classes = {
 {PAT18, {SL, "Acyltrehaloses [SL03]", {"PAT18"} } }
 };
 
+
+
+static map<LipidClass, string> ClassString;
+static map<string, LipidClass> StringClass;
+static map<string, LipidCategory> StringCategory;
     
 
 #endif /* LIPID_ENUMS_H */
