@@ -5,10 +5,10 @@
 
 using namespace std;
 
-class Exception {
+class LipidException {
 public:
     string message;
-    Exception(string _message){
+    LipidException(string _message){
         message = _message;
     }
     
@@ -18,25 +18,25 @@ public:
 };
 
 
-class IllegalArgumentException : Exception {
+class IllegalArgumentException : public LipidException {
 public:
-    IllegalArgumentException(string message) : Exception(message){
+    IllegalArgumentException(string message) : LipidException(message){
         
     }
 };
 
 
-class ConstraintViolationException : Exception {
+class ConstraintViolationException : public LipidException {
 public:
-    ConstraintViolationException(string message) : Exception(message){
+    ConstraintViolationException(string message) : LipidException(message){
         
     }
 };
 
 
-class RuntimeException : Exception {
+class RuntimeException : public LipidException {
 public:
-    RuntimeException(string message) : Exception(message){
+    RuntimeException(string message) : LipidException(message){
         
     }
 };

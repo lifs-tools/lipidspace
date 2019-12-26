@@ -9,7 +9,7 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
     LipidFaBondType lipid_FA_bond_type = ESTER;
     
     if (_fa != NULL){
-        for (int i = 0; i < _fa->size(); ++i){
+        for (unsigned int i = 0; i < _fa->size(); ++i){
             StructuralFattyAcid *fas = (StructuralFattyAcid*)_fa;
             if (fa.find(fas->name) == fa.end()){
                 throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");

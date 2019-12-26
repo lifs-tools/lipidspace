@@ -1,10 +1,18 @@
 CC = g++
-obj = Adduct.o IsomericFattyAcid.o LipidMolecularSubspecies.o LipidStructuralSubspecies.o FattyAcid.o  LipidAdduct.o LipidSpecies.o MolecularFattyAcid.o Fragment.o LipidIsomericSubspecies.o LipidSpeciesInfo.o StructuralFattyAcid.o
+obj = cppgoslin/domain/Adduct.o cppgoslin/domain/IsomericFattyAcid.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/MolecularFattyAcid.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StructuralFattyAcid.o
 opt = -O0
 
+
 main: ${obj}
-	${CC} -shared ${obj} ${opt} -o libcppGoslin.so
+	${CC} -shared ${obj} -o libcppGoslin.so
 	
 	
-%.o: cppgoslin/domain/%.cpp
-	${CC} -std=c++11 -I. -Wall ${opt} -fPIC -c $<
+%.o: %.cpp
+	${CC} -std=c++11 -I. -Wall ${opt} -fPIC -o $@ -c $<
+	
+clean:
+	rm -rf cppgoslin/domain/*.o
+	rm -rf libcppGoslin.so
+
+test: main
+	${CC} -I. -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.cpp -L. -l cppGoslin

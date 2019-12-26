@@ -10,7 +10,7 @@ LipidIsomericSubspecies::LipidIsomericSubspecies(string head_group, vector<Fatty
     }
     
     if (_fa) {
-        for (int i = 0; i < _fa->size(); ++i){
+        for (unsigned int i = 0; i < _fa->size(); ++i){
             IsomericFattyAcid *fas = (IsomericFattyAcid*)_fa->at(i);
             if (fa.find(fas->name) != fa.end()){
                 throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");
@@ -51,7 +51,7 @@ string LipidIsomericSubspecies::build_lipid_isomeric_substructure_name(){
     
     s << (!use_head_group ? LipidSpecies::get_class_string(lipid_class) : head_group);
     
-    for (int i = 0; i < fa_list.size(); ++i){
+    for (unsigned int i = 0; i < fa_list.size(); ++i){
         if (i > 0) s << "/"; 
         
         IsomericFattyAcid* fatty_acid = (IsomericFattyAcid*)fa_list.at(i);
@@ -115,6 +115,6 @@ string LipidIsomericSubspecies::get_lipid_string(LipidLevel level){
             s << "LipidIsomericSubspecies does not know how to create a lipid string for level " << level;
             string error_message;
             s >> error_message;
-            throw Exception(error_message);
+            throw IllegalArgumentException(error_message);
     }
 }
