@@ -1,34 +1,39 @@
-import unittest
-import os
+#include "cppgoslin/parser/Parser.h"
+#include <set>
+#include <string>
+#include <stdlib.h>
+#include <iostream>
+#include <ctime>
+#include <cassert>
 
-from pygoslin.parser.Parser import Parser, Bitfield, GoslinParser, LipidParser, LipidMapsParser
-from pygoslin.parser.GoslinParserEventHandler import GoslinParserEventHandler
-from pygoslin.parser.GoslinFragmentParserEventHandler import GoslinFragmentParserEventHandler
-from pygoslin.parser.LipidMapsParserEventHandler import LipidMapsParserEventHandler
-from pygoslin.domain.LipidLevel import LipidLevel
-from random import randint
+using namespace std;
 
-class ParserTest(unittest.TestCase):
-    PARSER_QUOTE = '\''
+int main(int argc, char** argv){
+    char PARSER_QUOTE = '\'';
+    
+    srand(time(NULL));
     
     
-    def test_bitfield(self):
-        n = randint(5000, 20000)
-        m = randint(500, 2000)
-        s = set([randint(1, n - 2) for x in range(m)])
-        b = Bitfield(n)
-        for i in s:
-            b.set(i)
+    int n = 5000 + (rand() % 1500000);
+    int m = 500 + (rand() % 150000);
+    set<int> s;
+    for (int i = 0; i < m; ++i) s.insert(rand() % (n - 2));
+    
+    Bitfield b(n);
+    for (auto i : s) b.set_bit(i);
+    
+    int ii = 0;
+    b.init();
+    for (auto st : s){
+        int bb = b.get_bit_positions();
+        assert(bb == st);
+        ii += 1;
+    }
+
+    assert( ii == s.size());
         
-        i = 0
-        for bb, st in zip(b.get_bit_positions(), sorted(s)):
-            assert bb == st
-            i += 1
     
-        assert i == len(s)
-        
-    
-    
+    /*
     def test_lipid_parser(self):
         lipid_parser = LipidParser()
         
@@ -269,3 +274,6 @@ class ParserTest(unittest.TestCase):
         for lipid_name in lipidnames:
             lipid_parser.parse(lipid_name)
             assert lipid_parser.lipid != None
+    */
+    return 0;
+}

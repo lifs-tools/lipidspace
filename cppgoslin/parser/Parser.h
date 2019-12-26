@@ -1,127 +1,90 @@
-from enum import Enum
-from os import path
+#ifndef PARSER_H
+#define PARSER_H
 
-from pygoslin.parser.GoslinParserEventHandler import GoslinParserEventHandler
-from pygoslin.parser.GoslinFragmentParserEventHandler import GoslinFragmentParserEventHandler
-from pygoslin.parser.LipidMapsParserEventHandler import LipidMapsParserEventHandler
-import pygoslin
+/*
+#include "cppgoslin/parser/GoslinParserEventHandler.h"
+#include "cppgoslin/parser/GoslinFragmentParserEventHandler.h"
+#include "cppgoslin/parser/LipidMapsParserEventHandler.h"
+*/
+#include <string>
+#include <set>
+#include <map>
+#include <vector>
+#include <iostream>
 
-class Context(Enum):
-    NoContext = 1
-    InLineComment = 2
-    InLongComment = 3
-    InQuote = 4
-    
-class MatchWords(Enum):
-    NoMatch = 1
-    LineCommentStart = 2
-    LineCommentEnd = 3
-    LongCommentStart = 4
-    LongCommentEnd = 5
-    Quote = 6
-    
-    
-# DP stands for dynamic programming
-class DPNode:
-    
-    def __init__(self, _rule1, _rule2, _left, _right):
-        self.rule_index_1 = _rule1
-        self.rule_index_2 = _rule2
-        self.left = _left
-        self.right = _right
-        
-        
-        
+enum Content {NoContext, InLineComment, InLongComment, InQuote};
+enum MatchWords {NoMatch, LineCommentStart, LineCommentEnd, LongCommentStart, LongCommentEnd, Quote};
 
-class TreeNode:
+using namespace std;
 
-    def __init__(self, _rule, _fire_event):
-        self.rule_index = _rule
-        self.left = None
-        self.right = None
-        self.terminal = 0
-        self.fire_event = _fire_event
+class Parser;
     
+// DP stands for dynamic programming
+class DPNode {
+public:    
+    uint rule_index_1;
+    uint rule_index_2;
+    DPNode *left = NULL;
+    DPNode *right = NULL;
     
-    
-    def get_text(self):
-        if self.terminal == 0:
-            left_str = self.left.get_text()
-            right_str = self.right.get_text() if self.right != None else ""
-            return "%s%s" % (left_str if left_str != Parser.EOF_SIGN else "", right_str if right_str != Parser.EOF_SIGN else "")
-        return self.terminal
-        
-        
-        
+    DPNode(uint _rule1, uint _rule2, DPNode *_left, DPNode *_right);
+    ~DPNode();
+};
         
 
-# this class is dedicated to have an efficient sorted set class storing
-# values within 0..n-1 and fast sequencial iterator
-class Bitfield:
+class TreeNode {
+public:
+    uint rule_index;
+    TreeNode *left;
+    TreeNode *right;
+    char terminal;
+    bool fire_event;
+    static const char EOF_SIGN = '\0';
     
-    multiplicator = 0x022fdd63cc95386d
-    positions = [0, 1,  2, 53,  3,  7, 54, 27, 4, 38, 41,  8, 34, 55, 48, 28,
+    TreeNode(uint _rule, bool _fire_event);
+    ~TreeNode();
+    string get_text();
+};
+        
+        
+    static const uint positions[64] = {0, 1,  2, 53,  3,  7, 54, 27, 4, 38, 41,  8, 34, 55, 48, 28,
         62,  5, 39, 46, 44, 42, 22,  9, 24, 35, 59, 56, 49, 18, 29, 11,
         63, 52,  6, 26, 37, 40, 33, 47, 61, 45, 43, 21, 23, 58, 17, 10,
-        51, 25, 36, 32, 60, 20, 57, 16, 50, 31, 19, 15, 30, 14, 13, 12]
-    
-    def __init__(self, length):
-        l = 1 + ((length + 1) >> 6)
-        s = 1 + ((l + 1) >> 6)
-        self.field = [0] * l
-        self.superfield = [0] * s
+        51, 25, 36, 32, 60, 20, 57, 16, 50, 31, 19, 15, 30, 14, 13, 12};
+        
 
+// this class is dedicated to have an efficient sorted set class storing
+// values within 0..n-1 and fast sequencial iterator
+class Bitfield {
+public:
+    unsigned long *field;
+    unsigned long *superfield;
+    unsigned int spre;
+    unsigned long sv;
+    unsigned int si;
+    unsigned long v;
+    unsigned int fi;
+    unsigned int pos;
+    unsigned int field_len;
+    unsigned int superfield_len;
     
     
-    def ulong(num):
-        return num & ((1 << 64) - 1)
+    static const unsigned long multiplicator = 0x022fdd63cc95386ull;
     
     
-    def set(self, pos):
-        self.field[pos >> 6] |= Bitfield.ulong(1 << (pos & 63))
-        self.superfield[pos >> 12] |= Bitfield.ulong(1 << ((pos >> 6) & 63))
-    
-    
-    
-    def is_set(self, pos):
-        return ((self.field[pos >> 6] >> (pos & 63)) & 1) == 1
-    
-    
-    def is_not_set(self, pos):
-        return ((self.field[pos >> 6] >> (pos & 63)) & 1) == 0
-    
-    
-    def get_bit_positions(self):
-        spre = 0
-        for cell in self.superfield:
-            sv = cell
-            while sv != 0:
-                # algorithm for getting least significant bit position
-                sv1 = Bitfield.ulong(sv & -sv)
-                pos = spre + Bitfield.positions[Bitfield.ulong(sv1 * Bitfield.multiplicator) >> 58];
-                
-                v = self.field[pos]
-                while v != 0:
-                    # algorithm for getting least significant bit position
-                    v1 = Bitfield.ulong(v & -v)
-                    yield (pos << 6) + Bitfield.positions[Bitfield.ulong(Bitfield.ulong(v1 * Bitfield.multiplicator) >> 58)]
-                    v &= v - 1
-                
-                sv &= sv - 1
-            spre += 64
-    
-    
-    def get_positions(self, x):
-        while x != 0:
-            # algorithm for getting least significant bit position
-            v1 = Bitfield.ulong(x & -x)
-            yield positions[Bitfield.ulong(Bitfield.ulong(v1 * multiplicator) >> 58)]
-            x &= x - 1
+    Bitfield(uint length);
+    ~Bitfield();
+    void set_bit(uint pos);
+    bool is_set(uint pos);
+    bool is_not_set(uint pos);
+    void init();
+    int get_bit_positions();
+    void print_bitfield(unsigned long l);
+};
         
         
         
-        
-        
+/*
 class Parser:
     
     SHIFT = 32
@@ -657,3 +620,7 @@ class LipidParser:
                 self.event_handler = parser.event_handler
                 self.lipid = self.event_handler.lipid
                 break
+                
+*/
+
+#endif /* PARSER_H */
