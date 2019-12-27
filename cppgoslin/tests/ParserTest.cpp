@@ -24,10 +24,12 @@ int main(int argc, char** argv){
     
     int ii = 0;
     b.init();
-    for (auto st : s){
-        int bb = b.get_bit_positions();
-        assert(bb == st);
+    int bb;
+    set<int>::iterator st = s.begin();
+    while ((bb = b.get_bit_positions()) != -1){
+        assert(bb == *st);
         ii += 1;
+        st++;
     }
 
     assert( ii == s.size());
