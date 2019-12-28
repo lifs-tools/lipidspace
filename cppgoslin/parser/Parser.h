@@ -12,6 +12,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 enum Content {NoContext, InLineComment, InLongComment, InQuote};
 enum MatchWords {NoMatch, LineCommentStart, LineCommentEnd, LongCommentStart, LongCommentEnd, Quote};
@@ -88,8 +89,8 @@ public:
     static const RULE_TERMINAL = ';';
     static const string EOF_RULE_NAME = "EOF";
     static const char EOF_SIGN = (char)1;
-    static const int EOF_RULE = 1;
-    static const int START_RULE = 2;
+    static const unsigned long EOF_RULE = 1;
+    static const unsigned long START_RULE = 2;
     static const char DEFAULT_QUOTE = '\'';
     static const unsigned long next_free_rule_index;
     
@@ -112,17 +113,17 @@ public:
     ~Parser();
     void get_next_free_rule_index();
     vector<string>* extract_text_based_rules(string grammar_filename, char _quote = DEFAULT_QUOTE);
-    unsigned long compute_rule_key(rule_index_1, rule_index_2);
-    vector<string>* def split_string(string text, char separator, char _quote = DEFAULT_QUOTE);
+    static unsigned long compute_rule_key(rule_index_1, rule_index_2);
+    static vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE);
     bool is_terminal(string product_token, char _quote);
-    string de_escape(string text, char _quote);
+    static string de_escape(string text, char _quote);
     unsigned long add_terminal(string text);
     vector<unsigned long>* collect_one_backwards(unsigned long rule_index);
     vector<unsigned long>* collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index);
     void raise_events(TreeNode *node);
     void fill_tree(TreeNode *node, DPNode *dp_node);
     bool parse(string text_to_parse);
-        
+    static string strip(string s, char c);
     
 /*
 class GoslinParser(Parser):
