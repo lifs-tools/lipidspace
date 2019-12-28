@@ -124,7 +124,8 @@ public:
     void fill_tree(TreeNode *node, DPNode *dp_node);
     bool parse(string text_to_parse);
     static string strip(string s, char c);
-    
+    static string replace_all(std::string str, const std::string& from, const std::string& to);
+};
 /*
 class GoslinParser(Parser):
     def __init__(self):
