@@ -1,59 +1,62 @@
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 
 
+#define reg(x, y) registered_events.insert({x, bind(&GoslinParserEventHandler::y, this, placeholders::_1)})
+    
+
 GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler() {
     reset_lipid(NULL);
-    /*
-    registered_events["lipid_pre_event"] = reset_lipid
-    registered_events["lipid_post_event"] = build_lipid
     
-    registered_events["hg_cl_pre_event"] = set_head_group_name
-    registered_events["hg_mlcl_pre_event"] = set_head_group_name
-    registered_events["hg_pl_pre_event"] = set_head_group_name
-    registered_events["hg_lpl_pre_event"] = set_head_group_name
-    registered_events["hg_lpl_o_pre_event"] = set_head_group_name
-    registered_events["hg_pl_o_pre_event"] = set_head_group_name
-    registered_events["hg_lsl_pre_event"] = set_head_group_name
-    registered_events["hg_dsl_pre_event"] = set_head_group_name
-    registered_events["ch_pre_event"] = set_head_group_name
-    registered_events["hg_che_pre_event"] = set_head_group_name
-    registered_events["mediator_pre_event"] = set_head_group_name
-    registered_events["hg_mgl_pre_event"] = set_head_group_name
-    registered_events["hg_dgl_pre_event"] = set_head_group_name
-    registered_events["hg_sgl_pre_event"] = set_head_group_name
-    registered_events["hg_tgl_pre_event"] = set_head_group_name
+    reg("lipid_pre_event", reset_lipid);
+    reg("lipid_post_event", build_lipid);
     
-    registered_events["gl_species_pre_event"] = set_species_level
-    registered_events["pl_species_pre_event"] = set_species_level
-    registered_events["chc_pre_event"] = set_species_level
-    registered_events["sl_species_pre_event"] = set_species_level
-    registered_events["fa2_unsorted_pre_event"] = set_molecular_subspecies_level
-    registered_events["fa3_unsorted_pre_event"] = set_molecular_subspecies_level
-    registered_events["fa4_unsorted_pre_event"] = set_molecular_subspecies_level
+    reg("hg_cl_pre_event", set_head_group_name);
+    reg("hg_mlcl_pre_event", set_head_group_name);
+    reg("hg_pl_pre_event", set_head_group_name);
+    reg("hg_lpl_pre_event", set_head_group_name);
+    reg("hg_lpl_o_pre_event", set_head_group_name);
+    reg("hg_pl_o_pre_event", set_head_group_name);
+    reg("hg_lsl_pre_event", set_head_group_name);
+    reg("hg_dsl_pre_event", set_head_group_name);
+    reg("ch_pre_event", set_head_group_name);
+    reg("hg_che_pre_event", set_head_group_name);
+    reg("mediator_pre_event", set_head_group_name);
+    reg("hg_mgl_pre_event", set_head_group_name);
+    reg("hg_dgl_pre_event", set_head_group_name);
+    reg("hg_sgl_pre_event", set_head_group_name);
+    reg("hg_tgl_pre_event", set_head_group_name);
     
-    registered_events["lcb_pre_event"] = new_lcb
-    registered_events["lcb_post_event"] = clean_lcb
-    registered_events["fa_pre_event"] = new_fa
-    registered_events["fa_post_event"] = append_fa
+    reg("gl_species_pre_event", set_species_level);
+    reg("pl_species_pre_event", set_species_level);
+    reg("chc_pre_event", set_species_level);
+    reg("sl_species_pre_event", set_species_level);
+    reg("fa2_unsorted_pre_event", set_molecular_subspecies_level);
+    reg("fa3_unsorted_pre_event", set_molecular_subspecies_level);
+    reg("fa4_unsorted_pre_event", set_molecular_subspecies_level);
     
-    registered_events["ether_pre_event"] = add_ether
-    registered_events["old_hydroxyl_pre_event"] = add_old_hydroxyl
-    registered_events["db_count_pre_event"] = add_double_bonds
-    registered_events["carbon_pre_event"] = add_carbon
-    registered_events["hydroxyl_pre_event"] = add_hydroxyl
+    reg("lcb_pre_event", new_lcb);
+    reg("lcb_post_event", clean_lcb);
+    reg("fa_pre_event", new_fa);
+    reg("fa_post_event", append_fa);
+    
+    reg("ether_pre_event", add_ether);
+    reg("old_hydroxyl_pre_event", add_old_hydroxyl);
+    reg("db_count_pre_event", add_double_bonds);
+    reg("carbon_pre_event", add_carbon);
+    reg("hydroxyl_pre_event", add_hydroxyl);
     
     
-    registered_events["adduct_info_pre_event"] = new_adduct
-    registered_events["adduct_pre_event"] = add_adduct
-    registered_events["charge_pre_event"] = add_charge
-    registered_events["charge_sign_pre_event"] = add_charge_sign
-    */
+    reg("adduct_info_pre_event", new_adduct);
+    reg("adduct_pre_event", add_adduct);
+    reg("charge_pre_event", add_charge);
+    reg("charge_sign_pre_event", add_charge_sign);
 }
 
 
 
 
 void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
+    
     level = STRUCTURAL_SUBSPECIES;
     lipid = NULL;
     head_group = "";
@@ -89,8 +92,7 @@ void GoslinParserEventHandler::new_fa(TreeNode *node) {
             {
                 stringstream s;
                 s << "FA" << (fa_list->size() + 1);
-                string fa;
-                s >> fa;
+                string fa = s.str();
                 current_fa = new MolecularFattyAcid(fa, 2, 0, 0, ESTER, false, -1);
             }
             break;
@@ -99,8 +101,7 @@ void GoslinParserEventHandler::new_fa(TreeNode *node) {
             {
                 stringstream s1;
                 s1 << "FA" << (fa_list->size() + 1);
-                string fa1;
-                s1 >> fa1;
+                string fa1 = s1.str();
                 current_fa = new StructuralFattyAcid(fa1, 2, 0, 0, ESTER, false, 0);
             }
             break;
@@ -147,9 +148,12 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
         fa_list->insert(fa_list->begin(), lcb);
     }
     
-    lipid = NULL;    
     
+    lipid = NULL;
     LipidSpecies *ls = NULL;
+    
+    
+
     
     if (level == SPECIES){
         if (fa_list->size() > 0){
@@ -167,9 +171,13 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     }
         
     else if (level == STRUCTURAL_SUBSPECIES){
-        ls = new LipidStructuralSubspecies(head_group, fa_list);
-    }
+        cout << "hoho " << head_group << endl;
+        //ls = new LipidStructuralSubspecies(head_group, fa_list);
+        ls = new LipidSpecies(head_group);
+        cout << "hihi" << endl;
 
+    }
+    
     lipid = new LipidAdduct();
     lipid->lipid = ls;
     lipid->adduct = adduct;

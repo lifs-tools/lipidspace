@@ -1,7 +1,20 @@
 #include "LipidSpecies.h"
-
+#include <iostream>
+using namespace std;
+   
+LipidSpecies::LipidSpecies(string _head_group){
+    cout << "jupp " << endl;
+    head_group = head_group;
+    lipid_category = get_category(head_group);
     
+    lipid_class = get_class(head_group);
+    info.level = UNDEFINED_LEVEL;
+    use_head_group = false;
+}
+
+
 LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass _lipid_class, LipidSpeciesInfo *lipid_species_info){
+    cout << "japp " << endl;
     head_group = head_group;
     lipid_category = (_lipid_category != UNDEFINED_CATEGORY) ? _lipid_category : get_category(head_group);
     

@@ -4,6 +4,7 @@
 #include <set>
 #include <map>
 #include <string>
+#include <functional>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/parser/Parser.h"
 
@@ -15,7 +16,7 @@ using namespace std;
 class BaseParserEventHandler {
 public:
     Parser* parser;
-    map<string, void(*)(TreeNode *)> registered_events;
+    map<string, function<void(TreeNode *)>> registered_events;
     set<string> rule_names;
     
     

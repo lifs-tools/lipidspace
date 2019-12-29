@@ -46,6 +46,7 @@ int main(int argc, char** argv){
         // glycerophospholipid
         string lipid_name = "PE 16:1/12:0";
         goslin_parser.parse(lipid_name);
+        cout << "huhu" << endl;
         assert (goslin_parser.word_in_grammar);
     }
     catch (LipidException &e){

@@ -1,5 +1,22 @@
 #include "LipidStructuralSubspecies.h"
 
+#include <iostream>
+using namespace std;
+
+LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group) : LipidMolecularSubspecies (head_group) {
+    int num_carbon = 0;
+    int num_hydroxyl = 0;
+    int num_double_bonds = 0;
+    LipidFaBondType lipid_FA_bond_type = ESTER;
+    
+            
+    info.level = STRUCTURAL_SUBSPECIES;
+    info.num_carbon = num_carbon;
+    info.num_hydroxyl = num_hydroxyl;
+    info.num_double_bonds = num_double_bonds;
+    info.lipid_FA_bond_type = lipid_FA_bond_type;
+}
+
 
 
 LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<FattyAcid*> *_fa) : LipidMolecularSubspecies (head_group) {
@@ -8,9 +25,10 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
     int num_double_bonds = 0;
     LipidFaBondType lipid_FA_bond_type = ESTER;
     
+    
     if (_fa != NULL){
         for (unsigned int i = 0; i < _fa->size(); ++i){
-            StructuralFattyAcid *fas = (StructuralFattyAcid*)_fa;
+            StructuralFattyAcid *fas = (StructuralFattyAcid*)(_fa->at(i));
             if (fa.find(fas->name) == fa.end()){
                 throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");
             }
@@ -41,7 +59,6 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
     info.num_double_bonds = num_double_bonds;
     info.lipid_FA_bond_type = lipid_FA_bond_type;
 }
-
 
 
 string LipidStructuralSubspecies::get_lipid_string(LipidLevel level){

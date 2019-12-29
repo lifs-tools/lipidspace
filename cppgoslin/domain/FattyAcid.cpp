@@ -9,7 +9,7 @@ FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBo
     lcb = _lcb;
     
     if (num_carbon < 2){
-        throw ConstraintViolationException("FattyAcid must have at least 2 carbons!");
+        throw ConstraintViolationException("FattyAcid must have at least 2 carbons! Got " + to_string(num_carbon));
     }
     
     if (position < -1){
@@ -17,7 +17,7 @@ FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBo
     }
     
     if (num_hydroxyl < 0){
-        throw ConstraintViolationException("FattyAcid must have at least 0 hydroxy groups!");
+        throw ConstraintViolationException("FattyAcid must have at least 0 hydroxy groups! Got " + to_string(num_hydroxyl));
     }
 }
 

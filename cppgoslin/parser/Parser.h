@@ -26,26 +26,25 @@ class BaseParserEventHandler;
 // DP stands for dynamic programming
 class DPNode {
 public:    
-    uint rule_index_1;
-    uint rule_index_2;
+    unsigned long rule_index_1;
+    unsigned long rule_index_2;
     DPNode *left = NULL;
     DPNode *right = NULL;
     
-    DPNode(uint _rule1, uint _rule2, DPNode *_left, DPNode *_right);
-    ~DPNode();
+    DPNode(unsigned long _rule1, unsigned long _rule2, DPNode *_left, DPNode *_right);
 };
         
 
 class TreeNode {
 public:
-    uint rule_index;
+    unsigned long rule_index;
     TreeNode *left;
     TreeNode *right;
     char terminal;
     bool fire_event;
     static const char EOF_SIGN = '\0';
     
-    TreeNode(uint _rule, bool _fire_event);
+    TreeNode(unsigned long _rule, bool _fire_event);
     ~TreeNode();
     string get_text();
 };
@@ -100,7 +99,7 @@ public:
     map<char, set<unsigned long>*> TtoNT;
     map<unsigned long, set<unsigned long>*> NTtoNT;
     map<unsigned long, string> NTtoRule;
-    map<char, set<unsigned long>*> originalNTtoNT;
+    map<unsigned long, set<unsigned long>*> originalNTtoNT;
     char quote;
     BaseParserEventHandler *parser_event_handler;
     TreeNode *parse_tree;
@@ -120,7 +119,7 @@ public:
     static string de_escape(string text, char _quote);
     unsigned long add_terminal(string text);
     vector<unsigned long>* collect_one_backwards(unsigned long rule_index);
-    vector<unsigned long>* collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index);
+    vector<unsigned long>* collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index, int s = 0);
     void raise_events(TreeNode *node);
     void fill_tree(TreeNode *node, DPNode *dp_node);
     bool parse(string text_to_parse);

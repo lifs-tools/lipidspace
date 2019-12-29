@@ -13,26 +13,16 @@ const unsigned long Parser::START_RULE = 2ull;
 const char Parser::DEFAULT_QUOTE = '\'';
 
 
-DPNode::DPNode(uint _rule1, uint _rule2, DPNode *_left, DPNode *_right){
+DPNode::DPNode(unsigned long _rule1, unsigned long _rule2, DPNode *_left, DPNode *_right){
     rule_index_1 = _rule1;
     rule_index_2 = _rule2;
     left = _left;
     right = _right;
 }
 
-DPNode::~DPNode(){
-    if (left != NULL) delete left;
-    if (right != NULL) delete right;
-}
-        
       
-      
-      
-      
-        
-
     
-TreeNode::TreeNode(uint _rule, bool _fire_event){
+TreeNode::TreeNode(unsigned long _rule, bool _fire_event){
     rule_index = _rule;
     left = NULL;
     right = NULL;
@@ -48,12 +38,12 @@ TreeNode::~TreeNode(){
 
 
 string TreeNode::get_text(){
-    if (terminal){
+    if (!terminal){
         string left_str = left->get_text();
         string right_str = right != NULL ? right->get_text() : "";
         return (left_str != string(1, EOF_SIGN) ? left_str : "") + (right_str != string(1, EOF_SIGN) ? right_str : "");
     }
-    return string(1, terminal);
+    return string(1, (char)terminal);
 }
         
 
@@ -162,6 +152,10 @@ string Parser::strip(string s, char c){
 
 Parser::~Parser(){
     if (parse_tree) delete parse_tree;
+    
+    for (auto kvp : TtoNT) delete kvp.second;
+    for (auto kvp : NTtoNT) delete kvp.second;
+    for (auto kvp : originalNTtoNT) delete kvp.second;
 }
 
 
@@ -321,6 +315,7 @@ Parser::Parser(BaseParserEventHandler *_parserEventHandler, string grammar_filen
     
     
     
+    
     set<unsigned long> keys;
     for (auto key : TtoNT) keys.insert(key.first);
                                                                    
@@ -341,10 +336,21 @@ Parser::Parser(BaseParserEventHandler *_parserEventHandler, string grammar_filen
     }
     
     for (auto kvp : NTtoNT){
-        set<unsigned long> *rr = new set<unsigned long>();
-        for (auto r : *kvp.second) rr->insert(r);
-        originalNTtoNT.insert(pair<unsigned long, set<unsigned long>*>(kvp.first, rr));
+        set<unsigned long> *copy_set = new set<unsigned long>();
+        for (auto r : *kvp.second) copy_set->insert(r);
+        originalNTtoNT.insert({kvp.first, copy_set});
+        
     }
+    /*
+    for (auto kvp : originalNTtoNT){
+        if ((unsigned long)kvp.first < 1000){
+            cout << (unsigned long)kvp.first << " {";
+            for (auto v : *kvp.second){
+                cout << (unsigned long)v << ", ";
+            }
+            cout << "}" << endl;
+        }
+    }*/
     
     set<unsigned long> keysNT;
     for (auto k : NTtoNT) keysNT.insert(k.first);
@@ -358,18 +364,28 @@ Parser::Parser(BaseParserEventHandler *_parserEventHandler, string grammar_filen
             delete backward_rules;
         }
     }
+    
+    
+    
 }
 
 
 vector<string>* Parser::extract_text_based_rules(string grammar_filename, char _quote){
     
-    ifstream t(grammar_filename.c_str());
-    stringstream buffer;
-    buffer << t.rdbuf();
     
-    string grammar;
-    buffer >> grammar;
-    int grammar_length = grammar.length();
+    
+    std::ifstream t;
+    t.open(grammar_filename);      // open input file
+    t.seekg(0, std::ios::end);    // go to the end
+    int grammar_length = t.tellg();           // report location (this is the length)
+    t.seekg(0, std::ios::beg);    // go back to the beginning
+    char* buffer = new char[grammar_length];    // allocate memory for a buffer of appropriate dimension
+    t.read(buffer, grammar_length);       // read the whole file into the buffer
+    t.close();
+    string grammar = string(buffer);
+    delete buffer;
+    
+    
     
     /*
     deleting comments to prepare for splitting the grammar in rules.
@@ -455,11 +471,13 @@ vector<string>* Parser::extract_text_based_rules(string grammar_filename, char _
         throw RuntimeException("Error: corrupted grammar '" + grammar_filename + "', ends either in comment or quote");
     }
     
-    sb >> grammar;
+    grammar = sb.str();
     grammar = replace_all(grammar, "\r\n", "");
     grammar = replace_all(grammar, "\n", "");
     grammar = replace_all(grammar, "\r", "");
     grammar = strip(grammar, ' ');
+    
+    
     if (grammar[grammar.length() - 1] != RULE_TERMINAL){
         throw RuntimeException("Error: corrupted grammar'" + grammar_filename + "', last rule has no termininating sign, was: '" + string(1, grammar[grammar.length() - 1]) + "'");
     }
@@ -476,6 +494,7 @@ vector<string>* Parser::extract_text_based_rules(string grammar_filename, char _
         delete grammar_name_rule;
         throw RuntimeException("Error: first rule must start with the keyword 'grammar'");
     }
+    
     
     else if (grammar_name_rule->size() != 2){
         delete grammar_name_rule;
@@ -521,7 +540,7 @@ vector<string>* Parser::split_string(string text, char separator, char _quote){
         if (!in_quote){
             if (c == separator){
                 string sb_string;
-                sb >> sb_string;
+                sb_string = sb.str();
                 if (sb_string.length() > 0) tokens->push_back(sb_string);
                 sb.str("");
             }
@@ -545,7 +564,7 @@ vector<string>* Parser::split_string(string text, char separator, char _quote){
     }
     
     string sb_string;
-    sb >> sb_string;
+    sb_string = sb.str();
     
     if (sb_string.length() > 0){
         tokens->push_back(sb_string);
@@ -554,7 +573,6 @@ vector<string>* Parser::split_string(string text, char separator, char _quote){
         delete tokens;
         throw RuntimeException("Error: corrupted token in grammar");
     }
-    
     return tokens;
 }
 
@@ -586,7 +604,7 @@ string Parser::de_escape(string text, char _quote){
     
     }
     string sb_string;
-    sb >> sb_string;
+    sb_string = sb.str();
     return sb_string;
 }
 
@@ -638,16 +656,23 @@ vector<unsigned long>* Parser::collect_one_backwards(unsigned long rule_index){
 
 
 
-vector<unsigned long>* Parser::collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index){
+vector<unsigned long>* Parser::collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index, int s){
     if (originalNTtoNT.find(child_rule_index) == originalNTtoNT.end()) return NULL;
     
-    for (auto previous_index : *originalNTtoNT.at(child_rule_index)){
-        if (previous_index == parent_rule_index) return new vector<unsigned long>;
+    //cout << child_rule_index << " " << parent_rule_index << " " << s << endl;
+    /*
+    if (child_rule_index == 3ull) {
+        for (auto a : *originalNTtoNT.at(child_rule_index)) cout << a << endl;
+        exit(0);
+    }*/
+    
+    for (set<unsigned long>::iterator previous_index = originalNTtoNT.at(child_rule_index)->begin(); previous_index != originalNTtoNT.at(child_rule_index)->end(); ++previous_index){
+        if (*previous_index == parent_rule_index) return new vector<unsigned long>;
         
-        else if (originalNTtoNT.find(previous_index) != originalNTtoNT.end()){
-            vector<unsigned long>* collection = collect_backwards(previous_index, parent_rule_index);
+        else if (originalNTtoNT.find(*previous_index) != originalNTtoNT.end()){
+            vector<unsigned long>* collection = collect_backwards(*previous_index, parent_rule_index, s + 1);
             if (collection != NULL){
-                collection->push_back(previous_index);
+                collection->push_back(*previous_index);
                 return collection;
             }
         }
@@ -682,14 +707,17 @@ void Parser::fill_tree(TreeNode *node, DPNode *dp_node){
     // checking and extending nodes for single rule chains
     unsigned long key = dp_node->left != NULL ? compute_rule_key(dp_node->rule_index_1, dp_node->rule_index_2) : dp_node->rule_index_2;
     
+    //cout << "in" << endl;
     vector<unsigned long> *merged_rules = collect_backwards(key, node->rule_index);
+    //cout << "in 2" << endl;
     if (merged_rules != NULL){
         for (auto rule_index : *merged_rules){
             node->left = new TreeNode(rule_index, NTtoRule.find(rule_index) != NTtoRule.end());
             node = node->left;
         }
+        delete merged_rules;
     }
-    delete merged_rules;
+    //cout << "out" << endl;
     
     if (dp_node->left != NULL) { // None => leaf
         node->left = new TreeNode(dp_node->rule_index_1, NTtoRule.find(dp_node->rule_index_1) != NTtoRule.end());
@@ -725,15 +753,15 @@ void Parser::parse_regular(string text_to_parse){
     // dp stands for dynamic programming, nothing else
     map<unsigned long, DPNode*> ***dp_table = new map<unsigned long, DPNode*>**[n];
     // Ks is a lookup, which fields in the dp_table are filled
-    Bitfield **Ks = new Bitfield*[n];
+    set<unsigned long> *Ks = new set<unsigned long>[n];
     
-    
+    vector<DPNode*> DPs;
     
     
     // init the tables
     for (int i = 0; i < n; ++i){
         dp_table[i] = new map<unsigned long, DPNode*>*[n - i];
-        Ks[i] = new Bitfield(n - 1);
+        //Ks[i] = new Bitfield(n - 1);
         for (int j = 0; j < n - i; ++j) dp_table[i][j] = new map<unsigned long, DPNode*>();
         
     }
@@ -751,7 +779,8 @@ void Parser::parse_regular(string text_to_parse){
             unsigned old_key = rule_index & MASK;
             DPNode *dp_node = new DPNode(c, old_key, NULL, NULL);
             dp_table[i][0]->insert(pair<unsigned long, DPNode*>(new_key, dp_node));
-            Ks[i]->set_bit(0);
+            // Ks[i]->set_bit(0);
+            Ks[i].insert(0);
         }
     }
     
@@ -763,12 +792,13 @@ void Parser::parse_regular(string text_to_parse){
                 map<unsigned long, DPNode*>* Di = D[i];
                 int jp1 = j + 1;
                 
-                Ks[j]->init();
-                int k;
-                while ((k = Ks[j]->get_bit_positions()) != -1){
-                    if (k >= i) break;
-                    if (Ks[jp1 + k]->is_not_set(im1 - k)) continue;
-                
+                // Ks[j]->init();
+                //int k;
+                //while ((k = Ks[j]->get_bit_positions()) != -1){
+                for (auto k : Ks[j]){
+                    if (k >= (unsigned int)i) break;
+                    //if (Ks[jp1 + k]->is_not_set(im1 - k)) continue;
+                    if (Ks[jp1 + k].find(im1 - k) == Ks[jp1 + k].end()) continue;
                 
                     for (auto index_pair_1 : *D[k]){
                         for (auto index_pair_2 : *dp_table[jp1 + k][im1 - k]){
@@ -777,7 +807,9 @@ void Parser::parse_regular(string text_to_parse){
                             if (NTtoNT.find(key) == NTtoNT.end()) continue;
                             
                             DPNode *content = new DPNode(index_pair_1.first, index_pair_2.first, index_pair_1.second, index_pair_2.second);
-                            Ks[j]->set_bit(i);
+                            DPs.push_back(content);
+                            //Ks[j]->set_bit(i);
+                            Ks[j].insert(i);
                             for (auto rule_index : *NTtoNT.at(key)){
                                 Di->insert(pair<unsigned long, DPNode*>(rule_index, content));
                             }
@@ -786,7 +818,6 @@ void Parser::parse_regular(string text_to_parse){
                 }
             }
         }
-        
         for (int i = n - 1; i > 0; --i){
             if (dp_table[0][i]->find(START_RULE) != dp_table[0][i]->end()){
                 word_in_grammar = true;
@@ -799,16 +830,14 @@ void Parser::parse_regular(string text_to_parse){
     }
     
     // delete tables
+    for (auto dp_node : DPs) delete dp_node;
     for (int i = 0; i < n; ++i){
-        for (int j = 0; i < n - i; ++j){
-            for (auto kvp : *dp_table[i][j]){
-                delete kvp.second;
-            }
+        for (int j = 0; j < n - i; ++j){
             delete dp_table[i][j];
         }
         delete[] dp_table[i];
-        delete Ks[i];
     }
     delete[] dp_table;
     delete[] Ks;
+    
 }

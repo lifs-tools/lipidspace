@@ -17,7 +17,8 @@ using namespace std;
 class LipidStructuralSubspecies : public LipidMolecularSubspecies {
 public:
     
-    LipidStructuralSubspecies(string head_group, vector<FattyAcid*> *_fa = NULL);
+    LipidStructuralSubspecies(string head_group);
+    LipidStructuralSubspecies(string head_group, vector<FattyAcid*> *_fa);
     string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
 };
 
