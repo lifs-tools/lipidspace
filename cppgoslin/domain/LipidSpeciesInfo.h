@@ -9,15 +9,10 @@
 
 using namespace std;
 
-class LipidSpeciesInfo {
+class LipidSpeciesInfo : public MolecularFattyAcid {
     
 public:
     LipidLevel level;
-    int num_carbon;
-    int num_hydroxyl;
-    int num_double_bonds;
-    LipidFaBondType lipid_FA_bond_type;
-    
     LipidSpeciesInfo (FattyAcid *fa = NULL);
 };
         

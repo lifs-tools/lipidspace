@@ -7,6 +7,7 @@
 using namespace std;
 
 int main(int argc, char** argv){
+
     
     MolecularFattyAcid instanceZero = MolecularFattyAcid("FA1", 2, 0, 0, UNDEFINED_FA, false, 0);
     assert(0 == instanceZero.num_double_bonds);

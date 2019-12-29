@@ -5,22 +5,24 @@
 #include <map>
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
-#include "cppgoslin/domain/Parser.h"
+#include "cppgoslin/parser/Parser.h"
+
+class Parser;
+class TreeNode;
 
 using namespace std;
 
 class BaseParserEventHandler {
 public:
     Parser* parser;
-    map<string, void(*)()> registered_events;
+    map<string, void(*)(TreeNode *)> registered_events;
     set<string> rule_names;
     
     
     BaseParserEventHandler();
-    void sanity_check(self);
-    void handle_event(self, event_name, node);
-    static bool endswith(const string &main_str, const string to_match);
-    static replace(string& str, const string& from, const string& to);
+    void sanity_check();
+    void handle_event(string event_name, TreeNode *node);
+    static bool endswith(const string &main_str, const string &to_match);
 };
             
 #endif /*  BASE_PARSER_EVENT_HANDLER_H */

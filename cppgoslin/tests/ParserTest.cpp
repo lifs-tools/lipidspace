@@ -1,4 +1,5 @@
 #include "cppgoslin/parser/Parser.h"
+#include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include <set>
 #include <string>
 #include <stdlib.h>
@@ -12,6 +13,7 @@ int main(int argc, char** argv){
     char PARSER_QUOTE = '\'';
     
     srand(time(NULL));
+    
     
     
     int n = 5000 + (rand() % 1500000);
@@ -33,6 +35,24 @@ int main(int argc, char** argv){
     }
 
     assert( ii == s.size());
+    
+    
+    
+    
+    try {
+        GoslinParserEventHandler goslin_parser_event_handler;
+        Parser goslin_parser(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
+        
+        // glycerophospholipid
+        string lipid_name = "PE 16:1/12:0";
+        goslin_parser.parse(lipid_name);
+        assert (goslin_parser.word_in_grammar);
+    }
+    catch (LipidException &e){
+        cout << "Exception:" << endl;
+        cout << e.what() << endl;
+    }
+    
         
     
     /*
