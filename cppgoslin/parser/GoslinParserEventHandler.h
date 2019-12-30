@@ -23,7 +23,7 @@ public:
     LipidAdduct *lipid;
     string head_group;
     FattyAcid *lcb;
-    vector<FattyAcid*> *fa_list;
+    vector<FattyAcid*> fa_list;
     FattyAcid *current_fa;
     Adduct *adduct;
         

@@ -52,6 +52,10 @@ Bitfield::Bitfield(uint length){
     superfield_len = 1 + ((field_len + 1) >> 6);
     field = new unsigned long[field_len];
     superfield = new unsigned long[superfield_len];
+    
+    for (uint i = 0; i < field_len; ++i) field[i] = 0ull;
+    for (uint i = 0; i < superfield_len; ++i) superfield[i] = 0ull;
+    do_init = true;
 }
 
 Bitfield::~Bitfield(){
@@ -81,18 +85,20 @@ void Bitfield::print_bitfield(unsigned long l){
     } cout << endl;
 }
 
-void Bitfield::init(){
-    spre = 0;
-    si = 0;
-    sv = superfield[si];
-    fi = 0;
-    
-    unsigned long sv1 = (unsigned long)(sv & -sv);
-    pos = spre + __builtin_ctzll(sv1);
-    v = field[pos];
-}
 
 int Bitfield::get_bit_positions(){
+    if (do_init){
+        spre = 0;
+        si = 0;
+        sv = superfield[si];
+        fi = 0;
+        
+        unsigned long sv1 = (unsigned long)(sv & -sv);
+        pos = spre + __builtin_ctzll(sv1);
+        v = field[pos];
+        do_init = false;
+    }
+    
     do {
         while (sv != 0) {
             // algorithm for getting least significant bit position
@@ -107,19 +113,24 @@ int Bitfield::get_bit_positions(){
             if (sv != 0){
                 unsigned long sv1 = (unsigned long)(sv & -sv);
                 pos = spre + __builtin_ctzll(sv1);
-                v = field[pos];
+                if (pos < field_len) v = field[pos];
             }
         }
         
         spre += 64;
         if (si < superfield_len){
-            sv = superfield[++si];
-            unsigned long sv1 = (unsigned long)(sv & -sv);
-            pos = spre + __builtin_ctzll(sv1);
-            v = field[pos];
+            ++si;
+            if (si < superfield_len){
+                sv = superfield[si];
+                unsigned long sv1 = (unsigned long)(sv & -sv);
+                pos = spre + __builtin_ctzll(sv1);
+                if (pos < field_len) v = field[pos];
+            }
         }
     }
     while (si < superfield_len);
+    
+    do_init = true;
     return -1;
 }
 
@@ -371,21 +382,11 @@ Parser::Parser(BaseParserEventHandler *_parserEventHandler, string grammar_filen
 
 
 vector<string>* Parser::extract_text_based_rules(string grammar_filename, char _quote){
+    vector<string> *rules = NULL;
     
-    
-    
-    std::ifstream t;
-    t.open(grammar_filename);      // open input file
-    t.seekg(0, std::ios::end);    // go to the end
-    int grammar_length = t.tellg();           // report location (this is the length)
-    t.seekg(0, std::ios::beg);    // go back to the beginning
-    char* buffer = new char[grammar_length];    // allocate memory for a buffer of appropriate dimension
-    t.read(buffer, grammar_length);       // read the whole file into the buffer
-    t.close();
-    string grammar = string(buffer);
-    delete buffer;
-    
-    
+    ifstream ifs(grammar_filename);
+    string grammar( (std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+    int grammar_length = grammar.length();
     
     /*
     deleting comments to prepare for splitting the grammar in rules.
@@ -394,6 +395,10 @@ vector<string>* Parser::extract_text_based_rules(string grammar_filename, char _
     As long as we are in one context, key words for starting / ending
     the other contexts have to be ignored.
     */
+    
+    
+    
+    
     stringstream sb;
     Content current_context = NoContext;
     int current_position = 0;
@@ -462,11 +467,10 @@ vector<string>* Parser::extract_text_based_rules(string grammar_filename, char _
         }
             
     }
-                
+    
     if (current_context == NoContext){
         sb << grammar.substr(current_position, grammar_length - current_position);
     }
-        
     else {
         throw RuntimeException("Error: corrupted grammar '" + grammar_filename + "', ends either in comment or quote");
     }
@@ -482,15 +486,14 @@ vector<string>* Parser::extract_text_based_rules(string grammar_filename, char _
         throw RuntimeException("Error: corrupted grammar'" + grammar_filename + "', last rule has no termininating sign, was: '" + string(1, grammar[grammar.length() - 1]) + "'");
     }
     
-    vector<string> *rules = split_string(grammar, RULE_TERMINAL, _quote);
+    rules = split_string(grammar, RULE_TERMINAL, _quote);
     
     if (rules->size() < 1){
         throw RuntimeException("Error: corrupted grammar '" + grammar_filename + "', grammar is empty");
     }
-    
     vector<string> *grammar_name_rule = split_string(rules->at(0), ' ', _quote);
     
-    if (grammar_name_rule->at(0) != "grammar"){
+    if (grammar_name_rule->size() > 0 && grammar_name_rule->at(0) != "grammar"){
         delete grammar_name_rule;
         throw RuntimeException("Error: first rule must start with the keyword 'grammar'");
     }
@@ -793,7 +796,6 @@ void Parser::parse_regular(string text_to_parse){
                 map<unsigned long, DPNode*>* Di = D[i];
                 int jp1 = j + 1;
                 
-                // Ks[j]->init();
                 //int k;
                 //while ((k = Ks[j]->get_bit_positions()) != -1){
                 for (auto k : Ks[j]){
@@ -812,7 +814,7 @@ void Parser::parse_regular(string text_to_parse){
                             //Ks[j]->set_bit(i);
                             Ks[j].insert(i);
                             for (auto rule_index : *NTtoNT.at(key)){
-                                Di->insert(pair<unsigned long, DPNode*>(rule_index, content));
+                                Di->insert({rule_index, content});
                             }
                         }
                     }

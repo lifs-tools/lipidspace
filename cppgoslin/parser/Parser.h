@@ -65,6 +65,7 @@ public:
     unsigned int pos;
     unsigned int field_len;
     unsigned int superfield_len;
+    bool do_init;
     
     
     

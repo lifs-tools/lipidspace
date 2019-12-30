@@ -15,18 +15,16 @@ int main(int argc, char** argv){
     /*
     srand(time(NULL));
     
-    
-    
-    int n = 5000 + (rand() % 1500000);
-    int m = 500 + (rand() % 150000);
+    int n = 5000 + (rand() % 1500000); // highest bit
+    int m = 500 + (rand() % 15000); // number of bits
     set<int> s;
     for (int i = 0; i < m; ++i) s.insert(rand() % (n - 2));
+    
     
     Bitfield b(n);
     for (auto i : s) b.set_bit(i);
     
     int ii = 0;
-    b.init();
     int bb;
     set<int>::iterator st = s.begin();
     while ((bb = b.get_bit_positions()) != -1){
@@ -34,30 +32,37 @@ int main(int argc, char** argv){
         ii += 1;
         st++;
     }
-
-    assert( ii == s.size());
+    assert(ii == s.size());
+    
+    ii = 0;
+    st = s.begin();
+    while ((bb = b.get_bit_positions()) != -1){
+        assert(bb == *st);
+        ii += 1;
+        st++;
+    }
+    assert(ii == s.size());
+    
     */
-    
-    
-    
     
     
     try {
         GoslinParserEventHandler goslin_parser_event_handler;
         Parser goslin_parser(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
         
+        /*
         // glycerophospholipid
         string lipid_name = "PE 16:1/12:0";
         goslin_parser.parse(lipid_name);
         assert (goslin_parser.word_in_grammar);
         cout << goslin_parser_event_handler.lipid->get_lipid_string() << endl;
         delete goslin_parser_event_handler.lipid;
+        */
     }
     catch (LipidException &e){
         cout << "Exception:" << endl;
         cout << e.what() << endl;
     }
-    
     
     /*
     def test_lipid_parser(self):
