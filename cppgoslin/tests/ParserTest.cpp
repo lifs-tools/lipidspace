@@ -50,14 +50,23 @@ int main(int argc, char** argv){
         GoslinParserEventHandler goslin_parser_event_handler;
         Parser goslin_parser(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
         
-        /*
+        
         // glycerophospholipid
         string lipid_name = "PE 16:1/12:0";
         goslin_parser.parse(lipid_name);
         assert (goslin_parser.word_in_grammar);
         cout << goslin_parser_event_handler.lipid->get_lipid_string() << endl;
         delete goslin_parser_event_handler.lipid;
-        */
+        
+        
+        // glycerophospholipid
+        lipid_name = "DAG 16:1-12:0";
+        goslin_parser.parse(lipid_name);
+        
+        assert (goslin_parser.word_in_grammar);
+        cout << goslin_parser_event_handler.lipid->get_lipid_string() << endl;
+        delete goslin_parser_event_handler.lipid;
+        
     }
     catch (LipidException &e){
         cout << "Exception:" << endl;

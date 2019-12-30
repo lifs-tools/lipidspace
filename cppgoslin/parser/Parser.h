@@ -97,10 +97,10 @@ public:
     
     
     unsigned long next_free_rule_index;
-    map<char, set<unsigned long>*> TtoNT;
-    map<unsigned long, set<unsigned long>*> NTtoNT;
+    map<char, set<unsigned long>> TtoNT;
+    map<unsigned long, set<unsigned long>> NTtoNT;
     map<unsigned long, string> NTtoRule;
-    map<unsigned long, set<unsigned long>*> originalNTtoNT;
+    map<unsigned long, set<unsigned long>> originalNTtoNT;
     char quote;
     BaseParserEventHandler *parser_event_handler;
     TreeNode *parse_tree;

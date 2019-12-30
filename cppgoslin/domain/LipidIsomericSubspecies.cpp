@@ -62,11 +62,12 @@ string LipidIsomericSubspecies::build_lipid_isomeric_substructure_name(){
         
         stringstream db;
         db << "(";
-        if (fatty_acid->double_bond_positions->size()){
+        if (fatty_acid->double_bond_positions.size()){
             int j = 0;
-            for (map<int, string>::iterator it = fatty_acid->double_bond_positions->begin(); it != fatty_acid->double_bond_positions->end(); ++it, ++j){
+            for (auto it : fatty_acid->double_bond_positions){
                 if (j > 0) db << ",";
-                db << it->first << it->second;
+                db << it.first << it.second;
+                ++j;
             }
         }
         db << ")";
@@ -76,7 +77,7 @@ string LipidIsomericSubspecies::build_lipid_isomeric_substructure_name(){
         
         s << num_carbon << ":" << num_double_bonds;
         
-        if (fatty_acid->double_bond_positions->size()){
+        if (fatty_acid->double_bond_positions.size()){
             s << db.str();
         }
         
