@@ -29,7 +29,7 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
     if (_fa != NULL){
         for (unsigned int i = 0; i < _fa->size(); ++i){
             StructuralFattyAcid *fas = (StructuralFattyAcid*)(_fa->at(i));
-            if (fa.find(fas->name) == fa.end()){
+            if (fa.find(fas->name) != fa.end()){
                 throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");
             }
             else {
@@ -61,7 +61,12 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
 }
 
 
-string LipidStructuralSubspecies::get_lipid_string(LipidLevel level){
+LipidStructuralSubspecies::~LipidStructuralSubspecies(){
+    
+}
+
+
+string LipidStructuralSubspecies::get_lipid_string(LipidLevel level) {
     switch(level){
         case UNDEFINED_LEVEL:
         case STRUCTURAL_SUBSPECIES:
@@ -71,13 +76,9 @@ string LipidStructuralSubspecies::get_lipid_string(LipidLevel level){
         case CATEGORY:
         case CLASS:
         case SPECIES:
-            return get_lipid_string(level);
+            return LipidStructuralSubspecies::get_lipid_string(level);
         
         default:
-            stringstream ss;
-            ss << "LipidStructuralSubspecies does not know how to create a lipid string for level " << level;
-            string error_message;
-            ss >> error_message;
-            throw RuntimeException(error_message);
+            throw RuntimeException("LipidStructuralSubspecies does not know how to create a lipid string for level " + to_string(level));
     }
 }

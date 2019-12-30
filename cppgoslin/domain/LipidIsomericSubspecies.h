@@ -13,6 +13,7 @@ using namespace std;
 class LipidIsomericSubspecies : public LipidStructuralSubspecies {
 
     LipidIsomericSubspecies(string head_group, vector<FattyAcid*>* fa = NULL);
+    ~LipidIsomericSubspecies();
     string build_lipid_isomeric_substructure_name();
     string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
             

@@ -1,5 +1,6 @@
 #include "LipidAdduct.h"
 
+
 LipidAdduct::LipidAdduct(){
     lipid = NULL;
     adduct = NULL;
@@ -16,16 +17,12 @@ LipidAdduct::~LipidAdduct(){
     
 string LipidAdduct::get_lipid_string(LipidLevel level){
     stringstream s;
-    
     if (lipid) s << lipid->get_lipid_string(level);
     else return "";
     
     if (adduct) s << adduct->get_lipid_string();
     
-    string lipid_name;
-    s >> lipid_name;
-    
-    return lipid_name;
+    return s.str();
 }
     
     
@@ -41,8 +38,5 @@ string LipidAdduct::get_lipid_fragment_string(LipidLevel level){
         s << " - " << fragment->get_lipid_string();
     }
     
-    string lipid_name;
-    s >> lipid_name;
-    
-    return lipid_name;
+    return s.str();
 }

@@ -90,19 +90,13 @@ void GoslinParserEventHandler::new_fa(TreeNode *node) {
         
         case MOLECULAR_SUBSPECIES:
             {
-                stringstream s;
-                s << "FA" << (fa_list->size() + 1);
-                string fa = s.str();
-                current_fa = new MolecularFattyAcid(fa, 2, 0, 0, ESTER, false, -1);
+                current_fa = new MolecularFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, -1);
             }
             break;
         
         case STRUCTURAL_SUBSPECIES:
             {
-                stringstream s1;
-                s1 << "FA" << (fa_list->size() + 1);
-                string fa1 = s1.str();
-                current_fa = new StructuralFattyAcid(fa1, 2, 0, 0, ESTER, false, 0);
+                current_fa = new StructuralFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, 0);
             }
             break;
         
@@ -171,11 +165,7 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     }
         
     else if (level == STRUCTURAL_SUBSPECIES){
-        cout << "hoho " << head_group << endl;
-        //ls = new LipidStructuralSubspecies(head_group, fa_list);
-        ls = new LipidSpecies(head_group);
-        cout << "hihi" << endl;
-
+        ls = new LipidStructuralSubspecies(head_group, fa_list);
     }
     
     lipid = new LipidAdduct();

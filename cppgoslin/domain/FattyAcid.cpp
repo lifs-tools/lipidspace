@@ -1,5 +1,6 @@
 #include "FattyAcid.h"
 
+
 FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position){
     name = _name;
     position = _position;

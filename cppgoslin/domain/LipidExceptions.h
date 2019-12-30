@@ -20,7 +20,7 @@ public:
 
 class IllegalArgumentException : public LipidException {
 public:
-    IllegalArgumentException(string message) : LipidException(message){
+    IllegalArgumentException(string message) : LipidException("IllegalArgumentException: " + message){
         
     }
 };
@@ -28,7 +28,7 @@ public:
 
 class ConstraintViolationException : public LipidException {
 public:
-    ConstraintViolationException(string message) : LipidException(message){
+    ConstraintViolationException(string message) : LipidException("ConstraintViolationException: " + message){
         
     }
 };
@@ -36,7 +36,7 @@ public:
 
 class RuntimeException : public LipidException {
 public:
-    RuntimeException(string message) : LipidException(message){
+    RuntimeException(string message) : LipidException("RuntimeException: " + message){
         
     }
 };

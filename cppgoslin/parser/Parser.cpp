@@ -778,7 +778,8 @@ void Parser::parse_regular(string text_to_parse){
             unsigned long new_key = rule_index >> SHIFT;
             unsigned old_key = rule_index & MASK;
             DPNode *dp_node = new DPNode(c, old_key, NULL, NULL);
-            dp_table[i][0]->insert(pair<unsigned long, DPNode*>(new_key, dp_node));
+            dp_table[i][0]->insert({new_key, dp_node});
+            DPs.push_back(dp_node);
             // Ks[i]->set_bit(0);
             Ks[i].insert(0);
         }

@@ -1,6 +1,6 @@
 #include "LipidIsomericSubspecies.h"
 
-LipidIsomericSubspecies::LipidIsomericSubspecies(string head_group, vector<FattyAcid*> *_fa) : LipidStructuralSubspecies(head_group) {
+LipidIsomericSubspecies::LipidIsomericSubspecies(string _head_group, vector<FattyAcid*> *_fa) : LipidStructuralSubspecies(_head_group) {
     int num_carbon = 0;
     int num_hydroxyl = 0;
     int num_double_bonds = 0;
@@ -28,12 +28,7 @@ LipidIsomericSubspecies::LipidIsomericSubspecies(string head_group, vector<Fatty
                 }
                     
                 else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL)){
-                    stringstream s;
-                    s << "Only one FA can define an ether bond to the head group! Tried to add " << fas->lipid_FA_bond_type << " over existing " << lipid_FA_bond_type;
-                    string error_message;
-                    s >> error_message;
-                    
-                    throw ConstraintViolationException(error_message);
+                    throw ConstraintViolationException("Only one FA can define an ether bond to the head group! Tried to add " + to_string(fas->lipid_FA_bond_type) + " over existing " + to_string(lipid_FA_bond_type));
                 }
             }
         }
@@ -45,6 +40,11 @@ LipidIsomericSubspecies::LipidIsomericSubspecies(string head_group, vector<Fatty
     info.num_double_bonds = num_double_bonds;
     info.lipid_FA_bond_type = lipid_FA_bond_type;
 }
+
+LipidIsomericSubspecies::~LipidIsomericSubspecies(){
+    
+}
+
 
 string LipidIsomericSubspecies::build_lipid_isomeric_substructure_name(){
     stringstream s;
@@ -70,9 +70,6 @@ string LipidIsomericSubspecies::build_lipid_isomeric_substructure_name(){
             }
         }
         db << ")";
-        string db_pos;
-        db >> db_pos;
-        
             
         num_carbon += fatty_acid->num_carbon;
         num_hydroxyl += fatty_acid->num_hydroxyl;
@@ -80,7 +77,7 @@ string LipidIsomericSubspecies::build_lipid_isomeric_substructure_name(){
         s << num_carbon << ":" << num_double_bonds;
         
         if (fatty_acid->double_bond_positions->size()){
-            s << db_pos;
+            s << db.str();
         }
         
         if (num_hydroxyl > 0){
@@ -89,11 +86,7 @@ string LipidIsomericSubspecies::build_lipid_isomeric_substructure_name(){
         
         s << FattyAcid::suffix(fatty_acid->lipid_FA_bond_type);
     }
-    
-    
-    string fa_strings;
-    s >> fa_strings;
-    return fa_strings;
+    return s.str();
 }
 
 
@@ -111,10 +104,6 @@ string LipidIsomericSubspecies::get_lipid_string(LipidLevel level){
             return LipidStructuralSubspecies::get_lipid_string(level);
     
         default:
-            stringstream s;
-            s << "LipidIsomericSubspecies does not know how to create a lipid string for level " << level;
-            string error_message;
-            s >> error_message;
-            throw IllegalArgumentException(error_message);
+            throw IllegalArgumentException("LipidIsomericSubspecies does not know how to create a lipid string for level " + to_string(level));
     }
 }

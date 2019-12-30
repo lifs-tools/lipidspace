@@ -12,6 +12,7 @@ using namespace std;
 int main(int argc, char** argv){
     char PARSER_QUOTE = '\'';
     
+    /*
     srand(time(NULL));
     
     
@@ -35,6 +36,8 @@ int main(int argc, char** argv){
     }
 
     assert( ii == s.size());
+    */
+    
     
     
     
@@ -46,15 +49,15 @@ int main(int argc, char** argv){
         // glycerophospholipid
         string lipid_name = "PE 16:1/12:0";
         goslin_parser.parse(lipid_name);
-        cout << "huhu" << endl;
         assert (goslin_parser.word_in_grammar);
+        cout << goslin_parser_event_handler.lipid->get_lipid_string() << endl;
+        delete goslin_parser_event_handler.lipid;
     }
     catch (LipidException &e){
         cout << "Exception:" << endl;
         cout << e.what() << endl;
     }
     
-        
     
     /*
     def test_lipid_parser(self):

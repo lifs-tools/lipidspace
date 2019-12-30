@@ -4,9 +4,9 @@ LipidSpeciesInfo::LipidSpeciesInfo (FattyAcid *fa) : MolecularFattyAcid("", (fa)
     level = UNDEFINED_LEVEL;
     
     try {
-        num_double_bonds = ((MolecularFattyAcid*)fa)->num_double_bonds;
+        num_double_bonds = (fa) ? ((MolecularFattyAcid*)fa)->num_double_bonds : 0;
     }
     catch(const std::bad_cast& e) {
-        
+        num_double_bonds = 0;
     }
 }

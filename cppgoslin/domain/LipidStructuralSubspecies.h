@@ -19,6 +19,7 @@ public:
     
     LipidStructuralSubspecies(string head_group);
     LipidStructuralSubspecies(string head_group, vector<FattyAcid*> *_fa);
+    ~LipidStructuralSubspecies();
     string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
 };
 
