@@ -1,13 +1,8 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-/*
-#include "cppgoslin/parser/GoslinParserEventHandler.h"
-#include "cppgoslin/parser/GoslinFragmentParserEventHandler.h"
-#include "cppgoslin/parser/LipidMapsParserEventHandler.h"
-*/
+
 #include "cppgoslin/parser/BaseParserEventHandler.h"
-#include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/parser/KnownGrammars.h"
 #include <string>
@@ -32,6 +27,8 @@ public:
     GrammarString(string s) : string(s){}
         
 };
+
+
 
     
 // DP stands for dynamic programming
@@ -153,28 +150,10 @@ public:
 };
 
 
-class GoslinParser : public Parser<LipidAdduct*> {
-public:
-    GoslinParser();
-    ~GoslinParser();
-};
+
+
 
 /*
-class GoslinParser(Parser):
-    def __init__(self):
-        self.event_handler = GoslinParserEventHandler()
-        dir_name = path.dirname(pygoslin.__file__)
-        super().__init__(self.event_handler, dir_name + "/data/goslin/Goslin.g4", Parser.DEFAULT_QUOTE)
-        
-        
-        
-class GoslinFragmentParser(Parser):
-    def __init__(self):
-        self.event_handler = GoslinFragmentParserEventHandler()
-        dir_name = path.dirname(pygoslin.__file__)
-        super().__init__(self.event_handler, dir_name + "/data/goslin/GoslinFragments.g4", Parser.DEFAULT_QUOTE)
-        
-        
 class LipidMapsParser(Parser):
     def __init__(self):
         self.event_handler = LipidMapsParserEventHandler()

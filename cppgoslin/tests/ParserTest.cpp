@@ -1,5 +1,5 @@
 #include "cppgoslin/parser/Parser.h"
-#include "cppgoslin/parser/GoslinParserEventHandler.h"
+#include "cppgoslin/parser/KnownParsers.h"
 #include <set>
 #include <string>
 #include <stdlib.h>
@@ -70,12 +70,13 @@ int main(int argc, char** argv){
         delete lipid;
         */
         
-        GoslinParser gp;
-        string lipid_name = "PE 16:1-12:1";
+        GoslinFragmentParser gp;
+        string lipid_name = "PE 16:1-12:1 - bla";
         LipidAdduct *lipid = gp.parse(lipid_name);
         
         assert (lipid);
         cout << lipid->get_lipid_string() << endl;
+        cout << lipid->get_lipid_fragment_string() << endl;
         delete lipid;
     }
     catch (LipidException &e){
