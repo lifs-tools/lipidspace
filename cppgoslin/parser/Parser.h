@@ -7,7 +7,9 @@
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
 */
 #include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include "cppgoslin/domain/LipidAdduct.h"
+#include "cppgoslin/parser/KnownGrammars.h"
 #include <string>
 #include <set>
 #include <map>
@@ -23,6 +25,13 @@ using namespace std;
 
 template<class T>
 class BaseParserEventHandler;
+
+
+class GrammarString : public string {
+public:
+    GrammarString(string s) : string(s){}
+        
+};
 
     
 // DP stands for dynamic programming
@@ -81,6 +90,8 @@ public:
     int get_bit_positions();
     void print_bitfield(unsigned long l);
 };
+
+
         
     
 struct ParserMeta {
@@ -114,7 +125,6 @@ public:
     map<unsigned long, set<unsigned long>> originalNTtoNT;
     char quote;
     BaseParserEventHandler<T> *parser_event_handler;
-    TreeNode *parse_tree;
     bool word_in_grammar;
     string grammar_name;
     bool used_eof;
@@ -122,6 +132,8 @@ public:
     
     
     Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar_filename, char _quote = DEFAULT_QUOTE);
+    Parser(BaseParserEventHandler<T> *_parserEventHandler, GrammarString grammar_string, char _quote = DEFAULT_QUOTE);
+    void read_grammar(string grammar);
     ~Parser();
     unsigned long get_next_free_rule_index();
     vector<string>* extract_text_based_rules(string grammar_filename, char _quote = DEFAULT_QUOTE);
@@ -139,6 +151,14 @@ public:
     static string strip(string s, char c);
     static string replace_all(std::string str, const std::string& from, const std::string& to);
 };
+
+
+class GoslinParser : public Parser<LipidAdduct*> {
+public:
+    GoslinParser();
+    ~GoslinParser();
+};
+
 /*
 class GoslinParser(Parser):
     def __init__(self):

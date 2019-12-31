@@ -21,5 +21,5 @@ clean:
 	rm -rf libcppGoslin.so
 
 test: main
-	#${CC} -I. -O3 -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.cpp -L. -l cppGoslin
+	${CC} -I. -O3 -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.cpp -L. -l cppGoslin
 	${CC} -I. -O3 -o ParserTest cppgoslin/tests/ParserTest.cpp -L. -l cppGoslin

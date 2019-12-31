@@ -25,6 +25,7 @@ public:
     
     
     BaseParserEventHandler();
+    virtual ~BaseParserEventHandler();
     void sanity_check();
     void handle_event(string event_name, TreeNode *node);
     static bool endswith(const string &main_str, const string &to_match);

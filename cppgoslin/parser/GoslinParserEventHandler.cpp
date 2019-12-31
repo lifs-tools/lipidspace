@@ -5,8 +5,8 @@
     
 
 GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<LipidAdduct*>() {
+    fa_list = new vector<FattyAcid*>();
     
-
     reg("lipid_pre_event", reset_lipid);
     reg("lipid_post_event", build_lipid);
     
@@ -34,10 +34,12 @@ GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<Li
     reg("fa3_unsorted_pre_event", set_molecular_subspecies_level);
     reg("fa4_unsorted_pre_event", set_molecular_subspecies_level);
     
+    
     reg("lcb_pre_event", new_lcb);
     reg("lcb_post_event", clean_lcb);
     reg("fa_pre_event", new_fa);
     reg("fa_post_event", append_fa);
+    
     
     reg("ether_pre_event", add_ether);
     reg("old_hydroxyl_pre_event", add_old_hydroxyl);
@@ -53,16 +55,17 @@ GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<Li
 }
 
 
-
+GoslinParserEventHandler::~GoslinParserEventHandler(){
+    delete fa_list;
+}
 
 
 void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
-    
     level = STRUCTURAL_SUBSPECIES;
     lipid = NULL;
     head_group = "";
     lcb = NULL;
-    fa_list.clear();
+    fa_list->clear();
     current_fa = NULL;
     adduct = NULL;
 }
@@ -95,13 +98,13 @@ void GoslinParserEventHandler::new_fa(TreeNode *node) {
         
         case MOLECULAR_SUBSPECIES:
             {
-                current_fa = new MolecularFattyAcid("FA" + to_string(fa_list.size() + 1), 2, 0, 0, ESTER, false, -1);
+                current_fa = new MolecularFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, -1);
             }
             break;
         
         case STRUCTURAL_SUBSPECIES:
             {
-                current_fa = new StructuralFattyAcid("FA" + to_string(fa_list.size() + 1), 2, 0, 0, ESTER, false, 0);
+                current_fa = new StructuralFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, 0);
             }
             break;
         
@@ -136,10 +139,10 @@ void GoslinParserEventHandler::clean_lcb(TreeNode *node) {
 
 void GoslinParserEventHandler::append_fa(TreeNode *node) {
     if (level == STRUCTURAL_SUBSPECIES){
-        current_fa->position = fa_list.size() + 1;
+        current_fa->position = fa_list->size() + 1;
     }
         
-    fa_list.push_back(current_fa);
+    fa_list->push_back(current_fa);
     current_fa = NULL;
 }
     
@@ -147,8 +150,8 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
 
 void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     if (lcb){
-        for (auto fa : fa_list) fa->position += 1;
-        fa_list.insert(fa_list.begin(), lcb);
+        for (auto& fa : *fa_list) fa->position += 1;
+        fa_list->insert(fa_list->begin(), lcb);
     }
     
     
@@ -159,8 +162,8 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
 
     
     if (level == SPECIES){
-        if (fa_list.size() > 0){
-            LipidSpeciesInfo *lipid_species_info = new LipidSpeciesInfo(fa_list.at(0));
+        if (fa_list->size() > 0){
+            LipidSpeciesInfo *lipid_species_info = new LipidSpeciesInfo(fa_list->at(0));
             lipid_species_info->level = SPECIES;
             ls = new LipidSpecies(head_group, UNDEFINED_CATEGORY, UNDEFINED_CLASS, lipid_species_info);
         }
@@ -170,17 +173,18 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     }
         
     else if (level == MOLECULAR_SUBSPECIES){
-        ls = new LipidMolecularSubspecies(head_group, &fa_list);
+        ls = new LipidMolecularSubspecies(head_group, fa_list);
     }
         
     else if (level == STRUCTURAL_SUBSPECIES){
-        ls = new LipidStructuralSubspecies(head_group, &fa_list);
+        ls = new LipidStructuralSubspecies(head_group, fa_list);
     }
     
     lipid = new LipidAdduct();
     lipid->lipid = ls;
     lipid->adduct = adduct;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
+    
 }
     
     

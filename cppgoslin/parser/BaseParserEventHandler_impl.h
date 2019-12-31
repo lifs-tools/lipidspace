@@ -4,6 +4,11 @@ BaseParserEventHandler<T>::BaseParserEventHandler(){
     parser = NULL;
 }
 
+template <class T> 
+BaseParserEventHandler<T>::~BaseParserEventHandler(){
+    
+}
+
 // checking if all registered events are reasonable and orrur as rules in the grammar
 template <class T> 
 void BaseParserEventHandler<T>::sanity_check(){

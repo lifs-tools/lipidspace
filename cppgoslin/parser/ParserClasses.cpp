@@ -124,3 +124,11 @@ int Bitfield::get_bit_positions(){
 }
 
 
+
+GoslinParser::GoslinParser() : Parser<LipidAdduct*>(new GoslinParserEventHandler(), GrammarString(goslin_grammar), Parser<LipidAdduct*>::DEFAULT_QUOTE){
+        
+}
+
+GoslinParser::~GoslinParser(){
+    delete parser_event_handler;
+}

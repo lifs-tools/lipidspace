@@ -19,6 +19,7 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group) : LipidS
 
 
 LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<FattyAcid*> *_fa) : LipidSpecies(_head_group) {
+    
     int num_carbon = 0;
     int num_hydroxyl = 0;
     int num_double_bonds = 0;
@@ -28,11 +29,7 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<F
             MolecularFattyAcid *fas = (MolecularFattyAcid*)(_fa->at(i));
             
             if (fas->position != -1) {
-                stringstream s;
-                s << "MolecularFattyAcid " << fas->name << " must have position set to -1! Was: " << fas->position;
-                string error_message;
-                s >> error_message;
-                throw ConstraintViolationException(error_message);
+                throw ConstraintViolationException("MolecularFattyAcid " + fas->name + " must have position set to -1! Was: " + to_string(fas->position));
             }
             
             if (fa.find(fas->name) != fa.end()){
@@ -40,7 +37,7 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<F
             }
             
             else {
-                fa.insert(pair<string, FattyAcid*>(fas->name, fas));
+                fa.insert({fas->name, fas});
                 fa_list.push_back(fas);
                 num_carbon += fas->num_carbon;
                 num_hydroxyl += fas->num_hydroxyl;
@@ -51,12 +48,7 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<F
                 }
                 
                 else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL)){
-                    stringstream s;
-                    s << "Only one FA can define an ether bond to the head group! Tried to add " << fas->lipid_FA_bond_type << " over existing " << lipid_FA_bond_type;
-                    string error_message;
-                    s >> error_message;
-                    
-                    throw ConstraintViolationException(error_message);
+                    throw ConstraintViolationException("Only one FA can define an ether bond to the head group! Tried to add " + to_string(fas->lipid_FA_bond_type) + " over existing " + to_string(lipid_FA_bond_type));
                 }
             }
         }

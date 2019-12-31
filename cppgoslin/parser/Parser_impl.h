@@ -52,167 +52,178 @@ string Parser<T>::strip(string s, char c){
 
 template <class T>
 Parser<T>::~Parser(){
-    if (parse_tree) delete parse_tree;
+}
+
+
+template <class T>
+Parser<T>::Parser(BaseParserEventHandler<T> *_parserEventHandler, GrammarString grammar_string, char _quote){
+    quote = _quote;
+    parser_event_handler = _parserEventHandler;
+    
+    read_grammar(grammar_string);
 }
 
 
 template <class T>
 Parser<T>::Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar_filename, char _quote){
-    next_free_rule_index = START_RULE;
     quote = _quote;
     parser_event_handler = _parserEventHandler;
-    parse_tree = NULL;
+    
+    ifstream f(grammar_filename);
+    if (!f.good()){
+        throw RuntimeException("Error: file '" + grammar_filename + "' does not exist or can not be opened.");
+    }
+    
+    string grammar( (std::istreambuf_iterator<char>(f)), (std::istreambuf_iterator<char>()));
+    f.close();
+    read_grammar(grammar);
+}
+    
+template <class T>
+void Parser<T>::read_grammar(string grammar){
+    next_free_rule_index = START_RULE;
     word_in_grammar = false;
     grammar_name = "";
     used_eof = false;
     map<string, unsigned long> ruleToNT;
     
-    ifstream f(grammar_filename.c_str());
-    if (f.good()){
-        f.close();
-        // interpret the rules and create the structure for parsing
-        vector<string> *rules = extract_text_based_rules(grammar_filename, quote);
-        vector<string> *tokens = split_string(rules->at(0), ' ', quote);
-        grammar_name = tokens->at(1);
-        delete tokens;
+    
+    // interpret the rules and create the structure for parsing
+    vector<string> *rules = extract_text_based_rules(grammar, quote);
+    vector<string> *tokens = split_string(rules->at(0), ' ', quote);
+    grammar_name = tokens->at(1);
+    delete tokens;
+    
+    
+    rules->erase(rules->begin());
+    ruleToNT.insert(pair<string, unsigned long>(EOF_RULE_NAME, EOF_RULE));
+    TtoNT.insert(pair<char, set<unsigned long>>(EOF_SIGN, set<unsigned long>()));
+    TtoNT.at(EOF_SIGN).insert(EOF_RULE);
+    
+    for (auto rule_line : *rules){
         
-        
-        rules->erase(rules->begin());
-        ruleToNT.insert(pair<string, unsigned long>(EOF_RULE_NAME, EOF_RULE));
-        TtoNT.insert(pair<char, set<unsigned long>>(EOF_SIGN, set<unsigned long>()));
-        TtoNT.at(EOF_SIGN).insert(EOF_RULE);
-        
-        for (auto rule_line : *rules){
+        vector<string> tokens_level_1;
+        vector<string> *line_tokens = split_string(rule_line, RULE_ASSIGNMENT, quote);
+        for (auto t : *line_tokens) tokens_level_1.push_back(strip(t, ' '));
+        delete line_tokens;
             
-            vector<string> tokens_level_1;
-            vector<string> *line_tokens = split_string(rule_line, RULE_ASSIGNMENT, quote);
-            for (auto t : *line_tokens) tokens_level_1.push_back(strip(t, ' '));
-            delete line_tokens;
-                
-            if (tokens_level_1.size() != 2){
-                delete rules;
-                throw RuntimeException("Error: corrupted token in grammar rule: '" + rule_line + "'");
-            }
-            
-            vector<string> *rule_tokens = split_string(tokens_level_1.at(0), ' ', quote);
-            if (rule_tokens->size() > 1) {
-                delete rule_tokens;
-                delete rules;
-                throw RuntimeException("Error: several rule names on left hand side in grammar rule: '" + rule_line + "'");
-            }
+        if (tokens_level_1.size() != 2){
+            delete rules;
+            throw RuntimeException("Error: corrupted token in grammar rule: '" + rule_line + "'");
+        }
+        
+        vector<string> *rule_tokens = split_string(tokens_level_1.at(0), ' ', quote);
+        if (rule_tokens->size() > 1) {
             delete rule_tokens;
+            delete rules;
+            throw RuntimeException("Error: several rule names on left hand side in grammar rule: '" + rule_line + "'");
+        }
+        delete rule_tokens;
 
-            string rule = tokens_level_1.at(0);
-            
-            if (rule == EOF_RULE_NAME){
-                throw RuntimeException("Error: rule name is not allowed to be called EOF");
+        string rule = tokens_level_1.at(0);
+        
+        if (rule == EOF_RULE_NAME){
+            throw RuntimeException("Error: rule name is not allowed to be called EOF");
+        }
+        
+        vector<string>* products = split_string(tokens_level_1.at(1), RULE_SEPARATOR, quote);
+        for (uint i = 0; i < products->size(); ++i){
+            products->at(i) = strip(products->at(i), ' ');
+        }
+        
+        if (ruleToNT.find(rule) == ruleToNT.end()){
+            ruleToNT.insert(pair<string, unsigned long>(rule, get_next_free_rule_index()));
+        }
+        unsigned long new_rule_index = ruleToNT.at(rule);
+        
+        if (NTtoRule.find(new_rule_index) == NTtoRule.end()){
+            NTtoRule.insert(pair<unsigned long, string>(new_rule_index, rule));
+        }
+        
+        
+        for (auto product : *products){
+            vector<string> non_terminals;
+            vector<unsigned long> non_terminal_rules;
+            vector<string> *product_rules = split_string(product, ' ', quote);
+            for (auto NT : *product_rules){
+                string stripedNT = strip(NT, ' ');
+                if (is_terminal(stripedNT, quote)) stripedNT = de_escape(stripedNT, quote);
+                non_terminals.push_back(stripedNT);
+                used_eof |= (stripedNT == EOF_RULE_NAME);
             }
+            delete product_rules;
             
-            vector<string>* products = split_string(tokens_level_1.at(1), RULE_SEPARATOR, quote);
-            for (uint i = 0; i < products->size(); ++i){
-                products->at(i) = strip(products->at(i), ' ');
-            }
-            
-            if (ruleToNT.find(rule) == ruleToNT.end()){
-                ruleToNT.insert(pair<string, unsigned long>(rule, get_next_free_rule_index()));
-            }
-            unsigned long new_rule_index = ruleToNT.at(rule);
-            
-            if (NTtoRule.find(new_rule_index) == NTtoRule.end()){
-                NTtoRule.insert(pair<unsigned long, string>(new_rule_index, rule));
-            }
-            
-            
-            for (auto product : *products){
-                vector<string> non_terminals;
-                vector<unsigned long> non_terminal_rules;
-                vector<string> *product_rules = split_string(product, ' ', quote);
-                for (auto NT : *product_rules){
-                    string stripedNT = strip(NT, ' ');
-                    if (is_terminal(stripedNT, quote)) stripedNT = de_escape(stripedNT, quote);
-                    non_terminals.push_back(stripedNT);
-                    used_eof |= (stripedNT == EOF_RULE_NAME);
-                }
-                delete product_rules;
-                
-                string NTFirst = non_terminals.at(0);
-                if (non_terminals.size() > 1 || !is_terminal(NTFirst, quote) || NTFirst.length() != 3){
-                    for (auto non_terminal : non_terminals){
+            string NTFirst = non_terminals.at(0);
+            if (non_terminals.size() > 1 || !is_terminal(NTFirst, quote) || NTFirst.length() != 3){
+                for (auto non_terminal : non_terminals){
+                    
+                    if (is_terminal(non_terminal, quote)){
+                        non_terminal_rules.push_back(add_terminal(non_terminal));
+                    }
                         
-                        if (is_terminal(non_terminal, quote)){
-                            non_terminal_rules.push_back(add_terminal(non_terminal));
+                    else{
+                        if (ruleToNT.find(non_terminal) == ruleToNT.end()){
+                            ruleToNT.insert(pair<string, unsigned long>(non_terminal, get_next_free_rule_index()));
                         }
-                            
-                        else{
-                            if (ruleToNT.find(non_terminal) == ruleToNT.end()){
-                                ruleToNT.insert(pair<string, unsigned long>(non_terminal, get_next_free_rule_index()));
-                            }
-                            non_terminal_rules.push_back(ruleToNT.at(non_terminal));
-                        }
+                        non_terminal_rules.push_back(ruleToNT.at(non_terminal));
                     }
-                }
-                else{
-                    char c = NTFirst[1];
-                    if (TtoNT.find(c) == TtoNT.end()) TtoNT.insert(pair<char, set<unsigned long>>(c, set<unsigned long>()));
-                    TtoNT.at(c).insert(new_rule_index);
-                }
-                
-                // more than two rules, insert intermediate rule indexes
-                while (non_terminal_rules.size() > 2){
-                    unsigned long rule_index_2 = non_terminal_rules.back();
-                    non_terminal_rules.pop_back();
-                    unsigned long rule_index_1 = non_terminal_rules.back();
-                    non_terminal_rules.pop_back();
-                    
-                    unsigned long key = compute_rule_key(rule_index_1, rule_index_2);
-                    unsigned long next_index = get_next_free_rule_index();
-                    if (NTtoNT.find(key) == NTtoNT.end()) NTtoNT.insert(pair<unsigned long, set<unsigned long>>(key, set<unsigned long>()));
-                    NTtoNT.at(key).insert(next_index);
-                    non_terminal_rules.push_back(next_index);
-                }
-                    
-                // two product rules
-                if (non_terminal_rules.size() == 2){
-                    unsigned long rule_index_2 = non_terminal_rules.at(1);
-                    unsigned long rule_index_1 = non_terminal_rules.at(0);
-                    unsigned long key = compute_rule_key(rule_index_1, rule_index_2);
-                    if (NTtoNT.find(key) == NTtoNT.end()) NTtoNT.insert(pair<unsigned long, set<unsigned long>>(key, set<unsigned long>()));
-                    NTtoNT.at(key).insert(new_rule_index);
-                }
-                
-                // only one product rule
-                else if (non_terminal_rules.size() == 1){
-                    unsigned long rule_index_1 = non_terminal_rules.at(0);
-                    if (rule_index_1 == new_rule_index){
-                        delete products;
-                        delete rules;
-                        throw RuntimeException("Error: corrupted token in grammar: rule '" + rule + "' is not allowed to refer soleley to itself.");
-                    }
-                    
-                    if (NTtoNT.find(rule_index_1) == NTtoNT.end()) NTtoNT.insert(pair<unsigned long, set<unsigned long>>(rule_index_1, set<unsigned long>()));
-                    NTtoNT.at(rule_index_1).insert(new_rule_index);
                 }
             }
+            else{
+                char c = NTFirst[1];
+                if (TtoNT.find(c) == TtoNT.end()) TtoNT.insert(pair<char, set<unsigned long>>(c, set<unsigned long>()));
+                TtoNT.at(c).insert(new_rule_index);
+            }
             
-            delete products;
-        }
-        delete rules;
-        
-        // adding all rule names into the event handler
-        for (auto rule_name : ruleToNT){
-            parser_event_handler->rule_names.insert(rule_name.first);
-        }
+            // more than two rules, insert intermediate rule indexes
+            while (non_terminal_rules.size() > 2){
+                unsigned long rule_index_2 = non_terminal_rules.back();
+                non_terminal_rules.pop_back();
+                unsigned long rule_index_1 = non_terminal_rules.back();
+                non_terminal_rules.pop_back();
+                
+                unsigned long key = compute_rule_key(rule_index_1, rule_index_2);
+                unsigned long next_index = get_next_free_rule_index();
+                if (NTtoNT.find(key) == NTtoNT.end()) NTtoNT.insert(pair<unsigned long, set<unsigned long>>(key, set<unsigned long>()));
+                NTtoNT.at(key).insert(next_index);
+                non_terminal_rules.push_back(next_index);
+            }
+                
+            // two product rules
+            if (non_terminal_rules.size() == 2){
+                unsigned long rule_index_2 = non_terminal_rules.at(1);
+                unsigned long rule_index_1 = non_terminal_rules.at(0);
+                unsigned long key = compute_rule_key(rule_index_1, rule_index_2);
+                if (NTtoNT.find(key) == NTtoNT.end()) NTtoNT.insert(pair<unsigned long, set<unsigned long>>(key, set<unsigned long>()));
+                NTtoNT.at(key).insert(new_rule_index);
+            }
             
-        parser_event_handler->parser = this;
-        parser_event_handler->sanity_check();
+            // only one product rule
+            else if (non_terminal_rules.size() == 1){
+                unsigned long rule_index_1 = non_terminal_rules.at(0);
+                if (rule_index_1 == new_rule_index){
+                    delete products;
+                    delete rules;
+                    throw RuntimeException("Error: corrupted token in grammar: rule '" + rule + "' is not allowed to refer soleley to itself.");
+                }
+                
+                if (NTtoNT.find(rule_index_1) == NTtoNT.end()) NTtoNT.insert(pair<unsigned long, set<unsigned long>>(rule_index_1, set<unsigned long>()));
+                NTtoNT.at(rule_index_1).insert(new_rule_index);
+            }
+        }
         
+        delete products;
     }
-    else{
-        throw RuntimeException("Error: file '" + grammar_filename + "' does not exist or can not be opened.");
+    delete rules;
+    
+    // adding all rule names into the event handler
+    for (auto rule_name : ruleToNT){
+        parser_event_handler->rule_names.insert(rule_name.first);
     }
-    
-    
-    
+        
+    parser_event_handler->parser = this;
+    parser_event_handler->sanity_check();
+        
     
     set<unsigned long> keys;
     for (auto key : TtoNT) keys.insert(key.first);
@@ -259,11 +270,8 @@ Parser<T>::Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar
 
 
 template <class T>
-vector<string>* Parser<T>::extract_text_based_rules(string grammar_filename, char _quote){
+vector<string>* Parser<T>::extract_text_based_rules(string grammar, char _quote){
     vector<string> *rules = NULL;
-    
-    ifstream ifs(grammar_filename);
-    string grammar( (std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
     int grammar_length = grammar.length();
     
     /*
@@ -273,10 +281,6 @@ vector<string>* Parser<T>::extract_text_based_rules(string grammar_filename, cha
     As long as we are in one context, key words for starting / ending
     the other contexts have to be ignored.
     */
-    
-    
-    
-    
     stringstream sb;
     Content current_context = NoContext;
     int current_position = 0;
@@ -350,7 +354,7 @@ vector<string>* Parser<T>::extract_text_based_rules(string grammar_filename, cha
         sb << grammar.substr(current_position, grammar_length - current_position);
     }
     else {
-        throw RuntimeException("Error: corrupted grammar '" + grammar_filename + "', ends either in comment or quote");
+        throw RuntimeException("Error: corrupted grammar, ends either in comment or quote");
     }
     
     grammar = sb.str();
@@ -361,13 +365,13 @@ vector<string>* Parser<T>::extract_text_based_rules(string grammar_filename, cha
     
     
     if (grammar[grammar.length() - 1] != RULE_TERMINAL){
-        throw RuntimeException("Error: corrupted grammar'" + grammar_filename + "', last rule has no termininating sign, was: '" + string(1, grammar[grammar.length() - 1]) + "'");
+        throw RuntimeException("Error: corrupted grammar, last rule has no termininating sign, was: '" + string(1, grammar[grammar.length() - 1]) + "'");
     }
     
     rules = split_string(grammar, RULE_TERMINAL, _quote);
     
     if (rules->size() < 1){
-        throw RuntimeException("Error: corrupted grammar '" + grammar_filename + "', grammar is empty");
+        throw RuntimeException("Error: corrupted grammar, grammar is empty");
     }
     vector<string> *grammar_name_rule = split_string(rules->at(0), ' ', _quote);
     
@@ -633,10 +637,7 @@ T Parser<T>::parse(string text_to_parse){
 template <class T>
 void Parser<T>::parse_regular(string text_to_parse){
     word_in_grammar = false;
-    if (parse_tree != NULL){
-        delete parse_tree;
-        parse_tree = NULL;
-    }
+    parser_event_handler->content = NULL;
 
     int n = text_to_parse.length();
     // dp stands for dynamic programming, nothing else
@@ -705,9 +706,10 @@ void Parser<T>::parse_regular(string text_to_parse){
         for (int i = n - 1; i > 0; --i){
             if (dp_table[0][i]->find(START_RULE) != dp_table[0][i]->end()){
                 word_in_grammar = true;
-                parse_tree = new TreeNode(START_RULE, NTtoRule.find(START_RULE) != NTtoRule.end());
+                TreeNode *parse_tree = new TreeNode(START_RULE, NTtoRule.find(START_RULE) != NTtoRule.end());
                 fill_tree(parse_tree, dp_table[0][i]->at(START_RULE));
                 raise_events(parse_tree);
+                delete parse_tree;
                 break;
             }
         }

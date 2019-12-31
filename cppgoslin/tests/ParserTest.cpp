@@ -46,8 +46,8 @@ int main(int argc, char** argv){
     
     */
     
-    
     try {
+        /*
         GoslinParserEventHandler goslin_parser_event_handler;
         Parser<LipidAdduct*> goslin_parser(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
         
@@ -68,8 +68,15 @@ int main(int argc, char** argv){
         assert (lipid);
         cout << lipid->get_lipid_string() << endl;
         delete lipid;
+        */
         
+        GoslinParser gp;
+        string lipid_name = "PE 16:1-12:1";
+        LipidAdduct *lipid = gp.parse(lipid_name);
         
+        assert (lipid);
+        cout << lipid->get_lipid_string() << endl;
+        delete lipid;
     }
     catch (LipidException &e){
         cout << "Exception:" << endl;
