@@ -17,7 +17,7 @@
 
 using namespace std;
 
-class GoslinParserEventHandler : public BaseParserEventHandler {
+class GoslinParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
 public:
     LipidLevel level;
     LipidAdduct *lipid;
@@ -47,6 +47,7 @@ public:
     void add_charge(TreeNode *node);
     void add_charge_sign(TreeNode *node);
 };
+
 
 #endif /* GOSLIN_PARSER_EVENT_HANDLER_H */
         

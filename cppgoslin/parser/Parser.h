@@ -7,6 +7,7 @@
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
 */
 #include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/domain/LipidAdduct.h"
 #include <string>
 #include <set>
 #include <map>
@@ -20,6 +21,7 @@ enum MatchWords {NoMatch, LineCommentStart, LineCommentEnd, LongCommentStart, Lo
 
 using namespace std;
 
+template<class T>
 class BaseParserEventHandler;
 
     
@@ -81,8 +83,16 @@ public:
 };
         
     
-static const string EOF_RULE_NAME = "EOF";
+struct ParserMeta {
+    unsigned long next_free_rule_index;
+    map<char, set<unsigned long>> TtoNT;
+    map<unsigned long, set<unsigned long>> NTtoNT;
+    map<unsigned long, string> NTtoRule;
+    map<unsigned long, set<unsigned long>> originalNTtoNT;
+    char quote;
+};
 
+template <class T>
 class Parser {
 public:
     static const int SHIFT;
@@ -94,6 +104,7 @@ public:
     static const unsigned long EOF_RULE;
     static const unsigned long START_RULE;
     static const char DEFAULT_QUOTE;
+    static const string EOF_RULE_NAME;
     
     
     unsigned long next_free_rule_index;
@@ -102,7 +113,7 @@ public:
     map<unsigned long, string> NTtoRule;
     map<unsigned long, set<unsigned long>> originalNTtoNT;
     char quote;
-    BaseParserEventHandler *parser_event_handler;
+    BaseParserEventHandler<T> *parser_event_handler;
     TreeNode *parse_tree;
     bool word_in_grammar;
     string grammar_name;
@@ -110,7 +121,7 @@ public:
     
     
     
-    Parser(BaseParserEventHandler *_parserEventHandler, string grammar_filename, char _quote = DEFAULT_QUOTE);
+    Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar_filename, char _quote = DEFAULT_QUOTE);
     ~Parser();
     unsigned long get_next_free_rule_index();
     vector<string>* extract_text_based_rules(string grammar_filename, char _quote = DEFAULT_QUOTE);
@@ -123,7 +134,7 @@ public:
     vector<unsigned long>* collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index, int s = 0);
     void raise_events(TreeNode *node);
     void fill_tree(TreeNode *node, DPNode *dp_node);
-    bool parse(string text_to_parse);
+    T parse(string text_to_parse);
     void parse_regular(string text_to_parse);
     static string strip(string s, char c);
     static string replace_all(std::string str, const std::string& from, const std::string& to);
@@ -174,4 +185,7 @@ class LipidParser:
          
 */
 
+#include "cppgoslin/parser/Parser_impl.h"
 #endif /* PARSER_H */
+
+

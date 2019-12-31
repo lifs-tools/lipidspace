@@ -1,7 +1,7 @@
 CC = g++
 domain = cppgoslin/domain/Adduct.o cppgoslin/domain/IsomericFattyAcid.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/MolecularFattyAcid.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StructuralFattyAcid.o
 
-parser = cppgoslin/parser/Parser.o cppgoslin/parser/BaseParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o
+parser = cppgoslin/parser/Parser.o cppgoslin/parser/GoslinParserEventHandler.o
 
 obj = ${domain} ${parser}
 

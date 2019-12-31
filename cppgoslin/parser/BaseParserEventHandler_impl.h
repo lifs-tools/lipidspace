@@ -1,4 +1,3 @@
-#include "cppgoslin/parser/BaseParserEventHandler.h"
 
 template <class T> 
 BaseParserEventHandler<T>::BaseParserEventHandler(){

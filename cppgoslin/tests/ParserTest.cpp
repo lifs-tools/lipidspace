@@ -7,6 +7,7 @@
 #include <ctime>
 #include <cassert>
 
+
 using namespace std;
 
 int main(int argc, char** argv){
@@ -48,24 +49,26 @@ int main(int argc, char** argv){
     
     try {
         GoslinParserEventHandler goslin_parser_event_handler;
-        Parser goslin_parser(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
+        Parser<LipidAdduct*> goslin_parser(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
         
         
         // glycerophospholipid
         string lipid_name = "PE 16:1/12:0";
-        goslin_parser.parse(lipid_name);
-        assert (goslin_parser.word_in_grammar);
-        cout << goslin_parser_event_handler.lipid->get_lipid_string() << endl;
-        delete goslin_parser_event_handler.lipid;
+        LipidAdduct* lipid = goslin_parser.parse(lipid_name);
+        
+        assert (lipid);
+        cout << lipid->get_lipid_string() << endl;
+        delete lipid;
         
         
         // glycerophospholipid
         lipid_name = "DAG 16:1-12:0";
-        goslin_parser.parse(lipid_name);
+        lipid = goslin_parser.parse(lipid_name);
         
-        assert (goslin_parser.word_in_grammar);
-        cout << goslin_parser_event_handler.lipid->get_lipid_string() << endl;
-        delete goslin_parser_event_handler.lipid;
+        assert (lipid);
+        cout << lipid->get_lipid_string() << endl;
+        delete lipid;
+        
         
     }
     catch (LipidException &e){
