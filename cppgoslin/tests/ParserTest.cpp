@@ -69,46 +69,38 @@ int main(int argc, char** argv){
         lipid = gp.parse(lipid_name);
         
         assert (lipid);
-        cout << lipid->get_lipid_string() << endl;
-        cout << lipid->get_lipid_fragment_string() << endl;
         delete lipid;
         
         
-        
-        
-        
-        
-        
-        
-    }
-    catch (LipidException &e){
-        cout << "Exception:" << endl;
-        cout << e.what() << endl;
-    }
     
+        // test lipid parser
+        LipidParser lipid_parser;
+        
+        lipid_name = "PE 16:1-12:0";
+        lipid = lipid_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "PE 16:1_12:0");
+        delete lipid;
+        
+        /*
+        
+        lipid_name = "PA 16:1-12:0 - fragment";
+        lipid = lipid_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "PA 16:1_12:0");
+        assert (lipid->get_lipid_fragment_string() == "PA 16:1_12:0 - fragment");
+        delete lipid;
+        
+        lipid_name = "PE O-16:1p/12:0";
+        lipid = lipid_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "PE O-16:1p/12:0");
+        delete lipid;
+        
+        */
+        
+        
     /*
-    def test_lipid_parser(self):
-        lipid_parser = LipidParser()
-        
-        lipid_name = "PE 16:1-12:0"
-        lipid_parser.parse(lipid_name)
-        assert lipid_parser.lipid != None
-        assert lipid_parser.lipid.get_lipid_string() == "PE 16:1_12:0"
-        
-        lipid_name = "PA 16:1-12:0 - fragment"
-        lipid_parser.parse(lipid_name)
-        assert lipid_parser.lipid != None
-        assert lipid_parser.lipid.get_lipid_string() == "PA 16:1_12:0"
-        assert lipid_parser.lipid.get_lipid_fragment_string() == "PA 16:1_12:0 - fragment"
-        
-        lipid_name = "PE O-16:1p/12:0"
-        lipid_parser.parse(lipid_name)
-        assert lipid_parser.lipid != None
-        assert lipid_parser.lipid.get_lipid_string() == "PE O-16:1p/12:0"
-        
-        
-        
-        
         
     def test_lipid_maps(self):
         lipid_maps_parser = LipidMapsParser()
@@ -328,5 +320,14 @@ int main(int argc, char** argv){
             lipid_parser.parse(lipid_name)
             assert lipid_parser.lipid != None
     */
+    
+    
+        cout << "All tests passed without any problem" << endl;
+
+    }
+    catch (LipidException &e){
+        cout << "Exception:" << endl;
+        cout << e.what() << endl;
+    }
     return 0;
 }

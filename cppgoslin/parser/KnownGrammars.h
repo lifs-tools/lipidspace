@@ -599,7 +599,6 @@ round_open_bracket: ROB; \
 round_close_bracket: RCB; \
 square_open_bracket: SOB; \
 square_close_bracket: SCB; \
- \
 ";
 
 
