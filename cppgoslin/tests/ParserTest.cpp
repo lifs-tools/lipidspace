@@ -13,71 +13,73 @@ using namespace std;
 int main(int argc, char** argv){
     char PARSER_QUOTE = '\'';
     
-    /*
-    srand(time(NULL));
-    
-    int n = 5000 + (rand() % 1500000); // highest bit
-    int m = 500 + (rand() % 15000); // number of bits
-    set<int> s;
-    for (int i = 0; i < m; ++i) s.insert(rand() % (n - 2));
-    
-    
-    Bitfield b(n);
-    for (auto i : s) b.set_bit(i);
-    
-    int ii = 0;
-    int bb;
-    set<int>::iterator st = s.begin();
-    while ((bb = b.get_bit_positions()) != -1){
-        assert(bb == *st);
-        ii += 1;
-        st++;
-    }
-    assert(ii == s.size());
-    
-    ii = 0;
-    st = s.begin();
-    while ((bb = b.get_bit_positions()) != -1){
-        assert(bb == *st);
-        ii += 1;
-        st++;
-    }
-    assert(ii == s.size());
-    
-    */
-    
     try {
-        /*
+        // bitfield test
+        srand(time(NULL));
+        
+        int n = 5000 + (rand() % 1500000); // highest bit
+        int m = 500 + (rand() % 15000); // number of bits
+        set<int> s;
+        for (int i = 0; i < m; ++i) s.insert(rand() % (n - 2));
+        
+        
+        Bitfield b(n);
+        for (auto i : s) b.set_bit(i);
+        
+        int ii = 0;
+        int bb;
+        set<int>::iterator st = s.begin();
+        while ((bb = b.get_bit_positions()) != -1){
+            assert(bb == *st);
+            ii += 1;
+            st++;
+        }
+        assert(ii == s.size());
+        
+        ii = 0;
+        st = s.begin();
+        while ((bb = b.get_bit_positions()) != -1){
+            assert(bb == *st);
+            ii += 1;
+            st++;
+        }
+        assert(ii == s.size());
+        
+    
+        
+        // Pure Parser test
         GoslinParserEventHandler goslin_parser_event_handler;
         Parser<LipidAdduct*> goslin_parser(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
         
+        LipidAdduct* lipid;
         
         // glycerophospholipid
-        string lipid_name = "PE 16:1/12:0";
-        LipidAdduct* lipid = goslin_parser.parse(lipid_name);
+        for (auto lipid_name : {"PE 16:1/12:0", "DAG 16:1-12:0", "12-HETE", "HexCer 18:1;2/16:0"}){
+            LipidAdduct* lipid = goslin_parser.parse(lipid_name);
+            
+            assert (lipid);
+            delete lipid;
+        }
         
-        assert (lipid);
-        cout << lipid->get_lipid_string() << endl;
-        delete lipid;
         
         
-        // glycerophospholipid
-        lipid_name = "DAG 16:1-12:0";
-        lipid = goslin_parser.parse(lipid_name);
-        
-        assert (lipid);
-        cout << lipid->get_lipid_string() << endl;
-        delete lipid;
-        */
-        
+        // Goslin fragment parser test
         GoslinFragmentParser gp;
         string lipid_name = "PE 16:1-12:1 - bla";
-        LipidAdduct *lipid = gp.parse(lipid_name);
+        lipid = gp.parse(lipid_name);
         
         assert (lipid);
         cout << lipid->get_lipid_string() << endl;
         cout << lipid->get_lipid_fragment_string() << endl;
         delete lipid;
+        
+        
+        
+        
+        
+        
+        
+        
     }
     catch (LipidException &e){
         cout << "Exception:" << endl;
