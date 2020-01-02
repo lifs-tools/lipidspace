@@ -29,9 +29,10 @@ public:
 
 class LipidParser {
 public:
-    vector<Parser<LipidAdduct*>> parser_list;
+    vector<Parser<LipidAdduct*>*> parser_list;
     
     LipidParser();
+    ~LipidParser();
     LipidAdduct* parse(string lipid_name);
 };      
 

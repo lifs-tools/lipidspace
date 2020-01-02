@@ -32,20 +32,23 @@ LipidMapsParser::~LipidMapsParser(){
 
 
 LipidParser::LipidParser(){
-    parser_list.push_back(GoslinParser());
-    parser_list.push_back(GoslinFragmentParser());
-    parser_list.push_back(LipidMapsParser());
+    parser_list.push_back(new GoslinParser());
+    parser_list.push_back(new GoslinFragmentParser());
+    parser_list.push_back(new LipidMapsParser());
+}
+
+LipidParser::~LipidParser(){
+    for (auto parser : parser_list) delete parser;
 }
     
     
 LipidAdduct* LipidParser::parse(string lipid_name){
-    LipidAdduct* lipid = NULL;
     
     for (auto parser : parser_list) {
-        lipid = parser.parse(lipid_name);
+        LipidAdduct *lipid = parser->parse(lipid_name);
         if (lipid){
-            break;
+            return lipid;
         }
     }
-    return lipid;
+    return NULL;
 }

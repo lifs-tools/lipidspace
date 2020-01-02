@@ -131,7 +131,7 @@ public:
     Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar_filename, char _quote = DEFAULT_QUOTE);
     Parser(BaseParserEventHandler<T> *_parserEventHandler, GrammarString grammar_string, char _quote = DEFAULT_QUOTE);
     void read_grammar(string grammar);
-    ~Parser();
+    virtual ~Parser();
     unsigned long get_next_free_rule_index();
     vector<string>* extract_text_based_rules(string grammar_filename, char _quote = DEFAULT_QUOTE);
     static unsigned long compute_rule_key(unsigned long rule_index_1, unsigned long rule_index_2);

@@ -16,7 +16,7 @@ main: ${obj}
 	${CC} -std=c++11 -I. -Wall ${opt} -fPIC -o $@ -c $<
 	
 clean:
-	rm -rf cppgoslin/domain/*.o
+	#rm -rf cppgoslin/domain/*.o
 	rm -rf cppgoslin/parser/*.o
 	rm -rf libcppGoslin.so
 

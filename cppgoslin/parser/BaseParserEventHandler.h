@@ -19,7 +19,7 @@ template <class T>
 class BaseParserEventHandler {
 public:
     Parser<T>* parser;
-    map<string, function<void(TreeNode *)>> registered_events;
+    map<string, function<void(TreeNode *)>>* registered_events;
     set<string> rule_names;
     T content;
     

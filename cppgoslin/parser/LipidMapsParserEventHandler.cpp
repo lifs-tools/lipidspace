@@ -1,7 +1,7 @@
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
 
 
-#define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events.insert({x, bind(&LipidMapsParserEventHandler::y, this, placeholders::_1)})
+#define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events->insert({x, bind(&LipidMapsParserEventHandler::y, this, placeholders::_1)})
     
 
 LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHandler<LipidAdduct*>() {

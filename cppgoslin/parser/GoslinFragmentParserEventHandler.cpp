@@ -1,7 +1,7 @@
 #include "cppgoslin/parser/GoslinFragmentParserEventHandler.h"
 
 
-#define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events.insert({x, bind(&GoslinFragmentParserEventHandler::y, this, placeholders::_1)})
+#define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events->insert({x, bind(&GoslinFragmentParserEventHandler::y, this, placeholders::_1)})
     
 
 GoslinFragmentParserEventHandler::GoslinFragmentParserEventHandler() : BaseParserEventHandler<LipidAdduct*>() {

@@ -78,6 +78,7 @@ Parser<T>::Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar
     f.close();
     read_grammar(grammar);
 }
+
     
 template <class T>
 void Parser<T>::read_grammar(string grammar){
@@ -217,9 +218,7 @@ void Parser<T>::read_grammar(string grammar){
     delete rules;
     
     // adding all rule names into the event handler
-    for (auto rule_name : ruleToNT){
-        parser_event_handler->rule_names.insert(rule_name.first);
-    }
+    for (auto rule_name : ruleToNT) parser_event_handler->rule_names.insert(rule_name.first);
         
     parser_event_handler->parser = this;
     parser_event_handler->sanity_check();
@@ -263,9 +262,6 @@ void Parser<T>::read_grammar(string grammar){
             delete backward_rules;
         }
     }
-    
-    
-    
 }
 
 
@@ -285,6 +281,7 @@ vector<string>* Parser<T>::extract_text_based_rules(string grammar, char _quote)
     Content current_context = NoContext;
     int current_position = 0;
     int last_escaped_backslash = -1;
+    
     for (int i = 0; i < grammar_length - 1; ++i){
         MatchWords match = NoMatch;
         
@@ -297,7 +294,7 @@ vector<string>* Parser<T>::extract_text_based_rules(string grammar, char _quote)
         else if (grammar[i] == '\n') match = LineCommentEnd;
         else if (grammar[i] == '/' && grammar[i + 1] == '*') match = LongCommentStart;
         else if (grammar[i] == '*' && grammar[i + 1] == '/') match = LongCommentEnd;
-        else if (grammar[i] == _quote && ! (i >= 1 && grammar[i - 1] == '\\' && i - 1 != last_escaped_backslash)) match = Quote;
+        else if (grammar[i] == _quote &&  !(i >= 1 && grammar[i - 1] == '\\' && i - 1 != last_escaped_backslash)) match = Quote;
         
         if (match != NoMatch){
             switch (current_context){
@@ -347,7 +344,6 @@ vector<string>* Parser<T>::extract_text_based_rules(string grammar, char _quote)
                     break;
             }
         }
-            
     }
     
     if (current_context == NoContext){
@@ -595,9 +591,7 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
     // checking and extending nodes for single rule chains
     unsigned long key = dp_node->left != NULL ? compute_rule_key(dp_node->rule_index_1, dp_node->rule_index_2) : dp_node->rule_index_2;
     
-    //cout << "in" << endl;
     vector<unsigned long> *merged_rules = collect_backwards(key, node->rule_index);
-    //cout << "in 2" << endl;
     if (merged_rules != NULL){
         for (auto rule_index : *merged_rules){
             node->left = new TreeNode(rule_index, NTtoRule.find(rule_index) != NTtoRule.end());
@@ -605,7 +599,6 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
         }
         delete merged_rules;
     }
-    //cout << "out" << endl;
     
     if (dp_node->left != NULL) { // None => leaf
         node->left = new TreeNode(dp_node->rule_index_1, NTtoRule.find(dp_node->rule_index_1) != NTtoRule.end());
@@ -703,6 +696,8 @@ void Parser<T>::parse_regular(string text_to_parse){
                 }
             }
         }
+        
+        
         for (int i = n - 1; i > 0; --i){
             if (dp_table[0][i]->find(START_RULE) != dp_table[0][i]->end()){
                 word_in_grammar = true;
