@@ -1,8 +1,5 @@
 #include "LipidMolecularSubspecies.h"
 
-#include <iostream>
-using namespace std;
-
 LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group) : LipidSpecies(_head_group) {
     int num_carbon = 0;
     int num_hydroxyl = 0;

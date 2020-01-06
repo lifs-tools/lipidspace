@@ -6,7 +6,8 @@
 
 using namespace std;
 
-enum LipidCategory {UNDEFINED_CATEGORY, 
+enum LipidCategory {NO_CATEGORY,
+    UNDEFINED_CATEGORY, 
     GL, // SLM:000117142 Glycerolipids
     GP, // SLM:000001193 Glycerophospholipids
     SP, // SLM:000000525 Sphingolipids
@@ -29,7 +30,8 @@ static const map<LipidCategory, string> CategoryString = {
     
 
 
-enum LipidLevel {UNDEFINED_LEVEL,
+enum LipidLevel {NO_LEVEL,
+    UNDEFINED_LEVEL,
     CATEGORY, // Mediators, Glycerolipids, Glycerophospholipids, Sphingolipids, Steroids, Prenols
     CLASS, // Glyerophospholipids -> Glycerophosphoinositols (PI)
     SPECIES, // Phosphatidylinositol (16:0) or PI(16:0)
@@ -49,15 +51,16 @@ struct LipidClassMeta {
 
 
 
-enum LipidClass {UNDEFINED_CLASS, FA1 , FA2 , FA3 , FA4 , FA5 , FA6 , FA7 , FA8 , FA9 , FA10 , FA11 , FA12 , FA13 , FA14 , FA15 , FA16 , FA17 , FA18 , FA19 , FA20 , FA21 , FA22 , FA23 , FA24 , FA25 , FA26 , FA27 , FA28 , FA29 , FA30 , FA31 , FA32 , FA33 , FA34 , FA35 , FA36 , FA37 , FA38 , FA39 , FA40 , FA41 , FA42 , FA43 , FA44 , FA45 , FA46 , FA47 , FA48 , FA49 , FA50 , FA51 , FA52 , FA53 , FA54 , FA55 , FA56 , FA57 , FA58 , FA59 , FA60 , FA61 , FA62 , MG , DG , TG , MGDG , DGDG , SQMG , SQDG , BMP , CDPDAG , CL , MLCL , PA , LPA , PC , LPC , PE , PET , LPE , PG , LPG , PGP , PI , LPI , PIP , PIP_3p , PIP_4p , PIP_5p , PIP2 , PIP2_3p_4p , PIP2_3p_5p , PIP3 , PS , LPS , PIM1 , PIM2 , PIM3 , PIM4 , PIM5 , PIM6 , GLCDG , PENME2 , AC2SGL , DAT , PENME , PT , GLCGP , NAPE , LPIM1 , LPIM2 , LPIM3 , LPIM4 , LPIM5 , LPIM6 , CPA , CER , CERP , C1P , SM , HEXCER , HEX2CER , HEX3CER , FMC5 , FMC6 , LACCER , SHEXCER , LCB , LCBP , LHexCer , EPC , GB4 , GD3 , GM3 , GM4 , IPC , LSM , MIP2C , MIPC , STT , SE , CH , CHE , PAT16 , PAT18};
+enum LipidClass {NO_CLASS, UNDEFINED_CLASS, FA1 , FA2 , FA3 , FA4 , FA5 , FA6 , FA7 , FA8 , FA9 , FA10 , FA11 , FA12 , FA13 , FA14 , FA15 , FA16 , FA17 , FA18 , FA19 , FA20 , FA21 , FA22 , FA23 , FA24 , FA25 , FA26 , FA27 , FA28 , FA29 , FA30 , FA31 , FA32 , FA33 , FA34 , FA35 , FA36 , FA37 , FA38 , FA39 , FA40 , FA41 , FA42 , FA43 , FA44 , FA45 , FA46 , FA47 , FA48 , FA49 , FA50 , FA51 , FA52 , FA53 , FA54 , FA55 , FA56 , FA57 , FA58 , FA59 , FA60 , FA61 , FA62 , MG , DG , TG , MGDG , DGDG , SQMG , SQDG , BMP , CDPDAG , CL , MLCL , PA , LPA , PC , LPC , PE , PET , LPE , PG , LPG , PGP , PI , LPI , PIP , PIP_3p , PIP_4p , PIP_5p , PIP2 , PIP2_3p_4p , PIP2_3p_5p , PIP3 , PS , LPS , PIM1 , PIM2 , PIM3 , PIM4 , PIM5 , PIM6 , GLCDG , PENME2 , AC2SGL , DAT , PENME , PT , GLCGP , NAPE , LPIM1 , LPIM2 , LPIM3 , LPIM4 , LPIM5 , LPIM6 , CPA , CER , CERP , C1P , SM , HEXCER , HEX2CER , HEX3CER , FMC5 , FMC6 , LACCER , SHEXCER , LCB , LCBP , LHexCer , EPC , GB4 , GD3 , GM3 , GM4 , IPC , LSM , MIP2C , MIPC , STT , SE , CH , CHE , PAT16 , PAT18};
 
 
 
 typedef map<LipidClass, LipidClassMeta> ClassMap;
-enum LipidFaBondType { UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL};
+enum LipidFaBondType { NO_FA, UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL};
 
 
 static const ClassMap lipid_classes = {
+//{NO_CLASS, {NO_CATEGORY, "no class", {"no lipid class"} } },
 {UNDEFINED_CLASS, {UNDEFINED_CATEGORY, "UNDEFINED", {"Undefined lipid class"} } },
 {FA1, {FA, "Fatty acids and conjugates [FA01]", {"FA"} } },
 {FA2, {FA, "Fatty acids and conjugates [FA01]", {"10-HDoHE"} } },

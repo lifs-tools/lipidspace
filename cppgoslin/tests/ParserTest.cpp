@@ -18,49 +18,14 @@ int main(int argc, char** argv){
         string lipid_name;
         
         /*
-        
-        // bitfield test
-        srand(time(NULL));
-        
-        int n = 5000 + (rand() % 1500000); // highest bit
-        int m = 500 + (rand() % 15000); // number of bits
-        set<int> s;
-        for (int i = 0; i < m; ++i) s.insert(rand() % (n - 2));
-        
-        
-        Bitfield b(n);
-        for (auto i : s) b.set_bit(i);
-        
-        int ii = 0;
-        int bb;
-        set<int>::iterator st = s.begin();
-        while ((bb = b.get_bit_positions()) != -1){
-            assert(bb == *st);
-            ii += 1;
-            st++;
-        }
-        assert(ii == s.size());
-        
-        ii = 0;
-        st = s.begin();
-        while ((bb = b.get_bit_positions()) != -1){
-            assert(bb == *st);
-            ii += 1;
-            st++;
-        }
-        assert(ii == s.size());
-        
-    
-        
         // Pure Parser test
         GoslinParserEventHandler goslin_parser_event_handler;
         Parser<LipidAdduct*> goslin_parser(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
         
-        LipidAdduct* lipid;
         
         // glycerophospholipid
-        for (auto lipid_name : {"PE 16:1/12:0", "DAG 16:1-12:0", "12-HETE", "HexCer 18:1;2/16:0"}){
-            LipidAdduct* lipid = goslin_parser.parse(lipid_name);
+        for (auto the_lipid_name : {"PE 16:1/12:0", "DAG 16:1-12:0", "12-HETE", "HexCer 18:1;2/16:0"}){
+            LipidAdduct* lipid = goslin_parser.parse(the_lipid_name);
             
             assert (lipid);
             delete lipid;
@@ -70,7 +35,7 @@ int main(int argc, char** argv){
         
         // Goslin fragment parser test
         GoslinFragmentParser gp;
-        string lipid_name = "PE 16:1-12:1 - bla";
+        lipid_name = "PE 16:1-12:1 - bla";
         lipid = gp.parse(lipid_name);
         
         assert (lipid);
@@ -100,32 +65,31 @@ int main(int argc, char** argv){
         delete lipid;
         */
         
+        
         // testing lipid maps parser
-        //LipidMapsParser lipid_maps_parser;
-        LipidMapsParserEventHandler goslin_parser_event_handler;
-        Parser<LipidAdduct*> lipid_maps_parser(&goslin_parser_event_handler, "data/goslin/LipidMaps.g4", PARSER_QUOTE);
-        string lmp_data[][2] = {
-                           {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z))", "TAG 13:0/22:3/22:5"},{"PA(16:1/12:0)", "PA 16:1/12:0"},
+        LipidMapsParser lipid_maps_parser;
+        
+        vector< vector<string> > lmp_data{{"PA(16:1/12:0)", "PA 16:1/12:0"},{"PA(4:0/12:0)", "PA 4:0/12:0"},
                            {"PC(O-14:0/0:0)", "LPC O-14:0a"},
                            {"SQMG(16:1(11Z)/0:0)", "SQMG 16:1"},
-                           {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z)){iso6}", "TAG 13:0/22:3/22:5"},
+                           {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z))[iso6]", "TAG 13:0/22:3/22:5"},
                            {"13R-HODE", "13R-HODE"},
-                           {"CL(1'-{20:0/20:0},3'-{20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)})", "CL 20:0/20:0/20:4/18:2"},
+                           {"CL(1'-[20:0/20:0],3'-[20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)])", "CL 20:0/20:0/20:4/18:2"},
                            {"PA(P-20:0/18:3(6Z,9Z,12Z))", "PA 20:0p/18:3"},
                            {"M(IP)2C(t18:0/20:0(2OH))", "M(IP)2C 18:0;3/20:0;1"},
                            {"Cer(d16:2(4E,6E)/22:0(2OH))", "Cer 16:2;2/22:0;1"},
-                           {"MG(18:1(11E)/0:0/0:0){rac}", "MAG 18:1"},
-                           {"PAT18(24:1(2E)(2Me,4Me{S},6Me{S})/25:1(2E)(2Me,4Me{S},6Me{S})/26:1(2E)(2Me,4Me{S},6Me{S})/24:1(2E)(2Me,4Me{S},6Me{S}))", "PAT18 24:1/25:1/26:1/24:1"},
+                           {"MG(18:1(11E)/0:0/0:0)[rac]", "MAG 18:1"},
+                           {"PAT18(24:1(2E)(2Me,4Me[S],6Me[S])/25:1(2E)(2Me,4Me[S],6Me[S])/26:1(2E)(2Me,4Me[S],6Me[S])/24:1(2E)(2Me,4Me[S],6Me[S]))", "PAT18 24:1/25:1/26:1/24:1"},
                            {"(3'-sulfo)Galbeta-Cer(d18:1/20:0)", "SHexCer 18:1;2/20:0"},
                            {"GlcCer(d15:2(4E,6E)/22:0(2OH))", "HexCer 15:2;2/22:0;1"}};
         
-        for (int i = 0; i < 13; ++i){
-            lipid = lipid_maps_parser.parse(lmp_data[i][0]);
-            cout << lmp_data[i][0] << " " << lipid_maps_parser.word_in_grammar << endl;
+        for (int i = 0; i < lmp_data.size(); ++i){
+            lipid = lipid_maps_parser.parse(lmp_data.at(i)[0]);
             assert (lipid);
-            assert (lipid->get_lipid_string() == lmp_data[i][1]);
+            assert (lipid->get_lipid_string() == lmp_data.at(i)[1]);
             delete lipid;
         }
+        
     /*
 
     def test_lyso(self):
@@ -330,5 +294,6 @@ int main(int argc, char** argv){
         cout << "Exception:" << endl;
         cout << e.what() << endl;
     }
-    return 0;
+    
+    return EXIT_SUCCESS;
 }

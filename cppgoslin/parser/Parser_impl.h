@@ -263,15 +263,33 @@ void Parser<T>::read_grammar(string grammar){
         }
     }
     
+    
+    /*
+    for (auto foo : NTtoRule){
+        cout << foo.first << " " << foo.second << endl;
+    }
+    
     for (auto foo : NTtoNT){
         cout << foo.first << " [";
         int i = 0;
-        for (auto v : foo.second){
-            if (i++) cout << ", ";
-            cout << v;
-        }
+        for (auto v : foo.second) { if (i++) cout << ", "; cout << v; }
         cout << "]" << endl;
     }
+    
+    for (auto foo : originalNTtoNT){
+        cout << foo.first << " [";
+        int i = 0;
+        for (auto v : foo.second) { if (i++) cout << ", "; cout << v; }
+        cout << "]" << endl;
+    }
+    
+    for (auto foo : TtoNT){
+        cout << foo.first << " [";
+        int i = 0;
+        for (auto v : foo.second) { if (i++) cout << ", "; cout << v; }
+        cout << "]" << endl;
+    }
+    */
 }
 
 
@@ -646,7 +664,7 @@ void Parser<T>::parse_regular(string text_to_parse){
     // dp stands for dynamic programming, nothing else
     map<unsigned long, DPNode*> ***dp_table = new map<unsigned long, DPNode*>**[n];
     // Ks is a lookup, which fields in the dp_table are filled
-    Bitfield **Ks = new Bitfield*[n];
+    set<int> *Ks = new set<int>[n];
     
     vector<DPNode*> DPs;
     
@@ -655,7 +673,6 @@ void Parser<T>::parse_regular(string text_to_parse){
     for (int i = 0; i < n; ++i){
         dp_table[i] = new map<unsigned long, DPNode*>*[n - i];
         for (int j = 0; j < n - i; ++j) dp_table[i][j] = new map<unsigned long, DPNode*>();
-        Ks[i] = new Bitfield(n);
     }
     
     bool requirement_fulfilled = true;
@@ -672,7 +689,8 @@ void Parser<T>::parse_regular(string text_to_parse){
             DPNode *dp_node = new DPNode(c, old_key, NULL, NULL);
             dp_table[i][0]->insert({new_key, dp_node});
             DPs.push_back(dp_node);
-            Ks[i]->set_bit(0);
+            Ks[i].insert(0);
+            //cout << new_key << " " << old_key << endl;
         }
     }
     
@@ -684,10 +702,9 @@ void Parser<T>::parse_regular(string text_to_parse){
                 map<unsigned long, DPNode*>* Di = D[i];
                 int jp1 = j + 1;
                 
-                int k;
-                while ((k = Ks[j]->get_bit_positions()) != -1){
+                for (auto k : Ks[j]){
                     if (k >= i) break;
-                    if (Ks[jp1 + k]->is_not_set(im1 - k)) continue;
+                    if (Ks[jp1 + k].find(im1 - k) == Ks[jp1 + k].end()) continue;
                 
                     for (auto index_pair_1 : *D[k]){
                         for (auto index_pair_2 : *dp_table[jp1 + k][im1 - k]){
@@ -697,9 +714,10 @@ void Parser<T>::parse_regular(string text_to_parse){
                             
                             DPNode *content = new DPNode(index_pair_1.first, index_pair_2.first, index_pair_1.second, index_pair_2.second);
                             DPs.push_back(content);
-                            Ks[j]->set_bit(i);
+                            Ks[j].insert(i);
                             for (auto rule_index : NTtoNT.at(key)){
                                 Di->insert({rule_index, content});
+                                //cout << i << " " << j << " " << k << " " << key << " " << rule_index << endl;
                             }
                         }
                     }
@@ -727,7 +745,6 @@ void Parser<T>::parse_regular(string text_to_parse){
             delete dp_table[i][j];
         }
         delete[] dp_table[i];
-        delete Ks[i];
     }
     delete[] dp_table;
     delete[] Ks;

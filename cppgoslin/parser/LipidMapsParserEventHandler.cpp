@@ -131,7 +131,10 @@ void LipidMapsParserEventHandler::append_fa(TreeNode* node){
     }
         
     if (current_fa->num_carbon > 0) fa_list->push_back(current_fa);
-    else omit_fa = true;
+    else {
+        omit_fa = true;
+        delete current_fa;
+    }
     current_fa = NULL;
 }
     

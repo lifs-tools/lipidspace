@@ -1,6 +1,3 @@
-
-#include <iostream>
-
 template <class T> 
 BaseParserEventHandler<T>::BaseParserEventHandler(){
     parser = NULL;

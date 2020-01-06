@@ -1,9 +1,7 @@
 #include "LipidSpecies.h"
-#include <iostream>
-using namespace std;
    
 
-
+/*
 LipidSpecies::LipidSpecies(string _head_group){
     head_group = _head_group;
     lipid_category = get_category(head_group);
@@ -12,13 +10,13 @@ LipidSpecies::LipidSpecies(string _head_group){
     info.level = UNDEFINED_LEVEL;
     use_head_group = false;
 }
-
+*/
 
 LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass _lipid_class, LipidSpeciesInfo *lipid_species_info){
     head_group = _head_group;
-    lipid_category = (_lipid_category != UNDEFINED_CATEGORY) ? _lipid_category : get_category(head_group);
+    lipid_category = (_lipid_category != NO_CATEGORY) ? _lipid_category : get_category(head_group);
     
-    lipid_class = (_lipid_class != UNDEFINED_CLASS) ? _lipid_class : get_class(head_group);
+    lipid_class = (_lipid_class != NO_CLASS) ? _lipid_class : get_class(head_group);
     if (lipid_species_info != NULL){
         info.level = lipid_species_info->level;
         info.num_carbon = lipid_species_info->num_carbon;
@@ -40,7 +38,7 @@ LipidSpecies::~LipidSpecies(){
 
 
 string LipidSpecies::get_lipid_string(LipidLevel level){
-    if (level == UNDEFINED_LEVEL){
+    if (level == NO_LEVEL || level == UNDEFINED_LEVEL){
         throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + to_string(level));
     }
     
@@ -82,11 +80,7 @@ LipidCategory LipidSpecies::get_category(string _head_group){
         }
     }
     
-    
-    if (StringCategory.find(_head_group) == StringCategory.end()){
-        throw RuntimeException("Lipid with head group '" + _head_group + "' not found.");
-    }
-    return StringCategory.at(_head_group);
+    return (StringCategory.find(_head_group) != StringCategory.end()) ? StringCategory.at(_head_group) : UNDEFINED_CATEGORY;
 }
 
 
@@ -100,10 +94,7 @@ LipidClass LipidSpecies::get_class(string _head_group){
         }
     }
     
-    if (StringClass.find(_head_group) == StringClass.end()){
-        throw RuntimeException("Lipid with head group '" + _head_group + "' not found.");
-    }
-    return StringClass.at(_head_group);
+    return (StringClass.find(_head_group) != StringClass.end()) ? StringClass.at(_head_group) : UNDEFINED_CLASS;
 }
 
 

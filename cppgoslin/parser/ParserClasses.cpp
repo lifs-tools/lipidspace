@@ -68,12 +68,13 @@ bool Bitfield::is_not_set(uint pos){
     return ((field[pos >> 6] >> (pos & 63)) & 1ull) == 0ull;
 }
 
+/*
 void Bitfield::print_bitfield(unsigned long l){
     for (int i = 63; i >= 0; --i){
         cout << ((l >> i) & 1);
     } cout << endl;
 }
-
+*/
 
 int Bitfield::get_bit_positions(){
     if (do_init){
