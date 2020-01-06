@@ -75,7 +75,6 @@ int main(int argc, char** argv){
         
         assert (lipid);
         delete lipid;
-        */
         
     
         // test lipid parser
@@ -99,10 +98,14 @@ int main(int argc, char** argv){
         assert (lipid);
         assert (lipid->get_lipid_string() == "PE O-16:1p/12:0");
         delete lipid;
+        */
         
         // testing lipid maps parser
-        LipidMapsParser lipid_maps_parser;
-        string lmp_data[13][2] = {{"PA(16:1/12:0)", "PA 16:1/12:0"},
+        //LipidMapsParser lipid_maps_parser;
+        LipidMapsParserEventHandler goslin_parser_event_handler;
+        Parser<LipidAdduct*> lipid_maps_parser(&goslin_parser_event_handler, "data/goslin/LipidMaps.g4", PARSER_QUOTE);
+        string lmp_data[][2] = {
+                           {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z))", "TAG 13:0/22:3/22:5"},{"PA(16:1/12:0)", "PA 16:1/12:0"},
                            {"PC(O-14:0/0:0)", "LPC O-14:0a"},
                            {"SQMG(16:1(11Z)/0:0)", "SQMG 16:1"},
                            {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z)){iso6}", "TAG 13:0/22:3/22:5"},
@@ -118,7 +121,7 @@ int main(int argc, char** argv){
         
         for (int i = 0; i < 13; ++i){
             lipid = lipid_maps_parser.parse(lmp_data[i][0]);
-            cout << lmp_data[i][0] << endl;
+            cout << lmp_data[i][0] << " " << lipid_maps_parser.word_in_grammar << endl;
             assert (lipid);
             assert (lipid->get_lipid_string() == lmp_data[i][1]);
             delete lipid;

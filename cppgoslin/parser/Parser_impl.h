@@ -262,6 +262,16 @@ void Parser<T>::read_grammar(string grammar){
             delete backward_rules;
         }
     }
+    
+    for (auto foo : NTtoNT){
+        cout << foo.first << " [";
+        int i = 0;
+        for (auto v : foo.second){
+            if (i++) cout << ", ";
+            cout << v;
+        }
+        cout << "]" << endl;
+    }
 }
 
 
