@@ -43,8 +43,7 @@ If a test should fail, please contact the developers.
 
 ### Using cppgoslin
 
-The two major functions within cppgoslin are the parsing and printing of lipid names. A minimalistic example will demonstrate both functions the easiest way. In the *examples* folder, you will find the *lipid_name_parser.cpp* file. Compile it by using
-
+The two major functions within cppgoslin are the parsing and printing of lipid names. A minimalistic example will demonstrate both functions the easiest way. In the *examples* folder, you will find the *lipid_name_parser.cpp* file. Compile it by typing:
 
 ```
 cd examples
@@ -52,4 +51,4 @@ make
 ./lipid_name_parser
 ```
 
-within the folder. Be aware that when changing the installing directory you also have to change the library directory within the examples *makefile*.
+Be aware that when changing the installing directory you also have to change the library directory within the examples *makefile*.
