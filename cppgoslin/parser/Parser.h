@@ -28,6 +28,7 @@ public:
 };
 
 
+static const char DEFAULT_QUOTE = '\'';
 
     
 // DP stands for dynamic programming
@@ -110,7 +111,6 @@ public:
     static const char EOF_SIGN;
     static const unsigned long EOF_RULE;
     static const unsigned long START_RULE;
-    static const char DEFAULT_QUOTE;
     static const string EOF_RULE_NAME;
     
     
@@ -134,7 +134,6 @@ public:
     unsigned long get_next_free_rule_index();
     vector<string>* extract_text_based_rules(string grammar_filename, char _quote = DEFAULT_QUOTE);
     static unsigned long compute_rule_key(unsigned long rule_index_1, unsigned long rule_index_2);
-    static vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE);
     bool is_terminal(string product_token, char _quote);
     static string de_escape(string text, char _quote);
     unsigned long add_terminal(string text);
@@ -144,44 +143,16 @@ public:
     void fill_tree(TreeNode *node, DPNode *dp_node);
     T parse(string text_to_parse);
     void parse_regular(string text_to_parse);
-    static string strip(string s, char c);
     static string replace_all(std::string str, const std::string& from, const std::string& to);
 };
 
 
 
 
+string strip(string s, char c);
+vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE);
 
-/*
-class LipidMapsParser(Parser):
-    def __init__(self):
-        self.event_handler = LipidMapsParserEventHandler()
-        dir_name = path.dirname(pygoslin.__file__)
-        super().__init__(self.event_handler, dir_name + "/data/goslin/LipidMaps.g4", Parser.DEFAULT_QUOTE)
-        
-        
-class LipidParser:
-    def __init__(self):
-        self.parser = None
-        self.lipid = None
-        self.event_handler = None
-        
-        self.parser_list = [GoslinParser(), GoslinFragmentParser(), LipidMapsParser()]
-        
-    def parse(self, lipid_name):
-        self.parser = None
-        self.lipid = None
-        self.event_handler = None
-        
-        for parser in self.parser_list:
-            parser.parse(lipid_name)
-            if parser.word_in_grammar:
-                self.parser = parser
-                self.event_handler = parser.event_handler
-                self.lipid = self.event_handler.lipid
-                break
-         
-*/
+
 
 #include "cppgoslin/parser/Parser_impl.h"
 #endif /* PARSER_H */

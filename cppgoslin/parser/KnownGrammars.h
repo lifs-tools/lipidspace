@@ -247,14 +247,9 @@ static const string goslin_fragment_grammar = "/* \n\
 grammar GoslinFragments; \n\
  \n\
 /* first rule is always start rule */ \n\
-lipid : lipid_eof EOF; \n\
-lipid_eof : just_lipid | just_lipid FRAGMENT_SEPARATOR fragment_name; \n\
+lipid : just_lipid; \n\
 just_lipid : lipid_pure | lipid_pure adduct_info; \n\
 lipid_pure : gl | pl | sl | cholesterol | mediatorc; \n\
- \n\
-/* rules for fragments */ \n\
-fragment_name : frag_char; \n\
-frag_char : frag_char frag_char | character | sign; \n\
  \n\
 /* adduct information */ \n\
 adduct_info : '[M' adduct ']' charge charge_sign | adduct_separator '[M' adduct ']' charge charge_sign; \n\

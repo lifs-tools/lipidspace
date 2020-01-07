@@ -1,6 +1,6 @@
 #include "cppgoslin/parser/KnownParsers.h"
 
-GoslinParser::GoslinParser() : Parser<LipidAdduct*>(new GoslinParserEventHandler(), GrammarString(goslin_grammar), Parser<LipidAdduct*>::DEFAULT_QUOTE){
+GoslinParser::GoslinParser() : Parser<LipidAdduct*>(new GoslinParserEventHandler(), GrammarString(goslin_grammar), DEFAULT_QUOTE){
         
 }
 
@@ -10,7 +10,7 @@ GoslinParser::~GoslinParser(){
 }
 
 
-GoslinFragmentParser::GoslinFragmentParser() : Parser<LipidAdduct*>(new GoslinFragmentParserEventHandler(), GrammarString(goslin_fragment_grammar), Parser<LipidAdduct*>::DEFAULT_QUOTE){
+GoslinFragmentParser::GoslinFragmentParser() : Parser<LipidAdduct*>(new GoslinFragmentParserEventHandler(), GrammarString(goslin_fragment_grammar), DEFAULT_QUOTE){
         
 }
 
@@ -20,7 +20,7 @@ GoslinFragmentParser::~GoslinFragmentParser(){
 }
 
 
-LipidMapsParser::LipidMapsParser() : Parser<LipidAdduct*>(new LipidMapsParserEventHandler(), GrammarString(lipid_maps_grammar), Parser<LipidAdduct*>::DEFAULT_QUOTE){
+LipidMapsParser::LipidMapsParser() : Parser<LipidAdduct*>(new LipidMapsParserEventHandler(), GrammarString(lipid_maps_grammar), DEFAULT_QUOTE){
         
 }
 

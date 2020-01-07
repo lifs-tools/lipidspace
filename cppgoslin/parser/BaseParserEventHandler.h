@@ -22,7 +22,7 @@ public:
     map<string, function<void(TreeNode *)>>* registered_events;
     set<string> rule_names;
     T content;
-    
+    string parse_string;
     
     BaseParserEventHandler();
     virtual ~BaseParserEventHandler();

@@ -73,7 +73,7 @@ string LipidStructuralSubspecies::get_lipid_string(LipidLevel level) {
         case CATEGORY:
         case CLASS:
         case SPECIES:
-            return LipidStructuralSubspecies::get_lipid_string(level);
+            return LipidMolecularSubspecies::get_lipid_string(level);
         
         default:
             throw RuntimeException("LipidStructuralSubspecies does not know how to create a lipid string for level " + to_string(level));

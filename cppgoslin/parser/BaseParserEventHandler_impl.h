@@ -3,6 +3,7 @@ template <class T>
 BaseParserEventHandler<T>::BaseParserEventHandler(){
     parser = NULL;
     registered_events = new map<string, function<void(TreeNode *)>>();
+    parse_string = "";
 }
 
 template <class T> 

@@ -71,7 +71,6 @@ void LipidMapsParserEventHandler::set_molecular_subspecies_level(TreeNode* node)
     
     
 void LipidMapsParserEventHandler::mediator_event(TreeNode* node){
-    cout << "mediator !!!!!!!!!!!!!!" << endl;
     use_head_group = true;
 }
     

@@ -16,8 +16,6 @@ const unsigned long Parser<T>::EOF_RULE = 1ull;
 template <class T>
 const unsigned long Parser<T>::START_RULE = 2ull;
 template <class T>
-const char Parser<T>::DEFAULT_QUOTE = '\'';
-template <class T>
 const string Parser<T>::EOF_RULE_NAME = "EOF";
 
 
@@ -33,21 +31,6 @@ unsigned long Parser<T>::get_next_free_rule_index(){
 }
 
 
-template <class T>
-string Parser<T>::strip(string s, char c){
-    if (s.length() > 0) {
-        uint st = 0;
-        while (st < s.length() - 1 && s[st] == c) ++st;
-        s = s.substr(st, s.length() - st);
-    }
-    
-    if (s.length() > 0) {
-        uint en = 0;
-        while (en < s.length() - 1 && s[s.length() - 1 - en] == c) ++en;
-        s = s.substr(0, s.length() - en);
-    }
-    return s;
-}
 
 
 template <class T>
@@ -410,56 +393,6 @@ unsigned long Parser<T>::compute_rule_key(unsigned long rule_index_1, unsigned l
 
 
 
-template <class T>
-vector<string>* Parser<T>::split_string(string text, char separator, char _quote){
-    bool in_quote = false;
-    vector<string> *tokens = new vector<string>();
-    stringstream sb;
-    char last_char = '\0';
-    bool last_escaped_backslash = false;
-    
-    for (uint i = 0; i < text.length(); ++i){
-        char c = text[i];
-        bool escaped_backslash = false;
-        if (!in_quote){
-            if (c == separator){
-                string sb_string;
-                sb_string = sb.str();
-                if (sb_string.length() > 0) tokens->push_back(sb_string);
-                sb.str("");
-            }
-            else{
-                if (c == _quote) in_quote = !in_quote;
-                sb << c;
-            }
-        }
-        else {
-            if (c == '\\' && last_char == '\\' && !last_escaped_backslash){
-                escaped_backslash = true;
-            }
-            else if (c == _quote && !(last_char == '\\' && !last_escaped_backslash)){
-                in_quote = !in_quote;
-            }
-            sb << c;
-        }
-        
-        last_escaped_backslash = escaped_backslash;
-        last_char = c;
-    }
-    
-    string sb_string;
-    sb_string = sb.str();
-    
-    if (sb_string.length() > 0){
-        tokens->push_back(sb_string);
-    }
-    if (in_quote){
-        delete tokens;
-        throw RuntimeException("Error: corrupted token in grammar");
-    }
-    return tokens;
-}
-
 
 // checking if string is terminal
 template <class T>
@@ -620,6 +553,7 @@ template <class T>
 T Parser<T>::parse(string text_to_parse){
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
     parser_event_handler->content = NULL;
+    parser_event_handler->parse_string = text_to_parse;
     
     parse_regular(text_to_parse);
     return parser_event_handler->content;
