@@ -128,7 +128,7 @@ int main(int argc, char** argv){
         assert (lipid);
         assert (lipid->get_lipid_string() == "DAG 38:1");
         delete lipid;
-        
+       
         
         
         for (auto test_lipid_name : {"10-HDoHE","11-HDoHE","11-HETE","11,12-DHET","11(12)-EET", "12-HEPE","12-HETE","12-HHTrE","12-OxoETE","12(13)-EpOME","13-HODE","13-HOTrE","14,15-DHET","14(15)-EET","14(15)-EpETE","15-HEPE","15-HETE","15d-PGJ2","16-HDoHE","16-HETE","18-HEPE","5-HEPE","5-HETE","5-HpETE","5-OxoETE","5,12-DiHETE","5,6-DiHETE","5,6,15-LXA4","5(6)-EET","8-HDoHE","8-HETE","8,9-DHET","8(9)-EET","9-HEPE","9-HETE","9-HODE","9-HOTrE","9(10)-EpOME","AA","alpha-LA","DHA","EPA","Linoleic acid","LTB4","LTC4","LTD4","Maresin 1","Palmitic acid","PGB2","PGD2","PGE2","PGF2alpha","PGI2","Resolvin D1","Resolvin D2","Resolvin D3","Resolvin D5","tetranor-12-HETE","TXB1","TXB2","TXB3"}){
@@ -140,7 +140,7 @@ int main(int argc, char** argv){
         }
         
         
-    
+        // check if goslin parser fails correctly on parsing lipid name with fragment
         lipid_name = "PE 16:1-12:0 - -(H20)";
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid == NULL);
@@ -148,26 +148,20 @@ int main(int argc, char** argv){
         
         
         
+        // check if goslin fragment parser parses correctly lipid name with fragment
+        GoslinParser goslin_fragment_parser;
+        lipid_name = "PE 16:1-12:0 - -(H20)";
+        
+        lipid = goslin_fragment_parser.parse(lipid_name);
+        assert(lipid);
+        assert (lipid->fragment);
+        assert (lipid->fragment->name == "-(H20)");
+        delete lipid;
+        
+        
+        
+         
     /*
-        
-        
-    def test_lipid_fragment_success(self):
-    
-        goslin_fragment_parser_event_handler = GoslinFragmentParserEventHandler()
-        goslin_fragment_parser = Parser(goslin_fragment_parser_event_handler, "pygoslin/data/goslin/GoslinFragments.g4", ParserTest.PARSER_QUOTE)
-        
-        
-        lipid_name = "PE 16:1-12:0 - -(H20)"
-        goslin_fragment_parser.parse(lipid_name)
-        assert goslin_fragment_parser.word_in_grammar
-        
-        assert goslin_fragment_parser_event_handler.lipid.fragment != None
-        assert goslin_fragment_parser_event_handler.lipid.fragment.name == "-(H20)"
-        
-        
-        
-        
-        
         
     def test_lipid_names(self):
         goslin_parser_event_handler = GoslinParserEventHandler()

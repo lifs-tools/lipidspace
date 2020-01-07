@@ -166,9 +166,10 @@ void GoslinFragmentParserEventHandler::build_lipid(TreeNode *node) {
     
     if (level == SPECIES){
         if (fa_list->size() > 0){
-            LipidSpeciesInfo *lipid_species_info = new LipidSpeciesInfo(fa_list->at(0));
-            lipid_species_info->level = SPECIES;
-            ls = new LipidSpecies(head_group, NO_CATEGORY, NO_CLASS, lipid_species_info);
+            LipidSpeciesInfo lipid_species_info(fa_list->at(0));
+            delete fa_list->at(0);
+            lipid_species_info.level = SPECIES;
+            ls = new LipidSpecies(head_group, NO_CATEGORY, NO_CLASS, &lipid_species_info);
         }
         else{
             ls = new LipidSpecies(head_group);

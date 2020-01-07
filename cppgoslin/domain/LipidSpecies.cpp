@@ -11,7 +11,6 @@ LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, Li
         info.num_hydroxyl = lipid_species_info->num_hydroxyl;
         info.num_double_bonds = lipid_species_info->num_double_bonds;
         info.lipid_FA_bond_type = lipid_species_info->lipid_FA_bond_type;
-        delete lipid_species_info;
     }
     else {
         info.level = UNDEFINED_LEVEL;
