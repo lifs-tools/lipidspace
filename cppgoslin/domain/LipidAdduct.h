@@ -21,8 +21,8 @@ public:
     
     LipidAdduct();
     ~LipidAdduct();
-    string get_lipid_string(LipidLevel level = UNDEFINED_LEVEL);
-    string get_lipid_fragment_string(LipidLevel level = UNDEFINED_LEVEL);
+    string get_lipid_string(LipidLevel level = NO_LEVEL);
+    string get_lipid_fragment_string(LipidLevel level = NO_LEVEL);
 };
 
 #endif /* LIPID_ADDUCT_H */

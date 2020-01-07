@@ -93,7 +93,7 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator
 
 string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
     switch (level){
-        case UNDEFINED_LEVEL:
+        case NO_LEVEL:
         case MOLECULAR_SUBSPECIES:
             return build_lipid_subspecies_name("_");
     

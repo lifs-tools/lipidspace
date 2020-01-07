@@ -1,5 +1,5 @@
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
-
+#include <iostream>
 
 #define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events->insert({x, bind(&LipidMapsParserEventHandler::y, this, placeholders::_1)})
     
@@ -71,6 +71,7 @@ void LipidMapsParserEventHandler::set_molecular_subspecies_level(TreeNode* node)
     
     
 void LipidMapsParserEventHandler::mediator_event(TreeNode* node){
+    cout << "mediator !!!!!!!!!!!!!!" << endl;
     use_head_group = true;
 }
     
@@ -188,7 +189,7 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
         if (fa_list->size() > 0){
             LipidSpeciesInfo *lipid_species_info = new LipidSpeciesInfo(fa_list->at(0));
             lipid_species_info->level = SPECIES;
-            ls = new LipidSpecies(head_group, UNDEFINED_CATEGORY, UNDEFINED_CLASS, lipid_species_info);
+            ls = new LipidSpecies(head_group, NO_CATEGORY, NO_CLASS, lipid_species_info);
         }
         else {
             ls = new LipidSpecies(head_group);

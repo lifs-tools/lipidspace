@@ -65,7 +65,7 @@ LipidStructuralSubspecies::~LipidStructuralSubspecies(){
 
 string LipidStructuralSubspecies::get_lipid_string(LipidLevel level) {
     switch(level){
-        case UNDEFINED_LEVEL:
+        case NO_LEVEL:
         case STRUCTURAL_SUBSPECIES:
             return build_lipid_subspecies_name("/");
     

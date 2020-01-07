@@ -1,6 +1,5 @@
 #include "cppgoslin/parser/KnownParsers.h"
 
-
 GoslinParser::GoslinParser() : Parser<LipidAdduct*>(new GoslinParserEventHandler(), GrammarString(goslin_grammar), Parser<LipidAdduct*>::DEFAULT_QUOTE){
         
 }

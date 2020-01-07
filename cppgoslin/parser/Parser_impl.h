@@ -262,34 +262,6 @@ void Parser<T>::read_grammar(string grammar){
             delete backward_rules;
         }
     }
-    
-    
-    /*
-    for (auto foo : NTtoRule){
-        cout << foo.first << " " << foo.second << endl;
-    }
-    
-    for (auto foo : NTtoNT){
-        cout << foo.first << " [";
-        int i = 0;
-        for (auto v : foo.second) { if (i++) cout << ", "; cout << v; }
-        cout << "]" << endl;
-    }
-    
-    for (auto foo : originalNTtoNT){
-        cout << foo.first << " [";
-        int i = 0;
-        for (auto v : foo.second) { if (i++) cout << ", "; cout << v; }
-        cout << "]" << endl;
-    }
-    
-    for (auto foo : TtoNT){
-        cout << foo.first << " [";
-        int i = 0;
-        for (auto v : foo.second) { if (i++) cout << ", "; cout << v; }
-        cout << "]" << endl;
-    }
-    */
 }
 
 
@@ -647,6 +619,7 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
 template <class T>
 T Parser<T>::parse(string text_to_parse){
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
+    parser_event_handler->content = NULL;
     
     parse_regular(text_to_parse);
     return parser_event_handler->content;
@@ -658,7 +631,6 @@ T Parser<T>::parse(string text_to_parse){
 template <class T>
 void Parser<T>::parse_regular(string text_to_parse){
     word_in_grammar = false;
-    parser_event_handler->content = NULL;
 
     int n = text_to_parse.length();
     // dp stands for dynamic programming, nothing else
@@ -690,7 +662,6 @@ void Parser<T>::parse_regular(string text_to_parse){
             dp_table[i][0]->insert({new_key, dp_node});
             DPs.push_back(dp_node);
             Ks[i].insert(0);
-            //cout << new_key << " " << old_key << endl;
         }
     }
     
@@ -717,7 +688,6 @@ void Parser<T>::parse_regular(string text_to_parse){
                             Ks[j].insert(i);
                             for (auto rule_index : NTtoNT.at(key)){
                                 Di->insert({rule_index, content});
-                                //cout << i << " " << j << " " << k << " " << key << " " << rule_index << endl;
                             }
                         }
                     }
@@ -729,10 +699,9 @@ void Parser<T>::parse_regular(string text_to_parse){
         for (int i = n - 1; i > 0; --i){
             if (dp_table[0][i]->find(START_RULE) != dp_table[0][i]->end()){
                 word_in_grammar = true;
-                TreeNode *parse_tree = new TreeNode(START_RULE, NTtoRule.find(START_RULE) != NTtoRule.end());
-                fill_tree(parse_tree, dp_table[0][i]->at(START_RULE));
-                raise_events(parse_tree);
-                delete parse_tree;
+                TreeNode parse_tree(START_RULE, NTtoRule.find(START_RULE) != NTtoRule.end());
+                fill_tree(&parse_tree, dp_table[0][i]->at(START_RULE));
+                raise_events(&parse_tree);
                 break;
             }
         }
@@ -748,6 +717,5 @@ void Parser<T>::parse_regular(string text_to_parse){
     }
     delete[] dp_table;
     delete[] Ks;
-    
 }
 

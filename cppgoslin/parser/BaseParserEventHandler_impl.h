@@ -1,3 +1,4 @@
+
 template <class T> 
 BaseParserEventHandler<T>::BaseParserEventHandler(){
     parser = NULL;
@@ -14,6 +15,8 @@ template <class T>
 void BaseParserEventHandler<T>::sanity_check(){
     
     for (auto event_name : *registered_events){
+        
+        
         if (!endswith(event_name.first, "_pre_event") && !endswith(event_name.first, "_post_event")){
             throw RuntimeException("Parser event handler error: event '" + event_name.first + "' does not contain the suffix '_pre_event' or '_post_event'");
         }
@@ -29,6 +32,7 @@ void BaseParserEventHandler<T>::sanity_check(){
 
 template <class T> 
 void BaseParserEventHandler<T>::handle_event(string event_name, TreeNode *node){
+    
     if (registered_events->find(event_name) != registered_events->end()){
         registered_events->at(event_name)(node);
     }

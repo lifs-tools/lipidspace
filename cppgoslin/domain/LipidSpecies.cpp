@@ -1,16 +1,4 @@
 #include "LipidSpecies.h"
-   
-
-/*
-LipidSpecies::LipidSpecies(string _head_group){
-    head_group = _head_group;
-    lipid_category = get_category(head_group);
-    
-    lipid_class = get_class(head_group);
-    info.level = UNDEFINED_LEVEL;
-    use_head_group = false;
-}
-*/
 
 LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass _lipid_class, LipidSpeciesInfo *lipid_species_info){
     head_group = _head_group;
@@ -38,35 +26,35 @@ LipidSpecies::~LipidSpecies(){
 
 
 string LipidSpecies::get_lipid_string(LipidLevel level){
-    if (level == NO_LEVEL || level == UNDEFINED_LEVEL){
-        throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + to_string(level));
+    switch (level){
+            
+        default:
+            throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + to_string(level));
+            
+        case UNDEFINED_LEVEL:
+            throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + to_string(level));
+            
+        case CATEGORY:
+            return get_category_string(lipid_category);
+            
+        case CLASS:
+            return get_class_string(lipid_class);
+            
+        case NO_LEVEL:
+        case SPECIES:
+            stringstream st;
+            st << (!use_head_group ? get_class_string(lipid_class) : head_group);
+            
+            if (info.num_carbon > 0){
+                st <<  " " << info.num_carbon;
+                st << ":" << info.num_double_bonds;
+                if (info.num_hydroxyl > 0)  st << ";" << info.num_hydroxyl;
+                st << FattyAcid::suffix(info.lipid_FA_bond_type);
+            }
+            
+            return st.str();
     }
-    
-    else if (level == CATEGORY){
-        return get_category_string(lipid_category);
-    }
-        
-    else if (level == CLASS) {
-        return get_class_string(lipid_class);
-    }
-        
-    else if (level == SPECIES){
-        stringstream st;
-        st << (!use_head_group ? get_class_string(lipid_class) : head_group);
-        
-        if (info.num_carbon > 0){
-            st <<  " " << info.num_carbon;
-            st << ":" << info.num_double_bonds;
-            if (info.num_hydroxyl > 0)  st << ";" << info.num_hydroxyl;
-            st << FattyAcid::suffix(info.lipid_FA_bond_type);
-        }
-        
-        return st.str();
-    }
-        
-    else {
-        throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + to_string(level));
-    }
+    return "";
 }
 
 
@@ -80,7 +68,8 @@ LipidCategory LipidSpecies::get_category(string _head_group){
         }
     }
     
-    return (StringCategory.find(_head_group) != StringCategory.end()) ? StringCategory.at(_head_group) : UNDEFINED_CATEGORY;
+    auto cat = StringCategory.find(_head_group);
+    return (cat != StringCategory.end()) ? cat->second : UNDEFINED_CATEGORY;
 }
 
 
@@ -94,7 +83,8 @@ LipidClass LipidSpecies::get_class(string _head_group){
         }
     }
     
-    return (StringClass.find(_head_group) != StringClass.end()) ? StringClass.at(_head_group) : UNDEFINED_CLASS;
+    auto cl = StringClass.find(_head_group);
+    return (cl != StringClass.end()) ? cl->second : UNDEFINED_CLASS;
 }
 
 
