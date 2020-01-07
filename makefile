@@ -5,7 +5,7 @@ parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgos
 
 obj = ${domain} ${parser}
 
-opt = -std=c++14 -O3
+opt = -std=c++11 -O3
 
 
 main: ${obj}
@@ -16,10 +16,16 @@ main: ${obj}
 	${CC} ${opt} -I. -Wall -fPIC -o $@ -c $<
 	
 clean:
-	rm -rf cppgoslin/domain/*.o
-	rm -rf cppgoslin/parser/*.o
-	rm -rf libcppGoslin.so
+	rm -f cppgoslin/domain/*.o
+	rm -f cppgoslin/parser/*.o
+	rm -f libcppGoslin.so
+	rm -f MolecularFattyAcidTest
+	rm -f ParserTest
 
 test: main
 	${CC} -I. ${opt} -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.cpp -L. -l cppGoslin
 	${CC} -I. ${opt} -o ParserTest cppgoslin/tests/ParserTest.cpp -L. -l cppGoslin
+
+runtests: test
+	./MolecularFattyAcidTest
+	./ParserTest
