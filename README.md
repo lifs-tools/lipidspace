@@ -26,7 +26,7 @@ To install the library globally on your system, simply type:
 [sudo] make install
 ```
 
-Be sure that you have root permissions. Here, the library and headers are installed into the /usr directory. If you want to change, you have to edit the firstline in the **makefile**.
+Be sure that you have root permissions. Here, the library and headers are installed into the /usr directory. If you want to change, you have to edit the first line within the **makefile**.
 
 
 ### Testing cppgoslin
