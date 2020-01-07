@@ -12,8 +12,12 @@ int main(){
     string lipid_name = "PA(12:0_14:1)";
     LipidAdduct* lipid = lipid_parser.parse(lipid_name);
     
+    /* checking if parsing was successful, otherwise lipid reference remains NULL */
     if (lipid != NULL){
+        /* creating lipid name according to the recent lipid nomenclature */
         cout << lipid->get_lipid_string() << endl;
+        
+        /* important to delete lipid to avoid memory leaks */
         delete lipid;
     }
     
