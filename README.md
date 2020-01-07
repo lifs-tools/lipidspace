@@ -47,7 +47,9 @@ The two major functions within cppgoslin are the parsing and printing of lipid n
 
 
 ```
+cd examples
 make
+./lipid_name_parser
 ```
 
 within the folder. Be aware that when changing the installing directory you also have to change the library directory within the examples *makefile*.
