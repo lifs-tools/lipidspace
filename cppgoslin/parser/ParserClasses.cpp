@@ -10,6 +10,8 @@ DPNode::DPNode(unsigned long _rule1, unsigned long _rule2, DPNode *_left, DPNode
 }
 
       
+      
+      
     
 TreeNode::TreeNode(unsigned long _rule, bool _fire_event){
     rule_index = _rule;
@@ -20,10 +22,15 @@ TreeNode::TreeNode(unsigned long _rule, bool _fire_event){
 }
 
 
+
+
+
 TreeNode::~TreeNode(){
     if (left != NULL) delete left;
     if (right != NULL) delete right;
 }
+
+
 
 
 string TreeNode::get_text(){
@@ -34,18 +41,25 @@ string TreeNode::get_text(){
     }
     return string(1, (char)terminal);
 }
-        
+       
+       
+       
+       
 
-Bitfield::Bitfield(uint length){
+Bitfield::Bitfield(uint _length){
+    length = _length;
     field_len = 1 + ((length + 1) >> 6);
     superfield_len = 1 + ((field_len + 1) >> 6);
     field = new unsigned long[field_len];
     superfield = new unsigned long[superfield_len];
+    num_size = 0;
+    
     
     for (uint i = 0; i < field_len; ++i) field[i] = 0ull;
     for (uint i = 0; i < superfield_len; ++i) superfield[i] = 0ull;
-    do_init = true;
 }
+
+
 
 Bitfield::~Bitfield(){
     delete []field;
@@ -53,20 +67,24 @@ Bitfield::~Bitfield(){
 }
 
 
-void Bitfield::set_bit(uint pos){
-    field[pos >> 6] |= (unsigned long)(1ull << (pos & 63));
-    superfield[pos >> 12] |= (unsigned long)(1ull << ((pos >> 6) & 63));
+
+
+void Bitfield::insert(uint pos){
+    if (!find(pos)){
+        field[pos >> 6] |= (unsigned long)(1ull << (pos & 63));
+        superfield[pos >> 12] |= (unsigned long)(1ull << ((pos >> 6) & 63));
+        ++num_size;
+    }
 }
 
 
-bool Bitfield::is_set(uint pos){
+
+
+bool Bitfield::find(uint pos){
     return ((field[pos >> 6] >> (pos & 63)) & 1ull) == 1ull;
 }
 
 
-bool Bitfield::is_not_set(uint pos){
-    return ((field[pos >> 6] >> (pos & 63)) & 1ull) == 0ull;
-}
 
 /*
 void Bitfield::print_bitfield(unsigned long l){
@@ -76,52 +94,99 @@ void Bitfield::print_bitfield(unsigned long l){
 }
 */
 
-int Bitfield::get_bit_positions(){
-    if (do_init){
-        spre = 0;
-        si = 0;
-        sv = superfield[si];
-        fi = 0;
-        
-        unsigned long sv1 = (unsigned long)(sv & -sv);
-        pos = spre + __builtin_ctzll(sv1);
-        v = field[pos];
-        do_init = false;
-    }
+
+
+int Bitfield::next(uint pos){
+    if (pos >= length) return -1;
+    
+    uint field_pos = pos >> 6;
+    uint superfield_pos = pos >> 12;
+    
+    unsigned long field_bits = field[field_pos] & (~((1ull << (pos & 63)) - 1ull));
+    unsigned long superfield_bits = superfield[superfield_pos] & (~((1ull << ((pos >> 6) & 63)) - 1ull));
     
     do {
-        while (sv != 0) {
-            // algorithm for getting least significant bit position
-            while (v != 0) {
-                // algorithm for getting least significant bit position
-                unsigned long v1 = (unsigned long)(v & -v);
-                v &= v - 1;
-                return (pos << 6) + __builtin_ctzll(v1);
+        while (superfield_bits){
+            if (field_bits){
+                return (field_pos << 6) + __builtin_ctzll(field_bits & -field_bits);
             }
-            sv &= sv - 1;
             
-            if (sv != 0){
-                unsigned long sv1 = (unsigned long)(sv & -sv);
-                pos = spre + __builtin_ctzll(sv1);
-                if (pos < field_len) v = field[pos];
-            }
+            
+            superfield_bits &= superfield_bits - 1ull;
+            field_pos = (superfield_pos << 6) + __builtin_ctzll(superfield_bits & -superfield_bits);
+            if (field_pos < field_len) field_bits = field[field_pos];
         }
         
-        spre += 64;
-        if (si < superfield_len){
-            ++si;
-            if (si < superfield_len){
-                sv = superfield[si];
-                unsigned long sv1 = (unsigned long)(sv & -sv);
-                pos = spre + __builtin_ctzll(sv1);
-                if (pos < field_len) v = field[pos];
-            }
+        
+        
+        if (++superfield_pos < superfield_len){
+            superfield_bits = superfield[superfield_pos];
+            field_pos = (superfield_pos << 6) + __builtin_ctzll(superfield_bits & -superfield_bits);
+            if (field_pos < field_len) field_bits = field[field_pos];
         }
-    }
-    while (si < superfield_len);
+    } while (superfield_pos < superfield_len);
     
-    do_init = true;
     return -1;
+}
+
+
+
+
+
+Bitfield::iter::iter(Bitfield & _bitfield, uint index) : bitfield(_bitfield), num_index(index), last_position(0) {
+    last_position = bitfield.next(last_position);
+}
+
+
+
+
+int Bitfield::iter::operator*() const {
+    return last_position;
+}
+
+
+
+
+Bitfield::iter & Bitfield::iter::operator++() {
+    num_index++;
+    last_position = bitfield.next(last_position + 1);
+    return *this;
+}
+
+
+
+
+Bitfield::iter & Bitfield::iter::operator++(int i) {
+    return ++(*this);
+}
+
+
+
+
+bool Bitfield::iter::operator!=(const iter & rhs) const {
+    return num_index != rhs.num_index;
+}
+
+
+
+
+volatile uint Bitfield::size() const {
+    return num_size;
+}
+
+
+
+
+Bitfield::iter Bitfield::begin() {
+    return Bitfield::iter(*this, 0);
+}
+
+
+
+
+
+Bitfield::iter Bitfield::end(){
+    return Bitfield::iter(*this, size());
 }
 
 

@@ -11,6 +11,8 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <iterator>
 
 enum Content {NoContext, InLineComment, InLongComment, InQuote};
 enum MatchWords {NoMatch, LineCommentStart, LineCommentEnd, LongCommentStart, LongCommentEnd, Quote};
@@ -62,43 +64,47 @@ public:
 // this class is dedicated to have an efficient sorted set class storing
 // values within 0..n-1 and fast sequencial iterator
 class Bitfield {
+    class iter;
+    
 public:
     unsigned long *field;
     unsigned long *superfield;
-    unsigned int spre;
-    unsigned long sv;
-    unsigned int si;
-    unsigned long v;
-    unsigned int fi;
-    unsigned int pos;
-    unsigned int field_len;
-    unsigned int superfield_len;
-    bool do_init;
+    uint field_len;
+    uint superfield_len;
+    volatile uint num_size;
+    uint length;
     
+    iter begin();
+    iter end();
     
+    volatile uint size() const;
     
     
     Bitfield(uint length);
     ~Bitfield();
-    void set_bit(uint pos);
-    bool is_set(uint pos);
-    bool is_not_set(uint pos);
+    void insert(uint pos);
+    bool find(uint pos);
     void init();
-    int get_bit_positions();
+    int next(uint pos);
     void print_bitfield(unsigned long l);
+    
+private:
+    class iter : public std::iterator<std::output_iterator_tag, int>{
+        public:
+            explicit iter(Bitfield& _bitfield, uint index = 0);
+            int operator*() const;
+            iter & operator++();
+            iter & operator++(int);
+            bool operator!=(const iter &) const;
+        private:
+            uint num_index;
+            int last_position;
+            Bitfield &bitfield;
+    };
 };
 
 
         
-    
-struct ParserMeta {
-    unsigned long next_free_rule_index;
-    map<char, set<unsigned long>> TtoNT;
-    map<unsigned long, set<unsigned long>> NTtoNT;
-    map<unsigned long, string> NTtoRule;
-    map<unsigned long, set<unsigned long>> originalNTtoNT;
-    char quote;
-};
 
 template <class T>
 class Parser {

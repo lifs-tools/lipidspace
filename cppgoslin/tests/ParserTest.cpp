@@ -21,6 +21,37 @@ int main(int argc, char** argv){
         GoslinFragmentParser goslin_fragment_parser;
         
         
+        /*
+        Bitfield b(200);
+        
+        b.insert(20);
+        b.insert(20);
+        b.insert(1);
+        b.insert(2);
+        b.insert(0);
+        b.insert(55);
+        b.insert(75);
+        b.insert(82);
+        
+        
+        for (int i : b) cout << i << endl;
+        cout << endl;
+        b.insert(127);
+        b.insert(140);
+        b.insert(190);
+        
+        for (int i : b){
+            cout << i << endl;
+            if (i == 127) b.insert(128);
+        }
+        cout << endl;
+        
+        
+        
+        
+        if (true) exit(0);
+        */
+        
         
         
         // Pure Parser test
@@ -127,7 +158,6 @@ int main(int argc, char** argv){
         
         lipid = lipid_parser.parse("LPE O-16:1p/12:0");
         assert (lipid == NULL);
-        
         
         
         
