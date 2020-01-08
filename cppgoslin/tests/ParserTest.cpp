@@ -21,36 +21,27 @@ int main(int argc, char** argv){
         GoslinFragmentParser goslin_fragment_parser;
         
         
-        /*
-        Bitfield b(200);
         
-        b.insert(20);
-        b.insert(20);
-        b.insert(1);
-        b.insert(2);
-        b.insert(0);
-        b.insert(55);
-        b.insert(75);
-        b.insert(82);
+        // test bitfield
+        srand(time(0));
+        int num_numbers = 1000 + (rand() % 1000);
+        int max_number = num_numbers * 100;
+        set<int> check;
+        Bitfield b(max_number);
         
-        
-        for (int i : b) cout << i << endl;
-        cout << endl;
-        b.insert(127);
-        b.insert(140);
-        b.insert(190);
-        
-        for (int i : b){
-            cout << i << endl;
-            if (i == 127) b.insert(128);
+        for (int i = 0; i < num_numbers; ++i){
+            int num = rand() % max_number;
+            b.insert(num);
+            check.insert(num);
         }
-        cout << endl;
         
+        int cnt = 0;
+        for (int i : b){
+            assert (check.find(i) != check.end());
+            ++cnt;
+        }
+        assert (cnt == check.size());
         
-        
-        
-        if (true) exit(0);
-        */
         
         
         

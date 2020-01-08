@@ -71,13 +71,13 @@ public:
     unsigned long *superfield;
     uint field_len;
     uint superfield_len;
-    volatile uint num_size;
+    uint num_size;
     uint length;
     
     iter begin();
     iter end();
     
-    volatile uint size() const;
+    uint size() const;
     
     
     Bitfield(uint length);
@@ -85,21 +85,21 @@ public:
     void insert(uint pos);
     bool find(uint pos);
     void init();
-    int next(uint pos);
+    int next(int pos = -1);
     void print_bitfield(unsigned long l);
     
 private:
     class iter : public std::iterator<std::output_iterator_tag, int>{
         public:
             explicit iter(Bitfield& _bitfield, uint index = 0);
-            int operator*() const;
+            int operator*();
             iter & operator++();
             iter & operator++(int);
             bool operator!=(const iter &) const;
-        private:
             uint num_index;
             int last_position;
             Bitfield &bitfield;
+            bool get_next;
     };
 };
 
