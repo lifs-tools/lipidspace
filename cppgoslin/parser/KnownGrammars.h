@@ -114,7 +114,7 @@ hg_mlcl : 'MLCL'; \n\
 hg_dlclc : hg_dlcl | hg_dlcl heavy_hg; \n\
 hg_dlcl : 'DLCL'; \n\
 hg_plc : hg_pl | hg_pl heavy_hg; \n\
-hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT'; \n\
+hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT', 'PE-NMe2' | 'PE-NMe'; \n\
 hg_pim : 'PIM' hg_pim_number; \n\
 hg_pim_number : number; \n\
 hg_pip : hg_pip_pure | hg_pip_pure hg_pip_m | hg_pip_pure hg_pip_d | hg_pip_pure hg_pip_t; \n\
@@ -123,7 +123,7 @@ hg_pip_m : '[3\\']' | '[4\\']' | '[5\\']'; \n\
 hg_pip_d : '2' | '2[3\\',4\\']' | '2[4\\',5\\']' | '2[3\\',5\\']'; \n\
 hg_pip_t : '3' | '3[3\\',4\\',5\\']'; \n\
 hg_tplc : hg_tpl | hg_tpl heavy_hg; \n\
-hg_tpl : 'SLBPA'; \n\
+hg_tpl : 'SLBPA' | 'NAPE'; \n\
 hg_lplc : hg_lpl | hg_lpl heavy_hg; \n\
 hg_lpl : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | hg_lpim | 'CPA'; \n\
 hg_lpim : 'LPIM' hg_lpim_number; \n\
@@ -172,7 +172,7 @@ mediator : '10-HDoHE' | '11-HDoHE' | '11-HETE' | '11,12-DHET' | '11(12)-EET'| '1
 saccharolipid : sac_di | sac_f; \n\
 sac_di : hg_sac_di_c headgroup_separator sac_species | hg_sac_di_c headgroup_separator sac_di_subspecies; \n\
 hg_sac_di_c : hg_sac_di | hg_sac_di heavy_hg; \n\
-hg_sac_di : 'DAT'; \n\
+hg_sac_di : 'DAT' | 'AC2SGL'; \n\
 sac_f : hg_sac_f_c headgroup_separator sac_species | hg_sac_f_c headgroup_separator sac_f_subspecies; \n\
 hg_sac_f_c : hg_sac_f | hg_sac_f heavy_hg; \n\
 hg_sac_f : 'PAT16' | 'PAT18'; \n\

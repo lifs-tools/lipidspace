@@ -24,6 +24,10 @@ GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<Li
     reg("hg_dgl_pre_event", set_head_group_name);
     reg("hg_sgl_pre_event", set_head_group_name);
     reg("hg_tgl_pre_event", set_head_group_name);
+    reg("hg_dlcl_pre_event", set_head_group_name);
+    reg("hg_sac_di_pre_event", set_head_group_name);
+    reg("hg_sac_f_pre_event", set_head_group_name);
+    reg("hg_tpl_pre_event", set_head_group_name);  
     
     reg("gl_species_pre_event", set_species_level);
     reg("pl_species_pre_event", set_species_level);
