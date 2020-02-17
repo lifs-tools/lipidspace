@@ -41,6 +41,7 @@ Parser<T>::~Parser(){
 
 template <class T>
 Parser<T>::Parser(BaseParserEventHandler<T> *_parserEventHandler, GrammarString grammar_string, char _quote){
+    
     quote = _quote;
     parser_event_handler = _parserEventHandler;
     
@@ -50,6 +51,7 @@ Parser<T>::Parser(BaseParserEventHandler<T> *_parserEventHandler, GrammarString 
 
 template <class T>
 Parser<T>::Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar_filename, char _quote){
+    
     quote = _quote;
     parser_event_handler = _parserEventHandler;
     
@@ -566,7 +568,7 @@ T Parser<T>::parse(string text_to_parse){
 template <class T>
 void Parser<T>::parse_regular(string text_to_parse){
     word_in_grammar = false;
-
+    
     int n = text_to_parse.length();
     // dp stands for dynamic programming, nothing else
     map<unsigned long, DPNode*> ***dp_table = new map<unsigned long, DPNode*>**[n];
@@ -600,7 +602,6 @@ void Parser<T>::parse_regular(string text_to_parse){
             Ks[i]->insert(0);
         }
     }
-    
     if (requirement_fulfilled){
         for (int i = 1; i < n; ++i){
             int im1 = i - 1;
@@ -628,9 +629,9 @@ void Parser<T>::parse_regular(string text_to_parse){
                         }
                     }
                 }
+                //if (Di->size() > 0) Ks[j]->insert(i);
             }
         }
-        
         
         for (int i = n - 1; i > 0; --i){
             if (dp_table[0][i]->find(START_RULE) != dp_table[0][i]->end()){

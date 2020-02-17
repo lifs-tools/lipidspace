@@ -15,12 +15,11 @@ int main(int argc, char** argv){
     try {
         LipidAdduct* lipid;
         string lipid_name;
+        
         GoslinParser goslin_parser;
         LipidParser lipid_parser;
         LipidMapsParser lipid_maps_parser;
         GoslinFragmentParser goslin_fragment_parser;
-        
-        
         
         // test bitfield
         srand(time(0));
@@ -92,35 +91,36 @@ int main(int argc, char** argv){
         assert (lipid->get_lipid_string() == "PE O-16:1p/12:0");
         delete lipid;
         
+        
         lipid_name = "PAT16 16:1/12:0/14:1/8:0";
-        lipid = lipid_parser.parse(lipid_name);
-        assert (lipid->fragment);
+        lipid = goslin_parser.parse(lipid_name);
+        assert (lipid);
         assert (lipid->get_lipid_string() == "PAT16 16:1/12:0/14:1/8:0");
         delete lipid;
         
         lipid_name = "SLBPA 16:1/12:0/14:1";
         lipid = lipid_parser.parse(lipid_name);
-        assert (lipid->fragment);
+        assert (lipid);
         assert (lipid->get_lipid_string() == "SLBPA 16:1/12:0/14:1");
         delete lipid;
         
         lipid_name = "MLCL 16:1/12:0/14:1";
         lipid = lipid_parser.parse(lipid_name);
-        assert (lipid->fragment);
+        assert (lipid);
         assert (lipid->get_lipid_string() == "MLCL 16:1/12:0/14:1");
         delete lipid;
         
         
         lipid_name = "DLCL 14:1/8:0";
         lipid = lipid_parser.parse(lipid_name);
-        assert (lipid->fragment);
+        assert (lipid);
         assert (lipid->get_lipid_string() == "DLCL 14:1/8:0");
         delete lipid;
         
         
         lipid_name = "PIP[3'] 17:0/20:4(5Z,8Z,11Z,14Z)";
         lipid = lipid_parser.parse(lipid_name);
-        assert (lipid->fragment);
+        assert (lipid);
         assert (lipid->get_lipid_string() == "PIP[3'] 17:0/20:4");
         delete lipid;
         

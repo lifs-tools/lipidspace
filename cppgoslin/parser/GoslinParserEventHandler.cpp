@@ -74,6 +74,7 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
 }
 
 
+
 void GoslinParserEventHandler::set_head_group_name(TreeNode *node) {
     head_group = node->get_text();
 }

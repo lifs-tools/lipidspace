@@ -13,7 +13,7 @@ enum LipidCategory {NO_CATEGORY,
     SP, // SLM:000000525 Sphingolipids
     ST, // SLM:000500463 Steroids and derivatives
     FA, // SLM:000390054 Fatty acyls and derivatives
-    SL // Saccharolipids
+    SL // Saccharo lipids
 };
 
 
@@ -136,7 +136,6 @@ static const ClassMap lipid_classes = {
 {CL, {GP, "Glycerophosphoglycerophosphoglycerols [GP12]", {"CL"} } },
 {MLCL, {GP, "Glycerophosphoglycerophosphoglycerols [GP12]", {"MLCL"} } },
 {DLCL, {GP, "Glycerophosphoglycerophosphoglycerols [GP12]", {"DLCL"} } },
-{PA, {GP, "Glycerophosphates [GP10]", {"PA"} } },
 {LPA, {GP, "Glycerophosphates [GP10]", {"LPA"} } },
 {PC, {GP, "Glycerophosphocholines [GP01]", {"PC"} } },
 {LPC, {GP, "Glycerophosphocholines [GP01]", {"LPC", "LysoPC"} } },
@@ -146,6 +145,7 @@ static const ClassMap lipid_classes = {
 {PG, {GP, "Glycerophosphoglycerols [GP04]", {"PG"} } },
 {LPG, {GP, "Glycerophosphoglycerols [GP04]", {"LPG"} } },
 {PGP, {GP, "Glycerophosphoglycerophosphates [GP05]", {"PGP"} } },
+{PA, {GP, "Glycerophosphates [GP10]", {"PA"} } },
 {PI, {GP, "Glycerophosphoinositols [GP06]", {"PI"} } },
 {LPI, {GP, "Glycerophosphoinositols [GP06]", {"LPI"} } },
 {PIP, {GP, "Glycerophosphoinositol monophosphates [GP07]", {"PIP"} } },
