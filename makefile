@@ -10,8 +10,14 @@ obj = ${domain} ${parser}
 opt = -std=c++11 -O3
 
 
-main: ${obj}
+main: grammarWriter ${obj}
 	${CC} -shared ${obj} -o ${bin}
+	
+	
+
+grammarWriter:
+	${CC} ${opt} -o writeGrammersHeader writeGrammersHeader.cpp
+	./writeGrammersHeader "cppgoslin/parser/KnownGrammars.h"
 	
 	
 %.o: %.cpp
@@ -23,6 +29,7 @@ clean:
 	rm -f ${bin}
 	rm -f MolecularFattyAcidTest
 	rm -f ParserTest
+	rm -f writeGrammersHeader
 	
 dist-clean: clean
 	rm -f ${install_dir}/lib/${bin}

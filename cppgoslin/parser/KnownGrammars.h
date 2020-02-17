@@ -3,16 +3,44 @@
 
 #include <string>
 #include "cppgoslin/parser/Parser.h"
-
 using namespace std;
-
-static const string goslin_grammar = " \n\
+static const string goslin_grammar = "/* \n\
+ * MIT License \n\
+ *  \n\
+ * Copyright (c) 2017 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de \n\
+ *                    Bing Peng   -   bing.peng {at} isas.de \n\
+ *                    Nils Hoffmann  -  nils.hoffmann {at} isas.de \n\
+ * \n\
+ * Permission is hereby granted, free of charge, to any person obtaining a copy \n\
+ * of this software and associated documentation files (the 'Software'), to deal \n\
+ * in the Software without restriction, including without limitation the rights \n\
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell \n\
+ * copies of the Software, and to permit persons to whom the Software is \n\
+ * furnished to do so, subject to the following conditions:; \n\
+ *  \n\
+ * The above copyright notice and this permission notice shall be included in all \n\
+ * copies or substantial portions of the Software. \n\
+ *  \n\
+ * THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR \n\
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, \n\
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE \n\
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER \n\
+ * LIABILITY, WHether IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, \n\
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE \n\
+ * SOFTWARE. \n\
+*/ \n\
+ \n\
+/* This is a BNF / ANTLR4 grammar for lipid subspecies identifiers following \n\
+ * J.K. Pauling et al. 2017, PLoS One, 12(11):e0188394. \n\
+ */ \n\
+ \n\
 grammar Goslin; \n\
+ \n\
  \n\
 /* first rule is always start rule */ \n\
 lipid : lipid_eof EOF; \n\
 lipid_eof : lipid_pure | lipid_pure adduct_info; \n\
-lipid_pure : gl | pl | sl | cholesterol | mediatorc; \n\
+lipid_pure : gl | pl | sl | cholesterol | mediatorc | saccharolipid; \n\
  \n\
  \n\
 /* adduct information */ \n\
@@ -32,8 +60,9 @@ fa4 : fa4_unsorted | fa4_sorted; \n\
 fa4_unsorted: fa DASH fa DASH fa DASH fa | fa UNDERSCORE fa UNDERSCORE fa UNDERSCORE fa; \n\
 fa4_sorted: fa SLASH fa SLASH fa SLASH fa | fa BACKSLASH fa BACKSLASH fa BACKSLASH fa; \n\
  \n\
-/* glycerolipid rules */ \n\
-gl : mgl | dgl | sgl | tgl; \n\
+/* glycerolipid rules (7 classes) */ \n\
+gl : sqml | mgl | dgl | sgl | tgl; \n\
+sqml : hg_sqml_full headgroup_separator fa; \n\
 mgl : hg_mgl_full headgroup_separator fa; \n\
 dgl : hg_dgl_full headgroup_separator gl_species | hg_dgl_full headgroup_separator dgl_subspecies; \n\
 sgl : hg_sgl_full headgroup_separator gl_species | hg_sgl_full headgroup_separator dgl_subspecies; \n\
@@ -42,11 +71,13 @@ gl_species : fa; \n\
 dgl_subspecies : fa2; \n\
 tgl_subspecies : fa3; \n\
  \n\
+hg_sqml_full : hg_sqml | hg_mgl heavy_hg; \n\
 hg_mgl_full : hg_mgl | hg_mgl heavy_hg; \n\
 hg_dgl_full : hg_dgl | hg_dgl heavy_hg; \n\
 hg_sgl_full : hg_sgl | hg_sgl heavy_hg; \n\
 hg_tgl_full : hg_tgl | hg_tgl heavy_hg; \n\
  \n\
+hg_sqml : 'SQMG'; \n\
 hg_mgl : 'MAG'; \n\
 hg_dgl : 'DAG'; \n\
 hg_sgl : 'MGDG' | 'DGDG' | 'SQDG'; \n\
@@ -54,31 +85,49 @@ hg_tgl : 'TAG'; \n\
  \n\
  \n\
  \n\
-/* phospholipid rules */ \n\
-pl : lpl | dpl | pl_o | cl | mlcl; \n\
+/* phospholipid rules (56 classes) */ \n\
+pl : lpl | dpl | tpl | pl_o | cl | mlcl | dlcl; \n\
 pl_o : lpl_o | dpl_o; \n\
 lpl : hg_lplc headgroup_separator fa; \n\
 lpl_o : hg_lpl_oc plasmalogen_separator fa; \n\
 dpl : hg_plc headgroup_separator pl_species | hg_plc headgroup_separator pl_subspecies; \n\
+tpl : hg_tplc headgroup_separator pl_species | hg_tplc headgroup_separator tpl_subspecies; \n\
 dpl_o : hg_pl_oc plasmalogen_separator pl_species | hg_pl_oc plasmalogen_separator pl_subspecies; \n\
+dlcl : hg_dlclc headgroup_separator pl_species | hg_dlclc headgroup_separator dlcl_subspecies; \n\
 mlcl : hg_mlclc headgroup_separator pl_species | hg_mlclc headgroup_separator mlcl_subspecies; \n\
 cl : hg_clc headgroup_separator pl_species | hg_clc headgroup_separator cl_subspecies; \n\
  \n\
 pl_species : fa; \n\
 pl_subspecies : fa2; \n\
+tpl_subspecies : fa3; \n\
+dlcl_subspecies : fa2; \n\
 mlcl_subspecies : fa3; \n\
 cl_subspecies : fa4; \n\
  \n\
 heavy_hg : heavy; \n\
  \n\
+ \n\
 hg_clc : hg_cl | hg_cl heavy_hg; \n\
 hg_cl : 'CL'; \n\
 hg_mlclc : hg_mlcl | hg_mlcl heavy_hg; \n\
 hg_mlcl : 'MLCL'; \n\
+hg_dlclc : hg_dlcl | hg_dlcl heavy_hg; \n\
+hg_dlcl : 'DLCL'; \n\
 hg_plc : hg_pl | hg_pl heavy_hg; \n\
-hg_pl : 'BMP' | 'CDPDAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | 'PIP' | 'PIP2' | 'PIP3' | 'PS'; \n\
+hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT'; \n\
+hg_pim : 'PIM' hg_pim_number; \n\
+hg_pim_number : number; \n\
+hg_pip : hg_pip_pure | hg_pip_pure hg_pip_m | hg_pip_pure hg_pip_d | hg_pip_pure hg_pip_t; \n\
+hg_pip_pure : 'PIP'; \n\
+hg_pip_m : '[3\\']' | '[4\\']' | '[5\\']'; \n\
+hg_pip_d : '2' | '2[3\\',4\\']' | '2[4\\',5\\']' | '2[3\\',5\\']'; \n\
+hg_pip_t : '3' | '3[3\\',4\\',5\\']'; \n\
+hg_tplc : hg_tpl | hg_tpl heavy_hg; \n\
+hg_tpl : 'SLBPA'; \n\
 hg_lplc : hg_lpl | hg_lpl heavy_hg; \n\
-hg_lpl : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS'; \n\
+hg_lpl : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | hg_lpim | 'CPA'; \n\
+hg_lpim : 'LPIM' hg_lpim_number; \n\
+hg_lpim_number : number; \n\
 hg_lpl_oc : hg_lpl_o ' O' | hg_lpl_o heavy_hg ' O'; \n\
 hg_lpl_o : 'LPC' | 'LPE'; \n\
 hg_pl_oc : hg_pl_o ' O' | hg_pl_o heavy_hg ' O'; \n\
@@ -86,7 +135,7 @@ hg_pl_o : 'PC' | 'PE'; \n\
  \n\
  \n\
  \n\
-/* sphingolipid rules */ \n\
+/* sphingolipid rules (21) */ \n\
 sl : lsl | dsl; \n\
 lsl : hg_lslc headgroup_separator lcb; \n\
 dsl : hg_dslc headgroup_separator sl_species | hg_dslc headgroup_separator sl_subspecies; \n\
@@ -97,11 +146,13 @@ sl_subspecies : lcb sorted_fa_separator fa; \n\
 hg_lslc : hg_lsl | hg_lsl heavy_hg; \n\
 hg_lsl : 'LCB' | 'LCBP' | 'LHexCer' | 'LSM'; \n\
 hg_dslc : hg_dsl | hg_dsl heavy_hg; \n\
-hg_dsl : 'Cer' | 'CerP' | 'EPC' | 'GB3' | 'GB4' | 'GD3' | 'GM3' | 'GM4' | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SM'; \n\
+hg_dsl : 'Cer' | 'CerP' | 'EPC' | 'GB4' | 'GD3' | 'GM3' | 'GM4' | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SM' | 'FMC-5' | 'FMC-6' ; \n\
  \n\
  \n\
  \n\
-/* cholesterol lipids */ \n\
+ \n\
+ \n\
+/* cholesterol lipids (2 classes) */ \n\
 cholesterol : chc | che; \n\
 chc : ch | ch heavy_hg; \n\
 ch : 'Ch' | 'Cholesterol'; \n\
@@ -110,9 +161,25 @@ hg_chec : hg_che | hg_che heavy_hg; \n\
 hg_che : 'ChE' | 'CE'; \n\
  \n\
  \n\
-/* mediator lipids */ \n\
+/* mediator lipids (1 class) */ \n\
 mediatorc : mediator | mediator heavy_hg; \n\
 mediator : '10-HDoHE' | '11-HDoHE' | '11-HETE' | '11,12-DHET' | '11(12)-EET'| '12-HEPE' | '12-HETE' | '12-HHTrE' | '12-OxoETE' | '12(13)-EpOME' | '13-HODE' | '13-HOTrE' | '14,15-DHET' | '14(15)-EET' | '14(15)-EpETE' | '15-HEPE' | '15-HETE' | '15d-PGJ2' | '16-HDoHE' | '16-HETE' | '18-HEPE' | '5-HEPE' | '5-HETE' | '5-HpETE' | '5-OxoETE' | '5,12-DiHETE' | '5,6-DiHETE' | '5,6,15-LXA4' | '5(6)-EET' | '8-HDoHE' | '8-HETE' | '8,9-DHET' | '8(9)-EET' | '9-HEPE' | '9-HETE' | '9-HODE' | '9-HOTrE' | '9(10)-EpOME' | 'AA' | 'alpha-LA' | 'DHA' | 'EPA' | 'Linoleic acid' | 'LTB4' | 'LTC4' | 'LTD4' | 'Maresin 1' | 'Palmitic acid' | 'PGB2' | 'PGD2' | 'PGE2' | 'PGF2alpha' | 'PGI2' | 'Resolvin D1' | 'Resolvin D2' | 'Resolvin D3' | 'Resolvin D5' | 'tetranor-12-HETE' | 'TXB1' | 'TXB2' | 'TXB3'; \n\
+ \n\
+ \n\
+ \n\
+ \n\
+/* saccharolipids rules (3 classes) */ \n\
+saccharolipid : sac_di | sac_f; \n\
+sac_di : hg_sac_di_c headgroup_separator sac_species | hg_sac_di_c headgroup_separator sac_di_subspecies; \n\
+hg_sac_di_c : hg_sac_di | hg_sac_di heavy_hg; \n\
+hg_sac_di : 'DAT'; \n\
+sac_f : hg_sac_f_c headgroup_separator sac_species | hg_sac_f_c headgroup_separator sac_f_subspecies; \n\
+hg_sac_f_c : hg_sac_f | hg_sac_f heavy_hg; \n\
+hg_sac_f : 'PAT16' | 'PAT18'; \n\
+ \n\
+sac_species : fa; \n\
+sac_di_subspecies : fa2; \n\
+sac_f_subspecies : fa4; \n\
  \n\
  \n\
  \n\
@@ -173,24 +240,53 @@ round_close_bracket : RCB; \n\
 character : 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' |'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'; \n\
 charge : '1' | '2' | '3' | '4'; \n\
 charge_sign : '-' | '+'; \n\
-\n\
+ \n\
 ";
-
-
-
-
-
-
 
 
 
 static const string goslin_fragment_grammar = "/* \n\
+ * MIT License \n\
+ *  \n\
+ * Copyright (c) 2017 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de \n\
+ *                    Bing Peng   -   bing.peng {at} isas.de \n\
+ *                    Nils Hoffmann  -  nils.hoffmann {at} isas.de \n\
+ * \n\
+ * Permission is hereby granted, free of charge, to any person obtaining a copy \n\
+ * of this software and associated documentation files (the 'Software'), to deal \n\
+ * in the Software without restriction, including without limitation the rights \n\
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell \n\
+ * copies of the Software, and to permit persons to whom the Software is \n\
+ * furnished to do so, subject to the following conditions:; \n\
+ *  \n\
+ * The above copyright notice and this permission notice shall be included in all \n\
+ * copies or substantial portions of the Software. \n\
+ *  \n\
+ * THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR \n\
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, \n\
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE \n\
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER \n\
+ * LIABILITY, WHether IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, \n\
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE \n\
+ * SOFTWARE. \n\
+*/ \n\
+ \n\
+/* This is a BNF / ANTLR4 grammar for lipid subspecies identifiers following \n\
+ * J.K. Pauling et al. 2017, PLoS One, 12(11):e0188394. \n\
+ */ \n\
+ \n\
 grammar GoslinFragments; \n\
  \n\
 /* first rule is always start rule */ \n\
-lipid : just_lipid; \n\
+lipid : lipid_eof EOF; \n\
+lipid_eof : just_lipid | just_lipid FRAGMENT_SEPARATOR fragment_name; \n\
 just_lipid : lipid_pure | lipid_pure adduct_info; \n\
-lipid_pure : gl | pl | sl | cholesterol | mediatorc; \n\
+lipid_pure : gl | pl | sl | cholesterol | mediatorc | saccharolipid; \n\
+ \n\
+/* rules for fragments */ \n\
+fragment_name : frag_char; \n\
+frag_char : frag_char frag_char | character | sign; \n\
+sign : '-' | '+' | ' ' | ',' | '(' | ')' | '[' | ']' | ':' | '*' | ';'; \n\
  \n\
 /* adduct information */ \n\
 adduct_info : '[M' adduct ']' charge charge_sign | adduct_separator '[M' adduct ']' charge charge_sign; \n\
@@ -210,7 +306,8 @@ fa4_unsorted: fa DASH fa DASH fa DASH fa | fa UNDERSCORE fa UNDERSCORE fa UNDERS
 fa4_sorted: fa SLASH fa SLASH fa SLASH fa | fa BACKSLASH fa BACKSLASH fa BACKSLASH fa; \n\
  \n\
 /* glycerolipid rules */ \n\
-gl : mgl | dgl | sgl | tgl; \n\
+gl : sqml | mgl | dgl | sgl | tgl; \n\
+sqml : hg_sqml_full headgroup_separator fa; \n\
 mgl : hg_mgl_full headgroup_separator fa; \n\
 dgl : hg_dgl_full headgroup_separator gl_species | hg_dgl_full headgroup_separator dgl_subspecies; \n\
 sgl : hg_sgl_full headgroup_separator gl_species | hg_sgl_full headgroup_separator dgl_subspecies; \n\
@@ -219,11 +316,13 @@ gl_species : fa; \n\
 dgl_subspecies : fa2; \n\
 tgl_subspecies : fa3; \n\
  \n\
+hg_sqml_full : hg_sqml | hg_mgl heavy_hg; \n\
 hg_mgl_full : hg_mgl | hg_mgl heavy_hg; \n\
 hg_dgl_full : hg_dgl | hg_dgl heavy_hg; \n\
 hg_sgl_full : hg_sgl | hg_sgl heavy_hg; \n\
 hg_tgl_full : hg_tgl | hg_tgl heavy_hg; \n\
  \n\
+hg_sqml : 'SQMG'; \n\
 hg_mgl : 'MAG'; \n\
 hg_dgl : 'DAG'; \n\
 hg_sgl : 'MGDG' | 'DGDG' | 'SQDG'; \n\
@@ -232,30 +331,49 @@ hg_tgl : 'TAG'; \n\
  \n\
  \n\
 /* phospholipid rules */ \n\
-pl : lpl | dpl | pl_o | cl | mlcl; \n\
+pl : lpl | dpl | tpl | pl_o | cl | mlcl | dlcl; \n\
 pl_o : lpl_o | dpl_o; \n\
 lpl : hg_lplc headgroup_separator fa; \n\
 lpl_o : hg_lpl_oc plasmalogen_separator fa; \n\
 dpl : hg_plc headgroup_separator pl_species | hg_plc headgroup_separator pl_subspecies; \n\
+tpl : hg_tplc headgroup_separator pl_species | hg_tplc headgroup_separator tpl_subspecies; \n\
 dpl_o : hg_pl_oc plasmalogen_separator pl_species | hg_pl_oc plasmalogen_separator pl_subspecies; \n\
+dlcl : hg_dlclc headgroup_separator pl_species | hg_dlclc headgroup_separator dlcl_subspecies; \n\
 mlcl : hg_mlclc headgroup_separator pl_species | hg_mlclc headgroup_separator mlcl_subspecies; \n\
 cl : hg_clc headgroup_separator pl_species | hg_clc headgroup_separator cl_subspecies; \n\
  \n\
 pl_species : fa; \n\
 pl_subspecies : fa2; \n\
+tpl_subspecies : fa3; \n\
+dlcl_subspecies : fa2; \n\
 mlcl_subspecies : fa3; \n\
 cl_subspecies : fa4; \n\
  \n\
 heavy_hg : heavy; \n\
  \n\
+ \n\
+ \n\
 hg_clc : hg_cl | hg_cl heavy_hg; \n\
 hg_cl : 'CL'; \n\
 hg_mlclc : hg_mlcl | hg_mlcl heavy_hg; \n\
 hg_mlcl : 'MLCL'; \n\
+hg_dlclc : hg_dlcl | hg_dlcl heavy_hg; \n\
+hg_dlcl : 'DLCL'; \n\
 hg_plc : hg_pl | hg_pl heavy_hg; \n\
-hg_pl : 'BMP' | 'CDPDAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | 'PIP' | 'PIP2' | 'PIP3' | 'PS'; \n\
+hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT'; \n\
+hg_pim : 'PIM' hg_pim_number; \n\
+hg_pim_number : number; \n\
+hg_pip : hg_pip_pure | hg_pip_pure hg_pip_m | hg_pip_pure hg_pip_d | hg_pip_pure hg_pip_t; \n\
+hg_pip_pure : 'PIP'; \n\
+hg_pip_m : '[3\\']' | '[4\\']' | '[5\\']'; \n\
+hg_pip_d : '2' | '2[3\\',4\\']' | '2[4\\',5\\']' | '2[3\\',5\\']'; \n\
+hg_pip_t : '3' | '3[3\\',4\\',5\\']'; \n\
+hg_tplc : hg_tpl | hg_tpl heavy_hg; \n\
+hg_tpl : 'SLBPA'; \n\
 hg_lplc : hg_lpl | hg_lpl heavy_hg; \n\
-hg_lpl : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS'; \n\
+hg_lpl : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | hg_lpim | 'CPA'; \n\
+hg_lpim : 'LPIM' hg_lpim_number; \n\
+hg_lpim_number : number; \n\
 hg_lpl_oc : hg_lpl_o ' O' | hg_lpl_o heavy_hg ' O'; \n\
 hg_lpl_o : 'LPC' | 'LPE'; \n\
 hg_pl_oc : hg_pl_o ' O' | hg_pl_o heavy_hg ' O'; \n\
@@ -274,7 +392,7 @@ sl_subspecies : lcb sorted_fa_separator fa; \n\
 hg_lslc : hg_lsl | hg_lsl heavy_hg; \n\
 hg_lsl : 'LCB' | 'LCBP' | 'LHexCer' | 'LSM'; \n\
 hg_dslc : hg_dsl | hg_dsl heavy_hg; \n\
-hg_dsl : 'Cer' | 'CerP' | 'EPC' | 'GB3' | 'GB4' | 'GD3' | 'GM3' | 'GM4' | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SM'; \n\
+hg_dsl : 'Cer' | 'CerP' | 'EPC' | 'GB4' | 'GD3' | 'GM3' | 'GM4' | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SM' | 'FMC-5' | 'FMC-6' ; \n\
  \n\
  \n\
  \n\
@@ -290,6 +408,22 @@ hg_che : 'ChE' | 'CE'; \n\
 /* mediator lipids */ \n\
 mediatorc : mediator | mediator heavy_hg; \n\
 mediator : '10-HDoHE' | '11-HDoHE' | '11-HETE' | '11,12-DHET' | '11(12)-EET'| '12-HEPE' | '12-HETE' | '12-HHTrE' | '12-OxoETE' | '12(13)-EpOME' | '13-HODE' | '13-HOTrE' | '14,15-DHET' | '14(15)-EET' | '14(15)-EpETE' | '15-HEPE' | '15-HETE' | '15d-PGJ2' | '16-HDoHE' | '16-HETE' | '18-HEPE' | '5-HEPE' | '5-HETE' | '5-HpETE' | '5-OxoETE' | '5,12-DiHETE' | '5,6-DiHETE' | '5,6,15-LXA4' | '5(6)-EET' | '8-HDoHE' | '8-HETE' | '8,9-DHET' | '8(9)-EET' | '9-HEPE' | '9-HETE' | '9-HODE' | '9-HOTrE' | '9(10)-EpOME' | 'AA' | 'alpha-LA' | 'DHA' | 'EPA' | 'Linoleic acid' | 'LTB4' | 'LTC4' | 'LTD4' | 'Maresin 1' | 'Palmitic acid' | 'PGB2' | 'PGD2' | 'PGE2' | 'PGF2alpha' | 'PGI2' | 'Resolvin D1' | 'Resolvin D2' | 'Resolvin D3' | 'Resolvin D5' | 'tetranor-12-HETE' | 'TXB1' | 'TXB2' | 'TXB3'; \n\
+ \n\
+ \n\
+ \n\
+ \n\
+/* saccharolipids rules */ \n\
+saccharolipid : sac_di | sac_f; \n\
+sac_di : hg_sac_di_c headgroup_separator sac_species | hg_sac_di_c headgroup_separator sac_di_subspecies; \n\
+hg_sac_di_c : hg_sac_di | hg_sac_di heavy_hg; \n\
+hg_sac_di : 'DAT'; \n\
+sac_f : hg_sac_f_c headgroup_separator sac_species | hg_sac_f_c headgroup_separator sac_f_subspecies; \n\
+hg_sac_f_c : hg_sac_f | hg_sac_f heavy_hg; \n\
+hg_sac_f : 'PAT16' | 'PAT18'; \n\
+ \n\
+sac_species : fa; \n\
+sac_di_subspecies : fa2; \n\
+sac_f_subspecies : fa4; \n\
  \n\
  \n\
  \n\
@@ -350,19 +484,39 @@ round_close_bracket : RCB; \n\
 character : 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' |'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'; \n\
 charge : '1' | '2' | '3' | '4'; \n\
 charge_sign : '-' | '+'; \n\
-sign : '-' | '+' | ' ' | ',' | '(' | ')' | '[' | ']' | ':' | '*' | ';'; \n\
- \n\
 ";
 
 
 
-
-
-
-
-
-
-static const string lipid_maps_grammar = " \n\
+static const string lipid_maps_grammar = "//////////////////////////////////////////////////////////////////////////////// \n\
+// MIT License \n\
+//  \n\
+// Copyright (c) 2017 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de \n\
+//                    Bing Peng   -   bing.peng {at} isas.de \n\
+//                    Nils Hoffmann  -  nils.hoffmann {at} isas.de \n\
+// \n\
+// Permission is hereby granted, free of charge, to any person obtaining a copy \n\
+// of this software and associated documentation files (the 'Software'), to deal \n\
+// in the Software without restriction, including without limitation the rights \n\
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell \n\
+// copies of the Software, and to permit persons to whom the Software is \n\
+// furnished to do so, subject to the following conditions: \n\
+//  \n\
+// The above copyright notice and this permission notice shall be included in all \n\
+// copies or substantial portions of the Software. \n\
+//  \n\
+// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR \n\
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, \n\
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE \n\
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER \n\
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, \n\
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE \n\
+// SOFTWARE. \n\
+//////////////////////////////////////////////////////////////////////////////// \n\
+ \n\
+//// This is a BNF grammer for lipid subspecies identifiers followed by \n\
+//// J.K. Pauling et al. 2017, PLoS One, 12(11):e0188394.  \n\
+ \n\
 grammar LipidMaps; \n\
  \n\
 /* first rule is always start rule */ \n\
@@ -523,7 +677,9 @@ round_open_bracket: ROB; \n\
 round_close_bracket: RCB; \n\
 square_open_bracket: SOB; \n\
 square_close_bracket: SCB; \n\
+ \n\
 ";
+
 
 
 #endif /* KNOWN_GRAMMARS_H */
