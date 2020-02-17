@@ -124,10 +124,6 @@ int main(int argc, char** argv){
         assert (lipid->get_lipid_string() == "PIP[3'] 17:0/20:4");
         delete lipid;
         
-        
-        
-        
-        
         lipid_name = "PIMIP 12:0/14:1";
         lipid = lipid_parser.parse(lipid_name);
         assert (lipid);
