@@ -127,6 +127,36 @@ int main(int argc, char** argv){
         
         
         
+        
+        lipid_name = "PIMIP 12:0/14:1";
+        lipid = lipid_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "PIMIP 12:0/14:1");
+        delete lipid;
+        
+        lipid_name = "LCDPDAG 14:1";
+        lipid = lipid_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "LCDPDAG 14:1");
+        delete lipid;
+        
+        
+        lipid_name = "CPA 8:0";
+        lipid = lipid_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "CPA 8:0");
+        delete lipid;
+        
+        
+        lipid_name = "LPIN 20:4(5Z,8Z,11Z,14Z)";
+        lipid = lipid_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "LPIN 20:4");
+        delete lipid;
+        
+        
+        
+        
         // testing lipid maps parser
         vector< vector<string> > lmp_data{{"PA(16:1/12:0)", "PA 16:1/12:0"},{"PA(4:0/12:0)", "PA 4:0/12:0"},
                            {"PC(O-14:0/0:0)", "LPC O-14:0a"},

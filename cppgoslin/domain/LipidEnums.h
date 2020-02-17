@@ -51,7 +51,7 @@ struct LipidClassMeta {
 
 
 
-enum LipidClass {NO_CLASS, UNDEFINED_CLASS, FA1 , FA2 , FA3 , FA4 , FA5 , FA6 , FA7 , FA8 , FA9 , FA10 , FA11 , FA12 , FA13 , FA14 , FA15 , FA16 , FA17 , FA18 , FA19 , FA20 , FA21 , FA22 , FA23 , FA24 , FA25 , FA26 , FA27 , FA28 , FA29 , FA30 , FA31 , FA32 , FA33 , FA34 , FA35 , FA36 , FA37 , FA38 , FA39 , FA40 , FA41 , FA42 , FA43 , FA44 , FA45 , FA46 , FA47 , FA48 , FA49 , FA50 , FA51 , FA52 , FA53 , FA54 , FA55 , FA56 , FA57 , FA58 , FA59 , FA60 , FA61 , FA62 , MG , DG , TG , MGDG , DGDG , SQMG , SQDG , BMP , CDPDAG , CL , MLCL , PA , LPA , PC , LPC , PE , PET , LPE , PG , LPG , PGP , PI , LPI , PIP , PIP_3p , PIP_4p , PIP_5p , PIP2 , PIP2_3p_4p , PIP2_3p_5p , PIP3 , PIP3_3p_4p_5p , PS , LPS , PIM1 , PIM2 , PIM3 , PIM4 , PIM5 , PIM6 , GLCDG , PENME2 , AC2SGL , DAT , PENME , PT , GLCGP , NAPE , LPIM1 , LPIM2 , LPIM3 , LPIM4 , LPIM5 , LPIM6 , CPA , CER , CERP , C1P , SM , HEXCER , HEX2CER , HEX3CER , FMC5 , FMC6 , LACCER , SHEXCER , LCB , LCBP , LHexCer , EPC , GB4 , GD3 , GM3 , GM4 , IPC , LSM , MIP2C , MIPC , STT , SE , CH , CHE , PAT16 , PAT18, SLBPA, LBPA, PPA, GL_6_AC_GlC_GP, PNC, PNE, DLCL};
+enum LipidClass {NO_CLASS, UNDEFINED_CLASS, FA1 , FA2 , FA3 , FA4 , FA5 , FA6 , FA7 , FA8 , FA9 , FA10 , FA11 , FA12 , FA13 , FA14 , FA15 , FA16 , FA17 , FA18 , FA19 , FA20 , FA21 , FA22 , FA23 , FA24 , FA25 , FA26 , FA27 , FA28 , FA29 , FA30 , FA31 , FA32 , FA33 , FA34 , FA35 , FA36 , FA37 , FA38 , FA39 , FA40 , FA41 , FA42 , FA43 , FA44 , FA45 , FA46 , FA47 , FA48 , FA49 , FA50 , FA51 , FA52 , FA53 , FA54 , FA55 , FA56 , FA57 , FA58 , FA59 , FA60 , FA61 , FA62 , MG , DG , TG , MGDG , DGDG , SQMG , SQDG , BMP , CDPDAG , CL , MLCL , PA , LPA , PC , LPC , PE , PET , LPE , PG , LPG , PGP , PI , LPI , PIP , PIP_3p , PIP_4p , PIP_5p , PIP2 , PIP2_3p_4p , PIP2_3p_5p , PIP3 , PIP3_3p_4p_5p , PS , LPS , PIM1 , PIM2 , PIM3 , PIM4 , PIM5 , PIM6 , GLCDG , PENME2 , AC2SGL , DAT , PENME , PT , GLCGP , NAPE , LPIM1 , LPIM2 , LPIM3 , LPIM4 , LPIM5 , LPIM6 , CPA , CER , CERP , C1P , SM , HEXCER , HEX2CER , HEX3CER , FMC5 , FMC6 , LACCER , SHEXCER , LCB , LCBP , LHexCer , EPC , GB4 , GD3 , GM3 , GM4 , IPC , LSM , MIP2C , MIPC , STT , SE , CH , CHE , PAT16 , PAT18, SLBPA, PPA, GL_6_AC_GlC_GP, PNC, PNE, DLCL, LCDPDAG, LDMPE, LMMPE, LPIMIP, LPIN, PIMIP, DMPE};
 
 
 
@@ -165,7 +165,6 @@ static const ClassMap lipid_classes = {
 {PIM4, {GP, "Glycerophosphoinositolglycans [GP15]", {"PIM4"} } },
 {PIM5, {GP, "Glycerophosphoinositolglycans [GP15]", {"PIM5"} } },
 {PIM6, {GP, "Glycerophosphoinositolglycans [GP15]", {"PIM6"} } },
-{LBPA, {GP, "Glycerophosphoglycerols [GP04]", {"LBPA"} } },
 {PPA, {GP, "Glyceropyrophosphates [GP11]", {"PPA"} } },
 {GL_6_AC_GlC_GP, {GP, "Glycosylglycerophospholipids [GP14]", {"6-Ac-Glc-GP"} } },
 {PNC, {GP, "Glycerophosphonocholines [GP16]", {"PnC"} } },
@@ -214,7 +213,14 @@ static const ClassMap lipid_classes = {
 {AC2SGL, {SL, "Acyltrehaloses [SL03]", {"AC2SGL"} } },
 {PAT16, {SL, "Acyltrehaloses [SL03]", {"PAT16"} } },
 {PAT18, {SL, "Acyltrehaloses [SL03]", {"PAT18"} } },
-{DAT, {SL, "Acyltrehaloses [SL03]", {"DAT"} } }
+{DAT, {SL, "Acyltrehaloses [SL03]", {"DAT"} } },
+{DMPE, {GP, "Dimethylphosphatidylethanolamine", {"DMPE"} } },
+{PIMIP, {GP, "Phosphatidylinositol mannoside inositol phosphate", {"PIMIP"} } },
+{LCDPDAG, {GP, "Lyso-CDP-diacylglycerol", {"LCDPDAG"} } },
+{LDMPE, {GP, "Lysodimethylphosphatidylethanolamine", {"LDMPE"} } },
+{LMMPE, {GP, "Lysomonomethylphosphatidylethanolamine", {"LMMPE"} } },
+{LPIMIP, {GP, "Lysophosphatidylinositol- mannosideinositolphosphate", {"LPIMIP"} } },
+{LPIN, {GP, "Lysophosphatidylinositol-glucosamine", {"LPIN"} } }
 };
 
 
