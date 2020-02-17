@@ -48,7 +48,7 @@ public:
     void add_adduct(TreeNode *node);
     void add_charge(TreeNode *node);
     void add_charge_sign(TreeNode *node);
-    void add_fragment(TreeNode *node);
+    void add_fragment_name(TreeNode *node);
 };
 
 

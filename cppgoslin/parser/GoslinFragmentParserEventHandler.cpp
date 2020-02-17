@@ -56,6 +56,8 @@ GoslinFragmentParserEventHandler::GoslinFragmentParserEventHandler() : BaseParse
     reg("adduct_pre_event", add_adduct);
     reg("charge_pre_event", add_charge);
     reg("charge_sign_pre_event", add_charge_sign);
+    
+    reg("fragment_name_pre_event", add_fragment_name);
 }
 
 
@@ -83,6 +85,11 @@ void GoslinFragmentParserEventHandler::set_head_group_name(TreeNode *node) {
 
 void GoslinFragmentParserEventHandler::set_species_level(TreeNode *node) {
     level = SPECIES;
+}
+
+
+void GoslinFragmentParserEventHandler::add_fragment_name(TreeNode *node) {
+    fragment = new Fragment(node->get_text());
 }
     
     
@@ -156,6 +163,8 @@ void GoslinFragmentParserEventHandler::append_fa(TreeNode *node) {
 void GoslinFragmentParserEventHandler::build_lipid(TreeNode *node) {
     BaseParserEventHandler<LipidAdduct*>::content = NULL;
     lipid = NULL;
+    
+    /*
     string parsed_string = node->get_text();
     if (parsed_string.length() < parse_string.length()){
         string rest_string = parse_string.substr(parsed_string.length(), parse_string.length() - parsed_string.length());
@@ -173,7 +182,7 @@ void GoslinFragmentParserEventHandler::build_lipid(TreeNode *node) {
             return;
         }
     }
-    
+    */
     
     if (lcb){
         for (auto& fa : *fa_list) fa->position += 1;

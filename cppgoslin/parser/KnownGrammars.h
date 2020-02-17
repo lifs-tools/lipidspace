@@ -114,7 +114,7 @@ hg_mlcl : 'MLCL'; \n\
 hg_dlclc : hg_dlcl | hg_dlcl heavy_hg; \n\
 hg_dlcl : 'DLCL'; \n\
 hg_plc : hg_pl | hg_pl heavy_hg; \n\
-hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | 'PGP' | hg_pip | 'PS' | 'LBPA' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT' | 'PE-NMe2' | 'PE-NMe' | 'PAT16' | 'PA'; \n\
+hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT' | 'PE-NMe2' | 'PE-NMe'; \n\
 hg_pim : 'PIM' hg_pim_number; \n\
 hg_pim_number : number; \n\
 hg_pip : hg_pip_pure | hg_pip_pure hg_pip_m | hg_pip_pure hg_pip_d | hg_pip_pure hg_pip_t; \n\
@@ -131,7 +131,7 @@ hg_lpim_number : number; \n\
 hg_lpl_oc : hg_lpl_o ' O' | hg_lpl_o heavy_hg ' O'; \n\
 hg_lpl_o : 'LPC' | 'LPE'; \n\
 hg_pl_oc : hg_pl_o ' O' | hg_pl_o heavy_hg ' O'; \n\
-hg_pl_o : 'PC' | 'PE'; \n\
+hg_pl_o : 'PA' | 'PC' | 'PE' | 'PG' | 'PI' | 'PS'; \n\
  \n\
  \n\
  \n\
@@ -352,7 +352,6 @@ cl_subspecies : fa4; \n\
 heavy_hg : heavy; \n\
  \n\
  \n\
- \n\
 hg_clc : hg_cl | hg_cl heavy_hg; \n\
 hg_cl : 'CL'; \n\
 hg_mlclc : hg_mlcl | hg_mlcl heavy_hg; \n\
@@ -360,7 +359,7 @@ hg_mlcl : 'MLCL'; \n\
 hg_dlclc : hg_dlcl | hg_dlcl heavy_hg; \n\
 hg_dlcl : 'DLCL'; \n\
 hg_plc : hg_pl | hg_pl heavy_hg; \n\
-hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT', 'PE-NMe2' | 'PE-NMe'; \n\
+hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT' | 'PE-NMe2' | 'PE-NMe'; \n\
 hg_pim : 'PIM' hg_pim_number; \n\
 hg_pim_number : number; \n\
 hg_pip : hg_pip_pure | hg_pip_pure hg_pip_m | hg_pip_pure hg_pip_d | hg_pip_pure hg_pip_t; \n\
@@ -377,7 +376,7 @@ hg_lpim_number : number; \n\
 hg_lpl_oc : hg_lpl_o ' O' | hg_lpl_o heavy_hg ' O'; \n\
 hg_lpl_o : 'LPC' | 'LPE'; \n\
 hg_pl_oc : hg_pl_o ' O' | hg_pl_o heavy_hg ' O'; \n\
-hg_pl_o : 'PC' | 'PE'; \n\
+hg_pl_o : 'PA' | 'PC' | 'PE' | 'PG' | 'PI' | 'PS'; \n\
  \n\
  \n\
  \n\
