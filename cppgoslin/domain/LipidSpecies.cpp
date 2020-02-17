@@ -97,6 +97,11 @@ string LipidSpecies::get_class_string(LipidClass _lipid_class){
 }
 
 
+string LipidSpecies::get_class_name(){
+    return lipid_classes.at(lipid_class).class_name;
+}
+
+
 string LipidSpecies::get_category_string(LipidCategory _lipid_category){
     return CategoryString.at(_lipid_category);
 }

@@ -24,6 +24,12 @@ string LipidAdduct::get_lipid_string(LipidLevel level){
     
     return s.str();
 }
+
+
+string LipidAdduct::get_class_name(){
+    return (lipid) ? lipid->get_class_name() : "";
+}
+
     
     
 string LipidAdduct::get_lipid_fragment_string(LipidLevel level){

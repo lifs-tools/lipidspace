@@ -23,6 +23,7 @@ public:
     ~LipidAdduct();
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     string get_lipid_fragment_string(LipidLevel level = NO_LEVEL);
+    string get_class_name();
 };
 
 #endif /* LIPID_ADDUCT_H */

@@ -29,6 +29,7 @@ public:
     //LipidSpecies(string _head_group);
     LipidSpecies(string _head_group, LipidCategory _lipid_category = NO_CATEGORY, LipidClass lipid_class = NO_CLASS, LipidSpeciesInfo *lipid_species_info = NULL);
     virtual string get_lipid_string(LipidLevel level = NO_LEVEL);
+    string get_class_name();
     
     static LipidCategory get_category(string _head_group);
     static LipidClass get_class(string _head_group);

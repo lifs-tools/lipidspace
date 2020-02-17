@@ -16,6 +16,7 @@ int main(){
     if (lipid != NULL){
         /* creating lipid name according to the recent lipid nomenclature */
         cout << lipid->get_lipid_string() << endl;
+        cout << lipid->get_class_name() << endl;
         
         /* important to delete lipid to avoid memory leaks */
         delete lipid;

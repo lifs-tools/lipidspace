@@ -7,36 +7,6 @@
 using namespace std;
 
 static const string goslin_grammar = " \n\
-/* \n\
- * MIT License \n\
- *  \n\
- * Copyright (c) 2017 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de \n\
- *                    Bing Peng   -   bing.peng {at} isas.de \n\
- *                    Nils Hoffmann  -  nils.hoffmann {at} isas.de \n\
- * \n\
- * Permission is hereby granted, free of charge, to any person obtaining a copy \n\
- * of this software and associated documentation files (the 'Software'), to deal \n\
- * in the Software without restriction, including without limitation the rights \n\
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell \n\
- * copies of the Software, and to permit persons to whom the Software is \n\
- * furnished to do so, subject to the following conditions:; \n\
- *  \n\
- * The above copyright notice and this permission notice shall be included in all \n\
- * copies or substantial portions of the Software. \n\
- *  \n\
- * THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR \n\
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, \n\
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE \n\
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER \n\
- * LIABILITY, WHether IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, \n\
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE \n\
- * SOFTWARE. \n\
-*/ \n\
- \n\
-/* This is a BNF / ANTLR4 grammar for lipid subspecies identifiers following \n\
- * J.K. Pauling et al. 2017, PLoS One, 12(11):e0188394. \n\
- */ \n\
- \n\
 grammar Goslin; \n\
  \n\
 /* first rule is always start rule */ \n\
@@ -215,35 +185,6 @@ charge_sign : '-' | '+'; \n\
 
 
 static const string goslin_fragment_grammar = "/* \n\
- * MIT License \n\
- *  \n\
- * Copyright (c) 2017 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de \n\
- *                    Bing Peng   -   bing.peng {at} isas.de \n\
- *                    Nils Hoffmann  -  nils.hoffmann {at} isas.de \n\
- * \n\
- * Permission is hereby granted, free of charge, to any person obtaining a copy \n\
- * of this software and associated documentation files (the 'Software'), to deal \n\
- * in the Software without restriction, including without limitation the rights \n\
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell \n\
- * copies of the Software, and to permit persons to whom the Software is \n\
- * furnished to do so, subject to the following conditions:; \n\
- *  \n\
- * The above copyright notice and this permission notice shall be included in all \n\
- * copies or substantial portions of the Software. \n\
- *  \n\
- * THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR \n\
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, \n\
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE \n\
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER \n\
- * LIABILITY, WHether IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, \n\
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE \n\
- * SOFTWARE. \n\
-*/ \n\
- \n\
-/* This is a BNF / ANTLR4 grammar for lipid subspecies identifiers following \n\
- * J.K. Pauling et al. 2017, PLoS One, 12(11):e0188394. \n\
- */ \n\
- \n\
 grammar GoslinFragments; \n\
  \n\
 /* first rule is always start rule */ \n\
@@ -421,35 +362,7 @@ sign : '-' | '+' | ' ' | ',' | '(' | ')' | '[' | ']' | ':' | '*' | ';'; \n\
 
 
 
-static const string lipid_maps_grammar = "//////////////////////////////////////////////////////////////////////////////// \n\
-// MIT License \n\
-//  \n\
-// Copyright (c) 2017 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de \n\
-//                    Bing Peng   -   bing.peng {at} isas.de \n\
-//                    Nils Hoffmann  -  nils.hoffmann {at} isas.de \n\
-// \n\
-// Permission is hereby granted, free of charge, to any person obtaining a copy \n\
-// of this software and associated documentation files (the 'Software'), to deal \n\
-// in the Software without restriction, including without limitation the rights \n\
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell \n\
-// copies of the Software, and to permit persons to whom the Software is \n\
-// furnished to do so, subject to the following conditions: \n\
-//  \n\
-// The above copyright notice and this permission notice shall be included in all \n\
-// copies or substantial portions of the Software. \n\
-//  \n\
-// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR \n\
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, \n\
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE \n\
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER \n\
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, \n\
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE \n\
-// SOFTWARE. \n\
-//////////////////////////////////////////////////////////////////////////////// \n\
- \n\
-//// This is a BNF grammer for lipid subspecies identifiers followed by \n\
-//// J.K. Pauling et al. 2017, PLoS One, 12(11):e0188394.  \n\
- \n\
+static const string lipid_maps_grammar = " \n\
 grammar LipidMaps; \n\
  \n\
 /* first rule is always start rule */ \n\
