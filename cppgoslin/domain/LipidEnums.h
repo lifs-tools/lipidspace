@@ -173,7 +173,6 @@ static const ClassMap lipid_classes = {
 {PT, {GP, "Glycerophosphoinositolglycans [GP15]", {"PT"} } },
 {GLCDG, {GP, "Glycosyldiradylglycerols [GL05]", {"Glc-DG"} } },
 {PENME2, {GP, "Glycerophosphoethanolamines [GP02]", {"PE-NMe2"} } },
-{AC2SGL, {GP, "Acyltrehaloses [SL03]", {"AC2SGL"} } },
 {PENME, {GP, "Glycerophosphoethanolamines [GP02]", {"PE-NMe"} } },
 {GLCGP, {GP, "Glycosylglycerophospholipids [GP14]", {"Glc-GP"} } },
 {NAPE, {GP, "Glycerophosphoethanolamines [GP02]", {"NAPE"} } },
@@ -212,6 +211,7 @@ static const ClassMap lipid_classes = {
 {SE, {ST, "Steryl esters [ST0102]", {"SE"} } },
 {CH, {ST, "Cholesterol [LMST01010001]", {"CH", "FC", "Cholesterol"} } },
 {CHE, {ST, "Cholesteryl esters [ST0102]", {"ChE", "CE", "Cholesteryl ester", "Cholesterol ester"} } },
+{AC2SGL, {SL, "Acyltrehaloses [SL03]", {"AC2SGL"} } },
 {PAT16, {SL, "Acyltrehaloses [SL03]", {"PAT16"} } },
 {PAT18, {SL, "Acyltrehaloses [SL03]", {"PAT18"} } },
 {DAT, {SL, "Acyltrehaloses [SL03]", {"DAT"} } }
