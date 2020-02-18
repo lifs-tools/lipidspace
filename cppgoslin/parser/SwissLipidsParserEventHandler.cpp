@@ -129,8 +129,6 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     
     lipid = NULL;
     LipidSpecies *ls = NULL;
-    
-    
 
     
     if (level == SPECIES){

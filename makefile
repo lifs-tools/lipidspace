@@ -3,9 +3,10 @@ CC = g++
 bin = libcppGoslin.so
 domain = cppgoslin/domain/Adduct.o cppgoslin/domain/IsomericFattyAcid.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/MolecularFattyAcid.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StructuralFattyAcid.o
 
-parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinFragmentParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o
+parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinFragmentParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o cppgoslin/parser/SwissLipidsParserEventHandler.o
 
 obj = ${domain} ${parser}
+test_obj = cppgoslin/tests/MolecularFattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o
 
 opt = -std=c++11 -O3
 
@@ -24,6 +25,7 @@ grammarWriter:
 	${CC} ${opt} -I. -Wall -fPIC -o $@ -c $<
 	
 clean:
+	rm -f "cppgoslin/parser/KnownGrammars.h"
 	rm -f cppgoslin/domain/*.o
 	rm -f cppgoslin/parser/*.o
 	rm -f ${bin}
@@ -47,10 +49,13 @@ install: main
 	cp cppgoslin/domain/*.h  ${install_dir}/include/cppgoslin/domain/.
 	cp cppgoslin/parser/*.h  ${install_dir}/include/cppgoslin/parser/.
 	
-test: main
-	${CC} -I. ${opt} -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.cpp -L. -l cppGoslin
-	${CC} -I. ${opt} -o ParserTest cppgoslin/tests/ParserTest.cpp -L. -l cppGoslin
+test: main ${test_obj}
+	${CC} -I. ${opt} -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.o -L. -l cppGoslin
+	${CC} -I. ${opt} -o ParserTest cppgoslin/tests/ParserTest.o -L. -l cppGoslin
+	${CC} -I. ${opt} -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o -L. -l cppGoslin
 
-runtests: test
+	
+runtests:
 	./MolecularFattyAcidTest
 	./ParserTest
+	./SwissLipidsTest

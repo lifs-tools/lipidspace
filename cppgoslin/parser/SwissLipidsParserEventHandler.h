@@ -31,10 +31,6 @@ public:
     void reset_lipid(TreeNode *node);
     void build_lipid(TreeNode *node);
     void set_head_group_name(TreeNode *node);
-    void set_head_group_name(TreeNode *node);
-    void set_head_group_name(TreeNode *node);
-    void set_head_group_name(TreeNode *node);
-    void set_head_group_name(TreeNode *node);
     void set_species_level(TreeNode *node);
     void new_lcb(TreeNode *node);
     void clean_lcb(TreeNode *node);

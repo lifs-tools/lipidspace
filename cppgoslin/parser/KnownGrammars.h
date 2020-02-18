@@ -359,7 +359,7 @@ hg_mlcl : 'MLCL'; \n\
 hg_dlclc : hg_dlcl | hg_dlcl heavy_hg; \n\
 hg_dlcl : 'DLCL'; \n\
 hg_plc : hg_pl | hg_pl heavy_hg; \n\
-hg_pl : 'BMP' | 'CDPDAG' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT' | 'PE-NMe2' | 'PE-NMe'; \n\
+hg_pl : 'BMP' | 'CDP-DAG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | hg_pip | 'PS' | 'LBPA' | 'PGP' | 'PPA' | 'Glc-GP' | '6-Ac-Glc-GP' | hg_pim | 'PnC' | 'PnE' | 'PT' | 'PE-NMe2' | 'PE-NMe' | 'PIMIP'; \n\
 hg_pim : 'PIM' hg_pim_number; \n\
 hg_pim_number : number; \n\
 hg_pip : hg_pip_pure | hg_pip_pure hg_pip_m | hg_pip_pure hg_pip_d | hg_pip_pure hg_pip_t; \n\
@@ -370,7 +370,7 @@ hg_pip_t : '3' | '3[3\\',4\\',5\\']'; \n\
 hg_tplc : hg_tpl | hg_tpl heavy_hg; \n\
 hg_tpl : 'SLBPA' | 'NAPE'; \n\
 hg_lplc : hg_lpl | hg_lpl heavy_hg; \n\
-hg_lpl : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | hg_lpim | 'CPA'; \n\
+hg_lpl : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | hg_lpim | 'CPA' | 'LCDPDAG' | 'LDMPE' | 'LMMPE' | 'LPIMIP' | 'LPIN'; \n\
 hg_lpim : 'LPIM' hg_lpim_number; \n\
 hg_lpim_number : number; \n\
 hg_lpl_oc : hg_lpl_o ' O' | hg_lpl_o heavy_hg ' O'; \n\
@@ -529,7 +529,9 @@ element: 'd'; \n\
  \n\
  \n\
 /* pure fatty acid */ \n\
-pure_fa: fa; \n\
+pure_fa: hg_fa pure_fa_species | fa; \n\
+pure_fa_species: round_open_bracket fa round_close_bracket; \n\
+hg_fa: 'FA' | 'WE'; \n\
  \n\
 fa2 : fa2_unsorted | fa2_sorted; \n\
 fa2_unsorted: fa DASH fa | fa UNDERSCORE fa; \n\
@@ -677,6 +679,134 @@ round_close_bracket: RCB; \n\
 square_open_bracket: SOB; \n\
 square_close_bracket: SCB; \n\
  \n\
+";
+
+
+
+static const string swiss_lipids_grammar = "/* \n\
+ * MIT License \n\
+ *  \n\
+ * Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de \n\
+ *                    Bing Peng   -   bing.peng {at} isas.de \n\
+ *                    Nils Hoffmann  -  nils.hoffmann {at} isas.de \n\
+ * \n\
+ * Permission is hereby granted, free of charge, to any person obtaining a copy \n\
+ * of this software and associated documentation files (the 'Software'), to deal \n\
+ * in the Software without restriction, including without limitation the rights \n\
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell \n\
+ * copies of the Software, and to permit persons to whom the Software is \n\
+ * furnished to do so, subject to the following conditions:; \n\
+ *  \n\
+ * The above copyright notice and this permission notice shall be included in all \n\
+ * copies or substantial portions of the Software. \n\
+ *  \n\
+ * THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR \n\
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, \n\
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE \n\
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER \n\
+ * LIABILITY, WHether IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, \n\
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE \n\
+ * SOFTWARE. \n\
+*/ \n\
+ \n\
+ \n\
+ \n\
+grammar SwissLipids; \n\
+ \n\
+ \n\
+/* first rule is always start rule */ \n\
+lipid : lipid_pure EOF; \n\
+lipid_pure : fatty_acid | gl | pl | sl | st; \n\
+ \n\
+ \n\
+ \n\
+ \n\
+/* fatty acyl rules */ \n\
+fa : carbon carbon_db_separator db | ether carbon carbon_db_separator db; \n\
+lcb : hydroxyl carbon carbon_db_separator db; \n\
+carbon : number; \n\
+db : number; \n\
+ether : 'O-' | 'P-'; \n\
+hydroxyl : 'm' | 'd' | 't'; \n\
+ \n\
+ \n\
+fa2 : fa sorted_fa_separator fa; \n\
+fa3 : fa sorted_fa_separator fa sorted_fa_separator fa; \n\
+fa4 : fa sorted_fa_separator fa sorted_fa_separator fa sorted_fa_separator fa; \n\
+fa_species : fa; \n\
+ \n\
+ \n\
+ \n\
+/* fatty acid rules */ \n\
+fatty_acid : fa_hg fa_fa; \n\
+fa_hg : fa_hg_pure | fa_hg_pure headgroup_separator; \n\
+fa_hg_pure : 'FA' | 'fatty acid'  | 'fatty alcohol'; \n\
+fa_fa : ROB fa RCB; \n\
+ \n\
+ \n\
+ \n\
+/* glycerolipid rules */ \n\
+gl : gl_regular | gl_mono; \n\
+ \n\
+gl_regular : gl_hg gl_fa; \n\
+gl_fa : ROB fa_species RCB | ROB fa3 RCB; \n\
+gl_hg : 'MG' | 'DG' | 'TG'; \n\
+ \n\
+gl_mono : gl_mono_hg gl_mono_fa; \n\
+gl_mono_fa : ROB fa_species RCB | ROB fa2 RCB; \n\
+gl_mono_hg : gl_mono_hg_pure | gl_mono_hg_pure headgroup_separator; \n\
+gl_mono_hg_pure : 'MHDG' | 'DHDG'; \n\
+ \n\
+ \n\
+ \n\
+ \n\
+/* phospholipid rules */ \n\
+pl : pl_regular | pl_four; \n\
+ \n\
+pl_regular : pl_hg pl_fa; \n\
+pl_fa : ROB fa_species RCB | ROB fa2 RCB; \n\
+pl_hg : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | 'PA' | 'PC' | 'PE' | 'PG' | 'PI' | 'PS' | 'PGP' | 'PIP2' | 'PIP' | 'PIP3'; \n\
+ \n\
+pl_four : pl_four_hg pl_four_fa; \n\
+pl_four_fa : ROB fa_species RCB | ROB fa2 RCB | ROB fa4 RCB; \n\
+pl_four_hg : pl_four_hg_pure | pl_four_hg_pure headgroup_separator; \n\
+pl_four_hg_pure : 'BMP' | 'LBPA' | 'Lysobisphosphatidate'; \n\
+ \n\
+ \n\
+ \n\
+/* sphingolipid rules */ \n\
+sl : sl_hg sl_lcb; \n\
+sl_hg : 'HexCer' | 'Hex2Cer' | 'SM' | 'PE-Cer' | 'Cer' | 'CerP' | 'SulfoHexCer' | 'SulfoHex2Cer' | 'Gb3' | 'GA2' | 'GA1' | 'GM3' | 'GM2' | 'GM1' | 'GD3' | 'GT3' | 'GD1' | 'GT1' | 'GQ1' | 'GM4' | 'GD2' | 'GT2' | 'GP1'; \n\
+sl_lcb : ROB lcb RCB; \n\
+ \n\
+ \n\
+ \n\
+ \n\
+/* sterol rules */ \n\
+st : st_hg st_fa; \n\
+st_hg : 'SE'; \n\
+st_fa : ROB fa RCB; \n\
+ \n\
+ \n\
+ \n\
+ \n\
+/* separators */ \n\
+SPACE : ' '; \n\
+COLON : ':'; \n\
+SEMICOLON : ';'; \n\
+DASH : '-'; \n\
+UNDERSCORE : '_'; \n\
+SLASH : '/'; \n\
+BACKSLASH : '\\\\'; \n\
+COMMA: ','; \n\
+ROB: '('; \n\
+RCB: ')'; \n\
+ \n\
+sorted_fa_separator : SLASH; \n\
+headgroup_separator : SPACE; \n\
+carbon_db_separator : COLON; \n\
+number :  digit; \n\
+digit : '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | digit digit; \n\
 ";
 
 

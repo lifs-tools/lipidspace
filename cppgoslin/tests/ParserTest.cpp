@@ -34,7 +34,7 @@ int main(int argc, char** argv){
             check.insert(num);
         }
         
-        int cnt = 0;
+        uint cnt = 0;
         for (int i : b){
             assert (check.find(i) != check.end());
             ++cnt;
@@ -168,7 +168,7 @@ int main(int argc, char** argv){
                            {"(3'-sulfo)Galbeta-Cer(d18:1/20:0)", "SHexCer 18:1;2/20:0"},
                            {"GlcCer(d15:2(4E,6E)/22:0(2OH))", "HexCer 15:2;2/22:0;1"}};
         
-        for (int i = 0; i < lmp_data.size(); ++i){
+        for (uint i = 0; i < lmp_data.size(); ++i){
             lipid = lipid_maps_parser.parse(lmp_data.at(i)[0]);
             assert (lipid);
             assert (lipid->get_lipid_string() == lmp_data.at(i)[1]);
