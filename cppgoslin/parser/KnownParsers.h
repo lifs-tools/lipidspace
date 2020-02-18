@@ -27,6 +27,13 @@ public:
 };
 
 
+class SwissLipidsParser : public Parser<LipidAdduct*> {
+public:
+    SwissLipidsParser();
+    ~SwissLipidsParser();
+};
+
+
 class LipidParser {
 public:
     vector<Parser<LipidAdduct*>*> parser_list;

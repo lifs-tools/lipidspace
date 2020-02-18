@@ -29,11 +29,21 @@ LipidMapsParser::~LipidMapsParser(){
 }
 
 
+SwissLipidsParser::SwissLipidsParser() : Parser<LipidAdduct*>(new LipidMapsParserEventHandler(), GrammarString(swiss_lipids_grammar), DEFAULT_QUOTE){
+        
+}
+
+SwissLipidsParser::~SwissLipidsParser(){
+    delete parser_event_handler;
+}
+
+
 
 LipidParser::LipidParser(){
     parser_list.push_back(new GoslinParser());
     parser_list.push_back(new GoslinFragmentParser());
     parser_list.push_back(new LipidMapsParser());
+    parser_list.push_back(new SwissLipidsParser());
 }
 
 LipidParser::~LipidParser(){
