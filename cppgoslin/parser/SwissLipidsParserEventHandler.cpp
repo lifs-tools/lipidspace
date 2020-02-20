@@ -13,11 +13,15 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("gl_hg_pre_event", set_head_group_name);
     reg("gl_mono_hg_pre_event", set_head_group_name);
     reg("pl_hg_pre_event", set_head_group_name);
+    reg("pl_three_hg_pre_event", set_head_group_name);
     reg("pl_four_hg_pre_event", set_head_group_name);
     reg("sl_hg_pre_event", set_head_group_name);
     reg("st_hg_pre_event", set_head_group_name);
     
     reg("fa_species_pre_event", set_species_level);
+    
+    reg("gl_molecular_pre_event", set_molecular_level);
+    reg("unsorted_fa_separator_pre_event", set_molecular_level);
     
     reg("lcb_pre_event", new_lcb);
     reg("lcb_post_event", clean_lcb);
@@ -57,6 +61,11 @@ void SwissLipidsParserEventHandler::set_species_level(TreeNode *node) {
 }
     
 
+
+
+void SwissLipidsParserEventHandler::set_molecular_level(TreeNode *node) {
+    level = MOLECULAR_SUBSPECIES;
+}
     
     
 

@@ -32,6 +32,7 @@ public:
     void build_lipid(TreeNode *node);
     void set_head_group_name(TreeNode *node);
     void set_species_level(TreeNode *node);
+    void set_molecular_level(TreeNode *node);
     void new_lcb(TreeNode *node);
     void clean_lcb(TreeNode *node);
     void new_fa(TreeNode *node);
