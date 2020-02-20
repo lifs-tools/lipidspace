@@ -345,6 +345,9 @@ int main(int argc, char** argv){
         
         for (auto test_lipid_name : lipidnames){
             lipid = lipid_parser.parse(test_lipid_name);
+            if (lipid == NULL){
+                cout << "Fail: '" << test_lipid_name << "'" << endl;
+            }
             assert(lipid);
             delete lipid;
         }

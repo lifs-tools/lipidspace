@@ -132,7 +132,7 @@ static const ClassMap lipid_classes = {
 {SQMG, {GL, "Glycosylmonoradylglycerols [GL04]", {"SQMG"} } },
 {SQDG, {GL, "Glycosyldiradylglycerols [GL05]", {"SQDG"} } },
 {BMP, {GP, "Monoacylglycerophosphomonoradylglycerols [GP0410]", {"BMP", "LBPA"} } },
-{CDPDAG, {GP, "CDP-Glycerols [GP13]", {"CDPDAG", "CDP-DG"} } },
+{CDPDAG, {GP, "CDP-Glycerols [GP13]", {"CDPDAG", "CDPDG", "CDP-DG", "CDP-DAG"} } },
 {CL, {GP, "Glycerophosphoglycerophosphoglycerols [GP12]", {"CL"} } },
 {MLCL, {GP, "Glycerophosphoglycerophosphoglycerols [GP12]", {"MLCL"} } },
 {DLCL, {GP, "Glycerophosphoglycerophosphoglycerols [GP12]", {"DLCL"} } },

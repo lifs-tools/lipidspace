@@ -9,15 +9,15 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("lipid_pre_event", reset_lipid);
     reg("lipid_post_event", build_lipid);
     
+    reg("fa_hg_pre_event", set_head_group_name);
     reg("gl_hg_pre_event", set_head_group_name);
-    reg("gl_mono_hg_pure_pre_event", set_head_group_name);
+    reg("gl_mono_hg_pre_event", set_head_group_name);
     reg("pl_hg_pre_event", set_head_group_name);
-    reg("pl_four_hg_pure_pre_event", set_head_group_name);
+    reg("pl_four_hg_pre_event", set_head_group_name);
     reg("sl_hg_pre_event", set_head_group_name);
-    
+    reg("st_hg_pre_event", set_head_group_name);
     
     reg("fa_species_pre_event", set_species_level);
-    
     
     reg("lcb_pre_event", new_lcb);
     reg("lcb_post_event", clean_lcb);
@@ -25,7 +25,7 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("fa_post_event", append_fa);
     reg("ether_pre_event", add_ether);
     reg("hydroxyl_pre_event", add_hydroxyl);
-    reg("db_pre_event", add_double_bonds);
+    reg("db_count_pre_event", add_double_bonds);
     reg("carbon_pre_event", add_carbon);
     
 }

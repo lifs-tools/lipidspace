@@ -722,12 +722,27 @@ lipid_pure : fatty_acid | gl | pl | sl | st; \n\
  \n\
  \n\
 /* fatty acyl rules */ \n\
-fa : carbon carbon_db_separator db | ether carbon carbon_db_separator db; \n\
+fa : fa_core | fa_prefix fa_core | fa_core fa_suffix | fa_prefix fa_core fa_suffix; \n\
+fa_core : carbon carbon_db_separator db | ether carbon carbon_db_separator db; \n\
+ \n\
+lcb : lcb_core | fa_lcb_prefix lcb_core | lcb_core fa_suffix | fa_lcb_prefix lcb_core lcb_core; \n\
 lcb : hydroxyl carbon carbon_db_separator db; \n\
 carbon : number; \n\
-db : number; \n\
+db : db_count | db_count db_positions; \n\
+db_count : number; \n\
+db_positions : ROB db_position RCB; \n\
+db_position : db_single_position | db_position db_position_separator db_position; \n\
+db_single_position : db_position_number cistrans; \n\
+db_position_number : number; \n\
+cistrans : 'E' | 'Z'; \n\
 ether : 'O-' | 'P-'; \n\
 hydroxyl : 'm' | 'd' | 't'; \n\
+fa_suffix : fa_lcb_suffix_separator fa_lcb_suffix_core | ROB fa_lcb_suffix_core RCB; \n\
+fa_lcb_suffix_core : fa_lcb_suffix_number fa_lcb_suffix_type; \n\
+fa_lcb_suffix_type : 'OH' | 'me'; \n\
+fa_lcb_suffix_number : number; \n\
+fa_lcb_prefix : fa_lcb_prefix_type | fa_lcb_prefix_type fa_lcb_prefix_separator; \n\
+fa_lcb_prefix_type : 'iso'; \n\
  \n\
  \n\
 fa2 : fa sorted_fa_separator fa; \n\
@@ -738,9 +753,8 @@ fa_species : fa; \n\
  \n\
  \n\
 /* fatty acid rules */ \n\
-fatty_acid : fa_hg fa_fa; \n\
-fa_hg : fa_hg_pure | fa_hg_pure headgroup_separator; \n\
-fa_hg_pure : 'FA' | 'fatty acid'  | 'fatty alcohol'; \n\
+fatty_acid : fa_hg fa_fa | fa_hg headgroup_separator fa_fa; \n\
+fa_hg : 'FA' | 'fatty acid' | 'fatty alcohol'; \n\
 fa_fa : ROB fa RCB; \n\
  \n\
  \n\
@@ -748,14 +762,13 @@ fa_fa : ROB fa RCB; \n\
 /* glycerolipid rules */ \n\
 gl : gl_regular | gl_mono; \n\
  \n\
-gl_regular : gl_hg gl_fa; \n\
+gl_regular : gl_hg gl_fa | gl_hg headgroup_separator gl_fa; \n\
 gl_fa : ROB fa_species RCB | ROB fa3 RCB; \n\
-gl_hg : 'MG' | 'DG' | 'TG'; \n\
+gl_hg : 'MG' | 'DG' | 'TG' |  'MAG' | 'DAG' | 'TAG'; \n\
  \n\
-gl_mono : gl_mono_hg gl_mono_fa; \n\
+gl_mono : gl_mono_hg gl_mono_fa | gl_mono_hg headgroup_separator gl_mono_fa; \n\
 gl_mono_fa : ROB fa_species RCB | ROB fa2 RCB; \n\
-gl_mono_hg : gl_mono_hg_pure | gl_mono_hg_pure headgroup_separator; \n\
-gl_mono_hg_pure : 'MHDG' | 'DHDG'; \n\
+gl_mono_hg : 'MHDG' | 'DHDG'; \n\
  \n\
  \n\
  \n\
@@ -763,19 +776,18 @@ gl_mono_hg_pure : 'MHDG' | 'DHDG'; \n\
 /* phospholipid rules */ \n\
 pl : pl_regular | pl_four; \n\
  \n\
-pl_regular : pl_hg pl_fa; \n\
+pl_regular : pl_hg pl_fa | pl_hg headgroup_separator pl_fa; \n\
 pl_fa : ROB fa_species RCB | ROB fa2 RCB; \n\
 pl_hg : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | 'PA' | 'PC' | 'PE' | 'PG' | 'PI' | 'PS' | 'PGP' | 'PIP2' | 'PIP' | 'PIP3'; \n\
  \n\
-pl_four : pl_four_hg pl_four_fa; \n\
+pl_four : pl_four_hg pl_four_fa | pl_four_hg headgroup_separator pl_four_fa; \n\
 pl_four_fa : ROB fa_species RCB | ROB fa2 RCB | ROB fa4 RCB; \n\
-pl_four_hg : pl_four_hg_pure | pl_four_hg_pure headgroup_separator; \n\
-pl_four_hg_pure : 'BMP' | 'LBPA' | 'Lysobisphosphatidate'; \n\
+pl_four_hg : 'BMP' | 'LBPA' | 'Lysobisphosphatidate'; \n\
  \n\
  \n\
  \n\
 /* sphingolipid rules */ \n\
-sl : sl_hg sl_lcb; \n\
+sl : sl_hg sl_lcb | sl_hg headgroup_separator sl_lcb; \n\
 sl_hg : 'HexCer' | 'Hex2Cer' | 'SM' | 'PE-Cer' | 'Cer' | 'CerP' | 'SulfoHexCer' | 'SulfoHex2Cer' | 'Gb3' | 'GA2' | 'GA1' | 'GM3' | 'GM2' | 'GM1' | 'GD3' | 'GT3' | 'GD1' | 'GT1' | 'GQ1' | 'GM4' | 'GD2' | 'GT2' | 'GP1'; \n\
 sl_lcb : ROB lcb RCB; \n\
  \n\
@@ -783,7 +795,7 @@ sl_lcb : ROB lcb RCB; \n\
  \n\
  \n\
 /* sterol rules */ \n\
-st : st_hg st_fa; \n\
+st : st_hg st_fa | st_hg headgroup_separator st_fa; \n\
 st_hg : 'SE'; \n\
 st_fa : ROB fa RCB; \n\
  \n\
@@ -805,6 +817,10 @@ RCB: ')'; \n\
 sorted_fa_separator : SLASH; \n\
 headgroup_separator : SPACE; \n\
 carbon_db_separator : COLON; \n\
+db_position_separator : COMMA; \n\
+fa_lcb_suffix_separator : COLON; \n\
+fa_lcb_prefix_separator : COLON; \n\
+ \n\
 number :  digit; \n\
 digit : '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | digit digit; \n\
 ";
