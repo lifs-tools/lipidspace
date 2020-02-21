@@ -51,7 +51,7 @@ struct LipidClassMeta {
 
 
 
-enum LipidClass {NO_CLASS, UNDEFINED_CLASS, FA1 , FA2 , FA3 , FA4 , FA5 , FA6 , FA7 , FA8 , FA9 , FA10 , FA11 , FA12 , FA13 , FA14 , FA15 , FA16 , FA17 , FA18 , FA19 , FA20 , FA21 , FA22 , FA23 , FA24 , FA25 , FA26 , FA27 , FA28 , FA29 , FA30 , FA31 , FA32 , FA33 , FA34 , FA35 , FA36 , FA37 , FA38 , FA39 , FA40 , FA41 , FA42 , FA43 , FA44 , FA45 , FA46 , FA47 , FA48 , FA49 , FA50 , FA51 , FA52 , FA53 , FA54 , FA55 , FA56 , FA57 , FA58 , FA59 , FA60 , FA61 , FA62 , MG , DG , TG , MGDG , DGDG , SQMG , SQDG , BMP , CDPDAG , CL , MLCL , PA , LPA , PC , LPC , PE , PET , LPE , PG , LPG , PGP , PI , LPI , PIP , PIP_3p , PIP_4p , PIP_5p , PIP2 , PIP2_3p_4p , PIP2_3p_5p , PIP2_4p_5p , PIP3 , PIP3_3p_4p_5p , PS , LPS , PIM1 , PIM2 , PIM3 , PIM4 , PIM5 , PIM6 , GLCDG , PENME2 , AC2SGL , DAT , PENME , PT , GLCGP , NAPE , LPIM1 , LPIM2 , LPIM3 , LPIM4 , LPIM5 , LPIM6 , CPA , CER , CERP , C1P , SM , HEXCER , HEX2CER , HEX3CER , FMC5 , FMC6 , SHEXCER , LCB , LCBP , LHEXCER , EPC , GB4 , GD3 , GM3 , GM4 , IPC , LSM , MIP2C , MIPC , STT , SE , CH , CHE , PAT16 , PAT18, SLBPA, PPA, GL_6_AC_GlC_GP, PNC, PNE, DLCL, LCDPDAG, LDMPE, LMMPE, LPIMIP, LPIN, PIMIP, DMPE, NAE, GD1A_ALPHA, FUC_GAL_GM1, SULFOGALCER, GD1A, GM1B, GT1B, GQ1B, GT1A, GT1A_ALPHA, GQ1B_ALPHA, T_SULFO_LACCER, GP1C_ALPHA, GQ1C, GP1C, GD1C, GD1B, GT1C};
+enum LipidClass {NO_CLASS, UNDEFINED_CLASS, FA1 , FA2 , FA3 , FA4 , FA5 , FA6 , FA7 , FA8 , FA9 , FA10 , FA11 , FA12 , FA13 , FA14 , FA15 , FA16 , FA17 , FA18 , FA19 , FA20 , FA21 , FA22 , FA23 , FA24 , FA25 , FA26 , FA27 , FA28 , FA29 , FA30 , FA31 , FA32 , FA33 , FA34 , FA35 , FA36 , FA37 , FA38 , FA39 , FA40 , FA41 , FA42 , FA43 , FA44 , FA45 , FA46 , FA47 , FA48 , FA49 , FA50 , FA51 , FA52 , FA53 , FA54 , FA55 , FA56 , FA57 , FA58 , FA59 , FA60 , FA61 , FA62 , MG , DG , TG , MGDG , DGDG , SQMG , SQDG , BMP , CDPDAG , CL , MLCL , PA , LPA , PC , LPC , PE , PET , LPE , PG , LPG , PGP , PI , LPI , PIP , PIP_3p , PIP_4p , PIP_5p , PIP2 , PIP2_3p_4p , PIP2_3p_5p , PIP2_4p_5p , PIP3 , PIP3_3p_4p_5p , PS , LPS , PIM1 , PIM2 , PIM3 , PIM4 , PIM5 , PIM6 , GLCDG , PENME2 , AC2SGL , DAT , PENME , PT , GLCGP , NAPE , LPIM1 , LPIM2 , LPIM3 , LPIM4 , LPIM5 , LPIM6 , CPA , CER , CERP , C1P , SM , HEXCER , HEX2CER , HEX3CER , FMC5 , FMC6 , SHEXCER , LCB , LCBP , LHEXCER , EPC , GB4 , GD3 , GM3 , GM4 , IPC , LSM , MIP2C , MIPC , STT , SE , CH , CHE , PAT16 , PAT18, SLBPA, PPA, GL_6_AC_GlC_GP, PNC, PNE, DLCL, LCDPDAG, LDMPE, LMMPE, LPIMIP, LPIN, PIMIP, DMPE, NAE, GD1A_ALPHA, FUC_GAL_GM1, SULFOGALCER, GD1A, GM1B, GT1B, GQ1B, GT1A, GT1A_ALPHA, GQ1B_ALPHA, T_SULFO_LACCER, GP1C_ALPHA, GQ1C, GP1C, GD1C, GD1B, GT1C, GP_NAE, GB3CER, GB4CER, FORSSMAN, GALGB4CER, MSGG, DSGG, NEUAC_6_MSGG, NEUAC_8_MSGG, NOR1, NORINT, NOR2, GLOBO_H, GLOBO_A};
 
 typedef map<LipidClass, LipidClassMeta> ClassMap;
 enum LipidFaBondType { NO_FA, UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL};
@@ -123,6 +123,7 @@ static const ClassMap lipid_classes = {
 {FA61, {FA, "Fatty acids and conjugates [FA01]", {"TXB3"} } },
 {FA62, {FA, "Fatty acids and conjugates [FA01]", {"AA", "Arachidonic acid", "Arachidonic acid"} } },
 {NAE, {FA, "X-ethanolamine", {"NAE"} } },
+{GP_NAE, {FA, "X-ethanolamine", {"GP-NAE"} } },
 {MG, {GL, "Monoradylglycerols [GL01]", {"MAG", "MG"} } },
 {DG, {GL, "Diradylglycerols [GL02]", {"DAG", "DG"} } },
 {TG, {GL, "Triradylglycerols [GL03]", {"TAG", "TG"} } },
@@ -206,7 +207,6 @@ static const ClassMap lipid_classes = {
 {SULFOGALCER, {SP, "Acidic glycosphingolipids [SP06]", {"SulfoGalCer"} } },
 {GD1A, {SP, "Acidic glycosphingolipids [SP06]", {"GD1a"} } },
 {GM1B, {SP, "Acidic glycosphingolipids [SP06]", {"GM1b"} } },
-
 {GT1B, {SP, "Acidic glycosphingolipids [SP06]", {"GT1b"} } },
 {GQ1B, {SP, "Acidic glycosphingolipids [SP06]", {"GQ1b"} } },
 {GT1A, {SP, "Acidic glycosphingolipids [SP06]", {"GT1a"} } },
@@ -218,7 +218,19 @@ static const ClassMap lipid_classes = {
 {GT1A_ALPHA, {SP, "Acidic glycosphingolipids [SP06]", {"GT1a alpha"} } },
 {GQ1B_ALPHA, {SP, "Acidic glycosphingolipids [SP06]", {"GQ1b alpha"} } },
 {GP1C_ALPHA, {SP, "Acidic glycosphingolipids [SP06]", {"GP1c alpha"} } },
-
+{GB3CER, {SP, "Globoside", {"Gb3Cer"} } },
+{GB4CER, {SP, "Globoside", {"Gb4Cer"} } },
+{FORSSMAN, {SP, "Globoside", {"Forssman"} } },
+{GALGB4CER, {SP, "Globoside", {"GalGb4Cer"} } },
+{MSGG, {SP, "Globoside", {"MSGG"} } },
+{DSGG, {SP, "Globoside", {"DSGG"} } },
+{NEUAC_6_MSGG, {SP, "Globoside", {"NeuAc(alpha2-6)-MSGG"} } },
+{NEUAC_8_MSGG, {SP, "Globoside", {"NeuAc(alpha2-8)-MSGG"} } },
+{NOR1, {SP, "Globoside", {"NOR1"} } },
+{NORINT, {SP, "Globoside", {"NORint"} } },
+{NOR2, {SP, "Globoside", {"NOR2"} } },
+{GLOBO_H, {SP, "Globoside", {"Globo-H"} } },
+{GLOBO_A, {SP, "Globoside", {"Globo-A"} } },
 
 
 {IPC, {SP, "Phosphosphingolipids [SP03]", {"IPC", "PI-Cer"} } },
