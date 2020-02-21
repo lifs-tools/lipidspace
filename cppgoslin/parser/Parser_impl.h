@@ -84,8 +84,9 @@ void Parser<T>::read_grammar(string grammar){
     
     rules->erase(rules->begin());
     ruleToNT.insert(pair<string, unsigned long>(EOF_RULE_NAME, EOF_RULE));
-    TtoNT.insert(pair<char, set<unsigned long>>(EOF_SIGN, set<unsigned long>()));
-    TtoNT.at(EOF_SIGN).insert(EOF_RULE);
+    //TtoNT.insert(pair<char, set<unsigned long>>(EOF_SIGN, set<unsigned long>()));
+    TtoNT.insert(pair<char, unsigned long>(EOF_SIGN, EOF_RULE));
+    //TtoNT.at(EOF_SIGN).insert(EOF_RULE);
     
     for (auto rule_line : *rules){
         
@@ -158,8 +159,17 @@ void Parser<T>::read_grammar(string grammar){
             }
             else{
                 char c = NTFirst[1];
-                if (TtoNT.find(c) == TtoNT.end()) TtoNT.insert(pair<char, set<unsigned long>>(c, set<unsigned long>()));
-                TtoNT.at(c).insert(new_rule_index);
+                unsigned long tRule = 0;
+                if (TtoNT.find(c) == TtoNT.end()){
+                    tRule = get_next_free_rule_index();
+                    TtoNT.insert(pair<char, unsigned long>(c, tRule));
+                }
+                else {
+                    tRule = TtoNT.at(c);
+                }
+                
+                if (NTtoNT.find(tRule) == NTtoNT.end()) NTtoNT.insert(pair<unsigned long, set<unsigned long>>(tRule, set<unsigned long>()));
+                NTtoNT.at(tRule).insert(new_rule_index);
             }
             
             // more than two rules, insert intermediate rule indexes
@@ -209,7 +219,7 @@ void Parser<T>::read_grammar(string grammar){
     parser_event_handler->parser = this;
     parser_event_handler->sanity_check();
         
-    
+    /*
     set<unsigned long> keys;
     for (auto key : TtoNT) keys.insert(key.first);
                                                                    
@@ -228,6 +238,7 @@ void Parser<T>::read_grammar(string grammar){
             delete backward_rules;
         }
     }
+    */
     
     for (auto kvp : NTtoNT){
         originalNTtoNT.insert({kvp.first, set<unsigned long>()});
@@ -437,10 +448,18 @@ unsigned long Parser<T>::add_terminal(string text){
     vector<unsigned long> terminal_rules;
     for (uint i = 1; i < text.length() - 1; ++i){
         char c = text[i];
-        if (TtoNT.find(c) == TtoNT.end()) TtoNT.insert(pair<char, set<unsigned long>>(c, set<unsigned long>()));
-        unsigned long next_index = get_next_free_rule_index();
-        TtoNT.at(c).insert(next_index);
-        terminal_rules.push_back(next_index);
+        unsigned long tRule = 0;
+        if (TtoNT.find(c) == TtoNT.end()){
+            tRule = get_next_free_rule_index();
+            TtoNT.insert(pair<char, unsigned long>(c, tRule));
+        }
+        else {
+            tRule = TtoNT.at(c);
+        }
+        //unsigned long next_index = get_next_free_rule_index();
+        //NTtoNT.at(c).insert(next_index);
+        
+        terminal_rules.push_back(tRule);
     }
     
     while (terminal_rules.size() > 1){
@@ -593,15 +612,25 @@ void Parser<T>::parse_regular(string text_to_parse){
             break;
         }
         
-        for (auto rule_index : TtoNT.at(c)){
-            unsigned long new_key = rule_index >> SHIFT;
-            unsigned old_key = rule_index & MASK;
+        set<unsigned long> tRules;
+        vector<unsigned long> *backward_rules = collect_one_backwards(TtoNT.at(c));
+        for (auto p : *backward_rules){
+            tRules.insert(compute_rule_key(p, TtoNT.at(c)));
+        }
+        delete backward_rules;
+            
+        for (auto T_rule_index : tRules){
+            unsigned long new_key = T_rule_index >> SHIFT;
+            unsigned old_key = T_rule_index & MASK;
             DPNode *dp_node = new DPNode(c, old_key, NULL, NULL);
             dp_table[i][0]->insert({new_key, dp_node});
             DPs.push_back(dp_node);
             Ks[i]->insert(0);
         }
     }
+    
+    
+    
     if (requirement_fulfilled){
         for (int i = 1; i < n; ++i){
             int im1 = i - 1;
