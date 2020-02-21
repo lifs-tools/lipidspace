@@ -51,7 +51,13 @@ struct LipidClassMeta {
 
 
 
-enum LipidClass {NO_CLASS, UNDEFINED_CLASS, FA1 , FA2 , FA3 , FA4 , FA5 , FA6 , FA7 , FA8 , FA9 , FA10 , FA11 , FA12 , FA13 , FA14 , FA15 , FA16 , FA17 , FA18 , FA19 , FA20 , FA21 , FA22 , FA23 , FA24 , FA25 , FA26 , FA27 , FA28 , FA29 , FA30 , FA31 , FA32 , FA33 , FA34 , FA35 , FA36 , FA37 , FA38 , FA39 , FA40 , FA41 , FA42 , FA43 , FA44 , FA45 , FA46 , FA47 , FA48 , FA49 , FA50 , FA51 , FA52 , FA53 , FA54 , FA55 , FA56 , FA57 , FA58 , FA59 , FA60 , FA61 , FA62 , MG , DG , TG , MGDG , DGDG , SQMG , SQDG , BMP , CDPDAG , CL , MLCL , PA , LPA , PC , LPC , PE , PET , LPE , PG , LPG , PGP , PI , LPI , PIP , PIP_3p , PIP_4p , PIP_5p , PIP2 , PIP2_3p_4p , PIP2_3p_5p , PIP2_4p_5p , PIP3 , PIP3_3p_4p_5p , PS , LPS , PIM1 , PIM2 , PIM3 , PIM4 , PIM5 , PIM6 , GLCDG , PENME2 , AC2SGL , DAT , PENME , PT , GLCGP , NAPE , LPIM1 , LPIM2 , LPIM3 , LPIM4 , LPIM5 , LPIM6 , CPA , CER , CERP , C1P , SM , HEXCER , HEX2CER , HEX3CER , FMC5 , FMC6 , SHEXCER , LCB , LCBP , LHEXCER , EPC , GB4 , GD3 , GM3 , GM4 , IPC , LSM , MIP2C , MIPC , STT , SE , CH , CHE , PAT16 , PAT18, SLBPA, PPA, GL_6_AC_GlC_GP, PNC, PNE, DLCL, LCDPDAG, LDMPE, LMMPE, LPIMIP, LPIN, PIMIP, DMPE, NAE, GD1A_ALPHA, FUC_GAL_GM1, SULFOGALCER, GD1A, GM1B, GT1B, GQ1B, GT1A, GT1A_ALPHA, GQ1B_ALPHA, T_SULFO_LACCER, GP1C_ALPHA, GQ1C, GP1C, GD1C, GD1B, GT1C, GP_NAE, GB3CER, GB4CER, FORSSMAN, GALGB4CER, MSGG, DSGG, NEUAC_6_MSGG, NEUAC_8_MSGG, NOR1, NORINT, NOR2, GLOBO_H, GLOBO_A};
+enum LipidClass {NO_CLASS, UNDEFINED_CLASS, FA1 , FA2 , FA3 , FA4 , FA5 , FA6 , FA7 , FA8 , FA9 , FA10 , FA11 , FA12 , FA13 , FA14 , FA15 , FA16 , FA17 , FA18 , FA19 , FA20 , FA21 , FA22 , FA23 , FA24 , FA25 , FA26 , FA27 , FA28 , FA29 , FA30 , FA31 , FA32 , FA33 , FA34 , FA35 , FA36 , FA37 , FA38 , FA39 , FA40 , FA41 , FA42 , FA43 , FA44 , FA45 , FA46 , FA47 , FA48 , FA49 , FA50 , FA51 , FA52 , FA53 , FA54 , FA55 , FA56 , FA57 , FA58 , FA59 , FA60 , FA61 , FA62 , MG , DG , TG , MGDG , DGDG , SQMG , SQDG , BMP , CDPDAG , CL , MLCL , PA , LPA , PC , LPC , PE , PET , LPE , PG , LPG , PGP , PI , LPI , PIP , PIP_3p , PIP_4p , PIP_5p , PIP2 , PIP2_3p_4p , PIP2_3p_5p , PIP2_4p_5p , PIP3 , PIP3_3p_4p_5p , PS , LPS , PIM1 , PIM2 , PIM3 , PIM4 , PIM5 , PIM6 , GLCDG , PENME2 , AC2SGL , DAT , PENME , PT , GLCGP , NAPE , LPIM1 , LPIM2 , LPIM3 , LPIM4 , LPIM5 , LPIM6 , CPA , CER , CERP , C1P , SM , HEXCER , HEX2CER , HEX3CER , FMC5 , FMC6 , SHEXCER , LCB , LCBP , LHEXCER , EPC , GB4 , GD3 , GM3 , GM4 , IPC , LSM , MIP2C , MIPC , STT , SE , CH , CHE , PAT16 , PAT18, SLBPA, PPA, GL_6_AC_GlC_GP, PNC, PNE, DLCL, LCDPDAG, LDMPE, LMMPE, LPIMIP, LPIN, PIMIP, DMPE, NAE, GD1A_ALPHA, FUC_GAL_GM1, SULFOGALCER, GD1A, GM1B, GT1B, GQ1B, GT1A, GT1A_ALPHA, GQ1B_ALPHA, T_SULFO_LACCER, GP1C_ALPHA, GQ1C, GP1C, GD1C, GD1B, GT1C, GP_NAE, GB3CER, GB4CER, FORSSMAN, GALGB4CER, MSGG, DSGG, NEUAC_6_MSGG, NEUAC_8_MSGG, NOR1, NORINT, NOR2, GLOBO_H, GLOBO_A, AC_O9_GT3, GT1B_ALPHA_NEUGC, GT1B_ALPHA, AC_O9_GT1B, GM2_NEUGC, GALGALNAC_GM1B_NEUGC, GALNAC_GM1B_NEUGC, GM1B_NEUGC, GALNAC_GM1B, GM1_ALPHA, LEX_GM1, NEUGC_LACNAC_GM1_NEUGC, GALNAC_GM1, SO3_GM1_NEUGC, FUC_GM1_NEUGC, GM1_NEUGC, FUC_GM1, GD1C_NEUGC_NEUGC, GALGAL_GD1B, GAL_FUC_GD1B, GAL_GD1B, FUC_GD1B, GALNAC_GD1A_NEUGC_NEUAC, GALNAC_GD1A, GD1A_NEUGC_NEUGC, GD1A_NEUAC_NEUGC, GD1A_NEUGC_NEUAC, AC_O9_GD1A, SB1A, SM1B, SM1A, GALNACGAL_FUC_GA1, GAL_FUC_GA1, FUC_GA1, FUCIGB3CER, SO3_GAL_IGB4CER, SO3_IGB4CER, FUC_GAL_GAL_IGB4CER, FUC_IGB3CER, NEUACGAL_IGB4CER, GAL_IGB4CER, I_FORSSMAN, IGB4CER,IGB3CER, FUC_BRANCHED_FORSSMAN, BRANCHED_FORSSMAN, NEUGCNEUGC_GALGB4CER, NEUGC_GALGB4CER, SO3_GALGB4CER, SO3_GB4CER, GLCNACGB3CER, GLOBO_B, PARA_FORSSMAN, GALNACGALGB3CER, FUCGALGB3CER, GALGALGALGB3CER, GALGALGB3CER, GALGB3CER, GLOBO_LEX_9, GALGLCNAC_GALGB4CER, GLCNAC_GALGB4CER
+    
+    
+};
+
+
+
 
 typedef map<LipidClass, LipidClassMeta> ClassMap;
 enum LipidFaBondType { NO_FA, UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL};
@@ -231,7 +237,67 @@ static const ClassMap lipid_classes = {
 {NOR2, {SP, "Globoside", {"NOR2"} } },
 {GLOBO_H, {SP, "Globoside", {"Globo-H"} } },
 {GLOBO_A, {SP, "Globoside", {"Globo-A"} } },
-
+{AC_O9_GT3, {SP, "Globoside", {"Ac-O-9-GT3"} } },
+{GT1B_ALPHA_NEUGC, {SP, "Globoside", {"GT1b alpha(NeuGc)"} } },
+{GT1B_ALPHA, {SP, "Globoside", {"GT1b alpha"} } },
+{AC_O9_GT1B, {SP, "Globoside", {"Ac-O-9-GT1b"} } },
+{GM2_NEUGC, {SP, "Globoside", {"GM2(NeuGc)"} } },
+{GALGALNAC_GM1B_NEUGC, {SP, "Globoside", {"GalGalNAc-GM1b(NeuGc)"} } },
+{GALNAC_GM1B_NEUGC, {SP, "Globoside", {"GalNAc-GM1b(NeuGc)"} } },
+{GM1B_NEUGC, {SP, "Globoside", {"GM1b(NeuGc)"} } },
+{GALNAC_GM1B, {SP, "Globoside", {"GalNAc-GM1b"} } },
+{GM1_ALPHA, {SP, "Globoside", {"GM1 alpha"} } },
+{LEX_GM1, {SP, "Globoside", {"Lex-GM1"} } },
+{NEUGC_LACNAC_GM1_NEUGC, {SP, "Globoside", {"NeuGc-LacNAc-GM1(NeuGc)"} } },
+{GALNAC_GM1, {SP, "Globoside", {"GalNAc-GM1"} } },
+{SO3_GM1_NEUGC, {SP, "Globoside", {"SO3-GM1(NeuGc)"} } },
+{FUC_GM1_NEUGC, {SP, "Globoside", {"Fuc-GM1(NeuGc)"} } },
+{GM1_NEUGC, {SP, "Globoside", {"GM1(NeuGc)"} } },
+{FUC_GM1, {SP, "Globoside", {"Fuc-GM1"} } },
+{GD1C_NEUGC_NEUGC, {SP, "Globoside", {"GD1c(NeuGc/NeuGc)"} } },
+{GALGAL_GD1B, {SP, "Globoside", {"GalGal-GD1b"} } },
+{GAL_FUC_GD1B, {SP, "Globoside", {"Gal(Fuc)-GD1b"} } },
+{GAL_GD1B, {SP, "Globoside", {"Gal-GD1b"} } },
+{FUC_GD1B, {SP, "Globoside", {"Fuc-GD1b"} } },
+{GALNAC_GD1A_NEUGC_NEUAC, {SP, "Globoside", {"GalNAc-GD1a(NeuGc/NeuAc)"} } },
+{GALNAC_GD1A, {SP, "Globoside", {"GalNAc-GD1a"} } },
+{GD1A_NEUGC_NEUGC, {SP, "Globoside", {"GD1a(NeuGc/NeuGc)"} } },
+{GD1A_NEUAC_NEUGC, {SP, "Globoside", {"GD1a(NeuAc/NeuGc)"} } },
+{GD1A_NEUGC_NEUAC, {SP, "Globoside", {"GD1a(NeuGc/NeuAc)"} } },
+{AC_O9_GD1A, {SP, "Globoside", {"Ac-O-9-GD1a"} } },
+{SB1A, {SP, "Globoside", {"SB1a"} } },
+{SM1B, {SP, "Globoside", {"SM1b"} } },
+{SM1A, {SP, "Globoside", {"SM1a"} } },
+{GALNACGAL_FUC_GA1, {SP, "Globoside", {"GalNAcGal(Fuc)-GA1"} } },
+{GAL_FUC_GA1, {SP, "Globoside", {"Gal(Fuc)-GA1"} } },
+{FUC_GA1, {SP, "Globoside", {"Fuc-GA1"} } },
+{FUCIGB3CER, {SP, "Globoside", {"(Fuc)iGb3Cer"} } },
+{SO3_GAL_IGB4CER, {SP, "Globoside", {"SO3-Gal-iGb4Cer"} } },
+{SO3_IGB4CER, {SP, "Globoside", {"SO3-iGb4Cer"} } },
+{FUC_GAL_GAL_IGB4CER, {SP, "Globoside", {"Fuc(Gal)Gal-iGb4Cer"} } },
+{FUC_IGB3CER, {SP, "Globoside", {"Fuc-iGb3Cer"} } },
+{NEUACGAL_IGB4CER, {SP, "Globoside", {"NeuAcGal-iGb4Cer"} } },
+{GAL_IGB4CER, {SP, "Globoside", {"Gal-iGb4Cer"} } },
+{I_FORSSMAN, {SP, "Globoside", {"i-Forssman"} } },
+{IGB4CER, {SP, "Globoside", {"iGb4Cer"} } },
+{IGB3CER, {SP, "Globoside", {"iGb3Cer"} } },
+{FUC_BRANCHED_FORSSMAN, {SP, "Globoside", {"Fuc-Branched-Forssman"} } },
+{BRANCHED_FORSSMAN, {SP, "Globoside", {"Branched-Forssman"} } },
+{NEUGCNEUGC_GALGB4CER, {SP, "Globoside", {"NeuGcNeuGc-GalGb4Cer"} } },
+{NEUGC_GALGB4CER, {SP, "Globoside", {"NeuGc-GalGb4Cer"} } },
+{SO3_GALGB4CER, {SP, "Globoside", {"SO3-GalGb4Cer"} } },
+{SO3_GB4CER, {SP, "Globoside", {"SO3-Gb4Cer"} } },
+{GLCNACGB3CER, {SP, "Globoside", {"GlcNAcGb3Cer"} } },
+{GLOBO_B, {SP, "Globoside", {"Globo-B"} } },
+{PARA_FORSSMAN, {SP, "Globoside", {"Para-Forssman"} } },
+{GALNACGALGB3CER, {SP, "Globoside", {"GalNAcGalGb3Cer"} } },
+{FUCGALGB3CER, {SP, "Globoside", {"FucGalGb3Cer"} } },
+{GALGALGALGB3CER, {SP, "Globoside", {"GalGalGalGb3Cer"} } },
+{GALGALGB3CER, {SP, "Globoside", {"GalGalGb3Cer"} } },
+{GALGB3CER, {SP, "Globoside", {"GalGb3Cer"} } },
+{GLOBO_LEX_9, {SP, "Globoside", {"Globo-Lex-9"} } },
+{GALGLCNAC_GALGB4CER, {SP, "Globoside", {"GalGlcNAc-GalGb4Cer"} } },
+{GLCNAC_GALGB4CER, {SP, "Globoside", {"GlcNAc-GalGb4Cer"} } },
 
 {IPC, {SP, "Phosphosphingolipids [SP03]", {"IPC", "PI-Cer"} } },
 {LSM, {SP, "Ceramides [SP02]", {"LSM", "SPC"} } },

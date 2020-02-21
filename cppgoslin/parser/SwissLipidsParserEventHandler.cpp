@@ -16,12 +16,17 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("pl_three_hg_pre_event", set_head_group_name);
     reg("pl_four_hg_pre_event", set_head_group_name);
     reg("sl_hg_pre_event", set_head_group_name);
-    reg("st_hg_pre_event", set_head_group_name);
+    reg("st_species_hg_pre_event", set_head_group_name);
+    reg("st_sub1_hg_pre_event", set_head_group_name);
+    reg("st_sub2_hg_pre_event", set_head_group_name);
     
     reg("fa_species_pre_event", set_species_level);
     
     reg("gl_molecular_pre_event", set_molecular_level);
     reg("unsorted_fa_separator_pre_event", set_molecular_level);
+    reg("fa2_unsorted_pre_event", set_molecular_level);
+    reg("fa3_unsorted_pre_event", set_molecular_level);
+    reg("fa4_unsorted_pre_event", set_molecular_level);
     
     reg("lcb_pre_event", new_lcb);
     reg("lcb_post_event", clean_lcb);
