@@ -121,7 +121,7 @@ public:
     
     
     unsigned long next_free_rule_index;
-    map<char, unsigned long> TtoNT;
+    map<char, set<unsigned long>> TtoNT;
     map<unsigned long, set<unsigned long>> NTtoNT;
     map<unsigned long, string> NTtoRule;
     map<unsigned long, set<unsigned long>> originalNTtoNT;

@@ -84,9 +84,8 @@ void Parser<T>::read_grammar(string grammar){
     
     rules->erase(rules->begin());
     ruleToNT.insert(pair<string, unsigned long>(EOF_RULE_NAME, EOF_RULE));
-    //TtoNT.insert(pair<char, set<unsigned long>>(EOF_SIGN, set<unsigned long>()));
-    TtoNT.insert(pair<char, unsigned long>(EOF_SIGN, EOF_RULE));
-    //TtoNT.at(EOF_SIGN).insert(EOF_RULE);
+    TtoNT.insert(pair<char, set<unsigned long>>(EOF_SIGN, set<unsigned long>()));
+    TtoNT.at(EOF_SIGN).insert(EOF_RULE);
     
     for (auto rule_line : *rules){
         
@@ -162,10 +161,12 @@ void Parser<T>::read_grammar(string grammar){
                 unsigned long tRule = 0;
                 if (TtoNT.find(c) == TtoNT.end()){
                     tRule = get_next_free_rule_index();
-                    TtoNT.insert(pair<char, unsigned long>(c, tRule));
+                    TtoNT.insert(pair<char, set<unsigned long>>(c, set<unsigned long>()));
+                    TtoNT.at(c).insert(tRule);
+                    
                 }
                 else {
-                    tRule = TtoNT.at(c);
+                    tRule = *TtoNT.at(c).begin();
                 }
                 
                 if (NTtoNT.find(tRule) == NTtoNT.end()) NTtoNT.insert(pair<unsigned long, set<unsigned long>>(tRule, set<unsigned long>()));
@@ -219,7 +220,7 @@ void Parser<T>::read_grammar(string grammar){
     parser_event_handler->parser = this;
     parser_event_handler->sanity_check();
         
-    /*
+    
     set<unsigned long> keys;
     for (auto key : TtoNT) keys.insert(key.first);
                                                                    
@@ -238,7 +239,6 @@ void Parser<T>::read_grammar(string grammar){
             delete backward_rules;
         }
     }
-    */
     
     for (auto kvp : NTtoNT){
         originalNTtoNT.insert({kvp.first, set<unsigned long>()});
@@ -451,14 +451,12 @@ unsigned long Parser<T>::add_terminal(string text){
         unsigned long tRule = 0;
         if (TtoNT.find(c) == TtoNT.end()){
             tRule = get_next_free_rule_index();
-            TtoNT.insert(pair<char, unsigned long>(c, tRule));
+            TtoNT.insert(pair<char, set<unsigned long>>(c, set<unsigned long>()));
+            TtoNT.at(c).insert(tRule);
         }
         else {
-            tRule = TtoNT.at(c);
+            tRule = *TtoNT.at(c).begin();
         }
-        //unsigned long next_index = get_next_free_rule_index();
-        //NTtoNT.at(c).insert(next_index);
-        
         terminal_rules.push_back(tRule);
     }
     
@@ -611,22 +609,15 @@ void Parser<T>::parse_regular(string text_to_parse){
             requirement_fulfilled = false;
             break;
         }
-        
-        set<unsigned long> tRules;
-        vector<unsigned long> *backward_rules = collect_one_backwards(TtoNT.at(c));
-        for (auto p : *backward_rules){
-            tRules.insert(compute_rule_key(p, TtoNT.at(c)));
-        }
-        delete backward_rules;
             
-        for (auto T_rule_index : tRules){
+        for (auto T_rule_index : TtoNT.at(c)){
             unsigned long new_key = T_rule_index >> SHIFT;
             unsigned old_key = T_rule_index & MASK;
             DPNode *dp_node = new DPNode(c, old_key, NULL, NULL);
             dp_table[i][0]->insert({new_key, dp_node});
             DPs.push_back(dp_node);
-            Ks[i]->insert(0);
         }
+        Ks[i]->insert(0);
     }
     
     
@@ -651,14 +642,14 @@ void Parser<T>::parse_regular(string text_to_parse){
                             
                             DPNode *content = new DPNode(index_pair_1.first, index_pair_2.first, index_pair_1.second, index_pair_2.second);
                             DPs.push_back(content);
-                            Ks[j]->insert(i);
+                            //Ks[j]->insert(i);
                             for (auto rule_index : NTtoNT.at(key)){
                                 Di->insert({rule_index, content});
                             }
                         }
                     }
                 }
-                //if (Di->size() > 0) Ks[j]->insert(i);
+                if (Di->size() > 0) Ks[j]->insert(i);
             }
         }
         

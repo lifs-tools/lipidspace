@@ -50,7 +50,7 @@ install: main
 	cp cppgoslin/domain/*.h  ${install_dir}/include/cppgoslin/domain/.
 	cp cppgoslin/parser/*.h  ${install_dir}/include/cppgoslin/parser/.
 	
-test: main ${test_obj}
+test: libcppGoslin.so ${test_obj}
 	${CC} -I. ${opt} -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.o -L. -l cppGoslin
 	${CC} -I. ${opt} -o ParserTest cppgoslin/tests/ParserTest.o -L. -l cppGoslin
 	${CC} -I. ${opt} -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o -L. -l cppGoslin
