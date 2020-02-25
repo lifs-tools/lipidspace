@@ -10,7 +10,6 @@ test_obj = cppgoslin/tests/MolecularFattyAcidTest.o cppgoslin/tests/ParserTest.o
 
 opt = -std=c++11 -O3
 
-
 main: grammarWriter ${obj}
 	${CC} -shared ${obj} -o ${bin}
 	
@@ -57,7 +56,6 @@ test: libcppGoslin.so ${test_obj}
 
 	
 runtests:
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
-	./MolecularFattyAcidTest
-	./ParserTest
-	./SwissLipidsTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MolecularFattyAcidTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SwissLipidsTest
