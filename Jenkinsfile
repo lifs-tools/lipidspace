@@ -3,8 +3,8 @@ node {
     def toolName = "${jobToolName?:''}"
     def emailOnSuccess = "${jobEmailRecipients?:''}"
     def emailOnFailure = "${jobEmailRecipients?:''}"
-    def gitRepo = "lifs-tools/lipidcreator"
-    def gitHoster = "github.com"
+    def gitRepo = "${jobRepo?:'kopczynski/cppgoslin'}"
+    def gitHoster = "gitlab.isas.de"
     def gitUrl = "https://${gitHoster}/${gitRepo}"
     def gitUserName = "${jobGitUserName?:''}"
     def gitUserEmail = "${jobGitUserEmail?:''}"
@@ -47,7 +47,7 @@ node {
 //                    stage('Publish') {
 //                        def buildInfo = artifactoryServer.upload spec: afUploadSpec, failNoOp: true
 //                        artifactoryServer.publishBuildInfo buildInfo
-                    }
+//                    }
                     stage 'Tag'
                     withCredentials([usernamePassword(credentialsId: gitUserCredentialsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh("git config user.email '${jobGitUserEmail}'")
@@ -66,7 +66,7 @@ node {
                          body: "Artifacts have been deployed to Artifactory, build tag was pushed to ${gitUrl}/releases/tag/${BUILD_NUMBER}."
                 } catch(e) {
                     mail to: emailOnFailure,
-                         subject: "${tooName} build failed: ${currentBuild.fullDisplayName}",
+                         subject: "${toolName} build failed: ${currentBuild.fullDisplayName}",
                          body: """Please check the job errors:
                                   ${e}
                                 """
