@@ -3,7 +3,7 @@ node {
     def toolName = "${jobToolName?:''}"
     def emailOnSuccess = "${jobEmailRecipients?:''}"
     def emailOnFailure = "${jobEmailRecipients?:''}"
-    def gitRepo = "lifs-tools/lipidcreator"
+    def gitRepo = "${jobRepo?:'kopczynski/cppgoslin'}"
     def gitHoster = "gitlab.isas.de"
     def gitUrl = "https://${gitHoster}/${gitRepo}"
     def gitUserName = "${jobGitUserName?:''}"
