@@ -51,12 +51,13 @@ install: main
 	cp cppgoslin/parser/*.h  ${install_dir}/include/cppgoslin/parser/.
 	
 test: libcppGoslin.so ${test_obj}
-	${CC} -I. ${opt} -Bstatic -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.o -L. -l cppGoslin
-	${CC} -I. ${opt} -Bstatic -o ParserTest cppgoslin/tests/ParserTest.o -L. -l cppGoslin
-	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o -L. -l cppGoslin
+	${CC} -I. ${opt} -Bstatic -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o ParserTest cppgoslin/tests/ParserTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
 
 	
 runtests:
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
 	./MolecularFattyAcidTest
 	./ParserTest
 	./SwissLipidsTest
