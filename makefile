@@ -17,8 +17,8 @@ main: grammarWriter ${obj}
 	
 
 grammarWriter:
-	${CC} ${opt} -o writeGrammersHeader writeGrammersHeader.cpp
-	./writeGrammersHeader "cppgoslin/parser/KnownGrammars.h"
+	${CC} ${opt} -o writeGrammarsHeader writeGrammarsHeader.cpp
+	./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h"
 	
 	
 %.o: %.cpp
@@ -32,7 +32,7 @@ clean:
 	rm -f ${bin}
 	rm -f MolecularFattyAcidTest
 	rm -f ParserTest
-	rm -f writeGrammersHeader
+	rm -f writeGrammarsHeader
 	
 dist-clean: clean
 	rm -f ${install_dir}/lib/${bin}
