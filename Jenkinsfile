@@ -47,7 +47,7 @@ node {
 //                    stage('Publish') {
 //                        def buildInfo = artifactoryServer.upload spec: afUploadSpec, failNoOp: true
 //                        artifactoryServer.publishBuildInfo buildInfo
-                    }
+//                    }
                     stage 'Tag'
                     withCredentials([usernamePassword(credentialsId: gitUserCredentialsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh("git config user.email '${jobGitUserEmail}'")
