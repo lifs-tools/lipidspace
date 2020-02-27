@@ -58,7 +58,13 @@ public:
     ~TreeNode();
     string get_text();
 };
-        
+   
+/*
+static void intersection(set<unsigned long> &v1, set<unsigned long> &v2, set<unsigned long> &v) {
+  v.clear();
+  std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(),
+                        std::inserter(v,v.begin()));
+}*/
         
 
 // this class is dedicated to have an efficient sorted set class storing
@@ -125,6 +131,8 @@ public:
     map<unsigned long, set<unsigned long>> NTtoNT;
     map<unsigned long, string> NTtoRule;
     map<unsigned long, set<unsigned long>> originalNTtoNT;
+    vector<set<unsigned long>> left_pair;
+    vector<set<unsigned long>> right_pair;
     char quote;
     BaseParserEventHandler<T> *parser_event_handler;
     bool word_in_grammar;

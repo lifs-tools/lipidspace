@@ -16,7 +16,6 @@ int main(int argc, char** argv){
         SwissLipidsParser swiss_lipids_parser;
         
         
-        
         // test several more lipid names
         vector<string> lipid_names;
         ifstream infile("cppgoslin/tests/swiss-lipids-test.csv");
@@ -26,6 +25,7 @@ int main(int argc, char** argv){
             lipid_names.push_back(line);
         }
         infile.close();
+        
         
         for (auto lipid_name : lipid_names){
             lipid = swiss_lipids_parser.parse(lipid_name);

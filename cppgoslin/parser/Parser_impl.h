@@ -259,6 +259,20 @@ void Parser<T>::read_grammar(string grammar){
             delete backward_rules;
         }
     }
+    
+    
+    for (uint i = 0; i < next_free_rule_index; ++i){
+        left_pair.push_back(set<unsigned long>());
+        right_pair.push_back(set<unsigned long>());
+    }
+    
+    for (auto& kvp : NTtoNT){
+        if (kvp.first <= MASK) continue;
+        unsigned long l = kvp.first >> SHIFT;
+        unsigned long r = kvp.first & MASK;
+        right_pair.at(l).insert(kvp.first);
+        left_pair.at(r).insert(kvp.first);
+    }
 }
 
 
@@ -588,17 +602,25 @@ void Parser<T>::parse_regular(string text_to_parse){
     
     int n = text_to_parse.length();
     // dp stands for dynamic programming, nothing else
-    map<unsigned long, DPNode*> ***dp_table = new map<unsigned long, DPNode*>**[n];
-    vector<DPNode*> DPs;
+    map<unsigned long, DPNode*> ***DP = new map<unsigned long, DPNode*>**[n];
+    set<unsigned long> ***DL = new set<unsigned long>**[n];
+    set<unsigned long> ***DR = new set<unsigned long>**[n];
+    vector<DPNode*> DPnodes;
     
-    // Ks is a lookup, which fields in the dp_table are filled
+    // Ks is a lookup, which fields in the DP are filled
     Bitfield **Ks = new Bitfield*[n];
     
     
     // init the tables
     for (int i = 0; i < n; ++i){
-        dp_table[i] = new map<unsigned long, DPNode*>*[n - i];
-        for (int j = 0; j < n - i; ++j) dp_table[i][j] = new map<unsigned long, DPNode*>();
+        DP[i] = new map<unsigned long, DPNode*>*[n - i];
+        DL[i] = new set<unsigned long>*[n - i];
+        DR[i] = new set<unsigned long>*[n - i];
+        for (int j = 0; j < n - i; ++j){
+            DP[i][j] = new map<unsigned long, DPNode*>();
+            DL[i][j] = new set<unsigned long>();
+            DR[i][j] = new set<unsigned long>();
+        }
         Ks[i] = new Bitfield(n);
     }
     
@@ -614,50 +636,70 @@ void Parser<T>::parse_regular(string text_to_parse){
             unsigned long new_key = T_rule_index >> SHIFT;
             unsigned old_key = T_rule_index & MASK;
             DPNode *dp_node = new DPNode(c, old_key, NULL, NULL);
-            dp_table[i][0]->insert({new_key, dp_node});
-            DPs.push_back(dp_node);
+            DP[i][0]->insert({new_key, dp_node});
+            DL[i][0]->insert(left_pair.at(new_key).begin(), left_pair.at(new_key).end());
+            DR[i][0]->insert(right_pair.at(new_key).begin(), right_pair.at(new_key).end());
+            DPnodes.push_back(dp_node);
         }
         Ks[i]->insert(0);
     }
-    
-    
+
     
     if (requirement_fulfilled){
         for (int i = 1; i < n; ++i){
             int im1 = i - 1;
             for (int j = 0; j < n - i; ++j){
-                map<unsigned long, DPNode*>** D = dp_table[j];
-                map<unsigned long, DPNode*>* Di = D[i];
+                map<unsigned long, DPNode*>** DPj = DP[j];
+                map<unsigned long, DPNode*>* DPji = DPj[i];
                 int jp1 = j + 1;
                 
-                for (auto k : *Ks[j]){
-                    if (k >= i) break;
-                    if (!Ks[jp1 + k]->find(im1 - k)) continue;
+                set<unsigned long>* DLji = DL[j][i];
+                set<unsigned long>* DRji = DR[j][i];
                 
-                    for (auto index_pair_1 : *D[k]){
-                        for (auto index_pair_2 : *dp_table[jp1 + k][im1 - k]){
-                            unsigned long key = compute_rule_key(index_pair_1.first, index_pair_2.first);
+                for (auto k : *Ks[j]){
+                    int jpok = jp1 + k;
+                    if (!Ks[jp1 + k]->find(im1 - k)) continue;
+                    
+                    
+                    set<unsigned long>::iterator it_DR = DR[j][k]->begin();
+                    set<unsigned long>::iterator it_DL = DL[jpok][im1 - k]->begin();
+                    
+                    // compute intersection of both sets providing the common keys
+                    while (it_DR != DR[j][k]->end() && it_DL != DL[jpok][im1 - k]->end()){
+                        if (*it_DR == *it_DL){
                             
-                            if (NTtoNT.find(key) == NTtoNT.end()) continue;
+                            unsigned long index_pair_1 = *it_DL >> SHIFT;
+                            unsigned long index_pair_2 = *it_DL & MASK;
                             
-                            DPNode *content = new DPNode(index_pair_1.first, index_pair_2.first, index_pair_1.second, index_pair_2.second);
-                            DPs.push_back(content);
-                            //Ks[j]->insert(i);
-                            for (auto rule_index : NTtoNT.at(key)){
-                                Di->insert({rule_index, content});
+                            DPNode *content = new DPNode(index_pair_1, index_pair_2, DPj[k]->at(index_pair_1), DP[jp1 + k][im1 - k]->at(index_pair_2));
+                            DPnodes.push_back(content);
+                            
+                            for (unsigned long rule_index : NTtoNT.at(*it_DL)){
+                                DPji->insert({rule_index, content});
+                                DLji->insert(left_pair.at(rule_index).begin(), left_pair.at(rule_index).end());
+                                DRji->insert(right_pair.at(rule_index).begin(), right_pair.at(rule_index).end());
                             }
+                            it_DR++;
+                            it_DL++;
+                        }
+                        else if (*it_DR > *it_DL){
+                            it_DL++;
+                        }
+                        else {
+                            it_DR++;
                         }
                     }
+                    
                 }
-                if (Di->size() > 0) Ks[j]->insert(i);
+                if (DPji->size() > 0) Ks[j]->insert(i);
             }
         }
         
         for (int i = n - 1; i > 0; --i){
-            if (dp_table[0][i]->find(START_RULE) != dp_table[0][i]->end()){
+            if (DP[0][i]->find(START_RULE) != DP[0][i]->end()){
                 word_in_grammar = true;
                 TreeNode parse_tree(START_RULE, NTtoRule.find(START_RULE) != NTtoRule.end());
-                fill_tree(&parse_tree, dp_table[0][i]->at(START_RULE));
+                fill_tree(&parse_tree, DP[0][i]->at(START_RULE));
                 raise_events(&parse_tree);
                 break;
             }
@@ -665,15 +707,22 @@ void Parser<T>::parse_regular(string text_to_parse){
     }
     
     // delete tables
-    for (auto dp_node : DPs) delete dp_node;
+    for (auto dp_node : DPnodes) delete dp_node;
     for (int i = 0; i < n; ++i){
         for (int j = 0; j < n - i; ++j){
-            delete dp_table[i][j];
+            delete DP[i][j];
+            delete DL[i][j];
+            delete DR[i][j];
         }
-        delete[] dp_table[i];
+        delete[] DP[i];
+        delete[] DL[i];
+        delete[] DR[i];
         delete Ks[i];
     }
-    delete[] dp_table;
+    delete[] DP;
+    delete[] DL;
+    delete[] DR;
     delete[] Ks;
 }
+
 
