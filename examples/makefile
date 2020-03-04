@@ -7,3 +7,4 @@ libs = cppGoslin
 main: lipid_name_parser.cpp simple_statistics.cpp
 	${CC} ${opt} -I ${inc} -o lipid_name_parser lipid_name_parser.cpp -L ${lib_dir} -l ${libs}
 	${CC} ${opt} -I ${inc} -o simple_statistics simple_statistics.cpp -L ${lib_dir} -l ${libs}
+	${CC} ${opt} -I ${inc} -o swiss_lipids_statistics swiss_lipids_statistics.cpp -L ${lib_dir} -l ${libs}
