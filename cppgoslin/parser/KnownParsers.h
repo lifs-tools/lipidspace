@@ -6,6 +6,7 @@
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
 #include "cppgoslin/parser/SwissLipidsParserEventHandler.h"
+#include "cppgoslin/parser/BaseParserEventHandler.h"
 
 class GoslinParser : public Parser<LipidAdduct*> {
 public:

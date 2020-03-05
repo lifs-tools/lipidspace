@@ -56,7 +56,6 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
     return "";
 }
 
-
 LipidCategory LipidSpecies::get_category(string _head_group){
     if (!StringCategory.size()){
         for (const auto& kvp : lipid_classes){
@@ -67,8 +66,9 @@ LipidCategory LipidSpecies::get_category(string _head_group){
         }
     }
     
+    
     auto cat = StringCategory.find(_head_group);
-    return (cat != StringCategory.end()) ? cat->second : UNDEFINED_CATEGORY;
+    return (cat != StringCategory.end()) ? StringCategory.at(_head_group) : UNDEFINED_CATEGORY;
 }
 
 

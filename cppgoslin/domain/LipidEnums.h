@@ -19,6 +19,8 @@ enum LipidCategory {NO_CATEGORY,
 
 
 static const map<LipidCategory, string> CategoryString = {
+    {NO_CATEGORY, "NO_CATEGORY"},
+    {UNDEFINED_CATEGORY, "UNDEFINED_CATEGORY"},
     {GL, "GL"},
     {GP, "GP"},
     {SP, "SP"},

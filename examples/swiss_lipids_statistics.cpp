@@ -28,7 +28,7 @@ int main(){
          */
         map<string, int> lipid_counts;
 
-	cout << "Loaded " << lipidnames.size() << " lipid names." << endl;
+        cout << "Loaded " << lipidnames.size() << " lipid names." << endl;
         
         cout << "Parsing lipids" << endl; 
         int parsedLipids = 0;	
@@ -44,16 +44,16 @@ int main(){
                 delete lipid;
                 
                 /* adding species into the map */
-		if (species!="") {
-			cout << "Category: " << category <<" | Species: " << species << endl;
-                	if (lipid_counts.find(species) == lipid_counts.end()) lipid_counts.insert({species, 0});
-               		++lipid_counts.at(species);
-		} else {
-			cout << "Could not retrieve category for '" << lipid_name << "'" << endl;
-		}
+                if (species!="") {
+                    cout << "Category: " << category <<" | Species: " << species << endl;
+                            if (lipid_counts.find(species) == lipid_counts.end()) lipid_counts.insert({species, 0});
+                            ++lipid_counts.at(species);
+                } else {
+                    cout << "Could not retrieve category for '" << lipid_name << "'" << endl;
+                }
             } else {
-	    	cout << "Could not parse '" << lipid_name << "'" << endl;
-	    }
+                cout << "Could not parse '" << lipid_name << "'" << endl;
+            }
         }
        
         cout << "Parsed " << parsedLipids << " of " << totalLipids << " lipid names" << endl;	
