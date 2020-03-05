@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <fstream>
 
 using namespace std;
 
@@ -10,7 +11,7 @@ int main(){
     try {
         /* initiating the parser class */
         SwissLipidsParser lipid_parser;
-        LipidAdduct* lipid;
+        LipidAdduct* lipidAdduct;
             
         /* read in file with lipid names, one per row */
         vector<string> lipidnames;
@@ -32,29 +33,43 @@ int main(){
         
         cout << "Parsing lipids" << endl; 
         int parsedLipids = 0;	
-        int totalLipids = 0;	
+        int totalLipids = 0;
+	ofstream slout;
+	string fileName = "swisslipids-results.tsv";
+	slout.open(fileName, std::ofstream::out | std::ofstream::trunc);
+	if(slout.is_open()) {
+        cout << "Saving parsing results to '" << fileName << "'" << endl; 
+	slout << "Original Name" << '\t' << "Structural Level" << '\t' << "Name at Level" << '\t' << "Category" << '\t' << "Species" << endl;
         /* parsing all lipids */
         for (auto lipid_name : lipidnames){
-            cout << "Parsing name: " << lipid_name << endl;
-            lipid = lipid_parser.parse(lipid_name);
+	    ++totalLipids;
+	    slout << lipid_name << '\t';
+            lipidAdduct = lipid_parser.parse(lipid_name);
             /* checking if lipid name was parsed */
-            if (lipid){
-                string category = lipid->get_lipid_string(CATEGORY);
-                string species = lipid->get_lipid_string(SPECIES);
-                delete lipid;
+            if (lipidAdduct){
+		++parsedLipids;
+		LipidSpeciesInfo info = lipidAdduct->lipid->info;
+		string nativeLevelName = lipidAdduct->get_lipid_string(info.level);
+                slout << info.level << '\t';
+		slout << nativeLevelName << '\t';
+                string category = lipidAdduct->get_lipid_string(CATEGORY);
+                slout << category << '\t';
+		string species = lipidAdduct->get_lipid_string(SPECIES);
+                slout << species << endl;
+                delete lipidAdduct;
                 
                 /* adding species into the map */
-                if (species!="") {
-                    cout << "Category: " << category <<" | Species: " << species << endl;
-                            if (lipid_counts.find(species) == lipid_counts.end()) lipid_counts.insert({species, 0});
-                            ++lipid_counts.at(species);
-                } else {
-                    cout << "Could not retrieve category for '" << lipid_name << "'" << endl;
+                if (category!="") {
+                    if (lipid_counts.find(category) == lipid_counts.end()) lipid_counts.insert({category, 0});
+                    ++lipid_counts.at(category);
                 }
             } else {
                 cout << "Could not parse '" << lipid_name << "'" << endl;
+		slout << "N.A." << '\t' << "N.A." << '\t' << "N.A." << '\t' << "N.A." << endl;
             }
         }
+	slout.close();
+	}
        
         cout << "Parsed " << parsedLipids << " of " << totalLipids << " lipid names" << endl;	
         /* reporting the distribution */

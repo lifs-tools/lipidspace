@@ -5,15 +5,15 @@
 
 using namespace std;
 
-class LipidException {
+class LipidException : public std::exception {
 public:
     string message;
     LipidException(string _message){
         message = _message;
     }
     
-    string what() const throw(){
-        return message;
+    const char * what() const throw(){
+        return message.c_str();
     }
 };
 

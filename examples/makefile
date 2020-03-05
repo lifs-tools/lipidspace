@@ -1,5 +1,6 @@
 CC = g++
 opt = -O3 -std=c++11 -Wall
+dopt = -O0 -std=c++11 -Wall -g -rdynamic
 inc = /usr/include
 lib_dir = /usr/lib
 libs = cppGoslin
