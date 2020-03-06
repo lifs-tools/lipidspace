@@ -130,7 +130,7 @@ public:
     map<char, set<unsigned long>> TtoNT;
     map<unsigned long, set<unsigned long>> NTtoNT;
     map<unsigned long, string> NTtoRule;
-    map<unsigned long, set<unsigned long>> originalNTtoNT;
+    map<unsigned long, vector<unsigned long>*> substitution;
     vector<set<unsigned long>> left_pair;
     vector<set<unsigned long>> right_pair;
     char quote;
@@ -147,6 +147,7 @@ public:
     virtual ~Parser();
     unsigned long get_next_free_rule_index();
     vector<string>* extract_text_based_rules(string grammar_filename, char _quote = DEFAULT_QUOTE);
+    vector<unsigned long>* top_nodes(unsigned long rule_index);
     static unsigned long compute_rule_key(unsigned long rule_index_1, unsigned long rule_index_2);
     bool is_terminal(string product_token, char _quote);
     static string de_escape(string text, char _quote);

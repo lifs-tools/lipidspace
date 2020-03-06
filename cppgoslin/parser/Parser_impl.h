@@ -36,6 +36,9 @@ unsigned long Parser<T>::get_next_free_rule_index(){
 
 template <class T>
 Parser<T>::~Parser(){
+    for (auto& kv : substitution){
+        delete kv.second;
+    }
 }
 
 
@@ -219,8 +222,78 @@ void Parser<T>::read_grammar(string grammar){
         
     parser_event_handler->parser = this;
     parser_event_handler->sanity_check();
-        
     
+    
+    
+    for (auto& kv : NTtoNT){
+        for (auto& rule : kv.second){
+            vector<unsigned long>* topnodes = top_nodes(rule);
+            for (auto& rule_top : *topnodes){
+                vector<unsigned long>* chain = collect_backwards(rule, rule_top);
+                if (chain){
+                    chain->push_back(rule);
+                    cout << kv.first << endl;
+                    unsigned long key = kv.first + (rule_top << 16);
+                    substitution.insert({key, chain});
+                }
+            }
+            delete topnodes;
+    
+        }
+    }
+    
+    
+    for (auto& kv : substitution){
+        stringstream ss;
+        ss << kv.first << " [";
+        int i = 0;
+        for (auto& v : *kv.second){
+            if (i++ > 0) ss << ", ";
+            ss << v;
+        }
+        ss << "]";
+        cout << ss.str() << endl;
+    }
+    
+    exit(0);
+    
+    //for dictionary in [self.TtoNT, self.NTtoNT]:
+    
+    for (auto& kv : NTtoNT){
+        set<unsigned long> new_rules;
+        for (auto& rule : kv.second){
+            vector<unsigned long>* top = collect_one_backwards(rule);
+            
+            for (auto& r : *top){
+                new_rules.insert(r);
+            }
+            
+            delete top;
+        }
+        for (auto& r : new_rules){
+            kv.second.insert(r);
+        }
+    }
+    
+    for (auto& kv : TtoNT){
+        set<unsigned long> new_rules;
+        for (auto& rule : kv.second){
+            vector<unsigned long>* top = collect_one_backwards(rule);
+            
+            for (auto& r : *top){
+                new_rules.insert(r);
+            }
+            
+            delete top;
+        }
+        for (auto& r : new_rules){
+            kv.second.insert(r);
+        }
+    }
+    
+    
+        
+    /*
     set<unsigned long> keys;
     for (auto key : TtoNT) keys.insert(key.first);
                                                                    
@@ -240,12 +313,9 @@ void Parser<T>::read_grammar(string grammar){
         }
     }
     
-    for (auto kvp : NTtoNT){
-        originalNTtoNT.insert({kvp.first, set<unsigned long>()});
-        set<unsigned long> *copy_set = &originalNTtoNT.at(kvp.first);
-        for (auto r : kvp.second) copy_set->insert(r);
-        
-    }
+    
+    
+    
     
     set<unsigned long> keysNT;
     for (auto k : NTtoNT) keysNT.insert(k.first);
@@ -259,6 +329,9 @@ void Parser<T>::read_grammar(string grammar){
             delete backward_rules;
         }
     }
+    */
+    
+    
     
     
     for (uint i = 0; i < next_free_rule_index; ++i){
@@ -491,6 +564,27 @@ unsigned long Parser<T>::add_terminal(string text){
 }
 
 
+template <class T>
+vector<unsigned long>* Parser<T>::top_nodes(unsigned long rule_index){
+    vector<unsigned long> *collection = new vector<unsigned long>();
+    vector<unsigned long> *collection_top = new vector<unsigned long>();
+    collection->push_back(rule_index);
+    uint i = 0;
+    while (i < collection->size()){
+        unsigned long current_index = collection->at(i);
+        if (NTtoNT.find(current_index) != NTtoNT.end()){
+            for (auto previous_index : NTtoNT.at(current_index)) collection->push_back(previous_index);
+        }
+        else {
+            collection_top->push_back(current_index);
+        }
+        i += 1;
+    }
+    delete collection;
+    
+    return collection_top;
+}
+
 
 // expanding singleton rules, e.g. S -> A, A -> B, B -> C
 template <class T>
@@ -513,12 +607,12 @@ vector<unsigned long>* Parser<T>::collect_one_backwards(unsigned long rule_index
 
 template <class T>
 vector<unsigned long>* Parser<T>::collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index, int s){
-    if (originalNTtoNT.find(child_rule_index) == originalNTtoNT.end()) return NULL;
+    if (NTtoNT.find(child_rule_index) == NTtoNT.end()) return NULL;
     
-    for (auto previous_index : originalNTtoNT.at(child_rule_index)){
+    for (auto previous_index : NTtoNT.at(child_rule_index)){
         if (previous_index == parent_rule_index) return new vector<unsigned long>;
         
-        else if (originalNTtoNT.find(previous_index) != originalNTtoNT.end()){
+        else if (NTtoNT.find(previous_index) != NTtoNT.end()){
             vector<unsigned long>* collection = collect_backwards(previous_index, parent_rule_index, s + 1);
             if (collection != NULL){
                 collection->push_back(previous_index);
@@ -557,6 +651,17 @@ template <class T>
 void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
     // checking and extending nodes for single rule chains
     unsigned long key = dp_node->left != NULL ? compute_rule_key(dp_node->rule_index_1, dp_node->rule_index_2) : dp_node->rule_index_2;
+    unsigned long subst_key = key + (node->rule_index << 16);
+    
+    if ((key != node->rule_index) and (substitution.find(subst_key) != substitution.end())){
+        for (auto& rule_index : *substitution.at(subst_key)){
+            node->left = new TreeNode(rule_index, NTtoRule.find(rule_index) != NTtoRule.end());
+            node = node->left;
+        }
+    }
+
+    /*
+    unsigned long key = dp_node->left != NULL ? compute_rule_key(dp_node->rule_index_1, dp_node->rule_index_2) : dp_node->rule_index_2;
     
     vector<unsigned long> *merged_rules = collect_backwards(key, node->rule_index);
     if (merged_rules != NULL){
@@ -566,6 +671,7 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
         }
         delete merged_rules;
     }
+    */
     
     if (dp_node->left != NULL) { // None => leaf
         node->left = new TreeNode(dp_node->rule_index_1, NTtoRule.find(dp_node->rule_index_1) != NTtoRule.end());
@@ -704,6 +810,7 @@ void Parser<T>::parse_regular(string text_to_parse){
                 break;
             }
         }
+        cout << word_in_grammar << endl;
     }
     
     // delete tables
