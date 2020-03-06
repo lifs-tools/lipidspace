@@ -232,7 +232,6 @@ void Parser<T>::read_grammar(string grammar){
                 vector<unsigned long>* chain = collect_backwards(rule, rule_top);
                 if (chain){
                     chain->push_back(rule);
-                    cout << kv.first << endl;
                     unsigned long key = kv.first + (rule_top << 16);
                     substitution.insert({key, chain});
                 }
@@ -243,19 +242,6 @@ void Parser<T>::read_grammar(string grammar){
     }
     
     
-    for (auto& kv : substitution){
-        stringstream ss;
-        ss << kv.first << " [";
-        int i = 0;
-        for (auto& v : *kv.second){
-            if (i++ > 0) ss << ", ";
-            ss << v;
-        }
-        ss << "]";
-        cout << ss.str() << endl;
-    }
-    
-    //exit(0);
     
     //for dictionary in [self.TtoNT, self.NTtoNT]:
     
@@ -346,6 +332,7 @@ void Parser<T>::read_grammar(string grammar){
         right_pair.at(l).insert(kvp.first);
         left_pair.at(r).insert(kvp.first);
     }
+    
 }
 
 
@@ -739,12 +726,10 @@ void Parser<T>::parse_regular(string text_to_parse){
         }
             
         for (auto T_rule_index : TtoNT.at(c)){
-            unsigned long new_key = T_rule_index >> SHIFT;
-            unsigned old_key = T_rule_index & MASK;
-            DPNode *dp_node = new DPNode(c, old_key, NULL, NULL);
-            DP[i][0]->insert({new_key, dp_node});
-            DL[i][0]->insert(left_pair.at(new_key).begin(), left_pair.at(new_key).end());
-            DR[i][0]->insert(right_pair.at(new_key).begin(), right_pair.at(new_key).end());
+            DPNode *dp_node = new DPNode(c, T_rule_index, NULL, NULL);
+            DP[i][0]->insert({T_rule_index, dp_node});
+            DL[i][0]->insert(left_pair.at(T_rule_index).begin(), left_pair.at(T_rule_index).end());
+            DR[i][0]->insert(right_pair.at(T_rule_index).begin(), right_pair.at(T_rule_index).end());
             DPnodes.push_back(dp_node);
         }
         Ks[i]->insert(0);
@@ -810,7 +795,6 @@ void Parser<T>::parse_regular(string text_to_parse){
                 break;
             }
         }
-        cout << word_in_grammar << endl;
     }
     
     // delete tables
