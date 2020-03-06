@@ -24,6 +24,7 @@ public:
     FattyAcid *lcb;
     vector<FattyAcid*> *fa_list;
     FattyAcid *current_fa;
+    bool use_head_group;
         
     SwissLipidsParserEventHandler();
     ~SwissLipidsParserEventHandler();
@@ -41,6 +42,7 @@ public:
     void add_hydroxyl(TreeNode *node);
     void add_double_bonds(TreeNode *node);
     void add_carbon(TreeNode *node);
+    void mediator_event(TreeNode* node);
     
 };
 
