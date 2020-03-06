@@ -255,7 +255,7 @@ void Parser<T>::read_grammar(string grammar){
         cout << ss.str() << endl;
     }
     
-    exit(0);
+    //exit(0);
     
     //for dictionary in [self.TtoNT, self.NTtoNT]:
     
