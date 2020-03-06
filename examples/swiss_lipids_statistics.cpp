@@ -12,6 +12,8 @@ int main(){
         /* initiating the parser class */
         SwissLipidsParser lipid_parser;
         LipidAdduct* lipidAdduct;
+        
+        
             
         /* read in file with lipid names, one per row */
         vector<string> lipidnames;

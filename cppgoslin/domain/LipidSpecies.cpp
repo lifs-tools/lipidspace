@@ -1,9 +1,9 @@
 #include "LipidSpecies.h"
 
+
 LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass _lipid_class, LipidSpeciesInfo *lipid_species_info){
     head_group = _head_group;
     lipid_category = (_lipid_category != NO_CATEGORY) ? _lipid_category : get_category(head_group);
-    
     lipid_class = (_lipid_class != NO_CLASS) ? _lipid_class : get_class(head_group);
     if (lipid_species_info != NULL){
         info.level = lipid_species_info->level;
