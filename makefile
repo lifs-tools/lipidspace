@@ -11,22 +11,28 @@ test_obj = cppgoslin/tests/MolecularFattyAcidTest.o cppgoslin/tests/ParserTest.o
 
 opt = -std=c++11 -O3 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 #-g
 
-main: KnownGrammar ${obj}
+
+main: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
 	${CC} -shared ${obj} -o ${bin}
 	
-static: KnownGrammar ${obj}
+static: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
 	ar rcs ${abin} ${obj}
 
 	
-KnownGrammar: 
-	${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp cppgoslin/domain/StringFunctions.cpp
-	./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h" "LipidEnums.h"
+cppgoslin/parser/KnownGrammars.h: data/goslin/Goslin.g4 data/goslin/GoslinFragments.g4 data/goslin/LipidMaps.g4 data/goslin/SwissLipids.g4
+	${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp && ./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h"
 	
-%.o: %.cpp
+cppgoslin/domain/LipidEnums.h: data/goslin/lipid-list.csv
+	${CC} ${opt} -I . -o writeLipidEnums writeLipidEnums.cpp cppgoslin/domain/StringFunctions.cpp && ./writeLipidEnums "cppgoslin/domain/LipidEnums.h"
+	
+
+	
+%.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h
 	${CC} ${opt} -I. -Wall -fPIC -o $@ -c $<
 	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
+	rm -f "cppgoslin/domain/LipidEnums.h"
 	rm -f cppgoslin/domain/*.o
 	rm -f cppgoslin/parser/*.o
 	rm -f cppgoslin/tests/*.o
