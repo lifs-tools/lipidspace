@@ -128,6 +128,7 @@ public:
     
     unsigned long next_free_rule_index;
     map<char, set<unsigned long>> TtoNT;
+    map<char, unsigned long> originalTtoNT;
     map<unsigned long, set<unsigned long>> NTtoNT;
     map<unsigned long, string> NTtoRule;
     map<unsigned long, vector<unsigned long>*> substitution;
