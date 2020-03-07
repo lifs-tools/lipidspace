@@ -15,6 +15,7 @@
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/MolecularFattyAcid.h"
 #include "cppgoslin/domain/StructuralFattyAcid.h"
+#include "cppgoslin/domain/StringFunctions.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include "cppgoslin/parser/GoslinFragmentParserEventHandler.h"
 #include "cppgoslin/parser/GoslinParserEventHandler.h"

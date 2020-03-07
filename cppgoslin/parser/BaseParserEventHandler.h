@@ -6,6 +6,7 @@
 #include <string>
 #include <functional>
 #include "cppgoslin/domain/LipidExceptions.h"
+#include "cppgoslin/domain/StringFunctions.h"
 #include "cppgoslin/parser/Parser.h"
 
 template<class T>

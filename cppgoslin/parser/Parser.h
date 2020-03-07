@@ -4,6 +4,7 @@
 
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include "cppgoslin/domain/LipidAdduct.h"
+#include "cppgoslin/domain/StringFunctions.h"
 #include "cppgoslin/parser/KnownGrammars.h"
 #include <string>
 #include <set>
@@ -30,7 +31,6 @@ public:
 };
 
 
-static const char DEFAULT_QUOTE = '\'';
 
     
 // DP stands for dynamic programming
@@ -59,12 +59,7 @@ public:
     string get_text();
 };
    
-/*
-static void intersection(set<unsigned long> &v1, set<unsigned long> &v2, set<unsigned long> &v) {
-  v.clear();
-  std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(),
-                        std::inserter(v,v.begin()));
-}*/
+
         
 
 // this class is dedicated to have an efficient sorted set class storing
@@ -159,14 +154,8 @@ public:
     void fill_tree(TreeNode *node, DPNode *dp_node);
     T parse(string text_to_parse);
     void parse_regular(string text_to_parse);
-    static string replace_all(std::string str, const std::string& from, const std::string& to);
 };
 
-
-
-
-string strip(string s, char c);
-vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE);
 
 
 
