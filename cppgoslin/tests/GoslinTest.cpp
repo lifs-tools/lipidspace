@@ -14,12 +14,12 @@ int main(int argc, char** argv){
     
     try {
         LipidAdduct* lipid;
-        SwissLipidsParser swiss_lipids_parser;
+        GoslinParser goslin_parser;
         
         
         // test several more lipid names
         vector<string> lipid_names;
-        ifstream infile("cppgoslin/tests/swiss-lipids-test.csv");
+        ifstream infile("cppgoslin/tests/goslin-test.csv");
         string line;
         while (getline(infile, line)){
             line = strip(line, ' ');
@@ -30,7 +30,7 @@ int main(int argc, char** argv){
         auto start = chrono::steady_clock::now();
         
         for (auto lipid_name : lipid_names){
-            lipid = swiss_lipids_parser.parse(lipid_name);
+            lipid = goslin_parser.parse(lipid_name);
             if (lipid == NULL){
                 throw LipidException("Error: '" + lipid_name + "'");
             }
