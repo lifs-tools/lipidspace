@@ -305,7 +305,7 @@ int main(int argc, char** argv){
         assert (lsi.num_carbon == 38);
         assert (lsi.num_double_bonds == 3);
         assert (lsi.num_hydroxyl == 0);
-        assert (lsi.position == );
+        assert (lsi.position == -1);
         delete lipid;
         
         // sterol;
