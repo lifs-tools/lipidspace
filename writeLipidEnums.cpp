@@ -19,7 +19,7 @@ void writeLipidEnum(string ofFileName){
     
     string line;
     int i = 0;
-    map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"SL", 1}};
+    map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"SL", 1}, {"UNDEFINED", 1}};
     
     map<string, vector<string>*> data;
     while (getline(infile, line)){
@@ -73,7 +73,7 @@ void writeLipidEnum(string ofFileName){
         data.insert({enum_name, tokens});
     }
     
-    
+    offile << "/* DO NOT CHANGE THE FILE, IT IS AUTOMATICALLY GENERATED */" << endl << endl;
     offile << "#ifndef LIPID_ENUMS_H" << endl;
     offile << "#define LIPID_ENUMS_H" << endl;
     offile << "" << endl;
@@ -83,7 +83,7 @@ void writeLipidEnum(string ofFileName){
     offile << "using namespace std;" << endl;
     offile << "" << endl;
     offile << "enum LipidCategory {NO_CATEGORY," << endl;
-    offile << "    UNDEFINED_CATEGORY, " << endl;
+    offile << "    UNDEFINED," << endl;
     offile << "    GL, // SLM:000117142 Glycerolipids" << endl;
     offile << "    GP, // SLM:000001193 Glycerophospholipids" << endl;
     offile << "    SP, // SLM:000000525 Sphingolipids" << endl;
@@ -96,7 +96,7 @@ void writeLipidEnum(string ofFileName){
     offile << "" << endl;
     offile << "static const map<LipidCategory, string> CategoryString = {" << endl;
     offile << "    {NO_CATEGORY, \"NO_CATEGORY\"}," << endl;
-    offile << "    {UNDEFINED_CATEGORY, \"UNDEFINED_CATEGORY\"}," << endl;
+    offile << "    {UNDEFINED, \"UNDEFINED\"}," << endl;
     offile << "    {GL, \"GL\"}," << endl;
     offile << "    {GP, \"GP\"}," << endl;
     offile << "    {SP, \"SP\"}," << endl;
@@ -141,7 +141,6 @@ void writeLipidEnum(string ofFileName){
     offile << "" << endl;
     offile << "" << endl;
     offile << "static const ClassMap lipid_classes = {" << endl;
-    offile << "{UNDEFINED_CLASS, {UNDEFINED_CATEGORY, \"UNDEFINED\", {\"Undefined lipid class\"} } }," << endl;
     int cnt = 0;
     for (auto& kv : data){
         offile << "{" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", {\"" << kv.second->at(0) << "\"";
