@@ -62,15 +62,14 @@ install: main
 test: main ${test_obj}
 	${CC} -I. ${opt} -Bstatic -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o ParserTest cppgoslin/tests/ParserTest.o libcppGoslin.so
-	${CC} -I. ${opt} -Bstatic -o ParserFailTest cppgoslin/tests/ParserFailTest.o libcppGoslin.so
-	${CC} -I. ${opt} -Bstatic -o GoslinTest cppgoslin/tests/GoslinTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o LipidMapsTest cppgoslin/tests/LipidMapsTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o GoslinTest cppgoslin/tests/GoslinTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
 
 	
 runtests: test
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MolecularFattyAcidTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserFailTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./GoslinTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SwissLipidsTest

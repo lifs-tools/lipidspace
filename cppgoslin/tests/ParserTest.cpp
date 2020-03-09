@@ -296,6 +296,16 @@ int main(int argc, char** argv){
         assert (lipid->get_lipid_string(SPECIES) == "TAG 48:3");
         assert (lipid->get_lipid_string(CLASS) == "TAG");
         assert (lipid->get_lipid_string(CATEGORY) == "GL");
+        assert (lipid->lipid);
+        // try to retrieve LipidSpeciesInfo for summary information
+        LipidSpeciesInfo lsi = lipid->lipid->info;
+        assert (lsi.lcb == false);
+        assert (lsi.level == STRUCTURAL_SUBSPECIES);
+        assert (lsi.lipid_FA_bond_type == ESTER);
+        assert (lsi.num_carbon == 38);
+        assert (lsi.num_double_bonds == 3);
+        assert (lsi.num_hydroxyl == 0);
+        assert (lsi.position == );
         delete lipid;
         
         // sterol;
