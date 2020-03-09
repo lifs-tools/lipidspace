@@ -37,7 +37,7 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
             return get_category_string(lipid_category);
             
         case CLASS:
-            return get_class_string(lipid_class);
+            return (!use_head_group ? get_class_string(lipid_class) : head_group);
             
         case NO_LEVEL:
         case SPECIES:

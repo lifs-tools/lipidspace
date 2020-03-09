@@ -31,9 +31,9 @@ void BaseParserEventHandler<T>::sanity_check(){
     }
 }
 
+
 template <class T> 
 void BaseParserEventHandler<T>::handle_event(string event_name, TreeNode *node){
-    
     if (registered_events->find(event_name) != registered_events->end()){
         registered_events->at(event_name)(node);
     }
