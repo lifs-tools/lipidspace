@@ -231,9 +231,20 @@ void Parser<T>::read_grammar(string grammar){
             for (auto& rule_top : *topnodes){
                 vector<unsigned long>* chain = collect_backwards(rule, rule_top);
                 if (chain){
+                    chain->insert(chain->begin(), rule_top);
                     chain->push_back(rule);
-                    unsigned long key = kv.first + (rule_top << 16);
-                    substitution.insert({key, chain});
+                    
+                    int len = chain->size();
+                    
+                    while (len > 1){
+                        unsigned long top = chain->at(0);
+                        vector<unsigned long>* c = new vector<unsigned long>();
+                        for (uint i = 1; i < chain->size(); ++i) c->push_back(chain->at(i));
+                        chain = c;
+                        unsigned long key = kv.first + (top << 16);
+                        substitution.insert({key, chain});
+                        len = chain->size();
+                    }
                 }
             }
             delete topnodes;

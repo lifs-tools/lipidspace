@@ -7,13 +7,14 @@ domain = cppgoslin/domain/Adduct.o cppgoslin/domain/IsomericFattyAcid.o cppgosli
 parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinFragmentParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o cppgoslin/parser/SwissLipidsParserEventHandler.o
 
 obj = ${domain} ${parser}
-test_obj = cppgoslin/tests/MolecularFattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o cppgoslin/tests/GoslinTest.o
+test_obj = cppgoslin/tests/MolecularFattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o cppgoslin/tests/GoslinTest.o cppgoslin/tests/LipidMapsTest.o
 
 opt = -std=c++11 -O3 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 #-g
 
 
 main: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
 	${CC} -shared ${obj} -o ${bin}
+	
 	
 static: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
 	ar rcs ${abin} ${obj}
@@ -58,15 +59,16 @@ install: main
 	cp cppgoslin/domain/*.h  ${install_dir}/include/cppgoslin/domain/.
 	cp cppgoslin/parser/*.h  ${install_dir}/include/cppgoslin/parser/.
 	
-test: libcppGoslin.so ${test_obj}
+test: main ${test_obj}
 	${CC} -I. ${opt} -Bstatic -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o ParserTest cppgoslin/tests/ParserTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o ParserFailTest cppgoslin/tests/ParserFailTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o GoslinTest cppgoslin/tests/GoslinTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o LipidMapsTest cppgoslin/tests/LipidMapsTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
 
 	
-runtests:
+runtests: test
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MolecularFattyAcidTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserFailTest

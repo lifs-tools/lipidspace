@@ -47,6 +47,7 @@ public:
     void add_carbon(TreeNode* node);
     void build_lipid(TreeNode* node);
     void add_hydroxyl_lcb(TreeNode* node);
+    void pure_fa(TreeNode* node);
         
 };
 #endif /* LIPID_MAPS_PARSER_EVENT_HANDLER_H */

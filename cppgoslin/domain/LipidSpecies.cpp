@@ -37,7 +37,7 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
             return get_category_string(lipid_category);
             
         case CLASS:
-            return get_class_string(lipid_class);
+            return (!use_head_group ? get_class_string(lipid_class) : head_group);
             
         case NO_LEVEL:
         case SPECIES:
@@ -68,7 +68,7 @@ LipidCategory LipidSpecies::get_category(string _head_group){
     
     
     auto cat = StringCategory.find(_head_group);
-    return (cat != StringCategory.end()) ? StringCategory.at(_head_group) : UNDEFINED_CATEGORY;
+    return (cat != StringCategory.end()) ? StringCategory.at(_head_group) : UNDEFINED;
 }
 
 

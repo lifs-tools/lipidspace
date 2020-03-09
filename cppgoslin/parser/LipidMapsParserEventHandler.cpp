@@ -1,5 +1,4 @@
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
-#include <iostream>
 
 #define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events->insert({x, bind(&LipidMapsParserEventHandler::y, this, placeholders::_1)})
     
@@ -10,7 +9,8 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("lipid_pre_event", reset_lipid);
     reg("lipid_post_event", build_lipid);
     
-    reg("mediator_post_event", mediator_event);
+    reg("mediator_var_pre_event", mediator_event);
+    reg("sphingoxine_pre_event", mediator_event);
     
     reg("sgl_species_pre_event", set_species_level);
     reg("tgl_species_pre_event", set_species_level);
@@ -20,6 +20,8 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("fa2_unsorted_pre_event", set_molecular_subspecies_level);
     reg("fa3_unsorted_pre_event", set_molecular_subspecies_level);
     reg("fa4_unsorted_pre_event", set_molecular_subspecies_level);
+    
+    reg("fa_no_hg_pre_event", pure_fa);
     
     reg("hg_sgl_pre_event", set_head_group_name);
     reg("hg_gl_pre_event", set_head_group_name);
@@ -32,7 +34,7 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("hg_dsl_pre_event", set_head_group_name);
     reg("ch_pre_event", set_head_group_name);
     reg("hg_che_pre_event", set_head_group_name);
-    reg("mediator_pre_event", set_head_group_name);
+    reg("mediator_const_pre_event", set_head_group_name);
     
     reg("lcb_pre_event", new_lcb);
     reg("lcb_post_event", clean_lcb);
@@ -72,6 +74,7 @@ void LipidMapsParserEventHandler::set_molecular_subspecies_level(TreeNode* node)
     
 void LipidMapsParserEventHandler::mediator_event(TreeNode* node){
     use_head_group = true;
+    head_group = node->get_text();
 }
     
     
@@ -103,6 +106,10 @@ void LipidMapsParserEventHandler::new_fa(TreeNode* node){
     else if (level == STRUCTURAL_SUBSPECIES){
         current_fa = new StructuralFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, 0);
     }
+}
+
+void LipidMapsParserEventHandler::pure_fa(TreeNode* node){
+    head_group = "FA";
 }
     
     
