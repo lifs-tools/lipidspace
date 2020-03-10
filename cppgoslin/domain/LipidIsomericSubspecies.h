@@ -11,7 +11,7 @@
 using namespace std;
 
 class LipidIsomericSubspecies : public LipidStructuralSubspecies {
-
+public:
     LipidIsomericSubspecies(string head_group, vector<FattyAcid*>* fa = NULL);
     ~LipidIsomericSubspecies();
     string build_lipid_isomeric_substructure_name();

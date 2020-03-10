@@ -20,6 +20,8 @@ int main(int argc, char** argv){
         LipidParser lipid_parser;
         LipidMapsParser lipid_maps_parser;
         GoslinFragmentParser goslin_fragment_parser;
+        SwissLipidsParser swiss_lipids_parser;
+        
         
         // test bitfield
         srand(time(0));
@@ -70,6 +72,54 @@ int main(int argc, char** argv){
         
         
         
+        
+        
+        
+        
+        
+        // test SwissLipids parser
+        lipid_name = "TG(O-16:0/18:3(6Z,9Z,12Z)/18:1(11Z))";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "TAG 16:0a/18:3(6Z,9Z,12Z)/18:1(11Z)");
+        delete lipid;
+        
+        lipid_name = "PIP2[4,5](21:0/24:4(9Z,12Z,15Z,18Z))";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "PIP2[4',5'] 21:0/24:4(9Z,12Z,15Z,18Z)");
+        delete lipid;
+        
+        lipid_name = "GalGb3Cer(d18:0/14:0)";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "GalGb3Cer 18:0;2/14:0");
+        delete lipid;
+        
+        lipid_name = "PI(34:5(19Z,22Z,25Z,28Z,31Z)/18:1(6Z))";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "PI 34:5(19Z,22Z,25Z,28Z,31Z)/18:1(6Z)");
+        delete lipid;
+        
+        lipid_name = "PIP(22:6/20:4)";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "PIP 22:6/20:4");
+        delete lipid;
+        
+        lipid_name = "NAPE (12:0/30:4(15Z,18Z,21Z,24Z)/12:0)";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string() == "NAPE 12:0/30:4(15Z,18Z,21Z,24Z)/12:0");
+        delete lipid;
+        
+        
+        
+        
+        
+        
+
         
         // test lipid parser
         lipid_name = "PE 16:1-12:0";

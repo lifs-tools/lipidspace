@@ -1,5 +1,7 @@
 #include "LipidSpecies.h"
 
+#include <iostream>
+using namespace std;
 
 LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass _lipid_class, LipidSpeciesInfo *lipid_species_info){
     head_group = _head_group;
@@ -77,7 +79,7 @@ LipidClass LipidSpecies::get_class(string _head_group){
         for (auto kvp : lipid_classes){
             LipidClass l_class = kvp.first;
             for (auto hg : kvp.second.synonyms){
-                StringClass.insert(pair<string, LipidClass>(hg, l_class));
+                StringClass.insert({hg, l_class});
             }
         }
     }
@@ -93,7 +95,8 @@ string LipidSpecies::get_class_string(LipidClass _lipid_class){
             ClassString.insert({kvp.first, kvp.second.synonyms.at(0)});
         }
     }
-    return ClassString.at(_lipid_class);
+    auto cl = ClassString.find(_lipid_class);
+    return (cl != ClassString.end()) ? ClassString.at(_lipid_class) : "UNDEFINED";
 }
 
 
