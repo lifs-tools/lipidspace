@@ -9,6 +9,14 @@ MolecularFattyAcid::MolecularFattyAcid(string name, int num_carbon, int num_doub
 
 }
 
+MolecularFattyAcid::MolecularFattyAcid(FattyAcid* fa) : FattyAcid(fa){
+
+    MolecularFattyAcid* mol_fa = dynamic_cast<MolecularFattyAcid*>(fa);
+    if (mol_fa){
+        num_double_bonds = mol_fa->num_double_bonds;
+    }
+}
+
 MolecularFattyAcid::~MolecularFattyAcid(){
     
 }

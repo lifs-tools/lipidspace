@@ -2,11 +2,13 @@
 #define LIPID_MOLECULAR_SUBSPECIES_H
 
 #include "cppgoslin/domain/MolecularFattyAcid.h"
+#include "cppgoslin/domain/IsomericFattyAcid.h"
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidSpecies.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include <sstream>
+#include <typeinfo> 
 
 using namespace std;
 

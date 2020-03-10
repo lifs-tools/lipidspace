@@ -5,6 +5,10 @@ StructuralFattyAcid::StructuralFattyAcid(string name, int num_carbon, int num_do
     
 }
 
-StructuralFattyAcid::~StructuralFattyAcid() {
-  
+StructuralFattyAcid::StructuralFattyAcid(FattyAcid* fa) : MolecularFattyAcid(fa){
+    
+}
+
+StructuralFattyAcid::~StructuralFattyAcid(){
+    
 }

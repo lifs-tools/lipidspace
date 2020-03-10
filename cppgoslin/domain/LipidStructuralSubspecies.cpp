@@ -25,7 +25,9 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
     
     if (_fa != NULL){
         for (unsigned int i = 0; i < _fa->size(); ++i){
-            StructuralFattyAcid *fas = (StructuralFattyAcid*)(_fa->at(i));
+            StructuralFattyAcid *fas = new StructuralFattyAcid(_fa->at(i));
+            delete _fa->at(i);
+            
             if (fa.find(fas->name) != fa.end()){
                 throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");
             }

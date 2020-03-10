@@ -23,7 +23,8 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<F
     LipidFaBondType lipid_FA_bond_type = ESTER;
     if (_fa) {
         for (unsigned int i = 0; i < _fa->size(); ++i){
-            MolecularFattyAcid *fas = (MolecularFattyAcid*)(_fa->at(i));
+            MolecularFattyAcid *fas = new MolecularFattyAcid(_fa->at(i));
+            delete _fa->at(i);
             
             if (fas->position != -1) {
                 throw ConstraintViolationException("MolecularFattyAcid " + fas->name + " must have position set to -1! Was: " + to_string(fas->position));
@@ -62,11 +63,12 @@ LipidMolecularSubspecies::~LipidMolecularSubspecies(){
     
 }
 
+#include <iostream>
+using namespace std;
 
 string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator){
     stringstream s;
     s << (!use_head_group ? get_class_string(lipid_class) : head_group);
-    
     bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
     
     if (fa_list.size() > 0){
@@ -74,12 +76,33 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator
         for (unsigned int i = 0; i < fa_list.size(); ++i){
             if (i > 0) s << fa_separator;
             FattyAcid *fatty_acid = fa_list.at(i);
-            int num_double_bonds = ((MolecularFattyAcid*)fatty_acid)->num_double_bonds;
+            int num_double_bonds = 0;
+            
+            
+            MolecularFattyAcid* mol_fatty_acid = dynamic_cast<MolecularFattyAcid*>(fatty_acid);
+            if (mol_fatty_acid){
+                num_double_bonds = mol_fatty_acid->num_double_bonds;
+            }
+            
             int num_carbon = fatty_acid->num_carbon;
             int num_hydroxyl = fatty_acid->num_hydroxyl;
             string suffix = FattyAcid::suffix(fatty_acid->lipid_FA_bond_type);
             if (special_case && suffix.length() > 0) s << "O-";
             s << num_carbon << ":" << num_double_bonds;
+            IsomericFattyAcid* iso_fatty_acid = dynamic_cast<IsomericFattyAcid*>(fatty_acid);
+            if (iso_fatty_acid != NULL && iso_fatty_acid->double_bond_positions.size()){
+                stringstream db;
+                db << "(";
+                int j = 0;
+                for (auto it : iso_fatty_acid->double_bond_positions){
+                    if (j > 0) db << ",";
+                    db << it.first << it.second;
+                    ++j;
+                }
+                db << ")";
+                s << db.str();
+            }
+            
             if (num_hydroxyl) s << ";" << num_hydroxyl;
             s << suffix;
         }

@@ -22,8 +22,17 @@ FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_double_bonds, int _
     }
 }
 
+FattyAcid::FattyAcid(FattyAcid* fa){
+    name = fa->name;
+    position = fa->position;
+    num_carbon = fa->num_carbon;
+    num_hydroxyl = fa->num_hydroxyl;
+    lipid_FA_bond_type = fa->lipid_FA_bond_type;
+    lcb = fa->lcb;
+}
+
 FattyAcid::~FattyAcid(){
-    
+
 }
 
 string FattyAcid::suffix(LipidFaBondType lipid_FA_bond_type){
