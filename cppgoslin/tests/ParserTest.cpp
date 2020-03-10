@@ -102,7 +102,7 @@ int main(int argc, char** argv){
         assert (lipid->lipid->get_fa_list().size() == 2);
         int faCnt = 1;
         for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-          // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).get_num_double_bonds() << endl;
+          // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
           assert ((*fa).position == -1);
           switch(faCnt) {
           case 1:
@@ -110,14 +110,14 @@ int main(int argc, char** argv){
             assert ((*fa).num_carbon == 16);
             assert ((*fa).num_hydroxyl == 0);
             assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).get_num_double_bonds() == 1);
+            assert ((*fa).num_double_bonds == 1);
             break;
           case 2:
             assert ((*fa).lcb == false);
             assert ((*fa).num_carbon == 12);
             assert ((*fa).num_hydroxyl == 0);
             assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).get_num_double_bonds() == 0);
+            assert ((*fa).num_double_bonds == 0);
             break;
           }
           ++faCnt;
@@ -132,7 +132,7 @@ int main(int argc, char** argv){
         assert (lipid->lipid->get_fa_list().size() == 2);
         faCnt = 1;
         for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-          // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).get_num_double_bonds() << endl;
+          // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
           assert ((*fa).position == faCnt);
           switch(faCnt) {
           case 1:
@@ -140,14 +140,14 @@ int main(int argc, char** argv){
             assert ((*fa).num_carbon == 16);
             assert ((*fa).num_hydroxyl == 0);
             assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "p");
-            assert ((*fa).get_num_double_bonds() == 1);
+            assert ((*fa).num_double_bonds == 1);
             break;
           case 2:
             assert ((*fa).lcb == false);
             assert ((*fa).num_carbon == 12);
             assert ((*fa).num_hydroxyl == 0);
             assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).get_num_double_bonds() == 0);
+            assert ((*fa).num_double_bonds == 0);
             break;
           }
           ++faCnt;
@@ -355,7 +355,7 @@ int main(int argc, char** argv){
         assert (lipid->lipid->get_fa_list().size() == 2);
         faCnt = 1;
         for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-          // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).get_num_double_bonds() << endl;
+          // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
           assert ((*fa).position == faCnt);
           switch(faCnt) {
           case 1:
@@ -363,14 +363,14 @@ int main(int argc, char** argv){
             assert ((*fa).num_carbon == 16);
             assert ((*fa).num_hydroxyl == 2);
             assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).get_num_double_bonds() == 1);
+            assert ((*fa).num_double_bonds == 1);
             break;
           case 2:
             assert ((*fa).lcb == false);
             assert ((*fa).num_carbon == 12);
             assert ((*fa).num_hydroxyl == 0);
             assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).get_num_double_bonds() == 0);
+            assert ((*fa).num_double_bonds == 0);
             break;
           }
           ++faCnt;
@@ -400,7 +400,7 @@ int main(int argc, char** argv){
         assert (lipid->lipid->get_fa_list().size() == 3);
         faCnt = 1;
         for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-          // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).get_num_double_bonds() << endl;
+          // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
           assert ((*fa).position == faCnt);
           switch(faCnt) {
             case 1:
@@ -408,21 +408,21 @@ int main(int argc, char** argv){
               assert ((*fa).num_carbon == 16);
               assert ((*fa).num_hydroxyl == 0);
               assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-              assert ((*fa).get_num_double_bonds() == 1);
+              assert ((*fa).num_double_bonds == 1);
               break;
             case 2:
               assert ((*fa).lcb == false);
               assert ((*fa).num_carbon == 12);
               assert ((*fa).num_hydroxyl == 0);
               assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-              assert ((*fa).get_num_double_bonds() == 0);
+              assert ((*fa).num_double_bonds == 0);
               break;
             case 3:
               assert ((*fa).lcb == false);
               assert ((*fa).num_carbon == 20);
               assert ((*fa).num_hydroxyl == 0);
               assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-              assert ((*fa).get_num_double_bonds() == 2);
+              assert ((*fa).num_double_bonds == 2);
               break;
           }
           ++faCnt;

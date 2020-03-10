@@ -13,12 +13,12 @@ public:
     int position;
     int num_carbon;
     int num_hydroxyl;
+    int num_double_bonds;
     LipidFaBondType lipid_FA_bond_type;
     bool lcb;
 
-    FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position);
+    FattyAcid(string _name, int _num_carbon, int _num_double_bonds, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position);
     virtual ~FattyAcid();
     static string suffix(LipidFaBondType _lipid_FA_bond_type);
-    virtual int get_num_double_bonds();
 };
 #endif /* FATTY_ACID_H */

@@ -1,9 +1,10 @@
 #include "FattyAcid.h"
 
-FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position){
+FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_double_bonds, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position){
     name = _name;
     position = _position;
     num_carbon = _num_carbon;
+    num_double_bonds = _num_double_bonds;
     num_hydroxyl = _num_hydroxyl;
     lipid_FA_bond_type = _lipid_FA_bond_type;
     lcb = _lcb;
@@ -23,10 +24,6 @@ FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBo
 
 FattyAcid::~FattyAcid(){
     
-}
-
-int FattyAcid::get_num_double_bonds() {
-    return 0;
 }
 
 string FattyAcid::suffix(LipidFaBondType lipid_FA_bond_type){
