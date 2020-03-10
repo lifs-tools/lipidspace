@@ -19,6 +19,6 @@ public:
     FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position);
     virtual ~FattyAcid();
     static string suffix(LipidFaBondType _lipid_FA_bond_type);
-    virtual int get_num_double_bonds() {return 0;};
+    virtual int get_num_double_bonds();
 };
 #endif /* FATTY_ACID_H */
