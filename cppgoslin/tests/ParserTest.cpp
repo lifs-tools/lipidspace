@@ -49,17 +49,32 @@ int main(int argc, char** argv){
         // Pure Parser test
         GoslinParserEventHandler goslin_parser_event_handler;
         Parser<LipidAdduct*> goslin_parser_pure(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
-        
+      
+       	// check goslin pure parser with illegal lipid name
+	string failLipid = "TAG 16::1-18:1-24:0";
+	lipid = goslin_parser_pure.parse(failLipid);
+	assert (!lipid);
+	delete lipid;
+
         // glycerophospholipid
-        for (auto the_lipid_name : {"TAG 16:1-18:1-24:0", "PE 16:1/12:0", "DAG 16:1-12:0", "12-HETE", "HexCer 18:1;2/16:0"}){
+        for (auto the_lipid_name : { "TAG 16:1-18:1-24:0", "PE 16:1/12:0", "DAG 16:1-12:0", "12-HETE", "HexCer 18:1;2/16:0"}){
             LipidAdduct* lipid = goslin_parser_pure.parse(the_lipid_name);
             assert (lipid);
             delete lipid;
         }
         
         
-        
-        
+        // check swiss lipids parser with illegal lipid name
+	string failLipidSL = "TG(16::1-18:1-24:0)";
+	lipid = lipid_maps_parser.parse(failLipidSL);
+	assert (!lipid);
+	delete lipid;
+
+        // check goslin fragment parser with illegal lipid name 
+	string failLipidGoslin = "TAG 16::1-18:1-24:0";
+	lipid = goslin_fragment_parser.parse(failLipidGoslin);
+	assert (!lipid);
+	delete lipid;
         
         
         // check if goslin fragment parser parses correctly lipid name with fragment
@@ -225,7 +240,10 @@ int main(int argc, char** argv){
             delete lipid;
         }
 
-        
+	string failLipidLM = "TG(16::1-18:1-24:0)";
+	lipid = lipid_maps_parser.parse(failLipidLM);
+	assert (!lipid);
+	delete lipid;
         
         
         // testing lyso lipids
@@ -346,6 +364,16 @@ int main(int argc, char** argv){
         assert (lipid->get_lipid_string(SPECIES) == "TAG 48:3");
         assert (lipid->get_lipid_string(CLASS) == "TAG");
         assert (lipid->get_lipid_string(CATEGORY) == "GL");
+        assert (lipid->lipid);
+        // try to retrieve LipidSpeciesInfo for summary information
+        LipidSpeciesInfo lsi = lipid->lipid->info;
+        assert (lsi.lcb == false);
+        assert (lsi.level == STRUCTURAL_SUBSPECIES);
+        assert (lsi.lipid_FA_bond_type == ESTER);
+        assert (lsi.num_carbon == 48);
+        assert (lsi.num_double_bonds == 3);
+        assert (lsi.num_hydroxyl == 0);
+        assert (lsi.position == -1);
         delete lipid;
         
         // sterol;
