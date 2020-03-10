@@ -38,9 +38,9 @@ clean:
 	rm -f cppgoslin/parser/*.o
 	rm -f cppgoslin/tests/*.o
 	rm -f ${bin}
-	rm -f MolecularFattyAcidTest
-	rm -f ParserTest
+	rm -f *Test
 	rm -f writeGrammarsHeader
+	rm -f writeLipidEnums
 	rm -f ${abin}
 	
 dist-clean: clean
