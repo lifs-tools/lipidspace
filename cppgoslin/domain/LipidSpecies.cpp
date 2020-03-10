@@ -20,7 +20,9 @@ LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, Li
 
 
 LipidSpecies::~LipidSpecies(){
-    
+    for (auto fa : fa_list){
+        delete fa;
+    }
 }
 
 
@@ -104,4 +106,8 @@ string LipidSpecies::get_class_name(){
 
 string LipidSpecies::get_category_string(LipidCategory _lipid_category){
     return CategoryString.at(_lipid_category);
+}
+
+vector<FattyAcid*> LipidSpecies::get_fa_list(){
+    return fa_list;
 }

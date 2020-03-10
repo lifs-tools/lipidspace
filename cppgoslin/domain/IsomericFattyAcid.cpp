@@ -6,3 +6,6 @@ IsomericFattyAcid::IsomericFattyAcid(string name, int num_carbon, int num_double
     }
 }
 
+IsomericFattyAcid::~IsomericFattyAcid() {
+  
+}

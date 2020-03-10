@@ -21,7 +21,9 @@ FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_hydroxyl, LipidFaBo
     }
 }
 
-
+FattyAcid::~FattyAcid(){
+    
+}
 
 string FattyAcid::suffix(LipidFaBondType lipid_FA_bond_type){
     switch(lipid_FA_bond_type){

@@ -9,3 +9,11 @@ MolecularFattyAcid::MolecularFattyAcid(string name, int num_carbon, int _num_dou
         
     num_double_bonds = _num_double_bonds;
 }
+
+MolecularFattyAcid::~MolecularFattyAcid(){
+    
+}
+
+int MolecularFattyAcid::get_num_double_bonds(){
+    return num_double_bonds;
+}

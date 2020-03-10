@@ -59,9 +59,7 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<F
 }
 
 LipidMolecularSubspecies::~LipidMolecularSubspecies(){
-    for (auto fa : fa_list){
-        delete fa;
-    }
+    
 }
 
 

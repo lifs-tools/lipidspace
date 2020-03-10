@@ -12,8 +12,8 @@ using namespace std;
 
 class LipidMolecularSubspecies : public LipidSpecies {
 public:
-    map<string, FattyAcid*> fa;
-    vector<FattyAcid*> fa_list;
+    // map<string, FattyAcid*> fa;
+    // vector<FattyAcid*> fa_list;
 
     LipidMolecularSubspecies (string head_group);
     LipidMolecularSubspecies (string head_group, vector<FattyAcid*> *_fa);

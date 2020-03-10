@@ -25,6 +25,9 @@ public:
     LipidSpeciesInfo info;
     bool use_head_group;
     
+    map<string, FattyAcid*> fa;
+    vector<FattyAcid*> fa_list;
+    
     virtual ~LipidSpecies();
     //LipidSpecies(string _head_group);
     LipidSpecies(string _head_group, LipidCategory _lipid_category = NO_CATEGORY, LipidClass lipid_class = NO_CLASS, LipidSpeciesInfo *lipid_species_info = NULL);
@@ -35,6 +38,8 @@ public:
     static LipidClass get_class(string _head_group);
     static string get_class_string(LipidClass lipid_class);
     static string get_category_string(LipidCategory lipid_category);
+    
+    virtual vector<FattyAcid*> get_fa_list();
 };
             
 #endif /* LIPID_SPECIES_H */
