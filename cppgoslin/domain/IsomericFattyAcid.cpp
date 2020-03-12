@@ -23,3 +23,28 @@ IsomericFattyAcid::IsomericFattyAcid(FattyAcid* fa) : StructuralFattyAcid(fa){
 IsomericFattyAcid::~IsomericFattyAcid(){
     
 }
+
+string IsomericFattyAcid::to_string(bool special_case){
+    stringstream s;
+    
+    string lipid_suffix = suffix(lipid_FA_bond_type);
+    if (special_case && lipid_suffix.length() > 0) s << "O-";
+    s << num_carbon << ":" << num_double_bonds;
+    
+    if (double_bond_positions.size()){
+        stringstream db;
+        db << "(";
+        int j = 0;
+        for (auto it : double_bond_positions){
+            if (j > 0) db << ",";
+            db << it.first << it.second;
+            ++j;
+        }
+        db << ")";
+        s << db.str();
+    }
+    
+    if (num_hydroxyl) s << ";" << num_hydroxyl;
+    s << lipid_suffix;
+    return s.str();
+}

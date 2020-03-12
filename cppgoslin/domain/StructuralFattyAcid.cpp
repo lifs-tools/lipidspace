@@ -12,3 +12,7 @@ StructuralFattyAcid::StructuralFattyAcid(FattyAcid* fa) : MolecularFattyAcid(fa)
 StructuralFattyAcid::~StructuralFattyAcid(){
     
 }
+
+string StructuralFattyAcid::to_string(bool special_case){
+    return MolecularFattyAcid::to_string(special_case);
+}

@@ -5,7 +5,6 @@
 #include <iostream>
 #include <cassert>
 #include <fstream>
-#include <chrono>
 
 
 using namespace std;
@@ -27,7 +26,6 @@ int main(int argc, char** argv){
         }
         infile.close();
         
-        auto start = chrono::steady_clock::now();
         
         for (auto lipid_name : lipid_names){
             lipid = goslin_parser.parse(lipid_name);
@@ -38,10 +36,6 @@ int main(int argc, char** argv){
                 delete lipid;
             }
         }
-        auto end = chrono::steady_clock::now();
-        auto sec = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-        cout << "time elapsed: " << double(sec) / 1000. << " sec" << endl;
-        cout << "lipids / sec: " << double(lipid_names.size()) * 1000. / (double(sec)) << endl;
         
         
         cout << "All tests passed without any problem" << endl;

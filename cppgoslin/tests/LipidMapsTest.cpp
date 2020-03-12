@@ -5,7 +5,6 @@
 #include <iostream>
 #include <cassert>
 #include <fstream>
-#include <chrono>
 #include <vector>
 #include <map>
 
@@ -35,9 +34,7 @@ int main(int argc, char** argv){
         }
         infile.close();
         
-        auto start = chrono::steady_clock::now();
         
-        map<string, int> lipid_classes;
         
         for (uint i = 0; i < lipid_names_income.size(); ++i){
             string lipid_name = lipid_names_income.at(i);
@@ -48,25 +45,11 @@ int main(int argc, char** argv){
             }
             else {
                 string lipid_class = lipid->get_lipid_string(CLASS);
-                if (lipid_class == "Undefined lipid class"){
+                if (lipid_class == "Undefined lipid class" || lipid_class == "Undefined" || lipid_class == "UNDEFINED"){
                     throw LipidException("Error (undefined): '" + lipid_name + "'");
                 }
-                if (lipid_classes.find(lipid_class) == lipid_classes.end()){
-                    lipid_classes.insert({lipid_class, 0});
-                }
-                lipid_classes.at(lipid_class) = lipid_classes.at(lipid_class) + 1;
                 delete lipid;
             }
-        }
-        auto end = chrono::steady_clock::now();
-        auto sec = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-        cout << "time elapsed: " << double(sec) / 1000. << " sec" << endl;
-        cout << "lipids / sec: " << double(lipid_names_income.size()) * 1000. / (double(sec)) << endl;
-        
-        cout << endl;
-        
-        for (auto kv : lipid_classes){
-            cout << kv.first << ": " << kv.second << endl;
         }
         
         

@@ -42,3 +42,16 @@ string FattyAcid::suffix(LipidFaBondType lipid_FA_bond_type){
         default: return "";
     }
 }
+
+
+string FattyAcid::to_string(bool special_case){
+    stringstream s;
+    
+    string lipid_suffix = suffix(lipid_FA_bond_type);
+    if (special_case && lipid_suffix.length() > 0) s << "O-";
+    s << num_carbon << ":" << num_double_bonds;
+    
+    if (num_hydroxyl) s << ";" << num_hydroxyl;
+    s << lipid_suffix;
+    return s.str();
+}

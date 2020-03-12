@@ -13,6 +13,7 @@ class MolecularFattyAcid : public FattyAcid {
 public:
     MolecularFattyAcid(string name, int num_carbon, int _num_double_bonds, int num_hydroxyl, LipidFaBondType lipid_FA_bond_type, bool lcb, int position = -1);
     MolecularFattyAcid(FattyAcid* fa);
+    string to_string(bool special_case);
     ~MolecularFattyAcid();
 };            
 

@@ -20,3 +20,7 @@ MolecularFattyAcid::MolecularFattyAcid(FattyAcid* fa) : FattyAcid(fa){
 MolecularFattyAcid::~MolecularFattyAcid(){
     
 }
+
+string MolecularFattyAcid::to_string(bool special_case){
+    return FattyAcid::to_string(special_case);
+}
