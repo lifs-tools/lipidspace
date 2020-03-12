@@ -125,6 +125,7 @@ public:
     map<char, set<unsigned long>> TtoNT;
     map<char, unsigned long> originalTtoNT;
     map<unsigned long, set<unsigned long>> NTtoNT;
+    map<unsigned long, set<unsigned long>> originalNTtoNT;
     map<unsigned long, string> NTtoRule;
     map<unsigned long, vector<unsigned long>*> substitution;
     vector<set<unsigned long>> left_pair;
@@ -149,7 +150,7 @@ public:
     static string de_escape(string text, char _quote);
     unsigned long add_terminal(string text);
     vector<unsigned long>* collect_one_backwards(unsigned long rule_index);
-    vector<unsigned long>* collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index, int s = 0);
+    vector<unsigned long>* collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index);
     void raise_events(TreeNode *node);
     void fill_tree(TreeNode *node, DPNode *dp_node);
     T parse(string text_to_parse);
