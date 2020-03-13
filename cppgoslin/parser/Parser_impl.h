@@ -230,31 +230,41 @@ void Parser<T>::read_grammar(string grammar){
         }
     }
     
+    
+    // creating substitution dictionary for adding single rule chains into the parsing tree
+    for (auto& kv : NTtoNT){
+        for (auto& rule : kv.second){
+            vector<unsigned long>* topnodes = collect_one_backwards(rule);
+            for (auto& rule_top : *topnodes){
+                vector<unsigned long>* chain = collect_backwards(rule, rule_top);
+                if (chain){
+                    chain->push_back(rule);
+                    
+                    unsigned long key = kv.first + (rule_top << 16);
+                    substitution.insert({key, chain});
+                }
+            }
+            delete topnodes;
+        }
+    }
+
+    // expanding terminal dictionary for single rule chains
     set<unsigned long> keys;
     for (auto key : TtoNT) keys.insert(key.first);
-                                                                   
     for (auto c : keys){
         set<unsigned long> rules;
         for (auto rule : TtoNT.at(c)) rules.insert(rule);
-                                                                   
-        TtoNT[c].clear();
+                             
         for (auto rule : rules){
             vector<unsigned long> *backward_rules = collect_one_backwards(rule);
-            for (auto p : *backward_rules){
-                
-                TtoNT.at(c).insert(p);
-            }
+            for (auto p : *backward_rules) TtoNT.at(c).insert(p);
             delete backward_rules;
         }
     }
     
-    for (auto kvp : NTtoNT){
-        originalNTtoNT.insert({kvp.first, set<unsigned long>()});
-        set<unsigned long> *copy_set = &originalNTtoNT.at(kvp.first);
-        for (auto r : kvp.second) copy_set->insert(r);
-        
-    }
     
+    
+    // expanding non-terminal dictionary for single rule chains
     set<unsigned long> keysNT;
     for (auto k : NTtoNT) keysNT.insert(k.first);
     for (auto r : keysNT){
@@ -522,12 +532,12 @@ vector<unsigned long>* Parser<T>::collect_one_backwards(unsigned long rule_index
 
 template <class T>
 vector<unsigned long>* Parser<T>::collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index){
-    if (originalNTtoNT.find(child_rule_index) == originalNTtoNT.end()) return NULL;
+    if (NTtoNT.find(child_rule_index) == NTtoNT.end()) return NULL;
     
-    for (auto previous_index : originalNTtoNT.at(child_rule_index)){
+    for (auto previous_index : NTtoNT.at(child_rule_index)){
         if (previous_index == parent_rule_index) return new vector<unsigned long>;
         
-        else if (originalNTtoNT.find(previous_index) != originalNTtoNT.end()){
+        else if (NTtoNT.find(previous_index) != NTtoNT.end()){
             vector<unsigned long>* collection = collect_backwards(previous_index, parent_rule_index);
             if (collection != NULL){
                 collection->push_back(previous_index);
@@ -575,7 +585,7 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
         top_rule = dp_node->rule_index_2;
         bottom_rule = originalTtoNT.at(dp_node->rule_index_1);
     }
-    
+    /*
     vector<unsigned long> *merged_rules = collect_backwards(bottom_rule, top_rule);
     if (merged_rules != NULL){
         for (auto rule_index : *merged_rules){
@@ -584,6 +594,17 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
         }
         delete merged_rules;
     }
+    */
+    
+    unsigned long subst_key = bottom_rule + (top_rule << 16);
+    
+    if ((bottom_rule != top_rule) and (substitution.find(subst_key) != substitution.end())){
+        for (auto& rule_index : *substitution.at(subst_key)){
+            node->left = new TreeNode(rule_index, NTtoRule.find(rule_index) != NTtoRule.end());
+            node = node->left;
+        }
+    }
+
 
     
     if (dp_node->left != NULL) { // None => leaf
