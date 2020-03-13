@@ -6,7 +6,9 @@
 #include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/domain/Fragment.h"
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
+#include "cppgoslin/domain/LipidIsomericSubspecies.h"
 #include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/IsomericFattyAcid.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
 #include <set>
@@ -27,6 +29,8 @@ public:
     FattyAcid *current_fa;
     Adduct *adduct;
     Fragment *fragment;
+    int db_position;
+    string db_cistrans;
         
     GoslinFragmentParserEventHandler();
     ~GoslinFragmentParserEventHandler();
@@ -49,6 +53,11 @@ public:
     void add_charge(TreeNode *node);
     void add_charge_sign(TreeNode *node);
     void add_fragment_name(TreeNode *node);
+    
+    void set_isomeric_level(TreeNode* node);
+    void add_db_position(TreeNode* node);
+    void add_db_position_number(TreeNode* node);
+    void add_cistrans(TreeNode* node);
 };
 
 

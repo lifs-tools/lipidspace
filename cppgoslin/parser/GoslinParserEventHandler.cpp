@@ -43,6 +43,11 @@ GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<Li
     reg("fa_pre_event", new_fa);
     reg("fa_post_event", append_fa);
     
+    reg("db_single_position_pre_event", set_isomeric_level);
+    reg("db_single_position_post_event", add_db_position);
+    reg("db_position_number_pre_event", add_db_position_number);
+    reg("cistrans_pre_event", add_cistrans);
+    
     
     reg("ether_pre_event", add_ether);
     reg("old_hydroxyl_pre_event", add_old_hydroxyl);
@@ -71,6 +76,8 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
     fa_list->clear();
     current_fa = NULL;
     adduct = NULL;
+    db_position = 0;
+    db_cistrans = "";
 }
 
 
@@ -83,6 +90,30 @@ void GoslinParserEventHandler::set_head_group_name(TreeNode *node) {
 void GoslinParserEventHandler::set_species_level(TreeNode *node) {
     level = SPECIES;
 }
+
+
+void GoslinParserEventHandler::set_isomeric_level(TreeNode* node){
+    level = ISOMERIC_SUBSPECIES;
+    db_position = 0;
+    db_cistrans = "";
+}
+
+
+void GoslinParserEventHandler::add_db_position(TreeNode* node){
+    if (current_fa != NULL){
+       ((IsomericFattyAcid*)current_fa)->double_bond_positions.insert({db_position, db_cistrans});
+    }
+}
+
+
+void GoslinParserEventHandler::add_db_position_number(TreeNode* node){
+    db_position = atoi(node->get_text().c_str());
+}
+
+
+void GoslinParserEventHandler::add_cistrans(TreeNode* node){
+    db_cistrans = node->get_text();
+}
     
     
 
@@ -91,50 +122,32 @@ void GoslinParserEventHandler::set_molecular_subspecies_level(TreeNode *node) {
 }
     
     
-
 void GoslinParserEventHandler::new_fa(TreeNode *node) {
-    switch(level){
-        case SPECIES:
-            {
-                current_fa = new LipidSpeciesInfo();
-            }
-            break;
-        
-        case MOLECULAR_SUBSPECIES:
-            {
-                current_fa = new MolecularFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, -1);
-            }
-            break;
-        
-        case STRUCTURAL_SUBSPECIES:
-            {
-                current_fa = new StructuralFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, 0);
-            }
-            break;
-        
-        default:
-            break;
-    }
+    current_fa = new IsomericFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, -1, NULL);
 }
     
     
 
 void GoslinParserEventHandler::new_lcb(TreeNode *node) {
-    if (level == SPECIES){
-        lcb = new LipidSpeciesInfo();
-        lcb->lipid_FA_bond_type = ESTER;
-    }
-        
-    else if (level == STRUCTURAL_SUBSPECIES){
-        lcb = new StructuralFattyAcid("LCB", 2, 0, 1, ESTER, true, 1);
-    }
-    
+    lcb = new IsomericFattyAcid("LCB", 2, 0, 1, ESTER, true, 1, NULL);
     current_fa = lcb;
 }
         
         
 
 void GoslinParserEventHandler::clean_lcb(TreeNode *node) {
+    FattyAcid* tmp_lcb = lcb;
+    if (level == SPECIES){
+        lcb = new LipidSpeciesInfo(tmp_lcb);
+        lcb->lipid_FA_bond_type = ESTER;
+        delete tmp_lcb;
+    }
+        
+    else if (level == STRUCTURAL_SUBSPECIES){
+        lcb = new StructuralFattyAcid(tmp_lcb);
+        delete tmp_lcb;
+    }
+    
     current_fa = NULL;
 }
     
@@ -142,11 +155,41 @@ void GoslinParserEventHandler::clean_lcb(TreeNode *node) {
         
 
 void GoslinParserEventHandler::append_fa(TreeNode *node) {
-    if (level == STRUCTURAL_SUBSPECIES){
-        current_fa->position = fa_list->size() + 1;
-    }
+    FattyAcid* tmp_fa = current_fa;
+    switch(level){
+        case SPECIES:
+            {
+                current_fa = new LipidSpeciesInfo(tmp_fa);
+            }
+            break;
         
+        case MOLECULAR_SUBSPECIES:
+            {
+                current_fa = new MolecularFattyAcid(tmp_fa);
+            }
+            break;
+        
+        case STRUCTURAL_SUBSPECIES:
+            {
+                current_fa = new StructuralFattyAcid(tmp_fa);
+                current_fa->position = fa_list->size() + 1;
+            }
+            break;
+        
+        case ISOMERIC_SUBSPECIES:
+            {
+                current_fa = new IsomericFattyAcid(tmp_fa);
+                current_fa->position = fa_list->size() + 1;
+            }
+            break;
+        
+        default:
+            break;
+    }
+    
+
     fa_list->push_back(current_fa);
+    delete tmp_fa;
     current_fa = NULL;
 }
     
@@ -184,7 +227,10 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     else if (level == STRUCTURAL_SUBSPECIES){
         ls = new LipidStructuralSubspecies(head_group, fa_list);
     }
-    
+        
+    else if (level == ISOMERIC_SUBSPECIES){
+        ls = new LipidIsomericSubspecies(head_group, fa_list);
+    }
     lipid = new LipidAdduct();
     lipid->lipid = ls;
     lipid->adduct = adduct;

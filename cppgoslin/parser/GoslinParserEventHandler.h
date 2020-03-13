@@ -5,7 +5,9 @@
 #include "cppgoslin/domain/Adduct.h"
 #include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
+#include "cppgoslin/domain/LipidIsomericSubspecies.h"
 #include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/IsomericFattyAcid.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
 #include <set>
@@ -25,6 +27,8 @@ public:
     vector<FattyAcid*> *fa_list;
     FattyAcid *current_fa;
     Adduct *adduct;
+    int db_position;
+    string db_cistrans;
         
     GoslinParserEventHandler();
     ~GoslinParserEventHandler();
@@ -46,6 +50,11 @@ public:
     void add_adduct(TreeNode *node);
     void add_charge(TreeNode *node);
     void add_charge_sign(TreeNode *node);
+    
+    void set_isomeric_level(TreeNode* node);
+    void add_db_position(TreeNode* node);
+    void add_db_position_number(TreeNode* node);
+    void add_cistrans(TreeNode* node);
 };
 
 

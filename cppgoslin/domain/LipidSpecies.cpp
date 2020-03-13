@@ -76,6 +76,11 @@ LipidCategory LipidSpecies::get_category(string _head_group){
 }
 
 
+LipidLevel LipidSpecies::get_lipid_level(){
+    return SPECIES;
+}
+
+
 LipidClass LipidSpecies::get_class(string _head_group){
     if (!StringClass.size()){
         for (auto kvp : lipid_classes){

@@ -44,7 +44,7 @@ string FattyAcid::suffix(LipidFaBondType lipid_FA_bond_type){
 }
 
 
-string FattyAcid::to_string(bool special_case){
+string FattyAcid::to_string(bool special_case, LipidLevel level){
     stringstream s;
     
     string lipid_suffix = suffix(lipid_FA_bond_type);

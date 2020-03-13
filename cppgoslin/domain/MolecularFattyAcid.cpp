@@ -21,6 +21,18 @@ MolecularFattyAcid::~MolecularFattyAcid(){
     
 }
 
-string MolecularFattyAcid::to_string(bool special_case){
-    return FattyAcid::to_string(special_case);
+
+string MolecularFattyAcid::to_string(bool special_case, LipidLevel level){
+    switch (level){
+        case NO_LEVEL:
+        case MOLECULAR_SUBSPECIES:
+            return FattyAcid::to_string(special_case);
+            
+        case SPECIES:
+            return FattyAcid::to_string(special_case, level);
+        
+        default:
+            throw IllegalArgumentException("MolecularFattyAcid does not know how to create a fatty acid string for level " + to_string(level));
+        
+    }
 }

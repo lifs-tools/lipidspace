@@ -66,7 +66,7 @@ LipidMolecularSubspecies::~LipidMolecularSubspecies(){
 #include <iostream>
 using namespace std;
 
-string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator){
+string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator, LipidLevel level){
     stringstream s;
     s << (!use_head_group ? get_class_string(lipid_class) : head_group);
     bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
@@ -76,7 +76,7 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator
         for (unsigned int i = 0; i < fa_list.size(); ++i){
             if (i > 0) s << fa_separator;
             FattyAcid *fatty_acid = fa_list.at(i);
-            s << fatty_acid->to_string(special_case);
+            s << fatty_acid->to_string(special_case, level);
         }
     }
     
@@ -84,11 +84,16 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator
 }
 
 
+LipidLevel LipidMolecularSubspecies::get_lipid_level(){
+    return MOLECULAR_SUBSPECIES;
+}
+
+
 string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
     switch (level){
         case NO_LEVEL:
         case MOLECULAR_SUBSPECIES:
-            return build_lipid_subspecies_name("_");
+            return build_lipid_subspecies_name("_", level);
     
         case CATEGORY:
         case CLASS:

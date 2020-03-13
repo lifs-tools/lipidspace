@@ -24,27 +24,43 @@ IsomericFattyAcid::~IsomericFattyAcid(){
     
 }
 
-string IsomericFattyAcid::to_string(bool special_case){
-    stringstream s;
-    
-    string lipid_suffix = suffix(lipid_FA_bond_type);
-    if (special_case && lipid_suffix.length() > 0) s << "O-";
-    s << num_carbon << ":" << num_double_bonds;
-    
-    if (double_bond_positions.size()){
-        stringstream db;
-        db << "(";
-        int j = 0;
-        for (auto it : double_bond_positions){
-            if (j > 0) db << ",";
-            db << it.first << it.second;
-            ++j;
-        }
-        db << ")";
-        s << db.str();
+
+string IsomericFattyAcid::to_string(bool special_case, LipidLevel level){
+    switch(level){        
+        case NO_LEVEL:
+        case ISOMERIC_SUBSPECIES:
+            {
+                stringstream s;
+                string lipid_suffix = suffix(lipid_FA_bond_type);
+                if (special_case && lipid_suffix.length() > 0) s << "O-";
+                s << num_carbon << ":" << num_double_bonds;
+                
+                if (double_bond_positions.size()){
+                    stringstream db;
+                    db << "(";
+                    int j = 0;
+                    for (auto it : double_bond_positions){
+                        if (j > 0) db << ",";
+                        db << it.first << it.second;
+                        ++j;
+                    }
+                    db << ")";
+                    s << db.str();
+                }
+                
+                if (num_hydroxyl) s << ";" << num_hydroxyl;
+                s << lipid_suffix;
+                return s.str();
+            }
+            
+        case STRUCTURAL_SUBSPECIES:
+        case MOLECULAR_SUBSPECIES:
+        case SPECIES:
+            {
+                return StructuralFattyAcid::to_string(special_case, level);
+            }
+            
+        default:
+            throw IllegalArgumentException("IsomericFattyAcid does not know how to create a fatty acid string for level " + to_string(level));
     }
-    
-    if (num_hydroxyl) s << ";" << num_hydroxyl;
-    s << lipid_suffix;
-    return s.str();
 }

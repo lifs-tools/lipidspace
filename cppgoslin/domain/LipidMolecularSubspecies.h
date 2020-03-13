@@ -20,8 +20,9 @@ public:
     LipidMolecularSubspecies (string head_group);
     LipidMolecularSubspecies (string head_group, vector<FattyAcid*> *_fa);
     ~LipidMolecularSubspecies();
-    string build_lipid_subspecies_name(string fa_separator);
+    string build_lipid_subspecies_name(string fa_separator, LipidLevel level = NO_LEVEL);
     string get_lipid_string(LipidLevel level = NO_LEVEL);
+    LipidLevel get_lipid_level();
 };
 
 #endif /* LIPID_MOLECULAR_SUBSPECIES_H */

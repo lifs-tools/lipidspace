@@ -15,7 +15,7 @@ public:
     
     IsomericFattyAcid(string name, int num_carbon, int num_double_bonds, int num_hydroxyl, LipidFaBondType lipid_FA_bond_type, bool lcb, int position, map<int, string> *_double_bond_positions);
     IsomericFattyAcid(FattyAcid* fa);
-    string to_string(bool special_case);
+    string to_string(bool special_case, LipidLevel level = NO_LEVEL);
     ~IsomericFattyAcid();
 };
 

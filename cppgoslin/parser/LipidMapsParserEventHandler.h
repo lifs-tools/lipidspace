@@ -5,7 +5,9 @@
 #include "cppgoslin/domain/Adduct.h"
 #include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
+#include "cppgoslin/domain/LipidIsomericSubspecies.h"
 #include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/IsomericFattyAcid.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
 #include <set>
@@ -28,6 +30,8 @@ public:
     FattyAcid *current_fa;
     bool omit_fa;
     bool use_head_group;
+    int db_position;
+    string db_cistrans;
 
     LipidMapsParserEventHandler();
     ~LipidMapsParserEventHandler();
@@ -48,6 +52,11 @@ public:
     void build_lipid(TreeNode* node);
     void add_hydroxyl_lcb(TreeNode* node);
     void pure_fa(TreeNode* node);
+    
+    void set_isomeric_level(TreeNode* node);
+    void add_db_position(TreeNode* node);
+    void add_db_position_number(TreeNode* node);
+    void add_cistrans(TreeNode* node);
         
 };
 #endif /* LIPID_MAPS_PARSER_EVENT_HANDLER_H */

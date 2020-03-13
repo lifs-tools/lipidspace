@@ -46,6 +46,16 @@ int main(int argc, char** argv){
         
         
         
+        // check swiss lipids parser with illegal lipid name
+        lipid_name = "15:6(2Z,4E,6Z,8E,12E,14)(6Me,8Me,10Me[S],13Me)";
+        lipid = lipid_maps_parser.parse(lipid_name);
+        assert (lipid_maps_parser.word_in_grammar);
+        assert (lipid);
+        delete lipid;
+        
+        
+        
+        
         // Pure Parser test
         GoslinParserEventHandler goslin_parser_event_handler;
         Parser<LipidAdduct*> goslin_parser_pure(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);
@@ -234,7 +244,7 @@ int main(int argc, char** argv){
         lipid_name = "PIP[3'] 17:0/20:4(5Z,8Z,11Z,14Z)";
         lipid = lipid_parser.parse(lipid_name);
         assert (lipid);
-        assert (lipid->get_lipid_string() == "PIP[3'] 17:0/20:4");
+        assert (lipid->get_lipid_string() == "PIP[3'] 17:0/20:4(5Z,8Z,11Z,14Z)");
         delete lipid;
         
         lipid_name = "PIMIP 12:0/14:1";
@@ -260,26 +270,27 @@ int main(int argc, char** argv){
         lipid_name = "LPIN 20:4(5Z,8Z,11Z,14Z)";
         lipid = lipid_parser.parse(lipid_name);
         assert (lipid);
-        assert (lipid->get_lipid_string() == "LPIN 20:4");
+        assert (lipid->get_lipid_string() == "LPIN 20:4(5Z,8Z,11Z,14Z)");
         delete lipid;
         
         
         
         
         // testing lipid maps parser
-        vector< vector<string> > lmp_data{{"PA(16:1/12:0)", "PA 16:1/12:0"},{"PA(4:0/12:0)", "PA 4:0/12:0"},
+        vector< vector<string> > lmp_data{{"PA(16:1/12:0)", "PA 16:1/12:0"},
+                           {"PA(4:0/12:0)", "PA 4:0/12:0"},
                            {"PC(O-14:0/0:0)", "LPC O-14:0a"},
-                           {"SQMG(16:1(11Z)/0:0)", "SQMG 16:1"},
-                           {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z))[iso6]", "TAG 13:0/22:3/22:5"},
+                           {"SQMG(16:1(11Z)/0:0)", "SQMG 16:1(11Z)"},
+                           {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z))[iso6]", "TAG 13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z)"},
                            {"13R-HODE", "13R-HODE"},
-                           {"CL(1'-[20:0/20:0],3'-[20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)])", "CL 20:0/20:0/20:4/18:2"},
-                           {"PA(P-20:0/18:3(6Z,9Z,12Z))", "PA 20:0p/18:3"},
+                           {"CL(1'-[20:0/20:0],3'-[20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)])", "CL 20:0/20:0/20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)"},
+                           {"PA(P-20:0/18:3(6Z,9Z,12Z))", "PA 20:0p/18:3(6Z,9Z,12Z)"},
                            {"M(IP)2C(t18:0/20:0(2OH))", "M(IP)2C 18:0;3/20:0;1"},
-                           {"Cer(d16:2(4E,6E)/22:0(2OH))", "Cer 16:2;2/22:0;1"},
-                           {"MG(18:1(11E)/0:0/0:0)[rac]", "MAG 18:1"},
-                           {"PAT18(24:1(2E)(2Me,4Me[S],6Me[S])/25:1(2E)(2Me,4Me[S],6Me[S])/26:1(2E)(2Me,4Me[S],6Me[S])/24:1(2E)(2Me,4Me[S],6Me[S]))", "PAT18 24:1/25:1/26:1/24:1"},
+                           {"Cer(d16:2(4E,6E)/22:0(2OH))", "Cer 16:2(4E,6E);2/22:0;1"},
+                           {"MG(18:1(11E)/0:0/0:0)[rac]", "MAG 18:1(11E)"},
+                           {"PAT18(24:1(2E)(2Me,4Me[S],6Me[S])/25:1(2E)(2Me,4Me[S],6Me[S])/26:1(2E)(2Me,4Me[S],6Me[S])/24:1(2E)(2Me,4Me[S],6Me[S]))", "PAT18 24:1(2E)/25:1(2E)/26:1(2E)/24:1(2E)"},
                            {"(3'-sulfo)Galbeta-Cer(d18:1/20:0)", "SHexCer 18:1;2/20:0"},
-                           {"GlcCer(d15:2(4E,6E)/22:0(2OH))", "HexCer 15:2;2/22:0;1"}};
+                           {"GlcCer(d15:2(4E,6E)/22:0(2OH))", "HexCer 15:2(4E,6E);2/22:0;1"}};
         
         for (uint i = 0; i < lmp_data.size(); ++i){
             lipid = lipid_maps_parser.parse(lmp_data.at(i)[0]);
@@ -379,11 +390,11 @@ int main(int argc, char** argv){
         
          
         // test the down leveling of lipid names
-        
         // glycerophospholipid;
-        lipid_name = "PE 16:1/12:0";
+        lipid_name = "PE 16:1(2E)/12:0";
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
+        assert (lipid->get_lipid_string(ISOMERIC_SUBSPECIES) == "PE 16:1(2E)/12:0");
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "PE 16:1/12:0");
         assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PE 16:1_12:0");
         assert (lipid->get_lipid_string(SPECIES) == "PE 28:1");
@@ -437,6 +448,8 @@ int main(int argc, char** argv){
         assert (lipid->get_lipid_string(CLASS) == "TAG");
         assert (lipid->get_lipid_string(CATEGORY) == "GL");
         assert (lipid->lipid);
+        
+        
         // try to retrieve LipidSpeciesInfo for summary information
         LipidSpeciesInfo lsi = lipid->lipid->info;
         assert (lsi.lcb == false);

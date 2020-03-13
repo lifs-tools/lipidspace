@@ -38,7 +38,7 @@ public:
     static LipidClass get_class(string _head_group);
     static string get_class_string(LipidClass lipid_class);
     static string get_category_string(LipidCategory lipid_category);
-    
+    virtual LipidLevel get_lipid_level();
     virtual vector<FattyAcid*> get_fa_list();
 };
             

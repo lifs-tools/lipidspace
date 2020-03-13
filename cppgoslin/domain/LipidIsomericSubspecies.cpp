@@ -50,15 +50,24 @@ LipidIsomericSubspecies::~LipidIsomericSubspecies(){
 
 
 
+
+LipidLevel LipidIsomericSubspecies::get_lipid_level(){
+    return ISOMERIC_SUBSPECIES;
+}
+
+
+
 string LipidIsomericSubspecies::get_lipid_string(LipidLevel level){
     switch(level){
         case NO_LEVEL:
-        case ISOMERIC_SUBSPECIES:            
+        case ISOMERIC_SUBSPECIES:
+            return LipidMolecularSubspecies::build_lipid_subspecies_name("/", level);
+            
+        case SPECIES:
         case STRUCTURAL_SUBSPECIES:
         case MOLECULAR_SUBSPECIES:
         case CATEGORY:
         case CLASS:
-        case SPECIES:
             return LipidStructuralSubspecies::get_lipid_string(level);
     
         default:

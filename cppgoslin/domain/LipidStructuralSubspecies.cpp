@@ -65,11 +65,18 @@ LipidStructuralSubspecies::~LipidStructuralSubspecies(){
 }
 
 
+
+LipidLevel LipidStructuralSubspecies::get_lipid_level(){
+    return STRUCTURAL_SUBSPECIES;
+}
+
+
+
 string LipidStructuralSubspecies::get_lipid_string(LipidLevel level) {
     switch(level){
         case NO_LEVEL:
         case STRUCTURAL_SUBSPECIES:
-            return build_lipid_subspecies_name("/");
+            return build_lipid_subspecies_name("/", level);
     
         case MOLECULAR_SUBSPECIES:
         case CATEGORY:
