@@ -39,6 +39,10 @@ Parser<T>::~Parser(){
     for (auto& kv : substitution){
         delete kv.second;
     }
+    
+    for (auto& b : right_pair){
+        delete b;
+    }
 }
 
 
@@ -278,6 +282,18 @@ void Parser<T>::read_grammar(string grammar){
         }
     }
 
+    
+    for (uint i = 0; i < next_free_rule_index; ++i){
+        right_pair.push_back(new Bitfield(next_free_rule_index));
+    }
+    
+    for (auto& kvp : NTtoNT){
+        if (kvp.first <= MASK) continue;
+        unsigned long l = kvp.first >> SHIFT;
+        unsigned long r = kvp.first & MASK;
+        right_pair.at(l)->insert(r);
+    }
+    
     
 }
 
@@ -585,16 +601,6 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
         top_rule = dp_node->rule_index_2;
         bottom_rule = originalTtoNT.at(dp_node->rule_index_1);
     }
-    /*
-    vector<unsigned long> *merged_rules = collect_backwards(bottom_rule, top_rule);
-    if (merged_rules != NULL){
-        for (auto rule_index : *merged_rules){
-            node->left = new TreeNode(rule_index, NTtoRule.find(rule_index) != NTtoRule.end());
-            node = node->left;
-        }
-        delete merged_rules;
-    }
-    */
     
     unsigned long subst_key = bottom_rule + (top_rule << 16);
     
@@ -678,6 +684,7 @@ void Parser<T>::parse_regular(string text_to_parse){
     if (requirement_fulfilled){
         for (int i = 1; i < n; ++i){
             int im1 = i - 1;
+            
             for (int j = 0; j < n - i; ++j){
                 map<unsigned long, DPNode*>** DPj = DP[j];
                 map<unsigned long, DPNode*>* DPji = DPj[i];
@@ -685,18 +692,23 @@ void Parser<T>::parse_regular(string text_to_parse){
                 
                 for (auto k : *Ks[j]){
                     int jpok = jp1 + k;
-                    if (!Ks[jpok]->find(im1 - k)) continue;
+                    int im1mk = im1 - k;
+                    if (!Ks[jpok]->find(im1mk)) continue;
+                    
                     
                     for (auto index_pair_1 : *DP[j][k]){
-                        for (auto index_pair_2 : *DP[jpok][im1 - k]){
-                            unsigned long key = compute_rule_key(index_pair_1.first, index_pair_2.first);
+                        Bitfield* b = right_pair.at(index_pair_1.first);
+                        for (auto index_pair_2 : *DP[jpok][im1mk]){
                             
-                            if (NTtoNT.find(key) == NTtoNT.end()) continue;
-                            
-                            DPNode *content = new DPNode(index_pair_1.first, index_pair_2.first, index_pair_1.second, index_pair_2.second);
-                            DPnodes.push_back(content);
-                            for (auto rule_index : NTtoNT.at(key)){
-                                DPji->insert({rule_index, content});
+                            if (b->find(index_pair_2.first)){
+                                unsigned long key = compute_rule_key(index_pair_1.first, index_pair_2.first);
+                                
+                                DPNode *content = new DPNode(index_pair_1.first, index_pair_2.first, index_pair_1.second, index_pair_2.second);
+                                DPnodes.push_back(content);
+                                for (auto rule_index : NTtoNT.at(key)){
+                                    DPji->insert({rule_index, content});
+                                }
+                                
                             }
                         }
                     }
