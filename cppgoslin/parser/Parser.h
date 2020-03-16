@@ -127,8 +127,9 @@ public:
     map<unsigned long, set<unsigned long>> NTtoNT;
     map<unsigned long, string> NTtoRule;
     map<unsigned long, vector<unsigned long>*> substitution;
-    vector<set<unsigned long>> left_pair;
-    vector<set<unsigned long>> right_pair;
+    //vector<set<unsigned long>> left_pair;
+    vector<Bitfield*> right_pair;
+    int avg_pair;
     char quote;
     BaseParserEventHandler<T> *parser_event_handler;
     bool word_in_grammar;
