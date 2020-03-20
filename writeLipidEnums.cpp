@@ -89,6 +89,7 @@ void writeLipidEnum(string ofFileName){
     offile << "    SP, // SLM:000000525 Sphingolipids" << endl;
     offile << "    ST, // SLM:000500463 Steroids and derivatives" << endl;
     offile << "    FA, // SLM:000390054 Fatty acyls and derivatives" << endl;
+    offile << "    PK, // polyketides" << endl;
     offile << "    SL // Saccharo lipids" << endl;
     offile << "};" << endl;
     offile << "" << endl;
