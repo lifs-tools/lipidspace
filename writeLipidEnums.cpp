@@ -79,6 +79,7 @@ void writeLipidEnum(string ofFileName){
     offile << "" << endl;
     offile << "#include <vector>" << endl;
     offile << "#include <map>" << endl;
+    offile << "#include <set>" << endl;
     offile << "" << endl;
     offile << "using namespace std;" << endl;
     offile << "" << endl;
@@ -125,6 +126,8 @@ void writeLipidEnum(string ofFileName){
     offile << "struct LipidClassMeta {" << endl;
     offile << "    LipidCategory lipid_category;" << endl;
     offile << "    string class_name;" << endl;
+    offile << "    int max_num_fa;" << endl;
+    offile << "    set<int> possible_num_fa;" << endl;
     offile << "    vector<string> synonyms;" << endl;
     offile << "};" << endl;
     offile << "" << endl;
@@ -144,8 +147,20 @@ void writeLipidEnum(string ofFileName){
     offile << "static const ClassMap lipid_classes = {" << endl;
     int cnt = 0;
     for (auto& kv : data){
-        offile << "{" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", {\"" << kv.second->at(0) << "\"";
-        for (int i = 3; i < kv.second->size(); ++i){
+        offile << "{" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
+        offile << kv.second->at(3) << ", {";
+        
+        
+        vector<string>* tokens = split_string(kv.second->at(4), '|', '"');
+        for (int i = 0; i < tokens->size(); ++i){
+            string tok = strip(tokens->at(i), ' ');
+            if (i > 0) offile << ", ";
+            offile << tok;
+        }
+        delete tokens;
+        
+        offile << "}, {\"" << kv.second->at(0) << "\"";
+        for (int i = 5; i < kv.second->size(); ++i){
             string synonym = kv.second->at(i);
             if (synonym.length() < 1) continue;
             offile << ", \"" << synonym << "\"";

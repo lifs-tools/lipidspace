@@ -59,15 +59,27 @@ install: main
 	cp cppgoslin/domain/*.h  ${install_dir}/include/cppgoslin/domain/.
 	cp cppgoslin/parser/*.h  ${install_dir}/include/cppgoslin/parser/.
 	
-test: main ${test_obj}
+	
+MolecularFattyAcidTest: cppgoslin/tests/MolecularFattyAcidTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.o libcppGoslin.so
+
+ParserTest: cppgoslin/tests/ParserTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o ParserTest cppgoslin/tests/ParserTest.o libcppGoslin.so
+	
+LipidMapsTest: cppgoslin/tests/LipidMapsTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o LipidMapsTest cppgoslin/tests/LipidMapsTest.o libcppGoslin.so
+	
+GoslinTest: cppgoslin/tests/GoslinTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o GoslinTest cppgoslin/tests/GoslinTest.o libcppGoslin.so
+	
+SwissLipidsTest: cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
+	
+	
+test: MolecularFattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest
 
 	
-runtests: test
+runtests: MolecularFattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MolecularFattyAcidTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest

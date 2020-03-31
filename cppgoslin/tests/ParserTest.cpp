@@ -150,14 +150,14 @@ int main(int argc, char** argv){
         lipid_name = "PE 16:1-12:0";
         lipid = lipid_parser.parse(lipid_name);
         assert (lipid);
-        assert (lipid->get_lipid_string() == "PE 16:1_12:0");
+        assert (lipid->get_lipid_string() == "PE 16:1-12:0");
         delete lipid;
         
         lipid_name = "PA 16:1-12:0 - fragment";
         lipid = lipid_parser.parse(lipid_name);
         assert (lipid);
-        assert (lipid->get_lipid_string() == "PA 16:1_12:0");
-        assert (lipid->get_lipid_fragment_string() == "PA 16:1_12:0 - fragment");
+        assert (lipid->get_lipid_string() == "PA 16:1-12:0");
+        assert (lipid->get_lipid_fragment_string() == "PA 16:1-12:0 - fragment");
         // check that all FAs have been initialized properly
         assert (lipid->lipid->get_fa_list().size() == 2);
         int faCnt = 1;
@@ -396,7 +396,7 @@ int main(int argc, char** argv){
         assert (lipid);
         assert (lipid->get_lipid_string(ISOMERIC_SUBSPECIES) == "PE 16:1(2E)/12:0");
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "PE 16:1/12:0");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PE 16:1_12:0");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PE 16:1-12:0");
         assert (lipid->get_lipid_string(SPECIES) == "PE 28:1");
         assert (lipid->get_lipid_string(CLASS) == "PE");
         assert (lipid->get_lipid_string(CATEGORY) == "GP");
@@ -408,7 +408,7 @@ int main(int argc, char** argv){
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "Cer 16:1;2/12:0");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "Cer 16:1;2_12:0");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "Cer 16:1;2-12:0");
         assert (lipid->get_lipid_string(SPECIES) == "Cer 28:1;2");
         assert (lipid->get_lipid_string(CLASS) == "Cer");
         assert (lipid->get_lipid_string(CATEGORY) == "SP");
@@ -443,7 +443,7 @@ int main(int argc, char** argv){
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "TAG 16:1/12:0/20:2");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "TAG 16:1_12:0_20:2");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "TAG 16:1-12:0-20:2");
         assert (lipid->get_lipid_string(SPECIES) == "TAG 48:3");
         assert (lipid->get_lipid_string(CLASS) == "TAG");
         assert (lipid->get_lipid_string(CATEGORY) == "GL");
@@ -526,7 +526,7 @@ int main(int argc, char** argv){
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "PC O-16:1a/12:0");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PC O-16:1a_12:0");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PC O-16:1a-12:0");
         assert (lipid->get_lipid_string(SPECIES) == "PC O-28:1a");
         assert (lipid->get_lipid_string(CLASS) == "PC");
         assert (lipid->get_lipid_string(CATEGORY) == "GP");

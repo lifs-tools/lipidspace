@@ -93,7 +93,7 @@ string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
     switch (level){
         case NO_LEVEL:
         case MOLECULAR_SUBSPECIES:
-            return build_lipid_subspecies_name("_", level);
+            return build_lipid_subspecies_name("-", level);
     
         case CATEGORY:
         case CLASS:
