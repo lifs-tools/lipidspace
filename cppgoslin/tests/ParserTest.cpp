@@ -492,11 +492,12 @@ int main(int argc, char** argv){
         }
         delete lipid;
         
+        
+        
         // sterol;
         lipid_name = "ChE 16:1";
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
-        cout << lipid->get_lipid_string() << endl;
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "SE 27:1/16:1");
         assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "SE 27:1/16:1");
         assert (lipid->get_lipid_string(SPECIES) == "SE 27:1/16:1");
@@ -520,6 +521,16 @@ int main(int argc, char** argv){
         
     
         
+        // PC;
+        lipid_name = "PC O-16:1a/12:0";
+        lipid = goslin_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "PC O-16:1a/12:0");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PC O-16:1a_12:0");
+        assert (lipid->get_lipid_string(SPECIES) == "PC O-28:1a");
+        assert (lipid->get_lipid_string(CLASS) == "PC");
+        assert (lipid->get_lipid_string(CATEGORY) == "GP");
+        delete lipid;
         
         
         // testing adducts
