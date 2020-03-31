@@ -496,15 +496,27 @@ int main(int argc, char** argv){
         lipid_name = "ChE 16:1";
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
-        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "ChE 16:1");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "ChE 16:1");
-        assert (lipid->get_lipid_string(SPECIES) == "ChE 16:1");
-        assert (lipid->get_lipid_string(CLASS) == "ChE");
+        cout << lipid->get_lipid_string() << endl;
+        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(SPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(CLASS) == "SE 27:1");
         assert (lipid->get_lipid_string(CATEGORY) == "ST");
         delete lipid;
         
         
         
+        
+        // sterol;
+        lipid_name = "ChE 16:1";
+        lipid = goslin_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(SPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(CLASS) == "SE 27:1");
+        assert (lipid->get_lipid_string(CATEGORY) == "ST");
+        delete lipid;
         
     
         

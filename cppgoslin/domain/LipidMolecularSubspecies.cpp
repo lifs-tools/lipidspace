@@ -72,7 +72,7 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator
     bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
     
     if (fa_list.size() > 0){
-        s << " ";
+        s << ((lipid_category !=  ST) ? " " : "/");
         for (unsigned int i = 0; i < fa_list.size(); ++i){
             if (i > 0) s << fa_separator;
             FattyAcid *fatty_acid = fa_list.at(i);

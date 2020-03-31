@@ -49,10 +49,8 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
             st << (!use_head_group ? get_class_string(lipid_class) : head_group);
             
             if (info.num_carbon > 0){
-                st <<  " " << info.num_carbon;
-                st << ":" << info.num_double_bonds;
-                if (info.num_hydroxyl > 0)  st << ";" << info.num_hydroxyl;
-                st << FattyAcid::suffix(info.lipid_FA_bond_type);
+                st << ((lipid_category !=  ST) ? " " : "/");
+                st << ((FattyAcid)info).to_string();
             }
             
             return st.str();

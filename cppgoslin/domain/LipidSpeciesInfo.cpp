@@ -10,3 +10,4 @@ LipidSpeciesInfo::LipidSpeciesInfo (FattyAcid *fa) : MolecularFattyAcid("", (fa)
         num_double_bonds = 0;
     }
 }
+
