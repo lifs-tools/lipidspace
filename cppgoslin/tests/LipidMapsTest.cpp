@@ -62,7 +62,7 @@ int main(int argc, char** argv){
         
         
         
-        for (uint i = 0; i < lipid_names_income.size(); ++i){
+        for (uint32_t i = 0; i < lipid_names_income.size(); ++i){
             string lipid_name = lipid_names_income.at(i);
             string correct_lipid_name = lipid_names_outcome.at(i);
             lipid = lipid_maps_parser.parse(lipid_name);

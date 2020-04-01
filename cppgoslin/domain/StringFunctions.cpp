@@ -28,13 +28,13 @@ SOFTWARE.
 
 string strip(string s, char c){
     if (s.length() > 0) {
-        uint st = 0;
+        uint32_t st = 0;
         while (st < s.length() - 1 && s[st] == c) ++st;
         s = s.substr(st, s.length() - st);
     }
     
     if (s.length() > 0) {
-        uint en = 0;
+        uint32_t en = 0;
         while (en < s.length() - 1 && s[s.length() - 1 - en] == c) ++en;
         s = s.substr(0, s.length() - en);
     }
@@ -50,7 +50,7 @@ vector<string>* split_string(string text, char separator, char _quote){
     char last_char = '\0';
     bool last_escaped_backslash = false;
     
-    for (uint i = 0; i < text.length(); ++i){
+    for (uint32_t i = 0; i < text.length(); ++i){
         char c = text[i];
         bool escaped_backslash = false;
         if (!in_quote){
