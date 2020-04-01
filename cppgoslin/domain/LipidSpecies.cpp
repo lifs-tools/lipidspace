@@ -124,7 +124,8 @@ vector<FattyAcid*> LipidSpecies::get_fa_list(){
 
 
 bool LipidSpecies::validate(){
-    if (lipid_classes.find(lipid_class) == lipid_classes.end()) return true;
+    if (use_head_group) return true;
+    if (lipid_classes.find(lipid_class) == lipid_classes.end()) return false;
     return lipid_classes.at(lipid_class).max_num_fa == 0 || (lipid_classes.at(lipid_class).max_num_fa > 0 && info.num_carbon >= 2);
 }
 
