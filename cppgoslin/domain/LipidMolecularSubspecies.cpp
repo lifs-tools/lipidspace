@@ -93,6 +93,20 @@ string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
     switch (level){
         case NO_LEVEL:
         case MOLECULAR_SUBSPECIES:
+            
+            if (!validate()){
+                stringstream st;
+                st << "Number of fatty acyl chains for '" << get_class_string(lipid_class);
+                st << "' is incorrect, should be [";
+                int ii = 0;
+                for (auto p : lipid_classes.at(lipid_class).possible_num_fa){
+                    if (ii++ > 0) st << ", ";
+                    st << p;
+                }
+                st << "], present: " << fa.size();
+            
+                throw ConstraintViolationException(st.str());
+            }
             return build_lipid_subspecies_name("-", level);
     
         case CATEGORY:
@@ -107,4 +121,18 @@ string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
             s >> error_message;
             throw IllegalArgumentException("LipidMolecularSubspecies does not know how to create a lipid string for level " + to_string(level));
     }
+}
+
+
+bool LipidMolecularSubspecies::validate(){
+    if (lipid_classes.find(lipid_class) == lipid_classes.end() || lipid_classes.at(lipid_class).max_num_fa == 0) return true;
+    if ((int)fa_list.size() > lipid_classes.at(lipid_class).max_num_fa) return false;
+    if (lipid_classes.at(lipid_class).possible_num_fa.find(fa_list.size()) == lipid_classes.at(lipid_class).possible_num_fa.end()) return false;
+    
+    int num_lcb = 0;
+    for (auto& kv : fa){
+        num_lcb += kv.second->lcb;
+    }
+    if (lipid_category == SP && num_lcb != 1) return false;
+    return true;
 }

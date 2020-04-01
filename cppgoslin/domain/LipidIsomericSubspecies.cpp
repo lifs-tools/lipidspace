@@ -61,6 +61,19 @@ string LipidIsomericSubspecies::get_lipid_string(LipidLevel level){
     switch(level){
         case NO_LEVEL:
         case ISOMERIC_SUBSPECIES:
+            if (!LipidMolecularSubspecies::validate()){
+                stringstream st;
+                st << "Number of fatty acyl chains for '" << get_class_string(lipid_class);
+                st << "' is incorrect, should be [";
+                int ii = 0;
+                for (auto p : lipid_classes.at(lipid_class).possible_num_fa){
+                    if (ii++ > 0) st << ", ";
+                    st << p;
+                }
+                st << "], present: " << fa.size();
+            
+                throw ConstraintViolationException(st.str());
+            }
             return LipidMolecularSubspecies::build_lipid_subspecies_name("/", level);
             
         case SPECIES:

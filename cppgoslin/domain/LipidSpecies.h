@@ -40,6 +40,7 @@ public:
     static string get_category_string(LipidCategory lipid_category);
     virtual LipidLevel get_lipid_level();
     virtual vector<FattyAcid*> get_fa_list();
+    virtual bool validate();
 };
             
 #endif /* LIPID_SPECIES_H */

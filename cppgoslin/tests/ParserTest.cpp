@@ -139,12 +139,20 @@ int main(int argc, char** argv){
         assert (lipid->get_lipid_string() == "NAPE 12:0/30:4(15Z,18Z,21Z,24Z)/12:0");
         delete lipid;
         
+        /*
+        vector<FattyAcid*>* fa_list = new vector<FattyAcid*>;
+        LipidSpecies* ls = new LipidStructuralSubspecies("PA", fa_list);
+        try {
+            cout << ls->get_lipid_string() << endl;
+        }
+        catch (LipidException &e){
+            cout << "Exception:" << endl;
+            cout << e.what() << endl;
+        }
         
-        
-        
-        
-        
-
+        //delete ls;
+        //delete fa_list;
+        */
         
         // test lipid parser
         lipid_name = "PE 16:1-12:0";
@@ -329,7 +337,6 @@ int main(int argc, char** argv){
         
         lipid = lipid_parser.parse("LPE O-16:1p/12:0");
         assert (lipid == NULL);
-        
         
         
         

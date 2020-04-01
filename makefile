@@ -12,7 +12,9 @@ test_obj = cppgoslin/tests/MolecularFattyAcidTest.o cppgoslin/tests/ParserTest.o
 opt = -std=c++11 -O3 -march=native -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2
 
 
-main: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
+main: ${bin}
+
+${bin}:	cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
 	${CC} -shared ${obj} -o ${bin}
 	
 	
@@ -48,7 +50,7 @@ dist-clean: clean
 	rm -rf ${install_dir}/include/cppgoslin
 
 
-install: main
+install: ${bin}
 	mkdir -p ${install_dir}/lib
 	mkdir -p ${install_dir}/include
 	mkdir -p ${install_dir}/include/cppgoslin

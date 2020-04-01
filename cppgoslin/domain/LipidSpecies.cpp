@@ -45,6 +45,9 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
             
         case NO_LEVEL:
         case SPECIES:
+            if (!validate()){
+                throw ConstraintViolationException("No fatty acly chain information present for lipid '%s'" + get_class_string(lipid_class));
+            }
             stringstream st;
             st << (!use_head_group ? get_class_string(lipid_class) : head_group);
             
@@ -118,3 +121,10 @@ string LipidSpecies::get_category_string(LipidCategory _lipid_category){
 vector<FattyAcid*> LipidSpecies::get_fa_list(){
     return fa_list;
 }
+
+
+bool LipidSpecies::validate(){
+    if (lipid_classes.find(lipid_class) == lipid_classes.end()) return true;
+    return lipid_classes.at(lipid_class).max_num_fa == 0 || (lipid_classes.at(lipid_class).max_num_fa > 0 && info.num_carbon >= 2);
+}
+
