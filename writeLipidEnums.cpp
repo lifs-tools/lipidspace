@@ -44,14 +44,14 @@ void writeLipidEnum(string ofFileName){
     }
     
     string line;
-    int i = 0;
+    unsigned int i = 0;
     map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"SL", 1}, {"UNDEFINED", 1}};
     
     map<string, vector<string>*> data;
     while (getline(infile, line)){
         if (i++ == 0) continue;
         vector<string>* tokens = split_string(line, ',', '"');
-        for (int i = 0; i < tokens->size(); ++i){
+        for (unsigned int i = 0; i < tokens->size(); ++i){
             string s = tokens->at(i);
             if (s.length() >= 2 && s[0] == '"' && s[s.length() - 1] == '"'){
                 tokens->at(i) = s.substr(1, s.length() - 2);
@@ -61,7 +61,7 @@ void writeLipidEnum(string ofFileName){
         
         string enum_name = tokens->at(0);
         
-        for (int i = 0; i < enum_name.length(); ++i){
+        for (unsigned int i = 0; i < enum_name.length(); ++i){
             char c = enum_name[i];
             if ('A' <= c && c <= 'Z'){
                 
@@ -201,14 +201,14 @@ void writeLipidEnum(string ofFileName){
     offile << "" << endl;
     offile << "" << endl;
     offile << "static const ClassMap lipid_classes = {" << endl;
-    int cnt = 0;
+    unsigned int cnt = 0;
     for (auto& kv : data){
         offile << "{" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
         offile << kv.second->at(3) << ", {";
         
         
         vector<string>* tokens = split_string(kv.second->at(4), '|', '"');
-        for (int i = 0; i < tokens->size(); ++i){
+        for (unsigned int i = 0; i < tokens->size(); ++i){
             string tok = strip(tokens->at(i), ' ');
             if (i > 0) offile << ", ";
             offile << tok;
@@ -216,7 +216,7 @@ void writeLipidEnum(string ofFileName){
         delete tokens;
         
         offile << "}, {\"" << kv.second->at(0) << "\"";
-        for (int i = 5; i < kv.second->size(); ++i){
+        for (unsigned int i = 5; i < kv.second->size(); ++i){
             string synonym = kv.second->at(i);
             if (synonym.length() < 1) continue;
             offile << ", \"" << synonym << "\"";

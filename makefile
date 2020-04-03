@@ -1,5 +1,7 @@
 install_dir = /usr
-CC = g++
+CC = g++ -std=c++11
+AR = ar
+MARCH = -march=native
 bin = libcppGoslin.so
 abin = libcppGoslin.a
 domain = cppgoslin/domain/Adduct.o cppgoslin/domain/IsomericFattyAcid.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/MolecularFattyAcid.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StructuralFattyAcid.o cppgoslin/domain/StringFunctions.o
@@ -9,7 +11,7 @@ parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgos
 obj = ${domain} ${parser}
 test_obj = cppgoslin/tests/MolecularFattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o cppgoslin/tests/GoslinTest.o cppgoslin/tests/LipidMapsTest.o
 
-opt = -std=c++11 -O3 -march=native -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2
+opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
 
 
 main: ${bin}
@@ -19,7 +21,7 @@ ${bin}:	cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
 	
 	
 static: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
-	ar rcs ${abin} ${obj}
+	${AR} rcs ${abin} ${obj}
 
 	
 cppgoslin/parser/KnownGrammars.h: data/goslin/Goslin.g4 data/goslin/GoslinFragments.g4 data/goslin/LipidMaps.g4 data/goslin/SwissLipids.g4
@@ -31,7 +33,7 @@ cppgoslin/domain/LipidEnums.h: data/goslin/lipid-list.csv
 
 	
 %.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h
-	${CC} ${opt} -I. -Wall -fPIC -o $@ -c $<
+	${CC} ${opt} -I. -Wall -o $@ -c $<
 	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
