@@ -33,7 +33,7 @@ cppgoslin/domain/LipidEnums.h: data/goslin/lipid-list.csv
 
 	
 %.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h
-	${CC} ${opt} -I. -Wall -o $@ -c $<
+	${CC} ${opt} -I. -Wall -fPIC -o $@ -c $<
 	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
