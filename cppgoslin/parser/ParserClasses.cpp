@@ -1,3 +1,29 @@
+/*
+MIT License
+
+Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
+                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+
 #include "cppgoslin/parser/Parser.h"
 
 
@@ -46,14 +72,14 @@ string TreeNode::get_text(){
        
        
 
-Bitfield::Bitfield(uint _length){
+Bitfield::Bitfield(uint32_t _length){
     length = _length;
     field_len = 1 + ((length + 1) >> 6);
     field = new unsigned long[field_len];
     num_size = 0;
     
     
-    for (uint i = 0; i < field_len; ++i) field[i] = 0ull;
+    for (uint32_t i = 0; i < field_len; ++i) field[i] = 0ull;
 }
 
 
@@ -65,7 +91,7 @@ Bitfield::~Bitfield(){
 
 
 
-void Bitfield::insert(uint pos){
+void Bitfield::insert(uint32_t pos){
     if (!find(pos)){
         field[pos >> 6] |= (unsigned long)(1ull << (pos & 63));
         ++num_size;
@@ -75,7 +101,7 @@ void Bitfield::insert(uint pos){
 
 
 
-bool Bitfield::find(uint pos){
+bool Bitfield::find(uint32_t pos){
     return ((field[pos >> 6] >> (pos & 63)) & 1ull) == 1ull;
 }
 
@@ -94,7 +120,7 @@ int Bitfield::next(int pos){
     if ((int)pos >= (int)length) throw RuntimeException("Bitfield out of range");
     
     
-    uint field_pos = pos >> 6;
+    uint32_t field_pos = pos >> 6;
     unsigned long field_bits = field[field_pos] & (~((1ull << (pos & 63)) - 1ull));
     
     do {
@@ -111,7 +137,7 @@ int Bitfield::next(int pos){
 
 
 
-Bitfield::iter::iter(Bitfield & _bitfield, uint index) : bitfield (_bitfield) {
+Bitfield::iter::iter(Bitfield & _bitfield, uint32_t index) : bitfield (_bitfield) {
     num_index = index;
     last_position = -1;
     get_next = true;
@@ -154,7 +180,7 @@ bool Bitfield::iter::operator!=(const iter & rhs) const {
 
 
 
-uint Bitfield::size() const {
+uint32_t Bitfield::size() const {
     return num_size;
 }
 

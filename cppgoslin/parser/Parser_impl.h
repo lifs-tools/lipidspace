@@ -1,3 +1,29 @@
+/*
+MIT License
+
+Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
+                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+
 
 template <class T>
 const int Parser<T>::SHIFT = 32;
@@ -124,7 +150,7 @@ void Parser<T>::read_grammar(string grammar){
         }
         
         vector<string>* products = split_string(tokens_level_1.at(1), RULE_SEPARATOR, quote);
-        for (uint i = 0; i < products->size(); ++i){
+        for (uint32_t i = 0; i < products->size(); ++i){
             products->at(i) = strip(products->at(i), ' ');
         }
         
@@ -289,7 +315,7 @@ void Parser<T>::read_grammar(string grammar){
 
     
     // creating lookup table for right index pairs to a given left index
-    for (uint i = 0; i < next_free_rule_index; ++i){
+    for (uint32_t i = 0; i < next_free_rule_index; ++i){
         right_pair.push_back(new Bitfield(next_free_rule_index));
     }
     
@@ -454,7 +480,7 @@ string Parser<T>::de_escape(string text, char _quote){
     // remove the escape chars
     stringstream sb;
     bool last_escape_char = false;
-    for (uint i = 0; i < text.length(); ++i){
+    for (uint32_t i = 0; i < text.length(); ++i){
         char c = text[i];
         bool escape_char = false;
         
@@ -478,7 +504,7 @@ string Parser<T>::de_escape(string text, char _quote){
 template <class T>
 unsigned long Parser<T>::add_terminal(string text){
     vector<unsigned long> terminal_rules;
-    for (uint i = 1; i < text.length() - 1; ++i){
+    for (uint32_t i = 1; i < text.length() - 1; ++i){
         char c = text[i];
         unsigned long tRule = 0;
         if (uncontains(TtoNT, c)){
@@ -514,7 +540,7 @@ vector<unsigned long>* Parser<T>::top_nodes(unsigned long rule_index){
     vector<unsigned long> *collection = new vector<unsigned long>();
     vector<unsigned long> *collection_top = new vector<unsigned long>();
     collection->push_back(rule_index);
-    uint i = 0;
+    uint32_t i = 0;
     while (i < collection->size()){
         unsigned long current_index = collection->at(i);
         if (uncontains(NTtoNT, current_index)){
@@ -536,7 +562,7 @@ template <class T>
 vector<unsigned long>* Parser<T>::collect_one_backwards(unsigned long rule_index){
     vector<unsigned long> *collection = new vector<unsigned long>();
     collection->push_back(rule_index);
-    uint i = 0;
+    uint32_t i = 0;
     while (i < collection->size()){
         unsigned long current_index = collection->at(i);
         if (contains(NTtoNT, current_index)){

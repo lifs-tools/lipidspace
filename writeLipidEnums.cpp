@@ -1,3 +1,29 @@
+/*
+MIT License
+
+Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
+                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -74,11 +100,42 @@ void writeLipidEnum(string ofFileName){
     }
     
     offile << "/* DO NOT CHANGE THE FILE, IT IS AUTOMATICALLY GENERATED */" << endl << endl;
+    
+    
+    offile << "/*" << endl;
+    offile << "MIT License" << endl;
+    offile << endl;
+    offile << "Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de" << endl;
+    offile << "                   Nils Hoffmann  -  nils.hoffmann {at} isas.de" << endl;
+    offile << endl;
+    offile << "Permission is hereby granted, free of charge, to any person obtaining a copy" << endl;
+    offile << "of this software and associated documentation files (the \"Software\"), to deal" << endl;
+    offile << "in the Software without restriction, including without limitation the rights" << endl;
+    offile << "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell" << endl;
+    offile << "copies of the Software, and to permit persons to whom the Software is" << endl;
+    offile << "furnished to do so, subject to the following conditions:" << endl;
+    offile << endl;
+    offile << "The above copyright notice and this permission notice shall be included in all" << endl;
+    offile << "copies or substantial portions of the Software." << endl;
+    offile << endl;
+    offile << "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR" << endl;
+    offile << "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY," << endl;
+    offile << "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE" << endl;
+    offile << "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER" << endl;
+    offile << "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM," << endl;
+    offile << "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE" << endl;
+    offile << "SOFTWARE." << endl;
+    offile << "*/" << endl;
+    offile << endl;
+    offile << endl;
+    offile << endl;
+    
     offile << "#ifndef LIPID_ENUMS_H" << endl;
     offile << "#define LIPID_ENUMS_H" << endl;
     offile << "" << endl;
     offile << "#include <vector>" << endl;
     offile << "#include <map>" << endl;
+    offile << "#include <set>" << endl;
     offile << "" << endl;
     offile << "using namespace std;" << endl;
     offile << "" << endl;
@@ -89,6 +146,7 @@ void writeLipidEnum(string ofFileName){
     offile << "    SP, // SLM:000000525 Sphingolipids" << endl;
     offile << "    ST, // SLM:000500463 Steroids and derivatives" << endl;
     offile << "    FA, // SLM:000390054 Fatty acyls and derivatives" << endl;
+    offile << "    PK, // polyketides" << endl;
     offile << "    SL // Saccharo lipids" << endl;
     offile << "};" << endl;
     offile << "" << endl;
@@ -124,6 +182,8 @@ void writeLipidEnum(string ofFileName){
     offile << "struct LipidClassMeta {" << endl;
     offile << "    LipidCategory lipid_category;" << endl;
     offile << "    string class_name;" << endl;
+    offile << "    int max_num_fa;" << endl;
+    offile << "    set<int> possible_num_fa;" << endl;
     offile << "    vector<string> synonyms;" << endl;
     offile << "};" << endl;
     offile << "" << endl;
@@ -143,8 +203,20 @@ void writeLipidEnum(string ofFileName){
     offile << "static const ClassMap lipid_classes = {" << endl;
     int cnt = 0;
     for (auto& kv : data){
-        offile << "{" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", {\"" << kv.second->at(0) << "\"";
-        for (int i = 3; i < kv.second->size(); ++i){
+        offile << "{" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
+        offile << kv.second->at(3) << ", {";
+        
+        
+        vector<string>* tokens = split_string(kv.second->at(4), '|', '"');
+        for (int i = 0; i < tokens->size(); ++i){
+            string tok = strip(tokens->at(i), ' ');
+            if (i > 0) offile << ", ";
+            offile << tok;
+        }
+        delete tokens;
+        
+        offile << "}, {\"" << kv.second->at(0) << "\"";
+        for (int i = 5; i < kv.second->size(); ++i){
             string synonym = kv.second->at(i);
             if (synonym.length() < 1) continue;
             offile << ", \"" << synonym << "\"";

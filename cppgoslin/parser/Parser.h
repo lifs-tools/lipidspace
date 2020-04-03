@@ -1,3 +1,29 @@
+/*
+MIT License
+
+Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
+                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+
 #ifndef PARSER_H
 #define PARSER_H
 
@@ -70,21 +96,21 @@ class Bitfield {
 public:
     unsigned long *field;
     unsigned long *superfield;
-    uint field_len;
-    uint superfield_len;
-    uint num_size;
-    uint length;
+    uint32_t field_len;
+    uint32_t superfield_len;
+    uint32_t num_size;
+    uint32_t length;
     
     iter begin();
     iter end();
     
-    uint size() const;
+    uint32_t size() const;
     
     
-    Bitfield(uint length);
+    Bitfield(uint32_t length);
     ~Bitfield();
-    void insert(uint pos);
-    bool find(uint pos);
+    void insert(uint32_t pos);
+    bool find(uint32_t pos);
     void init();
     int next(int pos = -1);
     void print_bitfield(unsigned long l);
@@ -92,12 +118,12 @@ public:
 private:
     class iter : public std::iterator<std::output_iterator_tag, int>{
         public:
-            explicit iter(Bitfield& _bitfield, uint index = 0);
+            explicit iter(Bitfield& _bitfield, uint32_t index = 0);
             int operator*();
             iter & operator++();
             iter & operator++(int);
             bool operator!=(const iter &) const;
-            uint num_index;
+            uint32_t num_index;
             int last_position;
             Bitfield &bitfield;
             bool get_next;

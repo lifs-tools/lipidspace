@@ -1,3 +1,29 @@
+/*
+MIT License
+
+Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
+                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+
 #include "cppgoslin/cppgoslin.h"
 #include <set>
 #include <string>
@@ -36,7 +62,7 @@ int main(int argc, char** argv){
             check.insert(num);
         }
         
-        uint cnt = 0;
+        uint32_t cnt = 0;
         for (int i : b){
             assert (check.find(i) != check.end());
             ++cnt;
@@ -139,25 +165,33 @@ int main(int argc, char** argv){
         assert (lipid->get_lipid_string() == "NAPE 12:0/30:4(15Z,18Z,21Z,24Z)/12:0");
         delete lipid;
         
+        /*
+        vector<FattyAcid*>* fa_list = new vector<FattyAcid*>;
+        LipidSpecies* ls = new LipidStructuralSubspecies("PA", fa_list);
+        try {
+            cout << ls->get_lipid_string() << endl;
+        }
+        catch (LipidException &e){
+            cout << "Exception:" << endl;
+            cout << e.what() << endl;
+        }
         
-        
-        
-        
-        
-
+        //delete ls;
+        //delete fa_list;
+        */
         
         // test lipid parser
         lipid_name = "PE 16:1-12:0";
         lipid = lipid_parser.parse(lipid_name);
         assert (lipid);
-        assert (lipid->get_lipid_string() == "PE 16:1_12:0");
+        assert (lipid->get_lipid_string() == "PE 16:1-12:0");
         delete lipid;
         
         lipid_name = "PA 16:1-12:0 - fragment";
         lipid = lipid_parser.parse(lipid_name);
         assert (lipid);
-        assert (lipid->get_lipid_string() == "PA 16:1_12:0");
-        assert (lipid->get_lipid_fragment_string() == "PA 16:1_12:0 - fragment");
+        assert (lipid->get_lipid_string() == "PA 16:1-12:0");
+        assert (lipid->get_lipid_fragment_string() == "PA 16:1-12:0 - fragment");
         // check that all FAs have been initialized properly
         assert (lipid->lipid->get_fa_list().size() == 2);
         int faCnt = 1;
@@ -292,7 +326,7 @@ int main(int argc, char** argv){
                            {"(3'-sulfo)Galbeta-Cer(d18:1/20:0)", "SHexCer 18:1;2/20:0"},
                            {"GlcCer(d15:2(4E,6E)/22:0(2OH))", "HexCer 15:2(4E,6E);2/22:0;1"}};
         
-        for (uint i = 0; i < lmp_data.size(); ++i){
+        for (uint32_t i = 0; i < lmp_data.size(); ++i){
             lipid = lipid_maps_parser.parse(lmp_data.at(i)[0]);
             assert (lipid);
             assert (lipid->get_lipid_string() == lmp_data.at(i)[1]);
@@ -329,7 +363,6 @@ int main(int argc, char** argv){
         
         lipid = lipid_parser.parse("LPE O-16:1p/12:0");
         assert (lipid == NULL);
-        
         
         
         
@@ -396,7 +429,7 @@ int main(int argc, char** argv){
         assert (lipid);
         assert (lipid->get_lipid_string(ISOMERIC_SUBSPECIES) == "PE 16:1(2E)/12:0");
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "PE 16:1/12:0");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PE 16:1_12:0");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PE 16:1-12:0");
         assert (lipid->get_lipid_string(SPECIES) == "PE 28:1");
         assert (lipid->get_lipid_string(CLASS) == "PE");
         assert (lipid->get_lipid_string(CATEGORY) == "GP");
@@ -408,7 +441,7 @@ int main(int argc, char** argv){
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "Cer 16:1;2/12:0");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "Cer 16:1;2_12:0");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "Cer 16:1;2-12:0");
         assert (lipid->get_lipid_string(SPECIES) == "Cer 28:1;2");
         assert (lipid->get_lipid_string(CLASS) == "Cer");
         assert (lipid->get_lipid_string(CATEGORY) == "SP");
@@ -443,7 +476,7 @@ int main(int argc, char** argv){
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
         assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "TAG 16:1/12:0/20:2");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "TAG 16:1_12:0_20:2");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "TAG 16:1-12:0-20:2");
         assert (lipid->get_lipid_string(SPECIES) == "TAG 48:3");
         assert (lipid->get_lipid_string(CLASS) == "TAG");
         assert (lipid->get_lipid_string(CATEGORY) == "GL");
@@ -492,22 +525,45 @@ int main(int argc, char** argv){
         }
         delete lipid;
         
+        
+        
         // sterol;
         lipid_name = "ChE 16:1";
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
-        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "ChE 16:1");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "ChE 16:1");
-        assert (lipid->get_lipid_string(SPECIES) == "ChE 16:1");
-        assert (lipid->get_lipid_string(CLASS) == "ChE");
+        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(SPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(CLASS) == "SE 27:1");
         assert (lipid->get_lipid_string(CATEGORY) == "ST");
         delete lipid;
         
         
         
         
+        // sterol;
+        lipid_name = "ChE 16:1";
+        lipid = goslin_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(SPECIES) == "SE 27:1/16:1");
+        assert (lipid->get_lipid_string(CLASS) == "SE 27:1");
+        assert (lipid->get_lipid_string(CATEGORY) == "ST");
+        delete lipid;
+        
     
         
+        // PC;
+        lipid_name = "PC O-16:1a/12:0";
+        lipid = goslin_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "PC O-16:1a/12:0");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PC O-16:1a-12:0");
+        assert (lipid->get_lipid_string(SPECIES) == "PC O-28:1a");
+        assert (lipid->get_lipid_string(CLASS) == "PC");
+        assert (lipid->get_lipid_string(CATEGORY) == "GP");
+        delete lipid;
         
         
         // testing adducts
