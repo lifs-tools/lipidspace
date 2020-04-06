@@ -28,7 +28,7 @@ SOFTWARE.
 
 
 
-DPNode::DPNode(unsigned long _rule1, unsigned long _rule2, DPNode *_left, DPNode *_right){
+DPNode::DPNode(unsigned long long _rule1, unsigned long long _rule2, DPNode *_left, DPNode *_right){
     rule_index_1 = _rule1;
     rule_index_2 = _rule2;
     left = _left;
@@ -39,7 +39,7 @@ DPNode::DPNode(unsigned long _rule1, unsigned long _rule2, DPNode *_left, DPNode
       
       
     
-TreeNode::TreeNode(unsigned long _rule, bool _fire_event){
+TreeNode::TreeNode(unsigned long long _rule, bool _fire_event){
     rule_index = _rule;
     left = NULL;
     right = NULL;
@@ -75,7 +75,7 @@ string TreeNode::get_text(){
 Bitfield::Bitfield(uint32_t _length){
     length = _length;
     field_len = 1 + ((length + 1) >> 6);
-    field = new unsigned long[field_len];
+    field = new unsigned long long[field_len];
     num_size = 0;
     
     
@@ -93,7 +93,7 @@ Bitfield::~Bitfield(){
 
 void Bitfield::insert(uint32_t pos){
     if (!find(pos)){
-        field[pos >> 6] |= (unsigned long)(1ull << (pos & 63));
+        field[pos >> 6] |= (unsigned long long)(1ull << (pos & 63));
         ++num_size;
     }
 }
@@ -108,7 +108,7 @@ bool Bitfield::find(uint32_t pos){
 
 
 
-void Bitfield::print_bitfield(unsigned long l){
+void Bitfield::print_bitfield(unsigned long long l){
     for (int i = 63; i >= 0; --i){
         cout << ((l >> i) & 1);
     } cout << endl;
@@ -121,7 +121,7 @@ int Bitfield::next(int pos){
     
     
     uint32_t field_pos = pos >> 6;
-    unsigned long field_bits = field[field_pos] & (~((1ull << (pos & 63)) - 1ull));
+    unsigned long long field_bits = field[field_pos] & (~((1ull << (pos & 63)) - 1ull));
     
     do {
         if (field_bits){
