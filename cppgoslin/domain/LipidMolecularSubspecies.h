@@ -37,6 +37,7 @@ SOFTWARE.
 #include <typeinfo> 
 
 using namespace std;
+using namespace goslin;
 
 class LipidMolecularSubspecies : public LipidSpecies {
 public:

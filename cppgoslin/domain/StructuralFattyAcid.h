@@ -33,6 +33,7 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidEnums.h"
 
 using namespace std;
+using namespace goslin;
 
 class StructuralFattyAcid : public MolecularFattyAcid {
 

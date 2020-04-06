@@ -39,6 +39,7 @@ SOFTWARE.
 #include <map>
 
 using namespace std;
+using namespace goslin;
 
 class LipidStructuralSubspecies : public LipidMolecularSubspecies {
 public:

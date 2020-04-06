@@ -34,6 +34,7 @@ SOFTWARE.
 
 
 using namespace std;
+using namespace goslin;
 
 int main(int argc, char** argv){
     
@@ -54,11 +55,14 @@ int main(int argc, char** argv){
         
         
         for (auto lipid_name : lipid_names){
+	    cout << "Parsing lipid " << lipid_name << " ... ";
             lipid = swiss_lipids_parser.parse(lipid_name);
             if (lipid == NULL){
+	    	cout << "failed!" << endl;
                 throw LipidException("Error: '" + lipid_name + "'");
             }
             else {
+	    	cout << "succeeded!" << endl;
                 delete lipid;
             }
         }

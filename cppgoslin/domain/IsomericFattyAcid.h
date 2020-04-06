@@ -34,6 +34,7 @@ SOFTWARE.
 #include <typeinfo>
 
 using namespace std;
+using namespace goslin;
 
 class IsomericFattyAcid : public StructuralFattyAcid {
 public:

@@ -43,6 +43,7 @@ SOFTWARE.
 #include <sstream>
 
 using namespace std;
+using namespace goslin;
 
 static const set<string> head_group_exceptions = {"PA", "PC", "PE", "PG", "PI", "PS"};
 

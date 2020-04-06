@@ -29,6 +29,7 @@ SOFTWARE.
 #include <string>
 
 using namespace std;
+using namespace goslin;
 
 int main(){
     /* create instance of lipid parser containing several grammars */

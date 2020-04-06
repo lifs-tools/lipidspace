@@ -37,6 +37,7 @@ SOFTWARE.
 #include <sstream>
 
 using namespace std;
+using namespace goslin;
 
 class LipidAdduct {
 public:

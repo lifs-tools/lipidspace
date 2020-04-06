@@ -72,7 +72,7 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
         case NO_LEVEL:
         case SPECIES:
             if (!validate()){
-                throw ConstraintViolationException("No fatty acly chain information present for lipid '%s'" + get_class_string(lipid_class));
+                throw ConstraintViolationException("No fatty acly chain information present for lipid " + get_class_string(lipid_class));
             }
             stringstream st;
             st << (!use_head_group ? get_class_string(lipid_class) : head_group);

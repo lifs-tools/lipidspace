@@ -137,6 +137,7 @@ void writeLipidEnum(string ofFileName){
     offile << "#include <map>" << endl;
     offile << "#include <set>" << endl;
     offile << "" << endl;
+    offile << "namespace goslin {" << endl;
     offile << "using namespace std;" << endl;
     offile << "" << endl;
     offile << "enum LipidCategory {NO_CATEGORY," << endl;
@@ -230,6 +231,7 @@ void writeLipidEnum(string ofFileName){
     offile << "static map<LipidClass, string> ClassString;" << endl; 
     offile << "static map<string, LipidClass> StringClass;" << endl; 
     offile << "static map<string, LipidCategory> StringCategory;" << endl; 
+    offile << "}" << endl;
     offile << "" << endl; 
     offile << "#endif /* LIPID_ENUMS_H */" << endl; 
 }

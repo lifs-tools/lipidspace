@@ -36,6 +36,7 @@ SOFTWARE.
 
 
 using namespace std;
+using namespace goslin;
 
 int main(int argc, char** argv){
     

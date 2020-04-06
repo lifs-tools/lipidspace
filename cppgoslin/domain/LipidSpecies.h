@@ -37,6 +37,7 @@ SOFTWARE.
 
 
 using namespace std;
+using namespace goslin;
 
 
 class LipidSpeciesInfo;

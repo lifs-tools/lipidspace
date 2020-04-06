@@ -32,14 +32,13 @@ SOFTWARE.
 #include <fstream>
 
 using namespace std;
+using namespace goslin;
 
 int main(){
     try {
         /* initiating the parser class */
         SwissLipidsParser lipid_parser;
-        LipidAdduct* lipidAdduct;
-        
-        
+        LipidAdduct* lipidAdduct = NULL;
             
         /* read in file with lipid names, one per row */
         vector<string> lipidnames;
@@ -72,18 +71,41 @@ int main(){
         for (auto lipid_name : lipidnames){
 	    ++totalLipids;
 	    slout << lipid_name << '\t';
-            lipidAdduct = lipid_parser.parse(lipid_name);
+	    try {
+	        lipidAdduct = lipid_parser.parse(lipid_name);
+	    } catch (LipidException &e){
+                cout << "Exception:" << endl;
+                cout << e.what() << endl;
+	    }
             /* checking if lipid name was parsed */
-            if (lipidAdduct){
+            if (lipidAdduct != NULL){
 		++parsedLipids;
 		LipidSpeciesInfo info = lipidAdduct->lipid->info;
-		string nativeLevelName = lipidAdduct->get_lipid_string(info.level);
-                slout << info.level << '\t';
-		slout << nativeLevelName << '\t';
-                string category = lipidAdduct->get_lipid_string(CATEGORY);
-                slout << category << '\t';
-		string species = lipidAdduct->get_lipid_string(SPECIES);
-                slout << species << endl;
+		string nativeLevelName = "";
+		string category = "";
+		string species = "";
+		try {
+			nativeLevelName = lipidAdduct->get_lipid_string(info.level);
+            	} catch (ConstraintViolationException &ce) {
+			cout << "Constraint violation:" << endl;
+	                cout << ce.what() << endl;
+		}
+	                slout << info.level << '\t';
+			slout << nativeLevelName << '\t';
+		try {			
+	                category = lipidAdduct->get_lipid_string(CATEGORY);
+            	} catch (ConstraintViolationException &ce) {
+			cout << "Constraint violation:" << endl;
+	                cout << ce.what() << endl;
+		}
+	                slout << category << '\t';
+		try {
+			species = lipidAdduct->get_lipid_string(SPECIES);
+            	} catch (ConstraintViolationException &ce) {
+			cout << "Constraint violation:" << endl;
+	                cout << ce.what() << endl;
+		}
+	                slout << species << endl;
                 delete lipidAdduct;
                 
                 /* adding species into the map */

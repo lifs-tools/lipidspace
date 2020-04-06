@@ -33,6 +33,7 @@ SOFTWARE.
 #include <typeinfo>
 
 using namespace std;
+using namespace goslin;
 
 class MolecularFattyAcid : public FattyAcid {
 

@@ -44,6 +44,7 @@ SOFTWARE.
 #include <sstream>
 
 using namespace std;
+using namespace goslin;
 
 class GoslinFragmentParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
 public:

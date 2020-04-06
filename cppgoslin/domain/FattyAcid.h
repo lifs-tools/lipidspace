@@ -33,6 +33,7 @@ SOFTWARE.
 #include <sstream>
 
 using namespace std;
+using namespace goslin;
 
 class FattyAcid {
 public:

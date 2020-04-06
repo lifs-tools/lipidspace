@@ -35,6 +35,7 @@ SOFTWARE.
 #include <vector>
 
 using namespace std;
+using namespace goslin;
 
 class LipidIsomericSubspecies : public LipidStructuralSubspecies {
 public:

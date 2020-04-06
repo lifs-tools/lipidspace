@@ -31,6 +31,7 @@ SOFTWARE.
 #include <map>
 
 using namespace std;
+using namespace goslin;
 
 int main(){
     try {
