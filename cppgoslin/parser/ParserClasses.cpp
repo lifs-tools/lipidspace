@@ -28,7 +28,7 @@ SOFTWARE.
 
 
 
-DPNode::DPNode(unsigned long long _rule1, unsigned long long _rule2, DPNode *_left, DPNode *_right){
+DPNode::DPNode(uint64_t _rule1, uint64_t _rule2, DPNode *_left, DPNode *_right){
     rule_index_1 = _rule1;
     rule_index_2 = _rule2;
     left = _left;
@@ -39,7 +39,7 @@ DPNode::DPNode(unsigned long long _rule1, unsigned long long _rule2, DPNode *_le
       
       
     
-TreeNode::TreeNode(unsigned long long _rule, bool _fire_event){
+TreeNode::TreeNode(uint64_t _rule, bool _fire_event){
     rule_index = _rule;
     left = NULL;
     right = NULL;
@@ -72,14 +72,14 @@ string TreeNode::get_text(){
        
        
 
-Bitfield::Bitfield(uint32_t _length){
+Bitfield::Bitfield(uint64_t _length){
     length = _length;
     field_len = 1 + ((length + 1) >> 6);
-    field = new unsigned long long[field_len];
+    field = new uint64_t[field_len];
     num_size = 0;
     
     
-    for (uint32_t i = 0; i < field_len; ++i) field[i] = 0ull;
+    for (uint64_t i = 0; i < field_len; ++i) field[i] = 0ull;
 }
 
 
@@ -91,9 +91,9 @@ Bitfield::~Bitfield(){
 
 
 
-void Bitfield::insert(uint32_t pos){
+void Bitfield::insert(uint64_t pos){
     if (!find(pos)){
-        field[pos >> 6] |= (unsigned long long)(1ull << (pos & 63));
+        field[pos >> 6] |= (uint64_t)(1ull << (pos & 63));
         ++num_size;
     }
 }
@@ -101,14 +101,14 @@ void Bitfield::insert(uint32_t pos){
 
 
 
-bool Bitfield::find(uint32_t pos){
+bool Bitfield::find(uint64_t pos){
     return ((field[pos >> 6] >> (pos & 63)) & 1ull) == 1ull;
 }
 
 
 
 
-void Bitfield::print_bitfield(unsigned long long l){
+void Bitfield::print_bitfield(uint64_t l){
     for (int i = 63; i >= 0; --i){
         cout << ((l >> i) & 1);
     } cout << endl;
@@ -120,8 +120,8 @@ int Bitfield::next(int pos){
     if ((int)pos >= (int)length) throw RuntimeException("Bitfield out of range");
     
     
-    uint32_t field_pos = pos >> 6;
-    unsigned long long field_bits = field[field_pos] & (~((1ull << (pos & 63)) - 1ull));
+    uint64_t field_pos = pos >> 6;
+    uint64_t field_bits = field[field_pos] & (~((1ull << (pos & 63)) - 1ull));
     
     do {
         if (field_bits){
@@ -137,7 +137,7 @@ int Bitfield::next(int pos){
 
 
 
-Bitfield::iter::iter(Bitfield & _bitfield, uint32_t index) : bitfield (_bitfield) {
+Bitfield::iter::iter(Bitfield & _bitfield, uint64_t index) : bitfield (_bitfield) {
     num_index = index;
     last_position = -1;
     get_next = true;
@@ -180,7 +180,7 @@ bool Bitfield::iter::operator!=(const iter & rhs) const {
 
 
 
-uint32_t Bitfield::size() const {
+uint64_t Bitfield::size() const {
     return num_size;
 }
 

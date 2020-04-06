@@ -23,12 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-
 template <class T>
-const int Parser<T>::SHIFT = 32;
+const uint32_t Parser<T>::SHIFT = 32;
 template <class T>
-const unsigned long long Parser<T>::MASK = (1ull << SHIFT) - 1ull;
+const uint64_t Parser<T>::MASK = (1ull << SHIFT) - 1ull;
 template <class T>
 const char Parser<T>::RULE_ASSIGNMENT = ':';
 template <class T>
@@ -38,9 +36,9 @@ const char Parser<T>::RULE_TERMINAL = ';';
 template <class T>
 const char Parser<T>::EOF_SIGN = (char)1;
 template <class T>
-const unsigned long long Parser<T>::EOF_RULE = 1ull;
+const uint64_t Parser<T>::EOF_RULE = 1ull;
 template <class T>
-const unsigned long long Parser<T>::START_RULE = 2ull;
+const uint64_t Parser<T>::START_RULE = 2ull;
 template <class T>
 const string Parser<T>::EOF_RULE_NAME = "EOF";
 
@@ -53,7 +51,7 @@ const string Parser<T>::EOF_RULE_NAME = "EOF";
 
 
 template <class T>
-unsigned long long Parser<T>::get_next_free_rule_index(){
+uint64_t Parser<T>::get_next_free_rule_index(){
     if (next_free_rule_index <= MASK){
         return next_free_rule_index++;
     }
@@ -108,7 +106,7 @@ void Parser<T>::read_grammar(string grammar){
     word_in_grammar = false;
     grammar_name = "";
     used_eof = false;
-    map<string, unsigned long long> ruleToNT;
+    map<string, uint64_t> ruleToNT;
     
     
     // interpret the rules and create the structure for parsing
@@ -120,7 +118,7 @@ void Parser<T>::read_grammar(string grammar){
     
     rules->erase(rules->begin());
     ruleToNT.insert({EOF_RULE_NAME, EOF_RULE});
-    TtoNT.insert({EOF_SIGN, set<unsigned long long>()});
+    TtoNT.insert({EOF_SIGN, set<uint64_t>()});
     TtoNT.at(EOF_SIGN).insert(EOF_RULE);
     
     for (auto rule_line : *rules){
@@ -150,14 +148,14 @@ void Parser<T>::read_grammar(string grammar){
         }
         
         vector<string>* products = split_string(tokens_level_1.at(1), RULE_SEPARATOR, quote);
-        for (uint32_t i = 0; i < products->size(); ++i){
+        for (uint64_t i = 0; i < products->size(); ++i){
             products->at(i) = strip(products->at(i), ' ');
         }
         
         if (uncontains(ruleToNT, rule)){
             ruleToNT.insert({rule, get_next_free_rule_index()});
         }
-        unsigned long long new_rule_index = ruleToNT.at(rule);
+        uint64_t new_rule_index = ruleToNT.at(rule);
         
         if (uncontains(NTtoRule, new_rule_index)){
             NTtoRule.insert({new_rule_index, rule});
@@ -166,7 +164,7 @@ void Parser<T>::read_grammar(string grammar){
         
         for (auto product : *products){
             vector<string> non_terminals;
-            vector<unsigned long long> non_terminal_rules;
+            vector<uint64_t> non_terminal_rules;
             vector<string> *product_rules = split_string(product, ' ', quote);
             for (auto NT : *product_rules){
                 string stripedNT = strip(NT, ' ');
@@ -194,10 +192,10 @@ void Parser<T>::read_grammar(string grammar){
             }
             else{
                 char c = NTFirst[1];
-                unsigned long long tRule = 0;
+                uint64_t tRule = 0;
                 if (uncontains(TtoNT, c)){
                     tRule = get_next_free_rule_index();
-                    TtoNT.insert({c, set<unsigned long long>()});
+                    TtoNT.insert({c, set<uint64_t>()});
                     TtoNT.at(c).insert(tRule);
                     
                 }
@@ -205,43 +203,43 @@ void Parser<T>::read_grammar(string grammar){
                     tRule = *TtoNT.at(c).begin();
                 }
                 
-                if (uncontains(NTtoNT, tRule)) NTtoNT.insert({tRule, set<unsigned long long>()});
+                if (uncontains(NTtoNT, tRule)) NTtoNT.insert({tRule, set<uint64_t>()});
                 NTtoNT.at(tRule).insert(new_rule_index);
             }
             
             // more than two rules, insert intermediate rule indexes
             while (non_terminal_rules.size() > 2){
-                unsigned long long rule_index_2 = non_terminal_rules.back();
+                uint64_t rule_index_2 = non_terminal_rules.back();
                 non_terminal_rules.pop_back();
-                unsigned long long rule_index_1 = non_terminal_rules.back();
+                uint64_t rule_index_1 = non_terminal_rules.back();
                 non_terminal_rules.pop_back();
                 
-                unsigned long long key = compute_rule_key(rule_index_1, rule_index_2);
-                unsigned long long next_index = get_next_free_rule_index();
-                if (uncontains(NTtoNT, key)) NTtoNT.insert({key, set<unsigned long long>()});
+                uint64_t key = compute_rule_key(rule_index_1, rule_index_2);
+                uint64_t next_index = get_next_free_rule_index();
+                if (uncontains(NTtoNT, key)) NTtoNT.insert({key, set<uint64_t>()});
                 NTtoNT.at(key).insert(next_index);
                 non_terminal_rules.push_back(next_index);
             }
                 
             // two product rules
             if (non_terminal_rules.size() == 2){
-                unsigned long long rule_index_2 = non_terminal_rules.at(1);
-                unsigned long long rule_index_1 = non_terminal_rules.at(0);
-                unsigned long long key = compute_rule_key(rule_index_1, rule_index_2);
-                if (uncontains(NTtoNT, key)) NTtoNT.insert({key, set<unsigned long long>()});
+                uint64_t rule_index_2 = non_terminal_rules.at(1);
+                uint64_t rule_index_1 = non_terminal_rules.at(0);
+                uint64_t key = compute_rule_key(rule_index_1, rule_index_2);
+                if (uncontains(NTtoNT, key)) NTtoNT.insert({key, set<uint64_t>()});
                 NTtoNT.at(key).insert(new_rule_index);
             }
             
             // only one product rule
             else if (non_terminal_rules.size() == 1){
-                unsigned long long rule_index_1 = non_terminal_rules.at(0);
+                uint64_t rule_index_1 = non_terminal_rules.at(0);
                 if (rule_index_1 == new_rule_index){
                     delete products;
                     delete rules;
                     throw RuntimeException("Error: corrupted token in grammar: rule '" + rule + "' is not allowed to refer soleley to itself.");
                 }
                 
-                if (uncontains(NTtoNT, rule_index_1)) NTtoNT.insert({rule_index_1, set<unsigned long long>()});
+                if (uncontains(NTtoNT, rule_index_1)) NTtoNT.insert({rule_index_1, set<uint64_t>()});
                 NTtoNT.at(rule_index_1).insert(new_rule_index);
             }
         }
@@ -269,13 +267,13 @@ void Parser<T>::read_grammar(string grammar){
     // creating substitution dictionary for adding single rule chains into the parsing tree
     for (auto& kv : NTtoNT){
         for (auto& rule : kv.second){
-            vector<unsigned long long>* topnodes = collect_one_backwards(rule);
+            vector<uint64_t>* topnodes = collect_one_backwards(rule);
             for (auto& rule_top : *topnodes){
-                vector<unsigned long long>* chain = collect_backwards(rule, rule_top);
+                vector<uint64_t>* chain = collect_backwards(rule, rule_top);
                 if (chain){
                     chain->push_back(rule);
                     
-                    unsigned long long key = kv.first + (rule_top << 16);
+                    uint64_t key = kv.first + (rule_top << 16);
                     substitution.insert({key, chain});
                 }
             }
@@ -284,14 +282,14 @@ void Parser<T>::read_grammar(string grammar){
     }
 
     // expanding terminal dictionary for single rule chains
-    set<unsigned long long> keys;
+    set<uint64_t> keys;
     for (auto key : TtoNT) keys.insert(key.first);
     for (auto c : keys){
-        set<unsigned long long> rules;
+        set<uint64_t> rules;
         for (auto rule : TtoNT.at(c)) rules.insert(rule);
                              
         for (auto rule : rules){
-            vector<unsigned long long> *backward_rules = collect_one_backwards(rule);
+            vector<uint64_t> *backward_rules = collect_one_backwards(rule);
             for (auto p : *backward_rules) TtoNT.at(c).insert(p);
             delete backward_rules;
         }
@@ -300,14 +298,14 @@ void Parser<T>::read_grammar(string grammar){
     
     
     // expanding non-terminal dictionary for single rule chains
-    set<unsigned long long> keysNT;
+    set<uint64_t> keysNT;
     for (auto k : NTtoNT) keysNT.insert(k.first);
     for (auto r : keysNT){
-        set<unsigned long long> rules;
+        set<uint64_t> rules;
         for (auto rr : NTtoNT.at(r)) rules.insert(rr);
                                                                    
         for (auto rule : rules){
-            vector<unsigned long long> *backward_rules = collect_one_backwards(rule);
+            vector<uint64_t> *backward_rules = collect_one_backwards(rule);
             for (auto p : *backward_rules) NTtoNT.at(r).insert(p);
             delete backward_rules;
         }
@@ -315,7 +313,7 @@ void Parser<T>::read_grammar(string grammar){
 
     
     // creating lookup table for right index pairs to a given left index
-    for (uint32_t i = 0; i < next_free_rule_index; ++i){
+    for (uint64_t i = 0; i < next_free_rule_index; ++i){
         right_pair.push_back(new Bitfield(next_free_rule_index));
     }
     
@@ -456,7 +454,7 @@ vector<string>* Parser<T>::extract_text_based_rules(string grammar, char _quote)
 
 
 template <class T>
-unsigned long long Parser<T>::compute_rule_key(unsigned long long rule_index_1, unsigned long long rule_index_2){
+uint64_t Parser<T>::compute_rule_key(uint64_t rule_index_1, uint64_t rule_index_2){
     return (rule_index_1 << SHIFT) | rule_index_2;
 }
 
@@ -480,7 +478,7 @@ string Parser<T>::de_escape(string text, char _quote){
     // remove the escape chars
     stringstream sb;
     bool last_escape_char = false;
-    for (uint32_t i = 0; i < text.length(); ++i){
+    for (uint64_t i = 0; i < text.length(); ++i){
         char c = text[i];
         bool escape_char = false;
         
@@ -502,14 +500,14 @@ string Parser<T>::de_escape(string text, char _quote){
 
 // splitting the whole terminal in a tree structure where characters of terminal are the leafs and the inner nodes are added non terminal rules
 template <class T>
-unsigned long long Parser<T>::add_terminal(string text){
-    vector<unsigned long long> terminal_rules;
-    for (uint32_t i = 1; i < text.length() - 1; ++i){
+uint64_t Parser<T>::add_terminal(string text){
+    vector<uint64_t> terminal_rules;
+    for (uint64_t i = 1; i < text.length() - 1; ++i){
         char c = text[i];
-        unsigned long long tRule = 0;
+        uint64_t tRule = 0;
         if (uncontains(TtoNT, c)){
             tRule = get_next_free_rule_index();
-            TtoNT.insert({c, set<unsigned long long>()});
+            TtoNT.insert({c, set<uint64_t>()});
             TtoNT.at(c).insert(tRule);
         }
         else {
@@ -519,15 +517,15 @@ unsigned long long Parser<T>::add_terminal(string text){
     }
     
     while (terminal_rules.size() > 1){
-        unsigned long long rule_index_2 = terminal_rules.back();
+        uint64_t rule_index_2 = terminal_rules.back();
         terminal_rules.pop_back();
-        unsigned long long rule_index_1 = terminal_rules.back();
+        uint64_t rule_index_1 = terminal_rules.back();
         terminal_rules.pop_back();
         
-        unsigned long long next_index = get_next_free_rule_index();
+        uint64_t next_index = get_next_free_rule_index();
         
-        unsigned long long key = compute_rule_key(rule_index_1, rule_index_2);
-        if (uncontains(NTtoNT, key)) NTtoNT.insert({key, set<unsigned long long>()});
+        uint64_t key = compute_rule_key(rule_index_1, rule_index_2);
+        if (uncontains(NTtoNT, key)) NTtoNT.insert({key, set<uint64_t>()});
         NTtoNT.at(key).insert(next_index);
         terminal_rules.push_back(next_index);
     }
@@ -536,13 +534,13 @@ unsigned long long Parser<T>::add_terminal(string text){
 
 
 template <class T>
-vector<unsigned long long>* Parser<T>::top_nodes(unsigned long long rule_index){
-    vector<unsigned long long> *collection = new vector<unsigned long long>();
-    vector<unsigned long long> *collection_top = new vector<unsigned long long>();
+vector<uint64_t>* Parser<T>::top_nodes(uint64_t rule_index){
+    vector<uint64_t> *collection = new vector<uint64_t>();
+    vector<uint64_t> *collection_top = new vector<uint64_t>();
     collection->push_back(rule_index);
-    uint32_t i = 0;
+    uint64_t i = 0;
     while (i < collection->size()){
-        unsigned long long current_index = collection->at(i);
+        uint64_t current_index = collection->at(i);
         if (uncontains(NTtoNT, current_index)){
             for (auto previous_index : NTtoNT.at(current_index)) collection->push_back(previous_index);
         }
@@ -559,12 +557,12 @@ vector<unsigned long long>* Parser<T>::top_nodes(unsigned long long rule_index){
 
 // expanding singleton rules, e.g. S -> A, A -> B, B -> C
 template <class T>
-vector<unsigned long long>* Parser<T>::collect_one_backwards(unsigned long long rule_index){
-    vector<unsigned long long> *collection = new vector<unsigned long long>();
+vector<uint64_t>* Parser<T>::collect_one_backwards(uint64_t rule_index){
+    vector<uint64_t> *collection = new vector<uint64_t>();
     collection->push_back(rule_index);
-    uint32_t i = 0;
+    uint64_t i = 0;
     while (i < collection->size()){
-        unsigned long long current_index = collection->at(i);
+        uint64_t current_index = collection->at(i);
         if (contains(NTtoNT, current_index)){
             for (auto previous_index : NTtoNT.at(current_index)) collection->push_back(previous_index);
         }
@@ -577,14 +575,14 @@ vector<unsigned long long>* Parser<T>::collect_one_backwards(unsigned long long 
 
 
 template <class T>
-vector<unsigned long long>* Parser<T>::collect_backwards(unsigned long long child_rule_index, unsigned parent_rule_index){
+vector<uint64_t>* Parser<T>::collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index){
     if (uncontains(NTtoNT, child_rule_index)) return NULL;
     
     for (auto previous_index : NTtoNT.at(child_rule_index)){
-        if (previous_index == parent_rule_index) return new vector<unsigned long long>;
+        if (previous_index == parent_rule_index) return new vector<uint64_t>;
         
         else if (contains(NTtoNT, previous_index)){
-            vector<unsigned long long>* collection = collect_backwards(previous_index, parent_rule_index);
+            vector<uint64_t>* collection = collect_backwards(previous_index, parent_rule_index);
             if (collection != NULL){
                 collection->push_back(previous_index);
                 return collection;
@@ -622,7 +620,7 @@ template <class T>
 void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
     // checking and extending nodes for single rule chains
     
-    unsigned long long bottom_rule = 0, top_rule = 0;
+    uint64_t bottom_rule = 0, top_rule = 0;
     if (dp_node->left != NULL){
         bottom_rule = compute_rule_key(dp_node->rule_index_1, dp_node->rule_index_2);
         top_rule = node->rule_index;
@@ -632,7 +630,7 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
         bottom_rule = originalTtoNT.at(dp_node->rule_index_1);
     }
     
-    unsigned long long subst_key = bottom_rule + (top_rule << 16);
+    uint64_t subst_key = bottom_rule + (top_rule << 16);
     
     if ((bottom_rule != top_rule) and (contains(substitution, subst_key))){
         for (auto& rule_index : *substitution.at(subst_key)){
@@ -678,7 +676,7 @@ void Parser<T>::parse_regular(string text_to_parse){
     
     int n = text_to_parse.length();
     // dp stands for dynamic programming, nothing else
-    map<unsigned long long, DPNode*> ***DP = new map<unsigned long long, DPNode*>**[n];
+    map<uint64_t, DPNode*> ***DP = new map<uint64_t, DPNode*>**[n];
     vector<DPNode*> DPnodes;
     
     // Ks is a lookup, which fields in the DP are filled
@@ -687,9 +685,9 @@ void Parser<T>::parse_regular(string text_to_parse){
     
     // init the tables
     for (int i = 0; i < n; ++i){
-        DP[i] = new map<unsigned long long, DPNode*>*[n - i];
+        DP[i] = new map<uint64_t, DPNode*>*[n - i];
         for (int j = 0; j < n - i; ++j){
-            DP[i][j] = new map<unsigned long long, DPNode*>();
+            DP[i][j] = new map<uint64_t, DPNode*>();
         }
         Ks[i] = new Bitfield(n);
     }
@@ -716,7 +714,7 @@ void Parser<T>::parse_regular(string text_to_parse){
             int im1 = i - 1;
             
             for (int j = 0; j < n - i; ++j){
-                map<unsigned long long, DPNode*>* DPji = DP[j][i];
+                map<uint64_t, DPNode*>* DPji = DP[j][i];
                 int jp1 = j + 1;
                 
                 for (auto k : *Ks[j]){
@@ -729,7 +727,7 @@ void Parser<T>::parse_regular(string text_to_parse){
                             for (auto index_pair_2 : *DP[jpok][im1mk]){
                                 
                                 if (b->find(index_pair_2.first)){
-                                    unsigned long long key = compute_rule_key(index_pair_1.first, index_pair_2.first);
+                                    uint64_t key = compute_rule_key(index_pair_1.first, index_pair_2.first);
                                     
                                     DPNode *content = new DPNode(index_pair_1.first, index_pair_2.first, index_pair_1.second, index_pair_2.second);
                                     DPnodes.push_back(content);
