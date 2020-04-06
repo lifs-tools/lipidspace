@@ -62,25 +62,25 @@ public:
 // DP stands for dynamic programming
 class DPNode {
 public:    
-    unsigned long rule_index_1;
-    unsigned long rule_index_2;
+    unsigned long long rule_index_1;
+    unsigned long long rule_index_2;
     DPNode *left = NULL;
     DPNode *right = NULL;
     
-    DPNode(unsigned long _rule1, unsigned long _rule2, DPNode *_left, DPNode *_right);
+    DPNode(unsigned long long _rule1, unsigned long long _rule2, DPNode *_left, DPNode *_right);
 };
         
 
 class TreeNode {
 public:
-    unsigned long rule_index;
+    unsigned long long rule_index;
     TreeNode *left;
     TreeNode *right;
     char terminal;
     bool fire_event;
     static const char EOF_SIGN = '\0';
     
-    TreeNode(unsigned long _rule, bool _fire_event);
+    TreeNode(unsigned long long _rule, bool _fire_event);
     ~TreeNode();
     string get_text();
 };
@@ -94,8 +94,8 @@ class Bitfield {
     class iter;
     
 public:
-    unsigned long *field;
-    unsigned long *superfield;
+    unsigned long long *field;
+    unsigned long long *superfield;
     uint32_t field_len;
     uint32_t superfield_len;
     uint32_t num_size;
@@ -113,7 +113,7 @@ public:
     bool find(uint32_t pos);
     void init();
     int next(int pos = -1);
-    void print_bitfield(unsigned long l);
+    void print_bitfield(unsigned long long l);
     
 private:
     class iter : public std::iterator<std::output_iterator_tag, int>{
@@ -137,23 +137,23 @@ template <class T>
 class Parser {
 public:
     static const int SHIFT;
-    static const unsigned long MASK;
+    static const unsigned long long MASK;
     static const char RULE_ASSIGNMENT;
     static const char RULE_SEPARATOR;
     static const char RULE_TERMINAL;
     static const char EOF_SIGN;
-    static const unsigned long EOF_RULE;
-    static const unsigned long START_RULE;
+    static const unsigned long long EOF_RULE;
+    static const unsigned long long START_RULE;
     static const string EOF_RULE_NAME;
     
     
-    unsigned long next_free_rule_index;
-    map<char, set<unsigned long>> TtoNT;
-    map<char, unsigned long> originalTtoNT;
-    map<unsigned long, set<unsigned long>> NTtoNT;
-    map<unsigned long, string> NTtoRule;
-    map<unsigned long, vector<unsigned long>*> substitution;
-    //vector<set<unsigned long>> left_pair;
+    unsigned long long next_free_rule_index;
+    map<char, set<unsigned long long>> TtoNT;
+    map<char, unsigned long long> originalTtoNT;
+    map<unsigned long long, set<unsigned long long>> NTtoNT;
+    map<unsigned long long, string> NTtoRule;
+    map<unsigned long long, vector<unsigned long long>*> substitution;
+    //vector<set<unsigned long long>> left_pair;
     vector<Bitfield*> right_pair;
     int avg_pair;
     char quote;
@@ -168,15 +168,15 @@ public:
     Parser(BaseParserEventHandler<T> *_parserEventHandler, GrammarString grammar_string, char _quote = DEFAULT_QUOTE);
     void read_grammar(string grammar);
     virtual ~Parser();
-    unsigned long get_next_free_rule_index();
+    unsigned long long get_next_free_rule_index();
     vector<string>* extract_text_based_rules(string grammar_filename, char _quote = DEFAULT_QUOTE);
-    vector<unsigned long>* top_nodes(unsigned long rule_index);
-    static unsigned long compute_rule_key(unsigned long rule_index_1, unsigned long rule_index_2);
+    vector<unsigned long long>* top_nodes(unsigned long long rule_index);
+    static unsigned long long compute_rule_key(unsigned long long rule_index_1, unsigned long long rule_index_2);
     bool is_terminal(string product_token, char _quote);
     static string de_escape(string text, char _quote);
-    unsigned long add_terminal(string text);
-    vector<unsigned long>* collect_one_backwards(unsigned long rule_index);
-    vector<unsigned long>* collect_backwards(unsigned long child_rule_index, unsigned parent_rule_index);
+    unsigned long long add_terminal(string text);
+    vector<unsigned long long>* collect_one_backwards(unsigned long long rule_index);
+    vector<unsigned long long>* collect_backwards(unsigned long long child_rule_index, unsigned parent_rule_index);
     void raise_events(TreeNode *node);
     void fill_tree(TreeNode *node, DPNode *dp_node);
     T parse(string text_to_parse);
