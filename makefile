@@ -1,7 +1,7 @@
 install_dir = /usr
 CC = g++ -std=c++11
 AR = ar
-MARCH = -march=native
+MARCH = -mtune=native
 bin = libcppGoslin.so
 abin = libcppGoslin.a
 domain = cppgoslin/domain/Adduct.o cppgoslin/domain/IsomericFattyAcid.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/MolecularFattyAcid.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StructuralFattyAcid.o cppgoslin/domain/StringFunctions.o
