@@ -151,6 +151,7 @@ string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
 
 
 bool LipidMolecularSubspecies::validate(){
+    /*
     if (use_head_group) return true;
     if (lipid_classes.find(lipid_class) == lipid_classes.end()) return false;
     if (lipid_classes.at(lipid_class).max_num_fa == 0) return true;
@@ -162,5 +163,6 @@ bool LipidMolecularSubspecies::validate(){
         num_lcb += kv.second->lcb;
     }
     if (lipid_category == SP && num_lcb != 1) return false;
+    */
     return true;
 }
