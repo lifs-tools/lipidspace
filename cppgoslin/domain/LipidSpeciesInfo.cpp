@@ -26,11 +26,11 @@ SOFTWARE.
 
 #include "LipidSpeciesInfo.h"
 
-LipidSpeciesInfo::LipidSpeciesInfo (FattyAcid *fa) : MolecularFattyAcid("", (fa) ? fa->num_carbon : 2, 0, (fa) ? fa->num_hydroxyl : 0, (fa) ? fa->lipid_FA_bond_type : UNDEFINED_FA, (fa) ? fa->lcb : false, (fa) ? fa->position : -1) {
+LipidSpeciesInfo::LipidSpeciesInfo (FattyAcid *fa) : FattyAcid("", (fa) ? fa->num_carbon : 2, 0, (fa) ? fa->num_hydroxyl : 0, (fa) ? fa->lipid_FA_bond_type : UNDEFINED_FA, (fa) ? fa->lcb : false, (fa) ? fa->position : -1) {
     level = UNDEFINED_LEVEL;
     
     try {
-        num_double_bonds = (fa) ? ((MolecularFattyAcid*)fa)->num_double_bonds : 0;
+        num_double_bonds = (fa) ? ((FattyAcid*)fa)->num_double_bonds : 0;
     }
     catch(const std::bad_cast& e) {
         num_double_bonds = 0;

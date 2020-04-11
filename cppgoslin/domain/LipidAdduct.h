@@ -27,7 +27,7 @@ SOFTWARE.
 #ifndef LIPID_ADDUCT_H
 #define LIPID_ADDUCT_H
 
-#include "cppgoslin/domain/MolecularFattyAcid.h"
+#include "cppgoslin/domain/FattyAcid.h"
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidEnums.h"

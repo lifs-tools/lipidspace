@@ -127,7 +127,7 @@ void GoslinParserEventHandler::set_isomeric_level(TreeNode* node){
 
 void GoslinParserEventHandler::add_db_position(TreeNode* node){
     if (current_fa != NULL){
-       ((IsomericFattyAcid*)current_fa)->double_bond_positions.insert({db_position, db_cistrans});
+       current_fa->double_bond_positions.insert({db_position, db_cistrans});
     }
 }
 
@@ -149,28 +149,23 @@ void GoslinParserEventHandler::set_molecular_subspecies_level(TreeNode *node) {
     
     
 void GoslinParserEventHandler::new_fa(TreeNode *node) {
-    current_fa = new IsomericFattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, -1, NULL);
+    current_fa = new FattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, -1);
 }
     
     
 
 void GoslinParserEventHandler::new_lcb(TreeNode *node) {
-    lcb = new IsomericFattyAcid("LCB", 2, 0, 1, ESTER, true, 1, NULL);
+    lcb = new IsomericFattyAcid("LCB", 2, 0, 1, ESTER, true, 1);
     current_fa = lcb;
 }
         
         
 
 void GoslinParserEventHandler::clean_lcb(TreeNode *node) {
-    FattyAcid* tmp_lcb = lcb;
     if (level == SPECIES){
+        FattyAcid* tmp_lcb = lcb;
         lcb = new LipidSpeciesInfo(tmp_lcb);
         lcb->lipid_FA_bond_type = ESTER;
-        delete tmp_lcb;
-    }
-        
-    else if (level == STRUCTURAL_SUBSPECIES){
-        lcb = new StructuralFattyAcid(tmp_lcb);
         delete tmp_lcb;
     }
     
@@ -189,22 +184,9 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
             }
             break;
         
-        case MOLECULAR_SUBSPECIES:
-            {
-                current_fa = new MolecularFattyAcid(tmp_fa);
-            }
-            break;
-        
         case STRUCTURAL_SUBSPECIES:
-            {
-                current_fa = new StructuralFattyAcid(tmp_fa);
-                current_fa->position = fa_list->size() + 1;
-            }
-            break;
-        
         case ISOMERIC_SUBSPECIES:
             {
-                current_fa = new IsomericFattyAcid(tmp_fa);
                 current_fa->position = fa_list->size() + 1;
             }
             break;
@@ -283,7 +265,7 @@ void GoslinParserEventHandler::add_old_hydroxyl(TreeNode *node) {
     
 
 void GoslinParserEventHandler::add_double_bonds(TreeNode *node) {
-    ((MolecularFattyAcid*)current_fa)->num_double_bonds = atoi(node->get_text().c_str());
+    current_fa->num_double_bonds = atoi(node->get_text().c_str());
 }
     
     

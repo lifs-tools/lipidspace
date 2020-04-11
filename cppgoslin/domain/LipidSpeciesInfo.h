@@ -30,13 +30,12 @@ SOFTWARE.
 #include <string>
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/LipidEnums.h"
-#include "cppgoslin/domain/MolecularFattyAcid.h"
 #include <typeinfo>
 
 using namespace std;
 using namespace goslin;
 
-class LipidSpeciesInfo : public MolecularFattyAcid {
+class LipidSpeciesInfo : public FattyAcid {
     
 public:
     LipidLevel level;

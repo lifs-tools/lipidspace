@@ -49,12 +49,8 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<F
     LipidFaBondType lipid_FA_bond_type = ESTER;
     if (_fa) {
         for (unsigned int i = 0; i < _fa->size(); ++i){
-            MolecularFattyAcid *fas = new MolecularFattyAcid(_fa->at(i));
+            FattyAcid *fas = new FattyAcid(_fa->at(i));
             delete _fa->at(i);
-            
-            if (fas->position != -1) {
-                throw ConstraintViolationException("MolecularFattyAcid " + fas->name + " must have position set to -1! Was: " + to_string(fas->position));
-            }
             
             if (fa.find(fas->name) != fa.end()){
                 throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");

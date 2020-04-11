@@ -27,8 +27,7 @@ SOFTWARE.
 #ifndef LIPID_MOLECULAR_SUBSPECIES_H
 #define LIPID_MOLECULAR_SUBSPECIES_H
 
-#include "cppgoslin/domain/MolecularFattyAcid.h"
-#include "cppgoslin/domain/IsomericFattyAcid.h"
+#include "cppgoslin/domain/FattyAcid.h"
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidSpecies.h"
