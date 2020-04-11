@@ -43,9 +43,10 @@ public:
     int num_hydroxyl;
     int num_double_bonds;
     LipidFaBondType lipid_FA_bond_type;
+    map<int, string> double_bond_positions;
     bool lcb;
 
-    FattyAcid(string _name, int _num_carbon, int _num_double_bonds, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position);
+    FattyAcidFattyAcid(string name, int num_carbon, int num_double_bonds, int num_hydroxyl, LipidFaBondType lipid_FA_bond_type, bool lcb, int position, map<int, string> *_double_bond_positions);
     FattyAcid(FattyAcid* fa);
     virtual ~FattyAcid();
     virtual string to_string(bool special_case = false, LipidLevel level = NO_LEVEL);

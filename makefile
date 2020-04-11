@@ -4,12 +4,12 @@ AR = ar
 MARCH = -mtune=native
 bin = libcppGoslin.so
 abin = libcppGoslin.a
-domain = cppgoslin/domain/Adduct.o cppgoslin/domain/IsomericFattyAcid.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/MolecularFattyAcid.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StructuralFattyAcid.o cppgoslin/domain/StringFunctions.o
+domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StringFunctions.o
 
 parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinFragmentParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o cppgoslin/parser/SwissLipidsParserEventHandler.o
 
 obj = ${domain} ${parser}
-test_obj = cppgoslin/tests/MolecularFattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o cppgoslin/tests/GoslinTest.o cppgoslin/tests/LipidMapsTest.o
+test_obj = cppgoslin/tests/FattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o cppgoslin/tests/GoslinTest.o cppgoslin/tests/LipidMapsTest.o
 
 opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
 
@@ -64,8 +64,8 @@ install: ${bin}
 	cp cppgoslin/parser/*.h  ${install_dir}/include/cppgoslin/parser/.
 	
 	
-MolecularFattyAcidTest: cppgoslin/tests/MolecularFattyAcidTest.o libcppGoslin.so
-	${CC} -I. ${opt} -Bstatic -o MolecularFattyAcidTest cppgoslin/tests/MolecularFattyAcidTest.o libcppGoslin.so
+FattyAcidTest: cppgoslin/tests/FattyAcidTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o FattyAcidTest cppgoslin/tests/FattyAcidTest.o libcppGoslin.so
 
 ParserTest: cppgoslin/tests/ParserTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o ParserTest cppgoslin/tests/ParserTest.o libcppGoslin.so
@@ -80,11 +80,11 @@ SwissLipidsTest: cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
 	
 	
-test: MolecularFattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest
+test: FattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest
 
 	
-runtests: MolecularFattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MolecularFattyAcidTest
+runtests: FattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./FattyAcidTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./GoslinTest
