@@ -64,12 +64,22 @@ SwissLipidsParser::~SwissLipidsParser(){
 }
 
 
+HmdbParser::HmdbParser() : Parser<LipidAdduct*>(new HmdbParserEventHandler(), GrammarString(hmdb_grammar), DEFAULT_QUOTE){
+        
+}
+
+HmdbParser::~HmdbParser(){
+    delete parser_event_handler;
+}
+
+
 
 LipidParser::LipidParser(){
     parser_list.push_back(new GoslinParser());
-    parser_list.push_back(new GoslinFragmentParser());
     parser_list.push_back(new LipidMapsParser());
     parser_list.push_back(new SwissLipidsParser());
+    parser_list.push_back(new HmdbParser());
+    parser_list.push_back(new GoslinFragmentParser());
 }
 
 LipidParser::~LipidParser(){

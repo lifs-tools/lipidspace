@@ -116,6 +116,9 @@ void writeGrammarHeader(string ofFileName){
     addingGrammar(offile, "swiss_lipids_grammar", "data/goslin/SwissLipids.g4");
     offile << endl << endl << endl;
     
+    addingGrammar(offile, "hmdb_grammar", "data/goslin/HMDB.g4");
+    offile << endl << endl << endl;
+    
     offile << "#endif /* KNOWN_GRAMMARS_H */" << endl;
 }
 
