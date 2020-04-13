@@ -43,6 +43,7 @@ SOFTWARE.
 #include "cppgoslin/parser/GoslinFragmentParserEventHandler.h"
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include "cppgoslin/parser/SwissLipidsParserEventHandler.h"
+#include "cppgoslin/parser/HmdbParserEventHandler.h"
 #include "cppgoslin/parser/KnownGrammars.h"
 #include "cppgoslin/parser/KnownParsers.h"
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"

@@ -9,7 +9,7 @@ domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o c
 parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinFragmentParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o cppgoslin/parser/SwissLipidsParserEventHandler.o cppgoslin/parser/HmdbParserEventHandler.o
 
 obj = ${domain} ${parser}
-test_obj = cppgoslin/tests/FattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o cppgoslin/tests/GoslinTest.o cppgoslin/tests/LipidMapsTest.o
+test_obj = cppgoslin/tests/FattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o cppgoslin/tests/GoslinTest.o cppgoslin/tests/LipidMapsTest.o cppgoslin/tests/HdmbTest.o
 
 opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
 
@@ -79,13 +79,17 @@ GoslinTest: cppgoslin/tests/GoslinTest.o libcppGoslin.so
 SwissLipidsTest: cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest cppgoslin/tests/SwissLipidsTest.o libcppGoslin.so
 	
+HmdbTest: cppgoslin/tests/HmdbTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o HmdbTest cppgoslin/tests/HmdbTest.o libcppGoslin.so
 	
-test: FattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest
+	
+test: FattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
 
 	
-runtests: FattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest
+runtests: FattyAcidTest ParserTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./FattyAcidTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./GoslinTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SwissLipidsTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./HmdbTest
