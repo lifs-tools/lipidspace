@@ -160,13 +160,13 @@ void LipidMapsParserEventHandler::increment_hydroxyl(TreeNode* node){
 }
         
 void LipidMapsParserEventHandler::new_fa(TreeNode *node) {
-    current_fa = new FattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, -1);
+    current_fa = new FattyAcid("FA" + std::to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, 0, NULL);
 }
     
     
 
 void LipidMapsParserEventHandler::new_lcb(TreeNode *node) {
-    lcb = new FattyAcid("LCB", 2, 0, 1, ESTER, true, 1);
+    lcb = new FattyAcid("LCB", 2, 0, 1, ESTER, true, 1, NULL);
     current_fa = lcb;
 }
         
@@ -187,11 +187,12 @@ void LipidMapsParserEventHandler::clean_lcb(TreeNode *node) {
         
 
 void LipidMapsParserEventHandler::append_fa(TreeNode *node) {
-    FattyAcid* tmp_fa = current_fa;
     switch(level){
         case SPECIES:
             {
+                FattyAcid* tmp_fa = current_fa;
                 current_fa = new LipidSpeciesInfo(tmp_fa);
+                delete tmp_fa;
             }
             break;
         
@@ -207,9 +208,10 @@ void LipidMapsParserEventHandler::append_fa(TreeNode *node) {
     }
     
     if (current_fa->num_carbon > 0) fa_list->push_back(current_fa);
-    else omit_fa = true;
-    
-    delete tmp_fa;
+    else{
+        omit_fa = true;
+        delete current_fa;
+    }
     current_fa = NULL;
 }
     
@@ -246,7 +248,6 @@ void LipidMapsParserEventHandler::add_carbon(TreeNode* node){
     
 
 void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
-    
     if (omit_fa && head_group_exceptions.find(head_group) != head_group_exceptions.end()){
         head_group = "L" + head_group;
     }

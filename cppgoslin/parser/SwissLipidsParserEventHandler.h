@@ -33,7 +33,6 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/LipidIsomericSubspecies.h"
 #include "cppgoslin/domain/FattyAcid.h"
-#include "cppgoslin/domain/IsomericFattyAcid.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
 #include <set>

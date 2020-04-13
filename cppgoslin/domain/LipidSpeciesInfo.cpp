@@ -26,14 +26,36 @@ SOFTWARE.
 
 #include "LipidSpeciesInfo.h"
 
-LipidSpeciesInfo::LipidSpeciesInfo (FattyAcid *fa) : FattyAcid("", (fa) ? fa->num_carbon : 2, 0, (fa) ? fa->num_hydroxyl : 0, (fa) ? fa->lipid_FA_bond_type : UNDEFINED_FA, (fa) ? fa->lcb : false, (fa) ? fa->position : -1) {
+LipidSpeciesInfo::LipidSpeciesInfo () : FattyAcid() {
     level = UNDEFINED_LEVEL;
-    
-    try {
-        num_double_bonds = (fa) ? ((FattyAcid*)fa)->num_double_bonds : 0;
+}
+
+
+LipidSpeciesInfo::LipidSpeciesInfo (FattyAcid *fa) : FattyAcid(fa) {
+    level = UNDEFINED_LEVEL;
+}
+
+void LipidSpeciesInfo::clone(FattyAcid *fa){
+    if (fa) {
+        name = fa->name;
+        position = fa->position;
+        num_carbon = fa->num_carbon;
+        num_hydroxyl = fa->num_hydroxyl;
+        num_double_bonds = fa->num_double_bonds;
+        lipid_FA_bond_type = fa->lipid_FA_bond_type;
+        lcb = fa->lcb;
+        for (auto kv : fa->double_bond_positions){
+            double_bond_positions.insert({kv.first, kv.second});
+        }
     }
-    catch(const std::bad_cast& e) {
+    else {
+        name = "";
+        position = 0;
+        num_carbon = 0;
         num_double_bonds = 0;
+        num_hydroxyl = 0;
+        lipid_FA_bond_type = ESTER;
+        lcb = false;
     }
 }
 

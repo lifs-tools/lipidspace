@@ -29,20 +29,12 @@ SOFTWARE.
 #include <iostream>
 using namespace std;
 
-LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass _lipid_class, LipidSpeciesInfo *lipid_species_info){
+LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass _lipid_class, LipidSpeciesInfo* lipid_species_info){
     head_group = _head_group;
     lipid_category = (_lipid_category != NO_CATEGORY) ? _lipid_category : get_category(head_group);
     lipid_class = (_lipid_class != NO_CLASS) ? _lipid_class : get_class(head_group);
-    if (lipid_species_info != NULL){
-        info.level = lipid_species_info->level;
-        info.num_carbon = lipid_species_info->num_carbon;
-        info.num_hydroxyl = lipid_species_info->num_hydroxyl;
-        info.num_double_bonds = lipid_species_info->num_double_bonds;
-        info.lipid_FA_bond_type = lipid_species_info->lipid_FA_bond_type;
-    }
-    else {
-        info.level = UNDEFINED_LEVEL;
-    }
+    info.clone(lipid_species_info);
+    
     use_head_group = false;
 }
 
@@ -80,7 +72,7 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
             if (info.num_carbon > 0){
                 bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
                 st << ((lipid_category !=  ST) ? " " : "/");
-                st << ((FattyAcid)info).to_string(special_case);
+                st << info.to_string(special_case);
             }
             
             return st.str();

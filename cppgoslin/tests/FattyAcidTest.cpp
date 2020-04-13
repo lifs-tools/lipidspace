@@ -36,30 +36,30 @@ using namespace goslin;
 int main(int argc, char** argv){
 
     
-    FattyAcid instanceZero = FattyAcid("FA1", 2, 0, 0, UNDEFINED_FA, false, 0);
+    FattyAcid instanceZero = FattyAcid("FA1", 2, 0, 0, UNDEFINED_FA, false, 0, NULL);
     assert(0 == instanceZero.num_double_bonds);
     
     
-    FattyAcid instanceOne = FattyAcid("FA1", 2, 1, 0, UNDEFINED_FA, false, 0);
+    FattyAcid instanceOne = FattyAcid("FA1", 2, 1, 0, UNDEFINED_FA, false, 0, NULL);
     assert(1 == instanceOne.num_double_bonds);
          
     try {
-        FattyAcid instanceZeroFail = FattyAcid("FA1", 2, -1, 0, UNDEFINED_FA, false, 0);
+        FattyAcid instanceZeroFail = FattyAcid("FA1", 2, -1, 0, UNDEFINED_FA, false, 0, NULL);
         assert(false);
     }
     catch (LipidException &e){
         assert(true);
     }
        
-    FattyAcid instance = FattyAcid("FAX", 2, 0, 0, UNDEFINED_FA, false, 0);
+    FattyAcid instance = FattyAcid("FAX", 2, 0, 0, UNDEFINED_FA, false, 0, NULL);
     assert("FAX" == instance.name);
 
     
-    instance = FattyAcid("FAX", 2, 0, 0, UNDEFINED_FA, false, 1);
+    instance = FattyAcid("FAX", 2, 0, 0, UNDEFINED_FA, false, 1, NULL);
     assert(1 == instance.position);
     
     try {
-        instanceZero = FattyAcid("FA1", 2, 0, 0, UNDEFINED_FA, false, -2);
+        instanceZero = FattyAcid("FA1", 2, 0, 0, UNDEFINED_FA, false, -2, NULL);
         assert(false);
     }
     catch (LipidException &e){
@@ -67,12 +67,12 @@ int main(int argc, char** argv){
     }
 
 
-    instance = FattyAcid("FAX", 2, 0, 0, UNDEFINED_FA, false, 1);
+    instance = FattyAcid("FAX", 2, 0, 0, UNDEFINED_FA, false, 1, NULL);
     assert(2 == instance.num_carbon);
 
 
     try {
-        instance = FattyAcid("FAX", 1, 0, 0, UNDEFINED_FA, false, 1);
+        instance = FattyAcid("FAX", 1, 0, 0, UNDEFINED_FA, false, 1, NULL);
         assert(false);
     }
     catch (LipidException &e){
@@ -80,12 +80,12 @@ int main(int argc, char** argv){
     }
     
 
-    instance = FattyAcid("FAX", 2, 0, 1, UNDEFINED_FA, false, 1);
+    instance = FattyAcid("FAX", 2, 0, 1, UNDEFINED_FA, false, 1, NULL);
     assert(1 == instance.num_hydroxyl);
 
 
     try {
-        instance = FattyAcid("FAX", 2, 0, -1, UNDEFINED_FA, false, 1);
+        instance = FattyAcid("FAX", 2, 0, -1, UNDEFINED_FA, false, 1, NULL);
         assert(false);
     }
     catch (LipidException &e){

@@ -27,17 +27,7 @@ SOFTWARE.
 #include "LipidStructuralSubspecies.h"
 
 LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group) : LipidMolecularSubspecies (head_group) {
-    int num_carbon = 0;
-    int num_hydroxyl = 0;
-    int num_double_bonds = 0;
-    LipidFaBondType lipid_FA_bond_type = ESTER;
-    
-            
     info.level = STRUCTURAL_SUBSPECIES;
-    info.num_carbon = num_carbon;
-    info.num_hydroxyl = num_hydroxyl;
-    info.num_double_bonds = num_double_bonds;
-    info.lipid_FA_bond_type = lipid_FA_bond_type;
 }
 
 
@@ -51,7 +41,7 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
     
     if (_fa != NULL){
         for (unsigned int i = 0; i < _fa->size(); ++i){
-            StructuralFattyAcid *fas = new StructuralFattyAcid(_fa->at(i));
+            FattyAcid *fas = new FattyAcid(_fa->at(i));
             delete _fa->at(i);
             
             if (fa.find(fas->name) != fa.end()){

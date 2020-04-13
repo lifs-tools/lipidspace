@@ -57,7 +57,7 @@ public:
     
     virtual ~LipidSpecies();
     //LipidSpecies(string _head_group);
-    LipidSpecies(string _head_group, LipidCategory _lipid_category = NO_CATEGORY, LipidClass lipid_class = NO_CLASS, LipidSpeciesInfo *lipid_species_info = NULL);
+    LipidSpecies(string _head_group, LipidCategory _lipid_category = NO_CATEGORY, LipidClass lipid_class = NO_CLASS, LipidSpeciesInfo* lipid_species_info = NULL);
     virtual string get_lipid_string(LipidLevel level = NO_LEVEL);
     string get_class_name();
     

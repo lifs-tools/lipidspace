@@ -157,13 +157,13 @@ void GoslinFragmentParserEventHandler::set_molecular_subspecies_level(TreeNode *
     
     
 void GoslinFragmentParserEventHandler::new_fa(TreeNode *node) {
-    current_fa = new FattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, -1);
+    current_fa = new FattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, 0, NULL);
 }
     
     
 
 void GoslinFragmentParserEventHandler::new_lcb(TreeNode *node) {
-    lcb = new FattyAcid("LCB", 2, 0, 1, ESTER, true, 1);
+    lcb = new FattyAcid("LCB", 2, 0, 1, ESTER, true, 1, NULL);
     current_fa = lcb;
 }
         
@@ -184,11 +184,12 @@ void GoslinFragmentParserEventHandler::clean_lcb(TreeNode *node) {
         
 
 void GoslinFragmentParserEventHandler::append_fa(TreeNode *node) {
-    FattyAcid* tmp_fa = current_fa;
     switch(level){
         case SPECIES:
             {
+                FattyAcid* tmp_fa = current_fa;
                 current_fa = new LipidSpeciesInfo(tmp_fa);
+                delete tmp_fa;
             }
             break;
         
@@ -205,7 +206,6 @@ void GoslinFragmentParserEventHandler::append_fa(TreeNode *node) {
     
 
     fa_list->push_back(current_fa);
-    delete tmp_fa;
     current_fa = NULL;
 }
     

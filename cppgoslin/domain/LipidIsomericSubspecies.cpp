@@ -26,7 +26,6 @@ SOFTWARE.
 
 #include "LipidIsomericSubspecies.h"
 
-
 LipidIsomericSubspecies::LipidIsomericSubspecies(string _head_group, vector<FattyAcid*> *_fa) : LipidStructuralSubspecies(_head_group) {
     int num_carbon = 0;
     int num_hydroxyl = 0;
@@ -36,9 +35,10 @@ LipidIsomericSubspecies::LipidIsomericSubspecies(string _head_group, vector<Fatt
         lipid_FA_bond_type = ESTER;
     }
     
+    
     if (_fa) {
         for (unsigned int i = 0; i < _fa->size(); ++i){
-            IsomericFattyAcid *fas = new IsomericFattyAcid(_fa->at(i));
+            FattyAcid *fas = new FattyAcid(_fa->at(i));
             delete _fa->at(i);
             
             if (fa.find(fas->name) != fa.end()){

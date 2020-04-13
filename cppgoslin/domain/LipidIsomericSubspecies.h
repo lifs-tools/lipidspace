@@ -30,7 +30,7 @@ SOFTWARE.
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
-#include "cppgoslin/domain/IsomericFattyAcid.h"
+#include "cppgoslin/domain/FattyAcid.h"
 #include <sstream>
 #include <vector>
 

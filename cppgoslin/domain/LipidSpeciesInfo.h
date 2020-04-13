@@ -39,7 +39,9 @@ class LipidSpeciesInfo : public FattyAcid {
     
 public:
     LipidLevel level;
-    LipidSpeciesInfo (FattyAcid *fa = NULL);
+    LipidSpeciesInfo ();
+    LipidSpeciesInfo (FattyAcid *fa);
+    void clone (FattyAcid *fa);
 };
         
 #endif /* LIPID_SPECIES_INFO_H */

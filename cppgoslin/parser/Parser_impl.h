@@ -745,6 +745,8 @@ void Parser<T>::parse_regular(string text_to_parse){
             }
         }
         
+
+        
         for (int i = n - 1; i > 0; --i){
             if (contains_p(DP[0][i], START_RULE)){
                 word_in_grammar = true;
@@ -754,6 +756,7 @@ void Parser<T>::parse_regular(string text_to_parse){
                 break;
             }
         }
+    
     }
     
     // delete tables

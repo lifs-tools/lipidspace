@@ -73,13 +73,12 @@ int main(int argc, char** argv){
         
         
         
-        // check swiss lipids parser with illegal lipid name
+        // check lipids maps parser for headless FA
         lipid_name = "15:6(2Z,4E,6Z,8E,12E,14)(6Me,8Me,10Me[S],13Me)";
         lipid = lipid_maps_parser.parse(lipid_name);
         assert (lipid_maps_parser.word_in_grammar);
         assert (lipid);
         delete lipid;
-        
         
         
         
@@ -121,7 +120,6 @@ int main(int argc, char** argv){
         assert (lipid->fragment);
         assert (lipid->fragment->name == "-(H20)");
         delete lipid;
-        
         
         
         
@@ -198,7 +196,7 @@ int main(int argc, char** argv){
         int faCnt = 1;
         for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
           // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
-          assert ((*fa).position == -1);
+          assert ((*fa).position == 0);
           switch(faCnt) {
           case 1:
             assert ((*fa).lcb == false);
@@ -218,6 +216,7 @@ int main(int argc, char** argv){
           ++faCnt;
         }
         delete lipid;
+        
         
         lipid_name = "PE O-16:1p/12:0";
         lipid = lipid_parser.parse(lipid_name);
@@ -429,8 +428,8 @@ int main(int argc, char** argv){
         lipid = goslin_parser.parse(lipid_name);
         assert (lipid);
         assert (lipid->get_lipid_string(ISOMERIC_SUBSPECIES) == "PE 16:1(2E)/12:0");
-        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "PE 16:1/12:0");
-        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PE 16:1-12:0");
+        assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "PE 16:1(2E)/12:0");
+        assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "PE 16:1(2E)-12:0");
         assert (lipid->get_lipid_string(SPECIES) == "PE 28:1");
         assert (lipid->get_lipid_string(CLASS) == "PE");
         assert (lipid->get_lipid_string(CATEGORY) == "GP");
@@ -492,7 +491,7 @@ int main(int argc, char** argv){
         assert (lsi.num_carbon == 48);
         assert (lsi.num_double_bonds == 3);
         assert (lsi.num_hydroxyl == 0);
-        assert (lsi.position == -1);
+        assert (lsi.position == 0);
         // check that all FAs have been initialized properly
         assert (lipid->lipid->get_fa_list().size() == 3);
         faCnt = 1;
