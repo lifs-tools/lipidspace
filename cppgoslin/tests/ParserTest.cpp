@@ -105,6 +105,8 @@ int main(int argc, char** argv){
         lipid = lipid_maps_parser.parse(failLipidSL);
         assert (!lipid);
         delete lipid;
+        
+        
 
         // check goslin fragment parser with illegal lipid name 
         string failLipidGoslin = "TAG 16::1-18:1-24:0";
@@ -122,6 +124,36 @@ int main(int argc, char** argv){
         delete lipid;
         
         
+        
+        
+        
+        lipid_name = "PG(22:1(5Z)/12:0)";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->lipid->info.level == ISOMERIC_SUBSPECIES);
+        assert (lipid->get_lipid_string() == "PG 22:1(5Z)/12:0");
+        delete lipid;
+        
+        lipid_name = "PG(22:1/12:0)";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->lipid->info.level == STRUCTURAL_SUBSPECIES);
+        assert (lipid->get_lipid_string() == "PG 22:1/12:0");
+        delete lipid;
+        
+        lipid_name = "PG(22:1_12:0)";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->lipid->info.level == MOLECULAR_SUBSPECIES);
+        assert (lipid->get_lipid_string() == "PG 22:1-12:0");
+        delete lipid;
+        
+        lipid_name = "LPG(O-22:1)";
+        lipid = swiss_lipids_parser.parse(lipid_name);
+        assert (lipid);
+        assert (lipid->lipid->info.level == SPECIES);
+        assert (lipid->get_lipid_string() == "LPG 22:1a");
+        delete lipid;
         
         
         

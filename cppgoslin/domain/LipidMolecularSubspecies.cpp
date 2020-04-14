@@ -62,7 +62,7 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<F
                 }
             }
         }
-    }        
+    }
     info.level = MOLECULAR_SUBSPECIES;
     info.num_carbon = num_carbon;
     info.num_hydroxyl = num_hydroxyl;

@@ -35,6 +35,7 @@ LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, Li
     lipid_class = (_lipid_class != NO_CLASS) ? _lipid_class : get_class(head_group);
     info.clone(lipid_species_info);
     
+    info.level = SPECIES;
     use_head_group = false;
 }
 
