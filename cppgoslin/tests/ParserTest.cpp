@@ -102,6 +102,9 @@ int main(int argc, char** argv){
     }
     
     
+    
+    
+    
     // check lipid maps and swiss lipids parser with illegal lipid name
     string failLipidSL = "TG(16::1_18:1_24:0)";
     try {
@@ -168,6 +171,12 @@ int main(int argc, char** argv){
     
     
     
+    lipid_name = "fail";
+    try {
+        lipid = lipid_parser.parse(lipid_name);
+        assert (!lipid);
+    }
+    catch(LipidException &e){ }
     
     
     // test SwissLipids parser
