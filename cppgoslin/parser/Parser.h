@@ -179,7 +179,7 @@ public:
     vector<uint64_t>* collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index);
     void raise_events(TreeNode *node);
     void fill_tree(TreeNode *node, DPNode *dp_node);
-    T parse(string text_to_parse);
+    T parse(string text_to_parse, bool throw_error = true);
     void parse_regular(string text_to_parse);
 };
 

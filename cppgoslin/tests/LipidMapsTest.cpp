@@ -40,53 +40,49 @@ using namespace goslin;
 
 int main(int argc, char** argv){
     
-    try {
-        LipidAdduct* lipid;
-        LipidMapsParser lipid_maps_parser;
-        
-        
-        // test several more lipid names
-        vector<string> lipid_names_income;
-        vector<string> lipid_names_outcome;
-        ifstream infile("cppgoslin/tests/lipid-maps-test.csv");
-        string line;
-        while (getline(infile, line)){
-            vector<string>* tokens = split_string(line, ',', '"');
-            line = strip(line, ' ');
-            if (tokens->size() > 1){
-                lipid_names_income.push_back(strip(tokens->at(0), '"'));
-                lipid_names_outcome.push_back(strip(tokens->at(1), '"'));
-            }
-            delete tokens;
+    LipidAdduct* lipid;
+    LipidMapsParser lipid_maps_parser;
+    
+    
+    // test several more lipid names
+    vector<string> lipid_names_income;
+    vector<string> lipid_names_outcome;
+    ifstream infile("cppgoslin/tests/lipid-maps-test.csv");
+    string line;
+    while (getline(infile, line)){
+        vector<string>* tokens = split_string(line, ',', '"');
+        line = strip(line, ' ');
+        if (tokens->size() > 1){
+            lipid_names_income.push_back(strip(tokens->at(0), '"'));
+            lipid_names_outcome.push_back(strip(tokens->at(1), '"'));
         }
-        infile.close();
+        delete tokens;
+    }
+    infile.close();
         
         
         
-        for (uint32_t i = 0; i < lipid_names_income.size(); ++i){
-            string lipid_name = lipid_names_income.at(i);
-            string correct_lipid_name = lipid_names_outcome.at(i);
+    for (uint32_t i = 0; i < lipid_names_income.size(); ++i){
+        string lipid_name = lipid_names_income.at(i);
+        string correct_lipid_name = lipid_names_outcome.at(i);
+        try {
             lipid = lipid_maps_parser.parse(lipid_name);
-            if (lipid == NULL){
-                throw LipidException("Error: '" + lipid_name + "'");
-            }
-            else {
-                string lipid_class = lipid->get_lipid_string(CLASS);
-                if (lipid_class == "Undefined lipid class" || lipid_class == "Undefined" || lipid_class == "UNDEFINED"){
-                    throw LipidException("Error (undefined): '" + lipid_name + "'");
-                }
-                delete lipid;
+            assert(lipid != NULL);
+            delete lipid;
+        }
+        catch (LipidException &e){
+            if (correct_lipid_name.length() > 0){
+                cout << "Exception: " << lipid_names_income.at(i) << endl;
+                cout << e.what() << endl;
+                assert(false);
             }
         }
-        
-        
-        cout << "All tests passed without any problem" << endl;
+    }
+    
+    
+    cout << "All tests passed without any problem" << endl;
 
-    }
-    catch (LipidException &e){
-        cout << "Exception:" << endl;
-        cout << e.what() << endl;
-    }
+    
     
     return EXIT_SUCCESS;
 }

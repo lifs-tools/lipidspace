@@ -38,43 +38,37 @@ using namespace goslin;
 
 int main(int argc, char** argv){
     
-    try {
-        LipidAdduct* lipid;
-        SwissLipidsParser swiss_lipids_parser;
-        
-        
-        // test several more lipid names
-        vector<string> lipid_names;
-        ifstream infile("cppgoslin/tests/swiss-lipids-test.csv");
-        string line;
-        while (getline(infile, line)){
-            line = strip(line, ' ');
-            lipid_names.push_back(line);
+    LipidAdduct* lipid;
+    string test_file = "cppgoslin/tests/swiss-lipids-test.csv";
+    SwissLipidsParser parser;
+    
+    
+    // test several more lipid names
+    vector<string> lipid_names;
+    ifstream infile(test_file);
+    string line;
+    while (getline(infile, line)){
+        line = strip(line, ' ');
+        lipid_names.push_back(line);
+    }
+    infile.close();
+    
+    
+    for (auto lipid_name : lipid_names){
+        try {
+            lipid = parser.parse(lipid_name);
+            assert(lipid != NULL);
+            delete lipid;
         }
-        infile.close();
-        
-        
-        for (auto lipid_name : lipid_names){
-	    cout << "Parsing lipid " << lipid_name << " ... ";
-            lipid = swiss_lipids_parser.parse(lipid_name);
-            if (lipid == NULL){
-	    	cout << "failed!" << endl;
-                throw LipidException("Error: '" + lipid_name + "'");
-            }
-            else {
-	    	cout << "succeeded!" << endl;
-                delete lipid;
-            }
+        catch (LipidException &e){
+            cout << "Exception: " << lipid_name << endl;
+            cout << e.what() << endl;
         }
-        
-        
-        cout << "All tests passed without any problem" << endl;
+    }
+    
+    
+    cout << "All tests passed without any problem" << endl;
 
-    }
-    catch (LipidException &e){
-        cout << "Exception:" << endl;
-        cout << e.what() << endl;
-    }
     
     return EXIT_SUCCESS;
 }

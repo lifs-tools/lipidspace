@@ -68,4 +68,20 @@ public:
 };
 
 
+class UnsupportedLipidException : public LipidException {
+public:
+    UnsupportedLipidException(string message) : LipidException("UnsupportedLipidException: " + message){
+        
+    }
+};
+
+
+class LipidParsingException : public LipidException {
+public:
+    LipidParsingException(string message) : LipidException("LipidParsingException: " + message){
+        
+    }
+};
+
+
 #endif /* LIPID_EXCEPTIONS_H */

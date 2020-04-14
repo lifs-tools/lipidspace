@@ -90,10 +90,10 @@ LipidParser::~LipidParser(){
 LipidAdduct* LipidParser::parse(string lipid_name){
     
     for (auto parser : parser_list) {
-        LipidAdduct *lipid = parser->parse(lipid_name);
+        LipidAdduct *lipid = parser->parse(lipid_name, false);
         if (lipid){
             return lipid;
         }
     }
-    return NULL;
+    throw LipidException("Lipid not found");
 }

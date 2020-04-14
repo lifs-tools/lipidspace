@@ -38,40 +38,37 @@ using namespace goslin;
 
 int main(int argc, char** argv){
     
-    try {
-        LipidAdduct* lipid;
-        HmdbParser hmdb_parser;
+    LipidAdduct* lipid;
+    string test_file = "data/goslin/testfiles/hmdb-test.csv";
+    HmdbParser parser;
         
-        
-        // test several more lipid names
-        vector<string> lipid_names;
-        ifstream infile("data/goslin/testfiles/hmdb-lipids-test.csv");
-        string line;
-        while (getline(infile, line)){
-            line = strip(line, ' ');
-            lipid_names.push_back(line);
-        }
-        infile.close();
-        
-        
-        for (auto lipid_name : lipid_names){
-            lipid = hmdb_parser.parse(lipid_name);
-            if (lipid == NULL){
-                throw LipidException("Error: '" + lipid_name + "'");
-            }
-            else {
-                delete lipid;
-            }
-        }
-        
-        
-        cout << "All tests passed without any problem" << endl;
-
+    // test several more lipid names
+    vector<string> lipid_names;
+    ifstream infile(test_file);
+    string line;
+    while (getline(infile, line)){
+        line = strip(line, ' ');
+        lipid_names.push_back(line);
     }
-    catch (LipidException &e){
-        cout << "Exception:" << endl;
-        cout << e.what() << endl;
+    infile.close();
+    
+    
+    for (auto lipid_name : lipid_names){
+        try {
+            lipid = parser.parse(lipid_name);
+            assert(lipid != NULL);
+            delete lipid;
+        }
+        catch (LipidException &e){
+            if(dynamic_cast<LipidParsingException*>(&e) != NULL) {
+                cout << "Exception: " << lipid_name << endl;
+                cout << e.what() << endl;
+                assert(false);
+            }
+        }
     }
+    
+    cout << "All tests passed without any problem" << endl;
     
     return EXIT_SUCCESS;
 }

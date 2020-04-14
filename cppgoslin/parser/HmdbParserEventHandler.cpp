@@ -64,6 +64,10 @@ HmdbParserEventHandler::HmdbParserEventHandler() : BaseParserEventHandler<LipidA
     reg("hydroxyl_pre_event", add_hydroxyl);
     reg("db_count_pre_event", add_double_bonds);
     reg("carbon_pre_event", add_carbon);
+        
+    reg("furan_fa_pre_event", furan_fa);
+    reg("interlink_fa_pre_event", interlink_fa);
+    reg("lipid_suffix_pre_event", lipid_suffix);
     
 }
 
@@ -237,6 +241,7 @@ void HmdbParserEventHandler::add_ether(TreeNode *node) {
     string ether = node->get_text();
     if (ether == "O-" || ether == "o-") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
     else if (ether == "P-") current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
+    else throw UnsupportedLipidException("Fatty acyl chain of type '" + ether + "' is currently not supported");
 }
     
     
@@ -258,6 +263,21 @@ void HmdbParserEventHandler::add_double_bonds(TreeNode *node) {
 
 void HmdbParserEventHandler::add_carbon(TreeNode *node) {
     current_fa->num_carbon = atoi(node->get_text().c_str());
+}
+    
+
+void HmdbParserEventHandler::furan_fa(TreeNode *node) {
+    throw UnsupportedLipidException("Furan fatty acyl chains are currently not supported");
+}
+    
+
+void HmdbParserEventHandler::interlink_fa(TreeNode *node) {
+    throw UnsupportedLipidException("Interconnected fatty acyl chains are currently not supported");
+}
+    
+
+void HmdbParserEventHandler::lipid_suffix(TreeNode *node) {
+    throw UnsupportedLipidException("Lipids with suffix '" + node->get_text() + "' are currently not supported");
 }
 
         

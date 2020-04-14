@@ -79,6 +79,10 @@ public:
     void add_db_position_number(TreeNode* node);
     void add_cistrans(TreeNode* node);
     
+    void furan_fa(TreeNode *node);
+    void interlink_fa(TreeNode *node);
+    void lipid_suffix(TreeNode *node);
+    
 };
 
 
