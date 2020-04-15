@@ -45,7 +45,7 @@ void writeLipidEnum(string ofFileName){
     
     string line;
     unsigned int i = 0;
-    map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"SL", 1}, {"UNDEFINED", 1}};
+    map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"PK", 1}, {"SL", 1}, {"UNDEFINED", 1}};
     
     map<string, vector<string>*> data;
     while (getline(infile, line)){
