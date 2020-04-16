@@ -174,9 +174,19 @@ int main(int argc, char** argv){
     lipid_name = "fail";
     try {
         lipid = lipid_parser.parse(lipid_name);
-        assert (!lipid);
+        assert (false);
     }
     catch(LipidException &e){ }
+    
+    
+    
+    lipid_name = "LP 19:1p";
+    try {
+        lipid = lipid_parser.parse(lipid_name);
+        assert (false);
+    }
+    catch(LipidException &e){ }
+    
     
     
     // test SwissLipids parser
