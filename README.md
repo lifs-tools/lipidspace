@@ -11,8 +11,8 @@ The cppgoslin has been developed with regard the following general issues:
 
 ## Related Projects
 
-- [This project](http://github.com/lifs-tools/goslin)
-- [C++ implementation](https://github.com/lifs-tools/cppgoslin)
+- [This project](https://github.com/lifs-tools/cppgoslin)
+- [Goslin grammars and test files](http://github.com/lifs-tools/goslin)
 - [Java implementation](https://github.com/lifs-tools/jgoslin)
 - [Python implementation](https://github.com/lifs-tools/pygoslin)
 - [R implementation](https://github.com/lifs-tools/rgoslin)
