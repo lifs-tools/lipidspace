@@ -9,6 +9,14 @@ The cppgoslin has been developed with regard the following general issues:
 1. Ease the handling with lipid names for developers working on mass spectrometry-based lipidomics tools.
 2. Offering a tool to unify all existing dialects of lipid names.
 
+## Related Projects
+
+- [This project](http://github.com/lifs-tools/goslin)
+- [C++ implementation](https://github.com/lifs-tools/cppgoslin)
+- [Java implementation](https://github.com/lifs-tools/jgoslin)
+- [Python implementation](https://github.com/lifs-tools/pygoslin)
+- [R implementation](https://github.com/lifs-tools/rgoslin)
+- [Webapplication and REST API](https://github.com/lifs-tools/goslin-webapp)
 
 ## Installation
 
