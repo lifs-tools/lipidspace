@@ -151,3 +151,26 @@ bool LipidSpecies::validate(){
     return true;
 }
 
+
+ElementTable* LipidSpecies::get_elements(){
+    if (use_head_group){
+        return create_empty_table();
+    }
+    
+    /*
+    double mass = lipid_classes.at(lipid_class).headgroup_mass;
+    
+    if (info.level == SPECIES){
+        mass += info.get_mass();
+    }
+    else {
+        for (auto f : fa_list){
+            mass += f->get_mass();
+        }
+    }
+    return mass;
+    */
+    
+    return 0;
+}
+

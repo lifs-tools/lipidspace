@@ -55,3 +55,11 @@ string Adduct::get_lipid_string(){
     
     return output;
 }
+
+double Adduct::get_mass(){
+    return 0;
+}
+
+double Adduct::get_charge(){
+    return charge * charge_sign;
+}

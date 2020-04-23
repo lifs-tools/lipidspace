@@ -27,6 +27,12 @@ SOFTWARE.
 #ifndef FATTY_ACID_H
 #define FATTY_ACID_H
 
+
+#define MASS_H 1.007825035
+#define MASS_C 12.0
+#define MASS_O 15.99491463
+#define MASS_N 14.0030740
+
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidEnums.h"
@@ -45,11 +51,13 @@ public:
     LipidFaBondType lipid_FA_bond_type;
     map<int, string> double_bond_positions;
     bool lcb;
+    
 
     FattyAcid(string name, int num_carbon, int num_double_bonds, int num_hydroxyl, LipidFaBondType lipid_FA_bond_type, bool lcb, int position, map<int, string> *_double_bond_positions);
     FattyAcid();
     FattyAcid(FattyAcid* fa);
     string to_string(bool special_case = false);
+    ElementTable* get_elements();
     static string suffix(LipidFaBondType _lipid_FA_bond_type);
 };
 #endif /* FATTY_ACID_H */

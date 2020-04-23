@@ -59,3 +59,12 @@ void LipidSpeciesInfo::clone(FattyAcid *fa){
     }
 }
 
+
+ElementTable* LipidSpeciesInfo::get_elements(int num_fa){
+
+    ElementTable* elements = FattyAcid::get_elements();
+    elements->at(O) += num_fa - 1;
+    elements->at(H) -= num_fa - 1;
+    
+    return elements;
+}

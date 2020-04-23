@@ -82,6 +82,11 @@ int main(int argc, char** argv){
     
     
     
+    lipid = goslin_parser.parse("PA 12:0-14:1");
+    cout << lipid->get_mass() << endl;
+    delete lipid;
+    
+    
     // Pure Parser test
     GoslinParserEventHandler goslin_parser_event_handler;
     Parser<LipidAdduct*> goslin_parser_pure(&goslin_parser_event_handler, "data/goslin/Goslin.g4", PARSER_QUOTE);

@@ -137,8 +137,10 @@ void writeLipidEnum(string ofFileName){
     offile << "#include <map>" << endl;
     offile << "#include <set>" << endl;
     offile << "" << endl;
+    offile << "" << endl;
     offile << "namespace goslin {" << endl;
     offile << "using namespace std;" << endl;
+    offile << "" << endl;
     offile << "" << endl;
     offile << "enum LipidCategory {NO_CATEGORY," << endl;
     offile << "    UNDEFINED," << endl;
@@ -153,6 +155,14 @@ void writeLipidEnum(string ofFileName){
     offile << "" << endl;
     offile << "" << endl;
     offile << "" << endl;
+    offile << "enum Element {C = 0, C13 = 1, H = 2, H2 = 3, N = 4, N15 = 5, O = 6, O17 = 7, O18 = 8, P = 9, P32 = 10, S = 11, S34 = 12, S33 = 13};" <<  endl;
+    offile << "" << endl;
+    offile << "" << endl;
+    offile << "typedef map<Element, size_t> ElementTable;" << endl;
+    offile << "ElementTable* create_empty_table(){return new ElementTable{{C, 0}, {C13, 0}, {H, 0}, {H2, 0}, {N, 0}, {N15, 0}, {O, 0}, {O17, 0}, {O18, 0}, {P, 0}, {P32, 0}, {S, 0}, {S34, 0}, {S33, 0}}; }" << endl;
+    offile << "" << endl;
+    offile << "" << endl;
+    
     offile << "static const map<LipidCategory, string> CategoryString = {" << endl;
     offile << "    {NO_CATEGORY, \"NO_CATEGORY\"}," << endl;
     offile << "    {UNDEFINED, \"UNDEFINED\"}," << endl;
@@ -185,6 +195,7 @@ void writeLipidEnum(string ofFileName){
     offile << "    string class_name;" << endl;
     offile << "    int max_num_fa;" << endl;
     offile << "    set<int> possible_num_fa;" << endl;
+    offile << "    double headgroup_mass;" << endl;
     offile << "    vector<string> synonyms;" << endl;
     offile << "};" << endl;
     offile << "" << endl;
@@ -216,8 +227,8 @@ void writeLipidEnum(string ofFileName){
         }
         delete tokens;
         
-        offile << "}, {\"" << kv.second->at(0) << "\"";
-        for (unsigned int i = 5; i < kv.second->size(); ++i){
+        offile << "}, " << kv.second->at(5) << ", {\"" << kv.second->at(0) << "\"";
+        for (unsigned int i = 6; i < kv.second->size(); ++i){
             string synonym = kv.second->at(i);
             if (synonym.length() < 1) continue;
             offile << ", \"" << synonym << "\"";

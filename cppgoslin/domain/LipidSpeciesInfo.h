@@ -42,6 +42,7 @@ public:
     LipidSpeciesInfo ();
     LipidSpeciesInfo (FattyAcid *fa);
     void clone (FattyAcid *fa);
+    ElementTable* get_elements(int num_fa);
 };
         
 #endif /* LIPID_SPECIES_INFO_H */

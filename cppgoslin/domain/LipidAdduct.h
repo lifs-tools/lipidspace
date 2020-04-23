@@ -26,9 +26,11 @@ SOFTWARE.
 
 #ifndef LIPID_ADDUCT_H
 #define LIPID_ADDUCT_H
+#define ELECTRON_REST_MASS 0.00054857990946
 
 #include "cppgoslin/domain/FattyAcid.h"
 #include <string>
+#include <math.h>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/LipidSpecies.h"
@@ -51,6 +53,7 @@ public:
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     string get_lipid_fragment_string(LipidLevel level = NO_LEVEL);
     string get_class_name();
+    double get_mass();
 };
 
 #endif /* LIPID_ADDUCT_H */

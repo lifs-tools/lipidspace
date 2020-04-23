@@ -56,6 +56,18 @@ string LipidAdduct::get_class_name(){
     return (lipid) ? lipid->get_class_name() : "";
 }
 
+double LipidAdduct::get_mass(){
+    double mass = 0;
+    if (lipid) mass += lipid->get_mass();
+    if (adduct){
+        mass += adduct->get_mass();
+        double charge = adduct->get_charge();
+        if (charge != 0) mass = (mass - charge * ELECTRON_REST_MASS) / fabs(charge);
+    }
+    
+    return mass;
+}
+
     
     
 string LipidAdduct::get_lipid_fragment_string(LipidLevel level){
