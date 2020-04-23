@@ -39,6 +39,7 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("sphingoxine_pre_event", mediator_event);
     
     reg("sgl_species_pre_event", set_species_level);
+    reg("species_fa_pre_event", set_species_level);
     reg("tgl_species_pre_event", set_species_level);
     reg("dpl_species_pre_event", set_species_level);
     reg("cl_species_pre_event", set_species_level);
@@ -54,6 +55,7 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("hg_cl_pre_event", set_head_group_name);
     reg("hg_dpl_pre_event", set_head_group_name);
     reg("hg_lpl_pre_event", set_head_group_name);
+    reg("hg_threepl_pre_event", set_head_group_name);
     reg("hg_fourpl_pre_event", set_head_group_name);
     reg("sphingosine_name_pre_event", set_head_group_name);
     reg("sphinganine_name_pre_event", set_head_group_name);

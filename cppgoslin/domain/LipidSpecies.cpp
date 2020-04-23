@@ -154,14 +154,13 @@ bool LipidSpecies::validate(){
 
 ElementTable* LipidSpecies::get_elements(){
     ElementTable* elements = create_empty_table();
-    if (use_head_group){
+    if (use_head_group || (lipid_classes.find(lipid_class) == lipid_classes.end())){
         return elements;
     }
     
     for (auto e : lipid_classes.at(lipid_class).elements){
         elements->at(e.first) = e.second;
     }
-    
     switch (info.level){
         
         case MOLECULAR_SUBSPECIES:
@@ -197,6 +196,7 @@ ElementTable* LipidSpecies::get_elements(){
         default:
             break;
     }
+    
     return elements;
 }
 

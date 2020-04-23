@@ -122,8 +122,8 @@ string LipidAdduct::get_sum_formula(){
     stringstream ss;
     
     for (auto e : element_order){
-        if (e > 0) ss << element_shortcut.at(e);
-        if (e > 1) ss << elements->at(e);
+        if (elements->at(e) > 0) ss << element_shortcut.at(e);
+        if (elements->at(e) > 1) ss << elements->at(e);
     }
     
     delete elements;
