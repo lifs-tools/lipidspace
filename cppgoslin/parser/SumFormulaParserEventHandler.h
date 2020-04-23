@@ -24,42 +24,31 @@ SOFTWARE.
 */
 
 
-#include "Adduct.h"
+#ifndef GOSLIN_PARSER_EVENT_HANDLER_H
+#define GOSLIN_PARSER_EVENT_HANDLER_H
 
+#include "cppgoslin/domain/Element.h"
+#include "cppgoslin/parser/BaseParserEventHandler.h"
+#include <string>
+#include <set>
+#include <map>
+#include <vector>
+
+using namespace std;
+
+class SumFormulaParserEventHandler : public BaseParserEventHandler<ElementTable*> {
+public:
+    Element element;
+    size_t count;
     
-Adduct::Adduct(string _sum_formula, string _adduct_string, int _charge, int _sign){
-    sum_formula = _sum_formula;
-    adduct_string = _adduct_string;
-    charge = _charge;
-    set_charge_sign(_sign);
-}
+    SumFormulaParserEventHandler();
+    void reset_parser(TreeNode *node);
+    void element_group_post_event(TreeNode *node);
+    void element_pre_event(TreeNode *node);
+    void single_element_group_pre_event(TreeNode *node);
+    void count_pre_event(TreeNode *node);
+};
 
-void Adduct::set_charge_sign(int sign){
-    if (sign != -1 || sign != 0 || sign != 1){
-        charge_sign = sign;
-    }
+
+#endif /* GOSLIN_PARSER_EVENT_HANDLER_H */
         
-    else {
-        throw IllegalArgumentException("Sign can only be -1, 0, or 1");
-    }
-}
-        
-string Adduct::get_lipid_string(){
-    if (charge == 0){
-        return "[M]";
-    }
-    stringstream stst;
-    stst << "[M" << sum_formula << adduct_string << "]" << charge << ((charge_sign > 0) ? "+" : "-");
-    string output;
-    stst >> output;
-    
-    return output;
-}
-
-ElementTable* Adduct::get_elements(){
-    return create_empty_table();
-}
-
-double Adduct::get_charge(){
-    return charge * charge_sign;
-}

@@ -29,9 +29,7 @@ SOFTWARE.
 
 
 #include "cppgoslin/parser/BaseParserEventHandler.h"
-#include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/domain/StringFunctions.h"
-#include "cppgoslin/parser/KnownGrammars.h"
 #include <string>
 #include <set>
 #include <map>

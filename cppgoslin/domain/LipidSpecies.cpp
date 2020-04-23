@@ -153,24 +153,50 @@ bool LipidSpecies::validate(){
 
 
 ElementTable* LipidSpecies::get_elements(){
+    ElementTable* elements = create_empty_table();
     if (use_head_group){
-        return create_empty_table();
+        return elements;
     }
     
-    /*
-    double mass = lipid_classes.at(lipid_class).headgroup_mass;
-    
-    if (info.level == SPECIES){
-        mass += info.get_mass();
+    for (auto e : lipid_classes.at(lipid_class).elements){
+        elements->at(e.first) = e.second;
     }
-    else {
-        for (auto f : fa_list){
-            mass += f->get_mass();
-        }
-    }
-    return mass;
-    */
     
-    return 0;
+    switch (info.level){
+        
+        case MOLECULAR_SUBSPECIES:
+        case STRUCTURAL_SUBSPECIES:
+        case ISOMERIC_SUBSPECIES:
+            {
+                size_t num_true_fa = 0;
+                for (auto fa : fa_list){
+                    ElementTable* fa_elements = fa->get_elements();
+                    if (fa->num_carbon != 0 || fa->num_double_bonds != 0) num_true_fa += 1;
+                    for (auto e : *fa_elements) elements->at(e.first) += e.second;
+                        
+                    delete fa_elements;
+                }
+                if (lipid_classes.at(lipid_class).max_num_fa < num_true_fa){
+                    throw LipidException("Inconsistancy in number of fatty acyl chains for lipid '" + head_group + "'");
+                }
+                elements->at(ELEMENT_H) += lipid_classes.at(lipid_class).max_num_fa - num_true_fa; // adding hydrogens for absent fatty acyl chains
+            }
+            break;
+            
+        case SPECIES:
+            {
+                size_t max_poss_fa = *lipid_classes.at(lipid_class).possible_num_fa.rend();
+                ElementTable* fa_elements = info.get_elements(max_poss_fa);
+                for (auto e : *fa_elements) elements->at(e.first) += e.second;
+                delete fa_elements;
+                
+                elements->at(ELEMENT_H) += lipid_classes.at(lipid_class).max_num_fa - max_poss_fa; // adding hydrogens for absent fatty acyl chains
+            }
+            break;
+        
+        default:
+            break;
+    }
+    return elements;
 }
 

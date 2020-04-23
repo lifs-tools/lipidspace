@@ -29,6 +29,8 @@ SOFTWARE.
 #include <map>
 #include <stdlib.h>
 #include "cppgoslin/domain/StringFunctions.h"
+#include "cppgoslin/parser/Parser.h"
+#include "cppgoslin/parser/SumFormulaParserEventHandler.h"
 
 using namespace std;
 
@@ -50,7 +52,7 @@ void writeLipidEnum(string ofFileName){
     map<string, vector<string>*> data;
     while (getline(infile, line)){
         if (i++ == 0) continue;
-        vector<string>* tokens = split_string(line, ',', '"');
+        vector<string>* tokens = split_string(line, ',', '"', true);
         for (unsigned int i = 0; i < tokens->size(); ++i){
             string s = tokens->at(i);
             if (s.length() >= 2 && s[0] == '"' && s[s.length() - 1] == '"'){
@@ -98,6 +100,8 @@ void writeLipidEnum(string ofFileName){
         
         data.insert({enum_name, tokens});
     }
+    SumFormulaParserEventHandler sum_formula_handler;
+    Parser<ElementTable*> parser(&sum_formula_handler, "data/goslin/sum-formula.g4", DEFAULT_QUOTE);
     
     offile << "/* DO NOT CHANGE THE FILE, IT IS AUTOMATICALLY GENERATED */" << endl << endl;
     
@@ -133,9 +137,12 @@ void writeLipidEnum(string ofFileName){
     offile << "#ifndef LIPID_ENUMS_H" << endl;
     offile << "#define LIPID_ENUMS_H" << endl;
     offile << "" << endl;
+    offile << "" << endl;
+
     offile << "#include <vector>" << endl;
     offile << "#include <map>" << endl;
     offile << "#include <set>" << endl;
+    offile << "#include \"cppgoslin/domain/Element.h\"" << endl;
     offile << "" << endl;
     offile << "" << endl;
     offile << "namespace goslin {" << endl;
@@ -154,14 +161,7 @@ void writeLipidEnum(string ofFileName){
     offile << "};" << endl;
     offile << "" << endl;
     offile << "" << endl;
-    offile << "" << endl;
-    offile << "enum Element {C = 0, C13 = 1, H = 2, H2 = 3, N = 4, N15 = 5, O = 6, O17 = 7, O18 = 8, P = 9, P32 = 10, S = 11, S34 = 12, S33 = 13};" <<  endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "typedef map<Element, size_t> ElementTable;" << endl;
-    offile << "ElementTable* create_empty_table(){return new ElementTable{{C, 0}, {C13, 0}, {H, 0}, {H2, 0}, {N, 0}, {N15, 0}, {O, 0}, {O17, 0}, {O18, 0}, {P, 0}, {P32, 0}, {S, 0}, {S34, 0}, {S33, 0}}; }" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
+    
     
     offile << "static const map<LipidCategory, string> CategoryString = {" << endl;
     offile << "    {NO_CATEGORY, \"NO_CATEGORY\"}," << endl;
@@ -193,13 +193,17 @@ void writeLipidEnum(string ofFileName){
     offile << "struct LipidClassMeta {" << endl;
     offile << "    LipidCategory lipid_category;" << endl;
     offile << "    string class_name;" << endl;
-    offile << "    int max_num_fa;" << endl;
-    offile << "    set<int> possible_num_fa;" << endl;
-    offile << "    double headgroup_mass;" << endl;
+    offile << "    size_t max_num_fa;" << endl;
+    offile << "    set<size_t> possible_num_fa;" << endl;
+    offile << "    ElementTable elements;" << endl;
     offile << "    vector<string> synonyms;" << endl;
     offile << "};" << endl;
     offile << "" << endl;
     offile << "enum LipidClass {NO_CLASS, UNDEFINED_CLASS";
+    
+    
+    map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}};
+    
     
     for (auto& kv : data){
         offile << ", " << kv.first;
@@ -218,7 +222,6 @@ void writeLipidEnum(string ofFileName){
         offile << "{" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
         offile << kv.second->at(3) << ", {";
         
-        
         vector<string>* tokens = split_string(kv.second->at(4), '|', '"');
         for (unsigned int i = 0; i < tokens->size(); ++i){
             string tok = strip(tokens->at(i), ' ');
@@ -226,8 +229,19 @@ void writeLipidEnum(string ofFileName){
             offile << tok;
         }
         delete tokens;
+        offile << "}, {";
         
-        offile << "}, " << kv.second->at(5) << ", {\"" << kv.second->at(0) << "\"";
+        ElementTable* table = kv.second->at(5).length() > 0 ? parser.parse(kv.second->at(5)) : create_empty_table();
+        
+        int ii = 0;
+        for (auto& table_kv : *table){
+            if (ii++ > 0) offile << ", ";
+            offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+        }
+        
+        delete table;
+            
+        offile << "}, {\"" << kv.second->at(0) << "\"";
         for (unsigned int i = 6; i < kv.second->size(); ++i){
             string synonym = kv.second->at(i);
             if (synonym.length() < 1) continue;

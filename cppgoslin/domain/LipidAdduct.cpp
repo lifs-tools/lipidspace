@@ -57,13 +57,29 @@ string LipidAdduct::get_class_name(){
 }
 
 double LipidAdduct::get_mass(){
+    ElementTable* elements = create_empty_table();
+    size_t charge = 0;
     double mass = 0;
-    if (lipid) mass += lipid->get_mass();
-    if (adduct){
-        mass += adduct->get_mass();
-        double charge = adduct->get_charge();
-        if (charge != 0) mass = (mass - charge * ELECTRON_REST_MASS) / fabs(charge);
+    
+    if (lipid != NULL){
+        ElementTable* lipid_elements = lipid->get_elements();
+        for (auto e : *lipid_elements) elements->at(e.first) += e.second;
+        
+        delete lipid_elements;
     }
+            
+    if (adduct != NULL){
+        ElementTable* adduct_elements = adduct->get_elements();
+        charge = adduct->get_charge();
+        for (auto e : *adduct_elements) elements->at(e.first) += e.second;
+            
+        delete adduct_elements;
+    }
+            
+    for (auto e : *elements) mass += element_masses.at(e.first) * e.second;
+    
+    if (charge != 0) mass = (mass - charge * ELECTRON_REST_MASS) / fabs(charge);
+    delete elements;
     
     return mass;
 }
@@ -83,4 +99,34 @@ string LipidAdduct::get_lipid_fragment_string(LipidLevel level){
     }
     
     return s.str();
+}
+
+
+string LipidAdduct::get_sum_formula(){
+    ElementTable* elements = create_empty_table();
+    
+    if (lipid != NULL){
+        ElementTable* lipid_elements = lipid->get_elements();
+        for (auto e : *lipid_elements) elements->at(e.first) += e.second;
+        
+        delete lipid_elements;
+    }
+            
+    if (adduct != NULL){
+        ElementTable* adduct_elements = adduct->get_elements();
+        for (auto e : *adduct_elements) elements->at(e.first) += e.second;
+            
+        delete adduct_elements;
+    }
+    
+    stringstream ss;
+    
+    for (auto e : element_order){
+        if (e > 0) ss << element_shortcut.at(e);
+        if (e > 1) ss << elements->at(e);
+    }
+    
+    delete elements;
+            
+    return ss.str();
 }

@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
+#include "cppgoslin/domain/Element.h"
 #include <sstream>
 
 using namespace std;
@@ -43,7 +44,7 @@ public:
     Adduct(string _sum_formula, string _adduct_string, int _charge, int _sign);
     void set_charge_sign(int sign);
     string get_lipid_string();
-    double get_mass();
+    ElementTable* get_elements();
     double get_charge();
 };
 

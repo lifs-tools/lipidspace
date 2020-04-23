@@ -28,11 +28,6 @@ SOFTWARE.
 #define FATTY_ACID_H
 
 
-#define MASS_H 1.007825035
-#define MASS_C 12.0
-#define MASS_O 15.99491463
-#define MASS_N 14.0030740
-
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidEnums.h"

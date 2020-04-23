@@ -41,9 +41,11 @@ string strip(string s, char c){
     return s;
 }
 
+ElementTable* create_empty_table(){
+    return new ElementTable{{ELEMENT_C, 0}, {ELEMENT_C13, 0}, {ELEMENT_H, 0}, {ELEMENT_H2, 0}, {ELEMENT_N, 0}, {ELEMENT_N15, 0}, {ELEMENT_O, 0}, {ELEMENT_O17, 0}, {ELEMENT_O18, 0}, {ELEMENT_P, 0}, {ELEMENT_P32, 0}, {ELEMENT_S, 0}, {ELEMENT_S34, 0}, {ELEMENT_S33, 0}};
+}
 
-
-vector<string>* split_string(string text, char separator, char _quote){
+vector<string>* split_string(string text, char separator, char _quote, bool with_empty){
     bool in_quote = false;
     vector<string> *tokens = new vector<string>();
     stringstream sb;
@@ -57,7 +59,7 @@ vector<string>* split_string(string text, char separator, char _quote){
             if (c == separator){
                 string sb_string;
                 sb_string = sb.str();
-                if (sb_string.length() > 0) tokens->push_back(sb_string);
+                if (sb_string.length() > 0 || with_empty) tokens->push_back(sb_string);
                 sb.str("");
             }
             else{
@@ -101,3 +103,5 @@ string replace_all(std::string str, const std::string& from, const std::string& 
     }
     return str;
 }
+
+

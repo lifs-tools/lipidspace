@@ -31,6 +31,7 @@ SOFTWARE.
 #include <vector>
 #include <map>
 #include <sstream>
+#include "cppgoslin/domain/Element.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidSpeciesInfo.h"

@@ -34,6 +34,7 @@ SOFTWARE.
 #include "cppgoslin/parser/SwissLipidsParserEventHandler.h"
 #include "cppgoslin/parser/HmdbParserEventHandler.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/parser/KnownGrammars.h"
 
 class GoslinParser : public Parser<LipidAdduct*> {
 public:
