@@ -121,8 +121,7 @@ void SwissLipidsParserEventHandler::set_head_group_name(TreeNode *node) {
 
 
 void SwissLipidsParserEventHandler::set_head_group_name_se(TreeNode *node){
-    head_group = node->get_text();
-    replace_all(head_group, "(", "");
+    head_group = replace_all(node->get_text(), "(", " ");
 }
 
 
@@ -206,7 +205,6 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
         for (auto& fa : *fa_list) fa->position += 1;
         fa_list->insert(fa_list->begin(), lcb);
     }
-    
     
     lipid = NULL;
     LipidSpecies *ls = NULL;

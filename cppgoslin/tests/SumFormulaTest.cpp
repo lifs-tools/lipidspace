@@ -44,6 +44,11 @@ int main(int argc, char** argv){
     SwissLipidsParser swiss_lipids_parser;
     LipidMapsParser lipid_maps_parser;
     
+    /*
+    lipid = swiss_lipids_parser.parse("SE(27:1/10:0)");
+    cout << lipid->get_sum_formula() << " vs. C37H64O2" << endl;
+    exit(0);
+    */
     
     // test several more lipid names
     vector<string> lipid_names;
@@ -68,6 +73,51 @@ int main(int argc, char** argv){
         //cout << lipid_name << " " << correct_formula << endl;
         try {
             lipid = lipid_maps_parser.parse(lipid_name);
+            assert(lipid != NULL);
+            
+            if (lipid->get_sum_formula() != correct_formula){
+                cout << "Error for lipid '" << lipid_name << "': " << lipid->get_sum_formula() << " != " << correct_formula << endl;
+                assert(false);
+            }
+            delete lipid;
+        }
+        catch (LipidException &e){
+            if (lipid_name.length() > 0){
+                cout << "Exception: " << lipid_names.at(i) << endl;
+                cout << e.what() << endl;
+                assert(false);
+            }
+        }
+    }
+    
+    
+    
+    
+    
+    
+    // test several more lipid names
+    lipid_names.clear();
+    sum_formulas.clear();
+    
+    ifstream infile2("cppgoslin/tests/formulas-swiss-lipids.csv");
+    while (getline(infile2, line)){
+        vector<string>* tokens = split_string(line, ',', '"');
+        line = strip(line, ' ');
+        if (tokens->size() > 1){
+            lipid_names.push_back(strip(tokens->at(0), '"'));
+            sum_formulas.push_back(strip(tokens->at(1), '"'));
+        }
+        delete tokens;
+    }
+    infile.close();
+        
+    
+    for (uint32_t i = 0; i < lipid_names.size(); ++i){
+        string lipid_name = lipid_names.at(i);
+        string correct_formula = sum_formulas.at(i);
+        //cout << lipid_name << " " << correct_formula << endl;
+        try {
+            lipid = swiss_lipids_parser.parse(lipid_name);
             assert(lipid != NULL);
             
             if (lipid->get_sum_formula() != correct_formula){
