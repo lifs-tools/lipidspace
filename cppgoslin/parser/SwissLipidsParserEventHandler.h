@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/Adduct.h"
+#include "cppgoslin/domain/StringFunctions.h"
 #include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/LipidIsomericSubspecies.h"
@@ -78,6 +79,8 @@ public:
     void add_db_position(TreeNode* node);
     void add_db_position_number(TreeNode* node);
     void add_cistrans(TreeNode* node);
+    void se_species_fa(TreeNode *node);
+    void set_head_group_name_se(TreeNode *node);
     
 };
 

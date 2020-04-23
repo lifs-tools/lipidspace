@@ -219,7 +219,10 @@ void LipidMapsParserEventHandler::append_fa(TreeNode *node) {
 void LipidMapsParserEventHandler::add_ether(TreeNode* node){
     string ether = node->get_text();
     if (ether == "O-") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
-    else if (ether == "P-") current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
+    else if (ether == "P-"){
+        current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
+        current_fa->num_double_bonds += 1;
+    }
 }
     
     
@@ -237,7 +240,7 @@ void LipidMapsParserEventHandler::add_hydroxyl_lcb(TreeNode* node){
     
     
 void LipidMapsParserEventHandler::add_double_bonds(TreeNode* node){
-    current_fa->num_double_bonds = atoi(node->get_text().c_str());
+    current_fa->num_double_bonds += atoi(node->get_text().c_str());
 }
     
     

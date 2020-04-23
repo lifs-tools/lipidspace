@@ -32,6 +32,9 @@ SOFTWARE.
 SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEventHandler<LipidAdduct*>() {
     fa_list = new vector<FattyAcid*>();
     
+    
+
+        
     reg("lipid_pre_event", reset_lipid);
     reg("lipid_post_event", build_lipid);
     reg("fa_hg_pre_event", set_head_group_name);
@@ -45,7 +48,7 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("sl_hg_pre_event", set_head_group_name);
     reg("st_species_hg_pre_event", set_head_group_name);
     reg("st_sub1_hg_pre_event", set_head_group_name);
-    reg("st_sub2_hg_pre_event", set_head_group_name);
+    reg("st_sub2_hg_pre_event", set_head_group_name_se);
     reg("fa_species_pre_event", set_species_level);
     reg("gl_molecular_pre_event", set_molecular_level);
     reg("unsorted_fa_separator_pre_event", set_molecular_level);
@@ -64,6 +67,8 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("hydroxyl_pre_event", add_hydroxyl);
     reg("db_count_pre_event", add_double_bonds);
     reg("carbon_pre_event", add_carbon);
+    reg("sl_lcb_species_pre_event", set_species_level);
+    reg("st_species_fa_post_event", se_species_fa);
     
 }
 
@@ -112,6 +117,12 @@ void SwissLipidsParserEventHandler::add_cistrans(TreeNode* node){
 
 void SwissLipidsParserEventHandler::set_head_group_name(TreeNode *node) {
     head_group = node->get_text();
+}
+
+
+void SwissLipidsParserEventHandler::set_head_group_name_se(TreeNode *node){
+    head_group = node->get_text();
+    replace_all(head_group, "(", "");
 }
 
 
@@ -236,7 +247,10 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
 void SwissLipidsParserEventHandler::add_ether(TreeNode *node) {
     string ether = node->get_text();
     if (ether == "O-") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
-    else if (ether == "P-") current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
+    else if (ether == "P-"){
+        current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
+        current_fa->num_double_bonds += 1;
+    }
 }
     
     
@@ -251,7 +265,7 @@ void SwissLipidsParserEventHandler::add_hydroxyl(TreeNode *node) {
     
 
 void SwissLipidsParserEventHandler::add_double_bonds(TreeNode *node) {
-    current_fa->num_double_bonds = atoi(node->get_text().c_str());
+    current_fa->num_double_bonds += atoi(node->get_text().c_str());
 }
     
     
@@ -262,4 +276,9 @@ void SwissLipidsParserEventHandler::add_carbon(TreeNode *node) {
 
         
 
+void SwissLipidsParserEventHandler::se_species_fa(TreeNode *node){
+    head_group += " 27:1";
+    fa_list->at(fa_list->size() -1)->num_carbon -= 27;
+    fa_list->at(fa_list->size() -1)->num_double_bonds -= 1;
+}
         
