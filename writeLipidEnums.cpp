@@ -136,6 +136,7 @@ void writeLipidEnum(string ofFileName){
     offile << "#include <vector>" << endl;
     offile << "#include <map>" << endl;
     offile << "#include <set>" << endl;
+    offile << "#include <string>" << endl;
     offile << "" << endl;
     offile << "namespace goslin {" << endl;
     offile << "using namespace std;" << endl;
