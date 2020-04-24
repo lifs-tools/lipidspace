@@ -60,8 +60,12 @@ string Adduct::get_lipid_string(){
 ElementTable* Adduct::get_elements(){
     ElementTable* elements = create_empty_table();
     try{
+        SumFormulaParser adduct_sum_formula_parser;
         string adduct_name = adduct_string.substr(1);
-        elements = adduct_sum_formula_parser.parse(adduct_name);
+        ElementTable* adduct_elements = adduct_sum_formula_parser.parse(adduct_name);
+        for (auto e : *adduct_elements) elements->at(e.first) += e.second;
+        delete adduct_elements;
+        
     }
     catch (...) {
         return elements;

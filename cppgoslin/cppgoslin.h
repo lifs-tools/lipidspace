@@ -28,6 +28,7 @@ SOFTWARE.
 #define CPPGOSLIN_H
 
 #include "cppgoslin/domain/Adduct.h"
+#include "cppgoslin/domain/Element.h"
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/Fragment.h"
 #include "cppgoslin/domain/LipidAdduct.h"
@@ -43,10 +44,12 @@ SOFTWARE.
 #include "cppgoslin/parser/GoslinFragmentParserEventHandler.h"
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include "cppgoslin/parser/SwissLipidsParserEventHandler.h"
+#include "cppgoslin/parser/SumFormulaParserEventHandler.h"
 #include "cppgoslin/parser/HmdbParserEventHandler.h"
 #include "cppgoslin/parser/KnownGrammars.h"
 #include "cppgoslin/parser/KnownParsers.h"
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
 #include "cppgoslin/parser/Parser.h"
+#include "cppgoslin/parser/SumFormulaParser.h"
 
 #endif /* CPPGOSLIN_H */

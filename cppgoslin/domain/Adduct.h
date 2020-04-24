@@ -30,8 +30,7 @@ SOFTWARE.
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/Element.h"
-//#include "cppgoslin/domain/StringFunctions.h"
-#include "cppgoslin/parser/Parser.h"
+#include "cppgoslin/parser/SumFormulaParser.h"
 #include "cppgoslin/parser/KnownGrammars.h"
 #include <sstream>
 
@@ -45,7 +44,6 @@ public:
     string adduct_string;
     size_t charge;
     size_t charge_sign;
-    static SumFormulaParser adduct_sum_formula_parser;
     
     Adduct(string _sum_formula, string _adduct_string, int _charge, int _sign);
     void set_charge_sign(int sign);

@@ -57,23 +57,12 @@ string LipidAdduct::get_class_name(){
 }
 
 double LipidAdduct::get_mass(){
-    ElementTable* elements = create_empty_table();
+    ElementTable* elements = get_elements();
     size_t charge = 0;
     double mass = 0;
-    
-    if (lipid != NULL){
-        ElementTable* lipid_elements = lipid->get_elements();
-        for (auto e : *lipid_elements) elements->at(e.first) += e.second;
-        
-        delete lipid_elements;
-    }
-            
+          
     if (adduct != NULL){
-        ElementTable* adduct_elements = adduct->get_elements();
         charge = adduct->get_charge();
-        for (auto e : *adduct_elements) elements->at(e.first) += e.second;
-            
-        delete adduct_elements;
     }
             
     for (auto e : *elements) mass += element_masses.at(e.first) * e.second;
@@ -84,6 +73,25 @@ double LipidAdduct::get_mass(){
     return mass;
 }
 
+
+ElementTable* LipidAdduct::get_elements(){
+    ElementTable* elements = create_empty_table();
+    
+    if (lipid != NULL){
+        ElementTable* lipid_elements = lipid->get_elements();
+        for (auto e : *lipid_elements) elements->at(e.first) += e.second;
+        
+        delete lipid_elements;
+    }
+            
+    if (adduct != NULL){
+        ElementTable* adduct_elements = adduct->get_elements();
+        for (auto e : *adduct_elements) elements->at(e.first) += e.second;
+            
+        delete adduct_elements;
+    }
+    return elements;
+}
     
     
 string LipidAdduct::get_lipid_fragment_string(LipidLevel level){
@@ -103,30 +111,10 @@ string LipidAdduct::get_lipid_fragment_string(LipidLevel level){
 
 
 string LipidAdduct::get_sum_formula(){
-    ElementTable* elements = create_empty_table();
+    ElementTable* elements = get_elements();
     
-    if (lipid != NULL){
-        ElementTable* lipid_elements = lipid->get_elements();
-        for (auto e : *lipid_elements) elements->at(e.first) += e.second;
-        
-        delete lipid_elements;
-    }
-            
-    if (adduct != NULL){
-        ElementTable* adduct_elements = adduct->get_elements();
-        for (auto e : *adduct_elements) elements->at(e.first) += e.second;
-            
-        delete adduct_elements;
-    }
-    
-    stringstream ss;
-    
-    for (auto e : element_order){
-        if (elements->at(e) > 0) ss << element_shortcut.at(e);
-        if (elements->at(e) > 1) ss << elements->at(e);
-    }
-    
+    string formula = compute_sum_formula(elements);
     delete elements;
             
-    return ss.str();
+    return formula;
 }

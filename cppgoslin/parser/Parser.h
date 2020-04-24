@@ -101,16 +101,6 @@ public:
 };
 
 
-class SumFormulaParser : public Parser<ElementTable*> {
-public:
-    SumFormulaParser() : Parser<ElementTable*>(new SumFormulaParserEventHandler(), GrammarString(sum_formula_grammar), DEFAULT_QUOTE){
-        
-    }
-    ~SumFormulaParser(){
-        delete parser_event_handler;
-    }
-};
-
 
 #include "cppgoslin/parser/Parser_impl.h"
 #endif /* PARSER_H */

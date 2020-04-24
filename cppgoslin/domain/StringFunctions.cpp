@@ -26,6 +26,18 @@ SOFTWARE.
 
 #include "cppgoslin/domain/StringFunctions.h"
 
+
+string compute_sum_formula(ElementTable* elements){
+    stringstream ss;
+    
+    for (auto e : element_order){
+        if (elements->at(e) > 0) ss << element_shortcut.at(e);
+        if (elements->at(e) > 1) ss << elements->at(e);
+    }
+    return ss.str();
+}
+
+
 string strip(string s, char c){
     if (s.length() > 0) {
         uint32_t st = 0;
@@ -41,9 +53,13 @@ string strip(string s, char c){
     return s;
 }
 
+
+
 ElementTable* create_empty_table(){
     return new ElementTable{{ELEMENT_C, 0}, {ELEMENT_C13, 0}, {ELEMENT_H, 0}, {ELEMENT_H2, 0}, {ELEMENT_N, 0}, {ELEMENT_N15, 0}, {ELEMENT_O, 0}, {ELEMENT_O17, 0}, {ELEMENT_O18, 0}, {ELEMENT_P, 0}, {ELEMENT_P32, 0}, {ELEMENT_S, 0}, {ELEMENT_S34, 0}, {ELEMENT_S33, 0}};
 }
+
+
 
 vector<string>* split_string(string text, char separator, char _quote, bool with_empty){
     bool in_quote = false;

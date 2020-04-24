@@ -55,6 +55,7 @@ public:
     string get_class_name();
     double get_mass();
     string get_sum_formula();
+    ElementTable* get_elements();
 };
 
 #endif /* LIPID_ADDUCT_H */

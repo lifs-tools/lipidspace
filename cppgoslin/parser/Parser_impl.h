@@ -775,4 +775,3 @@ void Parser<T>::parse_regular(string text_to_parse){
     delete[] Ks;
 }
 
-
