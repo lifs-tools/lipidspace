@@ -46,7 +46,7 @@ void addingGrammar(ofstream& offile, string grammarName, string grammarFilename)
 
     
     ifstream infile(grammarFilename.c_str());
-    offile << "static const string " + grammarName + " = \"";
+    offile << "const string " + grammarName + " = \"";
     if (!infile.good()){
         cout << "Error: file '" + grammarFilename + "' not found." << endl;
         exit(-1);

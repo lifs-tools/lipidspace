@@ -247,7 +247,7 @@ void writeLipidEnum(string ofFileName){
             if (synonym.length() < 1) continue;
             offile << ", \"" << synonym << "\"";
         }
-        offile << "} } }" << (++cnt < data.size() ? "," : "") << endl; 
+        offile << "} } }" << (++cnt < data.size() ? ",\n" : "\n") << endl;
     }
 
     

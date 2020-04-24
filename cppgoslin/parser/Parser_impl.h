@@ -102,6 +102,7 @@ Parser<T>::Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar
     
 template <class T>
 void Parser<T>::read_grammar(string grammar){
+    
     next_free_rule_index = START_RULE;
     word_in_grammar = false;
     grammar_name = "";
