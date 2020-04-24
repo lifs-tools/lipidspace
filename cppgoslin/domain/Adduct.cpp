@@ -32,6 +32,7 @@ Adduct::Adduct(string _sum_formula, string _adduct_string, int _charge, int _sig
     adduct_string = _adduct_string;
     charge = _charge;
     set_charge_sign(_sign);
+    
 }
 
 
@@ -51,10 +52,8 @@ string Adduct::get_lipid_string(){
     }
     stringstream stst;
     stst << "[M" << sum_formula << adduct_string << "]" << charge << ((charge_sign > 0) ? "+" : "-");
-    string output;
-    stst >> output;
     
-    return output;
+    return stst.str();
 }
 
 ElementTable* Adduct::get_elements(){
@@ -82,7 +81,7 @@ ElementTable* Adduct::get_elements(){
 
 
 
-double Adduct::get_charge(){
+int Adduct::get_charge(){
     return charge * charge_sign;
 }
 

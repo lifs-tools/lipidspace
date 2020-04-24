@@ -42,14 +42,14 @@ class Adduct{
 public:
     string sum_formula;
     string adduct_string;
-    size_t charge;
-    size_t charge_sign;
+    int charge;
+    int charge_sign;
     
     Adduct(string _sum_formula, string _adduct_string, int _charge, int _sign);
     void set_charge_sign(int sign);
     string get_lipid_string();
     ElementTable* get_elements();
-    double get_charge();
+    int get_charge();
 };
 
 #endif /* ADDUCT_H */

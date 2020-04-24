@@ -9,7 +9,7 @@ domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o c
 parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinFragmentParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o cppgoslin/parser/SwissLipidsParserEventHandler.o cppgoslin/parser/HmdbParserEventHandler.o cppgoslin/parser/SumFormulaParserEventHandler.o cppgoslin/parser/SumFormulaParser.o
 
 obj = ${domain} ${parser}
-test_obj = cppgoslin/tests/FattyAcidTest.o cppgoslin/tests/ParserTest.o cppgoslin/tests/SwissLipidsTest.o cppgoslin/tests/GoslinTest.o cppgoslin/tests/LipidMapsTest.o cppgoslin/tests/HdmbTest.o
+
 
 opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
 
@@ -72,6 +72,9 @@ ParserTest: cppgoslin/tests/ParserTest.o libcppGoslin.so
 
 SumFormulaTest: cppgoslin/tests/SumFormulaTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o SumFormulaTest cppgoslin/tests/SumFormulaTest.o libcppGoslin.so
+
+MassesTest: cppgoslin/tests/MassesTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o MassesTest cppgoslin/tests/MassesTest.o libcppGoslin.so
 	
 LipidMapsTest: cppgoslin/tests/LipidMapsTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o LipidMapsTest cppgoslin/tests/LipidMapsTest.o libcppGoslin.so
@@ -86,13 +89,14 @@ HmdbTest: cppgoslin/tests/HmdbTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o HmdbTest cppgoslin/tests/HmdbTest.o libcppGoslin.so
 	
 	
-test: FattyAcidTest ParserTest SumFormulaTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
+test: FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
 
 	
-runtests: FattyAcidTest ParserTest SumFormulaTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
+runtests: FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./FattyAcidTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SumFormulaTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MassesTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./GoslinTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SwissLipidsTest

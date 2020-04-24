@@ -46,7 +46,16 @@ string LipidAdduct::get_lipid_string(LipidLevel level){
     if (lipid) s << lipid->get_lipid_string(level);
     else return "";
     
-    if (adduct) s << adduct->get_lipid_string();
+    
+    switch (level){
+        case CLASS:
+        case CATEGORY:
+            break;
+            
+        default:
+            if (adduct) s << adduct->get_lipid_string();
+            break;
+    }
     
     return s.str();
 }
@@ -56,9 +65,11 @@ string LipidAdduct::get_class_name(){
     return (lipid) ? lipid->get_class_name() : "";
 }
 
+
+
 double LipidAdduct::get_mass(){
     ElementTable* elements = get_elements();
-    size_t charge = 0;
+    int charge = 0;
     double mass = 0;
           
     if (adduct != NULL){
@@ -100,10 +111,20 @@ string LipidAdduct::get_lipid_fragment_string(LipidLevel level){
     if (lipid) s << lipid->get_lipid_string(level);
     else return "";
     
-    if (adduct) s << adduct->get_lipid_string();
     
-    if (fragment){
-        s << " - " << fragment->get_lipid_string();
+    
+    switch (level){
+        case CLASS:
+        case CATEGORY:
+            break;
+    
+        default:
+            if (adduct) s << adduct->get_lipid_string();
+            
+            if (fragment){
+                s << " - " << fragment->get_lipid_string();
+            }
+            break;
     }
     
     return s.str();
