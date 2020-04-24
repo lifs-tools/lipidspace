@@ -24,8 +24,8 @@ SOFTWARE.
 */
 
 
-#ifndef GOSLIN_PARSER_EVENT_HANDLER_H
-#define GOSLIN_PARSER_EVENT_HANDLER_H
+#ifndef SUM_FORMULA_PARSER_EVENT_HANDLER_H
+#define SUM_FORMULA_PARSER_EVENT_HANDLER_H
 
 #include "cppgoslin/domain/Element.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
@@ -50,5 +50,5 @@ public:
 };
 
 
-#endif /* GOSLIN_PARSER_EVENT_HANDLER_H */
+#endif /* SUM_FORMULA_PARSER_EVENT_HANDLER_H */
         

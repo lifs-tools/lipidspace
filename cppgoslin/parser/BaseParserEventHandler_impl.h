@@ -27,9 +27,7 @@ SOFTWARE.
 
 template <class T> 
 BaseParserEventHandler<T>::BaseParserEventHandler(){
-    parser = NULL;
     registered_events = new map<string, function<void(TreeNode *)>>();
-    parse_string = "";
 }
 
 template <class T> 
@@ -52,7 +50,7 @@ void BaseParserEventHandler<T>::sanity_check(){
         rule_name = replace_all(rule_name, "_pre_event", "");
         rule_name = replace_all(rule_name, "_post_event", "");
         if (rule_names.find(rule_name) == rule_names.end()){
-            throw RuntimeException("Parser event handler error: rule '" + rule_name + "' in event '" + event_name.first + "' is not present in the grammar" + (parser != NULL ? " '" + parser->grammar_name + "'" : ""));
+            throw RuntimeException("Parser event handler error: rule '" + rule_name + "' in event '" + event_name.first + "' is not present in the grammar");
         }
     }
 }

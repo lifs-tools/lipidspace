@@ -251,7 +251,6 @@ void Parser<T>::read_grammar(string grammar){
     // adding all rule names into the event handler
     for (auto rule_name : ruleToNT) parser_event_handler->rule_names.insert(rule_name.first);
         
-    parser_event_handler->parser = this;
     parser_event_handler->sanity_check();
     
     
@@ -662,7 +661,6 @@ T Parser<T>::parse(string text_to_parse, bool throw_error){
     string old_lipid = text_to_parse;
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
     parser_event_handler->content = NULL;
-    parser_event_handler->parse_string = text_to_parse;
     
     parse_regular(text_to_parse);
     if (throw_error && !word_in_grammar){

@@ -27,7 +27,7 @@ static: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
 cppgoslin/parser/KnownGrammars.h: data/goslin/Goslin.g4 data/goslin/GoslinFragments.g4 data/goslin/LipidMaps.g4 data/goslin/SwissLipids.g4
 	${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp && ./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h"
 	
-cppgoslin/domain/LipidEnums.h: data/goslin/lipid-list.csv
+cppgoslin/domain/LipidEnums.h: data/goslin/lipid-list.csv cppgoslin/parser/KnownGrammars.h
 	${CC} ${opt} -I . -o writeLipidEnums writeLipidEnums.cpp cppgoslin/domain/StringFunctions.cpp cppgoslin/parser/SumFormulaParserEventHandler.cpp cppgoslin/parser/ParserClasses.cpp && ./writeLipidEnums "cppgoslin/domain/LipidEnums.h"
 	
 

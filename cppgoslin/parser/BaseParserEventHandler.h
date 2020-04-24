@@ -33,7 +33,7 @@ SOFTWARE.
 #include <functional>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/StringFunctions.h"
-#include "cppgoslin/parser/Parser.h"
+#include "cppgoslin/parser/ParserClasses.h"
 
 template<class T>
 class Parser;
@@ -45,11 +45,9 @@ using namespace std;
 template <class T>
 class BaseParserEventHandler {
 public:
-    Parser<T>* parser;
     map<string, function<void(TreeNode *)>>* registered_events;
     set<string> rule_names;
     T content;
-    string parse_string;
     
     BaseParserEventHandler();
     virtual ~BaseParserEventHandler();

@@ -34,6 +34,7 @@ Adduct::Adduct(string _sum_formula, string _adduct_string, int _charge, int _sig
     set_charge_sign(_sign);
 }
 
+
 void Adduct::set_charge_sign(int sign){
     if (sign != -1 || sign != 0 || sign != 1){
         charge_sign = sign;
@@ -57,9 +58,29 @@ string Adduct::get_lipid_string(){
 }
 
 ElementTable* Adduct::get_elements(){
-    return create_empty_table();
+    ElementTable* elements = create_empty_table();
+    try{
+        string adduct_name = adduct_string.substr(1);
+        elements = adduct_sum_formula_parser.parse(adduct_name);
+    }
+    catch (...) {
+        return elements;
+    }
+    
+    if (adduct_string.length() > 0 && adduct_string[0] == '-'){
+        for (auto e : element_order){
+            elements->at(e) *= -1;
+        }
+    }
+    
+    return elements;
 }
+
+
 
 double Adduct::get_charge(){
     return charge * charge_sign;
 }
+
+
+
