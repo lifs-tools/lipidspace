@@ -41,6 +41,7 @@ class Parser;
 class TreeNode;
 
 using namespace std;
+using namespace goslin;
 
 template <class T>
 class BaseParserEventHandler {

@@ -26,8 +26,9 @@ SOFTWARE.
 
 #include "cppgoslin/domain/StringFunctions.h"
 
+using namespace goslin;
 
-string compute_sum_formula(ElementTable* elements){
+string goslin::compute_sum_formula(ElementTable* elements){
     stringstream ss;
     
     for (auto e : element_order){
@@ -38,7 +39,7 @@ string compute_sum_formula(ElementTable* elements){
 }
 
 
-string strip(string s, char c){
+string goslin::strip(string s, char c){
     if (s.length() > 0) {
         uint32_t st = 0;
         while (st < s.length() - 1 && s[st] == c) ++st;
@@ -55,13 +56,13 @@ string strip(string s, char c){
 
 
 
-ElementTable* create_empty_table(){
+ElementTable* goslin::create_empty_table(){
     return new ElementTable{{ELEMENT_C, 0}, {ELEMENT_C13, 0}, {ELEMENT_H, 0}, {ELEMENT_H2, 0}, {ELEMENT_N, 0}, {ELEMENT_N15, 0}, {ELEMENT_O, 0}, {ELEMENT_O17, 0}, {ELEMENT_O18, 0}, {ELEMENT_P, 0}, {ELEMENT_P32, 0}, {ELEMENT_S, 0}, {ELEMENT_S34, 0}, {ELEMENT_S33, 0}};
 }
 
 
 
-vector<string>* split_string(string text, char separator, char _quote, bool with_empty){
+vector<string>* goslin::split_string(string text, char separator, char _quote, bool with_empty){
     bool in_quote = false;
     vector<string> *tokens = new vector<string>();
     stringstream sb;
@@ -111,7 +112,7 @@ vector<string>* split_string(string text, char separator, char _quote, bool with
 }
 
 
-string replace_all(std::string str, const std::string& from, const std::string& to) {
+string goslin::replace_all(std::string str, const std::string& from, const std::string& to) {
     size_t start_pos = 0;
     while((start_pos = str.find(from, start_pos)) != std::string::npos) {
         str.replace(start_pos, from.length(), to);

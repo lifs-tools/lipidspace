@@ -33,6 +33,7 @@ SOFTWARE.
 #include "cppgoslin/parser/SumFormulaParserEventHandler.h"
 
 using namespace std;
+using namespace goslin;
 
 
 
