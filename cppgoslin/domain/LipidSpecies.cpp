@@ -83,7 +83,7 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
 
 LipidCategory LipidSpecies::get_category(string _head_group){
     if (!StringCategory.size()){
-        for (const auto& kvp : lipid_classes){
+        for (const auto& kvp : LipidClasses::get_instance().lipid_classes){
             LipidCategory category = kvp.second.lipid_category;
             for (auto hg : kvp.second.synonyms){
                 StringCategory.insert(pair<string, LipidCategory>(hg, category));
@@ -104,7 +104,7 @@ LipidLevel LipidSpecies::get_lipid_level(){
 
 LipidClass LipidSpecies::get_class(string _head_group){
     if (!StringClass.size()){
-        for (auto kvp : lipid_classes){
+        for (auto kvp : LipidClasses::get_instance().lipid_classes){
             LipidClass l_class = kvp.first;
             for (auto hg : kvp.second.synonyms){
                 StringClass.insert({hg, l_class});
@@ -119,7 +119,7 @@ LipidClass LipidSpecies::get_class(string _head_group){
 
 string LipidSpecies::get_class_string(LipidClass _lipid_class){
     if (!ClassString.size()){
-        for (auto kvp : lipid_classes){
+        for (auto kvp : LipidClasses::get_instance().lipid_classes){
             ClassString.insert({kvp.first, kvp.second.synonyms.at(0)});
         }
     }
@@ -129,7 +129,7 @@ string LipidSpecies::get_class_string(LipidClass _lipid_class){
 
 
 string LipidSpecies::get_class_name(){
-    return lipid_classes.at(lipid_class).class_name;
+    return LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name;
 }
 
 
@@ -154,11 +154,11 @@ bool LipidSpecies::validate(){
 
 ElementTable* LipidSpecies::get_elements(){
     ElementTable* elements = create_empty_table();
-    if (use_head_group || (lipid_classes.find(lipid_class) == lipid_classes.end())){
+    if (use_head_group || (LipidClasses::get_instance().lipid_classes.find(lipid_class) == LipidClasses::get_instance().lipid_classes.end())){
         return elements;
     }
     
-    for (auto e : lipid_classes.at(lipid_class).elements){
+    for (auto e : LipidClasses::get_instance().lipid_classes.at(lipid_class).elements){
         elements->at(e.first) = e.second;
     }
     switch (info.level){
@@ -175,21 +175,21 @@ ElementTable* LipidSpecies::get_elements(){
                         
                     delete fa_elements;
                 }
-                if (lipid_classes.at(lipid_class).max_num_fa < num_true_fa){
+                if (LipidClasses::get_instance().lipid_classes.at(lipid_class).max_num_fa < num_true_fa){
                     throw LipidException("Inconsistancy in number of fatty acyl chains for lipid '" + head_group + "'");
                 }
-                elements->at(ELEMENT_H) += lipid_classes.at(lipid_class).max_num_fa - num_true_fa; // adding hydrogens for absent fatty acyl chains
+                elements->at(ELEMENT_H) += LipidClasses::get_instance().lipid_classes.at(lipid_class).max_num_fa - num_true_fa; // adding hydrogens for absent fatty acyl chains
             }
             break;
             
         case SPECIES:
             {
-                size_t max_poss_fa = *lipid_classes.at(lipid_class).possible_num_fa.rend();
+                size_t max_poss_fa = *LipidClasses::get_instance().lipid_classes.at(lipid_class).possible_num_fa.rend();
                 ElementTable* fa_elements = info.get_elements(max_poss_fa);
                 for (auto e : *fa_elements) elements->at(e.first) += e.second;
                 delete fa_elements;
                 
-                elements->at(ELEMENT_H) += lipid_classes.at(lipid_class).max_num_fa - max_poss_fa; // adding hydrogens for absent fatty acyl chains
+                elements->at(ELEMENT_H) += LipidClasses::get_instance().lipid_classes.at(lipid_class).max_num_fa - max_poss_fa; // adding hydrogens for absent fatty acyl chains
             }
             break;
         

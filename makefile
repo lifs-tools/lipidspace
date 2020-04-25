@@ -4,7 +4,7 @@ AR = ar
 MARCH = -mtune=native
 bin = libcppGoslin.so
 abin = libcppGoslin.a
-domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StringFunctions.o
+domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StringFunctions.o cppgoslin/domain/LipidClasses.o
 
 parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinFragmentParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o cppgoslin/parser/SwissLipidsParserEventHandler.o cppgoslin/parser/HmdbParserEventHandler.o cppgoslin/parser/SumFormulaParserEventHandler.o cppgoslin/parser/SumFormulaParser.o
 
@@ -16,28 +16,28 @@ opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
 
 main: ${bin}
 
-${bin}:	cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
+${bin}:	cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp ${obj}
 	${CC} -shared ${obj} -o ${bin}
 	
 	
-static: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h ${obj}
+static: cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp ${obj}
 	${AR} rcs ${abin} ${obj}
 
 	
 cppgoslin/parser/KnownGrammars.h: data/goslin/Goslin.g4 data/goslin/GoslinFragments.g4 data/goslin/LipidMaps.g4 data/goslin/SwissLipids.g4
 	${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp && ./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h"
 	
-cppgoslin/domain/LipidEnums.h: data/goslin/lipid-list.csv cppgoslin/parser/KnownGrammars.h
-	${CC} ${opt} -I . -o writeLipidEnums writeLipidEnums.cpp cppgoslin/domain/StringFunctions.cpp cppgoslin/parser/SumFormulaParserEventHandler.cpp cppgoslin/parser/ParserClasses.cpp && ./writeLipidEnums "cppgoslin/domain/LipidEnums.h"
+cppgoslin/domain/LipidClasses.cpp: data/goslin/lipid-list.csv cppgoslin/parser/KnownGrammars.h
+	${CC} ${opt} -I . -o writeLipidEnums writeLipidEnums.cpp cppgoslin/domain/StringFunctions.cpp cppgoslin/parser/SumFormulaParserEventHandler.cpp cppgoslin/parser/ParserClasses.cpp && ./writeLipidEnums "cppgoslin/domain/LipidClasses.cpp"
 	
 
 	
-%.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidEnums.h
+%.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp
 	${CC} ${opt} -I. -Wall -fPIC -o $@ -c $<
 	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
-	rm -f "cppgoslin/domain/LipidEnums.h"
+	rm -f "cppgoslin/domain/LipidClasses.cpp"
 	rm -f cppgoslin/domain/*.o
 	rm -f cppgoslin/parser/*.o
 	rm -f cppgoslin/tests/*.o

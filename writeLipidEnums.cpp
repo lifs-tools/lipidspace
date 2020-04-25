@@ -103,6 +103,10 @@ void writeLipidEnum(string ofFileName){
     SumFormulaParserEventHandler sum_formula_handler;
     Parser<ElementTable*> parser(&sum_formula_handler, "data/goslin/sum-formula.g4", DEFAULT_QUOTE);
     
+    
+    map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}};
+    
+    
     offile << "/* DO NOT CHANGE THE FILE, IT IS AUTOMATICALLY GENERATED */" << endl << endl;
     
     
@@ -131,95 +135,16 @@ void writeLipidEnum(string ofFileName){
     offile << "SOFTWARE." << endl;
     offile << "*/" << endl;
     offile << endl;
+    offile << "#include \"cppgoslin/domain/LipidEnums.h\"" << endl;
+    offile << endl;
+    offile << "using namespace goslin;" << endl;
     offile << endl;
     offile << endl;
-    
-    offile << "#ifndef LIPID_ENUMS_H" << endl;
-    offile << "#define LIPID_ENUMS_H" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-
-    offile << "#include <vector>" << endl;
-    offile << "#include <map>" << endl;
-    offile << "#include <set>" << endl;
-    offile << "#include \"cppgoslin/domain/Element.h\"" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "namespace goslin {" << endl;
-    offile << "using namespace std;" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "enum LipidCategory {NO_CATEGORY," << endl;
-    offile << "    UNDEFINED," << endl;
-    offile << "    GL, // SLM:000117142 Glycerolipids" << endl;
-    offile << "    GP, // SLM:000001193 Glycerophospholipids" << endl;
-    offile << "    SP, // SLM:000000525 Sphingolipids" << endl;
-    offile << "    ST, // SLM:000500463 Steroids and derivatives" << endl;
-    offile << "    FA, // SLM:000390054 Fatty acyls and derivatives" << endl;
-    offile << "    PK, // polyketides" << endl;
-    offile << "    SL // Saccharo lipids" << endl;
-    offile << "};" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    
-    
-    offile << "static const map<LipidCategory, string> CategoryString = {" << endl;
-    offile << "    {NO_CATEGORY, \"NO_CATEGORY\"}," << endl;
-    offile << "    {UNDEFINED, \"UNDEFINED\"}," << endl;
-    offile << "    {GL, \"GL\"}," << endl;
-    offile << "    {GP, \"GP\"}," << endl;
-    offile << "    {SP, \"SP\"}," << endl;
-    offile << "    {ST, \"ST\"}," << endl;
-    offile << "    {FA, \"FA\"}," << endl;
-    offile << "    {SL, \"SL\"}" << endl;
-    offile << "};" << endl;
-    offile << "" << endl;
-    offile << "    " << endl;
-    offile << "    " << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "enum LipidLevel {NO_LEVEL," << endl;
-    offile << "    UNDEFINED_LEVEL," << endl;
-    offile << "    CATEGORY, // Mediators, Glycerolipids, Glycerophospholipids, Sphingolipids, Steroids, Prenols" << endl;
-    offile << "    CLASS, // Glyerophospholipids -> Glycerophosphoinositols (PI)" << endl;
-    offile << "    SPECIES, // Phosphatidylinositol (16:0) or PI(16:0)" << endl;
-    offile << "    MOLECULAR_SUBSPECIES, // Phosphatidylinositol (8:0-8:0) or PI(8:0-8:0)" << endl;
-    offile << "    STRUCTURAL_SUBSPECIES, // Phosphatidylinositol (8:0/8:0) or PI(8:0/8:0)" << endl;
-    offile << "    ISOMERIC_SUBSPECIES // e.g. Phosphatidylethanolamine (P-18:0/22:6(4Z,7Z,10Z,13Z,16Z,19Z))" << endl;
-    offile << "};" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "struct LipidClassMeta {" << endl;
-    offile << "    LipidCategory lipid_category;" << endl;
-    offile << "    string class_name;" << endl;
-    offile << "    size_t max_num_fa;" << endl;
-    offile << "    set<size_t> possible_num_fa;" << endl;
-    offile << "    ElementTable elements;" << endl;
-    offile << "    vector<string> synonyms;" << endl;
-    offile << "};" << endl;
-    offile << "" << endl;
-    offile << "enum LipidClass {NO_CLASS, UNDEFINED_CLASS";
-    
-    
-    map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}};
-    
-    
-    for (auto& kv : data){
-        offile << ", " << kv.first;
-    }
-    offile << "};" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "typedef map<LipidClass, LipidClassMeta> ClassMap;" << endl;
-    offile << "enum LipidFaBondType { NO_FA, UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL};" << endl;
-    offile << "" << endl;
-    offile << "" << endl;
-    offile << "static const ClassMap lipid_classes = {" << endl;
+    offile << "LipidClasses::LipidClasses(){" << endl;
+    offile << "    lipid_classes = {" << endl;
     unsigned int cnt = 0;
     for (auto& kv : data){
-        offile << "{" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
+        offile << "    {" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
         offile << kv.second->at(3) << ", {";
         
         vector<string>* tokens = split_string(kv.second->at(4), '|', '"');
@@ -251,14 +176,9 @@ void writeLipidEnum(string ofFileName){
     }
 
     
-    offile << "};" << endl; 
-    offile << "" << endl; 
-    offile << "static map<LipidClass, string> ClassString;" << endl; 
-    offile << "static map<string, LipidClass> StringClass;" << endl; 
-    offile << "static map<string, LipidCategory> StringCategory;" << endl; 
-    offile << "}" << endl;
-    offile << "" << endl; 
-    offile << "#endif /* LIPID_ENUMS_H */" << endl; 
+    offile << "    };" << endl; 
+    offile << "}" << endl; 
+    offile << endl;
 }
 
 
