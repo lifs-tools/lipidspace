@@ -40,7 +40,7 @@ using namespace goslin;
 class SumFormulaParserEventHandler : public BaseParserEventHandler<ElementTable*> {
 public:
     Element element;
-    size_t count;
+    int count;
     
     SumFormulaParserEventHandler();
     void reset_parser(TreeNode *node);

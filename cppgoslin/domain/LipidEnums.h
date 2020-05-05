@@ -81,8 +81,8 @@ enum LipidLevel {NO_LEVEL,
 struct LipidClassMeta {
     LipidCategory lipid_category;
     string class_name;
-    size_t max_num_fa;
-    set<size_t> possible_num_fa;
+    int max_num_fa;
+    set<int> possible_num_fa;
     ElementTable elements;
     vector<string> synonyms;
 };

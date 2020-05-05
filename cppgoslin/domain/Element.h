@@ -14,7 +14,7 @@ using namespace std;
 enum Element {ELEMENT_C, ELEMENT_C13, ELEMENT_H, ELEMENT_H2, ELEMENT_N, ELEMENT_N15, ELEMENT_O, ELEMENT_O17, ELEMENT_O18, ELEMENT_P, ELEMENT_P32, ELEMENT_S, ELEMENT_S34, ELEMENT_S33};
 
 
-typedef map<Element, size_t> ElementTable;
+typedef map<Element, int> ElementTable;
 
 
 ElementTable* create_empty_table();

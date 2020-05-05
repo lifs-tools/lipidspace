@@ -167,7 +167,7 @@ ElementTable* LipidSpecies::get_elements(){
         case STRUCTURAL_SUBSPECIES:
         case ISOMERIC_SUBSPECIES:
             {
-                size_t num_true_fa = 0;
+                int num_true_fa = 0;
                 for (auto fa : fa_list){
                     ElementTable* fa_elements = fa->get_elements();
                     if (fa->num_carbon != 0 || fa->num_double_bonds != 0) num_true_fa += 1;
@@ -184,7 +184,7 @@ ElementTable* LipidSpecies::get_elements(){
             
         case SPECIES:
             {
-                size_t max_poss_fa = *LipidClasses::get_instance().lipid_classes.at(lipid_class).possible_num_fa.rend();
+                int max_poss_fa = *LipidClasses::get_instance().lipid_classes.at(lipid_class).possible_num_fa.rend();
                 ElementTable* fa_elements = info.get_elements(max_poss_fa);
                 for (auto e : *fa_elements) elements->at(e.first) += e.second;
                 delete fa_elements;
