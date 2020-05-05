@@ -119,7 +119,7 @@ void writeGrammarHeader(string ofFileName){
     addingGrammar(offile, "hmdb_grammar", "data/goslin/HMDB.g4");
     offile << endl << endl << endl;
     
-    addingGrammar(offile, "sum_formula_grammar", "data/goslin/sum-formula.g4");
+    addingGrammar(offile, "sum_formula_grammar", "data/goslin/SumFormula.g4");
     offile << endl << endl << endl;
     
     offile << "#endif /* KNOWN_GRAMMARS_H */" << endl;

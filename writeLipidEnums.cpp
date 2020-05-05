@@ -102,7 +102,7 @@ void writeLipidEnum(string ofFileName){
         data.insert({enum_name, tokens});
     }
     SumFormulaParserEventHandler sum_formula_handler;
-    Parser<ElementTable*> parser(&sum_formula_handler, "data/goslin/sum-formula.g4", DEFAULT_QUOTE);
+    Parser<ElementTable*> parser(&sum_formula_handler, "data/goslin/SumFormula.g4", DEFAULT_QUOTE);
     
     
     map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}};

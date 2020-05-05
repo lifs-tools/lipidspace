@@ -34,11 +34,11 @@ SumFormulaParserEventHandler::SumFormulaParserEventHandler() : BaseParserEventHa
     element = ELEMENT_H;
     count = 0;
     
-    reg("Molecule_pre_event", reset_parser);
-    reg("Element_Group_post_event", element_group_post_event);
-    reg("Element_pre_event", element_pre_event);
-    reg("Single_Element_pre_event", single_element_group_pre_event);
-    reg("Count_pre_event", count_pre_event);
+    reg("molecule_pre_event", reset_parser);
+    reg("element_group_post_event", element_group_post_event);
+    reg("element_pre_event", element_pre_event);
+    reg("single_element_pre_event", single_element_group_pre_event);
+    reg("count_pre_event", count_pre_event);
     
 }
 

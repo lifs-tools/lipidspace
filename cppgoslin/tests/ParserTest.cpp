@@ -543,8 +543,8 @@ int main(int argc, char** argv){
     lipid_name = "TAG 16:1(5E)/18:0/20:2(3Z,6Z)";
     lipid = goslin_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "TAG 16:1/18:0/20:2");
-    assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "TAG 16:1-18:0-20:2");
+    assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "TAG 16:1(5E)/18:0/20:2(3Z,6Z)");
+    assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "TAG 16:1(5E)-18:0-20:2(3Z,6Z)");
     assert (lipid->get_lipid_string(SPECIES) == "TAG 54:3");
     assert (lipid->get_lipid_string(CLASS) == "TAG");
     assert (lipid->get_lipid_string(CATEGORY) == "GL");
@@ -554,7 +554,7 @@ int main(int argc, char** argv){
     // try to retrieve LipidSpeciesInfo for summary information
     LipidSpeciesInfo lsi = lipid->lipid->info;
     assert (lsi.lcb == false);
-    assert (lsi.level == STRUCTURAL_SUBSPECIES);
+    assert (lsi.level == ISOMERIC_SUBSPECIES);
     assert (lsi.lipid_FA_bond_type == ESTER);
     assert (lsi.num_carbon == 54);
     assert (lsi.num_double_bonds == 3);
