@@ -114,7 +114,7 @@ vector<string>* goslin::split_string(string text, char separator, char _quote, b
 
 string goslin::replace_all(std::string str, const std::string& from, const std::string& to) {
     int start_pos = 0;
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+    while((start_pos = str.find(from, start_pos)) != (int)std::string::npos) {
         str.replace(start_pos, from.length(), to);
         start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
     }
