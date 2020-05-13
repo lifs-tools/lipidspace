@@ -71,7 +71,8 @@ int main(int argc, char** argv){
                 cout << lipid_name << ": " << e.what() << endl;
                 assert (false);
             }
-                
+            
+            
             assert (lipid->get_lipid_string(CLASS) == lipid_class);
             assert (compute_sum_formula(lipid->lipid->get_elements()) == lipid_formula);
             assert (fabs(lipid->get_mass() - lipid_mass) < 0.001);

@@ -48,9 +48,11 @@ void writeLipidEnum(string ofFileName){
     
     string line;
     unsigned int i = 0;
+    int SYNONYM_START_INDEX = 6;
     map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"PK", 1}, {"SL", 1}, {"UNDEFINED", 1}};
     
     map<string, vector<string>*> data;
+    set<string> keys;
     while (getline(infile, line)){
         if (i++ == 0) continue;
         vector<string>* tokens = split_string(line, ',', '"', true);
@@ -59,6 +61,24 @@ void writeLipidEnum(string ofFileName){
             if (s.length() >= 2 && s[0] == '"' && s[s.length() - 1] == '"'){
                 tokens->at(i) = s.substr(1, s.length() - 2);
             }
+        }
+        
+        if (keys.find(tokens->at(0)) != keys.end()){
+            cout << "Error: lipid name '" << tokens->at(0) << "' occurs multiple times in the lipid list." << endl;
+            exit(-1);
+        }
+        keys.insert(tokens->at(0));
+        
+        
+        for (int i = SYNONYM_START_INDEX; i < (int)tokens->size(); ++i){
+            string test_lipid_name = tokens->at(i);
+            if (test_lipid_name == "") continue;
+            if (keys.find(test_lipid_name) != keys.end()){
+                cout << "Error: lipid name '" << test_lipid_name << "' occurs multiple times in the lipid list." << endl;
+                
+                exit(-1);
+            }
+            keys.insert(test_lipid_name);
         }
         
         
@@ -168,7 +188,7 @@ void writeLipidEnum(string ofFileName){
         delete table;
             
         offile << "}, {\"" << kv.second->at(0) << "\"";
-        for (unsigned int i = 6; i < kv.second->size(); ++i){
+        for (unsigned int i = SYNONYM_START_INDEX; i < kv.second->size(); ++i){
             string synonym = kv.second->at(i);
             if (synonym.length() < 1) continue;
             offile << ", \"" << synonym << "\"";
