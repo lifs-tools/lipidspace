@@ -69,6 +69,7 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("carbon_pre_event", add_carbon);
     reg("sl_lcb_species_pre_event", set_species_level);
     reg("st_species_fa_post_event", se_species_fa);
+    reg("fa_lcb_suffix_type_pre_event", add_one_hydroxyl);
     
 }
 
@@ -258,6 +259,11 @@ void SwissLipidsParserEventHandler::add_hydroxyl(TreeNode *node) {
     if (old_hydroxyl == "m") current_fa->num_hydroxyl = 1;
     else if (old_hydroxyl == "d") current_fa->num_hydroxyl = 2;
     else if (old_hydroxyl == "t") current_fa->num_hydroxyl = 3;
+}
+
+
+void SwissLipidsParserEventHandler::add_one_hydroxyl(TreeNode *node) {
+    current_fa->num_hydroxyl += 1;
 }
     
     

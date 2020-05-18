@@ -31,7 +31,7 @@ SOFTWARE.
 #include <iostream>
 #include <cassert>
 #include <fstream>
-
+#include <math.h>
 
 using namespace std;
 using namespace goslin;
@@ -48,6 +48,7 @@ int main(int argc, char** argv){
     LipidMapsParser lipid_maps_parser;
     GoslinFragmentParser goslin_fragment_parser;
     SwissLipidsParser swiss_lipids_parser;
+    HmdbParser hmdb_parser;
     
     
     // test bitfield
@@ -136,6 +137,51 @@ int main(int argc, char** argv){
     assert (lipid->fragment);
     assert (lipid->fragment->name == "-(H20)");
     delete lipid;
+    
+    
+    
+    
+    
+    
+    lipid = swiss_lipids_parser.parse("Cer(d18:1(4E)/24:0-2OH)");
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "Cer 18:1(4E);2/24:0;1");
+    assert (lipid->get_sum_formula() == "C42H83NO4");
+    assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
+    delete lipid;
+        
+        
+    lipid = swiss_lipids_parser.parse("Cer(d18:1(4E)/24:0(2OH))");
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "Cer 18:1(4E);2/24:0;1");
+    assert (lipid->get_sum_formula() == "C42H83NO4");
+    assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
+    delete lipid;
+        
+        
+    lipid = lipid_maps_parser.parse("Cer(d18:1(4E)/24:0(2OH))");
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "Cer 18:1(4E);2/24:0;1");
+    assert (lipid->get_sum_formula() == "C42H83NO4");
+    assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
+    delete lipid;
+        
+    
+    lipid = goslin_parser.parse("Cer 18:1(4E);2/24:0;1");
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "Cer 18:1(4E);2/24:0;1");
+    assert (lipid->get_sum_formula() == "C42H83NO4");
+    assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
+    delete lipid;
+        
+    lipid = hmdb_parser.parse("SM(d18:1/16:1(9Z)(OH))");
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "SM 18:1;2/16:1(9Z);1");
+    assert (lipid->get_sum_formula() == "C39H77N2O7P");
+    assert (abs(lipid->get_mass() - 716.546841) < 1e-3);
+    delete lipid;
+    
+    
     
     
     

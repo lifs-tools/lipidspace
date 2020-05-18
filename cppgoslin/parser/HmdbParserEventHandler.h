@@ -82,6 +82,7 @@ public:
     void furan_fa(TreeNode *node);
     void interlink_fa(TreeNode *node);
     void lipid_suffix(TreeNode *node);
+    void add_one_hydroxyl(TreeNode *node);
     
 };
 

@@ -81,6 +81,7 @@ public:
     void add_cistrans(TreeNode* node);
     void se_species_fa(TreeNode *node);
     void set_head_group_name_se(TreeNode *node);
+    void add_one_hydroxyl(TreeNode *node);
     
 };
 
