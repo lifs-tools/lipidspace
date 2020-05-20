@@ -26,7 +26,6 @@ SOFTWARE.
 
 #include "FattyAcid.h"
 
-
 FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_double_bonds, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position, map<int, string> *_double_bond_positions){
     name = _name;
     position = _position;
@@ -36,6 +35,9 @@ FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_double_bonds, int _
     lipid_FA_bond_type = _lipid_FA_bond_type;
     lcb = _lcb;
     if (_double_bond_positions != NULL){
+        if (num_double_bonds != (int)_double_bond_positions->size()) {
+            throw ConstraintViolationException("Isomeric FattyAcid must receive double bond positions for all double bonds! Got " + std::to_string(num_double_bonds) + " double bonds and " + std::to_string(_double_bond_positions->size()) + " positions.");
+        }
         for (auto kv : *_double_bond_positions){
             double_bond_positions.insert({kv.first, kv.second});
         }
@@ -109,6 +111,10 @@ string FattyAcid::to_string(bool special_case){
     string lipid_suffix = suffix(lipid_FA_bond_type);
     if (special_case && lipid_suffix.length() > 0) s << "O-";
     s << num_carbon << ":" << num_double_bonds;
+    
+    if (double_bond_positions.size() > 0 && num_double_bonds != (int)double_bond_positions.size()) {
+        throw ConstraintViolationException("Isomeric FattyAcid must receive double bond positions for all double bonds! Got " + std::to_string(num_double_bonds) + " double bonds and " + std::to_string(double_bond_positions.size()) + " positions.");
+    }
     
     if (double_bond_positions.size()){
         stringstream db;

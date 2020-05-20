@@ -105,7 +105,6 @@ int main(int argc, char** argv){
     
     
     
-    
     // check lipid maps and swiss lipids parser with illegal lipid name
     string failLipidSL = "TG(16::1_18:1_24:0)";
     try {
@@ -157,6 +156,7 @@ int main(int argc, char** argv){
     assert (lipid->get_sum_formula() == "C42H83NO4");
     assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
     delete lipid;
+    
         
         
     lipid = lipid_maps_parser.parse("Cer(d18:1(4E)/24:0(2OH))");
@@ -194,12 +194,14 @@ int main(int argc, char** argv){
     assert (lipid->get_lipid_string() == "PG 22:1(5Z)/12:0");
     delete lipid;
     
+    
     lipid_name = "PG(22:1/12:0)";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
     assert (lipid->lipid->info.level == STRUCTURAL_SUBSPECIES);
     assert (lipid->get_lipid_string() == "PG 22:1/12:0");
     delete lipid;
+    
     
     lipid_name = "PG(22:1_12:0)";
     lipid = swiss_lipids_parser.parse(lipid_name);
@@ -231,7 +233,22 @@ int main(int argc, char** argv){
         lipid = lipid_parser.parse(lipid_name);
         assert (false);
     }
-    catch(LipidException &e){ }
+    catch(LipidException &e){
+    }
+    
+    
+    
+    lipid_name = "PA 19:2(12E)/12:0";
+    lipid = lipid_parser.parse(lipid_name);
+    try {
+        string l = lipid->get_lipid_string();
+        assert (false);
+        assert(l == "foo");
+    }
+    catch(LipidException &e){
+        delete lipid;
+    }
+    
     
     
     

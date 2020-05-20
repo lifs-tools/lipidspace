@@ -127,7 +127,7 @@ void GoslinParserEventHandler::set_isomeric_level(TreeNode* node){
 
 void GoslinParserEventHandler::add_db_position(TreeNode* node){
     if (current_fa != NULL){
-       current_fa->double_bond_positions.insert({db_position, db_cistrans});
+        current_fa->double_bond_positions.insert({db_position, db_cistrans});
     }
 }
 
