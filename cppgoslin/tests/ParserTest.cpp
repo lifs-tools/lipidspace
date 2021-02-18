@@ -219,6 +219,51 @@ int main(int argc, char** argv){
     
     
     
+    lipid_name = "PC O-16:1/12:0";
+    lipid = lipid_parser.parse(lipid_name);
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "PC O-16:1/12:0");
+    try {
+        cout << lipid->get_mass() << endl;
+        assert (false);
+    }
+    catch(LipidException &e){ }
+    delete lipid;
+    
+    
+    lipid_name = "LPC O-16:1";
+    lipid = lipid_parser.parse(lipid_name);
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "LPC O-16:1");
+    try {
+        cout << lipid->get_sum_formula() << endl;
+        assert (false);
+    }
+    catch(LipidException &e){ }
+    delete lipid;
+    
+    
+    lipid_name = "LPC O-16:1a";
+    lipid = lipid_parser.parse(lipid_name);
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "LPC O-16:1a");
+    delete lipid;
+    
+    
+    lipid_name = "LPE O-16:4p";
+    lipid = lipid_parser.parse(lipid_name);
+    assert (lipid);
+    assert (lipid->get_lipid_string() == "LPE O-16:4p");
+    delete lipid;
+    
+    
+    lipid_name = "LPE O-16:2p";
+    lipid = lipid_parser.parse(lipid_name);
+    assert (lipid);
+    assert (lipid->get_lipid_string(CLASS) == "LPE");
+    delete lipid;
+    
+    
     lipid_name = "fail";
     try {
         lipid = lipid_parser.parse(lipid_name);

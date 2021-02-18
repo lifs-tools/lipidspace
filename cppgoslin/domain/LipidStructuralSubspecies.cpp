@@ -25,6 +25,9 @@ SOFTWARE.
 
 
 #include "LipidStructuralSubspecies.h"
+#include <iostream>
+
+using namespace std;
 
 LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group) : LipidMolecularSubspecies (head_group) {
     info.level = STRUCTURAL_SUBSPECIES;
@@ -53,10 +56,10 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<F
                 num_carbon += fas->num_carbon;
                 num_hydroxyl += fas->num_hydroxyl;
                 num_double_bonds += fas->num_double_bonds;
-                if (lipid_FA_bond_type == ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL)){
+                if (lipid_FA_bond_type == ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL || fas->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
                     lipid_FA_bond_type = fas->lipid_FA_bond_type;
                 }
-                else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL)){
+                else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL || fas->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
                     stringstream ss;
                     ss << "Only one FA can define an ether bond to the head group! Tried to add " << lipid_FA_bond_type << " over existing " << lipid_FA_bond_type;
                     string error_message;

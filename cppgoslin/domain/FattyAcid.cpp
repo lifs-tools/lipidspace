@@ -106,10 +106,16 @@ string FattyAcid::suffix(LipidFaBondType lipid_FA_bond_type){
 }
 
 
+bool FattyAcid::lipid_FA_bond_type_prefix(LipidFaBondType lipid_FA_bond_type){
+    return (lipid_FA_bond_type == ETHER_PLASMANYL) || (lipid_FA_bond_type == ETHER_PLASMENYL) || (lipid_FA_bond_type == ETHER_UNSPECIFIED); 
+}
+
+
+
 string FattyAcid::to_string(bool special_case){
     stringstream s;
     string lipid_suffix = suffix(lipid_FA_bond_type);
-    if (special_case && lipid_suffix.length() > 0) s << "O-";
+    if (special_case && lipid_FA_bond_type_prefix(lipid_FA_bond_type)) s << "O-";
     s << num_carbon << ":" << num_double_bonds;
     
     if (double_bond_positions.size() > 0 && num_double_bonds != (int)double_bond_positions.size()) {

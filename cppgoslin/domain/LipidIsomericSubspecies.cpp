@@ -52,11 +52,11 @@ LipidIsomericSubspecies::LipidIsomericSubspecies(string _head_group, vector<Fatt
                 num_hydroxyl += fas->num_hydroxyl;
                 num_double_bonds += fas->num_double_bonds;
                 
-                if (lipid_FA_bond_type == ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL)){
+                if (lipid_FA_bond_type == ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL || fas->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
                     lipid_FA_bond_type = fas->lipid_FA_bond_type;
                 }
                     
-                else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL)){
+                else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL || fas->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
                     throw ConstraintViolationException("Only one FA can define an ether bond to the head group! Tried to add " + to_string(fas->lipid_FA_bond_type) + " over existing " + to_string(lipid_FA_bond_type));
                 }
             }

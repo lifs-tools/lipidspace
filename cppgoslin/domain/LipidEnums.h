@@ -92,7 +92,7 @@ enum LipidClass {NO_CLASS, UNDEFINED_CLASS, AA, AC2SGL, AC_O_9_GD1A, AC_O_9_GT1B
 
 
 typedef map<LipidClass, LipidClassMeta> ClassMap;
-enum LipidFaBondType { NO_FA, UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL};
+enum LipidFaBondType { NO_FA, UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL, ETHER_UNSPECIFIED};
 
 
 class LipidClasses {

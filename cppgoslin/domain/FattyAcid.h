@@ -54,5 +54,6 @@ public:
     string to_string(bool special_case = false);
     ElementTable* get_elements();
     static string suffix(LipidFaBondType _lipid_FA_bond_type);
+    static bool lipid_FA_bond_type_prefix(LipidFaBondType lipid_FA_bond_type);
 };
 #endif /* FATTY_ACID_H */

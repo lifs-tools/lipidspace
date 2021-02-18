@@ -86,6 +86,9 @@ GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<Li
     reg("adduct_pre_event", add_adduct);
     reg("charge_pre_event", add_charge);
     reg("charge_sign_pre_event", add_charge_sign);
+    
+    reg("hg_lpl_oc_pre_event", set_unspecified_ether);
+    reg("hg_pl_oc_pre_event", set_unspecified_ether);
 }
 
 
@@ -104,9 +107,13 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
     adduct = NULL;
     db_position = 0;
     db_cistrans = "";
+    unspecified_ether = false;
 }
 
 
+void GoslinParserEventHandler::set_unspecified_ether(TreeNode *node) {
+    unspecified_ether = true;
+}
 
 void GoslinParserEventHandler::set_head_group_name(TreeNode *node) {
     head_group = node->get_text();
@@ -149,7 +156,12 @@ void GoslinParserEventHandler::set_molecular_subspecies_level(TreeNode *node) {
     
     
 void GoslinParserEventHandler::new_fa(TreeNode *node) {
-    current_fa = new FattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, 0, NULL);
+    LipidFaBondType lipid_FA_bond_type = ESTER;
+    if (unspecified_ether){
+        unspecified_ether = false;
+        lipid_FA_bond_type = ETHER_UNSPECIFIED;
+    }
+    current_fa = new FattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, lipid_FA_bond_type, false, 0, NULL);
 }
     
     
