@@ -71,7 +71,8 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
             st << (!use_head_group ? get_class_string(lipid_class) : head_group);
             
             if (info.num_carbon > 0){
-                bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
+                // bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
+                bool special_case = lipid_category == GP;
                 st << ((lipid_category !=  ST) ? " " : "/");
                 st << info.to_string(special_case);
             }

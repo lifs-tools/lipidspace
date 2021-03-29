@@ -81,7 +81,8 @@ using namespace std;
 string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator, LipidLevel level){
     stringstream s;
     s << (!use_head_group ? get_class_string(lipid_class) : head_group);
-    bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
+    // bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
+    bool special_case = lipid_category == GP;
     
     if (fa_list.size() > 0){
         s << ((lipid_category !=  ST) ? " " : "/");
