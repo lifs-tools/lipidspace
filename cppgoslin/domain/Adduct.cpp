@@ -39,7 +39,7 @@ Adduct::Adduct(string _sum_formula, string _adduct_string, int _charge, int _sig
 
 
 void Adduct::set_charge_sign(int sign){
-    if (sign != -1 || sign != 0 || sign != 1){
+    if (-1 <= sign && sign <= 1){
         charge_sign = sign;
     }
         

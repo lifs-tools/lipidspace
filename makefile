@@ -11,7 +11,7 @@ parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgos
 obj = ${domain} ${parser}
 
 
-opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
+opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wlogical-op
 
 
 main: ${bin}
