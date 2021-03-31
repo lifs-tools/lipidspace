@@ -15,7 +15,8 @@ jobs:
       matrix:
         config:
         - { name: "Ubuntu Latest GCC", artifact: "Linux.tar.xz", os: ubuntu-latest, build_type: "Release", cc: "gcc", cxx: "g++" }
-        - { name: "macOS Latest Clang", artifact: "macOS.tar.xz", os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++" }
+          #        - { name: "macOS Latest Clang", artifact: "macOS.tar.xz", os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++" }
+        - { name: "Ubuntu Latest Clang", artifact: "Linux-clang.tar.xz", os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++" }
     steps:
     - uses: actions/checkout@v2
     - name: make
