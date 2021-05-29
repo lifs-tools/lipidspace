@@ -1,5 +1,6 @@
 install_dir = /usr
 CC = g++ -std=c++11
+#CC = clang++-10
 AR = ar
 MARCH = -mtune=native
 bin = libcppGoslin.so
@@ -11,7 +12,7 @@ parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgos
 obj = ${domain} ${parser}
 
 
-opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wlogical-op
+opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
 
 
 main: ${bin}
@@ -33,7 +34,7 @@ cppgoslin/domain/LipidClasses.cpp: data/goslin/lipid-list.csv cppgoslin/parser/K
 
 	
 %.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp
-	${CC} ${opt} -I. -Wall -fPIC -o $@ -c $<
+	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
