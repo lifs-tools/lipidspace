@@ -104,6 +104,9 @@ void writeGrammarHeader(string ofFileName){
     offile << "using namespace std;" << endl;
 
     
+    addingGrammar(offile, "shorthand_grammar", "data/goslin/Shorthand2020.g4");
+    offile << endl << endl << endl;
+    
     addingGrammar(offile, "goslin_grammar", "data/goslin/Goslin.g4");
     offile << endl << endl << endl;
     
@@ -120,6 +123,12 @@ void writeGrammarHeader(string ofFileName){
     offile << endl << endl << endl;
     
     addingGrammar(offile, "sum_formula_grammar", "data/goslin/SumFormula.g4");
+    offile << endl << endl << endl;
+    
+    addingGrammar(offile, "fatty_acid_grammar", "data/goslin/SumFormula.g4");
+    offile << endl << endl << endl;
+    
+    addingGrammar(offile, "systematic_grammar", "data/goslin/SumFormula.g4");
     offile << endl << endl << endl;
     
     offile << "#endif /* KNOWN_GRAMMARS_H */" << endl;

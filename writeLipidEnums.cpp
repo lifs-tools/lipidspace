@@ -48,7 +48,7 @@ void writeLipidEnum(string ofFileName){
     
     string line;
     unsigned int i = 0;
-    int SYNONYM_START_INDEX = 6;
+    int SYNONYM_START_INDEX = 7;
     map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"PK", 1}, {"SL", 1}, {"UNDEFINED", 1}};
     
     map<string, vector<string>*> data;
@@ -125,7 +125,7 @@ void writeLipidEnum(string ofFileName){
     Parser<ElementTable*> parser(&sum_formula_handler, "data/goslin/SumFormula.g4", DEFAULT_QUOTE);
     
     
-    map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}};
+    map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}, {ELEMENT_F, "ELEMENT_F"}, {ELEMENT_Cl, "ELEMENT_Cl"}, {ELEMENT_Br, "ELEMENT_Br"}, {ELEMENT_I, "ELEMENT_I"}, {ELEMENT_As, "ELEMENT_As"}};
     
     
     offile << "/* DO NOT CHANGE THE FILE, IT IS AUTOMATICALLY GENERATED */" << endl << endl;
@@ -165,28 +165,31 @@ void writeLipidEnum(string ofFileName){
     offile << "    lipid_classes = {" << endl;
     unsigned int cnt = 0;
     for (auto& kv : data){
+        // add lipid category, description, max num fa, possible num fa
         offile << "    {" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
-        offile << kv.second->at(3) << ", {";
+        offile << kv.second->at(3) << ", " << kv.second->at(4) << ", {";
         
-        vector<string>* tokens = split_string(kv.second->at(4), '|', '"');
+        vector<string>* tokens = split_string(kv.second->at(5), '|', '"');
         for (unsigned int i = 0; i < tokens->size(); ++i){
             string tok = strip(tokens->at(i), ' ');
             if (i > 0) offile << ", ";
-            offile << tok;
+            offile << "\"" << tok << "\"";
         }
         delete tokens;
         offile << "}, {";
         
-        ElementTable* table = kv.second->at(5).length() > 0 ? parser.parse(kv.second->at(5)) : create_empty_table();
         
+        
+        // add element table
+        ElementTable* table = kv.second->at(6).length() > 0 ? parser.parse(kv.second->at(6)) : create_empty_table();
         int ii = 0;
         for (auto& table_kv : *table){
             if (ii++ > 0) offile << ", ";
             offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
         }
-        
         delete table;
-            
+         
+        // add synonyms
         offile << "}, {\"" << kv.second->at(0) << "\"";
         for (unsigned int i = SYNONYM_START_INDEX; i < kv.second->size(); ++i){
             string synonym = kv.second->at(i);

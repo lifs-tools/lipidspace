@@ -82,7 +82,8 @@ struct LipidClassMeta {
     LipidCategory lipid_category;
     string class_name;
     int max_num_fa;
-    set<int> possible_num_fa;
+    int possible_num_fa;
+    set<string> special_cases;
     ElementTable elements;
     vector<string> synonyms;
 };
