@@ -125,10 +125,10 @@ void writeGrammarHeader(string ofFileName){
     addingGrammar(offile, "sum_formula_grammar", "data/goslin/SumFormula.g4");
     offile << endl << endl << endl;
     
-    addingGrammar(offile, "fatty_acid_grammar", "data/goslin/SumFormula.g4");
+    addingGrammar(offile, "fatty_acid_grammar", "data/goslin/FattyAcids.g4");
     offile << endl << endl << endl;
     
-    addingGrammar(offile, "systematic_grammar", "data/goslin/SumFormula.g4");
+    addingGrammar(offile, "systematic_grammar", "data/goslin/Systematic.g4");
     offile << endl << endl << endl;
     
     offile << "#endif /* KNOWN_GRAMMARS_H */" << endl;

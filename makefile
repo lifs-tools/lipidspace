@@ -5,7 +5,7 @@ AR = ar
 MARCH = -mtune=native
 bin = libcppGoslin.so
 abin = libcppGoslin.a
-domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StringFunctions.o cppgoslin/domain/LipidClasses.o
+domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StringFunctions.o cppgoslin/domain/LipidClasses.o cppgoslin/domain/DoubleBonds.o cppgoslin/domain/FunctionalGroup.o
 
 parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinFragmentParserEventHandler.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o cppgoslin/parser/SwissLipidsParserEventHandler.o cppgoslin/parser/HmdbParserEventHandler.o cppgoslin/parser/SumFormulaParserEventHandler.o cppgoslin/parser/SumFormulaParser.o
 
