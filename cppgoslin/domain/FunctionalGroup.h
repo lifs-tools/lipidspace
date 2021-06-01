@@ -11,6 +11,12 @@
 using namespace std;
 using namespace goslin;
 
+
+#define contains(X, Y) ((X).find(Y) != (X).end())
+#define contains_p(X, Y) ((X)->find(Y) != (X)->end())
+#define uncontains(X, Y) ((X).find(Y) == (X).end())
+#define uncontains_p(X, Y) ((X)->find(Y) == (X)->end())
+
 class FunctionalGroup {
 public:
     string name;
@@ -24,8 +30,8 @@ public:
     map<string, vector<FunctionalGroup*>>* functionalGroups;
     
     FunctionalGroup(string _name, int _position = -1, int _count = 1, DoubleBonds* _doubleBonds = 0, bool _is_atomic = false, string _stereochemistry = "", ElementTable* _elements = 0, map<string, vector<FunctionalGroup*>>* _functionalGroups = 0);
+    FunctionalGroup(FunctionalGroup* fg);
     ~FunctionalGroup();
-    FunctionalGroup* copy();
     ElementTable* getElements();
     void shiftPositions(int shift);
     ElementTable* getFunctionalGroupElements();
@@ -35,42 +41,20 @@ public:
     void add(FunctionalGroup* fg);
 };
 
+
+class HeadgroupDecorator : public FunctionalGroup {
+public:
+    string suffix;
+    LipidLevel lowestVisibleLevel;
+    
+    HeadgroupDecorator(string _name, int _position = -1, int _count = -1, ElementTable* _elements = 0, bool _suffix = false, LipidLevel _level = NO_LEVEL); 
+    HeadgroupDecorator(HeadgroupDecorator* hgd);
+    string toString(LipidLevel level);
+};
+    
+
+
 /*
-class HeadgroupDecorator(FunctionalGroup):
-    def __init__(self, name, position = -1, count = 1, elements = None, suffix = False, level = None):
-        super().__init__(name, position = position, count = count, elements = elements)
-        self.suffix = suffix
-        self.lowest_visible_level = level
-        
-    def copy(self):
-        return HeadgroupDecorator(self.name, position = self.position, count = self.count, elements = self.elements, suffix = self.suffix, level = self.lowest_visible_level)
-        
-        
-        
-        
-    def to_string(self, level):
-        if not self.suffix: return self.name
-    
-        decorator_string = ""
-        if self.lowest_visible_level == None or self.lowest_visible_level.value <= level.value:
-            
-            if "decorator_alkyl" in self.functionalGroups and len(self.functionalGroups["decorator_alkyl"]) > 0:
-                decorator_string = self.functionalGroups["decorator_alkyl"][0].to_string(level) if level != LipidLevel.SPECIES else "Alk"
-                
-            elif "decorator_acyl" in self.functionalGroups and len(self.functionalGroups["decorator_acyl"]) > 0:
-                decorator_string = "FA %s" % self.functionalGroups["decorator_acyl"][0].to_string(level) if level != LipidLevel.SPECIES else "FA"
-                
-            else:
-                decorator_string = self.name
-                
-            decorator_string = "(%s)" % decorator_string
-            
-        return decorator_string
-    
-    
-
-
-
     
 class AcylAlkylGroup(FunctionalGroup):
     def __init__(self, fa, position = -1, count = 1, alkyl = False, N_bond = False):

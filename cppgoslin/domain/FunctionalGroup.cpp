@@ -13,6 +13,24 @@ FunctionalGroup::FunctionalGroup(string _name, int _position, int _count, Double
 }
 
 
+
+FunctionalGroup::FunctionalGroup(FunctionalGroup* fg){
+    name = fg->name;
+    position = fg->position;
+    count = fg->count;
+    stereochemistry = fg->stereochemistry;
+    ringStereo = fg->ringStereo;
+    doubleBonds = new DoubleBonds(fg->doubleBonds);
+    
+    for (auto &kv : *(fg->elements)) elements->at(kv.first) = kv.second;
+    for (auto &kv : *(fg->functionalGroups)){
+        functionalGroups->insert({kv.first, vector<FunctionalGroup*>()});
+        for (auto fg : kv.second) functionalGroups->at(kv.first).push_back(new FunctionalGroup(fg));
+    }
+}
+
+
+
 FunctionalGroup::~FunctionalGroup(){
     delete doubleBonds;
     delete elements;
@@ -22,20 +40,6 @@ FunctionalGroup::~FunctionalGroup(){
         }
     }
     delete functionalGroups;
-}
-
-
-FunctionalGroup* FunctionalGroup::copy(){
-    DoubleBonds* db = new DoubleBonds(doubleBonds);
-    FunctionalGroup* fg = new FunctionalGroup(name, position, count, db, is_atomic, stereochemistry);
-    fg->ringStereo = ringStereo;
-    
-    for (auto &kv : *elements) fg->elements->at(kv.first) = kv.second;
-    for (auto &kv : *functionalGroups){
-        fg->functionalGroups->insert({kv.first, vector<FunctionalGroup*>()});
-        for (auto fg : kv.second) fg->functionalGroups->at(kv.first).push_back(fg->copy());
-    }
-    return fg;
 }
 
 
@@ -128,4 +132,38 @@ void FunctionalGroup::add(FunctionalGroup* fg){
         elements->at(kv.first) += kv.second * fg->count;
     }
 }
-    
+
+
+
+HeadgroupDecorator::HeadgroupDecorator(string _name, int _position, int _count, ElementTable* _elements, bool _suffix, LipidLevel _level) : FunctionalGroup(_name, _position, _count, 0, false, "", _elements){
+    suffix = _suffix;
+    lowestVisibleLevel = _level;
+}
+        
+        
+HeadgroupDecorator::HeadgroupDecorator(HeadgroupDecorator* hgd) : FunctionalGroup(hgd){
+    suffix = hgd->suffix;
+    lowestVisibleLevel = hgd->lowestVisibleLevel;    
+}
+
+
+string HeadgroupDecorator::toString(LipidLevel level){
+    if (suffix.length() == 0) return name;
+
+    string decoratorString = "";
+    if (lowestVisibleLevel == NO_LEVEL || lowestVisibleLevel <= level){
+        
+        if (contains_p(functionalGroups, "decorator_alkyl") && functionalGroups->at("decorator_alkyl").size() > 0){
+            decoratorString = (level != SPECIES) ? functionalGroups->at("decorator_alkyl").at(0)->toString(level) : "Alk";
+        }
+        else if (contains_p(functionalGroups, "decorator_acyl") && functionalGroups->at("decorator_acyl").size() > 0){
+            decoratorString = (level != SPECIES) ? ("FA " + functionalGroups->at("decorator_acyl").at(0)->toString(level)) : "FA";
+        }
+        else {
+            decoratorString = name;
+        }
+        decoratorString = "(" + decoratorString + ")";
+    }
+        
+    return decoratorString;
+}
