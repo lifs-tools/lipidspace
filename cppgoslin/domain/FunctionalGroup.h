@@ -29,6 +29,8 @@ public:
     ElementTable* elements;
     map<string, vector<FunctionalGroup*>>* functionalGroups;
     
+    
+    
     FunctionalGroup(string _name, int _position = -1, int _count = 1, DoubleBonds* _doubleBonds = 0, bool _is_atomic = false, string _stereochemistry = "", ElementTable* _elements = 0, map<string, vector<FunctionalGroup*>>* _functionalGroups = 0);
     FunctionalGroup(FunctionalGroup* fg);
     ~FunctionalGroup();
@@ -47,89 +49,30 @@ public:
     string suffix;
     LipidLevel lowestVisibleLevel;
     
-    HeadgroupDecorator(string _name, int _position = -1, int _count = -1, ElementTable* _elements = 0, bool _suffix = false, LipidLevel _level = NO_LEVEL); 
+    HeadgroupDecorator(string _name, int _position = -1, int _count = 1, ElementTable* _elements = 0, bool _suffix = false, LipidLevel _level = NO_LEVEL); 
     HeadgroupDecorator(HeadgroupDecorator* hgd);
     string toString(LipidLevel level);
 };
+
+
+class KnownFunctionalGroups {
+    public:
+        static KnownFunctionalGroups& get_instance()
+        {
+            static KnownFunctionalGroups instance;
+            return instance;
+        }
+    private:
+        KnownFunctionalGroups();
+        
+    public:
+        map<string, FunctionalGroup*> knownFunctionalGroups;
+        KnownFunctionalGroups(KnownFunctionalGroups const&) = delete;
+        void operator=(KnownFunctionalGroups const&) = delete;
+};
     
-
-
+    
 /*
-    
-class AcylAlkylGroup(FunctionalGroup):
-    def __init__(self, fa, position = -1, count = 1, alkyl = False, N_bond = False):
-        
-        super().__init__("O", position = position, count = count)
-        self.alkyl = alkyl
-        if fa != None: self.functionalGroups["alkyl" if self.alkyl else "acyl"] = [fa]
-        self.double_bonds = int(not self.alkyl)
-        self.set_N_bond_type(N_bond)
-        
-        if self.N_bond:
-            self.elements[Element.H] = 2 if self.alkyl else 0
-            self.elements[Element.O] = -1 if self.alkyl else 0
-            self.elements[Element.N] = 1
-            
-        else:
-            self.elements[Element.H] = 1 if self.alkyl else -1
-            self.elements[Element.O] = 0 if self.alkyl else 1
-        
-        
-    def copy(self):
-        return AcylAlkylGroup(self.functionalGroups["alkyl" if self.alkyl else "acyl"][0].copy(), alkyl = self.alkyl, position = self.position, count = self.count, N_bond = self.N_bond)
-        
-        
-        
-    def set_N_bond_type(self, N_bond):
-        self.N_bond = N_bond
-        
-        if self.N_bond:
-            self.elements[Element.H] = 2 if self.alkyl else 0
-            self.elements[Element.O] = -1 if self.alkyl else 0
-            self.elements[Element.N] = 1
-            
-        else:
-            self.elements[Element.H] = 1 if self.alkyl else -1
-            self.elements[Element.O] = 0 if self.alkyl else 1
-        
-        
-
-    def to_string(self, level):
-        acyl_alkyl_string = []
-        if level == LipidLevel.ISOMERIC_SUBSPECIES: acyl_alkyl_string.append("%i" % self.position)
-        acyl_alkyl_string.append("%s(" % ("N" if self.N_bond else "O"))
-        if not self.alkyl: acyl_alkyl_string.append("FA ")
-        fa = self.functionalGroups["alkyl" if self.alkyl else "acyl"][0]
-        acyl_alkyl_string.append(fa.to_string(level))
-        acyl_alkyl_string.append(")")
-        
-        return "".join(acyl_alkyl_string)
-    
-    
-
-
-
-    
-class CarbonChain(FunctionalGroup):
-    def __init__(self, fa, position = -1, count = 1):
-        super().__init__("cc", position = position, count = count)
-        if fa != None: self.functionalGroups["cc"] = [fa]
-        
-        self.elements[Element.H] = 1
-        self.elements[Element.O] = -1
-        
-        
-    def copy(self):
-        return CarbonChain(self.functionalGroups["cc"][0].copy(), position = self.position, count = self.count)
-        
-        
-
-    def to_string(self, level):
-        return "%s(%s)" % ((str(self.position) if level == LipidLevel.ISOMERIC_SUBSPECIES else ""), self.functionalGroups["cc"][0].to_string(level))
-    
-    
-    
-    
     
 _known_functionalGroups = {"OH": FunctionalGroup("OH", elements = {Element.O: 1}), # hydroxyl
                            "Me": FunctionalGroup("Me", elements = {Element.C: 1, Element.H: 2}), # methyl

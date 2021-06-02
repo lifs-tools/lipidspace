@@ -46,12 +46,19 @@ void writeLipidEnum(string ofFileName){
         exit(-1);
     }
     
+    ifstream functional_file("data/goslin/functional-groups.csv");
+    if (!functional_file.good()){
+        cout << "Error: file 'data/goslin/lipid-list.csv' not found." << endl;
+        exit(-1);
+    }
+    
     string line;
     unsigned int i = 0;
     int SYNONYM_START_INDEX = 7;
     map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"PK", 1}, {"SL", 1}, {"UNDEFINED", 1}};
     
     map<string, vector<string>*> data;
+    vector< vector<string>*> functional_data;
     set<string> keys;
     while (getline(infile, line)){
         if (i++ == 0) continue;
@@ -124,6 +131,17 @@ void writeLipidEnum(string ofFileName){
     SumFormulaParserEventHandler sum_formula_handler;
     Parser<ElementTable*> parser(&sum_formula_handler, "data/goslin/SumFormula.g4", DEFAULT_QUOTE);
     
+    while (getline(functional_file, line)){
+        if (i++ == 0) continue;
+        functional_data.push_back(split_string(line, ',', '"', true));
+    }
+        
+    
+    
+    ofstream enums("cppgoslin/domain/ClassesEnum.h");
+    enums << "enum LipidClass {NO_CLASS, UNDEFINED_CLASS";
+    
+    
     
     map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}, {ELEMENT_F, "ELEMENT_F"}, {ELEMENT_Cl, "ELEMENT_Cl"}, {ELEMENT_Br, "ELEMENT_Br"}, {ELEMENT_I, "ELEMENT_I"}, {ELEMENT_As, "ELEMENT_As"}};
     
@@ -157,7 +175,9 @@ void writeLipidEnum(string ofFileName){
     offile << "*/" << endl;
     offile << endl;
     offile << "#include \"cppgoslin/domain/LipidEnums.h\"" << endl;
+    offile << "#include \"cppgoslin/domain/FunctionalGroup.h\"" << endl;
     offile << endl;
+    offile << "using namespace std;" << endl;
     offile << "using namespace goslin;" << endl;
     offile << endl;
     offile << endl;
@@ -168,6 +188,7 @@ void writeLipidEnum(string ofFileName){
         // add lipid category, description, max num fa, possible num fa
         offile << "    {" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
         offile << kv.second->at(3) << ", " << kv.second->at(4) << ", {";
+        enums << ", " << kv.first;
         
         vector<string>* tokens = split_string(kv.second->at(5), '|', '"');
         for (unsigned int i = 0; i < tokens->size(); ++i){
@@ -198,11 +219,53 @@ void writeLipidEnum(string ofFileName){
         }
         offile << "} } }" << (++cnt < data.size() ? ",\n" : "\n") << endl;
     }
+    
+    enums << "};" << endl;
 
     
     offile << "    };" << endl; 
     offile << "}" << endl; 
     offile << endl;
+    offile << endl;
+    offile << endl;
+    offile << endl;
+    
+    
+    offile << "KnownFunctionalGroups::KnownFunctionalGroups(){" << endl;
+    offile << "    knownFunctionalGroups = {" << endl;
+    
+    cnt = 0;
+    for (auto &row : functional_data){
+        if (cnt++ == 0) continue;
+        
+        offile << "        {\"" << row->at(0) << "\", new FunctionalGroup(\"" << row->at(0) << "\", -1, 1, new DoubleBonds(" << row->at(2) << "), " << row->at(3) << ", \"\", new ElementTable{";
+        
+        // add element table
+        ElementTable* table = row->at(1).length() > 0 ? parser.parse(row->at(1)) : create_empty_table();
+        int ii = 0;
+        for (auto& table_kv : *table){
+            if (ii++ > 0) offile << ", ";
+            offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+        }
+        delete table;
+        offile << "})}";
+        
+        if (cnt < functional_data.size()) offile << ",";
+        if (row->size() > 4) offile << " // " << row->at(4);
+        offile << "\n\n";
+        
+        
+        
+        
+        
+    //{"OH2", new FunctionalGroup("OH", -1, 1, 0, false, "", new ElementTable{{ELEMENT_C, 0}, {ELEMENT_C13, 0}, {ELEMENT_H, 0}, {ELEMENT_H2, 0}, {ELEMENT_N, 0}, {ELEMENT_N15, 0}, {ELEMENT_O, 0}, {ELEMENT_O17, 0}, {ELEMENT_O18, 0}, {ELEMENT_P, 0}, {ELEMENT_P32, 0}, {ELEMENT_S, 0}, {ELEMENT_S34, 0}, {ELEMENT_S33, 0}, {ELEMENT_F, 0}, {ELEMENT_Cl, 0}, {ELEMENT_Br, 0}, {ELEMENT_I, 0}, {ELEMENT_As, 0}})} // hydroxyl
+    }
+    offile << "    };" << endl;
+    offile << "}" << endl;
+    offile << endl;
+    
+    
+    for (auto &f : functional_data) delete f;
 }
 
 

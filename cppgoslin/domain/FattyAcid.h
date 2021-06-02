@@ -31,12 +31,13 @@ SOFTWARE.
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidEnums.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
 #include <sstream>
 
 using namespace std;
 using namespace goslin;
 
-class FattyAcid {
+class FattyAcid : public FunctionalGroup {
 public:
     string name;
     int position;
@@ -56,4 +57,30 @@ public:
     static string suffix(LipidFaBondType _lipid_FA_bond_type);
     static bool lipid_FA_bond_type_prefix(LipidFaBondType lipid_FA_bond_type);
 };
+
+
+    
+
+
+class AcylAlkylGroup : public FunctionalGroup {
+public:
+    bool alkyl;
+    bool NBond;
+    
+    
+    AcylAlkylGroup(FattyAcid* _fa, int _position = -1, int count = 1, bool _alkyl = false, bool _NBond = false);
+    AcylAlkylGroup(AcylAlkylGroup* aag);
+    void setNBondType(bool NBond);
+    string toString(LipidLevel level);
+};
+    
+
+    
+class CarbonChain : public FunctionalGroup {
+public:
+    CarbonChain(FattyAcid* _fa, int _position = -1, int _count = 1);
+    CarbonChain(CarbonChain* cc);
+    string toString(LipidLevel level);
+};
+
 #endif /* FATTY_ACID_H */

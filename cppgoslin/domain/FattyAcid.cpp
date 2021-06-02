@@ -26,7 +26,7 @@ SOFTWARE.
 
 #include "FattyAcid.h"
 
-FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_double_bonds, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position, map<int, string> *_double_bond_positions){
+FattyAcid::FattyAcid(string _name, int _num_carbon, int _num_double_bonds, int _num_hydroxyl, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position, map<int, string> *_double_bond_positions) : FunctionalGroup(_name) {
     name = _name;
     position = _position;
     num_carbon = _num_carbon;
@@ -177,4 +177,72 @@ ElementTable* FattyAcid::get_elements(){
     }
     
     return table;
+}
+
+
+
+
+AcylAlkylGroup::AcylAlkylGroup(FattyAcid* _fa, int _position = -1, int _count = -1, bool _alkyl = false, bool _NBond = false) : FunctionalGroup("O", _position, _count){
+    alkyl = _alkyl;
+    if (_fa != 0){
+        functionalGroups->insert({alkyl ? "alkyl" : "acyl", vector<FunctionalGroup*> {_fa} });
+    }
+    doubleBonds->numDoubleBonds = int(!alkyl);
+    setNBondType(NBond);
+    
+}
+
+
+AcylAlkylGroup::AcylAlkylGroup(AcylAlkylGroup* aag) : FunctionalGroup(aag){
+    alkyl = aag->alkyl;
+    setNBondType(aag->NBond);
+}
+
+
+void AcylAlkylGroup::setNBondType(bool _NBond){
+    NBond = _NBond;
+        
+    if (NBond){
+        elements->at(ELEMENT_H) = alkyl ? 2 : 0;
+        elements->at(ELEMENT_O) = alkyl ? -1 : 0;
+        elements->at(ELEMENT_N) = 1;
+    }
+    else {
+        elements->at(ELEMENT_H) = alkyl ? 1 : -1;
+        elements->at(ELEMENT_O) = alkyl ? 0 : 1;
+    }
+}
+
+
+string AcylAlkylGroup::toString(LipidLevel level){
+    stringstream acylAlkylString;
+    if (level == ISOMERIC_SUBSPECIES) acylAlkylString << position;
+    acylAlkylString << (NBond ? "N" : "O") << "(";
+    if (!alkyl) acylAlkylString << "FA ";
+    acylAlkylString << functionalGroups->at(alkyl ? "alkyl" :"acyl").front()->toString(level) << ")";
+    
+    return acylAlkylString.str();
+}
+
+
+
+
+CarbonChain::CarbonChain(FunctionalGroup* _fa, int _position, int _count) : FunctionalGroup("cc", _position, _count){
+    if (_fa != 0){
+        functionalGroups->insert({"cc", vector<FunctionalGroup*> {_fa}});
+    }
+    
+    elements->at(ELEMENT_H) = 1;
+    elements->at(ELEMENT_O) = -1;
+}
+
+
+CarbonChain::CarbonChain(CarbonChain* cc) : FunctionalGroup(cc){
+    elements->at(ELEMENT_H) = 1;
+    elements->at(ELEMENT_O) = -1;
+}
+
+
+string CarbonChain::toString(LipidLevel level){
+    return (level == ISOMERIC_SUBSPECIES ? std::to_string(position) : "") + "(" + functionalGroups->at("cc").front()->toString(level) + ")";
 }

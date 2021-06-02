@@ -167,3 +167,10 @@ string HeadgroupDecorator::toString(LipidLevel level){
         
     return decoratorString;
 }
+
+
+KnownFunctionalGroups::KnownFunctionalGroups(){
+    knownFunctionalGroups = {
+        {"OH2", new FunctionalGroup("OH", -1, 1, 0, false, "", new ElementTable{{ELEMENT_C, 0}, {ELEMENT_C13, 0}, {ELEMENT_H, 0}, {ELEMENT_H2, 0}, {ELEMENT_N, 0}, {ELEMENT_N15, 0}, {ELEMENT_O, 0}, {ELEMENT_O17, 0}, {ELEMENT_O18, 0}, {ELEMENT_P, 0}, {ELEMENT_P32, 0}, {ELEMENT_S, 0}, {ELEMENT_S34, 0}, {ELEMENT_S33, 0}, {ELEMENT_F, 0}, {ELEMENT_Cl, 0}, {ELEMENT_Br, 0}, {ELEMENT_I, 0}, {ELEMENT_As, 0}})} // hydroxyl
+    };
+}
