@@ -135,10 +135,23 @@ void FunctionalGroup::add(FunctionalGroup* fg){
 
 
 
+FunctionalGroup* FunctionalGroup::getFunctionalGroup(string fgName){
+    map<string, FunctionalGroup*>& knownFunctionalGroups = KnownFunctionalGroups::get_instance().knownFunctionalGroups;
+    if(contains(knownFunctionalGroups, fgName)){
+        return knownFunctionalGroups.at(fgName);
+    }
+    throw RuntimeException("Name '" + fgName + "' not registered in functional group list");
+}
+
+
+
+
 HeadgroupDecorator::HeadgroupDecorator(string _name, int _position, int _count, ElementTable* _elements, bool _suffix, LipidLevel _level) : FunctionalGroup(_name, _position, _count, 0, false, "", _elements){
     suffix = _suffix;
     lowestVisibleLevel = _level;
 }
+
+
         
         
 HeadgroupDecorator::HeadgroupDecorator(HeadgroupDecorator* hgd) : FunctionalGroup(hgd){
@@ -148,7 +161,7 @@ HeadgroupDecorator::HeadgroupDecorator(HeadgroupDecorator* hgd) : FunctionalGrou
 
 
 string HeadgroupDecorator::toString(LipidLevel level){
-    if (suffix.length() == 0) return name;
+    if (!suffix) return name;
 
     string decoratorString = "";
     if (lowestVisibleLevel == NO_LEVEL || lowestVisibleLevel <= level){
@@ -166,11 +179,4 @@ string HeadgroupDecorator::toString(LipidLevel level){
     }
         
     return decoratorString;
-}
-
-
-KnownFunctionalGroups::KnownFunctionalGroups(){
-    knownFunctionalGroups = {
-        {"OH2", new FunctionalGroup("OH", -1, 1, 0, false, "", new ElementTable{{ELEMENT_C, 0}, {ELEMENT_C13, 0}, {ELEMENT_H, 0}, {ELEMENT_H2, 0}, {ELEMENT_N, 0}, {ELEMENT_N15, 0}, {ELEMENT_O, 0}, {ELEMENT_O17, 0}, {ELEMENT_O18, 0}, {ELEMENT_P, 0}, {ELEMENT_P32, 0}, {ELEMENT_S, 0}, {ELEMENT_S34, 0}, {ELEMENT_S33, 0}, {ELEMENT_F, 0}, {ELEMENT_Cl, 0}, {ELEMENT_Br, 0}, {ELEMENT_I, 0}, {ELEMENT_As, 0}})} // hydroxyl
-    };
 }

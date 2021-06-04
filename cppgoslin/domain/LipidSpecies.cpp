@@ -82,61 +82,9 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
     return "";
 }
 
-LipidCategory LipidSpecies::get_category(string _head_group){
-    if (!StringCategory.size()){
-        for (const auto& kvp : LipidClasses::get_instance().lipid_classes){
-            LipidCategory category = kvp.second.lipid_category;
-            for (auto hg : kvp.second.synonyms){
-                StringCategory.insert(pair<string, LipidCategory>(hg, category));
-            }
-        }
-    }
-    
-    
-    auto cat = StringCategory.find(_head_group);
-    return (cat != StringCategory.end()) ? StringCategory.at(_head_group) : UNDEFINED;
-}
 
 
-LipidLevel LipidSpecies::get_lipid_level(){
-    return SPECIES;
-}
 
-
-LipidClass LipidSpecies::get_class(string _head_group){
-    if (!StringClass.size()){
-        for (auto kvp : LipidClasses::get_instance().lipid_classes){
-            LipidClass l_class = kvp.first;
-            for (auto hg : kvp.second.synonyms){
-                StringClass.insert({hg, l_class});
-            }
-        }
-    }
-    
-    auto cl = StringClass.find(_head_group);
-    return (cl != StringClass.end()) ? cl->second : UNDEFINED_CLASS;
-}
-
-
-string LipidSpecies::get_class_string(LipidClass _lipid_class){
-    if (!ClassString.size()){
-        for (auto kvp : LipidClasses::get_instance().lipid_classes){
-            ClassString.insert({kvp.first, kvp.second.synonyms.at(0)});
-        }
-    }
-    auto cl = ClassString.find(_lipid_class);
-    return (cl != ClassString.end()) ? ClassString.at(_lipid_class) : "UNDEFINED";
-}
-
-
-string LipidSpecies::get_class_name(){
-    return LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name;
-}
-
-
-string LipidSpecies::get_category_string(LipidCategory _lipid_category){
-    return CategoryString.at(_lipid_category);
-}
 
 vector<FattyAcid*> LipidSpecies::get_fa_list(){
     return fa_list;
