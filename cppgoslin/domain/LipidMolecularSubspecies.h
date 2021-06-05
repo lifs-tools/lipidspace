@@ -40,12 +40,12 @@ using namespace goslin;
 
 class LipidMolecularSubspecies : public LipidSpecies {
 public:
-    LipidMolecularSubspecies (string head_group);
-    LipidMolecularSubspecies (string head_group, vector<FattyAcid*> *_fa);
+    LipidMolecularSubspecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa);
     ~LipidMolecularSubspecies();
-    string build_lipid_subspecies_name(string fa_separator, LipidLevel level = NO_LEVEL);
+    string build_lipid_subspecies_name(LipidLevel level = NO_LEVEL);
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     LipidLevel get_lipid_level();
+    ElementTable* get_elements();
     bool validate();
 };
 

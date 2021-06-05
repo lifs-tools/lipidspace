@@ -30,8 +30,8 @@ SOFTWARE.
 using namespace std;
 
 
-LipidStructuralSubspecies::LipidStructuralSubspecies(Headgroup _headgroup, vector<FattyAcid*> *_fa) : LipidMolecularSubspecies (_headgroup, _fa) {
-    info.level = STRUCTURAL_SUBSPECIES;
+LipidStructuralSubspecies::LipidStructuralSubspecies(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidMolecularSubspecies (_headgroup, _fa) {
+    info->level = STRUCTURAL_SUBSPECIES;
 }
 
 

@@ -44,7 +44,7 @@ using namespace goslin;
 class LipidStructuralSubspecies : public LipidMolecularSubspecies {
 public:
     
-    LipidStructuralSubspecies(Headgroup _headgroup, vector<FattyAcid*> *_fa = NULL);
+    LipidStructuralSubspecies(Headgroup* _headgroup, vector<FattyAcid*> *_fa = NULL);
     ~LipidStructuralSubspecies();
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     LipidLevel get_lipid_level();

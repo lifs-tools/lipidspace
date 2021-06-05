@@ -27,7 +27,7 @@ SOFTWARE.
 #include "LipidIsomericSubspecies.h"
 
 LipidIsomericSubspecies::LipidIsomericSubspecies(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidStructuralSubspecies(_headgroup, _fa) {            
-    info.level = ISOMERIC_SUBSPECIES;
+    info->level = ISOMERIC_SUBSPECIES;
 }
 
 LipidIsomericSubspecies::~LipidIsomericSubspecies(){

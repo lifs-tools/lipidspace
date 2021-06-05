@@ -26,74 +26,77 @@ SOFTWARE.
 
 #include "LipidMolecularSubspecies.h"
 
-LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group) : LipidSpecies(_head_group) {
-    info.level = MOLECULAR_SUBSPECIES;
-}
 
-
-LipidMolecularSubspecies::LipidMolecularSubspecies (string _head_group, vector<FattyAcid*> *_fa) : LipidSpecies(_head_group) {
+LipidMolecularSubspecies::LipidMolecularSubspecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidSpecies(_headgroup) {
+    info->level = MOLECULAR_SUBSPECIES;
     
-    int num_carbon = 0;
-    int num_hydroxyl = 0;
-    int num_double_bonds = 0;
-    LipidFaBondType lipid_FA_bond_type = ESTER;
-    if (_fa) {
-        for (unsigned int i = 0; i < _fa->size(); ++i){
-            FattyAcid *fas = new FattyAcid(_fa->at(i));
-            delete _fa->at(i);
-            
-            if (fa.find(fas->name) != fa.end()){
-                throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");
-            }
-            
-            else {
-                fa.insert({fas->name, fas});
-                fa_list.push_back(fas);
-                num_carbon += fas->num_carbon;
-                num_hydroxyl += fas->num_hydroxyl;
-                num_double_bonds += fas->num_double_bonds;
-                
-                if (lipid_FA_bond_type == ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL || fas->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
-                    lipid_FA_bond_type = fas->lipid_FA_bond_type;
-                }
-                
-                else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL || fas->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
-                    throw ConstraintViolationException("Only one FA can define an ether bond to the head group! Tried to add " + to_string(fas->lipid_FA_bond_type) + " over existing " + to_string(lipid_FA_bond_type));
-                }
-            }
+    for (auto fatty_acid : *_fa){
+        if (contains(fa, fatty_acid->name)){
+            throw ConstraintViolationException("FA names must be unique! FA with name " + fatty_acid->name + " was already added!");
         }
+        
+        fa.insert({fatty_acid->name, fatty_acid});
+        fa_list.push_back(fatty_acid);
+        info->add(fatty_acid);
     }
-    info.level = MOLECULAR_SUBSPECIES;
-    info.num_carbon = num_carbon;
-    info.num_hydroxyl = num_hydroxyl;
-    info.num_double_bonds = num_double_bonds;
-    info.lipid_FA_bond_type = lipid_FA_bond_type;
-    
+            
+            
+    // add 0:0 dummys
+    for (int i = (int)_fa->size(); i < info->total_fa; ++i){
+        FattyAcid *fatty_acid = new FattyAcid("FA" + std::to_string(i + _fa->size() + 1));
+        info->add(fatty_acid);
+        fa.insert({fatty_acid->name, fatty_acid});
+        fa_list.push_back(fatty_acid);
+    }
 }
+
 
 LipidMolecularSubspecies::~LipidMolecularSubspecies(){
     
 }
 
-#include <iostream>
-using namespace std;
+string LipidMolecularSubspecies::build_lipid_subspecies_name(LipidLevel level){
+    if (level == NO_LEVEL) level = MOLECULAR_SUBSPECIES;
+    
+    string fa_separator = (level != MOLECULAR_SUBSPECIES || headgroup->lipid_category == SP) ? "/" : "_";
+    stringstream lipid_name;
+    lipid_name << headgroup->get_lipid_string(level);
 
-string LipidMolecularSubspecies::build_lipid_subspecies_name(string fa_separator, LipidLevel level){
-    stringstream s;
-    s << (!use_head_group ? get_class_string(lipid_class) : head_group);
-    // bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
-    bool special_case = lipid_category == GP;
+    string fa_headgroup_separator = (headgroup->lipid_category != ST) ? " " : "/";
     
-    if (fa_list.size() > 0){
-        s << ((lipid_category !=  ST) ? " " : "/");
-        for (unsigned int i = 0; i < fa_list.size(); ++i){
-            if (i > 0) s << fa_separator;
-            FattyAcid *fatty_acid = fa_list.at(i);
-            s << fatty_acid->to_string(special_case);
-        }
+    switch (level){
+        case ISOMERIC_SUBSPECIES:
+        case STRUCTURAL_SUBSPECIES:
+            if (fa_list.size() > 0){
+                lipid_name << fa_headgroup_separator;
+                int i = 0;
+                for (auto fatty_acid : fa_list){
+                    if (i++ > 0) lipid_name << fa_separator;
+                    lipid_name << fatty_acid->to_string(level);
+                }
+            }
+            break;
+            
+        default:
+            bool go_on = false;
+            for (auto fatty_acid : fa_list){
+                if (fatty_acid->num_carbon > 0){
+                    go_on = true;
+                    break;
+                }
+            }
+            
+            if (go_on){
+                lipid_name << fa_headgroup_separator;
+                int i = 0;
+                for (auto fatty_acid : fa_list){
+                    if (i++ > 0) lipid_name << fa_separator;
+                    lipid_name << fatty_acid->to_string(level);
+                }
+            }
+            break;
     }
-    
-    return s.str();
+    return lipid_name.str();
 }
 
 
@@ -102,24 +105,31 @@ LipidLevel LipidMolecularSubspecies::get_lipid_level(){
 }
 
 
+
+ElementTable* LipidMolecularSubspecies::get_elements(){
+    ElementTable* elements = create_empty_table();
+    
+    ElementTable* hg_elements = headgroup->get_elements();
+    for (auto &kv : *hg_elements) elements->at(kv.first) += kv.second;
+    delete hg_elements;
+    
+    // add elements from all fatty acyl chains
+    for (auto fatty_acid : fa_list){
+        ElementTable* fa_elements = fatty_acid->get_elements();
+        for (auto &kv : *fa_elements) elements->at(kv.first) += kv.second;
+        delete fa_elements;
+
+    }
+    
+    return elements;
+}
+
+
 string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
     switch (level){
         case NO_LEVEL:
         case MOLECULAR_SUBSPECIES:
-            if (!validate()){
-                stringstream st;
-                st << "Number of fatty acyl chains for '" << get_class_string(lipid_class);
-                st << "' is incorrect, should be [";
-                int ii = 0;
-                for (auto p : LipidClasses::get_instance().lipid_classes.at(lipid_class).possible_num_fa){
-                    if (ii++ > 0) st << ", ";
-                    st << p;
-                }
-                st << "], present: " << fa.size();
-            
-                throw ConstraintViolationException(st.str());
-            }
-            return build_lipid_subspecies_name("-", level);
+            return build_lipid_subspecies_name(MOLECULAR_SUBSPECIES);
     
         case CATEGORY:
         case CLASS:
@@ -127,28 +137,6 @@ string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
             return LipidSpecies::get_lipid_string(level);
     
         default:
-            stringstream s;
-            s << "LipidMolecularSubspecies does not know how to create a lipid string for level " << level;
-            string error_message;
-            s >> error_message;
-            throw IllegalArgumentException("LipidMolecularSubspecies does not know how to create a lipid string for level " + to_string(level));
+            throw IllegalArgumentException("LipidMolecularSubspecies does not know how to create a lipid string for level " + std::to_string(level));
     }
-}
-
-
-bool LipidMolecularSubspecies::validate(){
-    /*
-    if (use_head_group) return true;
-    if (lipid_classes.find(lipid_class) == lipid_classes.end()) return false;
-    if (lipid_classes.at(lipid_class).max_num_fa == 0) return true;
-    if ((int)fa_list.size() > lipid_classes.at(lipid_class).max_num_fa) return false;
-    if (lipid_classes.at(lipid_class).possible_num_fa.find(fa_list.size()) == lipid_classes.at(lipid_class).possible_num_fa.end()) return false;
-    
-    int num_lcb = 0;
-    for (auto& kv : fa){
-        num_lcb += kv.second->lcb;
-    }
-    if (lipid_category == SP && num_lcb != 1) return false;
-    */
-    return true;
 }
