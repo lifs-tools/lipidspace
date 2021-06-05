@@ -39,6 +39,13 @@ string goslin::compute_sum_formula(ElementTable* elements){
 }
 
 
+string goslin::toLower(string st){
+    string s = string(st);
+    std::transform(s.begin(), s.end(), s.begin(),[](unsigned char c){ return std::tolower(c); });
+    return s;
+}
+
+
 string goslin::strip(string s, char c){
     if (s.length() > 0) {
         uint32_t st = 0;

@@ -33,16 +33,18 @@ SOFTWARE.
 #include <sstream>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/Element.h"
-
+#include <algorithm>
+#include <cctype>
 
 static const char DEFAULT_QUOTE = '\'';
 
 using namespace std;
 
 namespace goslin {
-string replace_all(std::string str, const std::string& from, const std::string& to);
-string strip(string s, char c);
-vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE, bool with_empty = false);
+    string replace_all(std::string str, const std::string& from, const std::string& to);
+    string strip(string s, char c);
+    vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE, bool with_empty = false);
+    string toLower(string s);
 }
 
 #endif /* STRINGFUNCTIONS_H */
