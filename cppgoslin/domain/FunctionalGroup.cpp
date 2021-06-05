@@ -1,15 +1,21 @@
 #include "cppgoslin/domain/FunctionalGroup.h"
 
-FunctionalGroup::FunctionalGroup(string _name, int _position, int _count, DoubleBonds* _doubleBonds, bool _is_atomic, string _stereochemistry, ElementTable* _elements, map<string, vector<FunctionalGroup*>>* _functionalGroups){
+FunctionalGroup::FunctionalGroup(string _name, int _position, int _count, DoubleBonds* _double_bonds, bool _is_atomic, string _stereochemistry, ElementTable* _elements, map<string, vector<FunctionalGroup*>>* _functional_groups){
     name = _name;
     position = _position;
     count = _count;
     stereochemistry = _stereochemistry;
-    ringStereo = "";
-    doubleBonds = (_doubleBonds != 0) ? _doubleBonds : new DoubleBonds();
+    ring_stereo = "";
+    double_bonds = (_double_bonds != 0) ? _double_bonds : new DoubleBonds();
     is_atomic = _is_atomic;
     elements = (_elements != 0) ? _elements : create_empty_table();
-    functionalGroups = (_functionalGroups != 0) ? _functionalGroups : (new map<string, vector<FunctionalGroup*>>());
+    functional_groups = (_functional_groups != 0) ? _functional_groups : (new map<string, vector<FunctionalGroup*>>());
+}
+
+
+
+bool FunctionalGroup::position_sort_function (FunctionalGroup* f1, FunctionalGroup *f2) {
+    return (f1->position < f2->position);
 }
 
 
@@ -19,61 +25,61 @@ FunctionalGroup::FunctionalGroup(FunctionalGroup* fg){
     position = fg->position;
     count = fg->count;
     stereochemistry = fg->stereochemistry;
-    ringStereo = fg->ringStereo;
-    doubleBonds = new DoubleBonds(fg->doubleBonds);
+    ring_stereo = fg->ring_stereo;
+    double_bonds = new DoubleBonds(fg->double_bonds);
     
     for (auto &kv : *(fg->elements)) elements->at(kv.first) = kv.second;
-    for (auto &kv : *(fg->functionalGroups)){
-        functionalGroups->insert({kv.first, vector<FunctionalGroup*>()});
-        for (auto fg : kv.second) functionalGroups->at(kv.first).push_back(new FunctionalGroup(fg));
+    for (auto &kv : *(fg->functional_groups)){
+        functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
+        for (auto fg : kv.second) functional_groups->at(kv.first).push_back(new FunctionalGroup(fg));
     }
 }
 
 
 
 FunctionalGroup::~FunctionalGroup(){
-    delete doubleBonds;
+    delete double_bonds;
     delete elements;
-    for (auto &kv : *functionalGroups){
+    for (auto &kv : *functional_groups){
         for (auto fg : kv.second){
             delete fg;
         }
     }
-    delete functionalGroups;
+    delete functional_groups;
 }
 
 
 
-ElementTable* FunctionalGroup::getElements(){
-    computeElements();
+ElementTable* FunctionalGroup::get_elements(){
+    compute_elements();
     ElementTable* _elements = create_empty_table();
     for (auto &kv : *elements) _elements->at(kv.first) = kv.second;
-    ElementTable* fgElements = getFunctionalGroupElements();
+    ElementTable* fgElements = get_functional_group_elements();
     for (auto &kv : *fgElements) _elements->at(kv.first) += kv.second;
     delete fgElements;
     return _elements;
 }
 
 
-void FunctionalGroup::shiftPositions(int shift){
+void FunctionalGroup::shift_positions(int shift){
     position += shift;
-    for (auto &kv : *functionalGroups){
+    for (auto &kv : *functional_groups){
         for (auto fg : kv.second)
-            fg->shiftPositions(shift);
+            fg->shift_positions(shift);
     }
 }
 
 
-ElementTable* FunctionalGroup::getFunctionalGroupElements(){
+ElementTable* FunctionalGroup::get_functional_group_elements(){
     ElementTable* _elements = create_empty_table();
     
-    for (auto &kv : *functionalGroups){
-        for (auto funcGroup : kv.second){
-            ElementTable* fgElements = funcGroup->getElements();
-            for (auto &el : *fgElements){
-                _elements->at(el.first) += el.second * funcGroup->count;
+    for (auto &kv : *functional_groups){
+        for (auto func_group : kv.second){
+            ElementTable* fg_elements = func_group->get_elements();
+            for (auto &el : *fg_elements){
+                _elements->at(el.first) += el.second * func_group->count;
             }
-            delete fgElements;
+            delete fg_elements;
         }
     }
                 
@@ -81,10 +87,10 @@ ElementTable* FunctionalGroup::getFunctionalGroupElements(){
 }
 
 
-void FunctionalGroup::computeElements(){
-    for (auto &kv : *functionalGroups){
-        for (auto funcGroup : kv.second){
-            funcGroup->computeElements();
+void FunctionalGroup::compute_elements(){
+    for (auto &kv : *functional_groups){
+        for (auto func_group : kv.second){
+            func_group->compute_elements();
         }
     }
 }
@@ -92,32 +98,32 @@ void FunctionalGroup::computeElements(){
 
 
         
-string FunctionalGroup::toString(LipidLevel level){
-    string fgString = "";
+string FunctionalGroup::to_string(LipidLevel level){
+    string fg_string = "";
     if (level == ISOMERIC_SUBSPECIES){
         if ('0' <= name[0] && name[0] <= '9'){
-            fgString = (position > -1) ? (std::to_string(position) + ringStereo + "(" + name + ")") : name;
+            fg_string = (position > -1) ? (std::to_string(position) + ring_stereo + "(" + name + ")") : name;
         }
         else {
-            fgString = (position > -1) ? (std::to_string(position) + ringStereo + name) : name;
+            fg_string = (position > -1) ? (std::to_string(position) + ring_stereo + name) : name;
         }
     }
     else{
-        fgString = (count > 1) ? ("(" + name + ")" + std::to_string(count)) : name;
+        fg_string = (count > 1) ? ("(" + name + ")" + std::to_string(count)) : name;
     }
     if (stereochemistry.length() > 0 && level == ISOMERIC_SUBSPECIES){
-        fgString += "[" + stereochemistry + "]";
+        fg_string += "[" + stereochemistry + "]";
     }
             
-    return fgString;
+    return fg_string;
 }
 
 
-int FunctionalGroup::getDoubleBonds(){
-    int db = count * doubleBonds->getNum();
-    for (auto &kv : *functionalGroups){
-        for (auto funcGroup : kv.second){
-            db += funcGroup->getDoubleBonds();
+int FunctionalGroup::get_double_bonds(){
+    int db = count * double_bonds->get_num();
+    for (auto &kv : *functional_groups){
+        for (auto func_group : kv.second){
+            db += func_group->get_double_bonds();
         }
     }
             
@@ -135,12 +141,12 @@ void FunctionalGroup::add(FunctionalGroup* fg){
 
 
 
-FunctionalGroup* FunctionalGroup::getFunctionalGroup(string fgName){
-    map<string, FunctionalGroup*>& knownFunctionalGroups = KnownFunctionalGroups::get_instance().knownFunctionalGroups;
-    if(contains(knownFunctionalGroups, fgName)){
-        return knownFunctionalGroups.at(fgName);
+FunctionalGroup* FunctionalGroup::get_functional_group(string fg_name){
+    map<string, FunctionalGroup*>& known_functional_groups = KnownFunctionalGroups::get_instance().known_functional_groups;
+    if(contains(known_functional_groups, fg_name)){
+        return known_functional_groups.at(fg_name);
     }
-    throw RuntimeException("Name '" + fgName + "' not registered in functional group list");
+    throw RuntimeException("Name '" + fg_name + "' not registered in functional group list");
 }
 
 
@@ -148,7 +154,7 @@ FunctionalGroup* FunctionalGroup::getFunctionalGroup(string fgName){
 
 HeadgroupDecorator::HeadgroupDecorator(string _name, int _position, int _count, ElementTable* _elements, bool _suffix, LipidLevel _level) : FunctionalGroup(_name, _position, _count, 0, false, "", _elements){
     suffix = _suffix;
-    lowestVisibleLevel = _level;
+    lowest_visible_level = _level;
 }
 
 
@@ -156,27 +162,27 @@ HeadgroupDecorator::HeadgroupDecorator(string _name, int _position, int _count, 
         
 HeadgroupDecorator::HeadgroupDecorator(HeadgroupDecorator* hgd) : FunctionalGroup(hgd){
     suffix = hgd->suffix;
-    lowestVisibleLevel = hgd->lowestVisibleLevel;    
+    lowest_visible_level = hgd->lowest_visible_level;    
 }
 
 
-string HeadgroupDecorator::toString(LipidLevel level){
+string HeadgroupDecorator::to_string(LipidLevel level){
     if (!suffix) return name;
 
-    string decoratorString = "";
-    if (lowestVisibleLevel == NO_LEVEL || lowestVisibleLevel <= level){
+    string decorator_string = "";
+    if (lowest_visible_level == NO_LEVEL || lowest_visible_level <= level){
         
-        if (contains_p(functionalGroups, "decorator_alkyl") && functionalGroups->at("decorator_alkyl").size() > 0){
-            decoratorString = (level != SPECIES) ? functionalGroups->at("decorator_alkyl").at(0)->toString(level) : "Alk";
+        if (contains_p(functional_groups, "decorator_alkyl") && functional_groups->at("decorator_alkyl").size() > 0){
+            decorator_string = (level != SPECIES) ? functional_groups->at("decorator_alkyl").at(0)->to_string(level) : "Alk";
         }
-        else if (contains_p(functionalGroups, "decorator_acyl") && functionalGroups->at("decorator_acyl").size() > 0){
-            decoratorString = (level != SPECIES) ? ("FA " + functionalGroups->at("decorator_acyl").at(0)->toString(level)) : "FA";
+        else if (contains_p(functional_groups, "decorator_acyl") && functional_groups->at("decorator_acyl").size() > 0){
+            decorator_string = (level != SPECIES) ? ("FA " + functional_groups->at("decorator_acyl").at(0)->to_string(level)) : "FA";
         }
         else {
-            decoratorString = name;
+            decorator_string = name;
         }
-        decoratorString = "(" + decoratorString + ")";
+        decorator_string = "(" + decorator_string + ")";
     }
         
-    return decoratorString;
+    return decorator_string;
 }

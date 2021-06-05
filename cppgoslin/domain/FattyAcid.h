@@ -32,6 +32,8 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
+#include "cppgoslin/domain/DoubleBonds.h"
+#include "cppgoslin/domain/StringFunctions.h"
 #include <sstream>
 
 using namespace std;
@@ -39,23 +41,18 @@ using namespace goslin;
 
 class FattyAcid : public FunctionalGroup {
 public:
-    string name;
-    int position;
     int num_carbon;
-    int num_hydroxyl;
-    int num_double_bonds;
     LipidFaBondType lipid_FA_bond_type;
-    map<int, string> double_bond_positions;
     bool lcb;
     
-
-    FattyAcid(string name, int num_carbon, int num_double_bonds, int num_hydroxyl, LipidFaBondType lipid_FA_bond_type, bool lcb, int position, map<int, string> *_double_bond_positions);
-    FattyAcid();
+    FattyAcid(string name, int num_carbon = 0, DoubleBonds* double_bonds = 0, map<string, vector<FunctionalGroup*> >* functional_groups = 0, LipidFaBondType lipid_FA_bond_type = ESTER, bool lcb = false, int position = 0);
     FattyAcid(FattyAcid* fa);
-    string to_string(bool special_case = false);
-    ElementTable* get_elements();
-    static string suffix(LipidFaBondType _lipid_FA_bond_type);
+    string to_string(LipidLevel level);
+    void compute_elements();
+    int get_double_bonds();
+    static string get_prefix(LipidFaBondType _lipid_FA_bond_type);
     static bool lipid_FA_bond_type_prefix(LipidFaBondType lipid_FA_bond_type);
+    const set<string> fg_exceptions {"acyl", "alkyl", "cy", "cc", "acetoxy"};
 };
 
 
@@ -65,13 +62,13 @@ public:
 class AcylAlkylGroup : public FunctionalGroup {
 public:
     bool alkyl;
-    bool NBond;
+    bool N_bond;
     
     
-    AcylAlkylGroup(FattyAcid* _fa, int _position = -1, int count = 1, bool _alkyl = false, bool _NBond = false);
+    AcylAlkylGroup(FattyAcid* _fa, int _position = -1, int count = 1, bool _alkyl = false, bool N_bond = false);
     AcylAlkylGroup(AcylAlkylGroup* aag);
-    void setNBondType(bool NBond);
-    string toString(LipidLevel level);
+    void set_n_bond_type(bool N_bond);
+    string to_string(LipidLevel level);
 };
     
 
@@ -80,7 +77,7 @@ class CarbonChain : public FunctionalGroup {
 public:
     CarbonChain(FattyAcid* _fa, int _position = -1, int _count = 1);
     CarbonChain(CarbonChain* cc);
-    string toString(LipidLevel level);
+    string to_string(LipidLevel level);
 };
 
 #endif /* FATTY_ACID_H */

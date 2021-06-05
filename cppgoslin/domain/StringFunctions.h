@@ -44,7 +44,7 @@ namespace goslin {
     string replace_all(std::string str, const std::string& from, const std::string& to);
     string strip(string s, char c);
     vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE, bool with_empty = false);
-    string toLower(string s);
+    string to_lower(string s);
 }
 
 #endif /* STRINGFUNCTIONS_H */

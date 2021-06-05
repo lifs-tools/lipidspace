@@ -23,36 +23,35 @@ public:
     int position;
     int count;
     string stereochemistry;
-    string ringStereo;
-    DoubleBonds* doubleBonds;
+    string ring_stereo;
+    DoubleBonds* double_bonds;
     bool is_atomic;
     ElementTable* elements;
-    map<string, vector<FunctionalGroup*>>* functionalGroups;
+    map<string, vector<FunctionalGroup*>>* functional_groups;
+    static bool position_sort_function(FunctionalGroup* f1, FunctionalGroup *f2);
     
-    
-    
-    FunctionalGroup(string _name, int _position = -1, int _count = 1, DoubleBonds* _doubleBonds = 0, bool _is_atomic = false, string _stereochemistry = "", ElementTable* _elements = 0, map<string, vector<FunctionalGroup*>>* _functionalGroups = 0);
+    FunctionalGroup(string _name, int _position = -1, int _count = 1, DoubleBonds* _double_bonds = 0, bool _is_atomic = false, string _stereochemistry = "", ElementTable* _elements = 0, map<string, vector<FunctionalGroup*>>* _functional_groups = 0);
     FunctionalGroup(FunctionalGroup* fg);
     ~FunctionalGroup();
-    ElementTable* getElements();
-    void shiftPositions(int shift);
-    ElementTable* getFunctionalGroupElements();
-    void computeElements();
-    string toString(LipidLevel level);
-    int getDoubleBonds();
+    ElementTable* get_elements();
+    void shift_positions(int shift);
+    ElementTable* get_functional_group_elements();
+    void compute_elements();
+    string to_string(LipidLevel level);
+    int get_double_bonds();
     void add(FunctionalGroup* fg);
-    static FunctionalGroup* getFunctionalGroup(string fgName);
+    static FunctionalGroup* get_functional_group(string fg_name);
 };
 
 
 class HeadgroupDecorator : public FunctionalGroup {
 public:
     bool suffix;
-    LipidLevel lowestVisibleLevel;
+    LipidLevel lowest_visible_level;
     
     HeadgroupDecorator(string _name, int _position = -1, int _count = 1, ElementTable* _elements = 0, bool _suffix = false, LipidLevel _level = NO_LEVEL); 
     HeadgroupDecorator(HeadgroupDecorator* hgd);
-    string toString(LipidLevel level);
+    string to_string(LipidLevel level);
 };
 
 
@@ -67,7 +66,7 @@ class KnownFunctionalGroups {
         KnownFunctionalGroups();
         
     public:
-        map<string, FunctionalGroup*> knownFunctionalGroups;
+        map<string, FunctionalGroup*> known_functional_groups;
         KnownFunctionalGroups(KnownFunctionalGroups const&) = delete;
         void operator=(KnownFunctionalGroups const&) = delete;
 };

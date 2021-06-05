@@ -232,7 +232,7 @@ void writeLipidEnum(string ofFileName){
     
     
     offile << "KnownFunctionalGroups::KnownFunctionalGroups(){" << endl;
-    offile << "    knownFunctionalGroups = {" << endl;
+    offile << "    known_functional_groups = {" << endl;
     
     cnt = 0;
     for (auto &row : functional_data){

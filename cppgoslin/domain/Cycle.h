@@ -22,16 +22,15 @@ public:
     int cycle;
     int start;
     int end;
-    vector<Element>* bridgeChain;
+    vector<Element>* bridge_chain;
     
-    Cycle(int _cycle, int _start = -1, int _end = -1, DoubleBonds* _doubleBonds = 0, map<string, vector<FunctionalGroup*> >* _functionalGroups = 0, vector<Element>* _bridgeChain = 0);
+    Cycle(int _cycle, int _start = -1, int _end = -1, DoubleBonds* _double_bonds = 0, map<string, vector<FunctionalGroup*> >* _functional_groups = 0, vector<Element>* _bridgeChain = 0);
     Cycle(Cycle* c);
-    int getDoubleBonds();
-    void rearrangeFunctionalGroups(FunctionalGroup *parent, int shift);
-    void shiftPositions(int shift);
-    void computeElements();
-    string toString(LipidLevel level);
-    static bool sortFunction(FunctionalGroup* f1, FunctionalGroup *f2);
+    int get_double_bonds();
+    void rearrange_functional_groups(FunctionalGroup *parent, int shift);
+    void shift_positions(int shift);
+    void compute_elements();
+    string to_string(LipidLevel level);
 };
 
 #endif /* CYCLE_H */

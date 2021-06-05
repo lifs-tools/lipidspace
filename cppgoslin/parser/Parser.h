@@ -93,7 +93,7 @@ public:
     static string de_escape(string text, char _quote);
     uint64_t add_terminal(string text);
     vector<uint64_t>* collect_one_backwards(uint64_t rule_index);
-    vector< vector<uint64_t>* >* collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index);
+    vector< vector<uint64_t>* >* collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index, set<uint64_t>* visited = 0, vector<uint64_t>* path = 0, vector< vector<uint64_t>* >* collection = 0);
     void raise_events(TreeNode *node);
     void fill_tree(TreeNode *node, DPNode *dp_node);
     T parse(string text_to_parse, bool throw_error = true);

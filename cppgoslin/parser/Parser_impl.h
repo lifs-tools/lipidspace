@@ -272,14 +272,18 @@ void Parser<T>::read_grammar(string grammar){
                 vector< vector<uint64_t>* >* chains = collect_backwards(rule, rule_top);
                 if (chains == 0) continue;
                 
-                for (auto chain : chains){
+                for (auto chain : *chains){
                     while (chain->size() > 1){
                         uint64_t top = chain->at(0);
-                        vector<uint64_t>* new_chain = new vector<uint64_t>();
-                        for (int i = 1; i < (int)chain->size(); ++i) new_chain->push_back(chain->at(i));
-                        chain = new_chain;
+                        chain->erase(chain->begin());
                         uint64_t key = kv.first + (top << 16);
                         substitution.insert({key, chain});
+                        
+                        if (chain->size() > 1){
+                            vector<uint64_t>* new_chain = new vector<uint64_t>();
+                            for (auto &e : *chain) new_chain->push_back(e);
+                            chain = new_chain;
+                        }
                     }
                 }
                 delete chains;
@@ -580,28 +584,8 @@ vector<uint64_t>* Parser<T>::collect_one_backwards(uint64_t rule_index){
 }
 
 
-
 template <class T>
-vector<uint64_t>* Parser<T>::collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index){
-    if (uncontains(NTtoNT, child_rule_index)) return NULL;
-    
-    for (auto previous_index : NTtoNT.at(child_rule_index)){
-        if (previous_index == parent_rule_index) return new vector<uint64_t>;
-        
-        else if (contains(NTtoNT, previous_index)){
-            vector<uint64_t>* collection = collect_backwards(previous_index, parent_rule_index);
-            if (collection != NULL){
-                collection->push_back(previous_index);
-                return collection;
-            }
-        }
-    }
-    return NULL;
-}
-
-
-template <class T>
-vector< vector<uint64_t>* >* Parser<T>::collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index, set<uint64_t>* visited = 0, vector<uint64_t>* path = 0, vector< vector<uint64_t>* >* collection = 0){
+vector< vector<uint64_t>* >* Parser<T>::collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index, set<uint64_t>* visited, vector<uint64_t>* path, vector< vector<uint64_t>* >* collection){
     // provides all single linkage paths from a child rule to a parent rule,
     // and yes, there can be several paths
     bool initDataStructures = false;
@@ -612,7 +596,7 @@ vector< vector<uint64_t>* >* Parser<T>::collect_backwards(uint64_t child_rule_in
         collection = new vector< vector<uint64_t>* >();
     }
     
-    if (uncontains(NTtoNT,  child_rule_index)){
+    if (uncontains(NTtoNT, child_rule_index)){
         if (initDataStructures){
             delete visited;
             delete path;
@@ -623,9 +607,9 @@ vector< vector<uint64_t>* >* Parser<T>::collect_backwards(uint64_t child_rule_in
     path->push_back(child_rule_index);
     
     for (auto previous_rule : NTtoNT.at(child_rule_index)){
-        if (uncontains(visited, previous_rule){
+        if (uncontains_p(visited, previous_rule)){
             if (previous_rule == parent_rule_index){
-                vector<uint64_t>* found_path = new vector<uint64_t*>();
+                vector<uint64_t>* found_path = new vector<uint64_t>();
                 found_path->push_back(parent_rule_index);
                 for (int i = (int)path->size() - 1; i >= 0; --i) found_path->push_back(path->at(i));
                 collection->push_back(found_path);

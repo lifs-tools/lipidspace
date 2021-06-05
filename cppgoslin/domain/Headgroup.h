@@ -15,22 +15,21 @@ using namespace std;
 class Headgroup {
 public:
     string headgroup;
-    LipidCategory lipidCategory;
-    LipidClass lipidClass;
-    bool useHeadgroup;
+    LipidCategory lipid_category;
+    LipidClass lipid_class;
+    bool use_headgroup;
     vector<HeadgroupDecorator*>* decorators;
-    bool spException;
+    bool sp_exception;
     
-    Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators = 0, bool _useHeadgroup = false);
+    Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators = 0, bool _use_headgroup = false);
     ~Headgroup();
-    string getLipidString(LipidLevel level = NO_LEVEL);
-    ElementTable* getElements();
-    LipidCategory getCategory(string _headgroup);
-    LipidLevel getLipidLevel();
-    LipidClass getClass(string _head_group);
-    string getClassString(LipidClass _lipidClass);
-    string getClassName();
-    string getCategoryString(LipidCategory _lipidCategory);
+    string get_lipid_string(LipidLevel level = NO_LEVEL);
+    ElementTable* get_elements();
+    LipidCategory get_category(string _headgroup);
+    LipidClass get_class(string _head_group);
+    string get_class_string(LipidClass _lipid_lass);
+    string get_class_name();
+    string get_category_string(LipidCategory _lipid_category);
     
 };
 

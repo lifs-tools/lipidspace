@@ -1,13 +1,13 @@
 #include "cppgoslin/domain/Cycle.h"
 
-Cycle::Cycle(int _cycle, int _start, int _end, DoubleBonds* _doubleBonds, map<string, vector<FunctionalGroup*> >* _functionalGroups, vector<Element>* _bridgeChain) : FunctionalGroup("cy", -1, 1, _doubleBonds, false, "", 0, _functionalGroups){
+Cycle::Cycle(int _cycle, int _start, int _end, DoubleBonds* _double_bonds, map<string, vector<FunctionalGroup*> >* _functional_groups, vector<Element>* _bridge_chain) : FunctionalGroup("cy", -1, 1, _double_bonds, false, "", 0, _functional_groups){
     count = 1;
     cycle = _cycle;
     position = _start;
     start = _start;
     end = _end;
     elements->at(ELEMENT_H) = -2;
-    bridgeChain = (_bridgeChain == 0) ? new vector<Element>() : _bridgeChain;
+    bridge_chain = (_bridge_chain == 0) ? new vector<Element>() : _bridge_chain;
 }
         
 
@@ -16,95 +16,95 @@ Cycle::Cycle(Cycle* c) : FunctionalGroup(c){
     start = c->start;
     end = c->end;
     elements->at(ELEMENT_H) = -2;
-    bridgeChain = new vector<Element>();
-    for (auto &chainElement : *(c->bridgeChain)) bridgeChain->push_back(chainElement);
+    bridge_chain = new vector<Element>();
+    for (auto &chain_element : *(c->bridge_chain)) bridge_chain->push_back(chain_element);
 }
                 
                 
-int Cycle::getDoubleBonds(){
-    return FunctionalGroup::getDoubleBonds() + 1;
+int Cycle::get_double_bonds(){
+    return FunctionalGroup::get_double_bonds() + 1;
 }
     
     
-void Cycle::rearrangeFunctionalGroups(FunctionalGroup* parent, int shift){
+void Cycle::rearrange_functional_groups(FunctionalGroup* parent, int shift){
     // put everything back into parent
-    for (auto &kv : doubleBonds->doubleBondPositions) {
-        parent->doubleBonds->doubleBondPositions.insert({kv.first, kv.second});
+    for (auto &kv : double_bonds->double_bond_positions) {
+        parent->double_bonds->double_bond_positions.insert({kv.first, kv.second});
     }
-    delete doubleBonds;
-    doubleBonds = new DoubleBonds();
+    delete double_bonds;
+    double_bonds = new DoubleBonds();
     
-    for (auto &kv : *functionalGroups){
-        if (!contains_p(parent->functionalGroups, kv.first)){
-            parent->functionalGroups->insert({kv.first, vector<FunctionalGroup*>()});
+    for (auto &kv : *functional_groups){
+        if (!contains_p(parent->functional_groups, kv.first)){
+            parent->functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
         }
-        parent->functionalGroups->at(kv.first).insert(parent->functionalGroups->at(kv.first).end(), functionalGroups->at(kv.first).begin(), functionalGroups->at(kv.first).end());
+        parent->functional_groups->at(kv.first).insert(parent->functional_groups->at(kv.first).end(), functional_groups->at(kv.first).begin(), functional_groups->at(kv.first).end());
     }
-    delete functionalGroups;
-    functionalGroups = new map<string, vector<FunctionalGroup*> >();
+    delete functional_groups;
+    functional_groups = new map<string, vector<FunctionalGroup*> >();
     
     
     // shift the cycle
-    shiftPositions(shift);
+    shift_positions(shift);
     
     
     // take back what's mine# check double bonds
-    for (auto &kv : parent->doubleBonds->doubleBondPositions){
+    for (auto &kv : parent->double_bonds->double_bond_positions){
         if (start <= kv.first && kv.first <= end){
-            doubleBonds->doubleBondPositions.insert({kv.first, kv.second});
+            double_bonds->double_bond_positions.insert({kv.first, kv.second});
         }
     }
-    doubleBonds->numDoubleBonds = doubleBonds->doubleBondPositions.size();
+    double_bonds->num_double_bonds = double_bonds->double_bond_positions.size();
     
-    for (auto &kv : doubleBonds->doubleBondPositions){
-        parent->doubleBonds->doubleBondPositions.erase(kv.first);
+    for (auto &kv : double_bonds->double_bond_positions){
+        parent->double_bonds->double_bond_positions.erase(kv.first);
     }
-    parent->doubleBonds->numDoubleBonds = parent->doubleBonds->doubleBondPositions.size();
+    parent->double_bonds->num_double_bonds = parent->double_bonds->double_bond_positions.size();
     
             
-    set<string> removeList;
-    for (auto &kv : *(parent->functionalGroups)){
-        vector<int> removeItem;
+    set<string> remove_list;
+    for (auto &kv : *(parent->functional_groups)){
+        vector<int> remove_item;
         
         int i = 0;
-        for (auto funcGroup : kv.second){
-            if (start <= funcGroup->position && funcGroup->position != end && funcGroup != this){
-                if (!contains_p(functionalGroups, kv.first)){
-                    functionalGroups->insert({kv.first, vector<FunctionalGroup*>()});
+        for (auto func_group : kv.second){
+            if (start <= func_group->position && func_group->position != end && func_group != this){
+                if (!contains_p(functional_groups, kv.first)){
+                    functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
                 }
-                functionalGroups->at(kv.first).push_back(funcGroup);
-                removeItem.push_back(i);
+                functional_groups->at(kv.first).push_back(func_group);
+                remove_item.push_back(i);
             }
             ++i;
         }
                 
-        while (!removeItem.empty()){
-            int pos = removeItem.back();
-            removeItem.pop_back();
+        while (!remove_item.empty()){
+            int pos = remove_item.back();
+            remove_item.pop_back();
             kv.second.erase(kv.second.begin() + pos);
         }
-        if (kv.second.empty()) removeList.insert(kv.first);
+        if (kv.second.empty()) remove_list.insert(kv.first);
     }
         
-    for (string fg : removeList) parent->functionalGroups->erase(fg);
+    for (string fg : remove_list) parent->functional_groups->erase(fg);
 }    
         
-void Cycle::shiftPositions(int shift){
-    FunctionalGroup::shiftPositions(shift);
+void Cycle::shift_positions(int shift){
+    FunctionalGroup::shift_positions(shift);
     start += shift;
     end += shift;
     DoubleBonds* db = new DoubleBonds();
-    for (auto &kv : doubleBonds->doubleBondPositions) db->doubleBondPositions.insert({kv.first, kv.second});
-    doubleBonds->numDoubleBonds = doubleBonds->doubleBondPositions.size();
+    for (auto &kv : double_bonds->double_bond_positions) db->double_bond_positions.insert({kv.first, kv.second});
+    double_bonds->num_double_bonds = double_bonds->double_bond_positions.size();
 }
     
 
-void Cycle::computeElements(){
+void Cycle::compute_elements(){
     ElementTable* elements = create_empty_table();
-    elements->at(ELEMENT_H) = -2 - 2 * doubleBonds->numDoubleBonds;
+    elements->at(ELEMENT_H) = -2 - 2 * double_bonds->num_double_bonds;
     
-    for (auto &chainElement : *bridgeChain){
-        switch(chainElement){
+    for (auto &chain_element : *bridge_chain){
+        switch(chain_element){
             case ELEMENT_C:
                 elements->at(ELEMENT_C) += 1;
                 elements->at(ELEMENT_H) += 2;
@@ -127,87 +127,85 @@ void Cycle::computeElements(){
         
     // add all implicit carbon chain elements
     if (start != -1 && end != -1){
-        int n = cycle - (end - start + 1 + bridgeChain->size());
+        int n = cycle - (end - start + 1 + bridge_chain->size());
         elements->at(ELEMENT_C) += n;
         elements->at(ELEMENT_H) += n << 1;
     }
 }
-        
-bool Cycle::sortFunction (FunctionalGroup* f1, FunctionalGroup *f2) {
-    return (f1->position < f2->position);
-}
+
     
-string Cycle::toString(LipidLevel level){
-    stringstream cycleString;
-    cycleString << "[";
+string Cycle::to_string(LipidLevel level){
+    stringstream cycle_string;
+    cycle_string << "[";
     if (start != -1 && level == ISOMERIC_SUBSPECIES){
-        cycleString << start << "-" << end;
+        cycle_string << start << "-" << end;
     }
     
-    if ((level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES) && bridgeChain->size() > 0){
-        cycleString << "(";
-        for (auto &e : *bridgeChain) cycleString << element_shortcut.at(e);
-        cycleString << ")";
+    if ((level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES) && bridge_chain->size() > 0){
+        cycle_string << "(";
+        for (auto &e : *bridge_chain) cycle_string << element_shortcut.at(e);
+        cycle_string << ")";
     }
-    cycleString << "cy" << cycle;
+    cycle_string << "cy" << cycle;
     
-    cycleString << ":" << doubleBonds->numDoubleBonds;
+    cycle_string << ":" << double_bonds->num_double_bonds;
     
-    if (doubleBonds->doubleBondPositions.size() > 0){
+    if (double_bonds->double_bond_positions.size() > 0){
         int i = 0;
-        cycleString << "(";
-        for (auto &kv : doubleBonds->doubleBondPositions){
-            if (i++ > 0) cycleString << ",";
-            cycleString << kv.first << kv.second;
+        cycle_string << "(";
+        for (auto &kv : double_bonds->double_bond_positions){
+            if (i++ > 0) cycle_string << ",";
+            cycle_string << kv.first << kv.second;
         }
-        cycleString << ")";
+        cycle_string << ")";
     }
     
     if (level == ISOMERIC_SUBSPECIES){
-        vector<string> fgNames;
-        for (auto &kv : *functionalGroups) fgNames.push_back(toLower(kv.first));
-        sort(fgNames.begin(), fgNames.end());
+        vector<string> fg_names;
+        for (auto &kv : *functional_groups) fg_names.push_back(to_lower(kv.first));
+        sort(fg_names.begin(), fg_names.end());
         
-        for (auto &fg : fgNames){
-            vector<FunctionalGroup*>& fgList = functionalGroups->at(fg);
-            if (fgList.empty()) continue;
+        for (auto &fg : fg_names){
+            vector<FunctionalGroup*>& fg_list = functional_groups->at(fg);
+            if (fg_list.empty()) continue;
             
-            sort(fgList.begin(), fgList.end(), sortFunction);
+            sort(fg_list.begin(), fg_list.end(), FunctionalGroup::position_sort_function);
             int i = 0;
-            cycleString << ";";
-            for (auto funcGroup : fgList){
-                if (i++ > 0) cycleString << ",";
-                cycleString << funcGroup->toString(level);
+            cycle_string << ";";
+            for (auto func_group : fg_list){
+                if (i++ > 0) cycle_string << ",";
+                cycle_string << func_group->to_string(level);
             }
         }
     }
     
     else if (level == STRUCTURAL_SUBSPECIES){
-        vector<string> fgNames;
-        for (auto &kv : *functionalGroups) fgNames.push_back(toLower(kv.first));
-        sort(fgNames.begin(), fgNames.end());
+        vector<string> fg_names;
+        for (auto &kv : *functional_groups) fg_names.push_back(to_lower(kv.first));
+        sort(fg_names.begin(), fg_names.end());
         
-        for (auto &fg : fgNames){
-            vector<FunctionalGroup*> &fgList = functionalGroups->at(fg);
-            if (fgList.empty()) continue;
+        for (auto &fg : fg_names){
+            vector<FunctionalGroup*> &fg_list = functional_groups->at(fg);
+            if (fg_list.empty()) continue;
             
-            else if (fgList.size() == 1){
-                cycleString << ";" << fgList.front()->toString(level);
+            else if (fg_list.size() == 1 && fg_list.at(0).count == 1){
+                cycle_string << ";" << fg_list.front()->to_string(level);
             }
             else {
-                int fgCount = 0;
-                for (auto funcGroup : fgList) fgCount += funcGroup->count;
-                if (fgCount > 1){
-                    cycleString << ";(" << fg << ")" << fgCount;
+                int fg_count = 0;
+                for (auto func_group : fg_list) fg_count += func_group->count;
+                if (fg_count > 1){
+                    cycle_string << ";(" << fg << ")" << fg_count;
                 }
-                    else{ cycleString << ";" << fg;
+                else {
+                    cycle_string << ";" << fg;
                 }
             }
         }
     }
                 
-    cycleString << "]";
-    if (stereochemistry.length() > 0) cycleString << "[" << stereochemistry << "]";
+    cycle_string << "]";
+    if (stereochemistry.length() > 0) cycle_string << "[" << stereochemistry << "]";
     
-    return cycleString.str();
+    return cycle_string.str();
 }

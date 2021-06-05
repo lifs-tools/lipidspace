@@ -39,7 +39,7 @@ string goslin::compute_sum_formula(ElementTable* elements){
 }
 
 
-string goslin::toLower(string st){
+string goslin::to_lower(string st){
     string s = string(st);
     std::transform(s.begin(), s.end(), s.begin(),[](unsigned char c){ return std::tolower(c); });
     return s;

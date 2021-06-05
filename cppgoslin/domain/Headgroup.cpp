@@ -1,12 +1,12 @@
 #include "cppgoslin/domain/Headgroup.h"
     
-Headgroup::Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators, bool _useHeadgroup){
+Headgroup::Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators, bool _use_headgroup){
     headgroup = _headgroup;
-    lipidCategory = getCategory(_headgroup);
-    lipidClass = getClass(headgroup);
-    useHeadgroup = _useHeadgroup;
+    lipid_category = get_category(_headgroup);
+    lipid_class = get_class(headgroup);
+    use_headgroup = _use_headgroup;
     decorators = (_decorators != 0) ? _decorators : new vector<HeadgroupDecorator*>();
-    spException = lipidCategory == SP && ((LipidClasses::get_instance().lipid_classes.at(lipidClass).class_name.compare("Cer") != 0 && LipidClasses::get_instance().lipid_classes.at(lipidClass).class_name.compare("SPB") != 0) || decorators->size() > 0);
+    sp_exception = lipid_category == SP && ((LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name.compare("Cer") != 0 && LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name.compare("SPB") != 0) || decorators->size() > 0);
 }
 
 
@@ -16,7 +16,7 @@ Headgroup::~Headgroup(){
 }
         
 
-LipidCategory Headgroup::getCategory(string _headgroup){
+LipidCategory Headgroup::get_category(string _headgroup){
     if (!StringCategory.size()){
         for (const auto& kvp : LipidClasses::get_instance().lipid_classes){
             LipidCategory category = kvp.second.lipid_category;
@@ -25,19 +25,14 @@ LipidCategory Headgroup::getCategory(string _headgroup){
             }
         }
     }
-    
-    
+
     auto cat = StringCategory.find(_headgroup);
     return (cat != StringCategory.end()) ? StringCategory.at(_headgroup) : UNDEFINED;
 }
 
 
-LipidLevel Headgroup::getLipidLevel(){
-    return SPECIES;
-}
 
-
-LipidClass Headgroup::getClass(string _headgroup){
+LipidClass Headgroup::get_class(string _headgroup){
     if (!StringClass.size()){
         for (auto kvp : LipidClasses::get_instance().lipid_classes){
             LipidClass l_class = kvp.first;
@@ -52,78 +47,78 @@ LipidClass Headgroup::getClass(string _headgroup){
 }
 
 
-string Headgroup::getClassString(LipidClass _lipidClass){
+string Headgroup::get_class_string(LipidClass _lipid_class){
     if (!ClassString.size()){
         for (auto kvp : LipidClasses::get_instance().lipid_classes){
             ClassString.insert({kvp.first, kvp.second.synonyms.at(0)});
         }
     }
-    auto cl = ClassString.find(_lipidClass);
-    return (cl != ClassString.end()) ? ClassString.at(_lipidClass) : "UNDEFINED";
+    auto cl = ClassString.find(_lipid_class);
+    return (cl != ClassString.end()) ? ClassString.at(_lipid_class) : "UNDEFINED";
 }
 
 
-string Headgroup::getClassName(){
-    return LipidClasses::get_instance().lipid_classes.at(lipidClass).class_name;
+string Headgroup::get_class_name(){
+    return LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name;
 }
 
 
-string Headgroup::getCategoryString(LipidCategory _lipidCategory){
-    return CategoryString.at(_lipidCategory);
+string Headgroup::get_category_string(LipidCategory _lipid_category){
+    return CategoryString.at(_lipid_category);
 }        
         
         
-string Headgroup::getLipidString(LipidLevel level){
+string Headgroup::get_lipid_string(LipidLevel level){
     if (level == CATEGORY){
-        return getCategoryString(lipidCategory);
+        return get_category_string(lipid_category);
     }
     
-    string hgs = ((useHeadgroup) ? headgroup : getClassString(lipidClass));
+    string hgs = ((use_headgroup) ? headgroup : get_class_string(lipid_class));
     
     if (level == CLASS){
         return hgs;
     }
     
-    stringstream headgoupString;
+    stringstream headgoup_string;
             
     // adding prefixes to the headgroup
     if (level != ISOMERIC_SUBSPECIES && level != STRUCTURAL_SUBSPECIES){
         vector<string> prefixes;
         for (auto hgd : *decorators){
-            if (!hgd->suffix) prefixes.push_back(hgd->toString(level));
+            if (!hgd->suffix) prefixes.push_back(hgd->to_string(level));
         }
         sort (prefixes.begin(), prefixes.end());
-        for (auto prefix : prefixes) headgoupString << prefix;
+        for (auto prefix : prefixes) headgoup_string << prefix;
     }
     else {
         for (auto hgd : *decorators){
-            if (!hgd->suffix) headgoupString << hgd->toString(level) << "-";
+            if (!hgd->suffix) headgoup_string << hgd->to_string(level) << "-";
         }
     }
         
     // adding headgroup
-    headgoupString << hgs;
+    headgoup_string << hgs;
         
     // ading suffixes to the headgroup
     for (auto hgd : *decorators){
-        if (hgd->suffix) headgoupString << hgd->toString(level);
+        if (hgd->suffix) headgoup_string << hgd->to_string(level);
     }
-    if (level == ISOMERIC_SUBSPECIES && spException){
-        headgoupString << "(1)";
+    if (level == ISOMERIC_SUBSPECIES && sp_exception){
+        headgoup_string << "(1)";
     }
         
-    return headgoupString.str();
+    return headgoup_string.str();
 }
         
         
-ElementTable* Headgroup::getElements(){
-    if (useHeadgroup){
+ElementTable* Headgroup::get_elements(){
+    if (use_headgroup){
         throw RuntimeException("Element table cannot be computed for lipid '" + headgroup + "'");
     }
     
     ElementTable *elements = create_empty_table();
     
-    for (auto &kv : LipidClasses::get_instance().lipid_classes.at(lipidClass).elements){
+    for (auto &kv : LipidClasses::get_instance().lipid_classes.at(lipid_class).elements){
         elements->at(kv.first) += kv.second;
     }
     
@@ -134,7 +129,7 @@ ElementTable* Headgroup::getElements(){
     }
     
     
-    if (lipidCategory == SP && (LipidClasses::get_instance().lipid_classes.at(lipidClass).class_name.compare("Cer") == 0 || LipidClasses::get_instance().lipid_classes.at(lipidClass).class_name.compare("SPB") == 0) && decorators->size() == 0){
+    if (lipid_category == SP && (LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name.compare("Cer") == 0 || LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name.compare("SPB") == 0) && decorators->size() == 0){
         elements->at(ELEMENT_O) -= 1;
     }
     

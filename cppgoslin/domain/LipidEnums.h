@@ -93,7 +93,7 @@ struct LipidClassMeta {
 
 
 typedef map<LipidClass, LipidClassMeta> ClassMap;
-enum LipidFaBondType { NO_FA, UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL, ETHER_UNSPECIFIED};
+enum LipidFaBondType { NO_FA, UNDEFINED_FA, ESTER, ETHER_PLASMANYL, ETHER_PLASMENYL, ETHER_UNSPECIFIED, AMINE};
 
 
 class LipidClasses {
