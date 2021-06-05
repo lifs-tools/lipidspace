@@ -28,9 +28,13 @@ SOFTWARE.
 #define CPPGOSLIN_H
 
 #include "cppgoslin/domain/Adduct.h"
+#include "cppgoslin/domain/Cycle.h"
+#include "cppgoslin/domain/DoubleBonds.h"
 #include "cppgoslin/domain/Element.h"
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/Fragment.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
+#include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/LipidExceptions.h"

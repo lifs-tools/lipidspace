@@ -144,7 +144,7 @@ void FunctionalGroup::add(FunctionalGroup* fg){
 FunctionalGroup* FunctionalGroup::get_functional_group(string fg_name){
     map<string, FunctionalGroup*>& known_functional_groups = KnownFunctionalGroups::get_instance().known_functional_groups;
     if(contains(known_functional_groups, fg_name)){
-        return known_functional_groups.at(fg_name);
+        return new FunctionalGroup(known_functional_groups.at(fg_name));
     }
     throw RuntimeException("Name '" + fg_name + "' not registered in functional group list");
 }

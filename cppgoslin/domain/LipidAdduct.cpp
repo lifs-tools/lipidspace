@@ -67,6 +67,13 @@ string LipidAdduct::get_class_name(){
 
 
 
+    
+string LipidAdduct::get_extended_class(){
+    return lipid ? lipid->get_extended_class() : "";
+}
+
+
+
 double LipidAdduct::get_mass(){
     ElementTable* elements = get_elements();
     int charge = 0;

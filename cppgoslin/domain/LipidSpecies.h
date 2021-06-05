@@ -35,6 +35,8 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidSpeciesInfo.h"
+#include "cppgoslin/domain/Headgroup.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
 
 
 using namespace std;
@@ -47,20 +49,19 @@ class LipidSpeciesInfo;
 
 class LipidSpecies {
 public:
-    string head_group;
+    Headgroup* headgroup;
     LipidCategory lipid_category;
     LipidClass lipid_class;
-    LipidSpeciesInfo info;
+    LipidSpeciesInfo* info;
     bool use_head_group;
     
     map<string, FattyAcid*> fa;
     vector<FattyAcid*> fa_list;
     
     virtual ~LipidSpecies();
-    //LipidSpecies(string _head_group);
-    LipidSpecies(string _head_group, LipidCategory _lipid_category = NO_CATEGORY, LipidClass lipid_class = NO_CLASS, LipidSpeciesInfo* lipid_species_info = NULL);
+    LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa = 0);
     virtual string get_lipid_string(LipidLevel level = NO_LEVEL);
-    string get_class_name();
+    string get_extended_class();
     ElementTable* get_elements();
     
     static LipidCategory get_category(string _head_group);

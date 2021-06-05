@@ -27,7 +27,7 @@ public:
     ElementTable* get_elements();
     LipidCategory get_category(string _headgroup);
     LipidClass get_class(string _head_group);
-    string get_class_string(LipidClass _lipid_lass);
+    string get_class_string(LipidClass _lipid_class);
     string get_class_name();
     string get_category_string(LipidCategory _lipid_category);
     

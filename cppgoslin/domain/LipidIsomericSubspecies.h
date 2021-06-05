@@ -31,6 +31,7 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/Headgroup.h"
 #include <sstream>
 #include <vector>
 
@@ -39,7 +40,7 @@ using namespace goslin;
 
 class LipidIsomericSubspecies : public LipidStructuralSubspecies {
 public:
-    LipidIsomericSubspecies(string head_group, vector<FattyAcid*>* fa = NULL);
+    LipidIsomericSubspecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa = NULL);
     ~LipidIsomericSubspecies();
     string build_lipid_isomeric_substructure_name();
     string get_lipid_string(LipidLevel level = NO_LEVEL);

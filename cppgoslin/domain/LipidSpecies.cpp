@@ -29,14 +29,32 @@ SOFTWARE.
 #include <iostream>
 using namespace std;
 
-LipidSpecies::LipidSpecies(string _head_group, LipidCategory _lipid_category, LipidClass _lipid_class, LipidSpeciesInfo* lipid_species_info){
-    head_group = _head_group;
-    lipid_category = (_lipid_category != NO_CATEGORY) ? _lipid_category : get_category(head_group);
-    lipid_class = (_lipid_class != NO_CLASS) ? _lipid_class : get_class(head_group);
-    info.clone(lipid_species_info);
+LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
     
-    info.level = SPECIES;
-    use_head_group = false;
+    headgroup = _headgroup;
+    
+    info = new LipidSpeciesInfo(headgroup->lipid_class);
+    info->level = SPECIES;
+    
+    // add fatty acids
+    for (auto fatty_acid : *_fa) info->add(fatty_acid);
+    
+    
+    if (headgroup->sp_exception){
+        if (uncontains_p(info->functional_groups, "OH")) info->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+        info->functional_groups->at("OH").push_back(FunctionalGroup::get_functional_group("OH"));
+    }
+    
+    
+    for (auto decorator : *headgroup->decorators){
+        if (decorator->name == "decorator_alkyl" || decorator->name == "decorator_acyl"){
+            ElementTable* e = decorator->get_elements();
+            info->num_carbon += e->at(ELEMENT_C);
+            delete e;
+            info->double_bonds += decorator->get_double_bonds();
+        }
+    }
+        
 }
 
 
@@ -44,6 +62,9 @@ LipidSpecies::~LipidSpecies(){
     for (auto fa : fa_list){
         delete fa;
     }
+    
+    delete info;
+    delete headgroup;
 }
 
 
@@ -51,39 +72,43 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
     switch (level){
             
         default:
-            throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + to_string(level));
+            throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + std::to_string(level));
             
         case UNDEFINED_LEVEL:
-            throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + to_string(level));
-            
-        case CATEGORY:
-            return get_category_string(lipid_category);
+            throw RuntimeException("LipidSpecies does not know how to create a lipid string for level " + std::to_string(level));
             
         case CLASS:
-            return (!use_head_group ? get_class_string(lipid_class) : head_group);
+        case CATEGORY:
+            return headgroup->get_lipid_string(level);
             
         case NO_LEVEL:
         case SPECIES:
-            if (!validate()){
-                throw ConstraintViolationException("No fatty acly chain information present for lipid " + get_class_string(lipid_class));
-            }
-            stringstream st;
-            st << (!use_head_group ? get_class_string(lipid_class) : head_group);
+            stringstream lipid_string;
+            lipid_string << headgroup->get_lipid_string(level);
             
-            if (info.num_carbon > 0){
-                // bool special_case = (lipid_class == PC) | (lipid_class == LPC) | (lipid_class == PE) | (lipid_class == LPE);
-                bool special_case = lipid_category == GP;
-                st << ((lipid_category !=  ST) ? " " : "/");
-                st << info.to_string(special_case);
+            if (info->elements->at(ELEMENT_C) > 0 || info->num_carbon > 0){
+                lipid_string << (headgroup->lipid_category != ST ? " " : "/") << info->to_string();
             }
-            
-            return st.str();
+            return lipid_string.str();
     }
     return "";
 }
 
 
 
+string LipidSpecies::get_extended_class(){
+    bool special_case = (info->num_carbon > 0) ? (lipid_category == GP) : false;
+    string class_name = headgroup->get_class_name();
+    if (special_case && (info->lipid_FA_bond_type == ETHER_PLASMANYL || info->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
+        return class_name + "-O";
+    }
+    
+    else if (special_case && info->lipid_FA_bond_type == ETHER_PLASMENYL){
+        return class_name + "-p";
+    }
+    
+    return class_name;
+}
 
 
 vector<FattyAcid*> LipidSpecies::get_fa_list(){
@@ -103,49 +128,36 @@ bool LipidSpecies::validate(){
 
 ElementTable* LipidSpecies::get_elements(){
     ElementTable* elements = create_empty_table();
-    if (use_head_group || (LipidClasses::get_instance().lipid_classes.find(lipid_class) == LipidClasses::get_instance().lipid_classes.end())){
-        return elements;
-    }
     
-    for (auto e : LipidClasses::get_instance().lipid_classes.at(lipid_class).elements){
-        elements->at(e.first) = e.second;
-    }
-    switch (info.level){
-        
-        case MOLECULAR_SUBSPECIES:
+    switch(info->level){
         case STRUCTURAL_SUBSPECIES:
         case ISOMERIC_SUBSPECIES:
-            {
-                int num_true_fa = 0;
-                for (auto fa : fa_list){
-                    ElementTable* fa_elements = fa->get_elements();
-                    if (fa->num_carbon != 0 || fa->num_double_bonds != 0) num_true_fa += 1;
-                    for (auto e : *fa_elements) elements->at(e.first) += e.second;
-                        
-                    delete fa_elements;
-                }
-                if (LipidClasses::get_instance().lipid_classes.at(lipid_class).max_num_fa < num_true_fa){
-                    throw LipidException("Inconsistancy in number of fatty acyl chains for lipid '" + head_group + "'");
-                }
-                elements->at(ELEMENT_H) += LipidClasses::get_instance().lipid_classes.at(lipid_class).max_num_fa - num_true_fa; // adding hydrogens for absent fatty acyl chains
-            }
-            break;
-            
         case SPECIES:
-            {
-                int max_poss_fa = *LipidClasses::get_instance().lipid_classes.at(lipid_class).possible_num_fa.rend();
-                ElementTable* fa_elements = info.get_elements(max_poss_fa);
-                for (auto e : *fa_elements) elements->at(e.first) += e.second;
-                delete fa_elements;
-                
-                elements->at(ELEMENT_H) += LipidClasses::get_instance().lipid_classes.at(lipid_class).max_num_fa - max_poss_fa; // adding hydrogens for absent fatty acyl chains
-            }
+        case MOLECULAR_SUBSPECIES:
             break;
-        
-        default:
-            break;
+
+        default:    
+            throw LipidException("Element table cannot be computed for lipid level " + std::to_string(info->level));
     }
+    
+    ElementTable* hg_elements = headgroup->get_elements();
+    for (auto &kv : *hg_elements) elements->at(kv.first) += kv.second;
+    delete hg_elements;
+        
+    
+    ElementTable* info_elements = info->get_elements();
+    for (auto &kv : *info_elements) elements->at(kv.first) += kv.second;
+    delete info_elements;
+    
+    // since only one FA info is provided, we have to treat this single information as
+    // if we would have the complete information about all possible FAs in that lipid
+    LipidClassMeta &meta = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class);
+    
+    int additional_fa = meta.possible_num_fa;
+    int remaining_H = meta.max_num_fa - additional_fa;
+    int hydrochain = contains(meta.special_cases, "HC");
+    elements->at(ELEMENT_O) -= -additional_fa + info->num_ethers + headgroup->sp_exception + hydrochain;
+    elements->at(ELEMENT_H) += -additional_fa + remaining_H + 2 * info->num_ethers + 2 * hydrochain;
     
     return elements;
 }
-

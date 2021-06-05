@@ -28,6 +28,7 @@ SOFTWARE.
 #define LIPID_SPECIES_INFO_H
 
 #include <string>
+#include <sstream>
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include <typeinfo>
@@ -39,10 +40,15 @@ class LipidSpeciesInfo : public FattyAcid {
     
 public:
     LipidLevel level;
-    LipidSpeciesInfo ();
-    LipidSpeciesInfo (FattyAcid *fa);
-    void clone (FattyAcid *fa);
-    ElementTable* get_elements(int num_fa);
+    int num_ethers;
+    int num_specified_fa;
+    int total_fa;
+    
+    LipidSpeciesInfo (LipidClass lipid_class);
+    void add(FattyAcid* _fa);
+    ElementTable* get_elements();
+    string to_string();
+    const string ether_prefix[5] = {"", "O-", "dO-", "tO-", "eO-"};
 };
         
 #endif /* LIPID_SPECIES_INFO_H */

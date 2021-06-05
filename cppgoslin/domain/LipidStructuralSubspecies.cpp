@@ -29,53 +29,9 @@ SOFTWARE.
 
 using namespace std;
 
-LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group) : LipidMolecularSubspecies (head_group) {
+
+LipidStructuralSubspecies::LipidStructuralSubspecies(Headgroup _headgroup, vector<FattyAcid*> *_fa) : LipidMolecularSubspecies (_headgroup, _fa) {
     info.level = STRUCTURAL_SUBSPECIES;
-}
-
-
-
-LipidStructuralSubspecies::LipidStructuralSubspecies(string head_group, vector<FattyAcid*> *_fa) : LipidMolecularSubspecies (head_group) {
-    int num_carbon = 0;
-    int num_hydroxyl = 0;
-    int num_double_bonds = 0;
-    LipidFaBondType lipid_FA_bond_type = ESTER;
-    
-    
-    if (_fa != NULL){
-        for (unsigned int i = 0; i < _fa->size(); ++i){
-            FattyAcid *fas = new FattyAcid(_fa->at(i));
-            delete _fa->at(i);
-            
-            if (fa.find(fas->name) != fa.end()){
-                throw ConstraintViolationException("FA names must be unique! FA with name " + fas->name + " was already added!");
-            }
-            else {
-                fa.insert({fas->name, fas});
-                fa_list.push_back(fas);
-                num_carbon += fas->num_carbon;
-                num_hydroxyl += fas->num_hydroxyl;
-                num_double_bonds += fas->num_double_bonds;
-                if (lipid_FA_bond_type == ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL || fas->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
-                    lipid_FA_bond_type = fas->lipid_FA_bond_type;
-                }
-                else if (lipid_FA_bond_type != ESTER && (fas->lipid_FA_bond_type == ETHER_PLASMANYL || fas->lipid_FA_bond_type == ETHER_PLASMENYL || fas->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
-                    stringstream ss;
-                    ss << "Only one FA can define an ether bond to the head group! Tried to add " << lipid_FA_bond_type << " over existing " << lipid_FA_bond_type;
-                    string error_message;
-                    ss >> error_message;
-                    
-                    throw ConstraintViolationException(error_message);
-                }
-            }
-        }
-    }
-            
-    info.level = STRUCTURAL_SUBSPECIES;
-    info.num_carbon = num_carbon;
-    info.num_hydroxyl = num_hydroxyl;
-    info.num_double_bonds = num_double_bonds;
-    info.lipid_FA_bond_type = lipid_FA_bond_type;
 }
 
 
@@ -95,19 +51,7 @@ string LipidStructuralSubspecies::get_lipid_string(LipidLevel level) {
     switch(level){
         case NO_LEVEL:
         case STRUCTURAL_SUBSPECIES:
-            if (!LipidMolecularSubspecies::validate()){
-                stringstream st;
-                st << "Number of fatty acyl chains for '" << get_class_string(lipid_class);
-                st << "' is incorrect, should be [";
-                int ii = 0;
-                for (auto p : LipidClasses::get_instance().lipid_classes.at(lipid_class).possible_num_fa){
-                    if (ii++ > 0) st << ", ";
-                    st << p;
-                }
-                st << "], present: " << fa.size();
-                throw ConstraintViolationException(st.str());
-            }
-            return build_lipid_subspecies_name("/", level);
+            return build_lipid_subspecies_name(STRUCTURAL_SUBSPECIES);
     
         case MOLECULAR_SUBSPECIES:
         case CATEGORY:
@@ -116,6 +60,6 @@ string LipidStructuralSubspecies::get_lipid_string(LipidLevel level) {
             return LipidMolecularSubspecies::get_lipid_string(level);
         
         default:
-            throw RuntimeException("LipidStructuralSubspecies does not know how to create a lipid string for level " + to_string(level));
+            throw RuntimeException("LipidStructuralSubspecies does not know how to create a lipid string for level " + std::to_string(level));
     }
 }
