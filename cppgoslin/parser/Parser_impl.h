@@ -269,13 +269,20 @@ void Parser<T>::read_grammar(string grammar){
         for (auto& rule : kv.second){
             vector<uint64_t>* topnodes = collect_one_backwards(rule);
             for (auto& rule_top : *topnodes){
-                vector<uint64_t>* chain = collect_backwards(rule, rule_top);
-                if (chain){
-                    chain->push_back(rule);
-                    
-                    uint64_t key = kv.first + (rule_top << 16);
-                    substitution.insert({key, chain});
+                vector< vector<uint64_t>* >* chains = collect_backwards(rule, rule_top);
+                if (chains == 0) continue;
+                
+                for (auto chain : chains){
+                    while (chain->size() > 1){
+                        uint64_t top = chain->at(0);
+                        vector<uint64_t>* new_chain = new vector<uint64_t>();
+                        for (int i = 1; i < (int)chain->size(); ++i) new_chain->push_back(chain->at(i));
+                        chain = new_chain;
+                        uint64_t key = kv.first + (top << 16);
+                        substitution.insert({key, chain});
+                    }
                 }
+                delete chains;
             }
             delete topnodes;
         }
@@ -591,7 +598,53 @@ vector<uint64_t>* Parser<T>::collect_backwards(uint64_t child_rule_index, unsign
     }
     return NULL;
 }
+
+
+template <class T>
+vector< vector<uint64_t>* >* Parser<T>::collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index, set<uint64_t>* visited = 0, vector<uint64_t>* path = 0, vector< vector<uint64_t>* >* collection = 0){
+    // provides all single linkage paths from a child rule to a parent rule,
+    // and yes, there can be several paths
+    bool initDataStructures = false;
+    if (visited == 0){
+        initDataStructures = true;
+        visited = new set<uint64_t>();
+        path = new vector<uint64_t>();
+        collection = new vector< vector<uint64_t>* >();
+    }
     
+    if (uncontains(NTtoNT,  child_rule_index)){
+        if (initDataStructures){
+            delete visited;
+            delete path;
+        }
+        return collection;
+    }
+    visited->insert(child_rule_index);
+    path->push_back(child_rule_index);
+    
+    for (auto previous_rule : NTtoNT.at(child_rule_index)){
+        if (uncontains(visited, previous_rule){
+            if (previous_rule == parent_rule_index){
+                vector<uint64_t>* found_path = new vector<uint64_t*>();
+                found_path->push_back(parent_rule_index);
+                for (int i = (int)path->size() - 1; i >= 0; --i) found_path->push_back(path->at(i));
+                collection->push_back(found_path);
+            }
+            
+            else{
+                collection = collect_backwards(previous_rule, parent_rule_index, visited, path, collection);
+            }
+        }
+    }
+    path->pop_back();
+    visited->erase(child_rule_index);
+    
+    if (initDataStructures){
+        delete visited;
+        delete path;
+    }
+    return collection;
+}
     
     
     
