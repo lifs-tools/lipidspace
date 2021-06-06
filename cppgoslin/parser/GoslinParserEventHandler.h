@@ -33,8 +33,11 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/LipidIsomericSubspecies.h"
 #include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/Headgroup.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
+#include <math.h>
 #include <set>
 #include <map>
 #include <vector>
@@ -55,7 +58,9 @@ public:
     Adduct *adduct;
     int db_position;
     string db_cistrans;
+    int db_numbers;
     bool unspecified_ether;
+    Headgroup* headgroup;
         
     GoslinParserEventHandler();
     ~GoslinParserEventHandler();

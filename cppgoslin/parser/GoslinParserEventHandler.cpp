@@ -106,8 +106,10 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
     current_fa = NULL;
     adduct = NULL;
     db_position = 0;
+    db_numbers = -1;
     db_cistrans = "";
     unspecified_ether = false;
+    headgroup = NULL;
 }
 
 
@@ -134,7 +136,7 @@ void GoslinParserEventHandler::set_isomeric_level(TreeNode* node){
 
 void GoslinParserEventHandler::add_db_position(TreeNode* node){
     if (current_fa != NULL){
-        current_fa->double_bond_positions.insert({db_position, db_cistrans});
+        current_fa->double_bonds->double_bond_positions.insert({db_position, db_cistrans});
     }
 }
 
@@ -156,31 +158,26 @@ void GoslinParserEventHandler::set_molecular_subspecies_level(TreeNode *node) {
     
     
 void GoslinParserEventHandler::new_fa(TreeNode *node) {
+    db_numbers = -1;
     LipidFaBondType lipid_FA_bond_type = ESTER;
     if (unspecified_ether){
         unspecified_ether = false;
         lipid_FA_bond_type = ETHER_UNSPECIFIED;
     }
-    current_fa = new FattyAcid("FA" + to_string(fa_list->size() + 1), 2, 0, 0, lipid_FA_bond_type, false, 0, NULL);
+    current_fa = new FattyAcid("FA" + std::to_string(fa_list->size() + 1), 2, 0, 0, lipid_FA_bond_type);
 }
     
     
 
 void GoslinParserEventHandler::new_lcb(TreeNode *node) {
-    lcb = new FattyAcid("LCB", 2, 0, 1, ESTER, true, 1, NULL);
+    lcb = new FattyAcid("LCB");
+    lcb->lcb = true;
     current_fa = lcb;
 }
         
         
 
 void GoslinParserEventHandler::clean_lcb(TreeNode *node) {
-    if (level == SPECIES){
-        FattyAcid* tmp_lcb = lcb;
-        lcb = new LipidSpeciesInfo(tmp_lcb);
-        lcb->lipid_FA_bond_type = ESTER;
-        delete tmp_lcb;
-    }
-    
     current_fa = NULL;
 }
     
@@ -188,24 +185,16 @@ void GoslinParserEventHandler::clean_lcb(TreeNode *node) {
         
 
 void GoslinParserEventHandler::append_fa(TreeNode *node) {
-    switch(level){
-        case SPECIES:
-            {
-                FattyAcid* tmp_fa = current_fa;
-                current_fa = new LipidSpeciesInfo(tmp_fa);
-                delete tmp_fa;
-            }
-            break;
+    if (current_fa->lipid_FA_bond_type == ETHER_UNSPECIFIED){
+        throw LipidException("Lipid with unspecified ether bond cannot be treated properly.");
+    }
         
-        case STRUCTURAL_SUBSPECIES:
-        case ISOMERIC_SUBSPECIES:
-            {
-                current_fa->position = fa_list->size() + 1;
-            }
-            break;
-        
-        default:
-            break;
+    if (db_numbers > -1 && db_numbers != current_fa->double_bonds->get_num()){
+        throw LipidException("Double bond count does not match with number of double bond positions");
+    }
+    
+    if (level == STRUCTURAL_SUBSPECIES || level == ISOMERIC_SUBSPECIES){
+            current_fa->position = fa_list->size() + 1;
     }
     
 
@@ -225,31 +214,14 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     lipid = NULL;
     LipidSpecies *ls = NULL;
     
-    
+    headgroup = new Headgroup(head_group);
 
-    
-    if (level == SPECIES){
-        if (fa_list->size() > 0){
-            LipidSpeciesInfo lipid_species_info(fa_list->at(0));
-            delete fa_list->at(0);
-            lipid_species_info.level = SPECIES;
-            ls = new LipidSpecies(head_group, NO_CATEGORY, NO_CLASS, &lipid_species_info);
-        }
-        else{
-            ls = new LipidSpecies(head_group);
-        }
-    }
-        
-    else if (level == MOLECULAR_SUBSPECIES){
-        ls = new LipidMolecularSubspecies(head_group, fa_list);
-    }
-        
-    else if (level == STRUCTURAL_SUBSPECIES){
-        ls = new LipidStructuralSubspecies(head_group, fa_list);
-    }
-        
-    else if (level == ISOMERIC_SUBSPECIES){
-        ls = new LipidIsomericSubspecies(head_group, fa_list);
+    switch (level){
+        case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
+        case MOLECULAR_SUBSPECIES: ls = new LipidMolecularSubspecies(headgroup, fa_list); break;
+        case STRUCTURAL_SUBSPECIES: ls = new LipidStructuralSubspecies(headgroup, fa_list); break;
+        case ISOMERIC_SUBSPECIES: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
+        default: break;
     }
     lipid = new LipidAdduct();
     lipid->lipid = ls;
@@ -263,21 +235,33 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
 void GoslinParserEventHandler::add_ether(TreeNode *node) {
     string ether = node->get_text();
     if (ether == "a") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
-    else if (ether == "p") current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
+    else if (ether == "p"){
+        current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
+        current_fa->double_bonds->num_double_bonds = max(0, current_fa->double_bonds->num_double_bonds - 1);
+    }
 }
     
     
 
 void GoslinParserEventHandler::add_old_hydroxyl(TreeNode *node) {
     string old_hydroxyl = node->get_text();
-    if (old_hydroxyl == "d") current_fa->num_hydroxyl = 2;
-    else if (old_hydroxyl == "t") current_fa->num_hydroxyl = 3;
+    int num_h = 0;
+    if (old_hydroxyl == "d") num_h = 2;
+    else if (old_hydroxyl == "t") num_h = 3;
+    
+    
+    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
+    
+    FunctionalGroup* functional_group = FunctionalGroup::get_functional_group("OH");
+    functional_group->count = num_h;
+    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at("OH").push_back(functional_group);
 }
     
     
 
 void GoslinParserEventHandler::add_double_bonds(TreeNode *node) {
-    current_fa->num_double_bonds = atoi(node->get_text().c_str());
+    current_fa->double_bonds->num_double_bonds = atoi(node->get_text().c_str());
 }
     
     
@@ -289,7 +273,14 @@ void GoslinParserEventHandler::add_carbon(TreeNode *node) {
     
 
 void GoslinParserEventHandler::add_hydroxyl(TreeNode *node) {
-    current_fa->num_hydroxyl = atoi(node->get_text().c_str());
+    int num_h = atoi(node->get_text().c_str());
+    
+    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
+    
+    FunctionalGroup* functional_group = FunctionalGroup::get_functional_group("OH");
+    functional_group->count = num_h;
+    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at("OH").push_back(functional_group);
 }
     
     

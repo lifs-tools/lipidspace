@@ -45,7 +45,6 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/StringFunctions.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
-#include "cppgoslin/parser/GoslinFragmentParserEventHandler.h"
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include "cppgoslin/parser/SwissLipidsParserEventHandler.h"
 #include "cppgoslin/parser/SumFormulaParserEventHandler.h"

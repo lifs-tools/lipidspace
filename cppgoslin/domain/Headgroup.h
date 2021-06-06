@@ -25,11 +25,11 @@ public:
     ~Headgroup();
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     ElementTable* get_elements();
-    LipidCategory get_category(string _headgroup);
-    LipidClass get_class(string _head_group);
-    string get_class_string(LipidClass _lipid_class);
+    static LipidCategory get_category(string _headgroup);
+    static LipidClass get_class(string _head_group);
+    static string get_class_string(LipidClass _lipid_class);
+    static string get_category_string(LipidCategory _lipid_category);
     string get_class_name();
-    string get_category_string(LipidCategory _lipid_category);
     
 };
 

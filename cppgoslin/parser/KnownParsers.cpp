@@ -36,16 +36,6 @@ GoslinParser::~GoslinParser(){
 }
 
 
-GoslinFragmentParser::GoslinFragmentParser() : Parser<LipidAdduct*>(new GoslinFragmentParserEventHandler(), GrammarString(goslin_fragment_grammar), DEFAULT_QUOTE){
-        
-}
-
-
-GoslinFragmentParser::~GoslinFragmentParser(){
-    delete parser_event_handler;
-}
-
-
 LipidMapsParser::LipidMapsParser() : Parser<LipidAdduct*>(new LipidMapsParserEventHandler(), GrammarString(lipid_maps_grammar), DEFAULT_QUOTE){
         
 }
@@ -79,7 +69,6 @@ LipidParser::LipidParser(){
     parser_list.push_back(new LipidMapsParser());
     parser_list.push_back(new SwissLipidsParser());
     parser_list.push_back(new HmdbParser());
-    parser_list.push_back(new GoslinFragmentParser());
 }
 
 LipidParser::~LipidParser(){

@@ -102,7 +102,9 @@ void LipidMapsParserEventHandler::reset_lipid(TreeNode* node){
     use_head_group = false;
     omit_fa = false;
     db_position = 0;
+    db_numbers = -1;
     db_cistrans = "";
+    headgroup = NULL;
 }
     
 void LipidMapsParserEventHandler::set_molecular_subspecies_level(TreeNode* node){
@@ -130,7 +132,7 @@ void LipidMapsParserEventHandler::set_isomeric_level(TreeNode* node){
 
 void LipidMapsParserEventHandler::add_db_position(TreeNode* node){
     if (current_fa != NULL){
-        current_fa->double_bond_positions.insert({db_position, db_cistrans});
+        current_fa->double_bonds->double_bond_positions.insert({db_position, db_cistrans});
     }
 }
 
@@ -156,32 +158,28 @@ void LipidMapsParserEventHandler::set_species_level(TreeNode* node){
     
     
 void LipidMapsParserEventHandler::increment_hydroxyl(TreeNode* node){
-    if (node->get_text() == "OH"){
-        current_fa->num_hydroxyl += 1;
-    }
+    FunctionalGroup* functional_group = FunctionalGroup::get_functional_group("OH");
+    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at("OH").push_back(functional_group);
 }
         
+        
 void LipidMapsParserEventHandler::new_fa(TreeNode *node) {
-    current_fa = new FattyAcid("FA" + std::to_string(fa_list->size() + 1), 2, 0, 0, ESTER, false, 0, NULL);
+    db_numbers = -1;
+    current_fa = new FattyAcid("FA" + std::to_string(fa_list->size() + 1));
 }
     
     
 
 void LipidMapsParserEventHandler::new_lcb(TreeNode *node) {
-    lcb = new FattyAcid("LCB", 2, 0, 1, ESTER, true, 1, NULL);
+    lcb = new FattyAcid("LCB");
+    lcb->lcb = true;
     current_fa = lcb;
 }
         
         
 
 void LipidMapsParserEventHandler::clean_lcb(TreeNode *node) {
-    if (level == SPECIES){
-        FattyAcid* tmp_lcb = lcb;
-        lcb = new LipidSpeciesInfo(tmp_lcb);
-        lcb->lipid_FA_bond_type = ESTER;
-        delete tmp_lcb;
-    }
-    
     current_fa = NULL;
 }
     
@@ -189,31 +187,18 @@ void LipidMapsParserEventHandler::clean_lcb(TreeNode *node) {
         
 
 void LipidMapsParserEventHandler::append_fa(TreeNode *node) {
-    switch(level){
-        case SPECIES:
-            {
-                FattyAcid* tmp_fa = current_fa;
-                current_fa = new LipidSpeciesInfo(tmp_fa);
-                delete tmp_fa;
-            }
-            break;
-        
-        case STRUCTURAL_SUBSPECIES:
-        case ISOMERIC_SUBSPECIES:
-            {
-                current_fa->position = fa_list->size() + 1;
-            }
-            break;
-        
-        default:
-            break;
+    if (db_numbers > -1 && db_numbers != current_fa->double_bonds->get_num()){
+        throw LipidException("Double bond count does not match with number of double bond positions");
     }
     
-    if (current_fa->num_carbon > 0) fa_list->push_back(current_fa);
-    else{
-        omit_fa = true;
-        delete current_fa;
+    if (level == STRUCTURAL_SUBSPECIES || level == ISOMERIC_SUBSPECIES){
+            current_fa->position = fa_list->size() + 1;
     }
+    
+    if (current_fa->num_carbon == 0){
+        omit_fa = true;
+    }
+    fa_list->push_back(current_fa);
     current_fa = NULL;
 }
     
@@ -223,26 +208,44 @@ void LipidMapsParserEventHandler::add_ether(TreeNode* node){
     if (ether == "O-") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
     else if (ether == "P-"){
         current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
-        current_fa->num_double_bonds += 1;
+        current_fa->double_bonds->num_double_bonds += 1;
     }
 }
     
     
     
 void LipidMapsParserEventHandler::add_hydroxyl(TreeNode* node){
-    current_fa->num_hydroxyl = atoi(node->get_text().c_str());
+    int num_h = atoi(node->get_text().c_str());
+    
+    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
+    
+    FunctionalGroup* functional_group = FunctionalGroup::get_functional_group("OH");
+    functional_group->count = num_h;
+    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at("OH").push_back(functional_group);
 }
+
+
     
 void LipidMapsParserEventHandler::add_hydroxyl_lcb(TreeNode* node){
     string hydroxyl = node->get_text();
-    if (hydroxyl == "m") current_fa->num_hydroxyl = 1;
-    else if (hydroxyl == "d") current_fa->num_hydroxyl = 2;
-    else if (hydroxyl == "t") current_fa->num_hydroxyl = 3;
+    int num_h = 0;
+    if (hydroxyl == "m") num_h = 1;
+    else if (hydroxyl == "d") num_h = 2;
+    else if (hydroxyl == "t") num_h = 3;
+    
+    
+    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
+    
+    FunctionalGroup* functional_group = FunctionalGroup::get_functional_group("OH");
+    functional_group->count = num_h;
+    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at("OH").push_back(functional_group);
 }
     
     
 void LipidMapsParserEventHandler::add_double_bonds(TreeNode* node){
-    current_fa->num_double_bonds += atoi(node->get_text().c_str());
+    current_fa->double_bonds->num_double_bonds += atoi(node->get_text().c_str());
 }
     
     
@@ -265,31 +268,15 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
     lipid = NULL;
     LipidSpecies *ls = NULL;
     
-    if (level == SPECIES){
-        if (fa_list->size() > 0){
-            LipidSpeciesInfo lipid_species_info(fa_list->at(0));
-            delete fa_list->at(0);
-            lipid_species_info.level = SPECIES;
-            ls = new LipidSpecies(head_group, NO_CATEGORY, NO_CLASS, &lipid_species_info);
-        }
-        else {
-            ls = new LipidSpecies(head_group);
-        }
+    headgroup = new Headgroup(head_group);
+
+    switch (level){
+        case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
+        case MOLECULAR_SUBSPECIES: ls = new LipidMolecularSubspecies(headgroup, fa_list); break;
+        case STRUCTURAL_SUBSPECIES: ls = new LipidStructuralSubspecies(headgroup, fa_list); break;
+        case ISOMERIC_SUBSPECIES: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
+        default: break;
     }
-    else if (level == MOLECULAR_SUBSPECIES) {
-        ls = new LipidMolecularSubspecies(head_group, fa_list);
-    }
-        
-    else if (level == STRUCTURAL_SUBSPECIES) {
-        ls = new LipidStructuralSubspecies(head_group, fa_list);
-    }
-        
-    else if (level == ISOMERIC_SUBSPECIES){
-        ls = new LipidIsomericSubspecies(head_group, fa_list);
-    }
-    
-    
-    ls->use_head_group = use_head_group;
     lipid = new LipidAdduct();
     lipid->lipid = ls;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;

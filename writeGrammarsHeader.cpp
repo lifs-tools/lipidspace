@@ -110,9 +110,6 @@ void writeGrammarHeader(string ofFileName){
     addingGrammar(offile, "goslin_grammar", "data/goslin/Goslin.g4");
     offile << endl << endl << endl;
     
-    addingGrammar(offile, "goslin_fragment_grammar", "data/goslin/GoslinFragments.g4");
-    offile << endl << endl << endl;
-    
     addingGrammar(offile, "lipid_maps_grammar", "data/goslin/LipidMaps.g4");
     offile << endl << endl << endl;
     
