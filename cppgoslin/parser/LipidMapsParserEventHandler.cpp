@@ -277,6 +277,7 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
         case ISOMERIC_SUBSPECIES: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
         default: break;
     }
+    ls->use_head_group = use_head_group;
     lipid = new LipidAdduct();
     lipid->lipid = ls;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;

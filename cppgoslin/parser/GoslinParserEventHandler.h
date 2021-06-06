@@ -58,7 +58,6 @@ public:
     Adduct *adduct;
     int db_position;
     string db_cistrans;
-    int db_numbers;
     bool unspecified_ether;
     Headgroup* headgroup;
         

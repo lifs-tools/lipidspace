@@ -106,7 +106,6 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
     current_fa = NULL;
     adduct = NULL;
     db_position = 0;
-    db_numbers = -1;
     db_cistrans = "";
     unspecified_ether = false;
     headgroup = NULL;
@@ -158,7 +157,6 @@ void GoslinParserEventHandler::set_molecular_subspecies_level(TreeNode *node) {
     
     
 void GoslinParserEventHandler::new_fa(TreeNode *node) {
-    db_numbers = -1;
     LipidFaBondType lipid_FA_bond_type = ESTER;
     if (unspecified_ether){
         unspecified_ether = false;
@@ -189,7 +187,8 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
         throw LipidException("Lipid with unspecified ether bond cannot be treated properly.");
     }
         
-    if (db_numbers > -1 && db_numbers != current_fa->double_bonds->get_num()){
+    
+    if (current_fa->double_bonds->get_num() < 0){
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     

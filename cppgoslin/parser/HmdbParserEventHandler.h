@@ -33,6 +33,8 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/LipidIsomericSubspecies.h"
 #include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
+#include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
 #include <set>
@@ -55,6 +57,7 @@ public:
     bool use_head_group;
     int db_position;
     string db_cistrans;
+    Headgroup* headgroup;
         
     HmdbParserEventHandler();
     ~HmdbParserEventHandler();
