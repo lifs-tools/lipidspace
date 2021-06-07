@@ -5,7 +5,7 @@ AR = ar
 MARCH = -mtune=native
 bin = libcppGoslin.so
 abin = libcppGoslin.a
-domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StringFunctions.o cppgoslin/domain/LipidClasses.o cppgoslin/domain/DoubleBonds.o cppgoslin/domain/FunctionalGroup.o cppgoslin/domain/Headgroup.o
+domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StringFunctions.o cppgoslin/domain/LipidClasses.o cppgoslin/domain/DoubleBonds.o cppgoslin/domain/FunctionalGroup.o cppgoslin/domain/Headgroup.o cppgoslin/domain/Cycle.o
 
 parser = cppgoslin/parser/ParserClasses.o cppgoslin/parser/KnownParsers.o cppgoslin/parser/GoslinParserEventHandler.o cppgoslin/parser/LipidMapsParserEventHandler.o cppgoslin/parser/SwissLipidsParserEventHandler.o cppgoslin/parser/HmdbParserEventHandler.o cppgoslin/parser/SumFormulaParserEventHandler.o cppgoslin/parser/SumFormulaParser.o
 
@@ -37,7 +37,11 @@ cppgoslin/domain/LipidClasses.cpp: data/goslin/lipid-list.csv cppgoslin/parser/K
 	
 
 	
-%.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h cppgoslin/parser/Parser_impl.h
+cppgoslin/domain/%.o: cppgoslin/domain/%.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h
+	${CC} ${opt} -I. -fPIC -o $@ -c $<
+	
+	
+cppgoslin/parser/%.o: cppgoslin/parser/%.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h cppgoslin/parser/Parser_impl.h cppgoslin/parser/BaseParserEventHandler_impl.h
 	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
 clean:

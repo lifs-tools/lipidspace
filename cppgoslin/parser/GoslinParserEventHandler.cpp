@@ -89,6 +89,7 @@ GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<Li
     
     reg("hg_lpl_oc_pre_event", set_unspecified_ether);
     reg("hg_pl_oc_pre_event", set_unspecified_ether);
+    debug = "";
 }
 
 
@@ -273,6 +274,7 @@ void GoslinParserEventHandler::add_carbon(TreeNode *node) {
 
 void GoslinParserEventHandler::add_hydroxyl(TreeNode *node) {
     int num_h = atoi(node->get_text().c_str());
+    
     
     if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
     

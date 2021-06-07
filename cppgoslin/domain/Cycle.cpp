@@ -162,8 +162,8 @@ string Cycle::to_string(LipidLevel level){
     
     if (level == ISOMERIC_SUBSPECIES){
         vector<string> fg_names;
-        for (auto &kv : *functional_groups) fg_names.push_back(to_lower(kv.first));
-        sort(fg_names.begin(), fg_names.end());
+        for (auto &kv : *functional_groups) fg_names.push_back(kv.first);
+        sort(fg_names.begin(), fg_names.end(), lower_name_sort_function);
         
         for (auto &fg : fg_names){
             vector<FunctionalGroup*>& fg_list = functional_groups->at(fg);
@@ -181,14 +181,14 @@ string Cycle::to_string(LipidLevel level){
     
     else if (level == STRUCTURAL_SUBSPECIES){
         vector<string> fg_names;
-        for (auto &kv : *functional_groups) fg_names.push_back(to_lower(kv.first));
-        sort(fg_names.begin(), fg_names.end());
+        for (auto &kv : *functional_groups) fg_names.push_back(kv.first);
+        sort(fg_names.begin(), fg_names.end(), lower_name_sort_function);
         
         for (auto &fg : fg_names){
             vector<FunctionalGroup*> &fg_list = functional_groups->at(fg);
             if (fg_list.empty()) continue;
             
-            else if (fg_list.size() == 1 && fg_list.at(0).count == 1){
+            else if (fg_list.size() == 1 && fg_list.at(0)->count == 1){
                 cycle_string << ";" << fg_list.front()->to_string(level);
             }
             else {

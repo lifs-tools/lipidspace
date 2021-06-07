@@ -30,14 +30,15 @@ SOFTWARE.
 LipidMolecularSubspecies::LipidMolecularSubspecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidSpecies(_headgroup) {
     info->level = MOLECULAR_SUBSPECIES;
     
-    for (auto fatty_acid : *_fa){
-        if (contains(fa, fatty_acid->name)){
-            throw ConstraintViolationException("FA names must be unique! FA with name " + fatty_acid->name + " was already added!");
+    if (_fa != 0){
+        for (auto fatty_acid : *_fa){
+            if (contains(fa, fatty_acid->name)){
+                throw ConstraintViolationException("FA names must be unique! FA with name " + fatty_acid->name + " was already added!");
+            }
+            fa.insert({fatty_acid->name, fatty_acid});
+            fa_list.push_back(fatty_acid);
+            info->add(fatty_acid);
         }
-        
-        fa.insert({fatty_acid->name, fatty_acid});
-        fa_list.push_back(fatty_acid);
-        info->add(fatty_acid);
     }
             
             
@@ -70,6 +71,7 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(LipidLevel level){
             if (fa_list.size() > 0){
                 lipid_name << fa_headgroup_separator;
                 int i = 0;
+    
                 for (auto fatty_acid : fa_list){
                     if (i++ > 0) lipid_name << fa_separator;
                     lipid_name << fatty_acid->to_string(level);
@@ -90,8 +92,10 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(LipidLevel level){
                 lipid_name << fa_headgroup_separator;
                 int i = 0;
                 for (auto fatty_acid : fa_list){
-                    if (i++ > 0) lipid_name << fa_separator;
-                    lipid_name << fatty_acid->to_string(level);
+                    if (fatty_acid->num_carbon > 0){
+                        if (i++ > 0) lipid_name << fa_separator;
+                        lipid_name << fatty_acid->to_string(level);
+                    }
                 }
             }
             break;

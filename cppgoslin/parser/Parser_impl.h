@@ -265,8 +265,14 @@ void Parser<T>::read_grammar(string grammar){
     
     
     // creating substitution dictionary for adding single rule chains into the parsing tree
+    set<uint64_t> visited;
     for (auto& kv : NTtoNT){
-        for (auto& rule : kv.second){
+        set<uint64_t> values = set<uint64_t>(kv.second);
+        values.insert(kv.first);
+        for (auto& rule : values){
+            if (contains(visited, rule)) continue;
+            visited.insert(rule);
+            
             vector<uint64_t>* topnodes = collect_one_backwards(rule);
             for (auto& rule_top : *topnodes){
                 vector< vector<uint64_t>* >* chains = collect_backwards(rule, rule_top);
@@ -636,7 +642,7 @@ vector< vector<uint64_t>* >* Parser<T>::collect_backwards(uint64_t child_rule_in
 template <class T>
 void Parser<T>::raise_events(TreeNode *node){
     if (node != NULL){
-        string node_rule_name = node->fire_event ?  NTtoRule.at(node->rule_index) : "";
+        string node_rule_name = node->fire_event ? NTtoRule.at(node->rule_index) : "";
         if (node->fire_event) parser_event_handler->handle_event(node_rule_name + "_pre_event", node);
         
         if (node->left != NULL) { // node.terminal is != None when node is leaf
@@ -669,7 +675,7 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
     
     uint64_t subst_key = bottom_rule + (top_rule << 16);
     
-    if ((bottom_rule != top_rule) and (contains(substitution, subst_key))){
+    if ((bottom_rule != top_rule) && (contains(substitution, subst_key))){
         for (auto& rule_index : *substitution.at(subst_key)){
             node->left = new TreeNode(rule_index, contains(NTtoRule, rule_index));
             node = node->left;
@@ -705,7 +711,6 @@ T Parser<T>::parse(string text_to_parse, bool throw_error){
         throw LipidParsingException("Lipid '" + old_lipid + "' can not be parsed by grammar '" + grammar_name + "'");
     }
     
-    cout << "oho" << endl;
     return parser_event_handler->content;
 }
     

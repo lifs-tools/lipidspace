@@ -19,6 +19,11 @@ bool FunctionalGroup::position_sort_function (FunctionalGroup* f1, FunctionalGro
 }
 
 
+bool FunctionalGroup::lower_name_sort_function (string s1, string s2) {
+    return (to_lower(s1) < to_lower(s2));
+}
+
+
 
 FunctionalGroup::FunctionalGroup(FunctionalGroup* fg){
     name = fg->name;
@@ -27,11 +32,13 @@ FunctionalGroup::FunctionalGroup(FunctionalGroup* fg){
     stereochemistry = fg->stereochemistry;
     ring_stereo = fg->ring_stereo;
     double_bonds = new DoubleBonds(fg->double_bonds);
+    elements = create_empty_table();
+    functional_groups = new map<string, vector<FunctionalGroup*>>();
     
     for (auto &kv : *(fg->elements)) elements->at(kv.first) = kv.second;
     for (auto &kv : *(fg->functional_groups)){
         functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
-        for (auto fg : kv.second) functional_groups->at(kv.first).push_back(new FunctionalGroup(fg));
+        for (auto func_group : kv.second) functional_groups->at(kv.first).push_back(new FunctionalGroup(func_group));
     }
 }
 

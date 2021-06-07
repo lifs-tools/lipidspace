@@ -28,6 +28,7 @@ SOFTWARE.
 template <class T> 
 BaseParserEventHandler<T>::BaseParserEventHandler(){
     registered_events = new map<string, function<void(TreeNode *)>>();
+    debug = "";
 }
 
 template <class T> 
@@ -58,7 +59,16 @@ void BaseParserEventHandler<T>::sanity_check(){
 
 template <class T> 
 void BaseParserEventHandler<T>::handle_event(string event_name, TreeNode *node){
+    if (debug == "full"){
+        string reg_event = contains_p(registered_events, event_name) ? "*" : "";
+        cout << event_name << reg_event << ": \"" << node->get_text() << "\"" << endl;
+    }
+        
     if (registered_events->find(event_name) != registered_events->end()){
+        if (debug != "" && debug != "full"){
+            cout << event_name << ": \"" << node->get_text() << "\"" << endl;
+        }
+        
         registered_events->at(event_name)(node);
     }
 }

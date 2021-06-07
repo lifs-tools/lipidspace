@@ -4,18 +4,13 @@
 #include "cppgoslin/domain/Element.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/DoubleBonds.h"
+#include "cppgoslin/domain/StringFunctions.h"
 #include <map>
 #include <vector>
 #include <string>
 
 using namespace std;
 using namespace goslin;
-
-
-#define contains(X, Y) ((X).find(Y) != (X).end())
-#define contains_p(X, Y) ((X)->find(Y) != (X)->end())
-#define uncontains(X, Y) ((X).find(Y) == (X).end())
-#define uncontains_p(X, Y) ((X)->find(Y) == (X)->end())
 
 class FunctionalGroup {
 public:
@@ -29,14 +24,15 @@ public:
     ElementTable* elements;
     map<string, vector<FunctionalGroup*>>* functional_groups;
     static bool position_sort_function(FunctionalGroup* f1, FunctionalGroup *f2);
+    static bool lower_name_sort_function(string s1, string s2);
     
     FunctionalGroup(string _name, int _position = -1, int _count = 1, DoubleBonds* _double_bonds = 0, bool _is_atomic = false, string _stereochemistry = "", ElementTable* _elements = 0, map<string, vector<FunctionalGroup*>>* _functional_groups = 0);
     FunctionalGroup(FunctionalGroup* fg);
-    ~FunctionalGroup();
+    virtual ~FunctionalGroup();
     ElementTable* get_elements();
     void shift_positions(int shift);
     ElementTable* get_functional_group_elements();
-    void compute_elements();
+    virtual void compute_elements();
     string to_string(LipidLevel level);
     int get_double_bonds();
     void add(FunctionalGroup* fg);

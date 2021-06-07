@@ -49,6 +49,7 @@ public:
     map<string, function<void(TreeNode *)>>* registered_events;
     set<string> rule_names;
     T content;
+    string debug;
     
     BaseParserEventHandler();
     virtual ~BaseParserEventHandler();

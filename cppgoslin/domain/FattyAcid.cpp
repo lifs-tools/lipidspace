@@ -92,6 +92,7 @@ string FattyAcid::to_string(LipidLevel level){
         num_double_bonds = get_double_bonds() - (lipid_FA_bond_type == ETHER_PLASMENYL);
         delete e;
     }
+    
 
     fa_string << num_carbons << ":" << num_double_bonds;
     
@@ -111,8 +112,8 @@ string FattyAcid::to_string(LipidLevel level){
         
     if (level == ISOMERIC_SUBSPECIES){
         vector<string> fg_names;
-        for (auto &kv : *functional_groups) fg_names.push_back(to_lower(kv.first));
-        sort(fg_names.begin(), fg_names.end());
+        for (auto &kv : *functional_groups) fg_names.push_back(kv.first);
+        sort(fg_names.begin(), fg_names.end(), lower_name_sort_function);
         
         for (auto &fg : fg_names){
             vector<FunctionalGroup*>& fg_list = functional_groups->at(fg);
@@ -130,8 +131,9 @@ string FattyAcid::to_string(LipidLevel level){
     
     else if (level == STRUCTURAL_SUBSPECIES){
         vector<string> fg_names;
-        for (auto &kv : *functional_groups) fg_names.push_back(to_lower(kv.first));
-        sort(fg_names.begin(), fg_names.end());
+        for (auto &kv : *functional_groups) fg_names.push_back(kv.first);
+        sort(fg_names.begin(), fg_names.end(), lower_name_sort_function);
+        
         
         for (auto &fg : fg_names){
             vector<FunctionalGroup*> &fg_list = functional_groups->at(fg);
@@ -180,7 +182,7 @@ string FattyAcid::to_string(LipidLevel level){
 
 
 void FattyAcid::compute_elements(){
-    ElementTable* elements = create_empty_table();
+    for (auto &kv : *elements) elements->at(kv.first) = 0;
     
     int num_double_bonds = double_bonds->num_double_bonds;
     if (lipid_FA_bond_type == ETHER_PLASMENYL) num_double_bonds += 1;
