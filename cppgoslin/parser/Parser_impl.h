@@ -705,6 +705,7 @@ T Parser<T>::parse(string text_to_parse, bool throw_error){
         throw LipidParsingException("Lipid '" + old_lipid + "' can not be parsed by grammar '" + grammar_name + "'");
     }
     
+    cout << "oho" << endl;
     return parser_event_handler->content;
 }
     

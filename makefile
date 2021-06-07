@@ -37,7 +37,7 @@ cppgoslin/domain/LipidClasses.cpp: data/goslin/lipid-list.csv cppgoslin/parser/K
 	
 
 	
-%.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h
+%.o: %.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h cppgoslin/parser/Parser_impl.h
 	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
 clean:

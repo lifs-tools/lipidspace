@@ -198,7 +198,6 @@ void HmdbParserEventHandler::build_lipid(TreeNode *node) {
     ls->use_head_group = use_head_group;
     lipid = new LipidAdduct();
     lipid->lipid = ls;
-    lipid->adduct = adduct;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
 }
     

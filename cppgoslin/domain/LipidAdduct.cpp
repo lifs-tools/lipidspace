@@ -62,7 +62,7 @@ string LipidAdduct::get_lipid_string(LipidLevel level){
 
 
 string LipidAdduct::get_class_name(){
-    return (lipid) ? lipid->get_class_name() : "";
+    return (lipid) ? lipid->headgroup->get_class_name() : "";
 }
 
 

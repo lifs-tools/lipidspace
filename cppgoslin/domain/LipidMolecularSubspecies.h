@@ -46,7 +46,6 @@ public:
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     LipidLevel get_lipid_level();
     ElementTable* get_elements();
-    bool validate();
 };
 
 #endif /* LIPID_MOLECULAR_SUBSPECIES_H */

@@ -53,6 +53,7 @@ public:
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     string get_lipid_fragment_string(LipidLevel level = NO_LEVEL);
     string get_class_name();
+    string get_extended_class();
     double get_mass();
     string get_sum_formula();
     ElementTable* get_elements();
