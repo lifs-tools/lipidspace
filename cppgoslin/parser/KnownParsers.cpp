@@ -26,6 +26,16 @@ SOFTWARE.
 
 #include "cppgoslin/parser/KnownParsers.h"
 
+ShorthandParser::ShorthandParser() : Parser<LipidAdduct*>(new ShorthandParserEventHandler(), GrammarString(shorthand_grammar), DEFAULT_QUOTE){
+        
+}
+
+
+ShorthandParser::~ShorthandParser(){
+    delete parser_event_handler;
+}
+
+
 GoslinParser::GoslinParser() : Parser<LipidAdduct*>(new GoslinParserEventHandler(), GrammarString(goslin_grammar), DEFAULT_QUOTE){
         
 }
