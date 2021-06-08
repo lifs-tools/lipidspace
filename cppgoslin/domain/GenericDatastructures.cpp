@@ -7,11 +7,14 @@ GenericList::~GenericList(){
     }
 }
 
-/*
-void GenericList::remove(string key){
-    del(dictionary.at(key));
-    dictionary.erase(key);
-}*/
+
+
+void GenericList::remove_all(){
+    while(!list.empty()){
+        del(list.back());
+        list.pop_back();
+    }
+}
 
 
 void GenericList::del(pair<int, void*> &x){
@@ -140,6 +143,18 @@ void GenericDictionary::remove(string key){
     del(dictionary.at(key));
     dictionary.erase(key);
 }
+
+
+
+void GenericDictionary::remove_all(){
+    vector<string> keys;
+    for (auto &kv : dictionary) keys.push_back(kv.first);
+    for (auto key : keys){
+        del(dictionary.at(key));
+        dictionary.erase(key);
+    }
+}
+
 
 void GenericDictionary::del(pair<int, void*> &x){
     switch (x.first){

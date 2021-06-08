@@ -112,13 +112,15 @@ string Headgroup::get_lipid_string(LipidLevel level){
         
         
 ElementTable* Headgroup::get_elements(){
-    if (use_headgroup){
+    ClassMap &lipid_classes = LipidClasses::get_instance().lipid_classes;
+    
+    if (use_headgroup || uncontains(lipid_classes, lipid_class)){
         throw RuntimeException("Element table cannot be computed for lipid '" + headgroup + "'");
     }
     
     ElementTable *elements = create_empty_table();
     
-    for (auto &kv : LipidClasses::get_instance().lipid_classes.at(lipid_class).elements){
+    for (auto &kv : lipid_classes.at(lipid_class).elements){
         elements->at(kv.first) += kv.second;
     }
     
@@ -129,7 +131,7 @@ ElementTable* Headgroup::get_elements(){
     }
     
     
-    if (lipid_category == SP && (LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name.compare("Cer") == 0 || LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name.compare("SPB") == 0) && decorators->size() == 0){
+    if (lipid_category == SP && (lipid_classes.at(lipid_class).class_name.compare("Cer") == 0 || lipid_classes.at(lipid_class).class_name.compare("SPB") == 0) && decorators->size() == 0){
         elements->at(ELEMENT_O) -= 1;
     }
     

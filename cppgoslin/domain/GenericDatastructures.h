@@ -41,6 +41,7 @@ public:
     GenericDictionary* getDictionary(int i);
     
     void del(pair<int, void*> &x);
+    void remove_all();
 };
 
 
@@ -73,6 +74,7 @@ public:
     GenericDictionary* getDictionary(string key);
     
     void remove(string key);
+    void remove_all();
     void del(pair<int, void*> &x);
 };
 

@@ -29,7 +29,6 @@ SOFTWARE.
 
 LipidMolecularSubspecies::LipidMolecularSubspecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidSpecies(_headgroup) {
     info->level = MOLECULAR_SUBSPECIES;
-    
     if (_fa != 0){
         for (auto fatty_acid : *_fa){
             if (contains(fa, fatty_acid->name)){

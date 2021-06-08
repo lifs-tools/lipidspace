@@ -138,10 +138,10 @@ ElementTable* LipidSpecies::get_elements(){
             throw LipidException("Element table cannot be computed for lipid level " + std::to_string(info->level));
     }
     
+    
     ElementTable* hg_elements = headgroup->get_elements();
     for (auto &kv : *hg_elements) elements->at(kv.first) += kv.second;
     delete hg_elements;
-        
     
     ElementTable* info_elements = info->get_elements();
     for (auto &kv : *info_elements) elements->at(kv.first) += kv.second;

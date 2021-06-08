@@ -75,6 +75,7 @@ HmdbParser::~HmdbParser(){
 
 
 LipidParser::LipidParser(){
+    parser_list.push_back(new ShorthandParser());
     parser_list.push_back(new GoslinParser());
     parser_list.push_back(new LipidMapsParser());
     parser_list.push_back(new SwissLipidsParser());
