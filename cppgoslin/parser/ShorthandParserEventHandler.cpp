@@ -185,26 +185,53 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     
 }
 
-void ShorthandParserEventHandler::set_lipid_level(LipidLevel level){
-
+void ShorthandParserEventHandler::set_lipid_level(LipidLevel _level){
+    level = min(level, _level);
 }
 
 
 
 void ShorthandParserEventHandler::add_cycle_element(TreeNode *node){
-
+    string element = node->get_text();
+    
+    if (element == "O"){
+        tmp.get_dictionary("fa" + std::to_string(current_fa.size()))->get_list("cycle_elements")->set_int(ELEMENT_O);
+    }
+    else if (element == "N"){
+        tmp.get_dictionary("fa" + std::to_string(current_fa.size()))->get_list("cycle_elements")->set_int(ELEMENT_N);
+    }
+    else if (element == "C"){
+        tmp.get_dictionary("fa" + std::to_string(current_fa.size()))->get_list("cycle_elements")->set_int(ELEMENT_C);
+    }
 }
 
 
 
 void ShorthandParserEventHandler::set_headgroup_name(TreeNode *node){
-
+    if (headgroup.size() == 0) headgroup = node->get_text();
 }
 
 
 
 void ShorthandParserEventHandler::set_carbohydrate(TreeNode *node){
-
+    string carbohydrate = node->get_text();
+    FunctionalGroup* functional_group = 0;
+    try {
+        functional_group = FunctionalGroup::get_functional_group(carbohydrate);
+    }
+    catch (const std::exception& e){
+        throw LipidParsingException("Carbohydrate '" + carbohydrate + "' unknown");
+    }
+    
+    if (tmp.contains_key("func_group_head") && tmp.get_int("func_group_head") == 1){
+        headgroup_decorators.push_back(functional_group);
+    }
+    else {
+        if (uncontains_p(current_fa.at(current_fa.size() - 1).functional_groups, carbohydrate)){
+            current_fa.at(current_fa.size() - 1).functional_groups->insert({carbohydrate, vector<FunctionalGroup*>()});
+        }
+        current_fa.at(current_fa.size() - 1).functional_groups->at(carbohydrate).push_back(functional_group);
+    }
 }
 
 

@@ -7,6 +7,7 @@
 #include <vector>
 #include <set>
 #include <tuple>
+#include "cppgoslin/domain/StringFunctions.h"
 
 enum Type {TYPE_INT, TYPE_LONG, TYPE_FLOAT, TYPE_DOUBLE, TYPE_BOOL, TYPE_STRING, TYPE_LIST, TYPE_DICTIONARY};
 
@@ -19,26 +20,26 @@ public:
     ~GenericList();
     vector<pair<int, void*>> list;
     
-    void setInt(int i);
-    int getInt(int i);
+    void set_int(int i);
+    int get_int(int i);
     
-    void setLong(long l);
-    long getLong(int i);
+    void set_long(long l);
+    long get_long(int i);
     
-    void setFloat(float f);
-    float getFloat(int i);
+    void set_float(float f);
+    float get_float(int i);
     
-    void setDouble(double d);
-    double getDouble(int i);
+    void set_double(double d);
+    double get_double(int i);
     
-    void setString(string s);
-    string getString(int i);
+    void set_string(string s);
+    string get_string(int i);
     
-    void setList(GenericList* v);
-    GenericList* getList(int i);
+    void set_list(GenericList* v);
+    GenericList* get_list(int i);
     
-    void setDictionary(GenericDictionary* d);
-    GenericDictionary* getDictionary(int i);
+    void set_dictionary(GenericDictionary* d);
+    GenericDictionary* get_dictionary(int i);
     
     void del(pair<int, void*> &x);
     void remove_all();
@@ -52,30 +53,31 @@ public:
     ~GenericDictionary();
     map<string, pair<int, void*>> dictionary;
     
-    void setInt(string key, int i);
-    int getInt(string key);
+    void set_int(string key, int i);
+    int get_int(string key);
     
-    void setLong(string key, long l);
-    long getLong(string key);
+    void set_long(string key, long l);
+    long get_long(string key);
     
-    void setFloat(string key, float f);
-    float getFloat(string key);
+    void set_float(string key, float f);
+    float get_float(string key);
     
-    void setDouble(string key, double d);
-    double getDouble(string key);
+    void set_double(string key, double d);
+    double get_double(string key);
     
-    void setString(string key, string s);
-    string getString(string key);
+    void set_string(string key, string s);
+    string get_string(string key);
     
-    void setList(string key, GenericList* v);
-    GenericList* getList(string key);
+    void set_list(string key, GenericList* v);
+    GenericList* get_list(string key);
     
-    void setDictionary(string key, GenericDictionary* dict);
-    GenericDictionary* getDictionary(string key);
+    void set_dictionary(string key, GenericDictionary* dict);
+    GenericDictionary* get_dictionary(string key);
     
     void remove(string key);
     void remove_all();
     void del(pair<int, void*> &x);
+    bool contains_key(string key);
 };
 
 #endif /* GENERICDATASTRUCTURES_H */
