@@ -108,7 +108,7 @@ vector<string>* goslin::split_string(string text, char separator, char _quote, b
     string sb_string;
     sb_string = sb.str();
     
-    if (sb_string.length() > 0){
+    if (sb_string.length() > 0 || (last_char == ',' && with_empty)){
         tokens->push_back(sb_string);
     }
     if (in_quote){

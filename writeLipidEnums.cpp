@@ -238,8 +238,6 @@ void writeLipidEnum(string ofFileName){
     for (auto &row : functional_data){
         if (cnt++ == 0) continue;
         
-        cout << cnt << " " << row->size() << endl;
-        
         string class_name = (row->at(0) == "FG") ? "FunctionalGroup" : "HeadgroupDecorator";
         
         offile << "        {\"" << row->at(1) << "\", new " << class_name << "(\"" << row->at(1) << "\", -1, 1, new DoubleBonds(" << row->at(3) << "), " << row->at(4) << ", \"\", new ElementTable{";
