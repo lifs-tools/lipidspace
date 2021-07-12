@@ -238,19 +238,33 @@ void writeLipidEnum(string ofFileName){
     for (auto &row : functional_data){
         if (cnt++ == 0) continue;
         
-        string class_name = (row->at(0) == "FG") ? "FunctionalGroup" : "HeadgroupDecorator";
-        
-        offile << "        {\"" << row->at(1) << "\", new " << class_name << "(\"" << row->at(1) << "\", -1, 1, new DoubleBonds(" << row->at(3) << "), " << row->at(4) << ", \"\", new ElementTable{";
-        
-        // add element table
-        ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
-        int ii = 0;
-        for (auto& table_kv : *table){
-            if (ii++ > 0) offile << ", ";
-            offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+        if (row->at(0) == "FG"){
+            
+            offile << "        {\"" << row->at(1) << "\", new FunctionalGroup(\"" << row->at(1) << "\", -1, 1, new DoubleBonds(" << row->at(3) << "), " << row->at(4) << ", \"\", new ElementTable{";
+            
+            // add element table
+            ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
+            int ii = 0;
+            for (auto& table_kv : *table){
+                if (ii++ > 0) offile << ", ";
+                offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+            }
+            delete table;
+            offile << "})}";
         }
-        delete table;
-        offile << "})}";
+        else {
+            offile << "        {\"" << row->at(1) << "\", new HeadgroupDecorator(\"" << row->at(1) << "\", -1, 1, new ElementTable{";
+            
+            // add element table
+            ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
+            int ii = 0;
+            for (auto& table_kv : *table){
+                if (ii++ > 0) offile << ", ";
+                offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+            }
+            delete table;
+            offile << "})}";
+        }
         
         if (cnt < functional_data.size()) offile << ",";
         if (row->size() > 4) offile << " // " << row->at(5);

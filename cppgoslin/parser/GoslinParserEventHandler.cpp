@@ -215,6 +215,7 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     LipidSpecies *ls = NULL;
     
     headgroup = new Headgroup(head_group);
+    
 
     switch (level){
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
@@ -275,13 +276,13 @@ void GoslinParserEventHandler::add_carbon(TreeNode *node) {
 void GoslinParserEventHandler::add_hydroxyl(TreeNode *node) {
     int num_h = atoi(node->get_text().c_str());
     
-    
     if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
     
     FunctionalGroup* functional_group = FunctionalGroup::get_functional_group("OH");
     functional_group->count = num_h;
     if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
     current_fa->functional_groups->at("OH").push_back(functional_group);
+    level = min(level, STRUCTURAL_SUBSPECIES);
 }
     
     

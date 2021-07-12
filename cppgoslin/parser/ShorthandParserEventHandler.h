@@ -56,7 +56,7 @@ public:
     vector<FattyAcid*> fa_list;
     vector<FattyAcid*> current_fa;
     Adduct *adduct;
-    vector<HeadgroupDecorator*> headgroup_decorators;
+    vector<FunctionalGroup*> headgroup_decorators;
     GenericDictionary tmp;
         
     ShorthandParserEventHandler();

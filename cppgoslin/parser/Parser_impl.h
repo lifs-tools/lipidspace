@@ -702,6 +702,7 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
 // re-implementation of Cocke-Younger-Kasami algorithm
 template <class T>
 T Parser<T>::parse(string text_to_parse, bool throw_error){
+    
     string old_lipid = text_to_parse;
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
     parser_event_handler->content = NULL;
@@ -792,7 +793,6 @@ void Parser<T>::parse_regular(string text_to_parse){
             }
         }
         
-
         
         for (int i = n - 1; i > 0; --i){
             if (contains_p(DP[0][i], START_RULE)){

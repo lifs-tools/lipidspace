@@ -227,10 +227,10 @@ void ShorthandParserEventHandler::set_carbohydrate(TreeNode *node){
         headgroup_decorators.push_back(functional_group);
     }
     else {
-        if (uncontains_p(current_fa.at(current_fa.size() - 1).functional_groups, carbohydrate)){
-            current_fa.at(current_fa.size() - 1).functional_groups->insert({carbohydrate, vector<FunctionalGroup*>()});
+        if (uncontains_p(current_fa.at(current_fa.size() - 1)->functional_groups, carbohydrate)){
+            current_fa.at(current_fa.size() - 1)->functional_groups->insert({carbohydrate, vector<FunctionalGroup*>()});
         }
-        current_fa.at(current_fa.size() - 1).functional_groups->at(carbohydrate).push_back(functional_group);
+        current_fa.at(current_fa.size() - 1)->functional_groups->at(carbohydrate).push_back(functional_group);
     }
 }
 

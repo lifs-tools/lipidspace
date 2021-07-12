@@ -152,6 +152,7 @@ string FattyAcid::to_string(LipidLevel level){
                 int fg_count = 0;
                 for (auto func_group : fg_list) fg_count += func_group->count;
                 
+                
                 if (fg_count > 1){
                     fa_string << ";" << (!fg_list.at(0)->is_atomic ? ("(" + fg + ")" + std::to_string(fg_count)) : (fg + std::to_string(fg_count)));
                 }
