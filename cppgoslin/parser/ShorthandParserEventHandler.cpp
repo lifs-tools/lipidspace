@@ -528,55 +528,73 @@ void ShorthandParserEventHandler::add_acyl_linkage(TreeNode *node){
 
 
 void ShorthandParserEventHandler::set_alkyl_linkage(TreeNode *node){
-
+    tmp.get_dictionary(FA_I)->set_string("fg_name", "alkyl");
+    current_fa.push_back(new AcylAlkylGroup(0, -1, 1, true));
+    tmp.set_dictionary(FA_I, new GenericDictionary());
+    tmp.get_dictionary(FA_I)->set_int("linkage_pos", -1);
 }
 
 
 
 void ShorthandParserEventHandler::add_alkyl_linkage(TreeNode *node){
-
+    int linkage_pos = tmp.get_dictionary(FA_I)->get_int("linkage_pos");
+    tmp.remove(FA_I);
+    AcylAlkylGroup *alkyl = (AcylAlkylGroup*)current_fa.back();
+    current_fa.pop_back();
+    
+    alkyl->position = linkage_pos;
+    if (linkage_pos == -1) set_lipid_level(STRUCTURAL_SUBSPECIES);
+    
+    if (uncontains_p(current_fa.back()->functional_groups, "alkyl")) current_fa.back()->functional_groups->insert({"alkyl", vector<FunctionalGroup*>()});
+    current_fa.back()->functional_groups->at("alkyl").push_back(alkyl);
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_start(TreeNode *node){
-
+    ((Cycle*)current_fa.back())->start = atoi(node->get_text().c_str());
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_end(TreeNode *node){
-
+    ((Cycle*)current_fa.back())->end = atoi(node->get_text().c_str());
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_number(TreeNode *node){
-
+    ((Cycle*)current_fa.back())->cycle = atoi(node->get_text().c_str());
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_db_count(TreeNode *node){
-
+    ((Cycle*)current_fa.back())->double_bonds->num_double_bonds = atoi(node->get_text().c_str());
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_db_positions(TreeNode *node){
-
+    tmp.get_dictionary(FA_I)->set_int("cycle_db", ((Cycle*)current_fa.back())->double_bonds->get_num());
+    delete ((Cycle*)current_fa.back())->double_bonds;
+    ((Cycle*)current_fa.back())->double_bonds = new DoubleBonds();
 }
 
 
 
 void ShorthandParserEventHandler::check_cycle_db_positions(TreeNode *node){
-
+    if (((Cycle*)current_fa.back())->double_bonds->get_num() != tmp.get_dictionary(FA_I)->get_int("cycle_db")){
+        throw LipidException("Double bond number in cycle does not correspond to number of double bond positions.");
+    }
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_db_position(TreeNode *node){
-
+    int pos = atoi(node->get_text().c_str());
+    ((Cycle*)current_fa.back())->double_bonds->double_bond_positions.insert({pos, ""});
+    tmp.get_dictionary(FA_I)->set_int("last_db_pos", pos);
 }
 
 
