@@ -54,10 +54,10 @@ public:
     LipidLevel level;
     LipidAdduct *lipid;
     string headgroup;
-    vector<FattyAcid*> fa_list;
+    vector<FattyAcid*> *fa_list;
     vector<FunctionalGroup*> current_fa;
     Adduct *adduct;
-    vector<FunctionalGroup*> headgroup_decorators;
+    vector<HeadgroupDecorator*> *headgroup_decorators;
     GenericDictionary tmp;
     const set<string> special_types {"acyl", "alkyl", "decorator_acyl", "decorator_alkyl", "cc"};
         
