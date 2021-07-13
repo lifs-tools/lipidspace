@@ -151,7 +151,7 @@ ShorthandParserEventHandler::~ShorthandParserEventHandler(){
 
 
 void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
-    level = STRUCTURAL_SUBSPECIES;
+    level = ISOMERIC_SUBSPECIES;
     lipid = NULL;
     adduct = NULL;
     headgroup = "";
@@ -387,7 +387,7 @@ void ShorthandParserEventHandler::add_fatty_acyl_chain(TreeNode *node){
     if (current_fa.back()->double_bonds->get_num() != tmp.get_dictionary(fa_i)->get_int("db_count")){
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
-    else if (current_fa.back()->double_bonds->get_num() > 0){
+    else if (current_fa.back()->double_bonds->get_num() > 0 && current_fa.back()->double_bonds->double_bond_positions.size() == 0){
         set_lipid_level(STRUCTURAL_SUBSPECIES);
     }
     tmp.remove(fa_i);
@@ -407,8 +407,7 @@ void ShorthandParserEventHandler::add_fatty_acyl_chain(TreeNode *node){
 
 
 void ShorthandParserEventHandler::set_double_bond_position(TreeNode *node){
-    string fa_i = FA_I;
-    tmp.get_dictionary(fa_i)->set_int("db_position", atoi(node->get_text().c_str()));
+    tmp.get_dictionary(FA_I)->set_int("db_position", atoi(node->get_text().c_str()));
 }
 
 
@@ -426,7 +425,9 @@ void ShorthandParserEventHandler::add_double_bond_information(TreeNode *node){
     int pos = tmp.get_dictionary(fa_i)->get_int("db_position");
     string cistrans = tmp.get_dictionary(fa_i)->get_string("db_cistrans");
     
-    if (cistrans == "") set_lipid_level(STRUCTURAL_SUBSPECIES);
+    if (cistrans == ""){
+        set_lipid_level(STRUCTURAL_SUBSPECIES);
+    }
     
     tmp.get_dictionary(fa_i)->remove("db_position");
     tmp.get_dictionary(fa_i)->remove("db_cistrans");

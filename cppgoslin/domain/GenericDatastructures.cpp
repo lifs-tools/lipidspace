@@ -197,7 +197,13 @@ void GenericDictionary::del(pair<int, void*> &x){
 
 void GenericDictionary::set_int(string key, int i){
     void* vi = new int(i);
-    dictionary.insert({key, {TYPE_INT, vi}});
+    if (contains(dictionary, key)){
+        del(dictionary.at(key));
+        dictionary.at(key) = {TYPE_INT, vi};
+    }
+    else {
+        dictionary.insert({key, {TYPE_INT, vi}});
+    }
 }
 
 int GenericDictionary::get_int(string key){
@@ -206,7 +212,13 @@ int GenericDictionary::get_int(string key){
 
 void GenericDictionary::set_long(string key, long l){
     void* vl = new long(l);
-    dictionary.insert({key, {TYPE_LONG, vl}});
+    if (contains(dictionary, key)){
+        del(dictionary.at(key));
+        dictionary.at(key) = {TYPE_INT, vl};
+    }
+    else {
+        dictionary.insert({key, {TYPE_LONG, vl}});
+    }
 }
 
 long GenericDictionary::get_long(string key){
@@ -215,7 +227,13 @@ long GenericDictionary::get_long(string key){
 
 void GenericDictionary::set_float(string key, float f){
     void* vf = new float(f);
-    dictionary.insert({key, {TYPE_FLOAT, vf}});
+    if (contains(dictionary, key)){
+        del(dictionary.at(key));
+        dictionary.at(key) = {TYPE_INT, vf};
+    }
+    else {
+        dictionary.insert({key, {TYPE_FLOAT, vf}});
+    }
 }
 
 float GenericDictionary::get_float(string key){
@@ -224,7 +242,13 @@ float GenericDictionary::get_float(string key){
 
 void GenericDictionary::set_double(string key, double d){
     void* vd = new double(d);
-    dictionary.insert({key, {TYPE_DOUBLE, vd}});
+    if (contains(dictionary, key)){
+        del(dictionary.at(key));
+        dictionary.at(key) = {TYPE_INT, vd};
+    }
+    else {
+        dictionary.insert({key, {TYPE_DOUBLE, vd}});
+    }
 }
 
 double GenericDictionary::get_double(string key){
@@ -233,7 +257,13 @@ double GenericDictionary::get_double(string key){
 
 void GenericDictionary::set_string(string key, string s){
     void* vs = new string(s);
-    dictionary.insert({key, {TYPE_STRING, vs}});
+    if (contains(dictionary, key)){
+        del(dictionary.at(key));
+        dictionary.at(key) = {TYPE_INT, vs};
+    }
+    else {
+        dictionary.insert({key, {TYPE_STRING, vs}});
+    }
 }
 
 string GenericDictionary::get_string(string key){
@@ -241,7 +271,13 @@ string GenericDictionary::get_string(string key){
 }
 
 void GenericDictionary::set_list(string key, GenericList* v){
-    dictionary.insert({key, {TYPE_LIST, v}});
+    if (contains(dictionary, key)){
+        del(dictionary.at(key));
+        dictionary.at(key) = {TYPE_INT, v};
+    }
+    else {
+        dictionary.insert({key, {TYPE_LIST, v}});
+    }
 }
 
 GenericList* GenericDictionary::get_list(string key){
@@ -250,7 +286,13 @@ GenericList* GenericDictionary::get_list(string key){
 
 
 void GenericDictionary::set_dictionary(string key, GenericDictionary* dict){
-    dictionary.insert({key, {TYPE_DICTIONARY, (void*)dict}});
+    if (contains(dictionary, key)){
+        del(dictionary.at(key));
+        dictionary.at(key) = {TYPE_INT, dict};
+    }
+    else {
+        dictionary.insert({key, {TYPE_DICTIONARY, (void*)dict}});
+    }
 }
 
 
