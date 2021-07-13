@@ -67,7 +67,7 @@ public:
     
     AcylAlkylGroup(FattyAcid* _fa, int _position = -1, int count = 1, bool _alkyl = false, bool N_bond = false);
     AcylAlkylGroup(AcylAlkylGroup* aag);
-    void set_n_bond_type(bool N_bond);
+    void set_N_bond_type(bool N_bond);
     string to_string(LipidLevel level);
 };
     

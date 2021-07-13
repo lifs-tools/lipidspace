@@ -234,18 +234,18 @@ AcylAlkylGroup::AcylAlkylGroup(FattyAcid* _fa, int _position, int _count, bool _
         functional_groups->insert({alkyl ? "alkyl" : "acyl", vector<FunctionalGroup*> {_fa} });
     }
     double_bonds->num_double_bonds = int(!alkyl);
-    set_n_bond_type(N_bond);
+    set_N_bond_type(N_bond);
     
 }
 
 
 AcylAlkylGroup::AcylAlkylGroup(AcylAlkylGroup* aag) : FunctionalGroup(aag){
     alkyl = aag->alkyl;
-    set_n_bond_type(aag->N_bond);
+    set_N_bond_type(aag->N_bond);
 }
 
 
-void AcylAlkylGroup::set_n_bond_type(bool _N_bond){
+void AcylAlkylGroup::set_N_bond_type(bool _N_bond){
     N_bond = _N_bond;
         
     if (N_bond){

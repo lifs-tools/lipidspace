@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/Adduct.h"
+#include "cppgoslin/domain/Cycle.h"
 #include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/LipidIsomericSubspecies.h"
@@ -54,7 +55,7 @@ public:
     LipidAdduct *lipid;
     string headgroup;
     vector<FattyAcid*> fa_list;
-    vector<FattyAcid*> current_fa;
+    vector<FunctionalGroup*> current_fa;
     Adduct *adduct;
     vector<FunctionalGroup*> headgroup_decorators;
     GenericDictionary tmp;
