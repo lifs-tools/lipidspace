@@ -34,6 +34,7 @@ FunctionalGroup::FunctionalGroup(FunctionalGroup* fg){
     double_bonds = new DoubleBonds(fg->double_bonds);
     elements = create_empty_table();
     functional_groups = new map<string, vector<FunctionalGroup*>>();
+    is_atomic = fg->is_atomic;
     
     for (auto &kv : *(fg->elements)) elements->at(kv.first) = kv.second;
     for (auto &kv : *(fg->functional_groups)){

@@ -80,7 +80,7 @@ string LipidSpeciesInfo::to_string(){
         if (elements->at(e) > 0){
             info_string << ";" << element_shortcut.at(e);
             if (elements->at(e) > 1){
-                info_string << ";" << elements->at(e);
+                info_string << elements->at(e);
             }
         }
     } 

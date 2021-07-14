@@ -170,7 +170,7 @@ string FattyAcid::to_string(LipidLevel level){
             if (elements->at(e) > 0){
                 fa_string << ";" << element_shortcut.at(e);
                 if (elements->at(e) > 1){
-                    fa_string << ";" << elements->at(e);
+                    fa_string << elements->at(e);
                 }
             }
         } 

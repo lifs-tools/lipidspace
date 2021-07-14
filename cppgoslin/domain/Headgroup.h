@@ -20,6 +20,7 @@ public:
     bool use_headgroup;
     vector<HeadgroupDecorator*>* decorators;
     bool sp_exception;
+    const set<string> exception_headgroups {"Cer", "SPB"};
     
     Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators = 0, bool _use_headgroup = false);
     ~Headgroup();

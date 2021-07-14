@@ -6,7 +6,7 @@ Headgroup::Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators
     lipid_class = get_class(headgroup);
     use_headgroup = _use_headgroup;
     decorators = (_decorators != 0) ? _decorators : new vector<HeadgroupDecorator*>();
-    sp_exception = lipid_category == SP && ((LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name.compare("Cer") != 0 && LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name.compare("SPB") != 0) || decorators->size() > 0);
+    sp_exception = lipid_category == SP && (uncontains(exception_headgroups, _headgroup) || decorators->size() > 0);
 }
 
 
@@ -106,7 +106,7 @@ string Headgroup::get_lipid_string(LipidLevel level){
     if (level == ISOMERIC_SUBSPECIES && sp_exception){
         headgoup_string << "(1)";
     }
-        
+    
     return headgoup_string.str();
 }
         

@@ -61,6 +61,7 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(LipidLevel level){
     string fa_separator = (level != MOLECULAR_SUBSPECIES || headgroup->lipid_category == SP) ? "/" : "_";
     stringstream lipid_name;
     lipid_name << headgroup->get_lipid_string(level);
+    
 
     string fa_headgroup_separator = (headgroup->lipid_category != ST) ? " " : "/";
     

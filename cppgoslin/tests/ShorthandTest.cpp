@@ -136,6 +136,7 @@ int main(int argc, char** argv){
         
         string lipid_name = row.first;
         vector<string> &results = row.second;
+        cout << "testing: '" << lipid_name << "'" << endl;
         
         LipidAdduct *lipid = parser.parse(lipid_name);
         string formula = results.size() > 4 ? results.at(4) : lipid->get_sum_formula();
@@ -144,21 +145,18 @@ int main(int argc, char** argv){
         if (results.size() > 4){
             assertEqual(formula, lipid->get_sum_formula(), "test on lipid '" + lipid_name + "'");
         }
-        else{
-            formula = lipid->get_sum_formula();
-        }
         
         for (int l = 0; l < (int)levels.size(); ++l){
             LipidLevel lipid_level = levels.at(l);
             string n = lipid->get_lipid_string(lipid_level);
-            assertEqual(results[l], n, "test on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
-            assertEqual(formula, lipid->get_sum_formula(), "test on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
+            assertEqual(results.at(l), n, "test 1 on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
+            assertEqual(formula, lipid->get_sum_formula(), "test 2 on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
 
 
             LipidAdduct *lipid2 = parser.parse(n);
             for (int ll = l; ll < 4; ++ll){
-                assertEqual(results.at(ll), lipid2->get_lipid_string(levels.at(ll)), "test on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
-                assertEqual(formula, lipid2->get_sum_formula(), "test on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
+                assertEqual(results.at(ll), lipid2->get_lipid_string(levels.at(ll)), "test 3 on lipid '" + lipid_name + "' and level '" + std::to_string(levels.at(ll)) + "'");
+                assertEqual(formula, lipid2->get_sum_formula(), "test 4 on lipid '" + lipid_name + "' and level '" + std::to_string(levels.at(ll)) + "'");
             }
         }
     }

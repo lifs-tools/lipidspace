@@ -62,7 +62,7 @@ public:
     LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa = 0);
     virtual string get_lipid_string(LipidLevel level = NO_LEVEL);
     string get_extended_class();
-    ElementTable* get_elements();
+    virtual ElementTable* get_elements();
     
     virtual LipidLevel get_lipid_level();
     virtual vector<FattyAcid*> get_fa_list();
