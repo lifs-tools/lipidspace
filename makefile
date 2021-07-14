@@ -44,6 +44,10 @@ cppgoslin/domain/%.o: cppgoslin/domain/%.cpp cppgoslin/parser/KnownGrammars.h cp
 cppgoslin/parser/%.o: cppgoslin/parser/%.cpp cppgoslin/parser/KnownGrammars.h cppgoslin/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h cppgoslin/parser/Parser_impl.h cppgoslin/parser/BaseParserEventHandler_impl.h
 	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
+	
+cppgoslin/tests/%.o: cppgoslin/tests/%.cpp
+	${CC} ${opt} -I. -fPIC -o $@ -c $<
+	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
 	rm -f "cppgoslin/domain/LipidClasses.cpp"
@@ -74,6 +78,9 @@ install: ${bin}
 	cp cppgoslin/parser/*.h  ${install_dir}/include/cppgoslin/parser/.
 	
 	
+ShorthandTest: cppgoslin/tests/ShorthandTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o ShorthandTest cppgoslin/tests/ShorthandTest.o libcppGoslin.so
+	
 FattyAcidTest: cppgoslin/tests/FattyAcidTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o FattyAcidTest cppgoslin/tests/FattyAcidTest.o libcppGoslin.so
 
@@ -99,15 +106,16 @@ HmdbTest: cppgoslin/tests/HmdbTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o HmdbTest cppgoslin/tests/HmdbTest.o libcppGoslin.so
 	
 	
-test: FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
+test: ShorthandTest #FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
 
 	
-runtests: FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./FattyAcidTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SumFormulaTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MassesTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./GoslinTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SwissLipidsTest
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./HmdbTest
+runtests: ShorthandTest #FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ShorthandTest
+	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./FattyAcidTest
+	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
+	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SumFormulaTest
+	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MassesTest
+	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest
+	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./GoslinTest
+	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SwissLipidsTest
+	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./HmdbTest
