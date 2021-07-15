@@ -130,8 +130,7 @@ ElementTable* Headgroup::get_elements(){
         }
     }
     
-    
-    if (lipid_category == SP && (lipid_classes.at(lipid_class).class_name.compare("Cer") == 0 || lipid_classes.at(lipid_class).class_name.compare("SPB") == 0) && decorators->size() == 0){
+    if (lipid_category == SP && contains(exception_headgroups, get_class_string(lipid_class)) && decorators->size() == 0){
         elements->at(ELEMENT_O) -= 1;
     }
     

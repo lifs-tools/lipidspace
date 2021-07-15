@@ -468,12 +468,14 @@ void ShorthandParserEventHandler::set_cycle(TreeNode *node){
 void ShorthandParserEventHandler::add_cycle(TreeNode *node){
     string fa_i = FA_I;
     GenericList *cycle_elements = tmp.get_dictionary(fa_i)->get_list("cycle_elements");
-    tmp.get_dictionary(fa_i)->remove("cycle_elements");
     Cycle *cycle = (Cycle*)current_fa.back();
     current_fa.pop_back();
-    for (int i = 0; i < (int)cycle_elements->list.size(); ++i) cycle->bridge_chain->push_back((Element)cycle_elements->get_int(i));
+    for (int i = 0; i < (int)cycle_elements->list.size(); ++i){
+        cycle->bridge_chain->push_back((Element)cycle_elements->get_int(i));
+    }
+    tmp.get_dictionary(fa_i)->remove("cycle_elements");
         
-    if (cycle->end - cycle->start + 1 + (int)cycle->bridge_chain->size() != cycle->cycle){
+    if (cycle->start > -1 && cycle->end > -1 && cycle->end - cycle->start + 1 + (int)cycle->bridge_chain->size() != cycle->cycle){
         throw ConstraintViolationException("Cycle length '" + std::to_string(cycle->cycle) + "' does not match with cycle description.");
     }
     if (uncontains_p(current_fa.back()->functional_groups, "cy")){
@@ -566,9 +568,9 @@ void ShorthandParserEventHandler::set_acyl_linkage(TreeNode *node){
 
 
 void ShorthandParserEventHandler::add_acyl_linkage(TreeNode *node){
-    int linkage_type = tmp.get_dictionary(FA_I)->get_int("linkage_type");
+    bool linkage_type = tmp.get_dictionary(FA_I)->get_int("linkage_type");
     int linkage_pos = tmp.get_dictionary(FA_I)->get_int("linkage_pos");
-        
+    
     tmp.remove(FA_I);
     AcylAlkylGroup *acyl = (AcylAlkylGroup*)current_fa.back();
     current_fa.pop_back();
@@ -697,7 +699,7 @@ void ShorthandParserEventHandler::add_functional_group(TreeNode *node){
     GenericDictionary *gd = tmp.get_dictionary(FA_I);
     string fg_name = gd->get_string("fg_name");
     
-    if (contains(special_types, fg_name)) return;
+    if (contains(special_types, fg_name) || fg_name == "cy") return;
         
     int fg_pos = gd->get_int("fg_pos");
     int fg_cnt = gd->get_int("fg_cnt");
@@ -713,7 +715,7 @@ void ShorthandParserEventHandler::add_functional_group(TreeNode *node){
         functional_group = FunctionalGroup::get_functional_group(fg_name);
     }
     catch (const std::exception& e) {
-        throw LipidParsingException(" '" + fg_name + "' unknown");
+        throw LipidParsingException("'" + fg_name + "' unknown");
     }
     
     functional_group->position = fg_pos;

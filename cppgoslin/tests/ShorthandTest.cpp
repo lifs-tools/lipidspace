@@ -56,7 +56,7 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/24:0", {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/24:0", "Gal-Gal-Glc-Cer 18:1(4);OH/24:0", "GalGalGlcCer 18:1;O/24:0", "GalGalGlcCer 42:1;O2", "C60H113NO18"}}, // GalGalGlcCer 42:1;O2 / C60H113NO18
         
-        {"PC 16:0/20:2(5Z,13E);[8-12cy5;11OH;9oxo];15OH", {"PC 16:0/20:2(5Z,13E);[8-12cy5:0;11OH;9oxo];15OH", "PC 16:0/20:2(5,13);OH;[cy5:0;OH;oxo]", "PC 16:0_20:4;O3", "PC 36:4;O3"}}, // PC 36:4;O3
+        {"PC 16:0/20:2(5Z,13E);[8-12cy5;11OH;9oxo];15OH", {"PC 16:0/20:2(5Z,13E);[8-12cy5:0;11OH;9oxo];15OH", "PC 16:0/20:2(5,13);[cy5:0;OH;oxo];OH", "PC 16:0_20:4;O3", "PC 36:4;O3"}}, // PC 36:4;O3
         
         {"PE-N(FA 18:1(9Z)) 16:0/20:4(4Z,8Z,11Z,14Z)", {"PE-N(FA 18:1(9Z)) 16:0/20:4(4Z,8Z,11Z,14Z)", "PE-N(FA 18:1(9)) 16:0/20:4(4,8,11,14)", "PE-N(FA 18:1) 16:0_20:4", "PE-N(FA) 54:5"}}, // PE-N(FA) 54:5
         
@@ -88,13 +88,13 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"TG O-18:1(9Z)/O-16:0/O-18:1(9Z)", {"TG O-18:1(9Z)/O-16:0/O-18:1(9Z)", "TG O-18:1(9)/O-16:0/O-18:1(9)", "TG O-18:1_O-16:0_O-18:1", "TG tO-52:2"}}, // TG tO-52:2
         
-        {"FA 22:4(4Z,7Z,10Z,18E);[13-17cy5;14OH,16OH];20OH", {"FA 22:4(4Z,7Z,10Z,18E);[13-17cy5:0;14OH,16OH];20OH", "FA 22:4(4,7,10,18);OH;[cy5:0;(OH)2]", "FA 22:5;O3", "FA 22:5;O3", "C22H34O5"}}, // FA 22:5;O3 / C22H34O5
+        {"FA 22:4(4Z,7Z,10Z,18E);[13-17cy5;14OH,16OH];20OH", {"FA 22:4(4Z,7Z,10Z,18E);[13-17cy5:0;14OH,16OH];20OH", "FA 22:4(4,7,10,18);[cy5:0;(OH)2];OH", "FA 22:5;O3", "FA 22:5;O3", "C22H34O5"}}, // FA 22:5;O3 / C22H34O5
         
-        {"FA 20:2(5Z,13E);[8-13cy6;9OH,11OH;11oxy];15OH", {"FA 20:2(5Z,13E);[8-13cy6:0;9OH,11OH;11oxy];15OH", "FA 20:2(5,13);OH;[cy6:0;(OH)2;oxy]", "FA 20:3;O4", "FA 20:3;O4", "C20H34O6"}}, // FA 20:3;O4 / C20H34O6
+        {"FA 20:2(5Z,13E);[8-13cy6;9OH,11OH;11oxy];15OH", {"FA 20:2(5Z,13E);[8-13cy6:0;9OH,11OH;11oxy];15OH", "FA 20:2(5,13);[cy6:0;(OH)2;oxy];OH", "FA 20:3;O4", "FA 20:3;O4", "C20H34O6"}}, // FA 20:3;O4 / C20H34O6
         
         {"FA 20:4(6Z,8E,10E,14Z);5OH,12OH", {"FA 20:4(6Z,8E,10E,14Z);5OH,12OH", "FA 20:4(6,8,10,14);(OH)2", "FA 20:4;O2", "FA 20:4;O2", "C20H32O4"}}, // FA 20:4;O2 / C20H32O4
         
-        {"FA 22:0;4O(FA 10:0),5O(FA 10:0)", {"FA 22:0;4O(FA 10:0),5O(FA 10:0)", "FA 22:0;O(FA 10:0),O(FA 10:0)", "FA 42:2;O4", "FA 42:2;O4"}}, //  42:2;O4
+        {"FA 22:0;4O(FA 10:0),5O(FA 10:0)", {"FA 22:0;4O(FA 10:0),5O(FA 10:0)", "FA 22:0;O(FA 10:0),O(FA 10:0)", "FA 42:2;O4", "FA 42:2;O4", "C42H80O6"}}, //  42:2;O4
         
         {"FA 22:0;4O(FA 10:0);5O(10:0)", {"FA 22:0;4O(FA 10:0);5O(10:0)", "FA 22:0;O(FA 10:0);O(10:0)", "FA 42:1;O3", "FA 42:1;O3"}}, //  42:0;O4
         
@@ -116,7 +116,7 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
 
         {"Hex2Cer(1) 17:1(5E);15Me;3OH,4OH/22:0;2OH", {"Hex2Cer(1) 17:1(5E);15Me;3OH,4OH/22:0;2OH", "Hex2Cer 17:1(5);Me;(OH)2/22:0;OH", "Hex2Cer 18:1;O2/22:0;O", "Hex2Cer 40:1;O4", "C52H99NO15"}},
         
-        {"Glc-Cer(1) 21:0;[13-15cy3:0];3OH,4OH/22:1(16E);2OH;15oxo", {"Glc-Cer(1) 21:0;[13-15cy3:0];3OH,4OH/22:1(16E);2OH;15oxo", "Glc-Cer 21:0;(OH)2;[cy3:0]/22:1(16);OH;oxo", "GlcCer 21:1;O2/22:2;O2", "GlcCer 43:3;O5", "C49H91NO11"}}
+        {"Glc-Cer(1) 21:0;[13-15cy3:0];3OH,4OH/22:1(16E);2OH;15oxo", {"Glc-Cer(1) 21:0;[13-15cy3:0];3OH,4OH/22:1(16E);2OH;15oxo", "Glc-Cer 21:0;[cy3:0];(OH)2/22:1(16);OH;oxo", "GlcCer 21:1;O2/22:2;O2", "GlcCer 43:3;O5", "C49H91NO11"}}
         };
         
         
@@ -163,65 +163,3 @@ int main(int argc, char** argv){
     
     return 0;
 }
-
-/*
-
-class ShorthandTest(unittest.TestCase):
-    
-        
-    def test_nomenclature(self):
-        parser = ShorthandParser()
-
-        for lipid_name in data:
-            
-            results = data[lipid_name]
-            lipid = parser.parse(lipid_name)
-            formula = results[4] if len(results) > 4 else lipid.get_sum_formula()
-            
-            if len(results) > 4:
-                formula = results[4]
-                self.assertEqual(formula, lipid.get_sum_formula(), "test on lipid '%s'" % lipid_name)
-            else:
-                formula = lipid.get_sum_formula()
-            
-            levels = [LipidLevel.ISOMERIC_SUBSPECIES, LipidLevel.STRUCTURAL_SUBSPECIES, LipidLevel.MOLECULAR_SUBSPECIES, LipidLevel.SPECIES]
-            for l, lipid_level in enumerate(levels):
-                n = lipid.get_lipid_string(lipid_level)
-                self.assertEqual(results[l], n, "test on lipid '%s' and level '%s'" % (lipid_name, lipid_level))
-                self.assertEqual(formula, lipid.get_sum_formula(), "test on lipid '%s' and level '%s'" % (lipid_name, lipid_level))
-
-
-                lipid2 = parser.parse(n)
-                for ll in range(l, 4):
-                    self.assertEqual(results[ll], lipid2.get_lipid_string(levels[ll]), "test on lipid '%s' and level '%s'" % (lipid_name, lipid_level))
-                    self.assertEqual(formula, lipid2.get_sum_formula(), "test on lipid '%s' and level '%s'" % (lipid_name, lipid_level))
-        
-        
-        
-    def test_performance(self):
-        cycles, parser = 50, ShorthandParser()
-        length = 0
-        
-        start = time.time()
-        for lipid_name in data:
-            for i in range(cycles):
-                lipid = parser.parse(lipid_name)
-                length += len(lipid_name)
-                
-                lipid_name2 = lipid.get_lipid_string(LipidLevel.STRUCTURAL_SUBSPECIES)
-                lipid = parser.parse(lipid_name2)
-                length += len(lipid_name2)
-                
-                lipid_name2 = lipid.get_lipid_string(LipidLevel.MOLECULAR_SUBSPECIES)
-                lipid = parser.parse(lipid_name2)
-                length += len(lipid_name2)
-                
-                lipid_name2 = lipid.get_lipid_string(LipidLevel.SPECIES)
-                lipid = parser.parse(lipid_name2)
-                length += len(lipid_name2)
-                
-        elapsed = time.time() - start
-        print("time elapsed: %f" % elapsed)
-        print("lipid / second: %f" % (len(data) * cycles * 4 / elapsed))
-        print("Avg. lipid name length: %f" % (length / (len(data) * cycles * 4)))
-*/

@@ -29,12 +29,12 @@ public:
     FunctionalGroup(string _name, int _position = -1, int _count = 1, DoubleBonds* _double_bonds = 0, bool _is_atomic = false, string _stereochemistry = "", ElementTable* _elements = 0, map<string, vector<FunctionalGroup*>>* _functional_groups = 0);
     FunctionalGroup(FunctionalGroup* fg);
     virtual ~FunctionalGroup();
-    ElementTable* get_elements();
+    virtual ElementTable* get_elements();
     void shift_positions(int shift);
-    ElementTable* get_functional_group_elements();
+    virtual ElementTable* get_functional_group_elements();
     virtual void compute_elements();
-    string to_string(LipidLevel level);
-    int get_double_bonds();
+    virtual string to_string(LipidLevel level);
+    virtual int get_double_bonds();
     void add(FunctionalGroup* fg);
     static FunctionalGroup* get_functional_group(string fg_name);
 };

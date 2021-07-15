@@ -122,7 +122,6 @@ ElementTable* LipidMolecularSubspecies::get_elements(){
         ElementTable* fa_elements = fatty_acid->get_elements();
         for (auto &kv : *fa_elements) elements->at(kv.first) += kv.second;
         delete fa_elements;
-
     }
     
     return elements;
