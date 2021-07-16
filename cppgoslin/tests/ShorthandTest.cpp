@@ -133,10 +133,9 @@ int main(int argc, char** argv){
     ShorthandParser parser;
     
     /*
-    LipidAdduct *lipid = parser.parse("FA 22:0;4O(FA 10:0),5O(FA 10:0)");
+    LipidAdduct *lipid = parser.parse("Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/24:0");
     cout << lipid->get_lipid_string(MOLECULAR_SUBSPECIES) << endl;
-    cout << lipid->get_lipid_string(SPECIES) << endl;
-    cout << lipid->get_sum_formula() << endl;
+    cout << lipid->get_lipid_level() << endl;
     exit(0);
     */
 

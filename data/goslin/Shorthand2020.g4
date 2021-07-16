@@ -222,7 +222,6 @@ ROB: '(';
 RCB: ')';
 SOB: '[';
 SCB: ']';
-FRAGMENT_SEPARATOR : ' - ';
 
 apostroph : '\'' | '′';
 sorted_fa_separator : SLASH;
