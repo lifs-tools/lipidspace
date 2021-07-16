@@ -7,7 +7,7 @@ FG,oxo,OH-2,1,0,Keto
 FG,COOH,CO2,1,0,Carboxyl
 FG,Ep,OH-2,1,0,Epoxy
 FG,OO,O2,0,0,Peroxy
-FG,Ome,CHO,0,0,Methoxy
+FG,OMe,CH2O,0,0,Methoxy
 FG,oxy,O,0,0,Alkoxy / ether
 FG,Et,C2H4,0,0,ethyl
 FG,NH2,NH,0,0,

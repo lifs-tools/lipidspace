@@ -64,7 +64,7 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"PE P-16:0/18:1(9Z)", {"PE P-16:0/18:1(9Z)", "PE P-16:0/18:1(9)", "PE P-16:0_18:1", "PE O-34:2"}}, // PE O-34:2
         
-        {"PE O-18:1(11E);5OMe/22:0;3OH", {"PE O-18:1(11E);5OMe/22:0;3OH", "PE O-18:1(11);OMe/22:0;OH", "PE O-19:1;O_22:0;O", "PE O-41:1;O2"}}, // PE O-41:1;O2
+        {"PE O-18:1(11E);5OMe/22:0;3OH", {"PE O-18:1(11E);5OMe/22:0;3OH", "PE O-18:1(11);OMe/22:0;OH", "PE O-19:1;O_22:0;O", "PE O-41:1;O2", "C46H92NO9P"}}, // PE O-41:1;O2
         
         {"M(IP)2C(1) 20:0;3OH,4OH/26:0;2OH", {"M(IP)2C(1) 20:0;3OH,4OH/26:0;2OH", "M(IP)2C 20:0;(OH)2/26:0;OH", "M(IP)2C 20:0;O2/26:0;O", "M(IP)2C 46:0;O4"}}, // M(IP)2C 46:0;O4
         
@@ -133,9 +133,8 @@ int main(int argc, char** argv){
     ShorthandParser parser;
     
     /*
-    LipidAdduct *lipid = parser.parse("Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/24:0");
-    cout << lipid->get_lipid_string(MOLECULAR_SUBSPECIES) << endl;
-    cout << lipid->get_lipid_level() << endl;
+    LipidAdduct *lipid = parser.parse("PE O-18:1(11E);5OMe/22:0;3OH");
+    cout << lipid->get_sum_formula() << endl;
     exit(0);
     */
 

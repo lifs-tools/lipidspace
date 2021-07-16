@@ -63,6 +63,7 @@ ElementTable* FunctionalGroup::get_elements(){
     compute_elements();
     ElementTable* _elements = create_empty_table();
     for (auto &kv : *elements) _elements->at(kv.first) = kv.second;
+    
     ElementTable* fgElements = get_functional_group_elements();
     for (auto &kv : *fgElements) _elements->at(kv.first) += kv.second;
     delete fgElements;
