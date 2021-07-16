@@ -154,6 +154,7 @@ ElementTable* LipidSpecies::get_elements(){
     int additional_fa = meta.possible_num_fa;
     int remaining_H = meta.max_num_fa - additional_fa;
     int hydrochain = contains(meta.special_cases, "HC");
+    
     elements->at(ELEMENT_O) -= -additional_fa + info->num_ethers + headgroup->sp_exception + hydrochain;
     elements->at(ELEMENT_H) += -additional_fa + remaining_H + 2 * info->num_ethers + 2 * hydrochain;
     

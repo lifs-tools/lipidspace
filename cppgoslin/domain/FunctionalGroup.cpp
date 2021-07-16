@@ -14,6 +14,28 @@ FunctionalGroup::FunctionalGroup(string _name, int _position, int _count, Double
 
 
 
+FunctionalGroup* FunctionalGroup::copy(){
+    
+    DoubleBonds* db = double_bonds->copy();
+    map<string, vector<FunctionalGroup*> >* fg = new map<string, vector<FunctionalGroup*> >();
+    for (auto &kv : *functional_groups){
+        fg->insert({kv.first, vector<FunctionalGroup*>()});
+        for (auto &func_group : kv.second) {
+            fg->at(kv.first).push_back(func_group->copy());
+        }
+    }
+    ElementTable* e = create_empty_table();
+    for (auto &kv : *elements){
+        e->at(kv.first) = kv.second;
+    }
+    
+    FunctionalGroup* func_group = new FunctionalGroup(name, position, count, db, is_atomic, stereochemistry, e, fg);
+    func_group->ring_stereo = ring_stereo;
+    return func_group;
+}
+
+
+
 bool FunctionalGroup::position_sort_function (FunctionalGroup* f1, FunctionalGroup *f2) {
     return (f1->position < f2->position);
 }
@@ -22,27 +44,6 @@ bool FunctionalGroup::position_sort_function (FunctionalGroup* f1, FunctionalGro
 bool FunctionalGroup::lower_name_sort_function (string s1, string s2) {
     return (to_lower(s1) < to_lower(s2));
 }
-
-
-
-FunctionalGroup::FunctionalGroup(FunctionalGroup* fg){
-    name = fg->name;
-    position = fg->position;
-    count = fg->count;
-    stereochemistry = fg->stereochemistry;
-    ring_stereo = fg->ring_stereo;
-    double_bonds = new DoubleBonds(fg->double_bonds);
-    elements = create_empty_table();
-    functional_groups = new map<string, vector<FunctionalGroup*>>();
-    is_atomic = fg->is_atomic;
-    
-    for (auto &kv : *(fg->elements)) elements->at(kv.first) = kv.second;
-    for (auto &kv : *(fg->functional_groups)){
-        functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
-        for (auto func_group : kv.second) functional_groups->at(kv.first).push_back(new FunctionalGroup(func_group));
-    }
-}
-
 
 
 FunctionalGroup::~FunctionalGroup(){
@@ -90,7 +91,7 @@ ElementTable* FunctionalGroup::get_functional_group_elements(){
             delete fg_elements;
         }
     }
-                
+    
     return _elements;
 }
 
@@ -152,7 +153,7 @@ void FunctionalGroup::add(FunctionalGroup* fg){
 FunctionalGroup* FunctionalGroup::get_functional_group(string fg_name){
     map<string, FunctionalGroup*>& known_functional_groups = KnownFunctionalGroups::get_instance().known_functional_groups;
     if(contains(known_functional_groups, fg_name)){
-        return new FunctionalGroup(known_functional_groups.at(fg_name));
+        return known_functional_groups.at(fg_name)->copy();
     }
     throw RuntimeException("Name '" + fg_name + "' not registered in functional group list");
 }
@@ -165,13 +166,20 @@ HeadgroupDecorator::HeadgroupDecorator(string _name, int _position, int _count, 
     lowest_visible_level = _level;
 }
 
-
+HeadgroupDecorator* HeadgroupDecorator::copy(){
+    ElementTable* e = create_empty_table();
+    for (auto &kv : *elements){
+        e->at(kv.first) = kv.second;
+    }
+    return new HeadgroupDecorator(name, position, count, e, suffix, lowest_visible_level);
+}
         
-        
+/*
 HeadgroupDecorator::HeadgroupDecorator(HeadgroupDecorator* hgd) : FunctionalGroup(hgd){
     suffix = hgd->suffix;
     lowest_visible_level = hgd->lowest_visible_level;    
 }
+*/
 
 
 string HeadgroupDecorator::to_string(LipidLevel level){

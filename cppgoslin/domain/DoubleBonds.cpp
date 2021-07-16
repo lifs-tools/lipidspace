@@ -5,11 +5,12 @@ DoubleBonds::DoubleBonds(int num){
 }
 
 
-DoubleBonds::DoubleBonds(DoubleBonds* double_bonds){
-    num_double_bonds = double_bonds->num_double_bonds;
-    for (auto &kv : double_bonds->double_bond_positions){
-        double_bond_positions.insert({kv.first, kv.second});
+DoubleBonds* DoubleBonds::copy(){
+    DoubleBonds* db = new DoubleBonds(num_double_bonds);
+    for (auto &kv : double_bond_positions){
+        db->double_bond_positions.insert({kv.first, kv.second});
     }
+    return db;
 }
 
 

@@ -46,9 +46,9 @@ public:
     bool lcb;
     
     FattyAcid(string name, int num_carbon = 0, DoubleBonds* double_bonds = 0, map<string, vector<FunctionalGroup*> >* functional_groups = 0, LipidFaBondType lipid_FA_bond_type = ESTER, bool lcb = false, int position = 0);
-    FattyAcid(FattyAcid* fa);
     string to_string(LipidLevel level);
     void compute_elements();
+    FattyAcid* copy();
     int get_double_bonds();
     static string get_prefix(LipidFaBondType _lipid_FA_bond_type);
     static bool lipid_FA_bond_type_prefix(LipidFaBondType lipid_FA_bond_type);
@@ -66,7 +66,7 @@ public:
     
     
     AcylAlkylGroup(FattyAcid* _fa, int _position = -1, int count = 1, bool _alkyl = false, bool N_bond = false);
-    AcylAlkylGroup(AcylAlkylGroup* aag);
+    AcylAlkylGroup* copy();
     void set_N_bond_type(bool N_bond);
     string to_string(LipidLevel level);
 };
@@ -76,7 +76,7 @@ public:
 class CarbonChain : public FunctionalGroup {
 public:
     CarbonChain(FattyAcid* _fa, int _position = -1, int _count = 1);
-    CarbonChain(CarbonChain* cc);
+    CarbonChain* copy();
     string to_string(LipidLevel level);
 };
 

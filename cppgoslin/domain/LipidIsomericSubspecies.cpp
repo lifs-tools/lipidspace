@@ -28,6 +28,7 @@ SOFTWARE.
 
 LipidIsomericSubspecies::LipidIsomericSubspecies(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidStructuralSubspecies(_headgroup, _fa) {            
     info->level = ISOMERIC_SUBSPECIES;
+    
 }
 
 LipidIsomericSubspecies::~LipidIsomericSubspecies(){
@@ -41,6 +42,12 @@ LipidLevel LipidIsomericSubspecies::get_lipid_level(){
 }
 
 
+
+
+
+ElementTable* LipidIsomericSubspecies::get_elements(){
+    return LipidMolecularSubspecies::get_elements();
+}
 
 
 string LipidIsomericSubspecies::get_lipid_string(LipidLevel level){

@@ -13,8 +13,8 @@ public:
     map<int, string> double_bond_positions;
     
     DoubleBonds(int num = 0);
-    DoubleBonds(DoubleBonds *double_bonds);
     int get_num();
+    DoubleBonds* copy();
 };
 
 #endif /* DOUBLEBONDS_H */

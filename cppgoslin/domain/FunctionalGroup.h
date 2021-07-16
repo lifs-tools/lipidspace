@@ -27,8 +27,8 @@ public:
     static bool lower_name_sort_function(string s1, string s2);
     
     FunctionalGroup(string _name, int _position = -1, int _count = 1, DoubleBonds* _double_bonds = 0, bool _is_atomic = false, string _stereochemistry = "", ElementTable* _elements = 0, map<string, vector<FunctionalGroup*>>* _functional_groups = 0);
-    FunctionalGroup(FunctionalGroup* fg);
     virtual ~FunctionalGroup();
+    virtual FunctionalGroup* copy();
     virtual ElementTable* get_elements();
     void shift_positions(int shift);
     virtual ElementTable* get_functional_group_elements();
@@ -45,9 +45,9 @@ public:
     bool suffix;
     LipidLevel lowest_visible_level;
     
-    HeadgroupDecorator(string _name, int _position = -1, int _count = 1, ElementTable* _elements = 0, bool _suffix = false, LipidLevel _level = NO_LEVEL); 
-    HeadgroupDecorator(HeadgroupDecorator* hgd);
+    HeadgroupDecorator(string _name, int _position = -1, int _count = 1, ElementTable* _elements = 0, bool _suffix = false, LipidLevel _level = NO_LEVEL);
     string to_string(LipidLevel level);
+    HeadgroupDecorator* copy();
 };
 
 

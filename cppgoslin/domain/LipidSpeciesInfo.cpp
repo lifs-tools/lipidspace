@@ -54,11 +54,10 @@ void LipidSpeciesInfo::add(FattyAcid* _fa){
     else{
         num_specified_fa += 1;
     }
-    
     for (auto &kv : *(_fa->functional_groups)){
         if (uncontains_p(functional_groups, kv.first)) functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
         for (auto func_group : kv.second) {
-            functional_groups->at(kv.first).push_back(new FunctionalGroup(func_group));
+            functional_groups->at(kv.first).push_back(func_group->copy());
         }
     }
         

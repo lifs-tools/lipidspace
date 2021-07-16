@@ -46,10 +46,18 @@ FattyAcid::FattyAcid(string _name, int _num_carbon, DoubleBonds* _double_bonds, 
 }
 
 
-FattyAcid::FattyAcid(FattyAcid* fa) : FunctionalGroup(fa){
-    num_carbon = fa->num_carbon;
-    lipid_FA_bond_type = fa->lipid_FA_bond_type;
-    lcb = fa->lcb;
+FattyAcid* FattyAcid::copy(){
+    
+    DoubleBonds* db = double_bonds->copy();
+    map<string, vector<FunctionalGroup*> >* fg = new map<string, vector<FunctionalGroup*> >();
+    for (auto &kv : *functional_groups){
+        fg->insert({kv.first, vector<FunctionalGroup*>()});
+        for (auto &func_group : kv.second) {
+            fg->at(kv.first).push_back(func_group->copy());
+        }
+    }
+    
+    return new FattyAcid(name, num_carbon, db, fg, lipid_FA_bond_type, lcb, position);
 }
 
 
@@ -239,9 +247,8 @@ AcylAlkylGroup::AcylAlkylGroup(FattyAcid* _fa, int _position, int _count, bool _
 }
 
 
-AcylAlkylGroup::AcylAlkylGroup(AcylAlkylGroup* aag) : FunctionalGroup(aag){
-    alkyl = aag->alkyl;
-    set_N_bond_type(aag->N_bond);
+AcylAlkylGroup* AcylAlkylGroup::copy(){
+    return new AcylAlkylGroup((FattyAcid*)functional_groups->at(alkyl ? "alkyl" : "acyl").at(0)->copy(), position, count, alkyl, N_bond);
 }
 
 
@@ -282,10 +289,8 @@ CarbonChain::CarbonChain(FattyAcid* _fa, int _position, int _count) : Functional
     elements->at(ELEMENT_O) = -1;
 }
 
-
-CarbonChain::CarbonChain(CarbonChain* cc) : FunctionalGroup(cc){
-    elements->at(ELEMENT_H) = 1;
-    elements->at(ELEMENT_O) = -1;
+CarbonChain* CarbonChain::copy(){
+    return new CarbonChain((FattyAcid*)functional_groups->at("cc").at(0)->copy(), position, count);
 }
 
 

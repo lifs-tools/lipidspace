@@ -39,7 +39,7 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (Headgroup* _headgroup, vecto
             info->add(fatty_acid);
         }
     }
-            
+           
             
     // add 0:0 dummys
     for (int i = (int)_fa->size(); i < info->total_fa; ++i){
@@ -54,6 +54,7 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (Headgroup* _headgroup, vecto
 LipidMolecularSubspecies::~LipidMolecularSubspecies(){
     
 }
+
 
 string LipidMolecularSubspecies::build_lipid_subspecies_name(LipidLevel level){
     if (level == NO_LEVEL) level = MOLECULAR_SUBSPECIES;

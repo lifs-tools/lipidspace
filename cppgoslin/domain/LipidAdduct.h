@@ -56,6 +56,7 @@ public:
     string get_extended_class();
     double get_mass();
     string get_sum_formula();
+    LipidLevel get_lipid_level();
     ElementTable* get_elements();
 };
 

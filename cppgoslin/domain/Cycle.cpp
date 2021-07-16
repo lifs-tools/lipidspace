@@ -9,15 +9,20 @@ Cycle::Cycle(int _cycle, int _start, int _end, DoubleBonds* _double_bonds, map<s
     elements->at(ELEMENT_H) = -2;
     bridge_chain = (_bridge_chain == 0) ? new vector<Element>() : _bridge_chain;
 }
-        
 
-Cycle::Cycle(Cycle* c) : FunctionalGroup(c){
-    cycle = c->cycle;
-    start = c->start;
-    end = c->end;
-    elements->at(ELEMENT_H) = -2;
-    bridge_chain = new vector<Element>();
-    for (auto &chain_element : *(c->bridge_chain)) bridge_chain->push_back(chain_element);
+Cycle* Cycle::copy(){
+    DoubleBonds* db = double_bonds->copy();
+    map<string, vector<FunctionalGroup*> >* fg = new map<string, vector<FunctionalGroup*> >();
+    for (auto &kv : *functional_groups){
+        fg->insert({kv.first, vector<FunctionalGroup*>()});
+        for (auto &func_group : kv.second) {
+            fg->at(kv.first).push_back(func_group->copy());
+        }
+    }
+    vector<Element>* bc = new vector<Element>();
+    for (auto &e : *bridge_chain) bc->push_back(e);
+    
+    return new Cycle(cycle, start, end, db, fg, bc);
 }
                 
                 
