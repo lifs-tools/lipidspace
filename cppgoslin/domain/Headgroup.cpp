@@ -124,10 +124,13 @@ ElementTable* Headgroup::get_elements(){
         elements->at(kv.first) += kv.second;
     }
     
+    
     for (auto hgd : *decorators){
-        for (auto &kv : *(hgd->elements)){
+        ElementTable *hgd_elements = hgd->get_elements();
+        for (auto &kv : *hgd_elements){
             elements->at(kv.first) += kv.second * hgd->count;
         }
+        delete hgd_elements;
     }
     
     if (lipid_category == SP && contains(exception_headgroups, get_class_string(lipid_class)) && decorators->size() == 0){

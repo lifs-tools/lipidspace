@@ -71,7 +71,9 @@ void LipidSpeciesInfo::add(FattyAcid* _fa){
 string LipidSpeciesInfo::to_string(){
     stringstream info_string;
     info_string << ether_prefix[num_ethers];
+    for (auto &kv : double_bonds->double_bond_positions) cout << kv.first << ": " << kv.second << endl;
     info_string << num_carbon << ":" << double_bonds->get_num();
+    
     
     ElementTable *elements = get_functional_group_elements();
     for (int i = 2; i < (int)element_order.size(); ++i){

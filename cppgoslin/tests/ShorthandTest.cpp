@@ -58,7 +58,7 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"PC 16:0/20:2(5Z,13E);[8-12cy5;11OH;9oxo];15OH", {"PC 16:0/20:2(5Z,13E);[8-12cy5:0;11OH;9oxo];15OH", "PC 16:0/20:2(5,13);[cy5:0;OH;oxo];OH", "PC 16:0_20:4;O3", "PC 36:4;O3"}}, // PC 36:4;O3
         
-        {"PE-N(FA 18:1(9Z)) 16:0/20:4(4Z,8Z,11Z,14Z)", {"PE-N(FA 18:1(9Z)) 16:0/20:4(4Z,8Z,11Z,14Z)", "PE-N(FA 18:1(9)) 16:0/20:4(4,8,11,14)", "PE-N(FA 18:1) 16:0_20:4", "PE-N(FA) 54:5"}}, // PE-N(FA) 54:5
+        {"PE-N(FA 18:1(9Z)) 16:0/20:4(4Z,8Z,11Z,14Z)", {"PE-N(FA 18:1(9Z)) 16:0/20:4(4Z,8Z,11Z,14Z)", "PE-N(FA 18:1(9)) 16:0/20:4(4,8,11,14)", "PE-N(FA 18:1) 16:0_20:4", "PE-N(FA) 54:5", "C59H106NO7P"}}, // PE-N(FA) 54:5
         
         {"LPC O-16:1(11Z)/0:0", {"LPC O-16:1(11Z)/0:0", "LPC O-16:1(11)/0:0", "LPC O-16:1", "LPC O-16:1"}}, // LPC O-16:1 / C24H50NO6P
         
@@ -133,7 +133,11 @@ int main(int argc, char** argv){
     ShorthandParser parser;
     
     /*
-    LipidAdduct *lipid = parser.parse("PE O-18:1(11E);5OMe/22:0;3OH");
+    LipidAdduct *lipid = parser.parse("PE-N(FA 18:1(9Z)) 16:0/20:4(4Z,8Z,11Z,14Z)");
+    cout << lipid->get_lipid_string(ISOMERIC_SUBSPECIES) << endl;
+    cout << lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) << endl;
+    cout << lipid->get_lipid_string(MOLECULAR_SUBSPECIES) << endl;
+    cout << lipid->get_lipid_string(SPECIES) << endl;
     cout << lipid->get_sum_formula() << endl;
     exit(0);
     */
@@ -162,7 +166,7 @@ int main(int argc, char** argv){
             LipidAdduct *lipid2 = parser.parse(n);
             for (int ll = l; ll < 4; ++ll){
                 assertEqual(results.at(ll), lipid2->get_lipid_string(levels.at(ll)), "test 3 on lipid '" + lipid_name + "' and level '" + std::to_string(levels.at(ll)) + "'");
-                assertEqual(formula, lipid2->get_sum_formula(), "test 4 on lipid '" + lipid_name + "' and level '" + std::to_string(levels.at(ll)) + "'");
+                assertEqual(formula, lipid2->get_sum_formula(), "test 4 on lipid '" + lipid_name + "' and level '" + std::to_string(levels.at(l)) + "' mapped to level '" + std::to_string(levels.at(ll)) + "'");
             }
         }
     }
