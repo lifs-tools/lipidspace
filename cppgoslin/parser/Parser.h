@@ -70,7 +70,7 @@ public:
     map<uint64_t, set<uint64_t>> NTtoNT;
     map<uint64_t, string> NTtoRule;
     map<uint64_t, vector<uint64_t>*> substitution;
-    //vector<set<uint64_t>> left_pair;
+    vector< vector<uint64_t>*> substitution_list;
     vector<Bitfield*> right_pair;
     int avg_pair;
     char quote;
@@ -93,7 +93,8 @@ public:
     static string de_escape(string text, char _quote);
     uint64_t add_terminal(string text);
     vector<uint64_t>* collect_one_backwards(uint64_t rule_index);
-    vector< vector<uint64_t>* >* collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index, set<uint64_t>* visited = 0, vector<uint64_t>* path = 0, vector< vector<uint64_t>* >* collection = 0);
+    vector< vector<uint64_t>* >* collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index);
+    vector< vector<uint64_t>* >* collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index, set<uint64_t>* visited, vector<uint64_t>* path, vector< vector<uint64_t>* >* collection);
     void raise_events(TreeNode *node);
     void fill_tree(TreeNode *node, DPNode *dp_node);
     T parse(string text_to_parse, bool throw_error = true);

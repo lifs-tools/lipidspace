@@ -59,6 +59,7 @@ void writeLipidEnum(string ofFileName){
     
     map<string, vector<string>*> data;
     vector< vector<string>*> functional_data;
+    set<string> functional_data_set;
     set<string> keys;
     while (getline(infile, line)){
         if (i++ == 0) continue;
@@ -134,6 +135,12 @@ void writeLipidEnum(string ofFileName){
     while (getline(functional_file, line)){
         if (i++ == 0) continue;
         functional_data.push_back(split_string(line, ',', '"', true));
+        string fd_name = functional_data.back()->at(1);
+        if (functional_data_set.find(fd_name) != functional_data_set.end()){
+            cout << "Error: functional group '" + fd_name + "' occurs multiple times!" << endl;
+            exit(-1);
+        }
+        functional_data_set.insert(fd_name);
     }
         
     
@@ -232,15 +239,15 @@ void writeLipidEnum(string ofFileName){
     
     
     offile << "KnownFunctionalGroups::KnownFunctionalGroups(){" << endl;
-    offile << "    known_functional_groups = {" << endl;
     
     cnt = 0;
     for (auto &row : functional_data){
         if (cnt++ == 0) continue;
         
+        if (row->size() > 4) offile << "    // " << row->at(5) << endl;
         if (row->at(0) == "FG"){
             
-            offile << "        {\"" << row->at(1) << "\", new FunctionalGroup(\"" << row->at(1) << "\", -1, 1, new DoubleBonds(" << row->at(3) << "), " << row->at(4) << ", \"\", new ElementTable{";
+            offile << "    known_functional_groups.insert({\"" << row->at(1) << "\", new FunctionalGroup(\"" << row->at(1) << "\", -1, 1, new DoubleBonds(" << row->at(3) << "), " << row->at(4) << ", \"\", new ElementTable{";
             
             // add element table
             ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
@@ -253,7 +260,7 @@ void writeLipidEnum(string ofFileName){
             offile << "})}";
         }
         else {
-            offile << "        {\"" << row->at(1) << "\", new HeadgroupDecorator(\"" << row->at(1) << "\", -1, 1, new ElementTable{";
+            offile << "    known_functional_groups.insert({\"" << row->at(1) << "\", new HeadgroupDecorator(\"" << row->at(1) << "\", -1, 1, new ElementTable{";
             
             // add element table
             ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
@@ -265,14 +272,12 @@ void writeLipidEnum(string ofFileName){
             delete table;
             offile << "})}";
         }
-        
-        if (cnt < functional_data.size()) offile << ",";
-        if (row->size() > 4) offile << " // " << row->at(5);
+        offile << ");" << endl;
         offile << "\n\n";
     
         
     }
-    offile << "    };" << endl;
+    
     offile << "}" << endl;
     offile << endl;
     

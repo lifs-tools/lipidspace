@@ -54,7 +54,7 @@ public:
     LipidLevel level;
     LipidAdduct *lipid;
     string headgroup;
-    vector<FattyAcid*> *fa_list;
+    vector<FattyAcid*> fa_list;
     vector<FunctionalGroup*> current_fa;
     Adduct *adduct;
     vector<HeadgroupDecorator*> *headgroup_decorators;

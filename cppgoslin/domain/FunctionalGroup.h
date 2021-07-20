@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 
+
 using namespace std;
 using namespace goslin;
 
@@ -36,7 +37,16 @@ public:
     virtual string to_string(LipidLevel level);
     virtual int get_double_bonds();
     void add(FunctionalGroup* fg);
+};
+
+
+class KnownFunctionalGroups {
+public:
+    KnownFunctionalGroups();
+    ~KnownFunctionalGroups();
+    map<string, FunctionalGroup*> known_functional_groups;
     static FunctionalGroup* get_functional_group(string fg_name);
+    static KnownFunctionalGroups k;
 };
 
 
@@ -50,22 +60,6 @@ public:
     HeadgroupDecorator* copy();
 };
 
-
-class KnownFunctionalGroups {
-    public:
-        static KnownFunctionalGroups& get_instance()
-        {
-            static KnownFunctionalGroups instance;
-            return instance;
-        }
-    private:
-        KnownFunctionalGroups();
-        
-    public:
-        map<string, FunctionalGroup*> known_functional_groups;
-        KnownFunctionalGroups(KnownFunctionalGroups const&) = delete;
-        void operator=(KnownFunctionalGroups const&) = delete;
-};
     
 
 #endif /* FUNCTIONALGROUP_H */

@@ -155,7 +155,7 @@ void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
     lipid = NULL;
     adduct = NULL;
     headgroup = "";
-    fa_list = new vector<FattyAcid*>();
+    fa_list.clear();
     current_fa.clear();
     headgroup_decorators = new vector<HeadgroupDecorator*>();
     tmp.remove_all();
@@ -167,7 +167,7 @@ void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
 void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     Headgroup *head_group = new Headgroup(headgroup, headgroup_decorators);
     int true_fa = 0;
-    for (auto fa : *fa_list){
+    for (auto fa : fa_list){
         true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
     }
     int poss_fa = LipidClasses::get_instance().lipid_classes.at(head_group->lipid_class).possible_num_fa;
@@ -196,15 +196,15 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     }
     
     if (contains(LipidClasses::get_instance().lipid_classes.at(head_group->lipid_class).special_cases, "HC")){
-        fa_list->at(0)->lipid_FA_bond_type = AMINE;
+        fa_list.front()->lipid_FA_bond_type = AMINE;
     }
     
     
     
     // add count numbers for fatty acyl chains
-    int fa_it = fa_list->size() > 0 && fa_list->front()->lcb;
-    for (int it = fa_it; it < (int)fa_list->size(); ++it){
-        fa_list->at(it)->name += std::to_string(it + 1);
+    int fa_it = !fa_list.empty() && fa_list.front()->lcb;
+    for (int it = fa_it; it < (int)fa_list.size(); ++it){
+        fa_list.at(it)->name += std::to_string(it + 1);
     }
     
     lipid = new LipidAdduct();
@@ -212,19 +212,19 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     
     switch(level){
         case ISOMERIC_SUBSPECIES:
-            lipid->lipid = new LipidIsomericSubspecies(head_group, fa_list);
+            lipid->lipid = new LipidIsomericSubspecies(head_group, &fa_list);
             break;
             
         case STRUCTURAL_SUBSPECIES:
-            lipid->lipid = new LipidStructuralSubspecies(head_group, fa_list);
+            lipid->lipid = new LipidStructuralSubspecies(head_group, &fa_list);
             break;
             
         case MOLECULAR_SUBSPECIES:
-            lipid->lipid = new LipidMolecularSubspecies(head_group, fa_list);
+            lipid->lipid = new LipidMolecularSubspecies(head_group, &fa_list);
             break;
             
         case SPECIES:
-            lipid->lipid = new LipidSpecies(head_group, fa_list);
+            lipid->lipid = new LipidSpecies(head_group, &fa_list);
             break;
             
         default:
@@ -272,7 +272,7 @@ void ShorthandParserEventHandler::set_carbohydrate(TreeNode *node){
     string carbohydrate = node->get_text();
     FunctionalGroup* functional_group = 0;
     try {
-        functional_group = FunctionalGroup::get_functional_group(carbohydrate);
+        functional_group = KnownFunctionalGroups::get_functional_group(carbohydrate);
     }
     catch (const std::exception& e){
         throw LipidParsingException("Carbohydrate '" + carbohydrate + "' unknown");
@@ -350,8 +350,8 @@ void ShorthandParserEventHandler::set_hydroxyl(TreeNode *node){
 
 
 void ShorthandParserEventHandler::set_lcb(TreeNode *node){
-        fa_list->back()->lcb = true;
-        fa_list->back()->name = "LCB";
+        fa_list.back()->lcb = true;
+        fa_list.back()->name = "LCB";
 }
 
 
@@ -400,7 +400,7 @@ void ShorthandParserEventHandler::add_fatty_acyl_chain(TreeNode *node){
         current_fa.back()->functional_groups->at(special_type).push_back(fa);
     }
     else {
-        fa_list->push_back(fa);
+        fa_list.push_back(fa);
     }
 }
 
@@ -712,7 +712,7 @@ void ShorthandParserEventHandler::add_functional_group(TreeNode *node){
     
     FunctionalGroup *functional_group = 0;
     try {
-        functional_group = FunctionalGroup::get_functional_group(fg_name);
+        functional_group = KnownFunctionalGroups::get_functional_group(fg_name);
     }
     catch (const std::exception& e) {
         throw LipidParsingException("'" + fg_name + "' unknown");

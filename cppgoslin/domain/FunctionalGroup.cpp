@@ -6,16 +6,14 @@ FunctionalGroup::FunctionalGroup(string _name, int _position, int _count, Double
     count = _count;
     stereochemistry = _stereochemistry;
     ring_stereo = "";
-    double_bonds = (_double_bonds != 0) ? _double_bonds : new DoubleBonds();
+    double_bonds = (_double_bonds != 0) ? _double_bonds : new DoubleBonds(0);
     is_atomic = _is_atomic;
     elements = (_elements != 0) ? _elements : create_empty_table();
     functional_groups = (_functional_groups != 0) ? _functional_groups : (new map<string, vector<FunctionalGroup*>>());
 }
 
 
-
 FunctionalGroup* FunctionalGroup::copy(){
-    
     DoubleBonds* db = double_bonds->copy();
     map<string, vector<FunctionalGroup*> >* fg = new map<string, vector<FunctionalGroup*> >();
     for (auto &kv : *functional_groups){
@@ -50,7 +48,7 @@ FunctionalGroup::~FunctionalGroup(){
     delete double_bonds;
     delete elements;
     for (auto &kv : *functional_groups){
-        for (auto fg : kv.second){
+        for (auto &fg : kv.second){
             delete fg;
         }
     }
@@ -151,14 +149,19 @@ void FunctionalGroup::add(FunctionalGroup* fg){
 
 
 
-FunctionalGroup* FunctionalGroup::get_functional_group(string fg_name){
-    map<string, FunctionalGroup*>& known_functional_groups = KnownFunctionalGroups::get_instance().known_functional_groups;
-    if(contains(known_functional_groups, fg_name)){
-        return known_functional_groups.at(fg_name)->copy();
+KnownFunctionalGroups::~KnownFunctionalGroups(){
+    for (auto &kv : known_functional_groups) delete kv.second;
+}
+
+KnownFunctionalGroups KnownFunctionalGroups::k;
+
+FunctionalGroup* KnownFunctionalGroups::get_functional_group(string fg_name){
+    //static KnownFunctionalGroups k;
+    if(contains(k.known_functional_groups, fg_name)){
+        return k.known_functional_groups.at(fg_name)->copy();
     }
     throw RuntimeException("Name '" + fg_name + "' not registered in functional group list");
 }
-
 
 
 
@@ -174,13 +177,7 @@ HeadgroupDecorator* HeadgroupDecorator::copy(){
     }
     return new HeadgroupDecorator(name, position, count, e, suffix, lowest_visible_level);
 }
-        
-/*
-HeadgroupDecorator::HeadgroupDecorator(HeadgroupDecorator* hgd) : FunctionalGroup(hgd){
-    suffix = hgd->suffix;
-    lowest_visible_level = hgd->lowest_visible_level;    
-}
-*/
+
 
 
 string HeadgroupDecorator::to_string(LipidLevel level){

@@ -228,7 +228,7 @@ void SwissLipidsParserEventHandler::add_hydroxyl(TreeNode *node) {
     
     
     if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
-    FunctionalGroup* functional_group = FunctionalGroup::get_functional_group("OH");
+    FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
     if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
     current_fa->functional_groups->at("OH").push_back(functional_group);
@@ -240,7 +240,7 @@ void SwissLipidsParserEventHandler::add_one_hydroxyl(TreeNode *node) {
         current_fa->functional_groups->at("OH").at(0)->count += 1;
     }
     else {
-        FunctionalGroup* functional_group = FunctionalGroup::get_functional_group("OH");
+        FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
         if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
         current_fa->functional_groups->at("OH").push_back(functional_group);
     }

@@ -43,7 +43,7 @@ LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
     
     if (headgroup->sp_exception){
         if (uncontains_p(info->functional_groups, "OH")) info->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
-        info->functional_groups->at("OH").push_back(FunctionalGroup::get_functional_group("OH"));
+        info->functional_groups->at("OH").push_back(KnownFunctionalGroups::get_functional_group("OH"));
     }
     
     
