@@ -24,6 +24,11 @@ Cycle* Cycle::copy(){
     
     return new Cycle(cycle, start, end, db, fg, bc);
 }
+
+
+Cycle::~Cycle(){
+    delete bridge_chain;
+}
                 
                 
 int Cycle::get_double_bonds(){
@@ -105,7 +110,8 @@ void Cycle::shift_positions(int shift){
     
 
 void Cycle::compute_elements(){
-    ElementTable* elements = create_empty_table();
+    delete elements;
+    elements = create_empty_table();
     elements->at(ELEMENT_H) = -2 - 2 * double_bonds->num_double_bonds;
     
     for (auto &chain_element : *bridge_chain){

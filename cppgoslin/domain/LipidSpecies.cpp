@@ -37,7 +37,10 @@ LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
     
     // add fatty acids
     if (_fa != 0){
-        for (auto fatty_acid : *_fa) info->add(fatty_acid);
+        for (auto fatty_acid : *_fa){
+            info->add(fatty_acid);
+            fa_list.push_back(fatty_acid);
+        }
     }
     
     

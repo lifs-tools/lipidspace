@@ -31,22 +31,9 @@ LipidIsomericSubspecies::LipidIsomericSubspecies(Headgroup* _headgroup, vector<F
     
 }
 
-LipidIsomericSubspecies::~LipidIsomericSubspecies(){
-    
-}
-
-
 
 LipidLevel LipidIsomericSubspecies::get_lipid_level(){
     return ISOMERIC_SUBSPECIES;
-}
-
-
-
-
-
-ElementTable* LipidIsomericSubspecies::get_elements(){
-    return LipidMolecularSubspecies::get_elements();
 }
 
 

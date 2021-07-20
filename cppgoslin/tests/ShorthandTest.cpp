@@ -133,22 +133,18 @@ int main(int argc, char** argv){
     ShorthandParser parser;
     
     /*
-    LipidAdduct *lipid = parser.parse("LPC 18:0;2OH");
+    LipidAdduct *l = parser.parse("PE 20:0");
+    cout << l->get_lipid_string() << endl;
+    delete l;
+        
+    
+    LipidAdduct *lipid = parser.parse("CL O-16:0;3Me,7Me,11Me,15Me/O-16:0;3Me,7Me,11Me,15Me/O-16:0;3Me,7Me,11Me,15Me/O-16:0;3Me,7Me,11Me,15Me");
     
     
     cout << lipid->get_lipid_string(ISOMERIC_SUBSPECIES) << endl;
     cout << lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) << endl;
     cout << lipid->get_lipid_string(MOLECULAR_SUBSPECIES) << endl;
     cout << lipid->get_lipid_string(SPECIES) << endl;
-    
-    
-    FunctionalGroup* a = KnownFunctionalGroups::get_functional_group("OH");
-    cout << "got: " << a->name << " " << a << endl;
-    delete a;
-    
-    a = KnownFunctionalGroups::get_functional_group("OH");
-    cout << "got: " << a->name << " " << a << endl;
-    delete a;
     
     
     cout << lipid->get_sum_formula() << endl;
@@ -177,7 +173,7 @@ int main(int argc, char** argv){
             assertEqual(results.at(l), n, "test 1 on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
             assertEqual(formula, lipid->get_sum_formula(), "test 2 on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
 
-
+            
             LipidAdduct *lipid2 = parser.parse(n);
             for (int ll = l; ll < 4; ++ll){
                 assertEqual(results.at(ll), lipid2->get_lipid_string(levels.at(ll)), "test 3 on lipid '" + lipid_name + "' and level '" + std::to_string(levels.at(ll)) + "'");
@@ -187,6 +183,5 @@ int main(int argc, char** argv){
         }
         delete lipid;
     }
-    
     return 0;
 }

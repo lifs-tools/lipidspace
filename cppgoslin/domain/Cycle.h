@@ -25,6 +25,7 @@ public:
     vector<Element>* bridge_chain;
     
     Cycle(int _cycle, int _start = -1, int _end = -1, DoubleBonds* _double_bonds = 0, map<string, vector<FunctionalGroup*> >* _functional_groups = 0, vector<Element>* _bridgeChain = 0);
+    ~Cycle();
     Cycle* copy();
     int get_double_bonds();
     void rearrange_functional_groups(FunctionalGroup *parent, int shift);

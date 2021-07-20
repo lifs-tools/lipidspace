@@ -35,11 +35,6 @@ LipidStructuralSubspecies::LipidStructuralSubspecies(Headgroup* _headgroup, vect
 }
 
 
-LipidStructuralSubspecies::~LipidStructuralSubspecies(){
-    
-}
-
-
 
 LipidLevel LipidStructuralSubspecies::get_lipid_level(){
     return STRUCTURAL_SUBSPECIES;

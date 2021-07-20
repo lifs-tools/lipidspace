@@ -41,11 +41,9 @@ using namespace goslin;
 class LipidIsomericSubspecies : public LipidStructuralSubspecies {
 public:
     LipidIsomericSubspecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa = NULL);
-    ~LipidIsomericSubspecies();
     string build_lipid_isomeric_substructure_name();
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     LipidLevel get_lipid_level();
-    ElementTable* get_elements();
             
 };
 
