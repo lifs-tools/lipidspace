@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) the authors (listed in global LICENCE file)
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

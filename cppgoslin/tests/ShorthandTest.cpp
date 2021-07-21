@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Dominik Kopczynski   -   dominik.kopczynski {at} lipidomics.at
-                   Nils Hoffmann  -  nils.hoffmann {at} lipidomics.at
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
