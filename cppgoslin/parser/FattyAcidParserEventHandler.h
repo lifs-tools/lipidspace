@@ -114,6 +114,7 @@ public:
     
     void set_lipid_level(LipidLevel _level);
     void add_position(FunctionalGroup* func_group, int pos);
+    void switch_position(FunctionalGroup* func_group, int switch_num);
     
     static const map<string, int> last_numbers;
     static const map<string, int> second_numbers;

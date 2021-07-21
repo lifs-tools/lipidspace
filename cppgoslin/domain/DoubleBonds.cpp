@@ -41,7 +41,7 @@ DoubleBonds* DoubleBonds::copy(){
 
 int DoubleBonds::get_num(){
     if (double_bond_positions.size() > 0 && (int)double_bond_positions.size() != num_double_bonds)
-        throw ConstraintViolationException("Number of double bonds does not match to number of double bond positions");
+        throw ConstraintViolationException("Number of double bonds '" + std::to_string(num_double_bonds) + "' does not match to number of double bond positions '" + std::to_string(double_bond_positions.size()) + "'");
         
     return num_double_bonds;
 }

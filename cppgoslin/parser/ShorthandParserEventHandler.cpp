@@ -148,6 +148,9 @@ ShorthandParserEventHandler::~ShorthandParserEventHandler(){
 }
 
 
+const set<string> ShorthandParserEventHandler::special_types {"acyl", "alkyl", "decorator_acyl", "decorator_alkyl", "cc"};
+
+
 
 void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
     level = ISOMERIC_SUBSPECIES;
@@ -248,15 +251,11 @@ void ShorthandParserEventHandler::set_lipid_level(LipidLevel _level){
 void ShorthandParserEventHandler::add_cycle_element(TreeNode *node){
     string element = node->get_text();
     
-    if (element == "O"){
-        tmp.get_dictionary(FA_I)->get_list("cycle_elements")->set_int(ELEMENT_O);
+    if (uncontains(element_positions, element)){
+        throw LipidParsingException("Element '" + element + "' unknown");
     }
-    else if (element == "N"){
-        tmp.get_dictionary(FA_I)->get_list("cycle_elements")->set_int(ELEMENT_N);
-    }
-    else if (element == "C"){
-        tmp.get_dictionary(FA_I)->get_list("cycle_elements")->set_int(ELEMENT_C);
-    }
+    
+    tmp.get_dictionary(FA_I)->get_list("cycle_elements")->add_int(element_positions.at(element));
 }
 
 
@@ -474,7 +473,7 @@ void ShorthandParserEventHandler::add_cycle(TreeNode *node){
     }
     tmp.get_dictionary(fa_i)->remove("cycle_elements");
         
-    if (cycle->start > -1 && cycle->end > -1 && cycle->end - cycle->start + 1 + (int)cycle->bridge_chain->size() != cycle->cycle){
+    if (cycle->start > -1 && cycle->end > -1 && cycle->end - cycle->start + 1 + (int)cycle->bridge_chain->size() < cycle->cycle){
         throw ConstraintViolationException("Cycle length '" + std::to_string(cycle->cycle) + "' does not match with cycle description.");
     }
     if (uncontains_p(current_fa.back()->functional_groups, "cy")){
@@ -634,8 +633,8 @@ void ShorthandParserEventHandler::set_cycle_db_count(TreeNode *node){
 
 void ShorthandParserEventHandler::set_cycle_db_positions(TreeNode *node){
     tmp.get_dictionary(FA_I)->set_int("cycle_db", ((Cycle*)current_fa.back())->double_bonds->get_num());
-    delete ((Cycle*)current_fa.back())->double_bonds;
-    ((Cycle*)current_fa.back())->double_bonds = new DoubleBonds();
+    //delete ((Cycle*)current_fa.back())->double_bonds;
+    //((Cycle*)current_fa.back())->double_bonds = new DoubleBonds();
 }
 
 

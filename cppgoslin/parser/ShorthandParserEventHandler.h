@@ -58,7 +58,7 @@ public:
     Adduct *adduct;
     vector<HeadgroupDecorator*> *headgroup_decorators;
     GenericDictionary tmp;
-    const set<string> special_types {"acyl", "alkyl", "decorator_acyl", "decorator_alkyl", "cc"};
+    static const set<string> special_types;
         
     ShorthandParserEventHandler();
     ~ShorthandParserEventHandler();

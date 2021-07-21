@@ -151,12 +151,26 @@ void Cycle::compute_elements(){
                 elements->at(ELEMENT_H) += 1;
                 break;
                 
+            case ELEMENT_P:
+                elements->at(ELEMENT_P) += 1;
+                elements->at(ELEMENT_H) += 1;
+                break;
+                
+            case ELEMENT_As:
+                elements->at(ELEMENT_As) += 1;
+                elements->at(ELEMENT_H) += 1;
+                break;
+                
             case ELEMENT_O:
                 elements->at(ELEMENT_O) += 1;
                 break;
                 
-            default:
+            case ELEMENT_S:
+                elements->at(ELEMENT_S) += 1;
                 break;
+                
+            default:
+                throw ConstraintViolationException("Element '" + element_shortcut.at(chain_element) + "' cannot be part of a cycle bridge");
         }
         
     }
@@ -178,22 +192,23 @@ string Cycle::to_string(LipidLevel level){
     }
     
     if ((level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES) && bridge_chain->size() > 0){
-        cycle_string << "(";
         for (auto &e : *bridge_chain) cycle_string << element_shortcut.at(e);
-        cycle_string << ")";
     }
     cycle_string << "cy" << cycle;
     
     cycle_string << ":" << double_bonds->num_double_bonds;
     
-    if (double_bonds->double_bond_positions.size() > 0){
-        int i = 0;
-        cycle_string << "(";
-        for (auto &kv : double_bonds->double_bond_positions){
-            if (i++ > 0) cycle_string << ",";
-            cycle_string << kv.first << kv.second;
+    if (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES){
+        if (double_bonds->double_bond_positions.size() > 0){
+            int i = 0;
+            cycle_string << "(";
+            for (auto &kv : double_bonds->double_bond_positions){
+                if (i++ > 0) cycle_string << ",";
+                if (level == ISOMERIC_SUBSPECIES) cycle_string << kv.first << kv.second;
+                else  cycle_string << kv.first;
+            }
+            cycle_string << ")";
         }
-        cycle_string << ")";
     }
     
     if (level == ISOMERIC_SUBSPECIES){

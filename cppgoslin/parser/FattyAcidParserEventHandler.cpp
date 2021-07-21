@@ -246,7 +246,156 @@ void FattyAcidParserEventHandler::build_lipid(TreeNode *node) {
 }
 
 
+void FattyAcidParserEventHandler::switch_position(FunctionalGroup* func_group, int switch_num){
+    func_group->position = switch_num - func_group->position;
+    for (auto &kv : *(func_group->functional_groups)){
+        for (auto &fg : kv.second){
+            switch_position(fg, switch_num);
+        }
+    }
+}
+
+
 void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
+    FattyAcid* curr_fa = fatty_acyl_stack.back();
+    
+    /*
+    if (contain_p(curr_fa->functional_groups, "noyloxy")){
+        if (headgroup == "FA") headgroup = "FAHFA";
+        
+        while (!curr_fa->functional_groups->at("noyloxy"]).empty()){
+            FattyAcid* fa = (FattyAcid*)curr_fa->functional_groups->at("noyloxy").back();
+            curr_fa->functional_groups.at("noyloxy").pop_back();
+        
+            AcylAlkylGroup* acyl = new AcylAlkylGroup(fa);
+            acyl->position = fa->position;
+            
+            if (uncontains_p(curr_fa->functional_groups, "acyl")) curr_fa->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
+            curr_fa->functional_groups->at("acyl").push_back(acyl);
+        }
+        curr_fa->functional_groups->erase("noyloxy");
+    }
+        
+    else if (contains_p(curr_fa->functional_groups, "nyloxy")){
+        while (!curr_fa->functional_groups->at("nyloxy").empty()){
+            FattyAcid* fa = (FattyAcid*)curr_fa->functional_groups->at("nyloxy").back();
+            curr_fa->functional_groups.at("nyloxy").pop_back();        
+            
+            AcylAlkylGroup* alkyl = new AcylAlkylGroup(fa, -1, 1, true);
+            alkyl->position = fa->position
+            
+            if (uncontains_p(curr_fa->functional_groups, "alkyl")) curr_fa->functional_groups->insert({"alkyl", vector<FunctionalGroup*>()});
+            curr_fa->functional_groups->at("alkyl").push_back(alkyl);
+        }
+        curr_fa->functional_groups->erase("nyloxy");
+    }
+            
+    else {
+        bool has_yl = false;
+        for (auto &kv : *(curr_fa->functional_groups)){
+            if (endswith(kv.first, "yl"){
+                has_yl = true;
+                break;
+            }
+        }
+        if (has_yl){
+            while (true){
+                string yl = "";
+                for (auto &kv : *(curr_fa->functional_groups)){
+                    if (endswith(kv.first, "yl"){
+                        yl = kv.first;
+                        break;
+                    }
+                }
+                if (yl.length() == 0) {
+                    break;
+                }
+            
+                while len(curr_fa.functional_groups[yl]) > 0:
+                    fa = curr_fa.functional_groups[yl].pop()
+                    
+                    if "cyclo" in self.tmp:
+                        cyclo_len = curr_fa.num_carbon
+                        self.tmp['cyclo_len'] = cyclo_len
+                        switch_position(curr_fa, 2 + cyclo_len)
+                        if type(curr_fa.double_bonds) == dict: curr_fa.double_bonds = {2 + cyclo_len - k: v for k, v in curr_fa.double_bonds.items()}
+                        fa.shift_positions(cyclo_len)
+                        
+                        for fg, fg_list in fa.functional_groups.items():
+                            if fg not in curr_fa.functional_groups: curr_fa.functional_groups[fg] = fg_list
+                            else: curr_fa.functional_groups[fg] += fg_list
+                            
+                        
+                        curr_fa.num_carbon = cyclo_len + fa.num_carbon
+                        
+                        if type(curr_fa.double_bonds) == int: curr_fa.double_bonds = {}
+                        if type(fa.double_bonds) == dict:
+                            for pos, ez in fa.double_bonds.items():
+                                curr_fa.double_bonds[pos + cyclo_len] = ez
+                        self.tmp["cyclo_yl"] = True
+                        
+                    else:
+                        ## add carbon chains here here
+                        ## special chains: i.e. ethyl, methyl
+                        fg_name = ""
+                        if (fa.double_bonds if type(fa.double_bonds) == int else len(fa.double_bonds)) == 0 and len(fa.functional_groups) == 0:
+                            if fa.num_carbon == 1:
+                                fg_name = "Me"
+                                fg = get_functional_group(fg_name)
+                            
+                            elif fa.num_carbon == 2:
+                                fg_name = "Et"
+                                fg = get_functional_group(fg_name)
+                                
+                            if len(fg_name) > 0:
+                                fg.position = fa.position
+                                if fg_name not in curr_fa.functional_groups: curr_fa.functional_groups[fg_name] = []
+                                curr_fa.functional_groups[fg_name].append(fg)
+                            
+                        if len(fg_name) == 0:
+                            cc = CarbonChain(fa, position = fa.position)
+                            if "cc" not in curr_fa.functional_groups: curr_fa.functional_groups["cc"] = []
+                            curr_fa.functional_groups["cc"].append(cc)
+                            
+                if "cyclo" in self.tmp: del self.tmp["cyclo"]
+                del curr_fa.functional_groups[yl]
+            }
+        }
+    }
+        
+    if "cyclo" in curr_fa.functional_groups:
+        fa = curr_fa.functional_groups["cyclo"][0]
+        del curr_fa.functional_groups["cyclo"]
+        start_pos, end_pos = curr_fa.num_carbon + 1, curr_fa.num_carbon + (self.tmp["cyclo_len"] if 'cyclo_len' in self.tmp else 5)
+        fa.shift_positions(start_pos - 1)
+        
+        if "cy" in curr_fa.functional_groups:
+            for cy in curr_fa.functional_groups["cy"]:
+                cy.shift_positions(start_pos - 1)
+        
+        for fg, fg_list in fa.functional_groups.items():
+            if fg not in curr_fa.functional_groups: curr_fa.functional_groups[fg] = fg_list
+            else: curr_fa.functional_groups[fg] += fg_list
+        
+        curr_fa.num_carbon += fa.num_carbon
+        
+        if type(curr_fa.double_bonds) == int: curr_fa.double_bonds = {}
+        if type(fa.double_bonds) == dict:
+            for pos, ez in fa.double_bonds.items():
+                curr_fa.double_bonds[pos + start_pos - 1] = ez
+                
+        self.tmp["fg_pos"] = [[start_pos, ""], [end_pos, ""]]
+        self.add_cyclo(node)
+        
+        if "cyclo_len" in self.tmp: del self.tmp["cyclo_len"]
+        if "cyclo" in self.tmp: del self.tmp["cyclo"]
+        
+        
+    elif "cyclo" in self.tmp:
+        self.tmp["fg_pos"] = [[1, ""], [curr_fa.num_carbon, ""]]
+        self.add_cyclo(node)
+        del self.tmp["cyclo"]
+        */
 }
 
 
