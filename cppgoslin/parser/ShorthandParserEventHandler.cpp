@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
+Copyright (c) 2021 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
                    Nils Hoffmann  -  nils.hoffmann {at} isas.de
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

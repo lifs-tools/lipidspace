@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENCE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -70,8 +69,7 @@ void writeGrammarHeader(string ofFileName){
     offile << "/*" << endl;
     offile << "MIT License" << endl;
     offile << endl;
-    offile << "Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de" << endl;
-    offile << "                   Nils Hoffmann  -  nils.hoffmann {at} isas.de" << endl;
+    offile << "Copyright (c) the authors (listed in global LICENCE file)" << endl;
     offile << endl;
     offile << "Permission is hereby granted, free of charge, to any person obtaining a copy" << endl;
     offile << "of this software and associated documentation files (the \"Software\"), to deal" << endl;
