@@ -97,7 +97,6 @@ void writeGrammarHeader(string ofFileName){
     offile << "#define KNOWN_GRAMMARS_H" << endl << endl;
 
     offile << "#include <string>" << endl;
-    //offile << "#include \"cppgoslin/parser/Parser.h\"" << endl;
 
     offile << "using namespace std;" << endl;
     
