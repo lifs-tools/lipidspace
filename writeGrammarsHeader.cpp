@@ -100,7 +100,6 @@ void writeGrammarHeader(string ofFileName){
     //offile << "#include \"cppgoslin/parser/Parser.h\"" << endl;
 
     offile << "using namespace std;" << endl;
-
     
     addingGrammar(offile, "shorthand_grammar", "data/goslin/Shorthand2020.g4");
     offile << endl << endl << endl;

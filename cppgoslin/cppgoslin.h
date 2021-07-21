@@ -54,6 +54,7 @@ SOFTWARE.
 #include "cppgoslin/parser/KnownGrammars.h"
 #include "cppgoslin/parser/KnownParsers.h"
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
+#include "cppgoslin/parser/FattyAcidParserEventHandler.h"
 #include "cppgoslin/parser/Parser.h"
 #include "cppgoslin/parser/SumFormulaParser.h"
 

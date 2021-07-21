@@ -25,9 +25,24 @@ SOFTWARE.
 #ifndef FATTY_ACID_PARSER_EVENT_HANDLER_H
 #define FATTY_ACID_PARSER_EVENT_HANDLER_H
 
-
+#include "cppgoslin/domain/LipidEnums.h"
+#include "cppgoslin/domain/Adduct.h"
+#include "cppgoslin/domain/Cycle.h"
+#include "cppgoslin/domain/LipidAdduct.h"
+#include "cppgoslin/domain/LipidStructuralSubspecies.h"
+#include "cppgoslin/domain/LipidIsomericSubspecies.h"
+#include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/Headgroup.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
+#include "cppgoslin/domain/GenericDatastructures.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
+#include <math.h>
+#include <set>
+#include <map>
+#include <vector>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace goslin;
@@ -45,8 +60,12 @@ func_groups = {'keto': 'oxo', 'ethyl': 'Et', 'hydroxy': "OH", 'phospho': 'Ph', '
 ate = {'formate': 1, 'acetate': 2, 'butyrate': 4, 'propionate': 3, 'valerate': 5, 'isobutyrate': 4}
 */
 
-class ShorthandParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
+class FattyAcidParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
 public:
+    
+    
+    FattyAcidParserEventHandler();
+    ~FattyAcidParserEventHandler();
     void reset_lipid(TreeNode *node);
     void build_lipid(TreeNode *node);
     void set_fatty_acid(TreeNode *node);
@@ -97,7 +116,7 @@ public:
     void add_amine_name(TreeNode *node);
     void add_summary(TreeNode *node);
     void add_func_stereo(TreeNode *node);
-}
+};
         
         
 #endif /* FATTY_ACID_PARSER_EVENT_HANDLER_H */

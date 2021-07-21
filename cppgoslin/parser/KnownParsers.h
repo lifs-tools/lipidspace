@@ -27,12 +27,20 @@ SOFTWARE.
 #define KNOWN_PARSERS_H
 
 
+#include "cppgoslin/parser/FattyAcidParserEventHandler.h"
 #include "cppgoslin/parser/ShorthandParserEventHandler.h"
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
 #include "cppgoslin/parser/SwissLipidsParserEventHandler.h"
 #include "cppgoslin/parser/HmdbParserEventHandler.h"
 #include "cppgoslin/parser/KnownGrammars.h"
+
+class FattyAcidParser : public Parser<LipidAdduct*> {
+public:
+    FattyAcidParser();
+    ~FattyAcidParser();
+};
+
 
 class ShorthandParser : public Parser<LipidAdduct*> {
 public:

@@ -126,201 +126,206 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
 }
 
 
-void reset_lipid(TreeNode *node) {
+FattyAcidParserEventHandler::~FattyAcidParserEventHandler(){
+    
 }
 
 
-void build_lipid(TreeNode *node) {
+void FattyAcidParserEventHandler::reset_lipid(TreeNode *node) {
 }
 
 
-void set_fatty_acid(TreeNode *node) {
+void FattyAcidParserEventHandler::build_lipid(TreeNode *node) {
 }
 
 
-void set_fatty_acyl_type(TreeNode *node) {
+void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
 }
 
 
-void set_double_bond_information(TreeNode *node) {
+void FattyAcidParserEventHandler::set_fatty_acyl_type(TreeNode *node) {
 }
 
 
-void add_double_bond_information(TreeNode *node) {
+void FattyAcidParserEventHandler::set_double_bond_information(TreeNode *node) {
 }
 
 
-void set_double_bond_position(TreeNode *node) {
+void FattyAcidParserEventHandler::add_double_bond_information(TreeNode *node) {
 }
 
 
-void set_cistrans(TreeNode *node) {
+void FattyAcidParserEventHandler::set_double_bond_position(TreeNode *node) {
 }
 
 
-void check_db(TreeNode *node) {
+void FattyAcidParserEventHandler::set_cistrans(TreeNode *node) {
 }
 
 
-void reset_length(TreeNode *node) {
+void FattyAcidParserEventHandler::check_db(TreeNode *node) {
 }
 
 
-void set_functional_length(TreeNode *node) {
+void FattyAcidParserEventHandler::reset_length(TreeNode *node) {
 }
 
 
-void set_fatty_length(TreeNode *node) {
+void FattyAcidParserEventHandler::set_functional_length(TreeNode *node) {
 }
 
 
-void special_number(TreeNode *node) {
+void FattyAcidParserEventHandler::set_fatty_length(TreeNode *node) {
 }
 
 
-void last_number(TreeNode *node) {
+void FattyAcidParserEventHandler::special_number(TreeNode *node) {
 }
 
 
-void second_number(TreeNode *node) {
+void FattyAcidParserEventHandler::last_number(TreeNode *node) {
 }
 
 
-void set_functional_group(TreeNode *node) {
+void FattyAcidParserEventHandler::second_number(TreeNode *node) {
 }
 
 
-void add_functional_group(TreeNode *node) {
+void FattyAcidParserEventHandler::set_functional_group(TreeNode *node) {
 }
 
 
-void set_functional_pos(TreeNode *node) {
+void FattyAcidParserEventHandler::add_functional_group(TreeNode *node) {
 }
 
 
-void set_functional_position(TreeNode *node) {
+void FattyAcidParserEventHandler::set_functional_pos(TreeNode *node) {
 }
 
 
-void set_functional_type(TreeNode *node) {
+void FattyAcidParserEventHandler::set_functional_position(TreeNode *node) {
 }
 
 
-void rearrange_cycle(TreeNode *node) {
+void FattyAcidParserEventHandler::set_functional_type(TreeNode *node) {
 }
 
 
-void add_epoxy(TreeNode *node) {
+void FattyAcidParserEventHandler::rearrange_cycle(TreeNode *node) {
 }
 
 
-void set_cycle(TreeNode *node) {
+void FattyAcidParserEventHandler::add_epoxy(TreeNode *node) {
 }
 
 
-void set_methylene(TreeNode *node) {
+void FattyAcidParserEventHandler::set_cycle(TreeNode *node) {
 }
 
 
-void set_dioic(TreeNode *node) {
+void FattyAcidParserEventHandler::set_methylene(TreeNode *node) {
 }
 
 
-void set_dial(TreeNode *node) {
+void FattyAcidParserEventHandler::set_dioic(TreeNode *node) {
 }
 
 
-void set_prosta(TreeNode *node) {
+void FattyAcidParserEventHandler::set_dial(TreeNode *node) {
 }
 
 
-void add_cyclo(TreeNode *node) {
+void FattyAcidParserEventHandler::set_prosta(TreeNode *node) {
 }
 
 
-void reduction(TreeNode *node) {
+void FattyAcidParserEventHandler::add_cyclo(TreeNode *node) {
 }
 
 
-void homo(TreeNode *node) {
+void FattyAcidParserEventHandler::reduction(TreeNode *node) {
 }
 
 
-void set_recursion(TreeNode *node) {
+void FattyAcidParserEventHandler::homo(TreeNode *node) {
 }
 
 
-void add_recursion(TreeNode *node) {
+void FattyAcidParserEventHandler::set_recursion(TreeNode *node) {
 }
 
 
-void set_recursion_pos(TreeNode *node) {
+void FattyAcidParserEventHandler::add_recursion(TreeNode *node) {
 }
 
 
-void set_yl_ending(TreeNode *node) {
+void FattyAcidParserEventHandler::set_recursion_pos(TreeNode *node) {
 }
 
 
-void set_acetic_acid(TreeNode *node) {
+void FattyAcidParserEventHandler::set_yl_ending(TreeNode *node) {
 }
 
 
-void add_hydroxyl(TreeNode *node) {
+void FattyAcidParserEventHandler::set_acetic_acid(TreeNode *node) {
 }
 
 
-void setup_hydroxyl(TreeNode *node) {
+void FattyAcidParserEventHandler::add_hydroxyl(TreeNode *node) {
 }
 
 
-void add_hydroxyls(TreeNode *node) {
+void FattyAcidParserEventHandler::setup_hydroxyl(TreeNode *node) {
 }
 
 
-void add_wax_ester(TreeNode *node) {
+void FattyAcidParserEventHandler::add_hydroxyls(TreeNode *node) {
 }
 
 
-void set_ate(TreeNode *node) {
+void FattyAcidParserEventHandler::add_wax_ester(TreeNode *node) {
 }
 
 
-void set_iso(TreeNode *node) {
+void FattyAcidParserEventHandler::set_ate(TreeNode *node) {
 }
 
 
-void set_coa(TreeNode *node) {
+void FattyAcidParserEventHandler::set_iso(TreeNode *node) {
 }
 
 
-void set_methyl(TreeNode *node) {
+void FattyAcidParserEventHandler::set_coa(TreeNode *node) {
 }
 
 
-void set_car(TreeNode *node) {
+void FattyAcidParserEventHandler::set_methyl(TreeNode *node) {
 }
 
 
-void add_car(TreeNode *node) {
+void FattyAcidParserEventHandler::set_car(TreeNode *node) {
 }
 
 
-void add_ethanolamine(TreeNode *node) {
+void FattyAcidParserEventHandler::add_car(TreeNode *node) {
 }
 
 
-void add_amine(TreeNode *node) {
+void FattyAcidParserEventHandler::add_ethanolamine(TreeNode *node) {
 }
 
 
-void add_amine_name(TreeNode *node) {
+void FattyAcidParserEventHandler::add_amine(TreeNode *node) {
 }
 
 
-void add_summary(TreeNode *node) {
+void FattyAcidParserEventHandler::add_amine_name(TreeNode *node) {
 }
 
 
-void add_func_stereo(TreeNode *node) {
+void FattyAcidParserEventHandler::add_summary(TreeNode *node) {
+}
+
+
+void FattyAcidParserEventHandler::add_func_stereo(TreeNode *node) {
 }

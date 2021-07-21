@@ -25,6 +25,16 @@ SOFTWARE.
 
 #include "cppgoslin/parser/KnownParsers.h"
 
+FattyAcidParser::FattyAcidParser() : Parser<LipidAdduct*>(new FattyAcidParserEventHandler(), GrammarString(fatty_acid_grammar), DEFAULT_QUOTE){
+        
+}
+
+
+FattyAcidParser::~FattyAcidParser(){
+    delete parser_event_handler;
+}
+
+
 ShorthandParser::ShorthandParser() : Parser<LipidAdduct*>(new ShorthandParserEventHandler(), GrammarString(shorthand_grammar), DEFAULT_QUOTE){
         
 }
