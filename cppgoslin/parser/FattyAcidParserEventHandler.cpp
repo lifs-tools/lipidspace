@@ -140,15 +140,109 @@ const map<string, int> FattyAcidParserEventHandler::special_numbers {{"meth", 1}
 
 
 FattyAcidParserEventHandler::~FattyAcidParserEventHandler(){
-    
+}
+
+
+void FattyAcidParserEventHandler::set_lipid_level(LipidLevel _level){
+    level = min(level, _level);
 }
 
 
 void FattyAcidParserEventHandler::reset_lipid(TreeNode *node) {
+    level = ISOMERIC_SUBSPECIES;
+    headgroup = "";
+    fatty_acyl_stack.clear();
+    fatty_acyl_stack.push_back(new FattyAcid("FA"));
+    tmp.remove_all();
+    debug = "";
+}
+
+
+
+void FattyAcidParserEventHandler::add_position(FunctionalGroup* func_group, int pos){
+    func_group->position += func_group->position >= pos;
+    try {
+        ((Cycle*)func_group)->start += ((Cycle*)func_group)->start >= pos;
+        ((Cycle*)func_group)->end += ((Cycle*)func_group)->end >= pos;
+    }
+    catch (...){}
+    
+    for (auto &kv : *(func_group->functional_groups)){
+        for (auto &fg : kv.second){
+            add_position(fg, pos);
+        }
+    }
 }
 
 
 void FattyAcidParserEventHandler::build_lipid(TreeNode *node) {
+    
+    if (tmp.contains_key("cyclo_yl")) {
+        tmp.set_list("fg_pos", new GenericList());
+        tmp.get_list("fg_pos")->add_list(new GenericList());
+        tmp.get_list("fg_pos")->get_list(0)->add_int(1);
+        tmp.get_list("fg_pos")->get_list(0)->add_string("");
+        tmp.get_list("fg_pos")->add_list(new GenericList());
+        tmp.get_list("fg_pos")->get_list(1)->add_int(tmp.get_int("cyclo_len"));
+        tmp.get_list("fg_pos")->get_list(1)->add_string("");
+        add_cyclo(node);
+        tmp.remove("cyclo_yl");
+        tmp.remove("cyclo_len");
+    }
+            
+    
+    if (tmp.contains_key("post_adding")){
+        FattyAcid *curr_fa = fatty_acyl_stack.back();
+        int s = tmp.get_list("post_adding")->list.size();
+        curr_fa->num_carbon += s;
+        for (int i = 0; i < s; ++i){
+            int pos = tmp.get_list("post_adding")->get_int(i);
+            add_position(curr_fa, pos);
+            DoubleBonds* db = new DoubleBonds(curr_fa->double_bonds->num_double_bonds);
+            for (auto &kv : curr_fa->double_bonds->double_bond_positions){
+                db->double_bond_positions.insert({kv.first + (kv.first >= pos), kv.second});
+            }
+            delete curr_fa->double_bonds;
+            curr_fa->double_bonds = db;
+        }
+    }
+    
+    
+    FattyAcid *curr_fa = fatty_acyl_stack.back();
+    if (!curr_fa->double_bonds->double_bond_positions.empty()){
+        int db_right = 0;
+        for (auto &kv : curr_fa->double_bonds->double_bond_positions) db_right += kv.second.length() > 0;
+        if (db_right != (int)curr_fa->double_bonds->double_bond_positions.size()){
+            set_lipid_level(STRUCTURAL_SUBSPECIES);
+        }
+    }
+    
+    
+    Headgroup *head_group = new Headgroup(headgroup);
+    
+    lipid = new LipidAdduct();
+    
+    switch(level){
+        case ISOMERIC_SUBSPECIES:
+            lipid->lipid = new LipidIsomericSubspecies(head_group, &fatty_acyl_stack);
+            break;
+            
+        case STRUCTURAL_SUBSPECIES:
+            lipid->lipid = new LipidStructuralSubspecies(head_group, &fatty_acyl_stack);
+            break;
+            
+        case MOLECULAR_SUBSPECIES:
+            lipid->lipid = new LipidMolecularSubspecies(head_group, &fatty_acyl_stack);
+            break;
+            
+        case SPECIES:
+            lipid->lipid = new LipidSpecies(head_group, &fatty_acyl_stack);
+            break;
+            
+        default:
+            break;
+    }
+    BaseParserEventHandler<LipidAdduct*>::content = lipid;
 }
 
 

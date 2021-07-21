@@ -52,6 +52,11 @@ using namespace goslin;
 
 class FattyAcidParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
 public:
+    LipidLevel level;
+    LipidAdduct *lipid;
+    string headgroup;
+    vector<FattyAcid*> fatty_acyl_stack;
+    GenericDictionary tmp;
     
     
     FattyAcidParserEventHandler();
@@ -106,6 +111,9 @@ public:
     void add_amine_name(TreeNode *node);
     void add_summary(TreeNode *node);
     void add_func_stereo(TreeNode *node);
+    
+    void set_lipid_level(LipidLevel _level);
+    void add_position(FunctionalGroup* func_group, int pos);
     
     static const map<string, int> last_numbers;
     static const map<string, int> second_numbers;

@@ -45,25 +45,32 @@ public:
     ~GenericList();
     vector<pair<int, void*>> list;
     
-    void set_int(int i);
+    void add_int(int i);
+    void set_int(int i, int ii);
     int get_int(int i);
     
-    void set_long(long l);
+    void add_long(long l);
+    void set_long(int i, long l);
     long get_long(int i);
     
-    void set_float(float f);
+    void add_float(float f);
+    void set_float(int i, float f);
     float get_float(int i);
     
-    void set_double(double d);
+    void add_double(double d);
+    void set_double(int i, double d);
     double get_double(int i);
     
-    void set_string(string s);
+    void add_string(string s);
+    void set_string(int i, string s);
     string get_string(int i);
     
-    void set_list(GenericList* v);
+    void add_list(GenericList* v);
+    void set_list(int i, GenericList* v);
     GenericList* get_list(int i);
     
-    void set_dictionary(GenericDictionary* d);
+    void add_dictionary(GenericDictionary* d);
+    void set_dictionary(int i, GenericDictionary* d);
     GenericDictionary* get_dictionary(int i);
     
     void del(pair<int, void*> &x);

@@ -83,9 +83,15 @@ void GenericList::del(pair<int, void*> &x){
 
 
 
-void GenericList::set_int(int i){
+void GenericList::add_int(int i){
     void* vi = new int(i);
     list.push_back({TYPE_INT, vi});
+}
+
+void GenericList::set_int(int i, int ii){
+    void* vi = new int(ii);
+    del(list.at(i));
+    list.at(i) = {TYPE_INT, vi};
 }
 
 int GenericList::get_int(int key){
@@ -93,9 +99,15 @@ int GenericList::get_int(int key){
     return *((int*)(list.at(key).second));
 }
 
-void GenericList::set_long(long l){
+void GenericList::add_long(long l){
     void* vl = new long(l);
     list.push_back({TYPE_LONG, vl});
+}
+
+void GenericList::set_long(int i, long l){
+    void* vl = new long(l);
+    del(list.at(i));
+    list.at(i) = {TYPE_LONG, vl};
 }
 
 long GenericList::get_long(int key){
@@ -103,9 +115,15 @@ long GenericList::get_long(int key){
     return *((long*)(list.at(key).second));
 }
 
-void GenericList::set_float(float f){
+void GenericList::add_float(float f){
     void* vf = new float(f);
     list.push_back({TYPE_FLOAT, vf});
+}
+
+void GenericList::set_float(int i, float f){
+    void* vf = new float(f);
+    del(list.at(i));
+    list.at(i) = {TYPE_FLOAT, vf};
 }
 
 float GenericList::get_float(int key){
@@ -113,9 +131,15 @@ float GenericList::get_float(int key){
     return *((float*)(list.at(key).second));
 }
 
-void GenericList::set_double(double d){
+void GenericList::add_double(double d){
     void* vd = new double(d);
     list.push_back({TYPE_DOUBLE, vd});
+}
+
+void GenericList::set_double(int i, double d){
+    void* vd = new double(d);
+    del(list.at(i));
+    list.at(i) = {TYPE_DOUBLE, vd};
 }
 
 double GenericList::get_double(int key){
@@ -123,9 +147,15 @@ double GenericList::get_double(int key){
     return *((double*)(list.at(key).second));
 }
 
-void GenericList::set_string(string s){
+void GenericList::add_string(string s){
     void* vs = new string(s);
     list.push_back({TYPE_STRING, vs});
+}
+
+void GenericList::set_string(int i, string s){
+    void* vs = new string(s);
+    del(list.at(i));
+    list.at(i) = {TYPE_STRING, vs};
 }
 
 string GenericList::get_string(int key){
@@ -133,8 +163,13 @@ string GenericList::get_string(int key){
     return *((string*)(list.at(key).second));
 }
 
-void GenericList::set_list(GenericList* v){
+void GenericList::add_list(GenericList* v){
     list.push_back({TYPE_LIST, v});
+}
+
+void GenericList::set_list(int i, GenericList* v){
+    del(list.at(i));
+    list.at(i) = {TYPE_LIST, v};
 }
 
 GenericList* GenericList::get_list(int key){
@@ -143,8 +178,14 @@ GenericList* GenericList::get_list(int key){
 }
 
 
-void GenericList::set_dictionary(GenericDictionary* dict){
+void GenericList::add_dictionary(GenericDictionary* dict){
     list.push_back({TYPE_DICTIONARY, (void*)dict});
+}
+
+
+void GenericList::set_dictionary(int i, GenericDictionary* dict){
+    del(list.at(i));
+    list.at(i) = {TYPE_DICTIONARY, (void*)dict};
 }
 
 
