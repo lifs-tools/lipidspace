@@ -51,6 +51,7 @@ namespace goslin {
     string strip(string s, char c);
     vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE, bool with_empty = false);
     string to_lower(string s);
+    string to_upper(string s);
 }
 
 #endif /* STRINGFUNCTIONS_H */

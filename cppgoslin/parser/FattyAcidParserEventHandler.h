@@ -121,6 +121,10 @@ public:
     static const map<string, int> special_numbers;
     static const map<string, string> func_groups;
     static const map<string, int> ate;
+    
+    static const set<string> noic_set;
+    static const set<string> nal_set;
+    static const set<string> acetate_set;
 };
         
         

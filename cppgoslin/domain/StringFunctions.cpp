@@ -45,6 +45,13 @@ string goslin::to_lower(string st){
 }
 
 
+string goslin::to_upper(string st){
+    string s = string(st);
+    std::transform(s.begin(), s.end(), s.begin(),[](unsigned char c){ return std::toupper(c); });
+    return s;
+}
+
+
 string goslin::strip(string s, char c){
     if (s.length() > 0) {
         uint32_t st = 0;
