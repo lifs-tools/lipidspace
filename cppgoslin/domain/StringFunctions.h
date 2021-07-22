@@ -52,6 +52,7 @@ namespace goslin {
     vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE, bool with_empty = false);
     string to_lower(string s);
     string to_upper(string s);
+    bool endswith(const string &main_str, const string &to_match);
 }
 
 #endif /* STRINGFUNCTIONS_H */

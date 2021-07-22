@@ -71,12 +71,3 @@ void BaseParserEventHandler<T>::handle_event(string event_name, TreeNode *node){
         registered_events->at(event_name)(node);
     }
 }
- 
- template <class T> 
-bool BaseParserEventHandler<T>::endswith(const string &main_str, const string &to_match){
-    if(main_str.size() >= to_match.size() &&
-            main_str.compare(main_str.size() - to_match.size(), to_match.size(), to_match) == 0)
-            return true;
-        else
-            return false;
-}

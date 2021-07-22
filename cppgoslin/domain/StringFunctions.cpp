@@ -51,6 +51,14 @@ string goslin::to_upper(string st){
     return s;
 }
 
+bool goslin::endswith(const string &main_str, const string &to_match){
+    if(main_str.size() >= to_match.size() &&
+            main_str.compare(main_str.size() - to_match.size(), to_match.size(), to_match) == 0)
+            return true;
+        else
+            return false;
+}
+
 
 string goslin::strip(string s, char c){
     if (s.length() > 0) {
