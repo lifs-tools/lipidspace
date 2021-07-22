@@ -106,7 +106,7 @@ HmdbTest: cppgoslin/tests/HmdbTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o HmdbTest cppgoslin/tests/HmdbTest.o libcppGoslin.so
 	
 FattyAcidsTest: cppgoslin/tests/FattyAcidsTest.o libcppGoslin.so
-	${CC} -I. ${opt} -Bstatic -o HmdbTest cppgoslin/tests/FattyAcidsTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o FattyAcidsTest cppgoslin/tests/FattyAcidsTest.o libcppGoslin.so
 	
 	
 test: FattyAcidsTest #ShorthandTest FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest

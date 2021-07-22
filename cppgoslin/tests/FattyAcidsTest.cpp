@@ -39,7 +39,6 @@ int main(int argc, char** argv){
     string test_file = "cppgoslin/tests/fatty-acids-test.csv";
     FattyAcidParser lipid_parser;
     ShorthandParser shorthand_parser;
-    SumFormulaParser formula_parser;
         
     // test several more lipid names
     vector<string> lipid_data;
@@ -55,10 +54,12 @@ int main(int argc, char** argv){
     int failed = 0;
     int failed_sum = 0;
     
-    int i = 0;
+    int i = -1;
     for (auto lipid_name : lipid_data){
-            
-        vector<string> *data = split_string(lipid_name, ',', '"');
+        ++i;
+        
+        
+        vector<string> *data = split_string(lipid_name, ',', '"', true);
         
         string name = data->at(3);
         if (i && i % 100 == 0) cout << i << endl;
@@ -81,7 +82,7 @@ int main(int argc, char** argv){
         }
             
         string lipid_formula = lipid->get_sum_formula();
-        ElementTable *e = formula_parser.parse(data->at(2));
+        ElementTable *e = SumFormulaParser::get_instance().parse(data->at(2));
         string formula = goslin::compute_sum_formula(e);
         delete e;
         
@@ -129,7 +130,6 @@ int main(int argc, char** argv){
         delete lipid2;
         delete lipid;
         delete data;
-        ++i;
     }
     cout << "In the test, " << not_implemented << " of " << lipid_data.size() << " lipids can not be described by nomenclature" << endl;
     cout << "In the test, " << failed << " of " << (lipid_data.size() - not_implemented) << " lipids failed" << endl;
