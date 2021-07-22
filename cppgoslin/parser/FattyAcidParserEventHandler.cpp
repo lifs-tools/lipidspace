@@ -685,34 +685,198 @@ void FattyAcidParserEventHandler::set_dial(TreeNode *node) {
 
 
 void FattyAcidParserEventHandler::set_prosta(TreeNode *node) {
+    int minus_pos = 0;
+    if (tmp.contains_key("reduction")){
+        GenericList *gl = tmp.get_list("reduction");
+        for (int i = 0; i < (int)gl->list.size(); ++i){
+            minus_pos = gl->get_int(i) < 8;
+        }
+    }
+    tmp.set_list("fg_pos", new GenericList());
+    tmp.get_list("fg_pos")->add_list(new GenericList());
+    tmp.get_list("fg_pos")->add_list(new GenericList());
+    tmp.get_list("fg_pos")->get_list(0)->add_int(8 - minus_pos);
+    tmp.get_list("fg_pos")->get_list(0)->add_string("");
+    tmp.get_list("fg_pos")->get_list(1)->add_int(12 - minus_pos);
+    tmp.get_list("fg_pos")->get_list(1)->add_string("");
+    tmp.set_string("fg_type", "cy");
 }
 
 
 void FattyAcidParserEventHandler::add_cyclo(TreeNode *node) {
+    int start = tmp.get_list("fg_pos")->get_list(0)->get_int(0);
+    int end = tmp.get_list("fg_pos")->get_list(1)->get_int(0);
+    
+    
+    DoubleBonds *cyclo_db = new DoubleBonds();
+    // check double bonds
+    if (!fatty_acyl_stack.back()->double_bonds->double_bond_positions.empty()){
+        for (auto &kv : fatty_acyl_stack.back()->double_bonds->double_bond_positions){
+            if (start != kv.first && kv.first <= end){
+                cyclo_db->double_bond_positions.insert({kv.first, kv.second});
+            }
+        }
+        cyclo_db->num_double_bonds = cyclo_db->double_bond_positions.size();
+    
+        for (auto &kv : cyclo_db->double_bond_positions){
+            fatty_acyl_stack.back()->double_bonds->double_bond_positions.erase(kv.first);
+        }
+        fatty_acyl_stack.back()->double_bonds->num_double_bonds = fatty_acyl_stack.back()->double_bonds->double_bond_positions.size();
+        
+    }        
+    // check functional_groups
+    map<string, vector<FunctionalGroup*> > *cyclo_fg = new map<string, vector<FunctionalGroup*>>();
+    set<string> remove_list;
+    FattyAcid *curr_fa = fatty_acyl_stack.back();
+    
+    if (contains_p(curr_fa->functional_groups, "noyloxy")){
+        vector<int> remove_item;
+        int i = 0;
+        for (auto &func_group : curr_fa->functional_groups->at("noyloxy")){
+            if (start <= func_group->position && func_group->position <= end){
+                CarbonChain *cc = new CarbonChain((FattyAcid*)func_group, func_group->position);
+                
+                if (uncontains_p(curr_fa->functional_groups, "cc")) curr_fa->functional_groups->insert({"cc", vector<FunctionalGroup*>()});
+                curr_fa->functional_groups->at("cc").push_back(cc);
+                remove_item.push_back(i);
+            }
+            ++i;
+        }
+        for (int i = remove_item.size() - 1; i >= 0; --i) curr_fa->functional_groups->at("noyloxy").erase(curr_fa->functional_groups->at("noyloxy").begin() + remove_item.at(i));
+        if (curr_fa->functional_groups->at("noyloxy").empty()) remove_list.insert("noyloxy");
+    }
+    
+    for (auto &kv : *(curr_fa->functional_groups)){
+        vector<int> remove_item;
+        int i = 0;
+        for (auto &func_group : kv.second){
+            if (start <= func_group->position && func_group->position <= end){
+                if (uncontains_p(cyclo_fg, kv.first)) cyclo_fg->insert({kv.first, vector<FunctionalGroup*>()});
+                cyclo_fg->at(kv.first).push_back(func_group);
+                remove_item.push_back(i);
+            }
+            ++i;    
+        }
+        for (int i = remove_item.size() - 1; i >= 0; --i) kv.second.erase(kv.second.begin() + remove_item.at(i));
+        if (kv.second.empty()) remove_list.insert(kv.first);
+    }
+    for (auto &fg : remove_list) curr_fa->functional_groups->erase(fg);
+
+    Cycle *cycle = new Cycle(end - start + 1, start, end, cyclo_db, cyclo_fg);
+    if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "cy")) fatty_acyl_stack.back()->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
+    fatty_acyl_stack.back()->functional_groups->at("cy").push_back(cycle);
 }
 
 
 void FattyAcidParserEventHandler::reduction(TreeNode *node) {
+    fatty_acyl_stack.back()->num_carbon -= tmp.get_list("fg_pos")->list.size();
+    tmp.set_list("reduction", new GenericList());
+    for (int i = 0; i < (int)tmp.get_list("fg_pos")->list.size(); ++i){
+        tmp.get_list("reduction")->add_int(tmp.get_list("fg_pos")->get_list(i)->get_int(0));
+    }
 }
 
 
 void FattyAcidParserEventHandler::homo(TreeNode *node) {
+    tmp.set_list("post_adding", new GenericList());
+    for (int i = 0; i < (int)tmp.get_list("fg_pos")->list.size(); ++i){
+        tmp.get_list("post_adding")->add_int(tmp.get_list("fg_pos")->get_list(i)->get_int(0));
+    }
 }
 
 
 void FattyAcidParserEventHandler::set_recursion(TreeNode *node) {
+    tmp.set_list("fg_pos", new GenericList());
+    tmp.set_string("fg_type", "");
+    fatty_acyl_stack.push_back(new FattyAcid("FA"));
+    tmp.set_dictionary(FA_I, new GenericDictionary());
+    tmp.get_dictionary(FA_I)->set_int("recursion_pos", 0);
 }
 
 
 void FattyAcidParserEventHandler::add_recursion(TreeNode *node) {
+        int pos = tmp.get_dictionary(FA_I)->get_int("recursion_pos");
+        
+        FattyAcid *fa = fatty_acyl_stack.back();
+        fatty_acyl_stack.pop_back();
+        fa->position = pos;
+        FattyAcid *curr_fa = fatty_acyl_stack.back();
+        
+        string fname = "";
+        if (tmp.contains_key("cyclo_yl")){
+            fname = "cyclo";
+            tmp.remove("cyclo_yl");
+        }
+        else {
+            fname = headgroup;
+        }
+        if (uncontains_p(curr_fa->functional_groups, fname)) curr_fa->functional_groups->insert({fname, vector<FunctionalGroup*>()});
+        curr_fa->functional_groups->at(fname).push_back(fa);
+        tmp.set_int("added_func_group", 1);
 }
 
 
 void FattyAcidParserEventHandler::set_recursion_pos(TreeNode *node) {
+    tmp.get_dictionary(FA_I)->set_int("recursion_pos", atoi(node->get_text().c_str()));
 }
 
 
 void FattyAcidParserEventHandler::set_yl_ending(TreeNode *node) {
+    int l = atoi(node->get_text().c_str()) - 1;
+    if (l == 0) return;
+
+    FattyAcid *curr_fa = fatty_acyl_stack.back();
+    string fname = "";
+    FunctionalGroup *fg = 0;
+    if (l == 1){
+        fname = "Me";
+        fg = KnownFunctionalGroups::get_functional_group(fname);
+    }
+    else if (l == 2){
+        fname = "Et";
+        fg = KnownFunctionalGroups::get_functional_group(fname);
+    }
+    else {
+        FattyAcid *fa = new FattyAcid("FA", l);
+        // shift functional groups
+        for (auto &kv : *(curr_fa->functional_groups)){
+            vector<int> remove_item;
+            int i = 0;
+            for (auto &func_group : kv.second){
+                if (func_group->position <= l){
+                    remove_item.push_back(i);
+                    if (uncontains_p(fa->functional_groups, kv.first)) fa->functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
+                    func_group->position = l + 1 - func_group->position;
+                    fa->functional_groups->at(kv.first).push_back(func_group);
+                }
+            }
+            for (int i = remove_item.size() - 1; i >= 0; --i) curr_fa->functional_groups->at(kv.first).erase(curr_fa->functional_groups->at(kv.first).begin() + remove_item.at(i));
+        }
+        map<string, vector<FunctionalGroup*> > *tmp = curr_fa->functional_groups;
+        curr_fa->functional_groups = new map<string, vector<FunctionalGroup*> >();
+        for (auto &kv : *tmp){
+            if (!kv.second.empty()) curr_fa->functional_groups->insert({kv.first, kv.second});
+        }
+        delete tmp;
+        
+        // shift double bonds
+        if (!curr_fa->double_bonds->double_bond_positions.empty()){
+            delete fa->double_bonds;
+            fa->double_bonds = new DoubleBonds();
+            for (auto &kv : curr_fa->double_bonds->double_bond_positions){
+                if (kv.first <= l) fa->double_bonds->double_bond_positions.insert({l + 1 - kv.first, kv.second});
+            }
+            fa->double_bonds->num_double_bonds = fa->double_bonds->double_bond_positions.size();
+            for (auto &kv : fa->double_bonds->double_bond_positions) curr_fa->double_bonds->double_bond_positions.erase(kv.first);
+        }
+        fname = "cc";
+        fg = new CarbonChain(fa);
+    }
+    curr_fa->num_carbon -= l;
+    fg->position = l;
+    curr_fa->shift_positions(-l);
+    if (uncontains_p(curr_fa->functional_groups, fname)) curr_fa->functional_groups->insert({fname, vector<FunctionalGroup*>()});
+    curr_fa->functional_groups->at(fname).push_back(fg);
 }
 
 
