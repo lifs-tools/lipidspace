@@ -881,64 +881,133 @@ void FattyAcidParserEventHandler::set_yl_ending(TreeNode *node) {
 
 
 void FattyAcidParserEventHandler::set_acetic_acid(TreeNode *node) {
+    fatty_acyl_stack.back()->num_carbon += 2;
+    headgroup = "FA";
 }
 
 
 void FattyAcidParserEventHandler::add_hydroxyl(TreeNode *node) {
+    tmp.get_list("hydroxyl_pos")->add_int(atoi(node->get_text().c_str()));
 }
 
 
 void FattyAcidParserEventHandler::setup_hydroxyl(TreeNode *node) {
+    tmp.set_list("hydroxyl_pos", new GenericList());
 }
 
 
 void FattyAcidParserEventHandler::add_hydroxyls(TreeNode *node) {
+    if (tmp.get_list("hydroxyl_pos")->list.size() > 1){
+        FunctionalGroup *fg_oh = KnownFunctionalGroups::get_functional_group("OH");
+        vector<int> sorted_pos;
+        for (int i = 0; i < (int)tmp.get_list("hydroxyl_pos")->list.size(); ++i) sorted_pos.push_back(tmp.get_list("hydroxyl_pos")->get_int(i));
+        std::sort(sorted_pos.rbegin(), sorted_pos.rend());
+        for (int i = 0; i < (int)sorted_pos.size() - 1; ++i){
+            int pos = sorted_pos.at(i);
+            FunctionalGroup *fg_insert = fg_oh->copy();
+            fg_insert->position = pos;
+            if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "OH")) fatty_acyl_stack.back()->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+            fatty_acyl_stack.back()->functional_groups->at("OH").push_back(fg_insert);
+        }
+        delete fg_oh;
+    }
 }
 
 
 void FattyAcidParserEventHandler::add_wax_ester(TreeNode *node) {
+    FattyAcid *fa = fatty_acyl_stack.back();
+    fatty_acyl_stack.pop_back();
+    
+    fa->name += "1";
+    fa->lipid_FA_bond_type = AMINE;
+    fatty_acyl_stack.back()->name += "2";
+    fatty_acyl_stack.insert(fatty_acyl_stack.begin(), fa);
 }
 
 
 void FattyAcidParserEventHandler::set_ate(TreeNode *node) {
+    fatty_acyl_stack.back()->num_carbon += ate.at(node->get_text());
+    headgroup = "WE";
 }
 
 
 void FattyAcidParserEventHandler::set_iso(TreeNode *node) {
+        FattyAcid *curr_fa = fatty_acyl_stack.back();
+        curr_fa->num_carbon -= 1;
+        FunctionalGroup *fg = KnownFunctionalGroups::get_functional_group("Me");
+        fg->position = 2;
+        if (uncontains_p(curr_fa->functional_groups, "Me")) curr_fa->functional_groups->insert({"Me", vector<FunctionalGroup*>()});
+        curr_fa->functional_groups->at("Me").push_back(fg);
 }
 
 
 void FattyAcidParserEventHandler::set_coa(TreeNode *node) {
+    headgroup = "CoA";
 }
 
 
 void FattyAcidParserEventHandler::set_methyl(TreeNode *node) {
+    fatty_acyl_stack.back()->num_carbon += 1;
 }
 
 
 void FattyAcidParserEventHandler::set_car(TreeNode *node) {
+    tmp.set_list("fg_pos", new GenericList());
+    tmp.set_string("fg_type", "");
 }
 
 
 void FattyAcidParserEventHandler::add_car(TreeNode *node) {
+    headgroup = "CAR";
 }
 
 
 void FattyAcidParserEventHandler::add_ethanolamine(TreeNode *node) {
+    if (tmp.get_list("hydroxyl_pos")->list.size() > 1){
+        FunctionalGroup *fg_oh = KnownFunctionalGroups::get_functional_group("OH");
+        vector<int> sorted_pos;
+        for (int i = 0; i < (int)tmp.get_list("hydroxyl_pos")->list.size(); ++i) sorted_pos.push_back(tmp.get_list("hydroxyl_pos")->get_int(i));
+        std::sort(sorted_pos.rbegin(), sorted_pos.rend());
+        for (int i = 0; i < (int)sorted_pos.size() - 1; ++i){
+            int pos = sorted_pos.at(i);
+            FunctionalGroup *fg_insert = fg_oh->copy();
+            fg_insert->position = pos;
+            if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "OH")) fatty_acyl_stack.back()->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+            fatty_acyl_stack.back()->functional_groups->at("OH").push_back(fg_insert);
+            
+        }
+        delete fg_oh;
+    }
 }
 
 
 void FattyAcidParserEventHandler::add_amine(TreeNode *node) {
+    FattyAcid *fa = fatty_acyl_stack.back();
+    fatty_acyl_stack.pop_back();
+    
+    fa->name += "1";
+    fatty_acyl_stack.back()->name += "2";
+    fa->lipid_FA_bond_type = AMINE;
+    fatty_acyl_stack.insert(fatty_acyl_stack.begin(), fa);
 }
 
 
 void FattyAcidParserEventHandler::add_amine_name(TreeNode *node) {
+    headgroup = "NA";
 }
 
 
 void FattyAcidParserEventHandler::add_summary(TreeNode *node) {
+    tmp.get_dictionary(FA_I)->set_dictionary("fg_pos_summary", new GenericDictionary());
+    for (int i = 0; i < (int)tmp.get_list("fg_pos")->list.size(); ++i){
+        string k = std::to_string(tmp.get_list("fg_pos")->get_list(i)->get_int(0));
+        string v = tmp.get_list("fg_pos")->get_list(i)->get_string(1);
+        tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->set_string(k, v);
+    }
 }
 
 
 void FattyAcidParserEventHandler::add_func_stereo(TreeNode *node) {
+    int l = tmp.get_list("fg_pos")->list.size();
+    tmp.get_list("fg_pos")->get_list(l - 1)->set_string(1, node->get_text());
 }
