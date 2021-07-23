@@ -123,6 +123,8 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
     reg("fg_pos_summary_pre_event", set_functional_group);
     reg("fg_pos_summary_post_event", add_summary);
     reg("func_stereo_pre_event", add_func_stereo);
+    
+    debug = "";
 }
 
 
@@ -154,7 +156,7 @@ void FattyAcidParserEventHandler::reset_lipid(TreeNode *node) {
     fatty_acyl_stack.clear();
     fatty_acyl_stack.push_back(new FattyAcid("FA"));
     tmp.remove_all();
-    debug = "";
+    tmp.set_dictionary("fa1", new GenericDictionary());
 }
 
 
@@ -275,10 +277,11 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
         curr_fa->functional_groups->erase("noyloxy");
     }
         
-    else if (contains_p(curr_fa->functional_groups, "nyloxy")){
-        while (!curr_fa->functional_groups->at("nyloxy").empty()){
-            FattyAcid* fa = (FattyAcid*)curr_fa->functional_groups->at("nyloxy").back();
-            curr_fa->functional_groups->at("nyloxy").pop_back();        
+    else if (contains_p(curr_fa->functional_groups, "nyloxy") || contains_p(curr_fa->functional_groups, "yloxy")){
+        string yloxy = contains_p(curr_fa->functional_groups, "nyloxy") ? "nyloxy" : "yloxy";
+        while (!curr_fa->functional_groups->at(yloxy).empty()){
+            FattyAcid* fa = (FattyAcid*)curr_fa->functional_groups->at(yloxy).back();
+            curr_fa->functional_groups->at(yloxy).pop_back();        
             
             AcylAlkylGroup* alkyl = new AcylAlkylGroup(fa, -1, 1, true);
             alkyl->position = fa->position;
@@ -286,7 +289,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
             if (uncontains_p(curr_fa->functional_groups, "alkyl")) curr_fa->functional_groups->insert({"alkyl", vector<FunctionalGroup*>()});
             curr_fa->functional_groups->at("alkyl").push_back(alkyl);
         }
-        curr_fa->functional_groups->erase("nyloxy");
+        curr_fa->functional_groups->erase(yloxy);
     }
             
     else {
@@ -318,10 +321,12 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
                         int cyclo_len = curr_fa->num_carbon;
                         tmp.set_int("cyclo_len", cyclo_len);
                         switch_position(curr_fa, 2 + cyclo_len);
+                        /*
                         DoubleBonds *db = new DoubleBonds(curr_fa->double_bonds->num_double_bonds);
                         for (auto &kv : curr_fa->double_bonds->double_bond_positions) db->double_bond_positions.insert({2 + cyclo_len - kv.first, kv.second});
                         delete curr_fa->double_bonds;
                         curr_fa->double_bonds = db;
+                        */
                         fa->shift_positions(cyclo_len);
                         
                         for (auto &kv : *(fa->functional_groups)){
@@ -456,18 +461,26 @@ void FattyAcidParserEventHandler::set_double_bond_information(TreeNode *node) {
 }
 
 
-void FattyAcidParserEventHandler::add_double_bond_information(TreeNode *node) {
+void FattyAcidParserEventHandler::add_double_bond_information(TreeNode *node) {    
     int pos = tmp.get_dictionary(FA_I)->get_int("db_position");
     string str_pos = std::to_string(pos);
     string cistrans = to_upper(tmp.get_dictionary(FA_I)->get_string("db_cistrans"));
-    if (cistrans == "" && tmp.get_dictionary(FA_I)->contains_key("fg_pos_summary") && tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->contains_key(str_pos)) cistrans = tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->get_string(str_pos);
+    if (cistrans == "" && tmp.get_dictionary(FA_I)->contains_key("fg_pos_summary") && tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->contains_key(str_pos)){
+        cistrans = tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->get_string(str_pos);
+    }
     if (pos == 0) return;
     
     tmp.get_dictionary(FA_I)->remove("db_position");
     tmp.get_dictionary(FA_I)->remove("db_cistrans");
     
     if (uncontains(fatty_acyl_stack.back()->double_bonds->double_bond_positions, pos) || fatty_acyl_stack.back()->double_bonds->double_bond_positions.at(pos).length() == 0){
-        fatty_acyl_stack.back()->double_bonds->double_bond_positions.at(pos) = cistrans;
+        if (uncontains(fatty_acyl_stack.back()->double_bonds->double_bond_positions, pos)){
+            fatty_acyl_stack.back()->double_bonds->double_bond_positions.insert({pos, cistrans});
+        }
+        else {
+            fatty_acyl_stack.back()->double_bonds->double_bond_positions.at(pos) = cistrans;
+        }
+        fatty_acyl_stack.back()->double_bonds->num_double_bonds = fatty_acyl_stack.back()->double_bonds->double_bond_positions.size();
     }
 }
 

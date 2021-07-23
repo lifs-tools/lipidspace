@@ -63,11 +63,10 @@ void BaseParserEventHandler<T>::handle_event(string event_name, TreeNode *node){
         cout << event_name << reg_event << ": \"" << node->get_text() << "\"" << endl;
     }
         
-    if (registered_events->find(event_name) != registered_events->end()){
+    if (contains_p(registered_events, event_name)){
         if (debug != "" && debug != "full"){
             cout << event_name << ": \"" << node->get_text() << "\"" << endl;
         }
-        
         registered_events->at(event_name)(node);
     }
 }

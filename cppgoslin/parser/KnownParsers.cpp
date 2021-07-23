@@ -33,6 +33,11 @@ FattyAcidParser::FattyAcidParser() : Parser<LipidAdduct*>(new FattyAcidParserEve
 FattyAcidParser::~FattyAcidParser(){
     delete parser_event_handler;
 }
+        
+LipidAdduct* FattyAcidParser::parse(string lipid_name){
+    return Parser<LipidAdduct*>::parse(to_lower(lipid_name));
+}
+
 
 
 ShorthandParser::ShorthandParser() : Parser<LipidAdduct*>(new ShorthandParserEventHandler(), GrammarString(shorthand_grammar), DEFAULT_QUOTE){

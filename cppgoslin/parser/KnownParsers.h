@@ -39,6 +39,7 @@ class FattyAcidParser : public Parser<LipidAdduct*> {
 public:
     FattyAcidParser();
     ~FattyAcidParser();
+    LipidAdduct* parse(string lipid_name);
 };
 
 
