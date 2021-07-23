@@ -56,6 +56,7 @@ public:
     void rearrange_functional_groups(FunctionalGroup *parent, int shift);
     void shift_positions(int shift);
     void compute_elements();
+    void add_position(int pos);
     string to_string(LipidLevel level);
 };
 

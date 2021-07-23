@@ -61,6 +61,7 @@ public:
     virtual void compute_elements();
     virtual string to_string(LipidLevel level);
     virtual int get_double_bonds();
+    virtual void add_position(int pos);
     void add(FunctionalGroup* fg);
 };
 

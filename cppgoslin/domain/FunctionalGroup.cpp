@@ -165,6 +165,15 @@ int FunctionalGroup::get_double_bonds(){
 }
 
 
+void FunctionalGroup::add_position(int pos){
+    position += position >= pos;
+    
+    for (auto &kv : *functional_groups){
+        for (auto &fg : kv.second){
+            fg->add_position(pos);
+        }
+    }
+}
 
 
 void FunctionalGroup::add(FunctionalGroup* fg){

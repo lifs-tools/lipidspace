@@ -59,6 +59,12 @@ Cycle::~Cycle(){
 int Cycle::get_double_bonds(){
     return FunctionalGroup::get_double_bonds() + 1;
 }
+
+void Cycle::add_position(int pos){
+    start += start >= pos;
+    end += end >= pos;
+    FunctionalGroup::add_position(pos);
+}
     
     
 void Cycle::rearrange_functional_groups(FunctionalGroup* parent, int shift){

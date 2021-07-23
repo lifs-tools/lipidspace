@@ -40,10 +40,13 @@ int main(int argc, char** argv){
     FattyAcidParser lipid_parser;
     ShorthandParser shorthand_parser;
     
+    if (0){
+        LipidAdduct *l = lipid_parser.parse("9-oxo-11R,15S-dihydroxy-1a,1b-dihomo-13E-prostaenoic acid");
+        cout << l->get_lipid_string() << endl;
+        cout << l->get_sum_formula() << endl;
+        return 0;
+    }
     
-    LipidAdduct *l = lipid_parser.parse("(2E)-2-(2-methoxy-2-oxoethyl)but-2-enedioic acid");
-    cout << l->get_lipid_string() << endl;
-    return 0;
         
     // test several more lipid names
     vector<string> lipid_data;
@@ -60,13 +63,18 @@ int main(int argc, char** argv){
     int failed_sum = 0;
     
     int i = -1;
+    ofstream off("fails.csv");
     for (auto lipid_name : lipid_data){
         ++i;
+        if (i && i % 100 == 0) cout << i << endl;
         
         vector<string> *data = split_string(lipid_name, ',', '"', true);
-        
-        string name = data->at(3);
-        if (i && i % 100 == 0) cout << i << endl;
+        string name = strip(data->at(3), '\"');
+        if (name.length() == 0){
+            delete data;
+            continue;
+        }
+        //cout << i << " " << name << endl;
         
         if (name.find("yn") != string::npos || name.find("furan") != string::npos || endswith(name, "ane") || endswith(name, "one") || name.find("phosphate") != string::npos || name.find("pyran") != string::npos || endswith(name, "olide") || endswith(name, "-one")){
             not_implemented += 1;
@@ -80,7 +88,8 @@ int main(int argc, char** argv){
             lipid = lipid_parser.parse(name);
         }
         catch (LipidException &e) {
-            failed += 1;            
+            failed += 1;
+            off << name << endl;
             delete data;
             continue;
         }
@@ -137,6 +146,7 @@ int main(int argc, char** argv){
     }
     cout << "In the test, " << not_implemented << " of " << lipid_data.size() << " lipids can not be described by nomenclature" << endl;
     cout << "In the test, " << failed << " of " << (lipid_data.size() - not_implemented) << " lipids failed" << endl;
+    cout << "In the test, " << failed_sum << " of " << (lipid_data.size() - not_implemented) << " lipid sum formulas failed" << endl;
     
     return 0;
 }
