@@ -30,6 +30,7 @@ SOFTWARE.
 #include <iostream>
 #include <cassert>
 #include <fstream>
+#include <chrono>
 
 
 using namespace std;
@@ -41,7 +42,7 @@ int main(int argc, char** argv){
     ShorthandParser shorthand_parser;
     
     if (0){
-        LipidAdduct *l = lipid_parser.parse("9-oxo-11R,15S-dihydroxy-1a,1b-dihomo-13E-prostaenoic acid");
+        LipidAdduct *l = lipid_parser.parse("5Z,9Z-heptacosadienoic acid");
         cout << l->get_lipid_string() << endl;
         cout << l->get_sum_formula() << endl;
         return 0;
@@ -50,6 +51,7 @@ int main(int argc, char** argv){
         
     // test several more lipid names
     vector<string> lipid_data;
+    vector<string> lipid_names;
     ifstream infile(test_file);
     string line;
     while (getline(infile, line)){
@@ -62,11 +64,16 @@ int main(int argc, char** argv){
     int failed = 0;
     int failed_sum = 0;
     
+    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Test for correctness
+    ////////////////////////////////////////////////////////////////////////////
+    
     int i = -1;
     ofstream off("fails.csv");
     for (auto lipid_name : lipid_data){
         ++i;
-        if (i && i % 100 == 0) cout << i << endl;
         
         vector<string> *data = split_string(lipid_name, ',', '"', true);
         string name = strip(data->at(3), '\"');
@@ -74,7 +81,6 @@ int main(int argc, char** argv){
             delete data;
             continue;
         }
-        //cout << i << " " << name << endl;
         
         if (name.find("yn") != string::npos || name.find("furan") != string::npos || endswith(name, "ane") || endswith(name, "one") || name.find("phosphate") != string::npos || name.find("pyran") != string::npos || endswith(name, "olide") || endswith(name, "-one")){
             not_implemented += 1;
@@ -83,6 +89,7 @@ int main(int argc, char** argv){
         }
         
         
+        lipid_names.push_back(name);
         LipidAdduct *lipid = 0;
         try {
             lipid = lipid_parser.parse(name);
@@ -102,7 +109,7 @@ int main(int argc, char** argv){
         if (formula != lipid_formula){
             cout << i << ", " << lipid_name << ": " << formula << " / " << lipid_formula << endl;
             failed_sum += 1;
-            //assert(false);
+            assert(false);
         }
             
         if (to_lower(name).find("cyano") != string::npos){
@@ -117,7 +124,6 @@ int main(int argc, char** argv){
         if (formula != lipid_formula){
             cout << "current, " << i << ", " << lipid_name << ": " << formula << " != " << lipid_formula << " / " << lipid->get_lipid_string() << endl; 
             failed_sum += 1;
-            //assert(false);
         }
         delete lipid2;
         
@@ -127,7 +133,6 @@ int main(int argc, char** argv){
         if (formula != lipid_formula){
             cout << "molecular subspecies, " << i << ", " << lipid_name << ": " << formula << " != " << lipid_formula << endl;
             failed_sum += 1;
-            //assert(false);
         }
         delete lipid2;
         
@@ -137,7 +142,6 @@ int main(int argc, char** argv){
         if (formula != lipid_formula){
             cout << "species, " << i << ", " << lipid_name << ": " << formula << " != " << lipid_formula << endl;
             failed_sum += 1;
-            //assert(false);
         }
             
         delete lipid2;
@@ -147,6 +151,38 @@ int main(int argc, char** argv){
     cout << "In the test, " << not_implemented << " of " << lipid_data.size() << " lipids can not be described by nomenclature" << endl;
     cout << "In the test, " << failed << " of " << (lipid_data.size() - not_implemented) << " lipids failed" << endl;
     cout << "In the test, " << failed_sum << " of " << (lipid_data.size() - not_implemented) << " lipid sum formulas failed" << endl;
+    cout << endl;
+    
+    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Test for performance
+    ////////////////////////////////////////////////////////////////////////////
+    
+    i = 0;
+    double sum_mass = 0;
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    for (auto &lipid_name : lipid_names){
+        ++i;
+        
+        LipidAdduct *lipid = 0;
+        try {
+            lipid = lipid_parser.parse(lipid_name);
+        }
+        catch (LipidException &e) {
+            continue;
+        }
+        sum_mass += lipid->get_mass();
+        
+        delete lipid;
+    }
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    cout << "sum mass: " << sum_mass << endl;
+
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
+    
     
     return 0;
 }
