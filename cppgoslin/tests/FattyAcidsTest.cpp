@@ -72,6 +72,7 @@ int main(int argc, char** argv){
     
     int i = -1;
     ofstream off("fails.csv");
+    ofstream correct("correct.csv");
     for (auto lipid_name : lipid_data){
         ++i;
         
@@ -143,6 +144,8 @@ int main(int argc, char** argv){
             cout << "species, " << i << ", " << lipid_name << ": " << formula << " != " << lipid_formula << endl;
             failed_sum += 1;
         }
+        
+        correct << lipid_name << ",\"" << lipid->get_lipid_string() << "\"" << endl;
             
         delete lipid2;
         delete lipid;

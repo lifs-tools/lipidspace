@@ -31,6 +31,7 @@ SOFTWARE.
 #include <fstream>
 #include <vector>
 #include <map>
+#include <chrono>
 
 
 
@@ -119,7 +120,9 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"FA 8:0;[6-8SScy5:0]", {"FA 8:0;[6-8SScy5:0]", "FA 8:0;[SScy5:0]", "FA 8:1;S2", "FA 8:1;S2", "C8H14O2S2"}},
         
-        {"FA 20:0;[12-15Ocy5:2(12E,13E);13Me,14Me]", {"FA 20:0;[12-15Ocy5:2(12E,13E);13Me,14Me]", "FA 20:0;[Ocy5:2(12,13);(Me)2]", "FA 22:3;O", "FA 22:3;O", "C22H38O3"}}
+        {"FA 20:0;[12-15Ocy5:2(12E,13E);13Me,14Me]", {"FA 20:0;[12-15Ocy5:2(12E,13E);13Me,14Me]", "FA 20:0;[Ocy5:2(12,13);(Me)2]", "FA 22:3;O", "FA 22:3;O", "C22H38O3"}},
+        
+        {"DG O-16:0/0:0/O-16:1(9Z)", {"DG O-16:0/0:0/O-16:1(9Z)", "DG O-16:0/0:0/O-16:1(9)", "DG O-16:0_O-16:1", "DG dO-32:1", "C35H70O3"}}
         };
         
         
@@ -133,7 +136,13 @@ void assertEqual(string s1, string s2, string message = ""){
         
 
 int main(int argc, char** argv){
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     ShorthandParser parser;
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    std::cout << "Parser setup time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+    std::cout << "Parser setup time: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+    std::cout << "Parser setup time: " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
     
     /*
     LipidAdduct *l = parser.parse("PE 20:0");

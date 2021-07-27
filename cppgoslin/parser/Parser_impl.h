@@ -62,8 +62,8 @@ uint64_t Parser<T>::get_next_free_rule_index(){
 
 template <class T>
 Parser<T>::~Parser(){
-    for (auto& element : substitution_list){
-        delete element;
+    for (auto& element : substitution){
+        delete element.second;
     }
     
     for (auto& b : right_pair){
@@ -285,13 +285,18 @@ void Parser<T>::read_grammar(string grammar){
                         uint64_t top = chain->at(0);
                         chain->erase(chain->begin());
                         uint64_t key = kv.first + (top << 16);
-                        if (uncontains(substitution, key)) substitution.insert({key, chain});
-                        substitution_list.push_back(chain);
+                        if (uncontains(substitution, key)){
+                            substitution.insert({key, chain});
                         
-                        if (chain->size() > 1){
-                            vector<uint64_t>* new_chain = new vector<uint64_t>();
-                            for (auto &e : *chain) new_chain->push_back(e);
-                            chain = new_chain;
+                            if (chain->size() > 1){
+                                vector<uint64_t>* new_chain = new vector<uint64_t>();
+                                for (auto &e : *chain) new_chain->push_back(e);
+                                chain = new_chain;
+                            }
+                        }
+                        else {
+                            delete chain;
+                            break;
                         }
                     }
                 }
