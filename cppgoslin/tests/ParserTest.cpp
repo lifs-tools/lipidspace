@@ -45,10 +45,10 @@ int main(int argc, char** argv){
     GoslinParser goslin_parser;
     LipidParser lipid_parser;
     LipidMapsParser lipid_maps_parser;
-    GoslinFragmentParser goslin_fragment_parser;
+    //GoslinFragmentParser goslin_fragment_parser;
     SwissLipidsParser swiss_lipids_parser;
     HmdbParser hmdb_parser;
-    
+    int num_hydroxyl = 0;
     
     // test bitfield
     srand(time(0));
@@ -118,7 +118,7 @@ int main(int argc, char** argv){
     catch (LipidException &e){ }
     
     
-
+    /*
     failLipidSL = "TG 16::1-18:1-24:0";
     // check goslin fragment parser with illegal lipid name 
     try {
@@ -135,7 +135,7 @@ int main(int argc, char** argv){
     assert (lipid->fragment);
     assert (lipid->fragment->name == "-(H20)");
     delete lipid;
-    
+    */
     
     
     
@@ -143,7 +143,7 @@ int main(int argc, char** argv){
     
     lipid = swiss_lipids_parser.parse("Cer(d18:1(4E)/24:0-2OH)");
     assert (lipid);
-    assert (lipid->get_lipid_string() == "Cer 18:1(4E);2/24:0;1");
+    assert (lipid->get_lipid_string() == "Cer 18:1(4);(OH)2/24:0;OH");
     assert (lipid->get_sum_formula() == "C42H83NO4");
     assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
     delete lipid;
@@ -151,7 +151,7 @@ int main(int argc, char** argv){
         
     lipid = swiss_lipids_parser.parse("Cer(d18:1(4E)/24:0(2OH))");
     assert (lipid);
-    assert (lipid->get_lipid_string() == "Cer 18:1(4E);2/24:0;1");
+    assert (lipid->get_lipid_string() == "Cer 18:1(4);(OH)2/24:0;OH");
     assert (lipid->get_sum_formula() == "C42H83NO4");
     assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
     delete lipid;
@@ -160,7 +160,7 @@ int main(int argc, char** argv){
         
     lipid = lipid_maps_parser.parse("Cer(d18:1(4E)/24:0(2OH))");
     assert (lipid);
-    assert (lipid->get_lipid_string() == "Cer 18:1(4E);2/24:0;1");
+    assert (lipid->get_lipid_string() == "Cer 18:1(4);(OH)2/24:0;OH");
     assert (lipid->get_sum_formula() == "C42H83NO4");
     assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
     delete lipid;
@@ -168,14 +168,14 @@ int main(int argc, char** argv){
     
     lipid = goslin_parser.parse("Cer 18:1(4E);2/24:0;1");
     assert (lipid);
-    assert (lipid->get_lipid_string() == "Cer 18:1(4E);2/24:0;1");
+    assert (lipid->get_lipid_string() == "Cer 18:1(4);(OH)2/24:0;OH");
     assert (lipid->get_sum_formula() == "C42H83NO4");
     assert (abs(lipid->get_mass() - 665.632209) < 1e-3);
     delete lipid;
         
     lipid = hmdb_parser.parse("SM(d18:1/16:1(9Z)(OH))");
     assert (lipid);
-    assert (lipid->get_lipid_string() == "SM 18:1;2/16:1(9Z);1");
+    assert (lipid->get_lipid_string() == "SM 18:1;OH/16:1(9);OH");
     assert (lipid->get_sum_formula() == "C39H77N2O7P");
     assert (abs(lipid->get_mass() - 716.546841) < 1e-3);
     delete lipid;
@@ -189,7 +189,7 @@ int main(int argc, char** argv){
     lipid_name = "PG(22:1(5Z)/12:0)";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->lipid->info.level == ISOMERIC_SUBSPECIES);
+    assert (lipid->lipid->info->level == ISOMERIC_SUBSPECIES);
     assert (lipid->get_lipid_string() == "PG 22:1(5Z)/12:0");
     delete lipid;
     
@@ -197,7 +197,7 @@ int main(int argc, char** argv){
     lipid_name = "PG(22:1/12:0)";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->lipid->info.level == STRUCTURAL_SUBSPECIES);
+    assert (lipid->lipid->info->level == STRUCTURAL_SUBSPECIES);
     assert (lipid->get_lipid_string() == "PG 22:1/12:0");
     delete lipid;
     
@@ -205,54 +205,29 @@ int main(int argc, char** argv){
     lipid_name = "PG(22:1_12:0)";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->lipid->info.level == MOLECULAR_SUBSPECIES);
-    assert (lipid->get_lipid_string() == "PG 22:1-12:0");
+    assert (lipid->lipid->info->level == MOLECULAR_SUBSPECIES);
+    assert (lipid->get_lipid_string() == "PG 22:1_12:0");
     delete lipid;
     
     lipid_name = "LPG(O-22:1)";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->lipid->info.level == SPECIES);
-    assert (lipid->get_lipid_string() == "LPG O-22:1a");
-    delete lipid;
-    
-    
-    
-    lipid_name = "PC O-16:1/12:0";
-    lipid = lipid_parser.parse(lipid_name);
-    assert (lipid);
-    assert (lipid->get_lipid_string() == "PC O-16:1/12:0");
-    try {
-        cout << lipid->get_mass() << endl;
-        assert (false);
-    }
-    catch(LipidException &e){ }
-    delete lipid;
-    
-    
-    lipid_name = "LPC O-16:1";
-    lipid = lipid_parser.parse(lipid_name);
-    assert (lipid);
-    assert (lipid->get_lipid_string() == "LPC O-16:1");
-    try {
-        cout << lipid->get_sum_formula() << endl;
-        assert (false);
-    }
-    catch(LipidException &e){ }
+    assert (lipid->lipid->info->level == SPECIES);
+    assert (lipid->get_lipid_string() == "LPG O-22:1");
     delete lipid;
     
     
     lipid_name = "LPC O-16:1a";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "LPC O-16:1a");
+    assert (lipid->get_lipid_string() == "LPC O-16:1");
     delete lipid;
     
     
     lipid_name = "LPE O-16:4p";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "LPE O-16:4p");
+    assert (lipid->get_lipid_string() == "LPE P-16:3");
     delete lipid;
     
     
@@ -271,7 +246,6 @@ int main(int argc, char** argv){
     catch(LipidException &e){ }
     
     
-    
     lipid_name = "LP 19:1p";
     try {
         lipid = lipid_parser.parse(lipid_name);
@@ -283,14 +257,12 @@ int main(int argc, char** argv){
     
     
     lipid_name = "PA 19:2(12E)/12:0";
-    lipid = lipid_parser.parse(lipid_name);
     try {
+        lipid = lipid_parser.parse(lipid_name);
         string l = lipid->get_lipid_string();
         assert (false);
-        assert(l == "foo");
     }
     catch(LipidException &e){
-        delete lipid;
     }
     
     
@@ -300,19 +272,19 @@ int main(int argc, char** argv){
     lipid_name = "TG(O-16:0/18:3(6Z,9Z,12Z)/18:1(11Z))";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "TAG 16:0a/18:3(6Z,9Z,12Z)/18:1(11Z)");
+    assert (lipid->get_lipid_string() == "TG O-16:0/18:3(6Z,9Z,12Z)/18:1(11Z)");
     delete lipid;
     
     lipid_name = "PIP2[4,5](21:0/24:4(9Z,12Z,15Z,18Z))";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "PIP2[4',5'] 21:0/24:4(9Z,12Z,15Z,18Z)");
+    assert (lipid->get_lipid_string() == "PIP2(4',5') 21:0/24:4(9Z,12Z,15Z,18Z)");
     delete lipid;
     
     lipid_name = "GalGb3Cer(d18:0/14:0)";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "GalGb3Cer 18:0;2/14:0");
+    assert (lipid->get_lipid_string() == "GalGb3Cer 18:0;OH/14:0");
     delete lipid;
     
     lipid_name = "PI(34:5(19Z,22Z,25Z,28Z,31Z)/18:1(6Z))";
@@ -352,65 +324,36 @@ int main(int argc, char** argv){
     lipid_name = "PE 16:1-12:0";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "PE 16:1-12:0");
-    delete lipid;
-    
-    lipid_name = "PA 16:1-12:0 - fragment";
-    lipid = lipid_parser.parse(lipid_name);
-    assert (lipid);
-    assert (lipid->get_lipid_string() == "PA 16:1-12:0");
-    assert (lipid->get_lipid_fragment_string() == "PA 16:1-12:0 - fragment");
-    // check that all FAs have been initialized properly
-    assert (lipid->lipid->get_fa_list().size() == 2);
-    int faCnt = 1;
-    for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-        // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
-        assert ((*fa).position == 0);
-        switch(faCnt) {
-        case 1:
-        assert ((*fa).lcb == false);
-        assert ((*fa).num_carbon == 16);
-        assert ((*fa).num_hydroxyl == 0);
-        assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-        assert ((*fa).num_double_bonds == 1);
-        break;
-        case 2:
-        assert ((*fa).lcb == false);
-        assert ((*fa).num_carbon == 12);
-        assert ((*fa).num_hydroxyl == 0);
-        assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-        assert ((*fa).num_double_bonds == 0);
-        break;
-        }
-        ++faCnt;
-    }
+    assert (lipid->get_lipid_string() == "PE 16:1_12:0");
     delete lipid;
     
     
     lipid_name = "PE O-16:1p/12:0";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "PE O-16:1p/12:0");
+    assert (lipid->get_lipid_string() == "PE P-16:0/12:0");
     // check that all FAs have been initialized properly
     assert (lipid->lipid->get_fa_list().size() == 2);
-    faCnt = 1;
+    int faCnt = 1;
     for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-        // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
-        assert ((*fa).position == faCnt);
+        // cout << fa->name << " (lcb: " << (fa->lcb?"true":"false") << "): pos=" << fa->position << ", #carbon=" << fa->num_carbon << ", #hydroxyl=" << fa->num_hydroxyl << ", #double-bonds=" << fa->double_bonds->get_num() << endl;
+        assert (fa->position == faCnt);
         switch(faCnt) {
         case 1:
-        assert ((*fa).lcb == false);
-        assert ((*fa).num_carbon == 16);
-        assert ((*fa).num_hydroxyl == 0);
-        assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "p");
-        assert ((*fa).num_double_bonds == 1);
+        assert (fa->lcb == false);
+        assert (fa->num_carbon == 16);
+        num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+        assert (num_hydroxyl == 0);
+        assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "P-");
+        assert (fa->double_bonds->get_num() == 0);
         break;
         case 2:
-        assert ((*fa).lcb == false);
-        assert ((*fa).num_carbon == 12);
-        assert ((*fa).num_hydroxyl == 0);
-        assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-        assert ((*fa).num_double_bonds == 0);
+        assert (fa->lcb == false);
+        assert (fa->num_carbon == 12);
+        num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+        assert (num_hydroxyl == 0);
+        assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+        assert (fa->double_bonds->get_num() == 0);
         break;
         }
         ++faCnt;
@@ -427,27 +370,27 @@ int main(int argc, char** argv){
     lipid_name = "SLBPA 16:1/12:0/14:1";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "SLBPA 16:1/12:0/14:1");
+    assert (lipid->get_lipid_string() == "SLBPA 16:1_12:0_14:1");
     delete lipid;
     
     lipid_name = "MLCL 16:1/12:0/14:1";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "MLCL 16:1/12:0/14:1");
+    assert (lipid->get_lipid_string() == "LCL 16:1_12:0_14:1");
     delete lipid;
     
     
     lipid_name = "DLCL 14:1/8:0";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "DLCL 14:1/8:0");
+    assert (lipid->get_lipid_string() == "DLCL 14:1_8:0");
     delete lipid;
     
     
     lipid_name = "PIP[3'] 17:0/20:4(5Z,8Z,11Z,14Z)";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "PIP[3'] 17:0/20:4(5Z,8Z,11Z,14Z)");
+    assert (lipid->get_lipid_string() == "PIP(3') 17:0/20:4(5Z,8Z,11Z,14Z)");
     delete lipid;
     
     lipid_name = "PIMIP 12:0/14:1";
@@ -473,7 +416,7 @@ int main(int argc, char** argv){
     lipid_name = "LPIN 20:4(5Z,8Z,11Z,14Z)";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string() == "LPIN 20:4(5Z,8Z,11Z,14Z)");
+    assert (lipid->get_lipid_string() == "LPIN 20:4");
     delete lipid;
     
     
@@ -482,23 +425,24 @@ int main(int argc, char** argv){
     // testing lipid maps parser
     vector< vector<string> > lmp_data{{"PA(16:1/12:0)", "PA 16:1/12:0"},
                         {"PA(4:0/12:0)", "PA 4:0/12:0"},
-                        {"PC(O-14:0/0:0)", "LPC O-14:0a"},
-                        {"SQMG(16:1(11Z)/0:0)", "SQMG 16:1(11Z)"},
-                        {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z))[iso6]", "TAG 13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z)"},
+                        {"PC(O-14:0/0:0)", "LPC O-14:0"},
+                        {"SQMG(16:1(11Z)/0:0)", "SQMG 16:1"},
+                        {"TG(13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z))[iso6]", "TG 13:0/22:3(10Z,13Z,16Z)/22:5(7Z,10Z,13Z,16Z,19Z)"},
                         {"13R-HODE", "13R-HODE"},
                         {"CL(1'-[20:0/20:0],3'-[20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)])", "CL 20:0/20:0/20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)"},
-                        {"PA(P-20:0/18:3(6Z,9Z,12Z))", "PA O-20:1p/18:3(6Z,9Z,12Z)"},
-                        {"M(IP)2C(t18:0/20:0(2OH))", "M(IP)2C 18:0;3/20:0;1"},
+                        {"PA(P-20:0/18:3(6Z,9Z,12Z))", "PA P-20:0/18:3(6Z,9Z,12Z)"},
+                        {"M(IP)2C(t18:0/20:0(2OH))", "M(IP)2C 18:0;(OH)3/20:0;OH"},
                         {"Cer(d16:2(4E,6E)/22:0(2OH))", "Cer 16:2(4E,6E);2/22:0;1"},
                         {"MG(18:1(11E)/0:0/0:0)[rac]", "MAG 18:1(11E)"},
                         {"PAT18(24:1(2E)(2Me,4Me[S],6Me[S])/25:1(2E)(2Me,4Me[S],6Me[S])/26:1(2E)(2Me,4Me[S],6Me[S])/24:1(2E)(2Me,4Me[S],6Me[S]))", "PAT18 24:1(2E)/25:1(2E)/26:1(2E)/24:1(2E)"},
                         {"(3'-sulfo)Galbeta-Cer(d18:1/20:0)", "SHexCer 18:1;2/20:0"},
                         {"GlcCer(d15:2(4E,6E)/22:0(2OH))", "HexCer 15:2(4E,6E);2/22:0;1"}};
     
-    for (uint32_t i = 0; i < lmp_data.size(); ++i){
-        lipid = lipid_maps_parser.parse(lmp_data.at(i)[0]);
+    for (auto &lmp : lmp_data){
+        lipid = lipid_maps_parser.parse(lmp.at(0));
         assert (lipid);
-        assert (lipid->get_lipid_string() == lmp_data.at(i)[1]);
+        cout << lipid->get_lipid_string() << endl;
+        assert (lipid->get_lipid_string() == lmp.at(1));
         delete lipid;
     }
 
@@ -628,22 +572,24 @@ int main(int argc, char** argv){
     assert (lipid->lipid->get_fa_list().size() == 2);
     faCnt = 1;
     for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-        // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
-        assert ((*fa).position == faCnt);
+        // cout << fa->name << " (lcb: " << (fa->lcb?"true":"false") << "): pos=" << fa->position << ", #carbon=" << fa->num_carbon << ", #hydroxyl=" << fa->num_hydroxyl << ", #double-bonds=" << fa->double_bonds->get_num() << endl;
+        assert (fa->position == faCnt);
         switch(faCnt) {
         case 1:
-        assert ((*fa).lcb == true);
-        assert ((*fa).num_carbon == 16);
-        assert ((*fa).num_hydroxyl == 2);
-        assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-        assert ((*fa).num_double_bonds == 1);
+        assert (fa->lcb == true);
+        assert (fa->num_carbon == 16);
+        num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+        assert (num_hydroxyl == 2);
+        assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+        assert (fa->double_bonds->get_num() == 1);
         break;
         case 2:
-        assert ((*fa).lcb == false);
-        assert ((*fa).num_carbon == 12);
-        assert ((*fa).num_hydroxyl == 0);
-        assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-        assert ((*fa).num_double_bonds == 0);
+        assert (fa->lcb == false);
+        assert (fa->num_carbon == 12);
+        num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+        assert (num_hydroxyl == 0);
+        assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+        assert (fa->double_bonds->get_num() == 0);
         break;
         }
         ++faCnt;
@@ -664,41 +610,45 @@ int main(int argc, char** argv){
     
     
     // try to retrieve LipidSpeciesInfo for summary information
-    LipidSpeciesInfo lsi = lipid->lipid->info;
-    assert (lsi.lcb == false);
-    assert (lsi.level == ISOMERIC_SUBSPECIES);
-    assert (lsi.lipid_FA_bond_type == ESTER);
-    assert (lsi.num_carbon == 54);
-    assert (lsi.num_double_bonds == 3);
-    assert (lsi.num_hydroxyl == 0);
-    assert (lsi.position == 0);
+    LipidSpeciesInfo *lsi = lipid->lipid->info;
+    assert (lsi->lcb == false);
+    assert (lsi->level == ISOMERIC_SUBSPECIES);
+    assert (lsi->lipid_FA_bond_type == ESTER);
+    assert (lsi->num_carbon == 54);
+    assert (lsi->double_bonds->get_num() == 3);
+    num_hydroxyl = contains_p(lsi->functional_groups, "OH") ? lsi->functional_groups->at("OH").size() : 0;
+    assert (num_hydroxyl == 0);
+    assert (lsi->position == 0);
     // check that all FAs have been initialized properly
     assert (lipid->lipid->get_fa_list().size() == 3);
     faCnt = 1;
-    for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-        // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
-        assert ((*fa).position == faCnt);
+    for(FattyAcid* fa : lipid->lipid->get_fa_list()) {
+        // cout << fa->name << " (lcb: " << (fa->lcb?"true":"false") << "): pos=" << fa->position << ", #carbon=" << fa->num_carbon << ", #hydroxyl=" << fa->num_hydroxyl << ", #double-bonds=" << fa->double_bonds->get_num() << endl;
+        assert (fa->position == faCnt);
         switch(faCnt) {
         case 1:
-            assert ((*fa).lcb == false);
-            assert ((*fa).num_carbon == 16);
-            assert ((*fa).num_hydroxyl == 0);
-            assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).num_double_bonds == 1);
+            assert (fa->lcb == false);
+            assert (fa->num_carbon == 16);
+            num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+            assert (num_hydroxyl == 0);
+            assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+            assert (fa->double_bonds->get_num() == 1);
             break;
         case 2:
-            assert ((*fa).lcb == false);
-            assert ((*fa).num_carbon == 18);
-            assert ((*fa).num_hydroxyl == 0);
-            assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).num_double_bonds == 0);
+            assert (fa->lcb == false);
+            assert (fa->num_carbon == 18);
+            num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+            assert (num_hydroxyl == 0);
+            assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+            assert (fa->double_bonds->get_num() == 0);
             break;
         case 3:
-            assert ((*fa).lcb == false);
-            assert ((*fa).num_carbon == 20);
-            assert ((*fa).num_hydroxyl == 0);
-            assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).num_double_bonds == 2);
+            assert (fa->lcb == false);
+            assert (fa->num_carbon == 20);
+            num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+            assert (num_hydroxyl == 0);
+            assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+            assert (fa->double_bonds->get_num() == 2);
             break;
         }
         ++faCnt;
@@ -708,50 +658,54 @@ int main(int argc, char** argv){
     lipid_name = "TAG 16:1/12:0/20:2";
     lipid = goslin_parser.parse(lipid_name);
     assert (lipid);
-    assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "TAG 16:1/12:0/20:2");
-    assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "TAG 16:1-12:0-20:2");
-    assert (lipid->get_lipid_string(SPECIES) == "TAG 48:3");
-    assert (lipid->get_lipid_string(CLASS) == "TAG");
+    assert (lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) == "TG 16:1/12:0/20:2");
+    assert (lipid->get_lipid_string(MOLECULAR_SUBSPECIES) == "TG 16:1_12:0_20:2");
+    assert (lipid->get_lipid_string(SPECIES) == "TG 48:3");
+    assert (lipid->get_lipid_string(CLASS) == "TG");
     assert (lipid->get_lipid_string(CATEGORY) == "GL");
     assert (lipid->lipid);
     
     
     // try to retrieve LipidSpeciesInfo for summary information
     lsi = lipid->lipid->info;
-    assert (lsi.lcb == false);
-    assert (lsi.level == STRUCTURAL_SUBSPECIES);
-    assert (lsi.lipid_FA_bond_type == ESTER);
-    assert (lsi.num_carbon == 48);
-    assert (lsi.num_double_bonds == 3);
-    assert (lsi.num_hydroxyl == 0);
-    assert (lsi.position == 0);
+    assert (lsi->lcb == false);
+    assert (lsi->level == STRUCTURAL_SUBSPECIES);
+    assert (lsi->lipid_FA_bond_type == ESTER);
+    assert (lsi->num_carbon == 48);
+    assert (lsi->double_bonds->get_num() == 3);
+    num_hydroxyl = contains_p(lsi->functional_groups, "OH") ? lsi->functional_groups->at("OH").size() : 0;
+    assert (num_hydroxyl == 0);
+    assert (lsi->position == 0);
     // check that all FAs have been initialized properly
     assert (lipid->lipid->get_fa_list().size() == 3);
     faCnt = 1;
     for(FattyAcid* fa:lipid->lipid->get_fa_list()) {
-        // cout << (*fa).name << " (lcb: " << ((*fa).lcb?"true":"false") << "): pos=" << (*fa).position << ", #carbon=" << (*fa).num_carbon << ", #hydroxyl=" << (*fa).num_hydroxyl << ", #double-bonds=" << (*fa).num_double_bonds << endl;
-        assert ((*fa).position == faCnt);
+        // cout << fa->name << " (lcb: " << (fa->lcb?"true":"false") << "): pos=" << fa->position << ", #carbon=" << fa->num_carbon << ", #hydroxyl=" << fa->num_hydroxyl << ", #double-bonds=" << fa->double_bonds->get_num() << endl;
+        assert (fa->position == faCnt);
         switch(faCnt) {
         case 1:
-            assert ((*fa).lcb == false);
-            assert ((*fa).num_carbon == 16);
-            assert ((*fa).num_hydroxyl == 0);
-            assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).num_double_bonds == 1);
+            assert (fa->lcb == false);
+            assert (fa->num_carbon == 16);
+            num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+            assert (num_hydroxyl == 0);
+            assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+            assert (fa->double_bonds->get_num() == 1);
             break;
         case 2:
-            assert ((*fa).lcb == false);
-            assert ((*fa).num_carbon == 12);
-            assert ((*fa).num_hydroxyl == 0);
-            assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).num_double_bonds == 0);
+            assert (fa->lcb == false);
+            assert (fa->num_carbon == 12);
+            num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+            assert (num_hydroxyl == 0);
+            assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+            assert (fa->double_bonds->get_num() == 0);
             break;
         case 3:
-            assert ((*fa).lcb == false);
-            assert ((*fa).num_carbon == 20);
-            assert ((*fa).num_hydroxyl == 0);
-            assert (FattyAcid::suffix((*fa).lipid_FA_bond_type) == "");
-            assert ((*fa).num_double_bonds == 2);
+            assert (fa->lcb == false);
+            assert (fa->num_carbon == 20);
+            num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
+            assert (num_hydroxyl == 0);
+            assert (FattyAcid::get_prefix(fa->lipid_FA_bond_type) == "");
+            assert (fa->double_bonds->get_num() == 2);
             break;
         }
         ++faCnt;

@@ -49,10 +49,7 @@ class LipidSpeciesInfo;
 class LipidSpecies {
 public:
     Headgroup* headgroup;
-    LipidCategory lipid_category;
-    LipidClass lipid_class;
     LipidSpeciesInfo* info;
-    bool use_head_group;
     
     map<string, FattyAcid*> fa;
     vector<FattyAcid*> fa_list;

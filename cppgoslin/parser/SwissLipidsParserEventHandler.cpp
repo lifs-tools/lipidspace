@@ -183,6 +183,7 @@ void SwissLipidsParserEventHandler::append_fa(TreeNode *node) {
 
 void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     if (lcb){
+        level = min(level, STRUCTURAL_SUBSPECIES);
         for (auto& fa : *fa_list) fa->position += 1;
         fa_list->insert(fa_list->begin(), lcb);
     }
@@ -190,7 +191,12 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     lipid = NULL;
     LipidSpecies *ls = NULL;
 
-    headgroup = new Headgroup(head_group);
+    headgroup = new Headgroup(head_group, 0, use_head_group);
+    
+    int max_num_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa;
+    int num_fa = 0;
+    for (auto &fa : *fa_list) num_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
+    if (max_num_fa != num_fa) level = min(level, MOLECULAR_SUBSPECIES);
 
     switch (level){
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
@@ -199,7 +205,6 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
         case ISOMERIC_SUBSPECIES: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
         default: break;
     }
-    ls->use_head_group = use_head_group;
     lipid = new LipidAdduct();
     lipid->lipid = ls;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;

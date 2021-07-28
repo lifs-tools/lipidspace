@@ -80,9 +80,6 @@ install: ${bin}
 	
 ShorthandTest: cppgoslin/tests/ShorthandTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o ShorthandTest cppgoslin/tests/ShorthandTest.o libcppGoslin.so
-	
-FattyAcidTest: cppgoslin/tests/FattyAcidTest.o libcppGoslin.so
-	${CC} -I. ${opt} -Bstatic -o FattyAcidTest cppgoslin/tests/FattyAcidTest.o libcppGoslin.so
 
 ParserTest: cppgoslin/tests/ParserTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o ParserTest cppgoslin/tests/ParserTest.o libcppGoslin.so
@@ -109,14 +106,13 @@ FattyAcidsTest: cppgoslin/tests/FattyAcidsTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o FattyAcidsTest cppgoslin/tests/FattyAcidsTest.o libcppGoslin.so
 	
 	
-test: FattyAcidsTest ShorthandTest #FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
+test: FattyAcidsTest ShorthandTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
 
 	
-runtests: FattyAcidsTest ShorthandTest #FattyAcidTest ParserTest SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
+runtests: FattyAcidsTest ShorthandTest ParserTest #SumFormulaTest MassesTest LipidMapsTest GoslinTest SwissLipidsTest HmdbTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./FattyAcidsTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ShorthandTest
-	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./FattyAcidTest
-	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
 	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SumFormulaTest
 	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MassesTest
 	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest

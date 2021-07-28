@@ -105,7 +105,7 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
 
 
 string LipidSpecies::get_extended_class(){
-    bool special_case = (info->num_carbon > 0) ? (lipid_category == GP) : false;
+    bool special_case = (info->num_carbon > 0) ? (headgroup->lipid_category == GP) : false;
     string class_name = headgroup->get_class_name();
     if (special_case && (info->lipid_FA_bond_type == ETHER_PLASMANYL || info->lipid_FA_bond_type == ETHER_UNSPECIFIED)){
         return class_name + "-O";

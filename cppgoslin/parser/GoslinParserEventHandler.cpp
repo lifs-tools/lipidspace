@@ -86,6 +86,9 @@ GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<Li
     reg("charge_pre_event", add_charge);
     reg("charge_sign_pre_event", add_charge_sign);
     
+    
+    reg("lpl_pre_event", set_molecular_subspecies_level);
+    reg("lpl_o_pre_event", set_molecular_subspecies_level);
     reg("hg_lpl_oc_pre_event", set_unspecified_ether);
     reg("hg_pl_oc_pre_event", set_unspecified_ether);
     debug = "";
@@ -205,6 +208,7 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
 
 void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     if (lcb){
+        level = min(level, STRUCTURAL_SUBSPECIES);
         for (auto& fa : *fa_list) fa->position += 1;
         fa_list->insert(fa_list->begin(), lcb);
     }
@@ -214,6 +218,11 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     LipidSpecies *ls = NULL;
     
     headgroup = new Headgroup(head_group);
+    
+    int max_num_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa;
+    int num_fa = 0;
+    for (auto &fa : *fa_list) num_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
+    if (max_num_fa != num_fa) level = min(level, MOLECULAR_SUBSPECIES);
     
 
     switch (level){
