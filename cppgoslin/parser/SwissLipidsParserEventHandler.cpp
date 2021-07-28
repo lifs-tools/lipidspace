@@ -215,10 +215,7 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
 void SwissLipidsParserEventHandler::add_ether(TreeNode *node) {
     string ether = node->get_text();
     if (ether == "O-") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
-    else if (ether == "P-"){
-        current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
-        current_fa->double_bonds->num_double_bonds += 1;
-    }
+    else if (ether == "P-") current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
 }
     
     

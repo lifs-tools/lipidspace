@@ -61,6 +61,10 @@ public:
     int db_position;
     string db_cistrans;
     Headgroup* headgroup;
+    string mod_text;
+    int mod_pos;
+    int mod_num;
+    
 
     LipidMapsParserEventHandler();
     ~LipidMapsParserEventHandler();
@@ -69,7 +73,12 @@ public:
     void mediator_event(TreeNode* node);
     void set_head_group_name(TreeNode* node);
     void set_species_level(TreeNode* node);
-    void increment_hydroxyl(TreeNode* node);
+    void add_functional_group(TreeNode* node);
+    void set_structural_subspecies_level(TreeNode* node);
+    void set_mod(TreeNode* node);
+    void set_mod_text(TreeNode* node);
+    void set_mod_pos(TreeNode* node);
+    void set_mod_num(TreeNode* node);
     void new_fa(TreeNode* node);
     void new_lcb(TreeNode* node);
     void clean_lcb(TreeNode* node);

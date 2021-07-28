@@ -431,12 +431,12 @@ int main(int argc, char** argv){
                         {"13R-HODE", "13R-HODE"},
                         {"CL(1'-[20:0/20:0],3'-[20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)])", "CL 20:0/20:0/20:4(5Z,8Z,11Z,14Z)/18:2(9Z,12Z)"},
                         {"PA(P-20:0/18:3(6Z,9Z,12Z))", "PA P-20:0/18:3(6Z,9Z,12Z)"},
-                        {"M(IP)2C(t18:0/20:0(2OH))", "M(IP)2C 18:0;(OH)3/20:0;OH"},
-                        {"Cer(d16:2(4E,6E)/22:0(2OH))", "Cer 16:2(4E,6E);2/22:0;1"},
-                        {"MG(18:1(11E)/0:0/0:0)[rac]", "MAG 18:1(11E)"},
-                        {"PAT18(24:1(2E)(2Me,4Me[S],6Me[S])/25:1(2E)(2Me,4Me[S],6Me[S])/26:1(2E)(2Me,4Me[S],6Me[S])/24:1(2E)(2Me,4Me[S],6Me[S]))", "PAT18 24:1(2E)/25:1(2E)/26:1(2E)/24:1(2E)"},
-                        {"(3'-sulfo)Galbeta-Cer(d18:1/20:0)", "SHexCer 18:1;2/20:0"},
-                        {"GlcCer(d15:2(4E,6E)/22:0(2OH))", "HexCer 15:2(4E,6E);2/22:0;1"}};
+                        {"M(IP)2C(t18:0/20:0(2OH))", "M(IP)2C 18:0;(OH)2/20:0;OH"},
+                        {"Cer(d16:2(4E,6E)/22:0(2OH))", "Cer 16:2(4,6);(OH)2/22:0;OH"},
+                        {"MG(18:1(11E)/0:0/0:0)[rac]", "MG 18:1"},
+                        {"PAT18(24:1(2E)(2Me,4Me[S],6Me[S])/25:1(2E)(2Me,4Me[S],6Me[S])/26:1(2E)(2Me,4Me[S],6Me[S])/24:1(2E)(2Me,4Me[S],6Me[S]))", "PAT18 24:1(2E);2Me,4Me,6Me/25:1(2E);2Me,4Me,6Me/26:1(2E);2Me,4Me,6Me/24:1(2E);2Me,4Me,6Me"},
+                        {"(3'-sulfo)Galbeta-Cer(d18:1/20:0)", "SHexCer 18:1;OH/20:0"},
+                        {"GlcCer(d15:2(4E,6E)/22:0(2OH))", "GlcCer 15:2(4,6);OH/22:0;OH"}};
     
     for (auto &lmp : lmp_data){
         lipid = lipid_maps_parser.parse(lmp.at(0));

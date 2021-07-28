@@ -82,7 +82,12 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("db_count_pre_event", add_double_bonds);
     reg("carbon_pre_event", add_carbon);
     
-    reg("mod_text_pre_event", increment_hydroxyl);
+    reg("structural_mod_pre_event", set_structural_subspecies_level);
+    reg("single_mod_pre_event", set_mod);
+    reg("mod_text_pre_event", set_mod_text);
+    reg("mod_pos_pre_event", set_mod_pos);
+    reg("mod_num_pre_event", set_mod_num);
+    reg("single_mod_post_event", add_functional_group);
 } 
 
 
@@ -104,6 +109,9 @@ void LipidMapsParserEventHandler::reset_lipid(TreeNode* node){
     db_numbers = -1;
     db_cistrans = "";
     headgroup = NULL;
+    mod_pos = -1;
+    mod_num = 1;
+    mod_text = "";
 }
     
 void LipidMapsParserEventHandler::set_molecular_subspecies_level(TreeNode* node){
@@ -154,12 +162,42 @@ void LipidMapsParserEventHandler::set_head_group_name(TreeNode* node){
 void LipidMapsParserEventHandler::set_species_level(TreeNode* node){
     level = SPECIES;
 }
+   
+   
+   
+void LipidMapsParserEventHandler::set_structural_subspecies_level(TreeNode* node){
+    level = min(level, STRUCTURAL_SUBSPECIES);
+}
+
+
+void LipidMapsParserEventHandler::set_mod(TreeNode* node){
+    mod_text = "";
+    mod_pos = -1;
+    mod_num = 1;
+}
+
+
+void LipidMapsParserEventHandler::set_mod_text(TreeNode* node){
+    mod_text = node->get_text();
+}
+
+
+void LipidMapsParserEventHandler::set_mod_pos(TreeNode* node){
+    mod_pos = atoi(node->get_text().c_str());
+}
+
+
+void LipidMapsParserEventHandler::set_mod_num(TreeNode* node){
+    mod_pos = atoi(node->get_text().c_str());
+}   
     
     
-void LipidMapsParserEventHandler::increment_hydroxyl(TreeNode* node){
-    FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
-    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
-    current_fa->functional_groups->at("OH").push_back(functional_group);
+void LipidMapsParserEventHandler::add_functional_group(TreeNode* node){
+    FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group(mod_text);
+    functional_group->position = mod_pos;
+    functional_group->count = mod_num;
+    if (uncontains_p(current_fa->functional_groups, mod_text)) current_fa->functional_groups->insert({mod_text, vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at(mod_text).push_back(functional_group);
 }
         
         
@@ -205,10 +243,7 @@ void LipidMapsParserEventHandler::append_fa(TreeNode *node) {
 void LipidMapsParserEventHandler::add_ether(TreeNode* node){
     string ether = node->get_text();
     if (ether == "O-") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
-    else if (ether == "P-"){
-        current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
-        current_fa->double_bonds->num_double_bonds += 1;
-    }
+    else if (ether == "P-") current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
 }
     
     
