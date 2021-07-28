@@ -306,9 +306,7 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
     headgroup = new Headgroup(head_group, 0, use_head_group);
     
     int max_num_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa;
-    int num_fa = 0;
-    for (auto &fa : *fa_list) num_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
-    if (max_num_fa != num_fa) level = min(level, MOLECULAR_SUBSPECIES);
+    if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
 
     switch (level){
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;

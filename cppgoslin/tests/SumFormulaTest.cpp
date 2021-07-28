@@ -75,7 +75,7 @@ int main(int argc, char** argv){
             assert(lipid != NULL);
             
             if (lipid->get_sum_formula() != correct_formula){
-                cout << "Error for lipid '" << lipid_name << "': " << lipid->get_sum_formula() << " != " << correct_formula << endl;
+                cout << "Error for lipid '" << lipid_name << "': " << lipid->get_sum_formula() << " != " << correct_formula << " (reference)" << endl;
                 assert(false);
             }
             delete lipid;
