@@ -188,7 +188,7 @@ void HmdbParserEventHandler::build_lipid(TreeNode *node) {
     
     headgroup = new Headgroup(head_group, 0, use_head_group);
     
-    int max_num_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa;
+    int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
     if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
 
     switch (level){

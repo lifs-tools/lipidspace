@@ -106,16 +106,16 @@ FattyAcidsTest: cppgoslin/tests/FattyAcidsTest.o libcppGoslin.so
 	${CC} -I. ${opt} -Bstatic -o FattyAcidsTest cppgoslin/tests/FattyAcidsTest.o libcppGoslin.so
 	
 	
-test: FattyAcidsTest ShorthandTest ParserTest SumFormulaTest MassesTest GoslinTest LipidMapsTest #SwissLipidsTest HmdbTest
+test: FattyAcidsTest ShorthandTest ParserTest SumFormulaTest MassesTest GoslinTest LipidMapsTest SwissLipidsTest HmdbTest
 
 	
-runtests: FattyAcidsTest ShorthandTest ParserTest SumFormulaTest MassesTest GoslinTest LipidMapsTest #SwissLipidsTest HmdbTest
+runtests: FattyAcidsTest ShorthandTest ParserTest SumFormulaTest MassesTest GoslinTest LipidMapsTest SwissLipidsTest HmdbTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./FattyAcidsTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ShorthandTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./ParserTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SumFormulaTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./MassesTest
 	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./GoslinTest
-	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest
-	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SwissLipidsTest
-	#LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./HmdbTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./LipidMapsTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./SwissLipidsTest
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./HmdbTest

@@ -41,7 +41,6 @@ int main(int argc, char** argv){
     string test_file = "cppgoslin/tests/swiss-lipids-test.csv";
     SwissLipidsParser parser;
     
-    
     // test several more lipid names
     vector<string> lipid_names;
     ifstream infile(test_file);
@@ -52,8 +51,7 @@ int main(int argc, char** argv){
     }
     infile.close();
     
-    
-    for (auto lipid_name : lipid_names){
+    for (auto &lipid_name : lipid_names){
         try {
             lipid = parser.parse(lipid_name);
             assert(lipid != NULL);
