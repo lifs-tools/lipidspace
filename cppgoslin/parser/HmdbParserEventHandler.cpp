@@ -77,7 +77,7 @@ HmdbParserEventHandler::~HmdbParserEventHandler(){
 
 
 void HmdbParserEventHandler::reset_lipid(TreeNode *node) {
-    level = STRUCTURAL_SUBSPECIES;
+    level = ISOMERIC_SUBSPECIES;
     lipid = NULL;
     head_group = "";
     lcb = NULL;
@@ -91,7 +91,6 @@ void HmdbParserEventHandler::reset_lipid(TreeNode *node) {
 
 
 void HmdbParserEventHandler::set_isomeric_level(TreeNode* node){
-    level = ISOMERIC_SUBSPECIES;
     db_position = 0;
     db_cistrans = "";
 }
@@ -162,6 +161,9 @@ void HmdbParserEventHandler::clean_lcb(TreeNode *node) {
 void HmdbParserEventHandler::append_fa(TreeNode *node) {
     if (current_fa->double_bonds->get_num() < 0){
         throw LipidException("Double bond count does not match with number of double bond positions");
+    }
+    if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
+        level = min(level, STRUCTURAL_SUBSPECIES);
     }
     
     if (level == STRUCTURAL_SUBSPECIES || level == ISOMERIC_SUBSPECIES){
