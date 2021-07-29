@@ -49,7 +49,7 @@ int main(int argc, char** argv){
     ifstream infile("cppgoslin/tests/lipid-maps-test.csv");
     string line;
     while (getline(infile, line)){
-        vector<string>* tokens = split_string(line, ',', '"');
+        vector<string>* tokens = split_string(line, ',', '"', true);
         line = strip(line, ' ');
         if (tokens->size() > 1){
             lipid_names_income.push_back(strip(tokens->at(0), '"'));
@@ -59,14 +59,16 @@ int main(int argc, char** argv){
     }
     infile.close();
         
-        
-        
     for (uint32_t i = 0; i < lipid_names_income.size(); ++i){
         string lipid_name = lipid_names_income.at(i);
         string correct_lipid_name = lipid_names_outcome.at(i);
         try {
             lipid = lipid_maps_parser.parse(lipid_name);
             assert(lipid != NULL);
+            if (correct_lipid_name != "Unsupported lipid"){
+                //cout << lipid_name << "  |  " << lipid->get_lipid_string() << "  |  " << correct_lipid_name << " (reference)" << endl;
+                assert(correct_lipid_name == lipid->get_lipid_string());
+            }
             delete lipid;
         }
         catch (LipidException &e){

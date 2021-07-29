@@ -31,7 +31,6 @@ SOFTWARE.
 #include <fstream>
 #include <vector>
 #include <map>
-#include <chrono>
 
 
 
@@ -136,14 +135,7 @@ void assertEqual(string s1, string s2, string message = ""){
         
 
 int main(int argc, char** argv){
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     ShorthandParser parser;
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-    std::cout << "Parser setup time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-    std::cout << "Parser setup time: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-    std::cout << "Parser setup time: " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
-    
     /*
     LipidAdduct *l = parser.parse("PE 20:0");
     cout << l->get_lipid_string() << endl;

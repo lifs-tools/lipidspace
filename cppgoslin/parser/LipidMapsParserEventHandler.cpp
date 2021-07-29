@@ -34,7 +34,7 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("lipid_pre_event", reset_lipid);
     reg("lipid_post_event", build_lipid);
     
-    reg("mediator_var_pre_event", mediator_event);
+    reg("mediator_pre_event", mediator_event);
     reg("sphingoxine_pre_event", mediator_event);
     
     reg("sgl_species_pre_event", set_species_level);
@@ -88,6 +88,8 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("mod_pos_pre_event", set_mod_pos);
     reg("mod_num_pre_event", set_mod_num);
     reg("single_mod_post_event", add_functional_group);
+    
+    debug = "";
 } 
 
 
@@ -97,7 +99,7 @@ LipidMapsParserEventHandler::~LipidMapsParserEventHandler(){
     
     
 void LipidMapsParserEventHandler::reset_lipid(TreeNode* node){
-    level = STRUCTURAL_SUBSPECIES;
+    level = ISOMERIC_SUBSPECIES;
     lipid = NULL;
     head_group = "";
     lcb = NULL;
@@ -131,7 +133,6 @@ void LipidMapsParserEventHandler::mediator_event(TreeNode* node){
 
 
 void LipidMapsParserEventHandler::set_isomeric_level(TreeNode* node){
-    level = ISOMERIC_SUBSPECIES;
     db_position = 0;
     db_cistrans = "";
 }
@@ -140,6 +141,10 @@ void LipidMapsParserEventHandler::set_isomeric_level(TreeNode* node){
 void LipidMapsParserEventHandler::add_db_position(TreeNode* node){
     if (current_fa != NULL){
         current_fa->double_bonds->double_bond_positions.insert({db_position, db_cistrans});
+        
+        if (db_cistrans != "E" && db_cistrans != "Z"){
+            level = min(level, STRUCTURAL_SUBSPECIES);
+        }
     }
 }
 
@@ -188,7 +193,7 @@ void LipidMapsParserEventHandler::set_mod_pos(TreeNode* node){
 
 
 void LipidMapsParserEventHandler::set_mod_num(TreeNode* node){
-    mod_pos = atoi(node->get_text().c_str());
+    mod_num = atoi(node->get_text().c_str());
 }   
     
     
@@ -196,8 +201,9 @@ void LipidMapsParserEventHandler::add_functional_group(TreeNode* node){
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group(mod_text);
     functional_group->position = mod_pos;
     functional_group->count = mod_num;
-    if (uncontains_p(current_fa->functional_groups, mod_text)) current_fa->functional_groups->insert({mod_text, vector<FunctionalGroup*>()});
-    current_fa->functional_groups->at(mod_text).push_back(functional_group);
+    string fg_name = functional_group->name;
+    if (uncontains_p(current_fa->functional_groups, fg_name)) current_fa->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at(fg_name).push_back(functional_group);
 }
         
         
@@ -217,6 +223,12 @@ void LipidMapsParserEventHandler::new_lcb(TreeNode *node) {
         
 
 void LipidMapsParserEventHandler::clean_lcb(TreeNode *node) {
+    if (db_numbers > -1 && db_numbers != current_fa->double_bonds->get_num()){
+        throw LipidException("Double bond count does not match with number of double bond positions");
+    }
+    if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
+        level = min(level, STRUCTURAL_SUBSPECIES);
+    }
     current_fa = NULL;
 }
     
@@ -226,6 +238,9 @@ void LipidMapsParserEventHandler::clean_lcb(TreeNode *node) {
 void LipidMapsParserEventHandler::append_fa(TreeNode *node) {
     if (db_numbers > -1 && db_numbers != current_fa->double_bonds->get_num()){
         throw LipidException("Double bond count does not match with number of double bond positions");
+    }
+    if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
+        level = min(level, STRUCTURAL_SUBSPECIES);
     }
     
     if (level == STRUCTURAL_SUBSPECIES || level == ISOMERIC_SUBSPECIES){
@@ -305,8 +320,9 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
     
     headgroup = new Headgroup(head_group, 0, use_head_group);
     
-    int max_num_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa;
+    int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
     if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
+    
 
     switch (level){
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;

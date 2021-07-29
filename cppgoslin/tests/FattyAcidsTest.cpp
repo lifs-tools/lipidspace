@@ -30,7 +30,6 @@ SOFTWARE.
 #include <iostream>
 #include <cassert>
 #include <fstream>
-#include <chrono>
 
 
 using namespace std;
@@ -151,40 +150,12 @@ int main(int argc, char** argv){
         delete lipid;
         delete data;
     }
+    
+    
     cout << "In the test, " << not_implemented << " of " << lipid_data.size() << " lipids can not be described by nomenclature" << endl;
     cout << "In the test, " << failed << " of " << (lipid_data.size() - not_implemented) << " lipids failed" << endl;
     cout << "In the test, " << failed_sum << " of " << (lipid_data.size() - not_implemented) << " lipid sum formulas failed" << endl;
     cout << endl;
-    
-    
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Test for performance
-    ////////////////////////////////////////////////////////////////////////////
-    
-    i = 0;
-    double sum_mass = 0;
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    for (auto &lipid_name : lipid_names){
-        ++i;
-        
-        LipidAdduct *lipid = 0;
-        try {
-            lipid = lipid_parser.parse(lipid_name);
-        }
-        catch (LipidException &e) {
-            continue;
-        }
-        sum_mass += lipid->get_mass();
-        
-        delete lipid;
-    }
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    cout << "sum mass: " << sum_mass << endl;
-
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
     
     
     return 0;

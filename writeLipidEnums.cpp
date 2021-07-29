@@ -242,37 +242,40 @@ void writeLipidEnum(string ofFileName){
     for (auto &row : functional_data){
         if (cnt++ == 0) continue;
         
-        if (row->size() > 4) offile << "    // " << row->at(5) << endl;
-        if (row->at(0) == "FG"){
+        row->push_back(row->at(1));
+        for (int i = 6; i < (int)row->size(); ++i){
+            if (row->at(i) == "") continue;
             
-            offile << "    known_functional_groups.insert({\"" << row->at(1) << "\", new FunctionalGroup(\"" << row->at(1) << "\", -1, 1, new DoubleBonds(" << row->at(3) << "), " << row->at(4) << ", \"\", new ElementTable{";
-            
-            // add element table
-            ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
-            int ii = 0;
-            for (auto& table_kv : *table){
-                if (ii++ > 0) offile << ", ";
-                offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+            offile << "    // " << row->at(5) << endl;
+            if (row->at(0) == "FG"){
+                offile << "    known_functional_groups.insert({\"" << row->at(i) << "\", new FunctionalGroup(\"" << row->at(1) << "\", -1, 1, new DoubleBonds(" << row->at(3) << "), " << row->at(4) << ", \"\", new ElementTable{";
+                
+                // add element table
+                ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
+                int ii = 0;
+                for (auto& table_kv : *table){
+                    if (ii++ > 0) offile << ", ";
+                    offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+                }
+                delete table;
+                offile << "})}";
             }
-            delete table;
-            offile << "})}";
-        }
-        else {
-            offile << "    known_functional_groups.insert({\"" << row->at(1) << "\", new HeadgroupDecorator(\"" << row->at(1) << "\", -1, 1, new ElementTable{";
-            
-            // add element table
-            ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
-            int ii = 0;
-            for (auto& table_kv : *table){
-                if (ii++ > 0) offile << ", ";
-                offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+            else {
+                offile << "    known_functional_groups.insert({\"" << row->at(i) << "\", new HeadgroupDecorator(\"" << row->at(1) << "\", -1, 1, new ElementTable{";
+                
+                // add element table
+                ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
+                int ii = 0;
+                for (auto& table_kv : *table){
+                    if (ii++ > 0) offile << ", ";
+                    offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+                }
+                delete table;
+                offile << "})}";
             }
-            delete table;
-            offile << "})}";
+            offile << ");" << endl;
+            offile << "\n\n";
         }
-        offile << ");" << endl;
-        offile << "\n\n";
-    
         
     }
     
