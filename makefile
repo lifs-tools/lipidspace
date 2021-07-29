@@ -3,7 +3,7 @@ CC = g++ -std=c++11
 #CC = clang++-10
 AR = ar
 MARCH = -mtune=native
-bin = ./libcppGoslin.so
+bin = libcppGoslin.so
 abin = libcppGoslin.a
 domain = cppgoslin/domain/Adduct.o cppgoslin/domain/LipidMolecularSubspecies.o cppgoslin/domain/LipidStructuralSubspecies.o cppgoslin/domain/FattyAcid.o cppgoslin/domain/LipidAdduct.o cppgoslin/domain/LipidSpecies.o cppgoslin/domain/Fragment.o cppgoslin/domain/LipidIsomericSubspecies.o cppgoslin/domain/LipidSpeciesInfo.o cppgoslin/domain/StringFunctions.o cppgoslin/domain/LipidClasses.o cppgoslin/domain/DoubleBonds.o cppgoslin/domain/FunctionalGroup.o cppgoslin/domain/Headgroup.o cppgoslin/domain/Cycle.o cppgoslin/domain/GenericDatastructures.o
 
