@@ -33,6 +33,7 @@ SOFTWARE.
 #include <vector>
 #include <math.h>
 #include <map>
+#include <cassert>
 
 
 using namespace std;
@@ -70,7 +71,6 @@ int main(int argc, char** argv){
                 cout << lipid_name << ": " << e.what() << endl;
                 assert (false);
             }
-            
             
             assert (lipid->get_lipid_string(CLASS) == lipid_class);
             assert (compute_sum_formula(lipid->lipid->get_elements()) == lipid_formula);

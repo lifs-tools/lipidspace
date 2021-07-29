@@ -169,7 +169,6 @@ int main(int argc, char** argv){
         
         string lipid_name = row.first;
         vector<string> &results = row.second;
-        cout << "testing: '" << lipid_name << "'" << endl;
         
         LipidAdduct *lipid = parser.parse(lipid_name);
         string formula = results.size() > 4 ? results.at(4) : lipid->get_sum_formula();
@@ -195,5 +194,6 @@ int main(int argc, char** argv){
         }
         delete lipid;
     }
+    cout << "All tests passed without any problem" << endl;
     return 0;
 }
