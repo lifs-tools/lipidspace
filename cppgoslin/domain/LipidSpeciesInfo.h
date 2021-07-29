@@ -42,6 +42,7 @@ public:
     int num_ethers;
     int num_specified_fa;
     int total_fa;
+    LipidFaBondType extended_class;
     
     LipidSpeciesInfo (LipidClass lipid_class);
     void add(FattyAcid* _fa);

@@ -29,6 +29,7 @@ LipidSpeciesInfo::LipidSpeciesInfo (LipidClass lipid_class) : FattyAcid("info") 
     level = NO_LEVEL;
     num_ethers = 0;
     num_specified_fa = 0;
+    extended_class = ESTER;
     ClassMap &lipid_classes = LipidClasses::get_instance().lipid_classes;
     total_fa = contains(lipid_classes, lipid_class) ? lipid_classes.at(lipid_class).max_num_fa : 0;
 }
@@ -48,6 +49,7 @@ void LipidSpeciesInfo::add(FattyAcid* _fa){
     if (_fa->lipid_FA_bond_type == ETHER_PLASMENYL || _fa->lipid_FA_bond_type == ETHER_PLASMANYL){
         num_ethers += 1;
         lipid_FA_bond_type = ETHER_PLASMANYL;
+        extended_class = _fa->lipid_FA_bond_type;
     }
             
     else{
