@@ -753,7 +753,8 @@ int main(int argc, char** argv){
 
     // test several more lipid names
     vector<string> lipidnames;
-    ifstream infile("cppgoslin/tests/lipidnames.txt");
+    ifstream infile("data/goslin/testfiles/lipidnames.csv");
+    assert(infile.good());
     string line;
     while (getline(infile, line)){
         line = strip(line, ' ');

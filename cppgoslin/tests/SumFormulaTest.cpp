@@ -53,6 +53,7 @@ int main(int argc, char** argv){
     vector<string> lipid_names;
     vector<string> sum_formulas;
     ifstream infile("data/goslin/testfiles/formulas-lipid-maps.csv");
+    assert(infile.good());
     string line;
     while (getline(infile, line)){
         vector<string>* tokens = split_string(line, ',', '"');
@@ -88,9 +89,7 @@ int main(int argc, char** argv){
             }
         }
     }
-    
-    
-    
+    cout << "All tests passed without any problem" << endl;
     
     
     
@@ -98,7 +97,8 @@ int main(int argc, char** argv){
     lipid_names.clear();
     sum_formulas.clear();
     
-    ifstream infile2("cppgoslin/tests/formulas-swiss-lipids.csv");
+    ifstream infile2("data/goslin/testfiles/formulas-swiss-lipids.csv");
+    assert(infile2.good());
     while (getline(infile2, line)){
         vector<string>* tokens = split_string(line, ',', '"');
         line = strip(line, ' ');
@@ -108,7 +108,7 @@ int main(int argc, char** argv){
         }
         delete tokens;
     }
-    infile.close();
+    infile2.close();
         
     
     for (uint32_t i = 0; i < lipid_names.size(); ++i){

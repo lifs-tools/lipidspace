@@ -47,6 +47,7 @@ int main(int argc, char** argv){
     vector<string> lipid_names_income;
     vector<string> lipid_names_outcome;
     ifstream infile("data/goslin/testfiles/lipid-maps-test.csv");
+    assert(infile.good());
     string line;
     while (getline(infile, line)){
         vector<string>* tokens = split_string(line, ',', '"', true);

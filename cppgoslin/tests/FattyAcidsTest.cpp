@@ -52,6 +52,7 @@ int main(int argc, char** argv){
     vector<string> lipid_data;
     vector<string> lipid_names;
     ifstream infile(test_file);
+    assert(infile.good());
     string line;
     while (getline(infile, line)){
         line = strip(line, ' ');
