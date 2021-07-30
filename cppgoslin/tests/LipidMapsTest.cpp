@@ -65,7 +65,7 @@ int main(int argc, char** argv){
         try {
             lipid = lipid_maps_parser.parse(lipid_name);
             assert(lipid != NULL);
-            if (correct_lipid_name != "Unsupported lipid"){
+            if (correct_lipid_name != "Unsupported lipid" && correct_lipid_name.length() > 0){
                 //cout << lipid_name << "  |  " << lipid->get_lipid_string() << "  |  " << correct_lipid_name << " (reference)" << endl;
                 assert(correct_lipid_name == lipid->get_lipid_string());
             }
