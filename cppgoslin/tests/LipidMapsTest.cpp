@@ -46,7 +46,7 @@ int main(int argc, char** argv){
     // test several more lipid names
     vector<string> lipid_names_income;
     vector<string> lipid_names_outcome;
-    ifstream infile("cppgoslin/tests/lipid-maps-test.csv");
+    ifstream infile("data/goslin/testfiles/lipid-maps-test.csv");
     string line;
     while (getline(infile, line)){
         vector<string>* tokens = split_string(line, ',', '"', true);

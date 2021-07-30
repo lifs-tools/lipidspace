@@ -46,7 +46,7 @@ int main(int argc, char** argv){
     
     
     // test several more lipid names
-    ifstream infile("cppgoslin/tests/lipid-masses.csv");
+    ifstream infile("data/goslin/testfiles/lipid-masses.csv");
     string line;
     int ii = 0;
     while (getline(infile, line)){

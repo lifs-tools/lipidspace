@@ -38,7 +38,7 @@ using namespace goslin;
 int main(int argc, char** argv){
     
     LipidAdduct* lipid;
-    string test_file = "cppgoslin/tests/swiss-lipids-test.csv";
+    string test_file = "data/goslin/testfiles/swiss-lipids-test.csv";
     SwissLipidsParser parser;
     
     // test several more lipid names

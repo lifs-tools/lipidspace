@@ -36,7 +36,7 @@ using namespace std;
 using namespace goslin;
 
 int main(int argc, char** argv){
-    string test_file = "cppgoslin/tests/fatty-acids-test.csv";
+    string test_file = "data/goslin/testfiles/fatty-acids-test.csv";
     FattyAcidParser lipid_parser;
     ShorthandParser shorthand_parser;
     
