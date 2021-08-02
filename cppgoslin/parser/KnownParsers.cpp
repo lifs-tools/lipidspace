@@ -34,8 +34,8 @@ FattyAcidParser::~FattyAcidParser(){
     delete parser_event_handler;
 }
         
-LipidAdduct* FattyAcidParser::parse(string lipid_name){
-    return Parser<LipidAdduct*>::parse(to_lower(lipid_name));
+LipidAdduct* FattyAcidParser::parse(string lipid_name, bool throw_error){
+    return Parser<LipidAdduct*>::parse(to_lower(lipid_name), throw_error);
 }
 
 
@@ -95,6 +95,7 @@ LipidParser::LipidParser(){
     parser_list.push_back(new LipidMapsParser());
     parser_list.push_back(new SwissLipidsParser());
     parser_list.push_back(new HmdbParser());
+    lastSuccessfulParser = 0;
 }
 
 LipidParser::~LipidParser(){
@@ -103,10 +104,12 @@ LipidParser::~LipidParser(){
     
     
 LipidAdduct* LipidParser::parse(string lipid_name){
+    lastSuccessfulParser = 0;
     
     for (auto parser : parser_list) {
         LipidAdduct *lipid = parser->parse(lipid_name, false);
         if (lipid){
+            lastSuccessfulParser = parser;
             return lipid;
         }
     }

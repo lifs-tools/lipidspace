@@ -224,6 +224,27 @@ int main(int argc, char** argv){
     delete lipid;
     
     
+    
+    lipid_name = "2-tetracosyl-3-hydroxy-pentatriaconta-18Z-enoic acid";
+    lipid = lipid_parser.parse(lipid_name);
+    assert (lipid);
+    assert(lipid->get_lipid_string() == "FA 35:1(18Z);2(24:0);3OH");
+    assert(lipid_parser.lastSuccessfulParser);
+    assert(lipid_parser.lastSuccessfulParser->grammar_name == "FattyAcids");
+    delete lipid;
+    
+    
+    
+    
+    
+    lipid_name = "SM(1) 18:1(10Z);3OH/14:0";
+    lipid = lipid_parser.parse(lipid_name);
+    assert (lipid);
+    assert(lipid->get_lipid_string() == "SM(1) 18:1(10Z);3OH/14:0");
+    delete lipid;
+    
+    
+    
     lipid_name = "LPE O-16:4p";
     lipid = lipid_parser.parse(lipid_name);
     assert (lipid);

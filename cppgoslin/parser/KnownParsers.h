@@ -39,7 +39,7 @@ class FattyAcidParser : public Parser<LipidAdduct*> {
 public:
     FattyAcidParser();
     ~FattyAcidParser();
-    LipidAdduct* parse(string lipid_name);
+    LipidAdduct* parse(string lipid_name, bool throw_error = true);
 };
 
 
@@ -81,6 +81,7 @@ public:
 class LipidParser {
 public:
     vector<Parser<LipidAdduct*>*> parser_list;
+    Parser<LipidAdduct*>* lastSuccessfulParser;
     
     LipidParser();
     ~LipidParser();
