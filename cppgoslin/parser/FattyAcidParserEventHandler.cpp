@@ -176,6 +176,7 @@ void FattyAcidParserEventHandler::build_lipid(TreeNode *node) {
         tmp.remove("cyclo_yl");
         tmp.remove("cyclo_len");
     }
+    
             
     
     if (tmp.contains_key("post_adding")){
@@ -203,7 +204,6 @@ void FattyAcidParserEventHandler::build_lipid(TreeNode *node) {
             set_lipid_level(STRUCTURAL_SUBSPECIES);
         }
     }
-    
     
     Headgroup *head_group = new Headgroup(headgroup);
     
@@ -381,6 +381,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
     if (contains_p(curr_fa->functional_groups, "cyclo")){
         FattyAcid *fa = (FattyAcid*)curr_fa->functional_groups->at("cyclo").front();
         curr_fa->functional_groups->erase("cyclo");
+        tmp.set_int("cyclo_len", curr_fa->num_carbon);
         int start_pos = curr_fa->num_carbon + 1;
         int end_pos = curr_fa->num_carbon + (tmp.contains_key("cyclo_len") ? tmp.get_int("cyclo_len") : 5);
         fa->shift_positions(start_pos - 1);
@@ -420,6 +421,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
         
     else if (tmp.contains_key("cyclo")){
         tmp.set_int("cyclo_yl", 1);
+        tmp.set_int("cyclo_len", curr_fa->num_carbon);
         tmp.set_list("fg_pos", new GenericList());
         tmp.get_list("fg_pos")->add_list(new GenericList());
         tmp.get_list("fg_pos")->add_list(new GenericList());

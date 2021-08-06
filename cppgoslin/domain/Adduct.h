@@ -37,7 +37,7 @@ SOFTWARE.
 using namespace std;
 
 
-class Adduct{
+class Adduct {
 public:
     string sum_formula;
     string adduct_string;

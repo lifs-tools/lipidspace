@@ -40,8 +40,10 @@ int main(int argc, char** argv){
     FattyAcidParser lipid_parser;
     ShorthandParser shorthand_parser;
     
+
+    
     if (0){
-        LipidAdduct *l = lipid_parser.parse("5Z,9Z-heptacosadienoic acid");
+        LipidAdduct *l = lipid_parser.parse("1-methyl-cyclopentanol");
         cout << l->get_lipid_string() << endl;
         cout << l->get_sum_formula() << endl;
         return 0;
@@ -93,6 +95,7 @@ int main(int argc, char** argv){
         lipid_names.push_back(name);
         LipidAdduct *lipid = 0;
         try {
+            //cout << name << endl;
             lipid = lipid_parser.parse(name);
         }
         catch (LipidException &e) {

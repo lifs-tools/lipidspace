@@ -280,23 +280,24 @@ void Parser<T>::read_grammar(string grammar){
                     if (chain->size() <= 1){
                         delete chain;
                     }
-                    
-                    while (chain->size() > 1){
-                        uint64_t top = chain->at(0);
-                        chain->erase(chain->begin());
-                        uint64_t key = kv.first + (top << 16);
-                        if (uncontains(substitution, key)){
-                            substitution.insert({key, chain});
-                        
-                            if (chain->size() > 1){
-                                vector<uint64_t>* new_chain = new vector<uint64_t>();
-                                for (auto &e : *chain) new_chain->push_back(e);
-                                chain = new_chain;
+                    else {
+                        while (chain->size() > 1){
+                            uint64_t top = chain->at(0);
+                            chain->erase(chain->begin());
+                            uint64_t key = kv.first + (top << 16);
+                            if (uncontains(substitution, key)){
+                                substitution.insert({key, chain});
+                            
+                                if (chain->size() > 1){
+                                    vector<uint64_t>* new_chain = new vector<uint64_t>();
+                                    for (auto &e : *chain) new_chain->push_back(e);
+                                    chain = new_chain;
+                                }
                             }
-                        }
-                        else {
-                            delete chain;
-                            break;
+                            else {
+                                delete chain;
+                                break;
+                            }
                         }
                     }
                 }

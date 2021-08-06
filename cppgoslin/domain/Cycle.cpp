@@ -135,8 +135,10 @@ void Cycle::shift_positions(int shift){
     start += shift;
     end += shift;
     DoubleBonds* db = new DoubleBonds();
-    for (auto &kv : double_bonds->double_bond_positions) db->double_bond_positions.insert({kv.first, kv.second});
-    double_bonds->num_double_bonds = double_bonds->double_bond_positions.size();
+    for (auto &kv : double_bonds->double_bond_positions) db->double_bond_positions.insert({kv.first + shift, kv.second});
+    db->num_double_bonds = db->double_bond_positions.size();
+    delete double_bonds;
+    double_bonds = db;
 }
     
 

@@ -171,17 +171,17 @@ string FattyAcid::to_string(LipidLevel level){
                         
     }
     else {
-        ElementTable *elements = get_functional_group_elements();
+        ElementTable *func_elements = get_functional_group_elements();
         for (int i = 2; i < (int)element_order.size(); ++i){
             Element e = element_order.at(i);
-            if (elements->at(e) > 0){
+            if (func_elements->at(e) > 0){
                 fa_string << ";" << element_shortcut.at(e);
-                if (elements->at(e) > 1){
-                    fa_string << elements->at(e);
+                if (func_elements->at(e) > 1){
+                    fa_string << func_elements->at(e);
                 }
             }
         } 
-        delete elements;
+        delete func_elements;
     }
     return fa_string.str();
 }
