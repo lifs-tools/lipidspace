@@ -80,6 +80,7 @@ enum LipidLevel {NO_LEVEL,
 struct LipidClassMeta {
     LipidCategory lipid_category;
     string class_name;
+    string description;
     int max_num_fa;
     int possible_num_fa;
     set<string> special_cases;
