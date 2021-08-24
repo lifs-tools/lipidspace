@@ -190,7 +190,7 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
         }
     }
         
-    else if (true_fa != poss_fa){
+    else if (true_fa != poss_fa && (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES)){
         string hg_name = head_group->headgroup;
         delete head_group;
         throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
