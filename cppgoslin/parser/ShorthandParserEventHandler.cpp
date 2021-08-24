@@ -49,8 +49,7 @@ ShorthandParserEventHandler::ShorthandParserEventHandler() : BaseParserEventHand
     reg("gl_species_pre_event", set_species_level);
     reg("gl_molecular_species_pre_event", set_molecular_level);
     reg("pl_species_pre_event", set_species_level);
-    reg("pl_molecular_species_double_pre_event", set_molecular_level);
-    reg("pl_molecular_species_triple_pre_event", set_molecular_level);
+    reg("pl_molecular_species_pre_event", set_molecular_level);
     reg("sl_species_pre_event", set_species_level);
     reg("pl_single_pre_event", set_molecular_level);
     reg("unsorted_fa_separator_pre_event", set_molecular_level);
