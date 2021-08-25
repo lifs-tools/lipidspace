@@ -34,6 +34,7 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
     reg("lipid_pre_event", reset_lipid);
     reg("lipid_post_event", build_lipid);
     reg("fatty_acid_post_event", set_fatty_acid);
+    reg("fatty_acid_recursion_post_event", set_fatty_acid);
     
     reg("acid_single_type_pre_event", set_fatty_acyl_type);
     reg("ol_ending_pre_event", set_fatty_acyl_type);
@@ -108,12 +109,12 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
     reg("isobut_post_event", set_iso);
     
     // CoA
-    reg("CoA_post_event", set_coa);
+    reg("coa_post_event", set_coa);
     reg("methyl_pre_event", set_methyl);
     
     // CAR
-    reg("CAR_pre_event", set_car);
-    reg("CAR_post_event", add_car);
+    reg("car_pre_event", set_car);
+    reg("car_post_event", add_car);
     
     // amine
     reg("ethanolamine_post_event", add_ethanolamine);
