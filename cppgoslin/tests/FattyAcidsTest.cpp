@@ -69,23 +69,24 @@ int main(int argc, char** argv){
     for (auto lipid_row : lipid_data){
         
         vector<string> *data = split_string(lipid_row, ',', '"', true);
-        string lipid_name = strip(data->at(0), '\"');
-        string formula = strip(data->at(1), '\"');
-        string expected_lipid_name = strip(data->at(2), '\"');
+        string lmid = strip(data->at(0), '\"');
+        string lipid_name = strip(data->at(1), '\"');
+        string formula = strip(data->at(2), '\"');
+        string expected_lipid_name = strip(data->at(3), '\"');
         
         
         LipidAdduct *lipid = 0;
         lipid = lipid_parser.parse(lipid_name);
         
         
-        assertEqual(expected_lipid_name, lipid->get_lipid_string(), expected_lipid_name + " != " + lipid->get_lipid_string() + " (computed)");
+        assertEqual(expected_lipid_name, lipid->get_lipid_string(), lmid + ": " + expected_lipid_name + " != " + lipid->get_lipid_string() + " (computed)");
             
         string lipid_formula = lipid->get_sum_formula();
         ElementTable *e = SumFormulaParser::get_instance().parse(formula);
         formula = goslin::compute_sum_formula(e);
         delete e;
         
-        assertEqual(formula, lipid_formula, "lipid '" + lipid_name + "': " + formula + " != " + lipid_formula + " (computed)");
+        assertEqual(formula, lipid_formula, "formula " + lmid + ": " + formula + " != " + lipid_formula + " (computed)");
             
         if (to_lower(lipid_name).find("cyano") != string::npos) {
             delete lipid;
@@ -97,19 +98,19 @@ int main(int argc, char** argv){
         lipid_formula = lipid2->get_sum_formula();
         
         
-        assertEqual(formula, lipid_formula, "lipid '" + lipid->get_lipid_string() + "': " + formula + " != " + lipid_formula + " (computed)");
+        assertEqual(formula, lipid_formula, "lipid " + lmid + ": " + formula + " != " + lipid_formula + " (computed)");
         delete lipid2;
         
         lipid2 = shorthand_parser.parse(lipid->get_lipid_string(MOLECULAR_SUBSPECIES));
         lipid_formula = lipid2->get_sum_formula();
         
-        assertEqual(formula, lipid_formula, "molecular lipid '" + lipid->get_lipid_string(MOLECULAR_SUBSPECIES) + "': " + formula + " != " + lipid_formula + " (computed)");
+        assertEqual(formula, lipid_formula, "molecular " + lmid + ": " + formula + " != " + lipid_formula + " (computed)");
         delete lipid2;
         
         lipid2 = shorthand_parser.parse(lipid->get_lipid_string(SPECIES));
         lipid_formula = lipid2->get_sum_formula();
         
-        assertEqual(formula, lipid_formula, "species lipid '" + lipid->get_lipid_string(SPECIES) + "': " + formula + " != " + lipid_formula + " (computed)");
+        assertEqual(formula, lipid_formula, "species " + lmid + ": " + formula + " != " + lipid_formula + " (computed)");
         
         delete lipid2;
         delete lipid;
