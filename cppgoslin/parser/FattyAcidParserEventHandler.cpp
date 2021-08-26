@@ -247,20 +247,6 @@ void FattyAcidParserEventHandler::switch_position(FunctionalGroup* func_group, i
 void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
     FattyAcid* curr_fa = fatty_acyl_stack.back();
     
-    /*
-    if (tmp.get_dictionary(FA_I)->contains_key("fg_pos_summary")){
-        for (auto &kv : tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->dictionary){
-            string str_pos = kv.first;
-            string cistrans = to_upper(tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->get_string(str_pos));
-            int pos = atoi(str_pos.c_str());
-            if (pos > 0 && (cistrans == "E" || cistrans == "Z")){
-                curr_fa->double_bonds->double_bond_positions.insert({pos, cistrans});
-            }
-        }
-        curr_fa->double_bonds->num_double_bonds = curr_fa->double_bonds->double_bond_positions.size();
-    }
-    */
-    
     if (contains_p(curr_fa->functional_groups, "noyloxy")){
         if (headgroup == "FA") headgroup = "FAHFA";
         
@@ -382,9 +368,9 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
     if (contains_p(curr_fa->functional_groups, "cyclo")){
         FattyAcid *fa = (FattyAcid*)curr_fa->functional_groups->at("cyclo").front();
         curr_fa->functional_groups->erase("cyclo");
-        tmp.set_int("cyclo_len", curr_fa->num_carbon);
+        if (!tmp.contains_key("cyclo_len") tmp.set_int("cyclo_len", 5);
         int start_pos = curr_fa->num_carbon + 1;
-        int end_pos = curr_fa->num_carbon + (tmp.contains_key("cyclo_len") ? tmp.get_int("cyclo_len") : 5);
+        int end_pos = curr_fa->num_carbon + tmp.get_int("cyclo_len");
         fa->shift_positions(start_pos - 1);
         
         if (contains_p(curr_fa->functional_groups, "cy")){
@@ -434,6 +420,8 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
         //add_cyclo(node);
         tmp.remove("cyclo");
     }
+    
+    cout << curr_fa->num_carbon << endl;
 }
 
 
