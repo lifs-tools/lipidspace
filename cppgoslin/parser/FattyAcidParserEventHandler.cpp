@@ -127,7 +127,7 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
     reg("fg_pos_summary_post_event", add_summary);
     reg("func_stereo_pre_event", add_func_stereo);
     
-    debug = "a";
+    debug = "";
 }
 
 

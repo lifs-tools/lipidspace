@@ -89,7 +89,8 @@ void Cycle::rearrange_functional_groups(FunctionalGroup* parent, int shift){
     shift_positions(shift);
     
     
-    // take back what's mine# check double bonds
+    // take back what's mine
+    // check double bonds
     for (auto &kv : parent->double_bonds->double_bond_positions){
         if (start <= kv.first && kv.first <= end){
             double_bonds->double_bond_positions.insert({kv.first, kv.second});
@@ -102,14 +103,15 @@ void Cycle::rearrange_functional_groups(FunctionalGroup* parent, int shift){
     }
     parent->double_bonds->num_double_bonds = parent->double_bonds->double_bond_positions.size();
     
-            
+    // check functional groups
     set<string> remove_list;
     for (auto &kv : *(parent->functional_groups)){
         vector<int> remove_item;
         
         int i = 0;
+        
         for (auto func_group : kv.second){
-            if (start <= func_group->position && func_group->position != end && func_group != this){
+            if (start <= func_group->position && func_group->position <= end && func_group != this){
                 if (!contains_p(functional_groups, kv.first)){
                     functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
                 }
