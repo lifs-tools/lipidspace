@@ -127,7 +127,7 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
     reg("fg_pos_summary_post_event", add_summary);
     reg("func_stereo_pre_event", add_func_stereo);
     
-    debug = "";
+    debug = "a";
 }
 
 
@@ -696,7 +696,7 @@ void FattyAcidParserEventHandler::set_prosta(TreeNode *node) {
     if (tmp.contains_key("reduction")){
         GenericList *gl = tmp.get_list("reduction");
         for (int i = 0; i < (int)gl->list.size(); ++i){
-            minus_pos = gl->get_int(i) < 8;
+            minus_pos += gl->get_int(i) < 8;
         }
     }
     tmp.set_list("fg_pos", new GenericList());
