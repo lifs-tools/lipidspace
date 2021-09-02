@@ -67,6 +67,7 @@ HmdbParserEventHandler::HmdbParserEventHandler() : BaseParserEventHandler<LipidA
     reg("furan_fa_pre_event", furan_fa);
     reg("interlink_fa_pre_event", interlink_fa);
     reg("lipid_suffix_pre_event", lipid_suffix);
+    reg("methyl_pre_event", add_methyl);
     
 }
 
@@ -217,6 +218,16 @@ void HmdbParserEventHandler::add_ether(TreeNode *node) {
     
 
 void HmdbParserEventHandler::add_hydroxyl(TreeNode *node) {
+    FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("Me");
+    functional_group->position = current_fa->num_carbon - (node->get_text() == "i-" ? 1 : 2);
+    current_fa->num_carbon -= 1;
+    if (uncontains_p(current_fa->functional_groups, "Me")) current_fa->functional_groups->insert({"Me", vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at("Me").push_back(functional_group);
+}
+    
+    
+
+void HmdbParserEventHandler::add_methyl(TreeNode *node) {
     string old_hydroxyl = node->get_text();
     int num_h = 0;
     if (old_hydroxyl == "d") num_h = 2;
@@ -251,7 +262,7 @@ void HmdbParserEventHandler::add_double_bonds(TreeNode *node) {
     
 
 void HmdbParserEventHandler::add_carbon(TreeNode *node) {
-    current_fa->num_carbon = atoi(node->get_text().c_str());
+    current_fa->num_carbon += atoi(node->get_text().c_str());
 }
     
 
@@ -266,7 +277,7 @@ void HmdbParserEventHandler::interlink_fa(TreeNode *node) {
     
 
 void HmdbParserEventHandler::lipid_suffix(TreeNode *node) {
-    throw UnsupportedLipidException("Lipids with suffix '" + node->get_text() + "' are currently not supported");
+    //throw UnsupportedLipidException("Lipids with suffix '" + node->get_text() + "' are currently not supported");
 }
 
         

@@ -85,6 +85,7 @@ public:
     void interlink_fa(TreeNode *node);
     void lipid_suffix(TreeNode *node);
     void add_one_hydroxyl(TreeNode *node);
+    void add_methyl(TreeNode *node);
     
 };
 
