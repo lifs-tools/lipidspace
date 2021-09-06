@@ -71,6 +71,9 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("fa_pre_event", new_fa);
     reg("fa_post_event", append_fa);
     
+    reg("glyco_struct_pre_event", add_glyco);
+    reg("glyco_branch_post_event", glyco_branch);
+    
     reg("db_single_position_pre_event", set_isomeric_level);
     reg("db_single_position_post_event", add_db_position);
     reg("db_position_number_pre_event", add_db_position_number);
@@ -114,6 +117,7 @@ void LipidMapsParserEventHandler::reset_lipid(TreeNode* node){
     mod_pos = -1;
     mod_num = 1;
     mod_text = "";
+    headgroup_decorators = new vector<HeadgroupDecorator*>();
 }
     
 void LipidMapsParserEventHandler::set_molecular_subspecies_level(TreeNode* node){
@@ -205,6 +209,27 @@ void LipidMapsParserEventHandler::add_functional_group(TreeNode* node){
     if (uncontains_p(current_fa->functional_groups, fg_name)) current_fa->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
     current_fa->functional_groups->at(fg_name).push_back(functional_group);
 }
+
+
+void LipidMapsParserEventHandler::add_glyco(TreeNode* node){
+    string glyco_name = node->get_text();
+    HeadgroupDecorator *functional_group = 0;
+    try {
+        functional_group = (HeadgroupDecorator*)KnownFunctionalGroups::get_functional_group(glyco_name);
+    }
+    catch (...){
+        throw LipidParsingException("Carbohydrate '" + glyco_name + "' unknown");
+    }
+    
+    headgroup_decorators->push_back(functional_group);
+}
+
+
+
+void LipidMapsParserEventHandler::glyco_branch(TreeNode* node){
+    headgroup_decorators->back()->elements->at(ELEMENT_O) -= 1;
+}
+
         
         
 void LipidMapsParserEventHandler::new_fa(TreeNode *node) {
@@ -266,7 +291,7 @@ void LipidMapsParserEventHandler::add_ether(TreeNode* node){
 void LipidMapsParserEventHandler::add_hydroxyl(TreeNode* node){
     int num_h = atoi(node->get_text().c_str());
     
-    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
+    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && ((head_group != "Cer" && head_group != "LCB") || headgroup_decorators->size() > 0)) num_h -= 1;
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
@@ -284,7 +309,7 @@ void LipidMapsParserEventHandler::add_hydroxyl_lcb(TreeNode* node){
     else if (hydroxyl == "t") num_h = 3;
     
     
-    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
+    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && ((head_group != "Cer" && head_group != "LCB") || headgroup_decorators->size() > 0)) num_h -= 1;
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
@@ -318,7 +343,7 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
     lipid = NULL;
     LipidSpecies *ls = NULL;
     
-    headgroup = new Headgroup(head_group, 0, use_head_group);
+    headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
     
     int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
     if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);

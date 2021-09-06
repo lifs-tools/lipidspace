@@ -64,6 +64,7 @@ public:
     string mod_text;
     int mod_pos;
     int mod_num;
+    vector<HeadgroupDecorator*>* headgroup_decorators;
     
 
     LipidMapsParserEventHandler();
@@ -90,7 +91,8 @@ public:
     void build_lipid(TreeNode* node);
     void add_hydroxyl_lcb(TreeNode* node);
     void pure_fa(TreeNode* node);
-    
+    void add_glyco(TreeNode* node);
+    void glyco_branch(TreeNode* node);
     void set_isomeric_level(TreeNode* node);
     void add_db_position(TreeNode* node);
     void add_db_position_number(TreeNode* node);
