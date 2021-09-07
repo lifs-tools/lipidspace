@@ -275,6 +275,7 @@ void ShorthandParserEventHandler::set_carbohydrate(TreeNode *node){
         throw LipidParsingException("Carbohydrate '" + carbohydrate + "' unknown");
     }
     
+    functional_group->elements->at(ELEMENT_O) -= 1;
     if (tmp.contains_key("func_group_head") && tmp.get_int("func_group_head") == 1){
         headgroup_decorators->push_back((HeadgroupDecorator*)functional_group);
     }

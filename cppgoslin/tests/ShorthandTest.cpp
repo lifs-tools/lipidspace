@@ -53,7 +53,7 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"CerP(1) 18:1(4E);3OH/16:0;2OH", {"CerP(1) 18:1(4E);3OH/16:0;2OH", "CerP 18:1(4);OH/16:0;OH", "CerP 18:1;O/16:0;O", "CerP 34:1;O3", "C34H68NO7P"}}, // CerP 34:1;O3 / C34H68NO7P
         
-        {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/24:0", {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/24:0", "Gal-Gal-Glc-Cer 18:1(4);OH/24:0", "GalGalGlcCer 18:1;O/24:0", "GalGalGlcCer 42:1;O2", "C60H113NO18"}}, // GalGalGlcCer 42:1;O2 / C60H113NO18
+        {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/26:1(17Z)", {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/26:1(17Z)", "Gal-Gal-Glc-Cer 18:1(4);OH/26:1(17)", "GalGalGlcCer 18:1;O/26:1", "GalGalGlcCer 44:2;O2", "C62H115NO18"}}, // GalGalGlcCer 44:2;O2 / C62H115NO18
         
         {"PC 16:0/20:2(5Z,13E);[8-12cy5;11OH;9oxo];15OH", {"PC 16:0/20:2(5Z,13E);[8-12cy5:0;11OH;9oxo];15OH", "PC 16:0/20:2(5,13);[cy5:0;OH;oxo];OH", "PC 16:0_20:4;O3", "PC 36:4;O3"}}, // PC 36:4;O3
         

@@ -65,6 +65,7 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("pk_hg_pre_event", set_head_group_name);
     reg("hg_fa_pre_event", set_head_group_name);
     reg("hg_lsl_pre_event", set_head_group_name);
+    reg("special_cer_pre_event", set_head_group_name);
     reg("special_cer_hg_pre_event", set_head_group_name);
     reg("omega_linoleoyloxy_Cer_pre_event", set_omega_head_group_name);
     
