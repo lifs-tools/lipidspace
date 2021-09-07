@@ -66,6 +66,7 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("hg_fa_pre_event", set_head_group_name);
     reg("hg_lsl_pre_event", set_head_group_name);
     reg("special_cer_hg_pre_event", set_head_group_name);
+    reg("omega_linoleoyloxy_Cer_pre_event", set_omega_head_group_name);
     
     reg("lcb_pre_event", new_lcb);
     reg("lcb_post_event", clean_lcb);
@@ -73,7 +74,6 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("fa_post_event", append_fa);
     
     reg("glyco_struct_pre_event", add_glyco);
-    reg("glyco_branch_post_event", glyco_branch);
     
     reg("db_single_position_pre_event", set_isomeric_level);
     reg("db_single_position_post_event", add_db_position);
@@ -119,6 +119,7 @@ void LipidMapsParserEventHandler::reset_lipid(TreeNode* node){
     mod_num = 1;
     mod_text = "";
     headgroup_decorators = new vector<HeadgroupDecorator*>();
+    add_omega_linoleoyloxy_Cer = false;
 }
     
 void LipidMapsParserEventHandler::set_molecular_subspecies_level(TreeNode* node){
@@ -167,6 +168,13 @@ void LipidMapsParserEventHandler::add_cistrans(TreeNode* node){
 void LipidMapsParserEventHandler::set_head_group_name(TreeNode* node){
     head_group = node->get_text();
 }
+
+
+void LipidMapsParserEventHandler::set_omega_head_group_name(TreeNode* node){
+    add_omega_linoleoyloxy_Cer = true;
+    set_head_group_name(node);
+}
+
     
     
 void LipidMapsParserEventHandler::set_species_level(TreeNode* node){
@@ -222,13 +230,8 @@ void LipidMapsParserEventHandler::add_glyco(TreeNode* node){
         throw LipidParsingException("Carbohydrate '" + glyco_name + "' unknown");
     }
     
+    functional_group->elements->at(ELEMENT_O) -= 1;
     headgroup_decorators->push_back(functional_group);
-}
-
-
-
-void LipidMapsParserEventHandler::glyco_branch(TreeNode* node){
-    headgroup_decorators->back()->elements->at(ELEMENT_O) -= 1;
 }
 
         
@@ -343,6 +346,18 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
     
     lipid = NULL;
     LipidSpecies *ls = NULL;
+    
+    if (add_omega_linoleoyloxy_Cer){
+        if (fa_list->size() != 2){
+            throw LipidException("omega-linoleoyloxy-Cer with a different combination to one long chain base and one fatty acyl chain unknown");
+        }
+        if (uncontains_p(fa_list->back()->functional_groups, "acyl")) fa_list->back()->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
+        
+        DoubleBonds* db = new DoubleBonds(2);
+        db->double_bond_positions.insert({9, "Z"});
+        db->double_bond_positions.insert({12, "Z"});
+        fa_list->back()->functional_groups->at("acyl").push_back(new AcylAlkylGroup(new FattyAcid("FA", 18, db)));
+    }
     
     headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
     

@@ -65,6 +65,7 @@ public:
     int mod_pos;
     int mod_num;
     vector<HeadgroupDecorator*>* headgroup_decorators;
+    bool add_omega_linoleoyloxy_Cer;
     
 
     LipidMapsParserEventHandler();
@@ -92,11 +93,11 @@ public:
     void add_hydroxyl_lcb(TreeNode* node);
     void pure_fa(TreeNode* node);
     void add_glyco(TreeNode* node);
-    void glyco_branch(TreeNode* node);
     void set_isomeric_level(TreeNode* node);
     void add_db_position(TreeNode* node);
     void add_db_position_number(TreeNode* node);
     void add_cistrans(TreeNode* node);
+    void set_omega_head_group_name(TreeNode* node);
         
 };
 #endif /* LIPID_MAPS_PARSER_EVENT_HANDLER_H */
