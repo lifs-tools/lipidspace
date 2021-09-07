@@ -217,7 +217,7 @@ void HmdbParserEventHandler::add_ether(TreeNode *node) {
     
     
 
-void HmdbParserEventHandler::add_hydroxyl(TreeNode *node) {
+void HmdbParserEventHandler::add_methyl(TreeNode *node) {
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("Me");
     functional_group->position = current_fa->num_carbon - (node->get_text() == "i-" ? 1 : 2);
     current_fa->num_carbon -= 1;
@@ -227,7 +227,7 @@ void HmdbParserEventHandler::add_hydroxyl(TreeNode *node) {
     
     
 
-void HmdbParserEventHandler::add_methyl(TreeNode *node) {
+void HmdbParserEventHandler::add_hydroxyl(TreeNode *node) {
     string old_hydroxyl = node->get_text();
     int num_h = 0;
     if (old_hydroxyl == "d") num_h = 2;
