@@ -57,6 +57,9 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
     reg("notation_last_digit_pre_event", last_number);
     reg("notation_second_digit_pre_event", second_number);
     
+    // furan
+    reg("tetrahydrofuran_pre_event", set_furan);
+    
     // functional groups
     reg("functional_group_pre_event", set_functional_group);
     reg("functional_group_post_event", add_functional_group);
@@ -141,7 +144,7 @@ const map<string, string> FattyAcidParserEventHandler::func_groups {{"keto", "ox
 
 const map<string, int> FattyAcidParserEventHandler::ate {{"formate", 1}, {"acetate", 2}, {"butyrate", 4}, {"propionate", 3}, {"valerate", 5}, {"isobutyrate", 4}};
 
-const map<string, int> FattyAcidParserEventHandler::special_numbers {{"meth", 1}, {"etha", 2}, {"eth", 2}, {"propa", 3}, {"isoprop", 3}, {"prop", 3}, {"propi", 3}, {"propio", 3}, {"buta", 4}, {"but", 4}, {"butr", 4}, {"valer", 5}, {"eicosa", 20}, {"eicos", 20}, {"icosa", 20}, {"icos", 20}, {"prosta", 20}, {"prost", 20}, {"prostan", 20}};
+const map<string, int> FattyAcidParserEventHandler::special_numbers {{"meth", 1}, {"etha", 2}, {"eth", 2}, {"propa", 3}, {"isoprop", 3}, {"prop", 3}, {"propi", 3}, {"propio", 3}, {"buta", 4}, {"but", 4}, {"butr", 4},{"furan", 5}, {"valer", 5}, {"eicosa", 20}, {"eicos", 20}, {"icosa", 20}, {"icos", 20}, {"prosta", 20}, {"prost", 20}, {"prostan", 20}};
 
 
 FattyAcidParserEventHandler::~FattyAcidParserEventHandler(){
@@ -307,14 +310,8 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
                         int cyclo_len = curr_fa->num_carbon;
                         tmp.set_int("cyclo_len", cyclo_len);
                         if (fa->position != cyclo_len) {
-                            switch_position(curr_fa, 2 + cyclo_len);
+                            switch_position(curr_fa, 2 - tmp.contains_key("furan") + cyclo_len);
                         }
-                        /*
-                        DoubleBonds *db = new DoubleBonds(curr_fa->double_bonds->num_double_bonds);
-                        for (auto &kv : curr_fa->double_bonds->double_bond_positions) db->double_bond_positions.insert({2 + cyclo_len - kv.first, kv.second});
-                        delete curr_fa->double_bonds;
-                        curr_fa->double_bonds = db;
-                        */
                         fa->shift_positions(cyclo_len);
                         
                         for (auto &kv : *(fa->functional_groups)){
@@ -769,8 +766,13 @@ void FattyAcidParserEventHandler::add_cyclo(TreeNode *node) {
         if (kv.second.empty()) remove_list.insert(kv.first);
     }
     for (auto &fg : remove_list) curr_fa->functional_groups->erase(fg);
-
-    Cycle *cycle = new Cycle(end - start + 1, start, end, cyclo_db, cyclo_fg);
+    vector<Element>* bridge_chain = 0;
+    if (tmp.contains_key("furan")){
+        tmp.remove("furan");
+        bridge_chain = new vector<Element>{ELEMENT_O};
+    }
+    
+    Cycle *cycle = new Cycle(end - start + 1, start, end, cyclo_db, cyclo_fg, bridge_chain);
     if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "cy")) fatty_acyl_stack.back()->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
     fatty_acyl_stack.back()->functional_groups->at("cy").push_back(cycle);
 }
@@ -800,6 +802,14 @@ void FattyAcidParserEventHandler::set_recursion(TreeNode *node) {
     tmp.set_dictionary(FA_I, new GenericDictionary());
     tmp.get_dictionary(FA_I)->set_int("recursion_pos", 0);
 }
+
+
+
+void FattyAcidParserEventHandler::set_furan(TreeNode *node){
+    tmp.set_int("furan", 1);
+    set_cycle(node);
+}
+
 
 
 void FattyAcidParserEventHandler::add_recursion(TreeNode *node) {
@@ -835,6 +845,13 @@ void FattyAcidParserEventHandler::set_yl_ending(TreeNode *node) {
 
     FattyAcid *curr_fa = fatty_acyl_stack.back();
     string fname = "";
+    
+    if (tmp.contains_key("furan")){
+        curr_fa->num_carbon -= l;
+        return;
+    }
+    
+    
     FunctionalGroup *fg = 0;
     if (l == 1){
         fname = "Me";

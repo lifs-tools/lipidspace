@@ -113,7 +113,7 @@ public:
     void add_func_stereo(TreeNode *node);
     void set_db_length(TreeNode *node);
     void check_db_length(TreeNode *node);
-    
+    void set_furan(TreeNode *node);
     void set_lipid_level(LipidLevel _level);
     void switch_position(FunctionalGroup* func_group, int switch_num);
     
