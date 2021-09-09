@@ -58,7 +58,8 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
     reg("notation_second_digit_pre_event", second_number);
     
     // furan
-    reg("tetrahydrofuran_pre_event", set_furan);
+    reg("tetrahydrofuran_pre_event", set_tetrahydrofuran);
+    reg("furan_pre_event", set_furan);
     
     // functional groups
     reg("functional_group_pre_event", set_functional_group);
@@ -327,6 +328,12 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
                             curr_fa->double_bonds->double_bond_positions.insert({kv.first + cyclo_len, kv.second});
                         }
                         curr_fa->double_bonds->num_double_bonds = curr_fa->double_bonds->double_bond_positions.size();
+                        if (tmp.contains_key("furan") && tmp.get_int("furan") > 0){
+                            curr_fa->double_bonds->num_double_bonds += 2;
+                            if (uncontains(curr_fa->double_bonds->double_bond_positions, 1)) curr_fa->double_bonds->double_bond_positions.insert({1, "E"});
+                            if (uncontains(curr_fa->double_bonds->double_bond_positions, 3)) curr_fa->double_bonds->double_bond_positions.insert({3, "E"});
+                        }
+                            
                         tmp.set_int("cyclo_yl", 1);
                     }
                     else {
@@ -805,8 +812,15 @@ void FattyAcidParserEventHandler::set_recursion(TreeNode *node) {
 
 
 
+void FattyAcidParserEventHandler::set_tetrahydrofuran(TreeNode *node){
+    tmp.set_int("furan", 0);
+    set_cycle(node);
+}
+
+
+
 void FattyAcidParserEventHandler::set_furan(TreeNode *node){
-    tmp.set_int("furan", 1);
+    tmp.set_int("furan", 2);
     set_cycle(node);
 }
 
