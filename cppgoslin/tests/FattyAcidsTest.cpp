@@ -74,7 +74,6 @@ int main(int argc, char** argv){
         string formula = strip(data->at(2), '\"');
         string expected_lipid_name = strip(data->at(3), '\"');
         
-        
         LipidAdduct *lipid = 0;
         lipid = lipid_parser.parse(lipid_name);
         

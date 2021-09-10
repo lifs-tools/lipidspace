@@ -43,6 +43,8 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
     reg("db_number_post_event", set_double_bond_position);
     reg("cistrans_post_event", set_cistrans);
     reg("acid_type_double_post_event", check_db);
+    reg("db_length_pre_event", open_db_length);
+    reg("db_length_post_event", close_db_length);
     
     // lengths
     reg("functional_length_pre_event", reset_length);
@@ -249,51 +251,53 @@ void FattyAcidParserEventHandler::switch_position(FunctionalGroup* func_group, i
 void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
     FattyAcid* curr_fa = fatty_acyl_stack.back();
     
-    string length_pattern = tmp.get_string("length_pattern");
-    int num[tmp.get_list("length_tokens")->list.size()];
-    for (int i = 0; i < (int)tmp.get_list("length_tokens")->list.size(); ++i) num[i] = tmp.get_list("length_tokens")->get_int(i);
-    
-    int l = 0, d = 0;
-    if (length_pattern == "L" || length_pattern == "S"){
-        l += num[0];
-    }
+    if (tmp.contains_key("length_pattern")) {
         
-    else if (length_pattern == "LS"){
-        l += num[0] + num[1];
-    }
-    
-    else if (length_pattern == "LL" || length_pattern == "SL" || length_pattern == "SS"){
-        l += num[0];
-        d += num[1];
-    }
+        string length_pattern = tmp.get_string("length_pattern");
+        int num[tmp.get_list("length_tokens")->list.size()];
+        for (int i = 0; i < (int)tmp.get_list("length_tokens")->list.size(); ++i) num[i] = tmp.get_list("length_tokens")->get_int(i);
         
-    else if (length_pattern == "LSL" || length_pattern == "LSS"){
-        l += num[0] + num[1];
-        d += num[2];
-    }
+        int l = 0, d = 0;
+        if (length_pattern == "L" || length_pattern == "S"){
+            l += num[0];
+        }
+            
+        else if (length_pattern == "LS"){
+            l += num[0] + num[1];
+        }
         
-    else if (length_pattern == "LSLS"){
-        l += num[0] + num[1];
-        d += num[2] + num[3];
-    }
+        else if (length_pattern == "LL" || length_pattern == "SL" || length_pattern == "SS"){
+            l += num[0];
+            d += num[1];
+        }
+            
+        else if (length_pattern == "LSL" || length_pattern == "LSS"){
+            l += num[0] + num[1];
+            d += num[2];
+        }
+            
+        else if (length_pattern == "LSLS"){
+            l += num[0] + num[1];
+            d += num[2] + num[3];
+        }
+            
+        else if (length_pattern == "SLS"){
+            l += num[0];
+            d += num[1] + num[2];
+        }
+            
+        else if (length_pattern.length() > 0 && length_pattern[0] == 'X'){
+            l += num[0];
+            for (int i = 1; i < (int)tmp.get_list("length_tokens")->list.size(); ++i) d += num[i];
+        }
         
-    else if (length_pattern == "SLS"){
-        l += num[0];
-        d += num[1] + num[2];
-    }
+        else if (length_pattern == "LLS"){ // false
+            throw RuntimeException("Cannot determine fatty acid and double bond length in '" + node->get_text() + "'");
+        }
         
-    else if (length_pattern[0] == 'X'){
-        l += num[0];
-        for (int i = 1; i < (int)tmp.get_list("length_tokens")->list.size(); ++i) d += num[i];
+        curr_fa->num_carbon += l;
+        if (curr_fa->double_bonds->double_bond_positions.size() == 0 && d > 0) curr_fa->double_bonds->num_double_bonds = d;
     }
-    
-    else if (length_pattern == "LLS"){ // false
-        throw RuntimeException("Cannot determine fatty acid and double bond length in '" + node->get_text() + "'");
-    }
-    
-    curr_fa->num_carbon += l;
-    if (curr_fa->double_bonds->double_bond_positions.size() == 0 && d > 0) curr_fa->double_bonds->num_double_bonds = d;
-
     
     
     if (contains_p(curr_fa->functional_groups, "noyloxy")){
@@ -374,7 +378,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
                             curr_fa->double_bonds->double_bond_positions.insert({kv.first + cyclo_len, kv.second});
                         }
                         curr_fa->double_bonds->num_double_bonds = curr_fa->double_bonds->double_bond_positions.size();
-                        if (tmp.contains_key("furan") && tmp.get_int("furan") > 0){
+                        if (!tmp.contains_key("tetrahydrofuran") and tmp.contains_key("furan")){
                             curr_fa->double_bonds->num_double_bonds += 2;
                             if (uncontains(curr_fa->double_bonds->double_bond_positions, 1)) curr_fa->double_bonds->double_bond_positions.insert({1, "E"});
                             if (uncontains(curr_fa->double_bonds->double_bond_positions, 3)) curr_fa->double_bonds->double_bond_positions.insert({3, "E"});
@@ -470,6 +474,10 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
         //add_cyclo(node);
         tmp.remove("cyclo");
     }
+    
+    tmp.set_string("length_pattern", "");
+    tmp.set_list("length_tokens", new GenericList());
+    tmp.set_int("add_lengths", 0);
 }
 
 
@@ -567,6 +575,7 @@ void FattyAcidParserEventHandler::reset_length(TreeNode *node) {
     tmp.set_int("length", 0);
     tmp.set_string("length_pattern", "");
     tmp.set_list("length_tokens", new GenericList());
+    tmp.set_int("add_lengths", 1);
 }
 
 
@@ -578,28 +587,34 @@ void FattyAcidParserEventHandler::set_functional_length(TreeNode *node) {
 
 
 void FattyAcidParserEventHandler::set_fatty_length(TreeNode *node) {
-    //fatty_acyl_stack.back()->num_carbon += tmp.get_int("length");
+    tmp.set_int("add_lengths", 0);
 }
 
 
 void FattyAcidParserEventHandler::special_number(TreeNode *node) {
-    tmp.set_int("length", tmp.get_int("length") + special_numbers.at(node->get_text()));
-    tmp.set_string("length_pattern", tmp.get_string("length_pattern") + "X");
-    tmp.get_list("length_tokens")->add_int(special_numbers.at(node->get_text()));
+    if (tmp.get_int("add_lengths")){
+        tmp.set_int("length", tmp.get_int("length") + special_numbers.at(node->get_text()));
+        tmp.set_string("length_pattern", tmp.get_string("length_pattern") + "X");
+        tmp.get_list("length_tokens")->add_int(special_numbers.at(node->get_text()));
+    }
 }
 
 
 void FattyAcidParserEventHandler::last_number(TreeNode *node) {
-    tmp.set_int("length", tmp.get_int("length") + last_numbers.at(node->get_text()));
-    tmp.set_string("length_pattern", tmp.get_string("length_pattern") + "L");
-    tmp.get_list("length_tokens")->add_int(last_numbers.at(node->get_text()));
+    if (tmp.get_int("add_lengths")){
+        tmp.set_int("length", tmp.get_int("length") + last_numbers.at(node->get_text()));
+        tmp.set_string("length_pattern", tmp.get_string("length_pattern") + "L");
+        tmp.get_list("length_tokens")->add_int(last_numbers.at(node->get_text()));
+    }
 }
 
 
 void FattyAcidParserEventHandler::second_number(TreeNode *node) {
-    tmp.set_int("length", tmp.get_int("length") + second_numbers.at(node->get_text()));
-    tmp.set_string("length_pattern", tmp.get_string("length_pattern") + "S");
-    tmp.get_list("length_tokens")->add_int(second_numbers.at(node->get_text()));
+    if (tmp.get_int("add_lengths")){
+        tmp.set_int("length", tmp.get_int("length") + second_numbers.at(node->get_text()));
+        tmp.set_string("length_pattern", tmp.get_string("length_pattern") + "S");
+        tmp.get_list("length_tokens")->add_int(second_numbers.at(node->get_text()));
+    }
 }
 
 
@@ -867,14 +882,15 @@ void FattyAcidParserEventHandler::set_recursion(TreeNode *node) {
 
 
 void FattyAcidParserEventHandler::set_tetrahydrofuran(TreeNode *node){
-    tmp.set_int("furan", 0);
+    tmp.set_int("furan", 1);
+    tmp.set_int("tetrahydrofuran", 1);
     set_cycle(node);
 }
 
 
 
 void FattyAcidParserEventHandler::set_furan(TreeNode *node){
-    tmp.set_int("furan", 2);
+    tmp.set_int("furan", 1);
     set_cycle(node);
 }
 
@@ -1091,4 +1107,14 @@ void FattyAcidParserEventHandler::add_summary(TreeNode *node) {
 void FattyAcidParserEventHandler::add_func_stereo(TreeNode *node) {
     int l = tmp.get_list("fg_pos")->list.size();
     tmp.get_list("fg_pos")->get_list(l - 1)->set_string(1, node->get_text());
+}
+
+
+void FattyAcidParserEventHandler::open_db_length(TreeNode *node) {
+    tmp.set_int("add_lengths", 1);
+}
+
+
+void FattyAcidParserEventHandler::close_db_length(TreeNode *node) {
+    tmp.set_int("add_lengths", 0);
 }
