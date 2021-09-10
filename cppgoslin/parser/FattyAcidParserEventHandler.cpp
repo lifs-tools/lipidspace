@@ -842,13 +842,13 @@ void FattyAcidParserEventHandler::add_cyclo(TreeNode *node) {
         if (kv.second.empty()) remove_list.insert(kv.first);
     }
     for (auto &fg : remove_list) curr_fa->functional_groups->erase(fg);
-    vector<Element>* bridge_chain = 0;
+    vector<Element>* bridge_chain = new vector<Element>{};
     if (tmp.contains_key("furan")){
         tmp.remove("furan");
-        bridge_chain = new vector<Element>{ELEMENT_O};
+        bridge_chain->push_back(ELEMENT_O);
     }
     
-    Cycle *cycle = new Cycle(end - start + 1, start, end, cyclo_db, cyclo_fg, bridge_chain);
+    Cycle *cycle = new Cycle(end - start + 1 + bridge_chain->size(), start, end, cyclo_db, cyclo_fg, bridge_chain);
     if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "cy")) fatty_acyl_stack.back()->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
     fatty_acyl_stack.back()->functional_groups->at("cy").push_back(cycle);
 }
