@@ -38,8 +38,8 @@ using namespace goslin;
 void assertEqual(string s1, string s2, string message = ""){
     if(s1 != s2){
         cout << "Assertion failed: '" << s1 << "' != '" << s2 << "'" << endl;
-        if (message.length() > 0) cout << message << endl;
-        exit(-1);
+        if (message.length() > 0) cout << message << endl << endl;
+        //exit(-1);
     }
 }
 

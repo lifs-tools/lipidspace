@@ -111,8 +111,6 @@ public:
     void add_amine_name(TreeNode *node);
     void add_summary(TreeNode *node);
     void add_func_stereo(TreeNode *node);
-    void set_db_length(TreeNode *node);
-    void check_db_length(TreeNode *node);
     void set_tetrahydrofuran(TreeNode *node);
     void set_furan(TreeNode *node);
     void set_lipid_level(LipidLevel _level);

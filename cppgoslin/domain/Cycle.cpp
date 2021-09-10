@@ -187,7 +187,7 @@ void Cycle::compute_elements(){
         
     // add all implicit carbon chain elements
     if (start != -1 && end != -1){
-        int n = cycle - (end - start + 1 + bridge_chain->size());
+        int n = max((int)(cycle - (end - start + 1 + bridge_chain->size())), 0);
         elements->at(ELEMENT_C) += n;
         elements->at(ELEMENT_H) += n << 1;
     }

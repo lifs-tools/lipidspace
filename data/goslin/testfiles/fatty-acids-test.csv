@@ -398,7 +398,7 @@ LMFA01020389,"3,5-Dimethyltridecanoic acid",C15H30O2,"FA 13:0;3Me,5Me"
 LMFA01020390,"3,5-Dimethylpentadecanoic acid",C17H34O2,"FA 15:0;3Me,5Me"
 LMFA01020391,2-Methylheptanoic acid,C8H16O2,FA 7:0;2Me
 LMFA01020392,3-Methyl-2E-heptenoic acid,C8H14O2,FA 7:1(2E);3Me
-LMFA01020393,(2E)-2-(2-methoxy-2-oxoethyl)but-2-enedioic acid,C7H8O6,FA 3:1(2E);2(2:0;2OMe;2oxo);3COOH
+LMFA01020393,(2E)-2-(2-methoxy-2-oxoethyl)but-2-enedioic acid,C7H8O6,FA 3:1(2E);2(2:0;2OMe;2oxo);COOH
 LMFA01020396,10-methyl-octadecanoic acid,C19H38O2,FA 18:0;10Me
 LMFA01020397,6-hydroxy-6-methyl-9-oxooctacosanoic acid,C29H56O4,FA 28:0;6Me;6OH;9oxo
 LMFA01020398,"6S-methyl-2E,4E-octadienoic acid",C9H14O2,"FA 8:2(2E,4E);6Me"
@@ -406,7 +406,7 @@ LMFA01020399,"8-hydroxy-6S-methyl-2E,4E-octadienoic acid",C9H14O3,"FA 8:2(2E,4E)
 LMFA01020400,"3,7,11-trimethyl-2Z,6Z-dodecaenoic acid",C25H46O2,"FA 12:2(2Z,6Z);3Me,7Me,11Me"
 LMFA01020401,2S-hydroxy-3S-methylpentanoic acid,C6H12O3,FA 5:0;3Me;2OH
 LMFA01020402,5R-hydroxy-4S-methyl-2E-heptenoic acid,C8H14O3,FA 7:1(2E);4Me;5OH
-LMFA01020404,"15,16-dimethyltriacontanedioic acid",C32H62O4,"FA 29:0;29COOH;15Me,16Me"
+LMFA01020404,"15,16-dimethyltriacontanedioic acid",C32H62O4,"FA 29:0;COOH;15Me,16Me"
 LMFA01020405,"16-methyl-octadeca-5Z,9Z,12Z-trienoic acid",C19H32O2,"FA 18:3(5Z,9Z,12Z);16Me"
 LMFA01020406,15-methyl-11-Hexadecenoic acid,C17H32O2,FA 16:1(11);Me
 LMFA01020407,3-Hydroxy-11-methyloctadecanoic acid,C19H38O3,FA 18:0;11Me;3OH
@@ -1081,7 +1081,7 @@ LMFA01031026,13-Tetracosenoic acid,C24H46O2,FA 24:1(13)
 LMFA01031035,"7Z,11Z-eicosadienoic acid",C20H36O2,"FA 20:2(7Z,11Z)"
 LMFA01031037,"8Z,11Z-heptadecadienoic acid",C17H30O2,"FA 17:2(8Z,11Z)"
 LMFA01031038,"Eicosa-7,8-dienoic acid",C20H36O2,"FA 20:2(7,8)"
-LMFA01031041,"2E,4E,6E,8E,10E,12E-tetradecahexaenedioic acid",C14H14O4,"FA 13:6(2E,4E,6E,8E,10E,12E);13COOH"
+LMFA01031041,"2E,4E,6E,8E,10E,12E-tetradecahexaenedioic acid",C14H14O4,"FA 13:6(2E,4E,6E,8E,10E,12E);COOH"
 LMFA01031043,"11Z,14Z-eicosadienoic acid",C20H36O2,"FA 20:2(11Z,14Z)"
 LMFA01031049,"12Z,15Z,18Z-Tetracosatrienoic acid",C24H42O2,"FA 24:3(12Z,15Z,18Z)"
 LMFA01031050,"4Z,7Z-Hexadecadienoic acid",C16H28O2,"FA 16:2(4Z,7Z)"
@@ -1173,10 +1173,6 @@ LMFA01031186,6Z-heptadecenoic acid,C17H32O2,FA 17:1(6Z)
 LMFA01031187,"5-oxo-6E,8Z-tetradecadienoic acid",C14H22O3,"FA 14:2(6E,8Z);5oxo"
 LMFA01031188,"5-oxo-6E,8E-tetradecadienoic acid",C14H22O3,"FA 14:2(6E,8E);5oxo"
 LMFA01031190,8E-hexadecenoic acid,C16H30O2,FA 16:1(8E)
-LMFA01031191,9Z-tetradocosenoic acid,C24H46O2,FA 4:1(9Z)
-LMFA01031192,17E-tetradocosenoic acid,C24H46O2,FA 4:1(17E)
-LMFA01031193,18E-tetradocosenoic acid,C24H46O2,FA 4:1(18E)
-LMFA01031194,19E-tetradocosenoic acid,C24H46O2,FA 4:1(19E)
 LMFA01031195,9Z-tridecenoic acid,C13H24O2,FA 13:1(9Z)
 LMFA01031196,7E-tetradecenoic acid,C14H26O2,FA 14:1(7E)
 LMFA01031197,5Z-pentadecenoic acid,C15H28O2,FA 15:1(5Z)
@@ -1461,7 +1457,7 @@ LMFA01050450,"(7Z)-14-hydroxy-10,13-dioxoheptadec-7-enoic acid",C17H28O5,"FA 17:
 LMFA01050451,"(Z,7R,8S)-7,8-dihydroxyoctadec-9-enoic acid",C18H34O4,FA 18:1(9);(OH)2
 LMFA01050452,"(2R,3R)-2,3-dihydroxy-3-methylpentanoic acid",C6H12O4,"FA 5:0;3Me;2OH,3OH"
 LMFA01050453,"(2R)-2,3-dihydroxy-3-methylbutanoic acid",C5H10O4,"FA 4:0;3Me;2OH,3OH"
-LMFA01050454,(2R)-2-ethyl-2-hydroxybutanedioic acid,C6H10O5,FA 3:0;3COOH;2Et;2OH
+LMFA01050454,(2R)-2-ethyl-2-hydroxybutanedioic acid,C6H10O5,FA 3:0;COOH;2Et;2OH
 LMFA01050455,(2R)-2-hydroxybutanoic acid,C4H8O3,FA 4:0;2OH
 LMFA01050456,(2R)-2-hydroxynonanoic acid,C9H18O3,FA 9:0;2OH
 LMFA01050457,(3R)-3-hydroxy-3-methyl-2-oxopentanoic acid,C6H10O4,FA 5:0;3Me;3OH;2oxo
@@ -1473,12 +1469,12 @@ LMFA01050463,(3S)-3-hydroxybutanoic acid,C4H8O3,FA 4:0;3OH
 LMFA01050466,(4S)-4-hydroxy-2-oxopentanoic acid,C5H8O4,FA 5:0;4OH;2oxo
 LMFA01050468,"2,3-dihydroxy-2-methylbutanoic acid",C5H10O4,"FA 4:0;2Me;2OH,3OH"
 LMFA01050469,"2,3-dihydroxy-3-methyl-pentanoic acid",C6H12O4,"FA 5:0;3Me;2OH,3OH"
-LMFA01050470,"2-hydroxy-2,3-dimethylbutanedioic acid",C6H10O5,"FA 3:0;3COOH;2Me,3Me;2OH"
+LMFA01050470,"2-hydroxy-2,3-dimethylbutanedioic acid",C6H10O5,"FA 3:0;COOH;2Me,3Me;2OH"
 LMFA01050472,2-hydroxy-2-methyl-3-oxobutanoic acid,C5H8O4,FA 4:0;2Me;2OH;3oxo
 LMFA01050474,"(4S)-4,5-dihydroxy-2-oxopentanoic acid",C5H8O5,"FA 5:0;4OH,5OH;2oxo"
 LMFA01050477,"(3S,4R)-3,4,5-trihydroxypentanoic acid",C5H10O5,"FA 5:0;3OH,4OH,5OH"
 LMFA01050478,2-hydroxy-3-methylbutanoic acid,C5H10O3,FA 4:0;3Me;2OH
-LMFA01050479,2-hydroxy-3-oxohexanedioic acid,C6H8O6,FA 5:0;5COOH;2OH;3oxo
+LMFA01050479,2-hydroxy-3-oxohexanedioic acid,C6H8O6,FA 5:0;COOH;2OH;3oxo
 LMFA01050482,2-hydroxy-4-oxopentanoic acid,C5H8O4,FA 5:0;2OH;4oxo
 LMFA01050484,2-hydroxytetradecanoic acid,C14H28O3,FA 14:0;2OH
 LMFA01050486,"(4R,5R)-4,5,6-trihydroxy-2-oxohexanoic acid",C6H10O6,"FA 6:0;4OH,5OH,6OH;2oxo"
@@ -1528,7 +1524,6 @@ LMFA01050565,"Methyl 3S,5R-dihydroxy-8-methyl-8E,10-undecadienoate",C13H22O4,"WE
 LMFA01050566,9-hydroxy-12-oxo-10E-dodecenoic acid,C12H20O4,FA 12:1(10E);9OH;12oxo
 LMFA01050567,Methyl 3R-hydroxytetradecanoate,C15H30O3,WE 1:0/14:0;3OH
 LMFA01050579,"9,10-dihydroxy-2E,4E-decadienoic acid",C10H16O4,"FA 10:2(2E,4E);9OH,10OH"
-LMFA01050580,"5,11-dihydroxy-2E,6E-didodecenoic acid",C12H20O4,"FA 2:2(2E,6E);5OH,11OH"
 LMFA01050582,"9,11-dihydroxy-2E-dodecenoic acid",C12H22O4,"FA 12:1(2E);9OH,11OH"
 LMFA01050583,"5,11-dihydroxy-2E-dodecenoic acid",C12H22O4,"FA 12:1(2E);5OH,11OH"
 LMFA01050584,"Methyl 5,11-dihydroxy-2E-dodecenoate",C13H24O4,"WE 1:0/12:1(2E);5OH,11OH"
@@ -1850,14 +1845,14 @@ LMFA01090142,"Ethyl 2,3-diiodo-2Z-propenoate",C5H6I2O2,"WE 2:0/3:1(2Z);2I,3I"
 LMFA01090143,2-Bromo-2-iodoethanoic acid,C2H2BrIO2,FA 2:0;2Br;2I
 LMFA01090144,Ethyl 2-Bromo-2-iodoethanoate,C4H6BrIO2,WE 2:0/2:0;2Br;2I
 LMFA01090146,2-Bromo-2-chloroethanoic acid,C2H2BrClO2,FA 2:0;2Br;2Cl
-LMFA01090148,"(2E,4E)-3-chlorohexa-2,4-dienedioic acid",C6H5O4Cl,"FA 5:2(2E,4E);3Cl;5COOH"
-LMFA01090149,"(2Z,4Z)-3-chlorohexa-2,4-dienedioic acid",C6H5O4Cl,"FA 5:2(2Z,4Z);3Cl;5COOH"
-LMFA01090150,"(2Z,4E)-2,3,5-trichlorohexa-2,4-dienedioic acid",C6H3O4Cl3,"FA 5:2(2Z,4E);2Cl,3Cl,5Cl;5COOH"
-LMFA01090151,"(2E,4E)-2,4-dichlorohexa-2,4-dienedioic acid",C6H4O4Cl2,"FA 5:2(2E,4E);2Cl,4Cl;5COOH"
+LMFA01090148,"(2E,4E)-3-chlorohexa-2,4-dienedioic acid",C6H5O4Cl,"FA 5:2(2E,4E);3Cl;COOH"
+LMFA01090149,"(2Z,4Z)-3-chlorohexa-2,4-dienedioic acid",C6H5O4Cl,"FA 5:2(2Z,4Z);3Cl;COOH"
+LMFA01090150,"(2Z,4E)-2,3,5-trichlorohexa-2,4-dienedioic acid",C6H3O4Cl3,"FA 5:2(2Z,4E);2Cl,3Cl,5Cl;COOH"
+LMFA01090151,"(2E,4E)-2,4-dichlorohexa-2,4-dienedioic acid",C6H4O4Cl2,"FA 5:2(2E,4E);2Cl,4Cl;COOH"
 LMFA01090152,"(E)-2,5-dichloro-4-oxo-hex-2-enedioic acid",C6H4Cl2O5,FA 5:1(2);Cl2;COOH;oxo
-LMFA01090153,"(2E,4Z)-3-chlorohexa-2,4-dienedioic acid",C6H5O4Cl,"FA 5:2(2E,4Z);3Cl;5COOH"
+LMFA01090153,"(2E,4Z)-3-chlorohexa-2,4-dienedioic acid",C6H5O4Cl,"FA 5:2(2E,4Z);3Cl;COOH"
 LMFA01090154,5-chloropentanoic acid,C5H9O2Cl,FA 5:0;5Cl
-LMFA01090156,"(2Z,4Z)-2,3,4,5-tetrachlorohexa-2,4-dienedioic acid",C6H2O4Cl4,"FA 5:2(2Z,4Z);2Cl,3Cl,4Cl,5Cl;5COOH"
+LMFA01090156,"(2Z,4Z)-2,3,4,5-tetrachlorohexa-2,4-dienedioic acid",C6H2O4Cl4,"FA 5:2(2Z,4Z);2Cl,3Cl,4Cl,5Cl;COOH"
 LMFA01090157,20-Fluoroeicosanoic acid,C20H39O2F,FA 20:0;20F
 LMFA01090158,"15S-hydroxy-18S-bromo-12E,16,17-octadecatrienoic acid",C18H29O3Br,"FA 18:3(12,16,17);Br;OH"
 LMFA01090159,"15R-hydroxy-18R-bromo-13Z,16,17-octadecatrienoic acid",C18H29O3Br,"FA 18:3(13,16,17);Br;OH"
@@ -1889,7 +1884,7 @@ LMFA01100024,2R-aminotridecanoic acid,C13H27NO2,FA 13:0;2NH2
 LMFA01100026,2-amino-tridecanoic acid,C13H27NO2,FA 13:0;2NH2
 LMFA01100034,2S-amino-butanoic acid,C4H9NO2,FA 4:0;2NH2
 LMFA01100035,6-amino-hexanoic acid,C6H13NO2,FA 6:0;6NH2
-LMFA01100036,2-amino-3-oxo-hexanedioic acid,C6H9NO5,FA 5:0;5COOH;2NH2;3oxo
+LMFA01100036,2-amino-3-oxo-hexanedioic acid,C6H9NO5,FA 5:0;COOH;2NH2;3oxo
 LMFA01100037,4-amino-4-cyano-butanoic acid,C5H8N2O2,FA 4:0;4CN;4NH2
 LMFA01100038,2-amino-4-cyano-butanoic acid,C5H8N2O2,FA 4:0;4CN;2NH2
 LMFA01100039,4-amino-butanoic acid,C4H9NO2,FA 4:0;4NH2
@@ -1939,7 +1934,7 @@ LMFA01140024,"4S,5S-methylene-11-bromo-8E,10Z-tetradecadienoic acid",C15H23O2Br,
 LMFA01140026,"9R,10S-methylene-hexadecanoic acid",C17H32O2,FA 17:0;[9-11cy3:0]
 LMFA01140027,19-cyclopropyl-hexacosanoic acid,C27H52O2,FA 29:0;[27-29cy3:0]
 LMFA01140031,3-(2-cyclopenten-1-yl)-propanoic acid,C8H12O2,FA 8:0;[4-8cy5:1(5)]
-LMFA01140032,"((1S,2R)-2-Hexylcycloprop-1-yl)acetic acid",C11H20O2,FA 11:0;[3-5cy3:0]
+LMFA01140032,"((1S,2R)-2-Hexylcycloprop-1-yl)acetic acid",C11H20O2,FA 14:0;[6-8cy3:0]
 LMFA01140033,7-(2-octylcyclopropyl)heptanoic acid,C18H34O2,FA 18:0;[8-10cy3:0]
 LMFA01140034,15-(cyclopent-2-en-1-yl)pentadecanoic acid,C20H36O2,FA 20:0;[16-20cy5:1(17)]
 LMFA01140035,13-(2-cyclopenten-1-yl)-4Z-tridecenoic acid,C18H30O2,FA 18:1(4Z);[14-18cy5:1(15)]
@@ -2143,126 +2138,126 @@ LMFA01160136,2-tetracosyl-3-hydroxy-51-methoxy-dopentacontanoic acid,C78H156O4,F
 LMFA01160137,2-eicosyl-3-hydroxy-57-methoxy-octapentacontanoic acid,C80H160O4,FA 58:0;2(20:0);3OH;57OMe
 LMFA01160138,2-docosyl-3-hydroxy-57-methoxy-octapentacontanoic acid,C82H164O4,FA 58:0;2(22:0);3OH;57OMe
 LMFA01160139,2-tetracosyl-3-hydroxy-57-methoxy-octapentacontanoic acid,C84H168O4,FA 58:0;2(24:0);3OH;57OMe
-LMFA01170002,2E-dodecenedioic acid,C12H20O4,FA 11:1(2E);11COOH
-LMFA01170003,"2E,4E,6Z,8Z-Decatetraenedioic acid",C10H10O4,"FA 9:4(2E,4E,6Z,8Z);9COOH"
-LMFA01170004,"2E,4Z,6Z,8Z-Decatetraenedioic acid",C10H10O4,"FA 9:4(2E,4Z,6Z,8Z);9COOH"
-LMFA01170005,"2E,4E,6E,8E-Decatetraenedioic acid",C10H10O4,"FA 9:4(2E,4E,6E,8E);9COOH"
-LMFA01170006,Decanedioic acid,C10H18O4,FA 9:0;9COOH
-LMFA01170007,Undecanedioic acid,C11H20O4,FA 10:0;10COOH
-LMFA01170008,"2E,4E,8E,10E-Dodecatetraenedioic acid",C12H14O4,"FA 11:4(2E,4E,8E,10E);11COOH"
-LMFA01170009,Dodecanedioic acid,C12H22O4,FA 11:0;11COOH
-LMFA01170010,2-methyl-dodecanedioic acid,C13H24O4,FA 11:0;11COOH;2Me
-LMFA01170011,3-methyl-dodecanedioic acid,C13H24O4,FA 11:0;11COOH;3Me
-LMFA01170012,4-methyl-dodecanedioic acid,C13H24O4,FA 11:0;11COOH;4Me
-LMFA01170013,6-methyl-dodecanedioic acid,C13H24O4,FA 11:0;11COOH;6Me
-LMFA01170014,Tridecanedioic acid,C13H24O4,FA 12:0;12COOH
-LMFA01170015,2-methyl-tridecanedioic acid,C14H26O4,FA 12:0;12COOH;2Me
-LMFA01170016,3-methyl-tridecanedioic acid,C14H26O4,FA 12:0;12COOH;3Me
-LMFA01170017,4-methyl-tridecanedioic acid,C14H26O4,FA 12:0;12COOH;4Me
-LMFA01170018,Tetradecanedioic acid,C14H26O4,FA 13:0;13COOH
-LMFA01170019,3-methyl-tetradecanedioic acid,C15H28O4,FA 13:0;13COOH;3Me
-LMFA01170020,5-methyl-tetradecanedioic acid,C15H28O4,FA 13:0;13COOH;5Me
-LMFA01170021,Pentadecanedioic acid,C15H28O4,FA 14:0;14COOH
-LMFA01170022,Hexadecanedioic acid,C16H30O4,FA 15:0;15COOH
-LMFA01170023,2-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;15COOH;2Me
-LMFA01170024,3-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;15COOH;3Me
-LMFA01170025,4-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;15COOH;4Me
-LMFA01170026,5-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;15COOH;5Me
-LMFA01170027,8-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;15COOH;8Me
-LMFA01170028,Heptadecanedioic acid,C17H32O4,FA 16:0;16COOH
-LMFA01170029,Octadecanedioic acid,C18H34O4,FA 17:0;17COOH
-LMFA01170030,"9,10-dihydroxy-Octadecanedioic acid",C18H34O6,"FA 17:0;17COOH;9OH,10OH"
-LMFA01170032,2E-Decenedioic acid,C10H16O4,FA 9:1(2E);9COOH
-LMFA01170033,2Z-Dodecenedioic acid,C12H20O4,FA 11:1(2Z);11COOH
-LMFA01170034,"5Z,8Z,11Z,14Z-Eicosatetraenedioic acid",C20H30O4,"FA 19:4(5Z,8Z,11Z,14Z);19COOH"
-LMFA01170035,Eicosanedioic acid,C20H38O4,FA 19:0;19COOH
+LMFA01170002,2E-dodecenedioic acid,C12H20O4,FA 11:1(2E);COOH
+LMFA01170003,"2E,4E,6Z,8Z-Decatetraenedioic acid",C10H10O4,"FA 9:4(2E,4E,6Z,8Z);COOH"
+LMFA01170004,"2E,4Z,6Z,8Z-Decatetraenedioic acid",C10H10O4,"FA 9:4(2E,4Z,6Z,8Z);COOH"
+LMFA01170005,"2E,4E,6E,8E-Decatetraenedioic acid",C10H10O4,"FA 9:4(2E,4E,6E,8E);COOH"
+LMFA01170006,Decanedioic acid,C10H18O4,FA 9:0;COOH
+LMFA01170007,Undecanedioic acid,C11H20O4,FA 10:0;COOH
+LMFA01170008,"2E,4E,8E,10E-Dodecatetraenedioic acid",C12H14O4,"FA 11:4(2E,4E,8E,10E);COOH"
+LMFA01170009,Dodecanedioic acid,C12H22O4,FA 11:0;COOH
+LMFA01170010,2-methyl-dodecanedioic acid,C13H24O4,FA 11:0;COOH;2Me
+LMFA01170011,3-methyl-dodecanedioic acid,C13H24O4,FA 11:0;COOH;3Me
+LMFA01170012,4-methyl-dodecanedioic acid,C13H24O4,FA 11:0;COOH;4Me
+LMFA01170013,6-methyl-dodecanedioic acid,C13H24O4,FA 11:0;COOH;6Me
+LMFA01170014,Tridecanedioic acid,C13H24O4,FA 12:0;COOH
+LMFA01170015,2-methyl-tridecanedioic acid,C14H26O4,FA 12:0;COOH;2Me
+LMFA01170016,3-methyl-tridecanedioic acid,C14H26O4,FA 12:0;COOH;3Me
+LMFA01170017,4-methyl-tridecanedioic acid,C14H26O4,FA 12:0;COOH;4Me
+LMFA01170018,Tetradecanedioic acid,C14H26O4,FA 13:0;COOH
+LMFA01170019,3-methyl-tetradecanedioic acid,C15H28O4,FA 13:0;COOH;3Me
+LMFA01170020,5-methyl-tetradecanedioic acid,C15H28O4,FA 13:0;COOH;5Me
+LMFA01170021,Pentadecanedioic acid,C15H28O4,FA 14:0;COOH
+LMFA01170022,Hexadecanedioic acid,C16H30O4,FA 15:0;COOH
+LMFA01170023,2-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;COOH;2Me
+LMFA01170024,3-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;COOH;3Me
+LMFA01170025,4-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;COOH;4Me
+LMFA01170026,5-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;COOH;5Me
+LMFA01170027,8-methyl-hexadecanedioic acid,C17H32O4,FA 15:0;COOH;8Me
+LMFA01170028,Heptadecanedioic acid,C17H32O4,FA 16:0;COOH
+LMFA01170029,Octadecanedioic acid,C18H34O4,FA 17:0;COOH
+LMFA01170030,"9,10-dihydroxy-Octadecanedioic acid",C18H34O6,"FA 17:0;COOH;9OH,10OH"
+LMFA01170032,2E-Decenedioic acid,C10H16O4,FA 9:1(2E);COOH
+LMFA01170033,2Z-Dodecenedioic acid,C12H20O4,FA 11:1(2Z);COOH
+LMFA01170034,"5Z,8Z,11Z,14Z-Eicosatetraenedioic acid",C20H30O4,"FA 19:4(5Z,8Z,11Z,14Z);COOH"
+LMFA01170035,Eicosanedioic acid,C20H38O4,FA 19:0;COOH
 LMFA01170036,"Heneicosa-1,21-dioic acid",C21H40O4,FA 20:0;20COOH
-LMFA01170037,Docosanedioic acid,C22H42O4,FA 21:0;21COOH
-LMFA01170038,Tricosanedioic acid,C23H44O4,FA 22:0;22COOH
-LMFA01170039,Tetracosanedioic acid,C24H46O4,FA 23:0;23COOH
-LMFA01170040,Hexacosanedioic acid,C26H50O4,FA 25:0;25COOH
-LMFA01170041,Propanedioic acid,C3H4O4,FA 2:0;2COOH
-LMFA01170042,Triacontanedioic acid,C30H58O4,FA 29:0;29COOH
-LMFA01170043,Butanedioic acid,C4H6O4,FA 3:0;3COOH
-LMFA01170044,4E-Decenedioic acid,C10H16O4,FA 9:1(4E);9COOH
-LMFA01170045,4Z-Decenedioic acid,C10H16O4,FA 9:1(4Z);9COOH
-LMFA01170047,2-methylene-4-oxo-pentanedioic acid,C6H6O5,FA 4:0;4COOH;2My;4oxo
-LMFA01170048,Hexanedioic acid,C6H10O4,FA 5:0;5COOH
-LMFA01170049,2-hydroxy-Hexanedioic acid,C6H10O5,FA 5:0;5COOH;2OH
-LMFA01170050,2S-hydroxy-Hexanedioic acid,C6H10O5,FA 5:0;5COOH;2OH
-LMFA01170051,Heptanedioic acid,C7H12O4,FA 6:0;6COOH
-LMFA01170052,4-hydroxy-2-oxo-Heptanedioic acid,C7H10O6,FA 6:0;6COOH;4OH;2oxo
-LMFA01170053,8E-Heptadecenedioic acid,C17H30O4,FA 16:1(8E);16COOH
-LMFA01170054,Nonanedioic acid,C9H16O4,FA 8:0;8COOH
-LMFA01170055,9Z-Octadecenedioic acid,C18H32O4,FA 17:1(9Z);17COOH
+LMFA01170037,Docosanedioic acid,C22H42O4,FA 21:0;COOH
+LMFA01170038,Tricosanedioic acid,C23H44O4,FA 22:0;COOH
+LMFA01170039,Tetracosanedioic acid,C24H46O4,FA 23:0;COOH
+LMFA01170040,Hexacosanedioic acid,C26H50O4,FA 25:0;COOH
+LMFA01170041,Propanedioic acid,C3H4O4,FA 2:0;COOH
+LMFA01170042,Triacontanedioic acid,C30H58O4,FA 29:0;COOH
+LMFA01170043,Butanedioic acid,C4H6O4,FA 3:0;COOH
+LMFA01170044,4E-Decenedioic acid,C10H16O4,FA 9:1(4E);COOH
+LMFA01170045,4Z-Decenedioic acid,C10H16O4,FA 9:1(4Z);COOH
+LMFA01170047,2-methylene-4-oxo-pentanedioic acid,C6H6O5,FA 4:0;COOH;2My;4oxo
+LMFA01170048,Hexanedioic acid,C6H10O4,FA 5:0;COOH
+LMFA01170049,2-hydroxy-Hexanedioic acid,C6H10O5,FA 5:0;COOH;2OH
+LMFA01170050,2S-hydroxy-Hexanedioic acid,C6H10O5,FA 5:0;COOH;2OH
+LMFA01170051,Heptanedioic acid,C7H12O4,FA 6:0;COOH
+LMFA01170052,4-hydroxy-2-oxo-Heptanedioic acid,C7H10O6,FA 6:0;COOH;4OH;2oxo
+LMFA01170053,8E-Heptadecenedioic acid,C17H30O4,FA 16:1(8E);COOH
+LMFA01170054,Nonanedioic acid,C9H16O4,FA 8:0;COOH
+LMFA01170055,9Z-Octadecenedioic acid,C18H32O4,FA 17:1(9Z);COOH
 LMFA01170057,"9-hydroxy-hexadecan-1,16-dioic acid",C16H30O5,FA 15:0;15COOH;9OH
 LMFA01170058,"10-hydroxy-hexadecan-1,16-dioic acid",C16H30O5,FA 15:0;15COOH;10OH
 LMFA01170059,9-hydroxy-16-oxo-hexadecanoic acid,C16H30O4,FA 16:0;9OH;16oxo
 LMFA01170060,10-hydroxy-16-oxo-hexadecanoic acid,C16H30O4,FA 16:0;10OH;16oxo
 LMFA01170061,2-hydroxy-2-butenedioic acid,C4H4O5,FA 3:1(2);COOH;OH
-LMFA01170063,2-methylenebutanedioic acid,C5H6O4,FA 3:0;3COOH;2My
-LMFA01170064,2-hydroxy-3-propylbutanedioic acid,C7H12O5,FA 3:0;3(3:0);3COOH;2OH
-LMFA01170065,"4,6-dioxo-2Z-heptenedioic acid",C7H6O6,"FA 6:1(2Z);6COOH;4oxo,6oxo"
-LMFA01170066,"4,6-dioxo-2E-octenedioic acid",C8H8O6,"FA 7:1(2E);7COOH;4oxo,6oxo"
-LMFA01170067,4-oxo-2E-hexenedioic acid,C6H6O5,FA 5:1(2E);5COOH;4oxo
-LMFA01170068,3-methyl-2E-pentenedioic acid,C6H8O4,FA 4:1(2E);4COOH;3Me
-LMFA01170069,3-oxoheptanedioic acid,C7H10O5,FA 6:0;6COOH;3oxo
-LMFA01170070,2E-hexenedioic acid,C6H8O4,FA 5:1(2E);5COOH
-LMFA01170071,"3-hydroxy-2E,4E-hexadienedioic acid",C6H6O5,"FA 5:2(2E,4E);5COOH;3OH"
-LMFA01170076,2-hydroxy-decanedioic acid,C10H18O5,FA 9:0;9COOH;2OH
-LMFA01170077,"2Z,4Z-hexadienedioic acid",C6H6O4,"FA 5:2(2Z,4Z);5COOH"
-LMFA01170078,4Z-octenedioic acid,C8H12O4,FA 7:1(4Z);7COOH
-LMFA01170079,2-methyl-2E-pentenedioic acid,C6H8O4,FA 4:1(2E);4COOH;2Me
-LMFA01170080,"2,2-dimethyl-butanedioic acid",C6H10O4,"FA 3:0;3COOH;2Me,2Me"
-LMFA01170081,"2,3-dimethyl-3-hydroxy-pentanedioic acid",C7H12O5,"FA 4:0;4COOH;2Me,3Me;3OH"
+LMFA01170063,2-methylenebutanedioic acid,C5H6O4,FA 3:0;COOH;2My
+LMFA01170064,2-hydroxy-3-propylbutanedioic acid,C7H12O5,FA 3:0;3(3:0);COOH;2OH
+LMFA01170065,"4,6-dioxo-2Z-heptenedioic acid",C7H6O6,"FA 6:1(2Z);COOH;4oxo,6oxo"
+LMFA01170066,"4,6-dioxo-2E-octenedioic acid",C8H8O6,"FA 7:1(2E);COOH;4oxo,6oxo"
+LMFA01170067,4-oxo-2E-hexenedioic acid,C6H6O5,FA 5:1(2E);COOH;4oxo
+LMFA01170068,3-methyl-2E-pentenedioic acid,C6H8O4,FA 4:1(2E);COOH;3Me
+LMFA01170069,3-oxoheptanedioic acid,C7H10O5,FA 6:0;COOH;3oxo
+LMFA01170070,2E-hexenedioic acid,C6H8O4,FA 5:1(2E);COOH
+LMFA01170071,"3-hydroxy-2E,4E-hexadienedioic acid",C6H6O5,"FA 5:2(2E,4E);COOH;3OH"
+LMFA01170076,2-hydroxy-decanedioic acid,C10H18O5,FA 9:0;COOH;2OH
+LMFA01170077,"2Z,4Z-hexadienedioic acid",C6H6O4,"FA 5:2(2Z,4Z);COOH"
+LMFA01170078,4Z-octenedioic acid,C8H12O4,FA 7:1(4Z);COOH
+LMFA01170079,2-methyl-2E-pentenedioic acid,C6H8O4,FA 4:1(2E);COOH;2Me
+LMFA01170080,"2,2-dimethyl-butanedioic acid",C6H10O4,"FA 3:0;COOH;2Me,2Me"
+LMFA01170081,"2,3-dimethyl-3-hydroxy-pentanedioic acid",C7H12O5,"FA 4:0;COOH;2Me,3Me;3OH"
 LMFA01170082,"2-amino-2,4-hexadienedioic acid",C6H7NO4,"FA 5:2(2,4);COOH;NH2"
-LMFA01170083,(2S)-2-isopropyl-2-hydroxy-butanedioic acid,C7H12O5,FA 3:0;2(2:0;2Me);3COOH;2OH
-LMFA01170084,2-methyl-pentanedioic acid,C6H10O4,FA 4:0;4COOH;2Me
-LMFA01170085,2E-octenedioic acid,C8H12O4,FA 7:1(2E);7COOH
-LMFA01170086,"3,3-dimethyl-pentanedioic acid",C7H12O4,"FA 4:0;4COOH;3Me,3Me"
-LMFA01170087,3E-hexenedioic acid,C6H8O4,FA 5:1(3E);5COOH
-LMFA01170088,3-hydroxy-hexanedioic acid,C6H10O5,FA 5:0;5COOH;3OH
-LMFA01170089,3-hydroxy-dodecanedioic acid,C12H22O5,FA 11:0;11COOH;3OH
-LMFA01170092,3-hydroxy-decanedioic acid,C10H18O5,FA 9:0;9COOH;3OH
-LMFA01170093,3-hydroxy-octanedioic acid,C8H14O5,FA 7:0;7COOH;3OH
-LMFA01170094,3-hydroxy-tetradecanedioic acid,C14H26O5,FA 13:0;13COOH;3OH
-LMFA01170095,3-methyl-hexanedioic acid,C7H12O4,FA 5:0;5COOH;3Me
-LMFA01170096,3-oxo-hexanedioic acid,C6H8O5,FA 5:0;5COOH;3oxo
-LMFA01170098,2-amino-hexanedioic acid,C6H11NO4,FA 5:0;5COOH;2NH2
-LMFA01170099,2-methyl-2Z-butenedioic acid,C5H6O4,FA 3:1(2Z);3COOH;2Me
-LMFA01170102,"2,6-diamino-heptanedioic acid",C7H14N2O4,"FA 6:0;6COOH;2NH2,6NH2"
-LMFA01170103,"2,2-dimethyl-propanedioic acid",C5H8O4,"FA 2:0;2COOH;2Me,2Me"
-LMFA01170104,2-ethyl-hexanedioic acid,C8H14O4,FA 5:0;5COOH;2Et
-LMFA01170105,2-ethyl-propanedioic acid,C5H8O4,FA 2:0;2COOH;2Et
-LMFA01170107,"2R,3S,4R,5S-tetrahydroxy-hexanedioic acid",C6H10O8,"FA 5:0;5COOH;2OH,3OH,4OH,5OH"
-LMFA01170108,"2S,3S,4S,5R-tetrahydroxy-hexanedioic acid",C6H10O8,"FA 5:0;5COOH;2OH,3OH,4OH,5OH"
-LMFA01170109,2E-pentenedioic acid,C5H6O4,FA 4:1(2E);4COOH
-LMFA01170114,"4,6-dioxo-2Z-octenedioic acid",C8H8O6,"FA 7:1(2Z);7COOH;4oxo,6oxo"
-LMFA01170116,2-methyl-2E-butenedioic acid,C5H6O4,FA 3:1(2E);3COOH;2Me
-LMFA01170117,3-methyl-pentanedioic acid,C6H10O4,FA 4:0;4COOH;3Me
-LMFA01170118,2-methyl-propanedioic acid,C4H6O4,FA 2:0;2COOH;2Me
-LMFA01170119,2-methyl-butanedioic acid,C5H8O4,FA 3:0;3COOH;2Me
-LMFA01170120,2-oxo-butanedioic acid,C4H4O5,FA 3:0;3COOH;2oxo
-LMFA01170121,2-oxo-hexanedioic acid,C6H8O5,FA 5:0;5COOH;2oxo
-LMFA01170124,"2E,4E-hexadienedioic acid",C6H6O4,"FA 5:2(2E,4E);5COOH"
-LMFA01170128,"5Z,8Z,11Z-Eicosatrienedioic acid",C20H32O4,"FA 19:3(5Z,8Z,11Z);19COOH"
+LMFA01170083,(2S)-2-isopropyl-2-hydroxy-butanedioic acid,C7H12O5,FA 3:0;2(2:0;2Me);COOH;2OH
+LMFA01170084,2-methyl-pentanedioic acid,C6H10O4,FA 4:0;COOH;2Me
+LMFA01170085,2E-octenedioic acid,C8H12O4,FA 7:1(2E);COOH
+LMFA01170086,"3,3-dimethyl-pentanedioic acid",C7H12O4,"FA 4:0;COOH;3Me,3Me"
+LMFA01170087,3E-hexenedioic acid,C6H8O4,FA 5:1(3E);COOH
+LMFA01170088,3-hydroxy-hexanedioic acid,C6H10O5,FA 5:0;COOH;3OH
+LMFA01170089,3-hydroxy-dodecanedioic acid,C12H22O5,FA 11:0;COOH;3OH
+LMFA01170092,3-hydroxy-decanedioic acid,C10H18O5,FA 9:0;COOH;3OH
+LMFA01170093,3-hydroxy-octanedioic acid,C8H14O5,FA 7:0;COOH;3OH
+LMFA01170094,3-hydroxy-tetradecanedioic acid,C14H26O5,FA 13:0;COOH;3OH
+LMFA01170095,3-methyl-hexanedioic acid,C7H12O4,FA 5:0;COOH;3Me
+LMFA01170096,3-oxo-hexanedioic acid,C6H8O5,FA 5:0;COOH;3oxo
+LMFA01170098,2-amino-hexanedioic acid,C6H11NO4,FA 5:0;COOH;2NH2
+LMFA01170099,2-methyl-2Z-butenedioic acid,C5H6O4,FA 3:1(2Z);COOH;2Me
+LMFA01170102,"2,6-diamino-heptanedioic acid",C7H14N2O4,"FA 6:0;COOH;2NH2,6NH2"
+LMFA01170103,"2,2-dimethyl-propanedioic acid",C5H8O4,"FA 2:0;COOH;2Me,2Me"
+LMFA01170104,2-ethyl-hexanedioic acid,C8H14O4,FA 5:0;COOH;2Et
+LMFA01170105,2-ethyl-propanedioic acid,C5H8O4,FA 2:0;COOH;2Et
+LMFA01170107,"2R,3S,4R,5S-tetrahydroxy-hexanedioic acid",C6H10O8,"FA 5:0;COOH;2OH,3OH,4OH,5OH"
+LMFA01170108,"2S,3S,4S,5R-tetrahydroxy-hexanedioic acid",C6H10O8,"FA 5:0;COOH;2OH,3OH,4OH,5OH"
+LMFA01170109,2E-pentenedioic acid,C5H6O4,FA 4:1(2E);COOH
+LMFA01170114,"4,6-dioxo-2Z-octenedioic acid",C8H8O6,"FA 7:1(2Z);COOH;4oxo,6oxo"
+LMFA01170116,2-methyl-2E-butenedioic acid,C5H6O4,FA 3:1(2E);COOH;2Me
+LMFA01170117,3-methyl-pentanedioic acid,C6H10O4,FA 4:0;COOH;3Me
+LMFA01170118,2-methyl-propanedioic acid,C4H6O4,FA 2:0;COOH;2Me
+LMFA01170119,2-methyl-butanedioic acid,C5H8O4,FA 3:0;COOH;2Me
+LMFA01170120,2-oxo-butanedioic acid,C4H4O5,FA 3:0;COOH;2oxo
+LMFA01170121,2-oxo-hexanedioic acid,C6H8O5,FA 5:0;COOH;2oxo
+LMFA01170124,"2E,4E-hexadienedioic acid",C6H6O4,"FA 5:2(2E,4E);COOH"
+LMFA01170128,"5Z,8Z,11Z-Eicosatrienedioic acid",C20H32O4,"FA 19:3(5Z,8Z,11Z);COOH"
 LMFA01170130,"3,7-Dimethyl-2E,6E-decadien-1,10-dioic acid",C12H18O4,"FA 9:2(2E,6E);9COOH;3Me,7Me"
 LMFA01170131,"3,7-Dimethyl-2E-octene-1,8-dioic acid",C10H16O4,"FA 7:1(2E);7COOH;3Me,7Me"
 LMFA01170132,"2,6R-Dimethyl-2E-octen-1,8-dioic acid",C10H16O4,"FA 7:1(2E);7COOH;2Me,6Me"
-LMFA01170133,5-oxo-2Z-hexenedioic acid,C6H6O5,FA 5:1(2Z);5COOH;5oxo
-LMFA01170134,2Z-pentenedioic acid,C5H6O4,FA 4:1(2Z);4COOH
+LMFA01170133,5-oxo-2Z-hexenedioic acid,C6H6O5,FA 5:1(2Z);COOH;5oxo
+LMFA01170134,2Z-pentenedioic acid,C5H6O4,FA 4:1(2Z);COOH
 LMFA01170135,"Nonadecane-1,19-dioic acid",C19H36O4,FA 18:0;18COOH
-LMFA01170136,2-hydroxy-7-methyl-Octanedioic acid,C9H16O5,FA 7:0;7COOH;7Me;2OH
+LMFA01170136,2-hydroxy-7-methyl-Octanedioic acid,C9H16O5,FA 7:0;COOH;7Me;2OH
 LMFA01170137,"3Z-dodecene-1,12-dioic acid",C12H20O4,FA 11:1(3Z);11COOH
 LMFA01170138,"2,3-pentadienedioic acid",C5H4O4,"FA 4:2(2,3);COOH"
 LMFA01170139,10-methoxy-10-oxo-2E-decenoic acid,C11H18O4,FA 10:1(2E);10OMe;10oxo
 LMFA01170140,"2-pentyl-4Z-tridecene-1,13-dioic acid",C18H32O4,FA 12:1(4Z);2(5:0);12COOH
 LMFA01170141,"2-(2Z-octenyl)-decane-1,10-dioic acid",C18H32O4,FA 9:0;2(8:1(2Z));9COOH
 LMFA01170142,"2-(2Z,5Z-octadienyl)-decane-1,10-dioic acid",C18H30O4,"FA 9:0;2(8:2(2Z,5Z));9COOH"
-LMFA01170145,"(4Z,7R,8E,10E,12Z,14S)-7,14-dihydroxyoctadeca-4,8,10,12-tetraenedioic acid",C18H26O6,"FA 17:4(4Z,8E,10E,12Z);17COOH;7OH,14OH"
-LMFA01170150,"13,14-dimethyloctacosanedioic acid",C30H58O4,"FA 27:0;27COOH;13Me,14Me"
+LMFA01170145,"(4Z,7R,8E,10E,12Z,14S)-7,14-dihydroxyoctadeca-4,8,10,12-tetraenedioic acid",C18H26O6,"FA 17:4(4Z,8E,10E,12Z);COOH;7OH,14OH"
+LMFA01170150,"13,14-dimethyloctacosanedioic acid",C30H58O4,"FA 27:0;COOH;13Me,14Me"
 LMFA01170152,"Heptacosane-1,27-dioic acid",C27H52O4,FA 26:0;26COOH
-LMFA01170153,Nonacosanedioic acid,C29H56O4,FA 28:0;28COOH
+LMFA01170153,Nonacosanedioic acid,C29H56O4,FA 28:0;COOH
 LMFA02000001,"9S,10R-epoxy-octadecanoic acid",C18H34O3,FA 18:0;9Ep
 LMFA02000002,"9R,10S-epoxy-octadecanoic acid",C18H34O3,FA 18:0;9Ep
 LMFA02000003,"18-hydroxy-9R,10S-epoxy-octadecanoic acid",C18H34O4,FA 18:0;9Ep;18OH
@@ -2618,12 +2613,12 @@ LMFA02010015,"(1S,2S)-3-oxo-2-pentyl-cyclopentanehexanoic acid",C16H28O3,FA 16:0
 LMFA02010016,"(1S,2S)-3-oxo-2-pentyl-cyclopentanebutanoic acid",C14H24O3,FA 14:0;[5-9cy5:0;8oxo]
 LMFA02010017,"(1R,2R)-3-oxo-2-pentyl-cyclopentanebutanoic acid",C14H24O3,FA 14:0;[5-9cy5:0;8oxo]
 LMFA02010018,"(1S,2S)-3-oxo-2-(2'Z-pentenyl) cyclopent-4-enehexanoic acid",C16H24O3,"FA 5:1(2Z)/11:0;[7-11cy5:2(8Z,10)];3oxo"
-LMFA02020011,"{(1R,2R)-2-[(2Z)-5-hydroxypent-2-en-1-yl]-3-oxocyclopentyl}acetic acid",C12H18O4,FA 12:1(9Z);[3-7cy5:0;6oxo];12OH
-LMFA02020012,"[(1R,2R)-2-(4-hydroxypentyl)-3-oxocyclopentyl]acetic acid",C12H20O4,FA 12:0;[3-7cy5:0;6oxo];11OH
-LMFA02020013,"{(1R,2S,3S)-3-hydroxy-2-[(2Z)-pent-2-en-1-yl]cyclopentyl}acetic acid",C12H20O3,FA 12:1(9Z);[3-7cy5:0;6OH]
-LMFA02020015,"[(1R,2R)-2-(5-hydroxypentyl)-3-oxocyclopentyl]acetic acid",C12H20O4,FA 12:0;[3-7cy5:0;6oxo];12OH
-LMFA02020204,"[(1R,2R)-3-oxo-2-pentylcyclopentyl]acetic acid",C12H20O3,FA 12:0;[3-7cy5:0;6oxo]
-LMFA02020205,"[(1S,2S)-3-oxo-2-pentylcyclopentyl]acetic acid",C12H20O3,FA 12:0;[3-7cy5:0;6oxo]
+LMFA02020011,"{(1R,2R)-2-[(2Z)-5-hydroxypent-2-en-1-yl]-3-oxocyclopentyl}acetic acid",C12H18O4,FA 17:1(14Z);[8-12cy5:0;11oxo];17OH
+LMFA02020012,"[(1R,2R)-2-(4-hydroxypentyl)-3-oxocyclopentyl]acetic acid",C12H20O4,FA 17:0;[8-12cy5:0;11oxo];16OH
+LMFA02020013,"{(1R,2S,3S)-3-hydroxy-2-[(2Z)-pent-2-en-1-yl]cyclopentyl}acetic acid",C12H20O3,FA 17:1(14Z);[8-12cy5:0;11OH]
+LMFA02020015,"[(1R,2R)-2-(5-hydroxypentyl)-3-oxocyclopentyl]acetic acid",C12H20O4,FA 17:0;[8-12cy5:0;11oxo];17OH
+LMFA02020204,"[(1R,2R)-3-oxo-2-pentylcyclopentyl]acetic acid",C12H20O3,FA 17:0;[8-12cy5:0;11oxo]
+LMFA02020205,"[(1S,2S)-3-oxo-2-pentylcyclopentyl]acetic acid",C12H20O3,FA 17:0;[8-12cy5:0;11oxo]
 LMFA02030001,"(E)-8-(3,5-dihydroxy-2-(3-hydroxypent-1-en-1-yl)cyclopentyl)octanoic acid",C18H32O5,FA 18:1(14);[cy5:0;(OH)2];OH
 LMFA02030002,"(E)-11-(2-ethyl-3,5-dihydroxycyclopentyl)-9-hydroxyundec-10-enoic acid",C18H32O5,FA 18:1(10);[cy5:0;(OH)2];OH
 LMFA02030003,11-(2-ethyl-3-oxocyclopent-1-en-1-yl)-9S-hydroxyundec-10E-enoic acid,C18H28O4,FA 18:1(10E);[12-16cy5:1(12);15oxo];9OH
@@ -2897,7 +2892,7 @@ LMFA03010068,"9S,15S-dihydroxy-13E-prostaenoic acid",C20H36O4,FA 20:1(13E);[8-12
 LMFA03010069,"9R,11R,15S-trihydroxy-13E-prostaenoic acid",C20H36O5,"FA 20:1(13E);[8-12cy5:0;9OH,11OH];15OH"
 LMFA03010070,"9R,15S-dihydroxy-13E-prostaenoic acid",C20H36O4,FA 20:1(13E);[8-12cy5:0;9OH];15OH
 LMFA03010073,"1-methoxy-9S,11R,15S-trihydroxy-5Z,13E-prostadiene",C21H38O4,"HC 20:2(5Z,13E);[8-12cy5:0;9OH,11OH];15OH;1OMe"
-LMFA03010075,"N-(9S,11R,15S-trihydroxy-5Z,13E-prostadienoyl)-ethanolamine",C22H39NO5,"NAE 20:2(5Z,13E);[8-12cy5:0;9OH,11OH];15OH"
+LMFA03010075,"N-(9S,11R,15S-trihydroxy-5Z,13E-prostadienoyl)-ethanolamine",C22H39NO5,"NAE 40:2(5Z,13E);[8-12cy5:0;9OH,11OH];15OH"
 LMFA03010076,"isopropyl 9S,11R,15S-trihydroxy-5Z,13E-prostadienoate",C23H40O5,"WE 2:0;2Me/20:2(5Z,13E);[8-12cy5:0;9OH,11OH];15OH"
 LMFA03010077,"9S,11R,15S-trihydroxy-5E,13E-prostadienoic acid",C20H34O5,"FA 20:2(5E,13E);[8-12cy5:0;9OH,11OH];15OH"
 LMFA03010078,"9S,15S-dihydroxy-5Z,13E-prostadienoic acid",C20H34O4,"FA 20:2(5Z,13E);[8-12cy5:0;9OH];15OH"
@@ -2946,8 +2941,8 @@ LMFA03010147,"9-oxo-11R,15S,19R-trihydroxy-13E-prostaenoic acid",C20H34O6,"FA 20
 LMFA03010148,"9-oxo-11R,15S-dihydroxy-5E,13E-prostadienoic acid",C20H32O5,"FA 20:2(5E,13E);[8-12cy5:0;11OH;9oxo];15OH"
 LMFA03010149,"6-oxo-9S,11R,15S-trihydroxy-13E,17Z-prostadienoic acid",C20H32O6,"FA 20:2(13E,17Z);[8-12cy5:0;9OH,11OH];15OH;6oxo"
 LMFA03010150,"9S,11R-dihydroxy-15-oxo-13E-prostaenoic acid",C20H34O5,"FA 20:1(13E);[8-12cy5:0;9OH,11OH];15oxo"
-LMFA03010151,"N-(11R,15S-dihydroxy-9-oxo-5Z,13E-prostadienoyl)-ethanolamine",C22H37NO5,"NAE 20:2(5Z,13E);[8-12cy5:0;11OH;9oxo];15OH"
-LMFA03010152,"N-(9S,15S-dihydroxy-11-oxo-5Z,13E-prostadienoyl)-ethanolamine",C22H37NO5,"NAE 20:2(5Z,13E);[8-12cy5:0;9OH;11oxo];15OH"
+LMFA03010151,"N-(11R,15S-dihydroxy-9-oxo-5Z,13E-prostadienoyl)-ethanolamine",C22H37NO5,"NAE 40:2(5Z,13E);[8-12cy5:0;11OH;9oxo];15OH"
+LMFA03010152,"N-(9S,15S-dihydroxy-11-oxo-5Z,13E-prostadienoyl)-ethanolamine",C22H37NO5,"NAE 40:2(5Z,13E);[8-12cy5:0;9OH;11oxo];15OH"
 LMFA03010154,"9S,11R,15S-trihydroxy-2,3-dinor-13E-prostaenoic acid-cyclo[8S,12R]",C18H32O5,"FA 18:0;[8-12cy5:1(11E);9OH,11OH];15OH"
 LMFA03010155,"1a,1b-dihomo-9-oxo-11R,15S-dihydroxy-5Z,13E-prostadienoic acid",C22H36O5,"FA 22:2(7Z,15E);[10-14cy5:0;13OH;11oxo];17OH"
 LMFA03010156,"1a,1b-dihomo-9S,15S-dihydroxy-11-oxo-5Z,13E-prostadienoic acid",C22H36O5,"FA 22:2(7Z,15E);[10-14cy5:0;11OH;13oxo];17OH"
@@ -2975,8 +2970,8 @@ LMFA03010202,"methyl 9-oxo-11R-hydroxy-15R-acetoxy-5Z,10,13E-prostatrienoate",C2
 LMFA03010203,"9S,11R-dihydroxy-15-oxo-5Z-prostenoic acid",C20H34O5,"FA 20:1(5Z);[8-12cy5:0;9OH,11OH];15oxo"
 LMFA03010205,"6,9S-epoxy-11R-hydroxy-15-oxo-5Z,13E-prostadienoic acid",C20H30O5,"FA 20:2(5Z,13E);[8-12cy5:0;11OH];6Ep;15oxo"
 LMFA03010206,"9S-hydroxy-11,15-dioxo-5Z,13E-prostadienoic acid",C20H30O5,"FA 20:2(5Z,13E);[8-12cy5:0;9OH;11oxo];15oxo"
-LMFA03010208,"N-(9S,11S,15S-trihydroxy-5Z,13E-prostadienoyl)-ethanolamine",C22H39NO5,"NAE 20:2(5Z,13E);[8-12cy5:0;9OH,11OH];15OH"
-LMFA03010209,"N-(9-oxo-11R,15S-dihydroxy-13E-prostenoyl)-ethanolamine",C22H39NO5,NAE 20:1(13E);[8-12cy5:0;11OH;9oxo];15OH
+LMFA03010208,"N-(9S,11S,15S-trihydroxy-5Z,13E-prostadienoyl)-ethanolamine",C22H39NO5,"NAE 40:2(5Z,13E);[8-12cy5:0;9OH,11OH];15OH"
+LMFA03010209,"N-(9-oxo-11R,15S-dihydroxy-13E-prostenoyl)-ethanolamine",C22H39NO5,NAE 40:1(13E);[8-12cy5:0;11OH;9oxo];15OH
 LMFA03010210,"2,3-dinor-9-oxo-11R,15S-dihydroxy-5Z,13E-prostadienoic acid",C18H28O5,"FA 18:2(3Z,11E);[6-10cy5:0;9OH;7oxo];13OH"
 LMFA03010211,"2,3,4,5-tetranor-9-oxo-11R,15S-dihydroxy-13E-prostenoic acid",C16H26O5,FA 16:1(9E);[4-8cy5:0;7OH;5oxo];11OH
 LMFA03010212,"2,3-dinor-9S,11R,15S-trihydroxy-5Z,13E-prostadienoic acid",C18H30O5,"FA 18:2(3Z,11E);[6-10cy5:0;7OH,9OH];13OH"
@@ -3016,13 +3011,13 @@ LMFA03020041,"(5R,6Z,8E,14Z)-5-hydroxy-12-oxoicosa-6,8,14-trienoic acid",C20H32O
 LMFA03020043,"(5R,6Z,8E,12R,14Z)-5,12,20,20-tetrahydroxyicosa-6,8,14-trienoic acid",C20H34O6,"FA 20:3(6Z,8E,14Z);5OH,12OH,20OH,20OH"
 LMFA03020044,"(5R,6Z,8E,12R,14Z)-5,12,20,20,20-pentahydroxyicosa-6,8,14-trienoic acid",C20H34O7,"FA 20:3(6Z,8E,14Z);5OH,12OH,20OH,20OH,20OH"
 LMFA03020045,"(5R,6Z,8E,12R,14Z)-5,12-dihydroxyicosa-6,8,14-trienoic acid",C20H34O4,"FA 20:3(6Z,8E,14Z);5OH,12OH"
-LMFA03020046,"(5R,6Z,8E,14Z)-5-hydroxy-12-oxoicosa-6,8,14-trienedioic acid",C20H30O6,"FA 19:3(6Z,8E,14Z);19COOH;5OH;12oxo"
-LMFA03020047,"(5R,6Z,8E,10E,14Z)-5-hydroxy-12-oxoicosa-6,8,10,14-tetraenedioic acid",C20H28O6,"FA 19:4(6Z,8E,10E,14Z);19COOH;5OH;12oxo"
+LMFA03020046,"(5R,6Z,8E,14Z)-5-hydroxy-12-oxoicosa-6,8,14-trienedioic acid",C20H30O6,"FA 19:3(6Z,8E,14Z);COOH;5OH;12oxo"
+LMFA03020047,"(5R,6Z,8E,10E,14Z)-5-hydroxy-12-oxoicosa-6,8,10,14-tetraenedioic acid",C20H28O6,"FA 19:4(6Z,8E,10E,14Z);COOH;5OH;12oxo"
 LMFA03020048,"(5R,6Z,8E,10E,14Z)-5,20,20-trihydroxy-12-oxoicosa-6,8,10,14-tetraenoic acid",C20H30O6,"FA 20:4(6Z,8E,10E,14Z);5OH,20OH,20OH;12oxo"
 LMFA03020049,"(5R,6Z,8E,10E,14Z)-5,20-dihydroxy-12-oxoicosa-6,8,10,14-tetraenoic acid",C20H30O5,"FA 20:4(6Z,8E,10E,14Z);5OH,20OH;12oxo"
 LMFA03020050,"(5R,6Z,8E,10E,14Z)-5,20,20,20-tetrahydroxy-12-oxoicosa-6,8,10,14-tetraenoic acid",C20H30O7,"FA 20:4(6Z,8E,10E,14Z);5OH,20OH,20OH,20OH;12oxo"
 LMFA03020053,"(5R,6E,8Z,10E,12E,14R,15R,17Z)-5,14,15-trihydroxyicosa-6,8,10,12,17-pentaenoic acid",C20H30O5,"FA 20:5(6E,8Z,10E,12E,17Z);5OH,14OH,15OH"
-LMFA03020059,"(5R,6Z,8E,12R,14Z)-5,12-dihydroxyicosa-6,8,14-trienedioic acid",C20H32O6,"FA 19:3(6Z,8E,14Z);19COOH;5OH,12OH"
+LMFA03020059,"(5R,6Z,8E,12R,14Z)-5,12-dihydroxyicosa-6,8,14-trienedioic acid",C20H32O6,"FA 19:3(6Z,8E,14Z);COOH;5OH,12OH"
 LMFA03020061,"(5R,6Z,8E,10E,12S,14Z)-5,12,20,20-tetrahydroxyicosa-6,8,10,14-tetraenoic acid",C20H32O6,"FA 20:4(6Z,8E,10E,14Z);5OH,12OH,20OH,20OH"
 LMFA03020064,"(5S,6Z,8E,10E,12R,14Z)-5,12-dihydroxy-20-oxoicosa-6,8,10,14-tetraenoic acid",C20H30O5,"FA 20:4(6Z,8E,10E,14Z);5OH,12OH;20oxo"
 LMFA03020066,"(5R,6Z,8E,10E,12S,14Z)-5,12,20,20,20-pentahydroxyicosa-6,8,10,14-tetraenoic acid",C20H32O7,"FA 20:4(6Z,8E,10E,14Z);5OH,12OH,20OH,20OH,20OH"
@@ -5002,7 +4997,7 @@ LMFA05000008,1-docosanol,C22H46O,FOH 22:0
 LMFA05000009,14-methyl-1-hexadecanol,C17H36O,FOH 16:0;14Me
 LMFA05000010,14-methyl-1-pentadecanol,C16H34O,FOH 15:0;14Me
 LMFA05000015,"10-propyl-5,9-tridecadien-1-ol",C16H30O,"FOH 13:2(5,9);(3:0)"
-LMFA05000017,"2,2,9,9-tetramethyl-undecan-1,10-diol",C14H30O2,"FOH 11:0;2Me,2Me,9Me,9Me;10OH"
+LMFA05000017,"2,2,9,9-tetramethyl-undecan-1,10-diol",C14H30O2,"FOH 11:2;2Me,2Me,9Me,9Me;10OH"
 LMFA05000020,"5,7-dodecadien-1-ol",C12H22O,"FOH 12:2(5,7)"
 LMFA05000021,11-dodecen-1-ol,C12H24O,FOH 12:1(11)
 LMFA05000023,"7,11-hexadecadien-1-ol",C16H30O,"FOH 16:2(7,11)"
@@ -5041,27 +5036,27 @@ LMFA05000059,3Z-hexenol,C6H12O,FOH 6:1(3Z)
 LMFA05000060,2E-hexenol,C6H12O,FOH 6:1(2E)
 LMFA05000061,1-hexadecanol,C16H34O,FOH 16:0
 LMFA05000062,1-decanol,C10H22O,FOH 10:0
-LMFA05000068,"triacontan-1,14-diol",C30H62O2,FOH 30:0;14OH
-LMFA05000069,"2-methylhexadecane-1,2-diol",C17H36O2,FOH 16:0;2Me;2OH
-LMFA05000070,"2-methylheptadecane-1,2-diol",C18H38O2,FOH 17:0;2Me;2OH
-LMFA05000071,"3-methylheptadecane-1,2-diol",C18H38O2,FOH 17:0;3Me;2OH
-LMFA05000072,"11-methylheptadecane-1,2-diol",C18H38O2,FOH 17:0;11Me;2OH
-LMFA05000073,"2-methyloctadecane-1,2-diol",C19H40O2,FOH 18:0;2Me;2OH
-LMFA05000074,"nonadecane-1,2-diol",C19H40O2,FOH 19:0;2OH
-LMFA05000075,"13-methylnonadecane-1,2-diol",C20H42O2,FOH 19:0;13Me;2OH
-LMFA05000076,"eicosane-1,2-diol",C20H42O2,FOH 20:0;2OH
-LMFA05000077,"13-methyleicosane-1,2-diol",C21H44O2,FOH 20:0;13Me;2OH
-LMFA05000078,"15-methyleicosane-1,2-diol",C21H44O2,FOH 20:0;15Me;2OH
-LMFA05000079,"heneicosane-1,2-diol",C21H44O2,FOH 21:0;2OH
-LMFA05000080,"15-methylheneicosane-1,2-diol",C22H46O2,FOH 21:0;15Me;2OH
-LMFA05000081,"docosane-1,2-diol",C22H46O2,FOH 22:0;2OH
-LMFA05000082,"tricosane-1,2-diol",C23H48O2,FOH 23:0;2OH
-LMFA05000083,"tetracosane-1,2-diol",C24H50O2,FOH 24:0;2OH
-LMFA05000084,"3R,7R,11R,15S,18S,22R,26R,30R-octamethyldotriacontane-1,32-diol",C40H82O2,"FOH 32:0;3Me,7Me,11Me,15Me,18Me,22Me,26Me,30Me;32OH"
+LMFA05000068,"triacontan-1,14-diol",C30H62O2,FOH 30:2;14OH
+LMFA05000069,"2-methylhexadecane-1,2-diol",C17H36O2,FOH 16:2;2Me;2OH
+LMFA05000070,"2-methylheptadecane-1,2-diol",C18H38O2,FOH 17:2;2Me;2OH
+LMFA05000071,"3-methylheptadecane-1,2-diol",C18H38O2,FOH 17:2;3Me;2OH
+LMFA05000072,"11-methylheptadecane-1,2-diol",C18H38O2,FOH 17:2;11Me;2OH
+LMFA05000073,"2-methyloctadecane-1,2-diol",C19H40O2,FOH 18:2;2Me;2OH
+LMFA05000074,"nonadecane-1,2-diol",C19H40O2,FOH 19:2;2OH
+LMFA05000075,"13-methylnonadecane-1,2-diol",C20H42O2,FOH 19:2;13Me;2OH
+LMFA05000076,"eicosane-1,2-diol",C20H42O2,FOH 20:2;2OH
+LMFA05000077,"13-methyleicosane-1,2-diol",C21H44O2,FOH 20:2;13Me;2OH
+LMFA05000078,"15-methyleicosane-1,2-diol",C21H44O2,FOH 20:2;15Me;2OH
+LMFA05000079,"heneicosane-1,2-diol",C21H44O2,FOH 21:2;2OH
+LMFA05000080,"15-methylheneicosane-1,2-diol",C22H46O2,FOH 21:2;15Me;2OH
+LMFA05000081,"docosane-1,2-diol",C22H46O2,FOH 22:2;2OH
+LMFA05000082,"tricosane-1,2-diol",C23H48O2,FOH 23:2;2OH
+LMFA05000083,"tetracosane-1,2-diol",C24H50O2,FOH 24:2;2OH
+LMFA05000084,"3R,7R,11R,15S,18S,22R,26R,30R-octamethyldotriacontane-1,32-diol",C40H82O2,"FOH 32:2;3Me,7Me,11Me,15Me,18Me,22Me,26Me,30Me;32OH"
 LMFA05000085,octadecan-1-ol,C18H38O,FOH 18:0
 LMFA05000087,nonacosan-10R-ol,C29H60O,FOH 29:0
 LMFA05000088,nonacosan-10S-ol,C29H60O,FOH 29:0
-LMFA05000089,"octane-1,2-diol",C8H18O2,FOH 8:0;2OH
+LMFA05000089,"octane-1,2-diol",C8H18O2,FOH 8:2;2OH
 LMFA05000090,oct-1-en-3-ol,C8H16O,FOH 8:1(1)
 LMFA05000091,hentriacontan-16-ol,C31H64O,FOH 31:0
 LMFA05000092,nonan-1-ol,C9H20O,FOH 9:0
@@ -5070,7 +5065,7 @@ LMFA05000095,11Z-octadecen-1-ol,C18H36O,FOH 18:1(11Z)
 LMFA05000096,hentriacontan-1-ol,C31H64O,FOH 31:0
 LMFA05000097,"3Z,6Z,9Z-dodecatrien-1-ol",C12H20O,"FOH 12:3(3Z,6Z,9Z)"
 LMFA05000098,nonacosan-10-ol,C29H60O,FOH 29:0
-LMFA05000099,"2,6-dimethyl-2E,7-octadiene-1,6-diol",C10H18O2,"FOH 8:2(2,7);(Me)2;OH"
+LMFA05000099,"2,6-dimethyl-2E,7-octadiene-1,6-diol",C10H18O2,"FOH 0:2(2,7);(Me)2;OH"
 LMFA05000100,2-Methylpropan-1-ol,C4H10O,FOH 3:0;2Me
 LMFA05000101,Propan-1-ol,C3H8O,FOH 3:0
 LMFA05000102,2R-Methylbutan-1-ol,C5H12O,FOH 4:0;2Me
@@ -5275,10 +5270,10 @@ LMFA05000535,6Z-Heneicosen-11-ol,C21H42O,FOH 21:1(6Z)
 LMFA05000536,"2,6-Dimethyl-6E-octen-2-ol",C10H20O,"FOH 8:1(6E);2Me,6Me"
 LMFA05000537,3-methyl-3-Pentanol,C6H14O,FOH 3:0;2Et;1Me
 LMFA05000538,1-methyl-cyclopentanol,C6H12O,FOH 5:0;[1-5cy5:0;1Me]
-LMFA05000716,"2S-hydroxy-4-oxononadeca-16E,18E-dien-1-yl acetate",C21H36O4,"WE 19:2(16E,18E);2OH;4oxo/2:0"
-LMFA05000717,"2S-hydroxy-4-oxononadeca-5E,16E-dien-1-yl acetate",C21H36O4,"WE 19:2(5E,16E);2OH;4oxo/2:0"
+LMFA05000716,"2S-hydroxy-4-oxononadeca-16E,18E-dien-1-yl acetate",C21H36O4,"WE 19:2(16E,18E);2OH;4oxo/21:2"
+LMFA05000717,"2S-hydroxy-4-oxononadeca-5E,16E-dien-1-yl acetate",C21H36O4,"WE 19:2(5E,16E);2OH;4oxo/21:2"
 LMFA05000539,3-thiohexan-1-ol,C6H14OS,FOH 6:0;3SH
-LMFA05000540,3-thiohexyl acetate,C8H16O2S,WE 6:0;3SH/2:0
+LMFA05000540,3-thiohexyl acetate,C8H16O2S,WE 6:0;3SH/8:0
 LMFA05000541,4-Methyl-pentan-1-ol,C6H14O,FOH 5:0;4Me
 LMFA05000543,"(2E,4E)-deca-2,4-dien-1-ol",C10H18O,"FOH 10:2(2E,4E)"
 LMFA05000547,(2R)-octan-2-ol,C8H18O,FOH 8:0
@@ -5296,7 +5291,7 @@ LMFA05000559,(3E)-non-3-en-1-ol,C9H18O,FOH 9:1(3E)
 LMFA05000560,(3E)-oct-3-en-1-ol,C8H16O,FOH 8:1(3E)
 LMFA05000561,(4Z)-hex-4-en-1-ol,C6H12O,FOH 6:1(4Z)
 LMFA05000563,"(3E,5E)-7-hydroxy-6-methylhepta-3,5-dienal",C8H12O2,"FAL 7:2(3E,5E);6Me;7OH"
-LMFA05000564,"octane-1,3-diol",C8H18O2,FOH 8:0;3OH
+LMFA05000564,"octane-1,3-diol",C8H18O2,FOH 8:2;3OH
 LMFA05000565,"3,7-dimethyloctan-1-ol",C10H22O,"FOH 8:0;3Me,7Me"
 LMFA05000566,6-methylhept-5-en-2-ol,C8H16O,FOH 7:1(5);Me
 LMFA05000568,octan-3-ol,C8H18O,FOH 8:0
@@ -5304,21 +5299,21 @@ LMFA05000570,(2Z)-non-2-en-1-ol,C9H18O,FOH 9:1(2Z)
 LMFA05000571,(4Z)-hept-4-en-1-ol,C7H14O,FOH 7:1(4Z)
 LMFA05000572,(5Z)-oct-5-en-1-ol,C8H16O,FOH 8:1(5Z)
 LMFA05000573,"(3E,6E)-dodeca-3,6-dien-1-ol",C12H22O,"FOH 12:2(3E,6E)"
-LMFA05000575,"triacontane-1,11-diol",C30H62O2,FOH 30:0;11OH
-LMFA05000576,"heptadecane-1,17-diol",C17H36O2,FOH 17:0;17OH
-LMFA05000577,"nonadecane-1,2,4-triol",C19H40O3,"FOH 19:0;2OH,4OH"
-LMFA05000578,"icosane-1,20-diol",C20H42O2,FOH 20:0;20OH
-LMFA05000580,"tetracosane-1,24-diol",C24H50O2,FOH 24:0;24OH
-LMFA05000581,"hexacosane-1,26-diol",C26H54O2,FOH 26:0;26OH
-LMFA05000582,"octacosane-1,28-diol",C28H58O2,FOH 28:0;28OH
-LMFA05000583,"hexane-1,5-diol",C6H14O2,FOH 6:0;5OH
+LMFA05000575,"triacontane-1,11-diol",C30H62O2,FOH 30:2;11OH
+LMFA05000576,"heptadecane-1,17-diol",C17H36O2,FOH 17:2;17OH
+LMFA05000577,"nonadecane-1,2,4-triol",C19H40O3,"FOH 19:3;2OH,4OH"
+LMFA05000578,"icosane-1,20-diol",C20H42O2,FOH 20:2;20OH
+LMFA05000580,"tetracosane-1,24-diol",C24H50O2,FOH 24:2;24OH
+LMFA05000581,"hexacosane-1,26-diol",C26H54O2,FOH 26:2;26OH
+LMFA05000582,"octacosane-1,28-diol",C28H58O2,FOH 28:2;28OH
+LMFA05000583,"hexane-1,5-diol",C6H14O2,FOH 6:2;5OH
 LMFA05000587,undec-10-en-1-ol,C11H22O,FOH 11:1(10)
 LMFA05000588,tricosan-12-ol,C23H48O,FOH 23:0
 LMFA05000590,heptacosan-14-ol,C27H56O,FOH 27:0
 LMFA05000592,nonacosan-15-ol,C29H60O,FOH 29:0
-LMFA05000594,2-hydroxy-4-oxoheptadec-16-en-1-yl acetate,C19H34O4,WE 17:1(16);2OH;4oxo/2:0
+LMFA05000594,2-hydroxy-4-oxoheptadec-16-en-1-yl acetate,C19H34O4,WE 17:1(16);2OH;4oxo/19:0
 LMFA05000597,dec-1-en-3-ol,C10H20O,FOH 10:1(1)
-LMFA05000598,"hexane-1,2,3,4,5-pentol",C6H14O5,"FOH 6:0;2OH,3OH,4OH,5OH"
+LMFA05000598,"hexane-1,2,3,4,5-pentol",C6H14O5,"FOH 6:5;2OH,3OH,4OH,5OH"
 LMFA05000604,tritriacontan-1-ol,C33H68O,FOH 33:0
 LMFA05000608,"(2E,4E)-nona-2,4-dien-1-ol",C9H16O,"FOH 9:2(2E,4E)"
 LMFA05000609,"2,6-dimethylhept-6-en-1-ol",C9H18O,FOH 7:1(6);(Me)2
@@ -5335,30 +5330,30 @@ LMFA05000631,"(5E,10E)-pentadeca-5,10-dien-1-ol",C15H28O,"FOH 15:2(5E,10E)"
 LMFA05000636,dodec-9-en-1-ol,C12H24O,FOH 12:1(9)
 LMFA05000637,"3,7-dimethyloct-7-en-1-ol",C10H20O,FOH 8:1(7);(Me)2
 LMFA05000639,"heptadec-16-ene-1,2,4-triol",C17H34O3,FOH 17:1(16);(OH)2
-LMFA05000640,"2,4-dihydroxyheptadec-16-en-1-yl acetate",C19H36O4,"WE 17:1(16);2OH,4OH/2:0"
-LMFA05000641,"1,4-dihydroxyheptadec-16-en-2-yl acetate",C19H36O4,"WE 16:1(16);1Me;0OH,3OH/2:0"
-LMFA05000642,"1,2-dihydroxyheptadec-16-en-4-yl acetate",C19H36O4,"WE 14:1(16);3(3:0;2OH,3OH)/2:0"
+LMFA05000640,"2,4-dihydroxyheptadec-16-en-1-yl acetate",C19H36O4,"WE 17:1(16);2OH,4OH/19:0"
+LMFA05000641,"1,4-dihydroxyheptadec-16-en-2-yl acetate",C19H36O4,"WE 16:1(16);1Me;0OH,3OH/19:0"
+LMFA05000642,"1,2-dihydroxyheptadec-16-en-4-yl acetate",C19H36O4,"WE 14:1(16);3(3:0;2OH,3OH)/19:0"
 LMFA05000648,(4Z)-dec-4-en-1-ol,C10H20O,FOH 10:1(4Z)
-LMFA05000653,"docosane-1,3-diol",C22H46O2,FOH 22:0;3OH
-LMFA05000655,"heptacosane-6,8-diol",C27H56O2,FOH 27:0;8OH
-LMFA05000656,"nonacosane-6,8-diol",C29H60O2,FOH 29:0;8OH
+LMFA05000653,"docosane-1,3-diol",C22H46O2,FOH 22:2;3OH
+LMFA05000655,"heptacosane-6,8-diol",C27H56O2,FOH 27:2;8OH
+LMFA05000656,"nonacosane-6,8-diol",C29H60O2,FOH 29:2;8OH
 LMFA05000657,ethyl 3-hydroxyoctanoate,C10H20O3,WE 2:0/8:0;3OH
-LMFA05000665,"heptane-1,2,3-triol",C7H16O3,"FOH 7:0;2OH,3OH"
-LMFA05000666,"3,7-dimethyloctane-1,7-diol",C10H22O2,"FOH 8:0;3Me,7Me;7OH"
-LMFA05000667,"icosane-1,3-diol",C20H42O2,FOH 20:0;3OH
-LMFA05000683,"octane-1,8-diol",C8H18O2,FOH 8:0;8OH
+LMFA05000665,"heptane-1,2,3-triol",C7H16O3,"FOH 7:3;2OH,3OH"
+LMFA05000666,"3,7-dimethyloctane-1,7-diol",C10H22O2,"FOH 8:2;3Me,7Me;7OH"
+LMFA05000667,"icosane-1,3-diol",C20H42O2,FOH 20:2;3OH
+LMFA05000683,"octane-1,8-diol",C8H18O2,FOH 8:2;8OH
 LMFA05000684,(9E)-octadec-9-en-1-ol,C18H36O,FOH 18:1(9E)
 LMFA05000692,"(3S,4R,9R,11S)-3-methoxy-4-methylnonacosane-9,11-diol",C31H64O3,FOH 29:0;4Me;11OH;3OMe
-LMFA05000696,"(2E,4E,6E,8E,10E)-4,9-dimethyldodeca-2,4,6,8,10-pentaene-1,12-diol",C14H20O2,"FOH 12:5(2E,4E,6E,8E,10E);4Me,9Me;12OH"
-LMFA05000699,"tetracosane-1,3-diol",C24H50O2,FOH 24:0;3OH
+LMFA05000696,"(2E,4E,6E,8E,10E)-4,9-dimethyldodeca-2,4,6,8,10-pentaene-1,12-diol",C14H20O2,"FOH 0:5(2E,4E,6E,8E,10E);4Me,9Me;12OH"
+LMFA05000699,"tetracosane-1,3-diol",C24H50O2,FOH 24:2;3OH
 LMFA05000701,"hepta-2,4-dien-1-ol",C7H12O,"FOH 7:2(2,4)"
 LMFA05000702,(3E)-oct-3-en-2-ol,C8H16O,FOH 8:1(3E)
 LMFA05000703,2-ethylhexan-1-ol,C8H18O,FOH 6:0;2Et
 LMFA05000704,oct-7-en-2-ol,C8H16O,FOH 8:1(7)
-LMFA05000715,"2S,4S-dihydroxy-16E-heptadecen-1-yl-acetate",C19H36O4,"WE 2:0;16(17:0);2OH,4OH/0:0"
-LMFA05000718,"2S-hydroxy-4-oxoheneicosa-5E,12E,15E-trien-1-yl acetate",C23H38O4,"WE 21:3(5E,12E,15E);2OH;4oxo/2:0"
-LMFA05000719,2S-hydroxy-4-oxononadeca-5E-en-1-yl acetate,C21H38O4,WE 19:1(5E);2OH;4oxo/2:0
-LMFA05000720,2S-hydroxy-4-oxoheneicosa-12E-en-1-yl acetate,C23H42O4,WE 21:1(12E);2OH;4oxo/2:0
+LMFA05000715,"2S,4S-dihydroxy-16E-heptadecen-1-yl-acetate",C19H36O4,"WE 19:0;16(17:0);2OH,4OH/0:0"
+LMFA05000718,"2S-hydroxy-4-oxoheneicosa-5E,12E,15E-trien-1-yl acetate",C23H38O4,"WE 21:3(5E,12E,15E);2OH;4oxo/23:3"
+LMFA05000719,2S-hydroxy-4-oxononadeca-5E-en-1-yl acetate,C21H38O4,WE 19:1(5E);2OH;4oxo/21:0
+LMFA05000720,2S-hydroxy-4-oxoheneicosa-12E-en-1-yl acetate,C23H42O4,WE 21:1(12E);2OH;4oxo/23:0
 LMFA06000001,heptanal,C7H14O,FAL 7:0
 LMFA06000002,2-hexenal,C6H10O,FAL 6:1(2)
 LMFA06000003,3-hexenal,C6H10O,FAL 6:1(3)
@@ -5366,7 +5361,7 @@ LMFA06000004,4-hexenal,C6H10O,FAL 6:1(4)
 LMFA06000005,5-hexenal,C6H10O,FAL 6:1(5)
 LMFA06000006,"2,4-hexadienal",C6H8O,"FAL 6:2(2,4)"
 LMFA06000007,"4,5-hexadienal",C6H8O,"FAL 6:2(4,5)"
-LMFA06000008,hexanedial,C6H10O2,FAL 6:0;6oxo
+LMFA06000008,hexanedial,C6H10O2,FAL 6:0;0oxo
 LMFA06000009,2-hexenedial,C6H8O2,FAL 6:1(2);oxo
 LMFA06000010,3-hexenedial,C6H8O2,FAL 6:1(3);oxo
 LMFA06000011,"2,4-hexadienedial",C6H6O2,"FAL 6:2(2,4);oxo"
@@ -5383,7 +5378,7 @@ LMFA06000022,5-heptenal,C7H12O,FAL 7:1(5)
 LMFA06000023,6-heptenal,C7H12O,FAL 7:1(6)
 LMFA06000024,"2,4-heptadienal",C7H10O,"FAL 7:2(2,4)"
 LMFA06000025,"4,6-heptadienal",C7H10O,"FAL 7:2(4,6)"
-LMFA06000026,heptanedial,C7H12O2,FAL 7:0;7oxo
+LMFA06000026,heptanedial,C7H12O2,FAL 7:0;0oxo
 LMFA06000027,2-heptenedial,C7H10O2,FAL 7:1(2);oxo
 LMFA06000028,octanal,C8H16O,FAL 8:0
 LMFA06000029,2-octenal,C8H14O,FAL 8:1(2)
@@ -5796,236 +5791,236 @@ LMFA07010172,docosanyl 9Z-octadecenoate,C40H78O2,WE 22:0/18:1(9Z)
 LMFA07010173,9Z-octadecenyl docosanoate,C40H78O2,WE 18:1(9Z)/22:0
 LMFA07010174,"Methyl 2,4,8-trimethylundecanoate",C15H30O2,"WE 1:0/11:0;2Me,4Me,8Me"
 LMFA07010175,Methyl 3-methyl-2Z-dodecenoate,C14H26O2,WE 1:0/12:1(2Z);3Me
-LMFA07010176,Pentyl acetate,C7H14O2,WE 5:0/2:0
-LMFA07010177,"2E,5-Hexadienyl acetate",C8H12O2,"WE 6:2(2E,5)/2:0"
-LMFA07010178,2E-Hexenyl acetate,C8H14O2,WE 6:1(2E)/2:0
-LMFA07010179,3E-Hexenyl acetate,C8H14O2,WE 6:1(3E)/2:0
-LMFA07010180,"2E,4E-Hexadienyl acetate",C8H12O2,"WE 6:2(2E,4E)/2:0"
-LMFA07010181,3Z-Hexenyl acetate,C8H14O2,WE 6:1(3Z)/2:0
-LMFA07010182,1-Hexenyl acetate,C8H14O2,WE 6:1(1)/2:0
-LMFA07010183,3-Methylenehexyl acetate,C9H16O2,WE 6:0;3My/2:0
-LMFA07010184,Hexyl acetate,C8H16O2,WE 6:0/2:0
-LMFA07010185,2E-Heptenyl acetate,C9H16O2,WE 7:1(2E)/2:0
-LMFA07010186,Heptyl acetate,C9H18O2,WE 7:0/2:0
-LMFA07010187,"2E,7-Octadienyl acetate",C10H16O2,"WE 8:2(2E,7)/2:0"
-LMFA07010188,2E-Octenyl acetate,C10H18O2,WE 8:1(2E)/2:0
-LMFA07010189,"3,7-Dimethyl-2E,6-octadienyl acetate",C12H20O2,"WE 8:2(2E,6);3Me,7Me/2:0"
-LMFA07010190,"8-oxo-3,7-Dimethyl-6E-octenyl acetate",C12H20O3,"WE 8:1(6E);3Me,7Me;8oxo/2:0"
-LMFA07010191,"2E,4E-Octadienyl acetate",C10H16O2,"WE 8:2(2E,4E)/2:0"
-LMFA07010192,"2E,6E-Octadienyl acetate",C10H16O2,"WE 8:2(2E,6E)/2:0"
-LMFA07010193,"2E,6Z-Octadienyl acetate",C10H16O2,"WE 8:2(2E,6Z)/2:0"
-LMFA07010194,"3,7-Dimethyl-2Z,6-octadienyl acetate",C12H20O2,"WE 8:2(2Z,6);3Me,7Me/2:0"
-LMFA07010195,3Z-Octenyl acetate,C10H18O2,WE 8:1(3Z)/2:0
-LMFA07010196,4-Methyloctyl acetate,C11H22O2,WE 8:0;4Me/2:0
-LMFA07010197,Octyl acetate,C10H20O2,WE 8:0/2:0
-LMFA07010198,6E-Nonenyl acetate,C11H20O2,WE 9:1(6E)/2:0
-LMFA07010199,2-Nonenyl acetate,C11H20O2,WE 9:1(2)/2:0
-LMFA07010200,Nonyl acetate,C11H22O2,WE 9:0/2:0
-LMFA07010201,2E-Decenyl acetate,C12H22O2,WE 10:1(2E)/2:0
-LMFA07010202,4E-Decenyl acetate,C12H22O2,WE 10:1(4E)/2:0
-LMFA07010203,5E-Decenyl acetate,C12H22O2,WE 10:1(5E)/2:0
-LMFA07010204,7E-Decenyl acetate,C12H22O2,WE 10:1(7E)/2:0
-LMFA07010205,"3E,5E-Decadienyl acetate",C12H20O2,"WE 10:2(3E,5E)/2:0"
-LMFA07010206,3Z-Decenyl acetate,C12H22O2,WE 10:1(3Z)/2:0
-LMFA07010207,4Z-Decenyl acetate,C12H22O2,WE 10:1(4Z)/2:0
-LMFA07010208,5Z-Decenyl acetate,C12H22O2,WE 10:1(5Z)/2:0
-LMFA07010209,"7Z,9-Decadienyl acetate",C12H20O2,"WE 10:2(7Z,9)/2:0"
-LMFA07010210,7Z-Decenyl acetate,C12H22O2,WE 10:1(7Z)/2:0
-LMFA07010211,"3Z,5E-Decadienyl acetate",C12H20O2,"WE 10:2(3Z,5E)/2:0"
-LMFA07010212,Decyl acetate,C12H24O2,WE 10:0/2:0
-LMFA07010213,8E-Undecenyl acetate,C13H24O2,WE 11:1(8E)/2:0
-LMFA07010214,9E-Undecenyl acetate,C13H24O2,WE 11:1(9E)/2:0
-LMFA07010215,5Z-Undecenyl acetate,C13H24O2,WE 11:1(5Z)/2:0
-LMFA07010216,7Z-Undecenyl acetate,C13H24O2,WE 11:1(7Z)/2:0
-LMFA07010217,8Z-Undecenyl acetate,C13H24O2,WE 11:1(8Z)/2:0
-LMFA07010218,9Z-Undecenyl acetate,C13H24O2,WE 11:1(9Z)/2:0
-LMFA07010219,2-Undecenyl acetate,C13H24O2,WE 11:1(2)/2:0
-LMFA07010220,Undecyl acetate,C13H26O2,WE 11:0/2:0
-LMFA07010221,10R-Methyldodecyl acetate,C15H30O2,WE 12:0;10Me/2:0
-LMFA07010222,10E-Dodecenyl acetate,C14H26O2,WE 12:1(10E)/2:0
-LMFA07010223,3E-Dodecenyl acetate,C14H26O2,WE 12:1(3E)/2:0
-LMFA07010224,4E-Dodecenyl acetate,C14H26O2,WE 12:1(4E)/2:0
-LMFA07010225,5E-Dodecenyl acetate,C14H26O2,WE 12:1(5E)/2:0
-LMFA07010226,7E-Dodecenyl acetate,C14H26O2,WE 12:1(7E)/2:0
-LMFA07010227,8E-Dodecenyl acetate,C14H26O2,WE 12:1(8E)/2:0
-LMFA07010228,"9E,11-Dodecadienyl acetate",C14H24O2,"WE 12:2(9E,11)/2:0"
-LMFA07010229,9E-Dodecenyl acetate,C14H26O2,WE 12:1(9E)/2:0
-LMFA07010230,"3,7,11-Trimethyl-2,6,10-dodecatrienyl acetate",C17H28O2,"WE 12:3(2,6,10);3Me,7Me,11Me/2:0"
-LMFA07010231,"4E,10E-Dodecadienyl acetate",C14H24O2,"WE 12:2(4E,10E)/2:0"
-LMFA07010232,"5E,7E-Dodecadienyl acetate",C14H24O2,"WE 12:2(5E,7E)/2:0"
-LMFA07010233,"7E,9E,11-Dodecatrienyl acetate",C14H22O2,"WE 12:3(7E,9E,11)/2:0"
-LMFA07010234,"7E,9E-Dodecadienyl acetate",C14H24O2,"WE 12:2(7E,9E)/2:0"
-LMFA07010235,"8E,10E-Dodecadienyl acetate",C14H24O2,"WE 12:2(8E,10E)/2:0"
-LMFA07010236,"3E,5Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(3E,5Z)/2:0"
-LMFA07010237,"5E,7Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(5E,7Z)/2:0"
-LMFA07010238,"7E,9Z,11-Dodecatrienyl acetate",C14H22O2,"WE 12:3(7E,9Z,11)/2:0"
-LMFA07010239,"7E,9Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(7E,9Z)/2:0"
-LMFA07010240,"8E,10Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(8E,10Z)/2:0"
-LMFA07010241,10Z-Dodecenyl acetate,C14H26O2,WE 12:1(10Z)/2:0
-LMFA07010242,3Z-Dodecenyl acetate,C14H26O2,WE 12:1(3Z)/2:0
-LMFA07010243,5Z-Dodecenyl acetate,C14H26O2,WE 12:1(5Z)/2:0
-LMFA07010244,7Z-Dodecenyl acetate,C14H26O2,WE 12:1(7Z)/2:0
-LMFA07010245,8Z-Dodecenyl acetate,C14H26O2,WE 12:1(8Z)/2:0
-LMFA07010246,"9Z,11-Dodecadienyl acetate",C14H24O2,"WE 12:2(9Z,11)/2:0"
-LMFA07010248,9Z-Dodecenyl acetate,C14H26O2,WE 12:1(9Z)/2:0
-LMFA07010249,"3Z,5E-Dodecadienyl acetate",C14H24O2,"WE 12:2(3Z,5E)/2:0"
-LMFA07010250,"5Z,7E-Dodecadienyl acetate",C14H24O2,"WE 12:2(5Z,7E)/2:0"
-LMFA07010251,"7Z,9E,11-Dodecatrienyl acetate",C14H22O2,"WE 12:3(7Z,9E,11)/2:0"
-LMFA07010252,"7Z,9E-Dodecadienyl acetate",C14H24O2,"WE 12:2(7Z,9E)/2:0"
-LMFA07010253,"8Z,10E-Dodecadienyl acetate",C14H24O2,"WE 12:2(8Z,10E)/2:0"
-LMFA07010254,"3,7,11-Trimethyl-2,6,10-dodecatrienyl acetate",C17H28O2,"WE 12:3(2,6,10);3Me,7Me,11Me/2:0"
-LMFA07010255,"5Z,7Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(5Z,7Z)/2:0"
-LMFA07010256,"7Z,9Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(7Z,9Z)/2:0"
-LMFA07010257,"8Z,10Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(8Z,10Z)/2:0"
-LMFA07010258,"11,11,11,12,12-Pentafluoro-9Z-dodecenyl acetate",C14H21O2F5,"WE 12:1(9Z);11F,11F,11F,12F,12F/2:0"
-LMFA07010259,"11,11-Difluoro-9Z-dodecenyl acetate",C14H24O2F2,"WE 12:1(9Z);11F,11F/2:0"
-LMFA07010260,11-Dodecenyl acetate,C14H26O2,WE 12:1(11)/2:0
-LMFA07010261,"7,7-Difluoro-8Z-dodecenyl acetate",C14H24F2O2,"WE 12:1(8Z);7F,7F/2:0"
-LMFA07010262,Dodecyl acetate,C14H28O2,WE 12:0/2:0
-LMFA07010263,11E-Tridecenyl acetate,C15H28O2,WE 13:1(11E)/2:0
-LMFA07010264,3E-Tridecenyl acetate,C15H28O2,WE 13:1(3E)/2:0
-LMFA07010265,4E-Tridecenyl acetate,C15H28O2,WE 13:1(4E)/2:0
-LMFA07010266,6E-Tridecenyl acetate,C15H28O2,WE 13:1(6E)/2:0
-LMFA07010267,8E-Tridecenyl acetate,C15H28O2,WE 13:1(8E)/2:0
-LMFA07010268,9E-Tridecenyl acetate,C15H28O2,WE 13:1(9E)/2:0
-LMFA07010269,"4E,7Z-Tridecadienyl acetate",C15H26O2,"WE 13:2(4E,7Z)/2:0"
-LMFA07010270,"5E,9Z-Tridecadienyl acetate",C15H26O2,"WE 13:2(5E,9Z)/2:0"
-LMFA07010271,"4E,7Z,10Z-Tridecatrienyl acetate",C15H24O2,"WE 13:3(4E,7Z,10Z)/2:0"
-LMFA07010272,10Z-Tridecenyl acetate,C15H28O2,WE 13:1(10Z)/2:0
-LMFA07010273,11Z-Tridecenyl acetate,C15H28O2,WE 13:1(11Z)/2:0
-LMFA07010274,4Z-Tridecenyl acetate,C15H28O2,WE 13:1(4Z)/2:0
-LMFA07010275,8Z-Tridecenyl acetate,C15H28O2,WE 13:1(8Z)/2:0
-LMFA07010276,9Z-Tridecenyl acetate,C15H28O2,WE 13:1(9Z)/2:0
-LMFA07010277,"5Z,9E-Tridecadienyl acetate",C15H26O2,"WE 13:2(5Z,9E)/2:0"
-LMFA07010278,"5Z,9Z-Tridecadienyl acetate",C15H26O2,"WE 13:2(5Z,9Z)/2:0"
-LMFA07010279,"7Z,11Z-Tridecadienyl acetate",C15H26O2,"WE 13:2(7Z,11Z)/2:0"
-LMFA07010280,"11-Methyl-9Z,12-tridecadienyl acetate",C16H28O2,"WE 13:2(9Z,12);11Me/2:0"
-LMFA07010281,2-Tridecenyl acetate,C15H28O2,WE 13:1(2)/2:0
-LMFA07010282,Tridecyl acetate,C15H30O2,WE 13:0/2:0
-LMFA07010283,10E-Tetradecenyl acetate,C16H30O2,WE 14:1(10E)/2:0
-LMFA07010284,"11E,13-Tetradecadienyl acetate",C16H28O2,"WE 14:2(11E,13)/2:0"
-LMFA07010285,11E-Tetradecenyl acetate,C16H30O2,WE 14:1(11E)/2:0
-LMFA07010286,12E-Tetradecenyl acetate,C16H30O2,WE 14:1(12E)/2:0
-LMFA07010287,3E-Tetradecenyl acetate,C16H30O2,WE 14:1(3E)/2:0
-LMFA07010288,5E-Tetradecenyl acetate,C16H30O2,WE 14:1(5E)/2:0
-LMFA07010289,6E-Tetradecenyl acetate,C16H30O2,WE 14:1(6E)/2:0
-LMFA07010290,7E-Tetradecenyl acetate,C16H30O2,WE 14:1(7E)/2:0
-LMFA07010291,8E-Tetradecenyl acetate,C16H30O2,WE 14:1(8E)/2:0
-LMFA07010292,"9E,11-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9E,11)/2:0"
-LMFA07010293,9E-Tetradecenyl acetate,C16H30O2,WE 14:1(9E)/2:0
-LMFA07010294,"10E,12E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(10E,12E)/2:0"
-LMFA07010295,"3E,5E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3E,5E)/2:0"
-LMFA07010296,"8E,10E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(8E,10E)/2:0"
-LMFA07010297,"9E,12E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9E,12E)/2:0"
-LMFA07010298,"10E,12Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(10E,12Z)/2:0"
-LMFA07010299,"3E,5Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3E,5Z)/2:0"
-LMFA07010300,"3E,7Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3E,7Z)/2:0"
-LMFA07010301,"3E,8Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3E,8Z)/2:0"
-LMFA07010302,"4E,10Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(4E,10Z)/2:0"
-LMFA07010303,"4E,9Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(4E,9Z)/2:0"
-LMFA07010304,"8E,10Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(8E,10Z)/2:0"
-LMFA07010305,"9E,11Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9E,11Z)/2:0"
-LMFA07010306,"3E,8Z,11Z-Tetradecatrienyl acetate",C16H26O2,"WE 14:3(3E,8Z,11Z)/2:0"
-LMFA07010307,10Z-Tetradecenyl acetate,C16H30O2,WE 14:1(10Z)/2:0
-LMFA07010308,"11Z,13-Tetradecadienyl acetate",C16H28O2,"WE 14:2(11Z,13)/2:0"
-LMFA07010309,11Z-Tetradecenyl acetate,C16H30O2,WE 14:1(11Z)/2:0
-LMFA07010310,12Z-Tetradecenyl acetate,C16H30O2,WE 14:1(12Z)/2:0
-LMFA07010311,3Z-Tetradecenyl acetate,C16H30O2,WE 14:1(3Z)/2:0
-LMFA07010312,5Z-Tetradecenyl acetate,C16H30O2,WE 14:1(5Z)/2:0
-LMFA07010313,6Z-Tetradecenyl acetate,C16H30O2,WE 14:1(6Z)/2:0
-LMFA07010314,7Z-Tetradecenyl acetate,C16H30O2,WE 14:1(7Z)/2:0
-LMFA07010315,8Z-Tetradecenyl acetate,C16H30O2,WE 14:1(8Z)/2:0
-LMFA07010316,9Z-Tetradecenyl acetate,C16H30O2,WE 14:1(9Z)/2:0
-LMFA07010317,"10Z,12E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(10Z,12E)/2:0"
-LMFA07010318,"3Z,5E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3Z,5E)/2:0"
-LMFA07010319,"8Z,10E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(8Z,10E)/2:0"
-LMFA07010320,"9Z,11E,13-Tetradecatrienyl acetate",C16H26O2,"WE 14:3(9Z,11E,13)/2:0"
-LMFA07010321,"9Z,11E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9Z,11E)/2:0"
-LMFA07010322,"9Z,12E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9Z,12E)/2:0"
-LMFA07010323,"10Z,12Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(10Z,12Z)/2:0"
-LMFA07010324,"9Z,11Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9Z,11Z)/2:0"
-LMFA07010325,"9Z,12Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9Z,12Z)/2:0"
-LMFA07010326,12-Methyltetradecyl acetate,C17H34O2,WE 14:0;12Me/2:0
-LMFA07010327,"14,14,14-Trifluoro-11E-tetradecenyl acetate",C16H27O2F3,"WE 14:1(11E);14F,14F,14F/2:0"
-LMFA07010328,"14,14,14-Trifluoro-11Z-tetradecenyl acetate",C16H27O2F3,"WE 14:1(11Z);14F,14F,14F/2:0"
-LMFA07010329,14-Fluoro-11E-tetradecenyl acetate,C16H29O2F,WE 14:1(11E);14F/2:0
-LMFA07010330,14-Fluoro-11Z-tetradecenyl acetate,C16H29O2F,WE 14:1(11Z);14F/2:0
-LMFA07010331,Tetradecyl acetate,C16H32O2,WE 14:0/2:0
-LMFA07010332,12E-Pentadecenyl acetate,C17H32O2,WE 15:1(12E)/2:0
-LMFA07010333,9E-Pentadecenyl acetate,C17H32O2,WE 15:1(9E)/2:0
-LMFA07010334,"8E,10E-Pentadecadienyl acetate",C17H30O2,"WE 15:2(8E,10E)/2:0"
-LMFA07010335,"8E,10Z-Pentadecadienyl acetate",C17H30O2,"WE 15:2(8E,10Z)/2:0"
-LMFA07010336,10Z-Pentadecenyl acetate,C17H32O2,WE 15:1(10Z)/2:0
-LMFA07010337,12Z-Pentadecenyl acetate,C17H32O2,WE 15:1(12Z)/2:0
-LMFA07010338,8Z-Pentadecenyl acetate,C17H32O2,WE 15:1(8Z)/2:0
-LMFA07010339,9Z-Pentadecenyl acetate,C17H32O2,WE 15:1(9Z)/2:0
-LMFA07010340,"8Z,10E-Pentadecadienyl acetate",C17H30O2,"WE 15:2(8Z,10E)/2:0"
-LMFA07010341,"8Z,10Z-Pentadecadienyl acetate",C17H30O2,"WE 15:2(8Z,10Z)/2:0"
-LMFA07010342,Pentadecyl acetate,C17H34O2,WE 15:0/2:0
-LMFA07010343,11E-Hexadecenyl acetate,C18H34O2,WE 16:1(11E)/2:0
-LMFA07010344,5E-Hexadecenyl acetate,C18H34O2,WE 16:1(5E)/2:0
-LMFA07010345,6E-Hexadecenyl acetate,C18H34O2,WE 16:1(6E)/2:0
-LMFA07010346,8E-Hexadecenyl acetate,C18H34O2,WE 16:1(8E)/2:0
-LMFA07010347,9E-Hexadecenyl acetate,C18H34O2,WE 16:1(9E)/2:0
-LMFA07010348,"10E,12E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(10E,12E)/2:0"
-LMFA07010349,"11E,13E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11E,13E)/2:0"
-LMFA07010350,"10E,12E,14E-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(10E,12E,14E)/2:0"
-LMFA07010351,"3,7,11,15-Tetramethyl-2E,6E,10E,14-hexadecatetraenyl acetate",C22H36O2,"WE 16:4(2E,6E,10E,14);3Me,7Me,11Me,15Me/2:0"
-LMFA07010352,"10E,12E,14Z-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(10E,12E,14Z)/2:0"
-LMFA07010353,"4E,6E,10Z-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(4E,6E,10Z)/2:0"
-LMFA07010354,"4E,6E,11Z-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(4E,6E,11Z)/2:0"
-LMFA07010355,"10E,12Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(10E,12Z)/2:0"
-LMFA07010356,"11E,13Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11E,13Z)/2:0"
-LMFA07010357,"4E,6Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(4E,6Z)/2:0"
-LMFA07010358,"6E,11Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(6E,11Z)/2:0"
-LMFA07010359,"9E,11Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(9E,11Z)/2:0"
-LMFA07010360,"4E,6Z,10Z-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(4E,6Z,10Z)/2:0"
-LMFA07010361,10Z-Hexadecenyl acetate,C18H34O2,WE 16:1(10Z)/2:0
-LMFA07010362,11Z-Hexadecenyl acetate,C18H34O2,WE 16:1(11Z)/2:0
-LMFA07010363,12Z-Hexadecenyl acetate,C18H34O2,WE 16:1(12Z)/2:0
-LMFA07010365,3Z-Hexadecenyl acetate,C18H34O2,WE 16:1(3Z)/2:0
-LMFA07010366,5Z-Hexadecenyl acetate,C18H34O2,WE 16:1(5Z)/2:0
-LMFA07010367,7Z-Hexadecenyl acetate,C18H34O2,WE 16:1(7Z)/2:0
-LMFA07010368,9Z-Hexadecenyl acetate,C18H34O2,WE 16:1(9Z)/2:0
-LMFA07010369,"10Z,12E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(10Z,12E)/2:0"
-LMFA07010370,"11Z,13E,15-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(11Z,13E,15)/2:0"
-LMFA07010371,"11Z,13E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11Z,13E)/2:0"
-LMFA07010372,"11Z,14E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11Z,14E)/2:0"
-LMFA07010373,"7Z,11E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(7Z,11E)/2:0"
-LMFA07010374,"11Z,13Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11Z,13Z)/2:0"
-LMFA07010375,"7Z,11Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(7Z,11Z)/2:0"
-LMFA07010376,"8Z,10Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(8Z,10Z)/2:0"
-LMFA07010378,7-Hexadecenyl acetate,C18H34O2,WE 16:1(7)/2:0
-LMFA07010379,Hexadecyl acetate,C18H36O2,WE 16:0/2:0
-LMFA07010380,11Z-Heptadecenyl acetate,C19H36O2,WE 17:1(11Z)/2:0
-LMFA07010381,Heptadecyl acetate,C19H38O2,WE 17:0/2:0
-LMFA07010382,13E-Octadecenyl acetate,C20H38O2,WE 18:1(13E)/2:0
-LMFA07010383,2E-Octadecenyl acetate,C20H38O2,WE 18:1(2E)/2:0
-LMFA07010384,"3E,13E-Octadecadienyl acetate",C20H36O2,"WE 18:2(3E,13E)/2:0"
-LMFA07010385,"2E,13Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(2E,13Z)/2:0"
-LMFA07010386,"3E,13Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(3E,13Z)/2:0"
-LMFA07010387,11Z-Octadecenyl acetate,C20H38O2,WE 18:1(11Z)/2:0
-LMFA07010388,13Z-Octadecenyl acetate,C20H38O2,WE 18:1(13Z)/2:0
-LMFA07010389,9Z-Octadecenyl acetate,C20H38O2,WE 18:1(9Z)/2:0
-LMFA07010390,"2Z,13E-Octadecadienyl acetate",C20H36O2,"WE 18:2(2Z,13E)/2:0"
-LMFA07010391,"3Z,13E-Octadecadienyl acetate",C20H36O2,"WE 18:2(3Z,13E)/2:0"
-LMFA07010392,"2Z,13Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(2Z,13Z)/2:0"
-LMFA07010393,"3Z,13Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(3Z,13Z)/2:0"
-LMFA07010394,"9Z,12Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(9Z,12Z)/2:0"
-LMFA07010395,"3Z,6Z,9Z-Octadecatrienyl acetate",C20H34O2,"WE 18:3(3Z,6Z,9Z)/2:0"
-LMFA07010396,"9Z,12Z,15Z-Octadecatrienyl acetate",C20H34O2,"WE 18:3(9Z,12Z,15Z)/2:0"
-LMFA07010397,9-Octadecenyl acetate,C20H38O2,WE 18:1(9)/2:0
-LMFA07010398,Octadecyl acetate,C20H40O2,WE 18:0/2:0
-LMFA07010399,"11Z,19-Eicosadienyl acetate",C22H40O2,"WE 20:2(11Z,19)/2:0"
-LMFA07010400,11Z-Eicosenyl acetate,C22H42O2,WE 20:1(11Z)/2:0
-LMFA07010401,"11Z,14Z-Eicosadienyl acetate",C22H40O2,"WE 20:2(11Z,14Z)/2:0"
-LMFA07010402,"11Z,14Z,17Z-Eicosatrienyl acetate",C22H38O2,"WE 20:3(11Z,14Z,17Z)/2:0"
-LMFA07010403,Eicosyl acetate,C22H44O2,WE 20:0/2:0
-LMFA07010404,11-Docosenyl acetate,C24H46O2,WE 22:1(11)/2:0
-LMFA07010405,Docosyl acetate,C24H48O2,WE 22:0/2:0
-LMFA07010406,Tetracosyl acetate,C26H52O2,WE 24:0/2:0
-LMFA07010408,decyl formate,C11H22O2,WE 10:0/1:0
-LMFA07010409,dodecyl formate,C13H26O2,WE 12:0/1:0
+LMFA07010176,Pentyl acetate,C7H14O2,WE 5:0/7:0
+LMFA07010177,"2E,5-Hexadienyl acetate",C8H12O2,"WE 6:2(2E,5)/8:2"
+LMFA07010178,2E-Hexenyl acetate,C8H14O2,WE 6:1(2E)/8:0
+LMFA07010179,3E-Hexenyl acetate,C8H14O2,WE 6:1(3E)/8:0
+LMFA07010180,"2E,4E-Hexadienyl acetate",C8H12O2,"WE 6:2(2E,4E)/8:2"
+LMFA07010181,3Z-Hexenyl acetate,C8H14O2,WE 6:1(3Z)/8:0
+LMFA07010182,1-Hexenyl acetate,C8H14O2,WE 6:1(1)/8:0
+LMFA07010183,3-Methylenehexyl acetate,C9H16O2,WE 6:0;3My/8:0
+LMFA07010184,Hexyl acetate,C8H16O2,WE 6:0/8:0
+LMFA07010185,2E-Heptenyl acetate,C9H16O2,WE 7:1(2E)/9:0
+LMFA07010186,Heptyl acetate,C9H18O2,WE 7:0/9:0
+LMFA07010187,"2E,7-Octadienyl acetate",C10H16O2,"WE 8:2(2E,7)/10:2"
+LMFA07010188,2E-Octenyl acetate,C10H18O2,WE 8:1(2E)/10:0
+LMFA07010189,"3,7-Dimethyl-2E,6-octadienyl acetate",C12H20O2,"WE 8:2(2E,6);3Me,7Me/10:2"
+LMFA07010190,"8-oxo-3,7-Dimethyl-6E-octenyl acetate",C12H20O3,"WE 8:1(6E);3Me,7Me;8oxo/10:0"
+LMFA07010191,"2E,4E-Octadienyl acetate",C10H16O2,"WE 8:2(2E,4E)/10:2"
+LMFA07010192,"2E,6E-Octadienyl acetate",C10H16O2,"WE 8:2(2E,6E)/10:2"
+LMFA07010193,"2E,6Z-Octadienyl acetate",C10H16O2,"WE 8:2(2E,6Z)/10:2"
+LMFA07010194,"3,7-Dimethyl-2Z,6-octadienyl acetate",C12H20O2,"WE 8:2(2Z,6);3Me,7Me/10:2"
+LMFA07010195,3Z-Octenyl acetate,C10H18O2,WE 8:1(3Z)/10:0
+LMFA07010196,4-Methyloctyl acetate,C11H22O2,WE 8:0;4Me/10:0
+LMFA07010197,Octyl acetate,C10H20O2,WE 8:0/10:0
+LMFA07010198,6E-Nonenyl acetate,C11H20O2,WE 9:1(6E)/11:0
+LMFA07010199,2-Nonenyl acetate,C11H20O2,WE 9:1(2)/11:0
+LMFA07010200,Nonyl acetate,C11H22O2,WE 9:0/11:0
+LMFA07010201,2E-Decenyl acetate,C12H22O2,WE 10:1(2E)/12:0
+LMFA07010202,4E-Decenyl acetate,C12H22O2,WE 10:1(4E)/12:0
+LMFA07010203,5E-Decenyl acetate,C12H22O2,WE 10:1(5E)/12:0
+LMFA07010204,7E-Decenyl acetate,C12H22O2,WE 10:1(7E)/12:0
+LMFA07010205,"3E,5E-Decadienyl acetate",C12H20O2,"WE 10:2(3E,5E)/12:2"
+LMFA07010206,3Z-Decenyl acetate,C12H22O2,WE 10:1(3Z)/12:0
+LMFA07010207,4Z-Decenyl acetate,C12H22O2,WE 10:1(4Z)/12:0
+LMFA07010208,5Z-Decenyl acetate,C12H22O2,WE 10:1(5Z)/12:0
+LMFA07010209,"7Z,9-Decadienyl acetate",C12H20O2,"WE 10:2(7Z,9)/12:2"
+LMFA07010210,7Z-Decenyl acetate,C12H22O2,WE 10:1(7Z)/12:0
+LMFA07010211,"3Z,5E-Decadienyl acetate",C12H20O2,"WE 10:2(3Z,5E)/12:2"
+LMFA07010212,Decyl acetate,C12H24O2,WE 10:0/12:0
+LMFA07010213,8E-Undecenyl acetate,C13H24O2,WE 11:1(8E)/13:0
+LMFA07010214,9E-Undecenyl acetate,C13H24O2,WE 11:1(9E)/13:0
+LMFA07010215,5Z-Undecenyl acetate,C13H24O2,WE 11:1(5Z)/13:0
+LMFA07010216,7Z-Undecenyl acetate,C13H24O2,WE 11:1(7Z)/13:0
+LMFA07010217,8Z-Undecenyl acetate,C13H24O2,WE 11:1(8Z)/13:0
+LMFA07010218,9Z-Undecenyl acetate,C13H24O2,WE 11:1(9Z)/13:0
+LMFA07010219,2-Undecenyl acetate,C13H24O2,WE 11:1(2)/13:0
+LMFA07010220,Undecyl acetate,C13H26O2,WE 11:0/13:0
+LMFA07010221,10R-Methyldodecyl acetate,C15H30O2,WE 12:0;10Me/14:0
+LMFA07010222,10E-Dodecenyl acetate,C14H26O2,WE 12:1(10E)/14:0
+LMFA07010223,3E-Dodecenyl acetate,C14H26O2,WE 12:1(3E)/14:0
+LMFA07010224,4E-Dodecenyl acetate,C14H26O2,WE 12:1(4E)/14:0
+LMFA07010225,5E-Dodecenyl acetate,C14H26O2,WE 12:1(5E)/14:0
+LMFA07010226,7E-Dodecenyl acetate,C14H26O2,WE 12:1(7E)/14:0
+LMFA07010227,8E-Dodecenyl acetate,C14H26O2,WE 12:1(8E)/14:0
+LMFA07010228,"9E,11-Dodecadienyl acetate",C14H24O2,"WE 12:2(9E,11)/14:2"
+LMFA07010229,9E-Dodecenyl acetate,C14H26O2,WE 12:1(9E)/14:0
+LMFA07010230,"3,7,11-Trimethyl-2,6,10-dodecatrienyl acetate",C17H28O2,"WE 12:3(2,6,10);3Me,7Me,11Me/14:3"
+LMFA07010231,"4E,10E-Dodecadienyl acetate",C14H24O2,"WE 12:2(4E,10E)/14:2"
+LMFA07010232,"5E,7E-Dodecadienyl acetate",C14H24O2,"WE 12:2(5E,7E)/14:2"
+LMFA07010233,"7E,9E,11-Dodecatrienyl acetate",C14H22O2,"WE 12:3(7E,9E,11)/14:3"
+LMFA07010234,"7E,9E-Dodecadienyl acetate",C14H24O2,"WE 12:2(7E,9E)/14:2"
+LMFA07010235,"8E,10E-Dodecadienyl acetate",C14H24O2,"WE 12:2(8E,10E)/14:2"
+LMFA07010236,"3E,5Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(3E,5Z)/14:2"
+LMFA07010237,"5E,7Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(5E,7Z)/14:2"
+LMFA07010238,"7E,9Z,11-Dodecatrienyl acetate",C14H22O2,"WE 12:3(7E,9Z,11)/14:3"
+LMFA07010239,"7E,9Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(7E,9Z)/14:2"
+LMFA07010240,"8E,10Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(8E,10Z)/14:2"
+LMFA07010241,10Z-Dodecenyl acetate,C14H26O2,WE 12:1(10Z)/14:0
+LMFA07010242,3Z-Dodecenyl acetate,C14H26O2,WE 12:1(3Z)/14:0
+LMFA07010243,5Z-Dodecenyl acetate,C14H26O2,WE 12:1(5Z)/14:0
+LMFA07010244,7Z-Dodecenyl acetate,C14H26O2,WE 12:1(7Z)/14:0
+LMFA07010245,8Z-Dodecenyl acetate,C14H26O2,WE 12:1(8Z)/14:0
+LMFA07010246,"9Z,11-Dodecadienyl acetate",C14H24O2,"WE 12:2(9Z,11)/14:2"
+LMFA07010248,9Z-Dodecenyl acetate,C14H26O2,WE 12:1(9Z)/14:0
+LMFA07010249,"3Z,5E-Dodecadienyl acetate",C14H24O2,"WE 12:2(3Z,5E)/14:2"
+LMFA07010250,"5Z,7E-Dodecadienyl acetate",C14H24O2,"WE 12:2(5Z,7E)/14:2"
+LMFA07010251,"7Z,9E,11-Dodecatrienyl acetate",C14H22O2,"WE 12:3(7Z,9E,11)/14:3"
+LMFA07010252,"7Z,9E-Dodecadienyl acetate",C14H24O2,"WE 12:2(7Z,9E)/14:2"
+LMFA07010253,"8Z,10E-Dodecadienyl acetate",C14H24O2,"WE 12:2(8Z,10E)/14:2"
+LMFA07010254,"3,7,11-Trimethyl-2,6,10-dodecatrienyl acetate",C17H28O2,"WE 12:3(2,6,10);3Me,7Me,11Me/14:3"
+LMFA07010255,"5Z,7Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(5Z,7Z)/14:2"
+LMFA07010256,"7Z,9Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(7Z,9Z)/14:2"
+LMFA07010257,"8Z,10Z-Dodecadienyl acetate",C14H24O2,"WE 12:2(8Z,10Z)/14:2"
+LMFA07010258,"11,11,11,12,12-Pentafluoro-9Z-dodecenyl acetate",C14H21O2F5,"WE 12:1(9Z);11F,11F,11F,12F,12F/14:0"
+LMFA07010259,"11,11-Difluoro-9Z-dodecenyl acetate",C14H24O2F2,"WE 12:1(9Z);11F,11F/14:0"
+LMFA07010260,11-Dodecenyl acetate,C14H26O2,WE 12:1(11)/14:0
+LMFA07010261,"7,7-Difluoro-8Z-dodecenyl acetate",C14H24F2O2,"WE 12:1(8Z);7F,7F/14:0"
+LMFA07010262,Dodecyl acetate,C14H28O2,WE 12:0/14:0
+LMFA07010263,11E-Tridecenyl acetate,C15H28O2,WE 13:1(11E)/15:0
+LMFA07010264,3E-Tridecenyl acetate,C15H28O2,WE 13:1(3E)/15:0
+LMFA07010265,4E-Tridecenyl acetate,C15H28O2,WE 13:1(4E)/15:0
+LMFA07010266,6E-Tridecenyl acetate,C15H28O2,WE 13:1(6E)/15:0
+LMFA07010267,8E-Tridecenyl acetate,C15H28O2,WE 13:1(8E)/15:0
+LMFA07010268,9E-Tridecenyl acetate,C15H28O2,WE 13:1(9E)/15:0
+LMFA07010269,"4E,7Z-Tridecadienyl acetate",C15H26O2,"WE 13:2(4E,7Z)/15:2"
+LMFA07010270,"5E,9Z-Tridecadienyl acetate",C15H26O2,"WE 13:2(5E,9Z)/15:2"
+LMFA07010271,"4E,7Z,10Z-Tridecatrienyl acetate",C15H24O2,"WE 13:3(4E,7Z,10Z)/15:3"
+LMFA07010272,10Z-Tridecenyl acetate,C15H28O2,WE 13:1(10Z)/15:0
+LMFA07010273,11Z-Tridecenyl acetate,C15H28O2,WE 13:1(11Z)/15:0
+LMFA07010274,4Z-Tridecenyl acetate,C15H28O2,WE 13:1(4Z)/15:0
+LMFA07010275,8Z-Tridecenyl acetate,C15H28O2,WE 13:1(8Z)/15:0
+LMFA07010276,9Z-Tridecenyl acetate,C15H28O2,WE 13:1(9Z)/15:0
+LMFA07010277,"5Z,9E-Tridecadienyl acetate",C15H26O2,"WE 13:2(5Z,9E)/15:2"
+LMFA07010278,"5Z,9Z-Tridecadienyl acetate",C15H26O2,"WE 13:2(5Z,9Z)/15:2"
+LMFA07010279,"7Z,11Z-Tridecadienyl acetate",C15H26O2,"WE 13:2(7Z,11Z)/15:2"
+LMFA07010280,"11-Methyl-9Z,12-tridecadienyl acetate",C16H28O2,"WE 13:2(9Z,12);11Me/15:2"
+LMFA07010281,2-Tridecenyl acetate,C15H28O2,WE 13:1(2)/15:0
+LMFA07010282,Tridecyl acetate,C15H30O2,WE 13:0/15:0
+LMFA07010283,10E-Tetradecenyl acetate,C16H30O2,WE 14:1(10E)/16:0
+LMFA07010284,"11E,13-Tetradecadienyl acetate",C16H28O2,"WE 14:2(11E,13)/16:2"
+LMFA07010285,11E-Tetradecenyl acetate,C16H30O2,WE 14:1(11E)/16:0
+LMFA07010286,12E-Tetradecenyl acetate,C16H30O2,WE 14:1(12E)/16:0
+LMFA07010287,3E-Tetradecenyl acetate,C16H30O2,WE 14:1(3E)/16:0
+LMFA07010288,5E-Tetradecenyl acetate,C16H30O2,WE 14:1(5E)/16:0
+LMFA07010289,6E-Tetradecenyl acetate,C16H30O2,WE 14:1(6E)/16:0
+LMFA07010290,7E-Tetradecenyl acetate,C16H30O2,WE 14:1(7E)/16:0
+LMFA07010291,8E-Tetradecenyl acetate,C16H30O2,WE 14:1(8E)/16:0
+LMFA07010292,"9E,11-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9E,11)/16:2"
+LMFA07010293,9E-Tetradecenyl acetate,C16H30O2,WE 14:1(9E)/16:0
+LMFA07010294,"10E,12E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(10E,12E)/16:2"
+LMFA07010295,"3E,5E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3E,5E)/16:2"
+LMFA07010296,"8E,10E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(8E,10E)/16:2"
+LMFA07010297,"9E,12E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9E,12E)/16:2"
+LMFA07010298,"10E,12Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(10E,12Z)/16:2"
+LMFA07010299,"3E,5Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3E,5Z)/16:2"
+LMFA07010300,"3E,7Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3E,7Z)/16:2"
+LMFA07010301,"3E,8Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3E,8Z)/16:2"
+LMFA07010302,"4E,10Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(4E,10Z)/16:2"
+LMFA07010303,"4E,9Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(4E,9Z)/16:2"
+LMFA07010304,"8E,10Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(8E,10Z)/16:2"
+LMFA07010305,"9E,11Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9E,11Z)/16:2"
+LMFA07010306,"3E,8Z,11Z-Tetradecatrienyl acetate",C16H26O2,"WE 14:3(3E,8Z,11Z)/16:3"
+LMFA07010307,10Z-Tetradecenyl acetate,C16H30O2,WE 14:1(10Z)/16:0
+LMFA07010308,"11Z,13-Tetradecadienyl acetate",C16H28O2,"WE 14:2(11Z,13)/16:2"
+LMFA07010309,11Z-Tetradecenyl acetate,C16H30O2,WE 14:1(11Z)/16:0
+LMFA07010310,12Z-Tetradecenyl acetate,C16H30O2,WE 14:1(12Z)/16:0
+LMFA07010311,3Z-Tetradecenyl acetate,C16H30O2,WE 14:1(3Z)/16:0
+LMFA07010312,5Z-Tetradecenyl acetate,C16H30O2,WE 14:1(5Z)/16:0
+LMFA07010313,6Z-Tetradecenyl acetate,C16H30O2,WE 14:1(6Z)/16:0
+LMFA07010314,7Z-Tetradecenyl acetate,C16H30O2,WE 14:1(7Z)/16:0
+LMFA07010315,8Z-Tetradecenyl acetate,C16H30O2,WE 14:1(8Z)/16:0
+LMFA07010316,9Z-Tetradecenyl acetate,C16H30O2,WE 14:1(9Z)/16:0
+LMFA07010317,"10Z,12E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(10Z,12E)/16:2"
+LMFA07010318,"3Z,5E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(3Z,5E)/16:2"
+LMFA07010319,"8Z,10E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(8Z,10E)/16:2"
+LMFA07010320,"9Z,11E,13-Tetradecatrienyl acetate",C16H26O2,"WE 14:3(9Z,11E,13)/16:3"
+LMFA07010321,"9Z,11E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9Z,11E)/16:2"
+LMFA07010322,"9Z,12E-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9Z,12E)/16:2"
+LMFA07010323,"10Z,12Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(10Z,12Z)/16:2"
+LMFA07010324,"9Z,11Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9Z,11Z)/16:2"
+LMFA07010325,"9Z,12Z-Tetradecadienyl acetate",C16H28O2,"WE 14:2(9Z,12Z)/16:2"
+LMFA07010326,12-Methyltetradecyl acetate,C17H34O2,WE 14:0;12Me/16:0
+LMFA07010327,"14,14,14-Trifluoro-11E-tetradecenyl acetate",C16H27O2F3,"WE 14:1(11E);14F,14F,14F/16:0"
+LMFA07010328,"14,14,14-Trifluoro-11Z-tetradecenyl acetate",C16H27O2F3,"WE 14:1(11Z);14F,14F,14F/16:0"
+LMFA07010329,14-Fluoro-11E-tetradecenyl acetate,C16H29O2F,WE 14:1(11E);14F/16:0
+LMFA07010330,14-Fluoro-11Z-tetradecenyl acetate,C16H29O2F,WE 14:1(11Z);14F/16:0
+LMFA07010331,Tetradecyl acetate,C16H32O2,WE 14:0/16:0
+LMFA07010332,12E-Pentadecenyl acetate,C17H32O2,WE 15:1(12E)/17:0
+LMFA07010333,9E-Pentadecenyl acetate,C17H32O2,WE 15:1(9E)/17:0
+LMFA07010334,"8E,10E-Pentadecadienyl acetate",C17H30O2,"WE 15:2(8E,10E)/17:2"
+LMFA07010335,"8E,10Z-Pentadecadienyl acetate",C17H30O2,"WE 15:2(8E,10Z)/17:2"
+LMFA07010336,10Z-Pentadecenyl acetate,C17H32O2,WE 15:1(10Z)/17:0
+LMFA07010337,12Z-Pentadecenyl acetate,C17H32O2,WE 15:1(12Z)/17:0
+LMFA07010338,8Z-Pentadecenyl acetate,C17H32O2,WE 15:1(8Z)/17:0
+LMFA07010339,9Z-Pentadecenyl acetate,C17H32O2,WE 15:1(9Z)/17:0
+LMFA07010340,"8Z,10E-Pentadecadienyl acetate",C17H30O2,"WE 15:2(8Z,10E)/17:2"
+LMFA07010341,"8Z,10Z-Pentadecadienyl acetate",C17H30O2,"WE 15:2(8Z,10Z)/17:2"
+LMFA07010342,Pentadecyl acetate,C17H34O2,WE 15:0/17:0
+LMFA07010343,11E-Hexadecenyl acetate,C18H34O2,WE 16:1(11E)/18:0
+LMFA07010344,5E-Hexadecenyl acetate,C18H34O2,WE 16:1(5E)/18:0
+LMFA07010345,6E-Hexadecenyl acetate,C18H34O2,WE 16:1(6E)/18:0
+LMFA07010346,8E-Hexadecenyl acetate,C18H34O2,WE 16:1(8E)/18:0
+LMFA07010347,9E-Hexadecenyl acetate,C18H34O2,WE 16:1(9E)/18:0
+LMFA07010348,"10E,12E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(10E,12E)/18:2"
+LMFA07010349,"11E,13E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11E,13E)/18:2"
+LMFA07010350,"10E,12E,14E-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(10E,12E,14E)/18:3"
+LMFA07010351,"3,7,11,15-Tetramethyl-2E,6E,10E,14-hexadecatetraenyl acetate",C22H36O2,"WE 16:4(2E,6E,10E,14);3Me,7Me,11Me,15Me/18:4"
+LMFA07010352,"10E,12E,14Z-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(10E,12E,14Z)/18:3"
+LMFA07010353,"4E,6E,10Z-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(4E,6E,10Z)/18:3"
+LMFA07010354,"4E,6E,11Z-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(4E,6E,11Z)/18:3"
+LMFA07010355,"10E,12Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(10E,12Z)/18:2"
+LMFA07010356,"11E,13Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11E,13Z)/18:2"
+LMFA07010357,"4E,6Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(4E,6Z)/18:2"
+LMFA07010358,"6E,11Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(6E,11Z)/18:2"
+LMFA07010359,"9E,11Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(9E,11Z)/18:2"
+LMFA07010360,"4E,6Z,10Z-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(4E,6Z,10Z)/18:3"
+LMFA07010361,10Z-Hexadecenyl acetate,C18H34O2,WE 16:1(10Z)/18:0
+LMFA07010362,11Z-Hexadecenyl acetate,C18H34O2,WE 16:1(11Z)/18:0
+LMFA07010363,12Z-Hexadecenyl acetate,C18H34O2,WE 16:1(12Z)/18:0
+LMFA07010365,3Z-Hexadecenyl acetate,C18H34O2,WE 16:1(3Z)/18:0
+LMFA07010366,5Z-Hexadecenyl acetate,C18H34O2,WE 16:1(5Z)/18:0
+LMFA07010367,7Z-Hexadecenyl acetate,C18H34O2,WE 16:1(7Z)/18:0
+LMFA07010368,9Z-Hexadecenyl acetate,C18H34O2,WE 16:1(9Z)/18:0
+LMFA07010369,"10Z,12E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(10Z,12E)/18:2"
+LMFA07010370,"11Z,13E,15-Hexadecatrienyl acetate",C18H30O2,"WE 16:3(11Z,13E,15)/18:3"
+LMFA07010371,"11Z,13E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11Z,13E)/18:2"
+LMFA07010372,"11Z,14E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11Z,14E)/18:2"
+LMFA07010373,"7Z,11E-Hexadecadienyl acetate",C18H32O2,"WE 16:2(7Z,11E)/18:2"
+LMFA07010374,"11Z,13Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(11Z,13Z)/18:2"
+LMFA07010375,"7Z,11Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(7Z,11Z)/18:2"
+LMFA07010376,"8Z,10Z-Hexadecadienyl acetate",C18H32O2,"WE 16:2(8Z,10Z)/18:2"
+LMFA07010378,7-Hexadecenyl acetate,C18H34O2,WE 16:1(7)/18:0
+LMFA07010379,Hexadecyl acetate,C18H36O2,WE 16:0/18:0
+LMFA07010380,11Z-Heptadecenyl acetate,C19H36O2,WE 17:1(11Z)/19:0
+LMFA07010381,Heptadecyl acetate,C19H38O2,WE 17:0/19:0
+LMFA07010382,13E-Octadecenyl acetate,C20H38O2,WE 18:1(13E)/20:0
+LMFA07010383,2E-Octadecenyl acetate,C20H38O2,WE 18:1(2E)/20:0
+LMFA07010384,"3E,13E-Octadecadienyl acetate",C20H36O2,"WE 18:2(3E,13E)/20:2"
+LMFA07010385,"2E,13Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(2E,13Z)/20:2"
+LMFA07010386,"3E,13Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(3E,13Z)/20:2"
+LMFA07010387,11Z-Octadecenyl acetate,C20H38O2,WE 18:1(11Z)/20:0
+LMFA07010388,13Z-Octadecenyl acetate,C20H38O2,WE 18:1(13Z)/20:0
+LMFA07010389,9Z-Octadecenyl acetate,C20H38O2,WE 18:1(9Z)/20:0
+LMFA07010390,"2Z,13E-Octadecadienyl acetate",C20H36O2,"WE 18:2(2Z,13E)/20:2"
+LMFA07010391,"3Z,13E-Octadecadienyl acetate",C20H36O2,"WE 18:2(3Z,13E)/20:2"
+LMFA07010392,"2Z,13Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(2Z,13Z)/20:2"
+LMFA07010393,"3Z,13Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(3Z,13Z)/20:2"
+LMFA07010394,"9Z,12Z-Octadecadienyl acetate",C20H36O2,"WE 18:2(9Z,12Z)/20:2"
+LMFA07010395,"3Z,6Z,9Z-Octadecatrienyl acetate",C20H34O2,"WE 18:3(3Z,6Z,9Z)/20:3"
+LMFA07010396,"9Z,12Z,15Z-Octadecatrienyl acetate",C20H34O2,"WE 18:3(9Z,12Z,15Z)/20:3"
+LMFA07010397,9-Octadecenyl acetate,C20H38O2,WE 18:1(9)/20:0
+LMFA07010398,Octadecyl acetate,C20H40O2,WE 18:0/20:0
+LMFA07010399,"11Z,19-Eicosadienyl acetate",C22H40O2,"WE 20:2(11Z,19)/22:2"
+LMFA07010400,11Z-Eicosenyl acetate,C22H42O2,WE 20:1(11Z)/22:0
+LMFA07010401,"11Z,14Z-Eicosadienyl acetate",C22H40O2,"WE 20:2(11Z,14Z)/22:2"
+LMFA07010402,"11Z,14Z,17Z-Eicosatrienyl acetate",C22H38O2,"WE 20:3(11Z,14Z,17Z)/22:3"
+LMFA07010403,Eicosyl acetate,C22H44O2,WE 20:0/22:0
+LMFA07010404,11-Docosenyl acetate,C24H46O2,WE 22:1(11)/24:0
+LMFA07010405,Docosyl acetate,C24H48O2,WE 22:0/24:0
+LMFA07010406,Tetracosyl acetate,C26H52O2,WE 24:0/26:0
+LMFA07010408,decyl formate,C11H22O2,WE 10:0/11:0
+LMFA07010409,dodecyl formate,C13H26O2,WE 12:0/13:0
 LMFA07010410,Methyl propionate,C4H8O2,WE 1:0/3:0
 LMFA07010411,ethyl propionate,C5H10O2,WE 2:0/3:0
 LMFA07010412,propyl propionate,C6H12O2,WE 3:0/3:0
@@ -6033,22 +6028,22 @@ LMFA07010413,hexyl propionate,C9H18O2,WE 6:0/3:0
 LMFA07010414,decyl propionate,C13H26O2,WE 10:0/3:0
 LMFA07010415,tetradecyl propionate,C17H34O2,WE 14:0/3:0
 LMFA07010416,octadecyl propionate,C21H42O2,WE 18:0/3:0
-LMFA07010417,propionyl butyrate,C7H14O2,WE 3:0/4:0
-LMFA07010418,butryl butyrate,C8H16O2,WE 4:0/4:0
-LMFA07010419,hexyl butyrate,C10H20O2,WE 6:0/4:0
-LMFA07010420,octyl butyrate,C12H24O2,WE 8:0/4:0
-LMFA07010421,nonyl butyrate,C13H26O2,WE 9:0/4:0
-LMFA07010422,decyl butyrate,C14H28O2,WE 10:0/4:0
-LMFA07010423,undecyl butyrate,C15H30O2,WE 11:0/4:0
-LMFA07010424,dodecyl butyrate,C16H32O2,WE 12:0/4:0
-LMFA07010425,tridecyl butyrate,C17H34O2,WE 13:0/4:0
-LMFA07010426,tetradecyl butyrate,C18H36O2,WE 14:0/4:0
-LMFA07010427,pentadecyl butyrate,C19H38O2,WE 15:0/4:0
-LMFA07010428,hexadecyl butyrate,C20H40O2,WE 16:0/4:0
-LMFA07010429,octadecyl butyrate,C22H44O2,WE 18:0/4:0
-LMFA07010430,eicosyl butyrate,C24H48O2,WE 20:0/4:0
-LMFA07010431,docosenyl butyrate,C26H52O2,WE 22:0/4:0
-LMFA07010432,tetracosyl butyrate,C28H56O2,WE 24:0/4:0
+LMFA07010417,propionyl butyrate,C7H14O2,WE 3:0/7:0
+LMFA07010418,butryl butyrate,C8H16O2,WE 4:0/8:0
+LMFA07010419,hexyl butyrate,C10H20O2,WE 6:0/10:0
+LMFA07010420,octyl butyrate,C12H24O2,WE 8:0/12:0
+LMFA07010421,nonyl butyrate,C13H26O2,WE 9:0/13:0
+LMFA07010422,decyl butyrate,C14H28O2,WE 10:0/14:0
+LMFA07010423,undecyl butyrate,C15H30O2,WE 11:0/15:0
+LMFA07010424,dodecyl butyrate,C16H32O2,WE 12:0/16:0
+LMFA07010425,tridecyl butyrate,C17H34O2,WE 13:0/17:0
+LMFA07010426,tetradecyl butyrate,C18H36O2,WE 14:0/18:0
+LMFA07010427,pentadecyl butyrate,C19H38O2,WE 15:0/19:0
+LMFA07010428,hexadecyl butyrate,C20H40O2,WE 16:0/20:0
+LMFA07010429,octadecyl butyrate,C22H44O2,WE 18:0/22:0
+LMFA07010430,eicosyl butyrate,C24H48O2,WE 20:0/24:0
+LMFA07010431,docosenyl butyrate,C26H52O2,WE 22:0/26:0
+LMFA07010432,tetracosyl butyrate,C28H56O2,WE 24:0/28:0
 LMFA07010433,Methyl hexanoate,C7H14O2,WE 1:0/6:0
 LMFA07010434,ethyl hexanoate,C8H16O2,WE 2:0/6:0
 LMFA07010435,propionyl hexanoate,C9H18O2,WE 3:0/6:0
@@ -6143,63 +6138,62 @@ LMFA07010524,"Methyl 3,7-dimethyl-6E-octenoate",C11H20O2,"WE 1:0/8:1(6E);3Me,7Me
 LMFA07010525,Methyl 6E-nonenoate,C10H18O2,WE 1:0/9:1(6E)
 LMFA07010526,"Methyl (E)-2,6,10-trimethyl-5,9-undecadienoate",C15H26O2,"WE 1:0/11:2(5,9);(Me)3"
 LMFA07010527,Methyl 14-methyl-8-hexadecenoate,C18H36O2,WE 1:0/16:1(8);Me
-LMFA07010528,Methyl butyrate,C5H10O2,WE 1:0/4:0
 LMFA07010529,"Methyl 3,7-dimethyl-6-octenoate",C11H22O2,WE 1:0/8:1(6);(Me)2
 LMFA07010530,(Z)-3-Decenyl (E)-2-hexenoate,C16H28O2,WE 10:1(3)/6:1(2)
 LMFA07010531,(Z)-3-Decenyl (E)-3-hexenoate,C16H28O2,WE 10:1(3)/6:1(3)
 LMFA07010532,(Z)-5-Decenyl 3-methylbutanoate,C15H28O2,WE 10:1(5)/4:0;3Me
 LMFA07010533,(Z)-3-Dodecenyl (E)-2-butenoate,C16H28O2,WE 12:1(3)/4:1(2)
 LMFA07010534,(Z)-5-Dodecenyl (Z)-5-dodecenoate,C24H44O2,WE 12:1(5)/12:1(5)
-LMFA07010535,(Z)-7-Dodecenyl formate,C13H24O2,WE 12:1(7)/1:0
+LMFA07010535,(Z)-7-Dodecenyl formate,C13H24O2,WE 12:1(7)/13:0
 LMFA07010536,(Z)-7-Dodecenyl propionate,C15H28O2,WE 12:1(7)/3:0
-LMFA07010537,(Z)-7-Dodecenyl butyrate,C16H30O2,WE 12:1(7)/4:0
+LMFA07010537,(Z)-7-Dodecenyl butyrate,C16H30O2,WE 12:1(7)/16:0
 LMFA07010538,"(Z,E)-5,7-Dodecadienyl propionate",C15H26O2,"WE 12:2(5,7)/3:0"
 LMFA07010539,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl decanoate",C25H44O2,"WE 12:3(2,6,10);3Me,7Me,11Me/10:0"
 LMFA07010540,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl dodecanoate",C27H48O2,"WE 12:3(2,6,10);3Me,7Me,11Me/12:0"
 LMFA07010541,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl propionate",C18H30O2,"WE 12:3(2,6,10);3Me,7Me,11Me/3:0"
 LMFA07010542,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl 3-methylbutanoate",C20H34O2,"WE 12:3(2,6,10);3Me,7Me,11Me/4:0;3Me"
-LMFA07010543,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl butyrate",C19H32O2,"WE 12:3(2,6,10);3Me,7Me,11Me/4:0"
+LMFA07010543,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl butyrate",C19H32O2,"WE 12:3(2,6,10);3Me,7Me,11Me/16:3"
 LMFA07010544,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl pentanoate",C20H34O2,"WE 12:3(2,6,10);3Me,7Me,11Me/5:0"
 LMFA07010545,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl hexanoate",C21H36O2,"WE 12:3(2,6,10);3Me,7Me,11Me/6:0"
 LMFA07010546,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl heptanoate",C22H38O2,"WE 12:3(2,6,10);3Me,7Me,11Me/7:0"
 LMFA07010547,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl octanoate",C23H40O2,"WE 12:3(2,6,10);3Me,7Me,11Me/8:0"
 LMFA07010548,"(E,E)-3,7,11-Trimethyl-2,6,10-dodecatrienyl nonanoate",C24H42O2,"WE 12:3(2,6,10);3Me,7Me,11Me/9:0"
 LMFA07010549,"6,10,13-Trimethyltetradecyl 3-methylbutanoate",C22H44O2,"WE 14:0;6Me,10Me,13Me/4:0;3Me"
-LMFA07010550,(E)-8-Tetradecenyl formate,C15H28O2,WE 14:1(8)/1:0
-LMFA07010551,(Z)-8-Tetradecenyl formate,C15H28O2,WE 14:1(8)/1:0
-LMFA07010552,(E)-9-Tetradecenyl formate,C15H28O2,WE 14:1(9)/1:0
-LMFA07010553,(Z)-9-Tetradecenyl formate,C15H28O2,WE 14:1(9)/1:0
-LMFA07010554,"(E,E)-8,10-Tetradecadienyl formate",C15H26O2,"WE 14:2(8,10)/1:0"
+LMFA07010550,(E)-8-Tetradecenyl formate,C15H28O2,WE 14:1(8)/15:0
+LMFA07010551,(Z)-8-Tetradecenyl formate,C15H28O2,WE 14:1(8)/15:0
+LMFA07010552,(E)-9-Tetradecenyl formate,C15H28O2,WE 14:1(9)/15:0
+LMFA07010553,(Z)-9-Tetradecenyl formate,C15H28O2,WE 14:1(9)/15:0
+LMFA07010554,"(E,E)-8,10-Tetradecadienyl formate",C15H26O2,"WE 14:2(8,10)/15:2"
 LMFA07010555,"(Z,E)-9,12-Tetradecadienyl propionate",C17H30O2,"WE 14:2(9,12)/3:0"
-LMFA07010556,"10,14-Dimethylpentadecyl butyrate",C21H42O2,"WE 15:0;10Me,14Me/4:0"
-LMFA07010557,(Z)-11-Hexadecenyl formate,C17H32O2,WE 16:1(11)/1:0
+LMFA07010556,"10,14-Dimethylpentadecyl butyrate",C21H42O2,"WE 15:0;10Me,14Me/19:0"
+LMFA07010557,(Z)-11-Hexadecenyl formate,C17H32O2,WE 16:1(11)/17:0
 LMFA07010558,6-Octadecenyl 3-methylbutanoate,C23H46O2,WE 18:1(6)/4:0;3Me
-LMFA07010559,6-Octadecenyl valerate,C23H46O2,WE 18:1(6)/5:0
+LMFA07010559,6-Octadecenyl valerate,C23H46O2,WE 18:1(6)/23:0
 LMFA07010560,(Z)-7-Octadecenyl 3-methylbutanoate,C23H44O2,WE 18:1(7)/4:0;3Me
-LMFA07010561,(Z)-7-Octadecenyl butyrate,C22H42O2,WE 18:1(7)/4:0
+LMFA07010561,(Z)-7-Octadecenyl butyrate,C22H42O2,WE 18:1(7)/22:0
 LMFA07010562,(Z)-9-Octadecenyl 3-methylbutanoate,C23H44O2,WE 18:1(9)/4:0;3Me
 LMFA07010563,"Ethyl (E)-7,9-decadienoate",C12H20O2,"WE 2:0/10:2(7,9)"
 LMFA07010564,"Ethyl (Z,Z)-11,13-hexadecadienoate",C18H32O2,"WE 2:0/16:2(11,13)"
-LMFA07010565,"(Z,Z,Z)-11,14,17-Eicosatrienyl 4-methylvalerate",C26H46O2,"WE 20:3(11,14,17)/5:0;4Me"
+LMFA07010565,"(Z,Z,Z)-11,14,17-Eicosatrienyl 4-methylvalerate",C26H46O2,"WE 20:3(11,14,17)/25:3;4Me"
 LMFA07010566,2-Methylpropyl 2-methylpropionate,C8H16O2,WE 3:0;2Me/3:0;2Me
 LMFA07010567,2-Methylpropyl propionate,C7H14O2,WE 3:0;2Me/3:0
 LMFA07010568,2-Methylpropyl 2-methylbutanoate,C9H18O2,WE 3:0;2Me/4:0;2Me
 LMFA07010569,2-Methylbutyl 2-methylpropionate,C9H18O2,WE 4:0;2Me/3:0;2Me
-LMFA07010570,2-Methylbutyl butyrate,C9H18O2,WE 4:0;2Me/4:0
+LMFA07010570,2-Methylbutyl butyrate,C9H18O2,WE 4:0;2Me/8:0
 LMFA07010571,2-Methylbutyl hexanoate,C11H22O2,WE 4:0;2Me/6:0
 LMFA07010572,3-Methylbutyl 2-methylpropionate,C9H18O2,WE 4:0;3Me/3:0;2Me
 LMFA07010573,3-Methylbutyl propionate,C8H16O2,WE 4:0;3Me/3:0
-LMFA07010574,3-Methylbutyl butyrate,C9H18O2,WE 4:0;3Me/4:0
-LMFA07010575,3-Methyl-2-butenyl formate,C6H12O2,WE 4:1(2);3Me/1:0
+LMFA07010574,3-Methylbutyl butyrate,C9H18O2,WE 4:0;3Me/8:0
+LMFA07010575,3-Methyl-2-butenyl formate,C6H12O2,WE 4:1(2);3Me/5:0
 LMFA07010576,3-Methyl-2-butenyl hexadecanoate,C21H42O2,WE 4:1(2);3Me/16:0
 LMFA07010577,3-Methyl-2-butenyl octadecanoate,C23H46O2,WE 4:1(2);3Me/18:0
 LMFA07010578,3-Methyl-2-butenyl eicosanoate,C25H50O2,WE 4:1(2);3Me/20:0
 LMFA07010579,3-Methyl-2-butenyl docosanoate,C27H54O2,WE 4:1(2);3Me/22:0
-LMFA07010580,(E)-2-Methyl-2-butenyl butyrate,C9H16O2,WE 4:1(2);2Me/4:0
-LMFA07010581,(E)-2-Butenyl butyrate,C8H14O2,WE 4:1(2)/4:0
+LMFA07010580,(E)-2-Methyl-2-butenyl butyrate,C9H16O2,WE 4:1(2);2Me/8:0
+LMFA07010581,(E)-2-Butenyl butyrate,C8H14O2,WE 4:1(2)/8:0
 LMFA07010582,3-Methyl-3-butenyl tetradecanoate,C19H38O2,WE 4:1(3);3Me/14:0
 LMFA07010584,"(E)-2-Hexenyl (E)-7,9-decadienoate",C16H26O2,"WE 6:1(2)/10:2(7,9)"
-LMFA07010585,(E)-2-Hexenyl butyrate,C10H18O2,WE 6:1(2)/4:0
+LMFA07010585,(E)-2-Hexenyl butyrate,C10H18O2,WE 6:1(2)/10:0
 LMFA07010587,(E)-2-Hexenyl hexanoate,C12H22O2,WE 6:1(2)/6:0
 LMFA07010588,(E)-2-Hexenyl (E)-2-hexenoate,C12H20O2,WE 6:1(2)/6:1(2)
 LMFA07010589,(E)-2-Hexenyl (Z)-3-hexenoate,C12H20O2,WE 6:1(2)/6:1(3)
@@ -6208,7 +6202,7 @@ LMFA07010591,(Z)-3-Hexenyl hexadecanoate,C22H42O2,WE 6:1(3)/16:0
 LMFA07010592,(Z)-3-Hexenyl 3-methylbutanoate,C11H20O2,WE 6:1(3)/4:0;3Me
 LMFA07010593,3Z-Hexenyl butanoate,C10H18O2,WE 6:1(3Z)/4:0
 LMFA07010594,(Z)-3-Hexenyl hexanoate,C12H22O2,WE 6:1(3)/6:0
-LMFA07010595,Heptyl butyrate,C11H22O2,WE 7:0/4:0
+LMFA07010595,Heptyl butyrate,C11H22O2,WE 7:0/11:0
 LMFA07010596,"2,6-Dimethyl-5-heptenyl octanoate",C17H34O2,"WE 7:1(5);2Me,6Me/8:0"
 LMFA07010597,"2,6-Dimethyl-5-heptenyl nonanoate",C18H36O2,"WE 7:1(5);2Me,6Me/9:0"
 LMFA07010598,7-Methyloctyl 9-methyldecanoate,C20H40O2,WE 8:0;7Me/10:0;9Me
@@ -6216,29 +6210,29 @@ LMFA07010599,7-Methyloctyl (Z)-4-decenoate,C19H36O2,WE 8:0;Me/10:1(4)
 LMFA07010600,7-Methyloctyl 5-methylhexanoate,C16H32O2,WE 8:0;7Me/6:0;5Me
 LMFA07010601,7-Methyloctyl 7-methyloctanoate,C18H36O2,WE 8:0;7Me/8:0;7Me
 LMFA07010602,7-Methyloctyl octanoate,C17H34O2,WE 8:0;7Me/8:0
-LMFA07010603,(E)-2-Octenyl butyrate,C12H22O2,WE 8:1(2)/4:0
+LMFA07010603,(E)-2-Octenyl butyrate,C12H22O2,WE 8:1(2)/12:0
 LMFA07010605,(E)-2-Octenyl hexanoate,C14H26O2,WE 8:1(2)/6:0
-LMFA07010606,"3,7-Dimethyl-6-octenyl formate",C11H22O2,"WE 8:1(6);3Me,7Me/1:0"
+LMFA07010606,"3,7-Dimethyl-6-octenyl formate",C11H22O2,"WE 8:1(6);3Me,7Me/9:0"
 LMFA07010607,"3,7-Dimethyl-6-octenyl decanoate",C20H40O2,"WE 8:1(6);3Me,7Me/10:0"
 LMFA07010608,"3,7-Dimethyl-6-octenyl 3,7-dimethyl-6-octenoate",C20H40O2,WE 8:1(6);(Me)2/8:1(6);(Me)2
 LMFA07010609,"(E)-3,7-Dimethyl-6-octenyl 3,7-dimethyl-2,6-octadienoate",C20H38O2,"WE 8:1(6);(Me)2/8:2(2,6);(Me)2"
 LMFA07010610,3-Methylene-7-methyl-7-octenyl propionate,C13H24O2,WE 8:1(7);7Me;3My/3:0
-LMFA07010611,"(E)-3,7-Dimethyl-2,6-octadienyl formate",C11H18O2,"WE 8:2(2,6);3Me,7Me/1:0"
+LMFA07010611,"(E)-3,7-Dimethyl-2,6-octadienyl formate",C11H18O2,"WE 8:2(2,6);3Me,7Me/9:2"
 LMFA07010612,"(E)-3,7-Dimethyl-2,6-octadienyl decanoate",C20H36O2,"WE 8:2(2,6);3Me,7Me/10:0"
 LMFA07010613,"(E)-3,7-Dimethyl-2,6-octadienyl dodecanoate",C22H40O2,"WE 8:2(2,6);3Me,7Me/12:0"
 LMFA07010614,"(E)-3,7-Dimethyl-2,6-octadienyl propionate",C13H22O2,"WE 8:2(2,6);3Me,7Me/3:0"
 LMFA07010615,"(E)-3,7-Dimethyl-2,6-octadienyl 3-methylbutanoate",C15H26O2,"WE 8:2(2,6);3Me,7Me/4:0;3Me"
-LMFA07010616,"(E)-3,7-Dimethyl-2,6-octadienyl butyrate",C14H24O2,"WE 8:2(2,6);3Me,7Me/4:0"
+LMFA07010616,"(E)-3,7-Dimethyl-2,6-octadienyl butyrate",C14H24O2,"WE 8:2(2,6);3Me,7Me/12:2"
 LMFA07010617,"(E)-3,7-Dimethyl-2,6-octadienyl pentanoate",C15H26O2,"WE 8:2(2,6);3Me,7Me/5:0"
 LMFA07010618,"(E)-3,7-Dimethyl-2,6-octadienyl hexanoate",C16H28O2,"WE 8:2(2,6);3Me,7Me/6:0"
 LMFA07010619,"(E)-3,7-Dimethyl-2,6-octadienyl heptanoate",C17H30O2,"WE 8:2(2,6);3Me,7Me/7:0"
 LMFA07010620,"(E)-3,7-Dimethyl-2,6-octadienyl octanoate",C18H32O2,"WE 8:2(2,6);3Me,7Me/8:0"
 LMFA07010621,"(E)-3,7-Dimethyl-2,6-octadienyl nonanoate",C19H34O2,"WE 8:2(2,6);3Me,7Me/9:0"
 LMFA07010622,"(E)-3,7-Dimethyl-2,7-octadienyl propionate",C13H22O2,"WE 8:2(2,7);3Me,7Me/3:0"
-LMFA07010623,"(Z)-3,7-Dimethyl-2,6-octadienyl formate",C11H18O2,"WE 8:2(2,6);3Me,7Me/1:0"
+LMFA07010623,"(Z)-3,7-Dimethyl-2,6-octadienyl formate",C11H18O2,"WE 8:2(2,6);3Me,7Me/9:2"
 LMFA07010624,"(Z)-3,7-Dimethyl-2,6-octadienyl decanoate",C20H36O2,"WE 8:2(2,6);3Me,7Me/10:0"
 LMFA07010625,"(Z)-3,7-Dimethyl-2,6-octadienyl 3-methylbutanoate",C15H26O2,"WE 8:2(2,6);3Me,7Me/4:0;3Me"
-LMFA07010626,"(Z)-3,7-Dimethyl-2,6-octadienyl butyrate",C14H24O2,"WE 8:2(2,6);3Me,7Me/4:0"
+LMFA07010626,"(Z)-3,7-Dimethyl-2,6-octadienyl butyrate",C14H24O2,"WE 8:2(2,6);3Me,7Me/12:2"
 LMFA07010627,"(Z)-3,7-Dimethyl-2,6-octadienyl hexanoate",C16H28O2,"WE 8:2(2,6);3Me,7Me/6:0"
 LMFA07010628,"(Z)-3,7-Dimethyl-2,6-octadienyl octanoate",C18H32O2,"WE 8:2(2,6);3Me,7Me/8:0"
 LMFA07010629,"(Z)-3,7-Dimethyl-2,7-octadienyl propionate",C13H22O2,"WE 8:2(2,7);3Me,7Me/3:0"
@@ -6251,23 +6245,23 @@ LMFA07010635,3-Methyl-3-butenyl hexadecanoate,C21H40O2,WE 4:1(3);3Me/16:0
 LMFA07010636,3-Methyl-3-butenyl octadecanoate,C23H44O2,WE 4:1(3);3Me/18:0
 LMFA07010637,3-Methyl-3-butenyl eicosanoate,C25H48O2,WE 4:1(3);3Me/20:0
 LMFA07010638,3-Methyl-3-butenyl docosanoate,C27H52O2,WE 4:1(3);3Me/22:0
-LMFA07010639,"2,4-Hexadienyl butyrate",C10H16O2,"WE 6:2(2,4)/4:0"
-LMFA07010640,16-Methyl-9Z-heptadecenyl isobutyrate,C22H42O2,WE 17:1(9Z);16Me/3:0;2Me
-LMFA07010641,3Z-Hexenyl 2R-hydroxy-3-methylbutyrate,C11H20O3,WE 6:1(3Z)/4:0;3Me;2OH
+LMFA07010639,"2,4-Hexadienyl butyrate",C10H16O2,"WE 6:2(2,4)/10:2"
+LMFA07010640,16-Methyl-9Z-heptadecenyl isobutyrate,C22H42O2,WE 17:1(9Z);16Me/20:0;2Me
+LMFA07010641,3Z-Hexenyl 2R-hydroxy-3-methylbutyrate,C11H20O3,WE 6:1(3Z)/10:0;3Me;2OH
 LMFA07010642,3Z-Hexenyl 3R-hydroxybutanoate,C10H18O3,WE 6:1(3Z)/4:0;3OH
-LMFA07010643,3Z-Hexenyl isobutyrate,C10H18O2,WE 6:1(3Z)/3:0;2Me
-LMFA07010644,7Z-Octadecenyl isobutyrate,C22H42O2,WE 18:1(7Z)/3:0;2Me
-LMFA07010645,9Z-Octadecenyl isobutyrate,C23H44O2,WE 18:1(9Z)/3:0;2Me
-LMFA07010646,"11Z,14Z,17Z-Eicosatrienyl isobutyrate",C24H42O2,"WE 20:3(11Z,14Z,17Z)/3:0;2Me"
-LMFA07010647,"7Z,13Z,16Z,19Z-Docosatetraenyl isobutyrate",C26H44O2,"WE 22:4(7Z,13Z,16Z,19Z)/3:0;2Me"
-LMFA07010648,"1,3,5,7-Tetramethyldecyl formate",C15H30O2,"WE 10:0;1Me,3Me,5Me,7Me/1:0"
-LMFA07010649,"10,14-Dimethylpentadecyl isobutyrate",C21H42O2,"WE 15:0;10Me,14Me/3:0;2Me"
-LMFA07010650,14-Methylpentadecyl isobutyrate,C20H40O2,WE 15:0;14Me/3:0;2Me
-LMFA07010651,16-Methylheptadecyl isobutyrate,C22H44O2,WE 17:0;16Me/3:0;2Me
+LMFA07010643,3Z-Hexenyl isobutyrate,C10H18O2,WE 6:1(3Z)/9:0;2Me
+LMFA07010644,7Z-Octadecenyl isobutyrate,C22H42O2,WE 18:1(7Z)/21:0;2Me
+LMFA07010645,9Z-Octadecenyl isobutyrate,C23H44O2,WE 18:1(9Z)/21:0;2Me
+LMFA07010646,"11Z,14Z,17Z-Eicosatrienyl isobutyrate",C24H42O2,"WE 20:3(11Z,14Z,17Z)/23:3;2Me"
+LMFA07010647,"7Z,13Z,16Z,19Z-Docosatetraenyl isobutyrate",C26H44O2,"WE 22:4(7Z,13Z,16Z,19Z)/25:4;2Me"
+LMFA07010648,"1,3,5,7-Tetramethyldecyl formate",C15H30O2,"WE 10:0;1Me,3Me,5Me,7Me/11:0"
+LMFA07010649,"10,14-Dimethylpentadecyl isobutyrate",C21H42O2,"WE 15:0;10Me,14Me/18:0;2Me"
+LMFA07010650,14-Methylpentadecyl isobutyrate,C20H40O2,WE 15:0;14Me/18:0;2Me
+LMFA07010651,16-Methylheptadecyl isobutyrate,C22H44O2,WE 17:0;16Me/20:0;2Me
 LMFA07010652,1-Methylbutyl 3-methylbutanoate,C9H18O2,WE 4:0;1Me/4:0;3Me
 LMFA07010653,Isopropyl octanoate,C11H22O2,WE 2:0;2Me/8:0
-LMFA07010661,Decyl isobutyrate,C14H28O2,WE 10:0/3:0;2Me
-LMFA07010662,Eicosyl isobutyrate,C24H48O2,WE 20:0/3:0;2Me
+LMFA07010661,Decyl isobutyrate,C14H28O2,WE 10:0/13:0;2Me
+LMFA07010662,Eicosyl isobutyrate,C24H48O2,WE 20:0/23:0;2Me
 LMFA07010663,Isopropyl 2-methyl-2E-pentenoate,C9H16O2,WE 2:0;2Me/5:1(2E);2Me
 LMFA07010664,"Isopropyl 2,4-dimethyl-2E,4E-heptadienoate",C12H20O2,"WE 2:0;2Me/7:2(2E,4E);2Me,4Me"
 LMFA07010665,Isopropyl 5Z-dodecenoate,C15H28O2,WE 2:0;2Me/12:1(5Z)
@@ -6278,14 +6272,14 @@ LMFA07010669,Isopropyl 9Z-dodecenoate,C15H28O2,WE 2:0;2Me/12:1(9Z)
 LMFA07010670,Isopropyl 9Z-hexadecenoate,C19H36O2,WE 2:0;2Me/16:1(9Z)
 LMFA07010671,Isopropyl 9Z-octadecenoate,C21H40O2,WE 2:0;2Me/18:1(9Z)
 LMFA07010672,Isopropyl 9Z-tetradecenoate,C17H32O2,WE 2:0;2Me/14:1(9Z)
-LMFA07010673,Isopropyl butyrate,C7H14O2,WE 2:0;2Me/4:0
+LMFA07010673,Isopropyl butyrate,C7H14O2,WE 2:0;2Me/7:0
 LMFA07010674,Isopropyl dodecanoate,C15H30O2,WE 2:0;2Me/12:0
 LMFA07010675,Isopropyl hexadecanoate,C19H38O2,WE 2:0;2Me/16:0
 LMFA07010676,Isopropyl hexanoate,C9H18O2,WE 2:0;2Me/6:0
 LMFA07010677,Isopropyl tetradecanoate,C17H34O2,WE 2:0;2Me/14:0
-LMFA07010678,Octadecyl isobutyrate,C22H44O2,WE 18:0/3:0;2Me
-LMFA07010679,Tetradecyl isobutyrate,C18H36O2,WE 14:0/3:0;2Me
-LMFA07010680,Undecyl isobutyrate,C15H30O2,WE 11:0/3:0;2Me
+LMFA07010678,Octadecyl isobutyrate,C22H44O2,WE 18:0/21:0;2Me
+LMFA07010679,Tetradecyl isobutyrate,C18H36O2,WE 14:0/17:0;2Me
+LMFA07010680,Undecyl isobutyrate,C15H30O2,WE 11:0/14:0;2Me
 LMFA07010681,2-methylbutyl octanoate,C13H26O2,WE 4:0;2Me/8:0
 LMFA07010682,3-Methylbutyl octanoate,C13H26O2,WE 4:0;3Me/8:0
 LMFA07010683,3-Methylbutyl pentadecanoate,C20H40O2,WE 4:0;3Me/15:0
@@ -6320,7 +6314,7 @@ LMFA07010746,prop-2-en-1-yl heptanoate,C10H18O2,WE 3:1(2)/7:0
 LMFA07010747,prop-2-en-1-yl hexanoate,C9H16O2,WE 3:1(2)/6:0
 LMFA07010748,prop-2-en-1-yl octanoate,C11H20O2,WE 3:1(2)/8:0
 LMFA07010752,hex-3-en-1-yl 2-methylbutanoate,C11H20O2,WE 6:1(3)/4:0;2Me
-LMFA07010753,3-hydroxynonyl acetate,C11H22O3,WE 9:0;3OH/2:0
+LMFA07010753,3-hydroxynonyl acetate,C11H22O3,WE 9:0;3OH/11:0
 LMFA07010757,3-methylbutyl 2-methylbutanoate,C10H20O2,WE 4:0;3Me/4:0;2Me
 LMFA07010758,3-methylbutyl decanoate,C15H30O2,WE 4:0;3Me/10:0
 LMFA07010759,3-methylbutyl dodecanoate,C17H34O2,WE 4:0;3Me/12:0
@@ -6349,7 +6343,7 @@ LMFA07010808,(3Z)-hex-3-en-1-yl (2E)-2-methylbut-2-enoate,C11H18O2,WE 6:1(3Z)/4:
 LMFA07010809,(3Z)-hex-3-en-1-yl (2E)-hex-2-enoate,C12H20O2,WE 6:1(3Z)/6:1(2E)
 LMFA07010810,(3Z)-oct-3-en-1-yl propanoate,C11H20O2,WE 8:1(3Z)/3:0
 LMFA07010811,ethyl (4Z)-hept-4-enoate,C9H16O2,WE 2:0/7:1(4Z)
-LMFA07010812,"(3R)-3,7-dimethyloct-6-en-1-yl acetate",C12H22O2,"WE 8:1(6);3Me,7Me/2:0"
+LMFA07010812,"(3R)-3,7-dimethyloct-6-en-1-yl acetate",C12H22O2,"WE 8:1(6);3Me,7Me/10:0"
 LMFA07010814,"3,7-dimethyloct-6-en-1-yl butanoate",C14H26O2,"WE 8:1(6);3Me,7Me/4:0"
 LMFA07010816,"3,7-dimethyloct-6-en-1-yl hexanoate",C16H30O2,"WE 8:1(6);3Me,7Me/6:0"
 LMFA07010817,"3,7-dimethyloct-6-en-1-yl 2-methylpropanoate",C14H26O2,"WE 8:1(6);3Me,7Me/3:0;2Me"
@@ -6452,7 +6446,7 @@ LMFA07010976,"(2Z)-3,7-dimethylocta-2,6-dien-1-yl propanoate",C13H22O2,"WE 8:2(2
 LMFA07010977,nonyl 3-methylbutanoate,C14H28O2,WE 9:0/4:0;3Me
 LMFA07010978,nonyl octanoate,C17H34O2,WE 9:0/8:0
 LMFA07010979,(2Z)-4-(octadecyloxy)-4-oxobut-2-enoic acid,C22H40O4,FA 4:1(2Z);4O(18:0);4oxo
-LMFA07010980,octyl formate,C9H18O2,WE 8:0/1:0
+LMFA07010980,octyl formate,C9H18O2,WE 8:0/9:0
 LMFA07010981,octyl heptanoate,C15H30O2,WE 8:0/7:0
 LMFA07010983,octyl propanoate,C11H22O2,WE 8:0/3:0
 LMFA07010984,ethyl heptanoate,C9H18O2,WE 2:0/7:0
@@ -6469,7 +6463,7 @@ LMFA07011004,propyl heptanoate,C10H20O2,WE 3:0/7:0
 LMFA07011005,propyl pentanoate,C8H16O2,WE 3:0/5:0
 LMFA07011006,propyl octadecanoate,C21H42O2,WE 3:0/18:0
 LMFA07011008,2-hydroxypropyl octadecanoate,C21H42O3,WE 3:0;2OH/18:0
-LMFA07011010,"3,7-dimethyloct-7-en-1-yl acetate",C12H22O2,"WE 8:1(7);3Me,7Me/2:0"
+LMFA07011010,"3,7-dimethyloct-7-en-1-yl acetate",C12H22O2,"WE 8:1(7);3Me,7Me/10:0"
 LMFA07011011,"3,7-dimethyloct-7-en-1-yl butanoate",C14H26O2,"WE 8:1(7);3Me,7Me/4:0"
 LMFA07011013,"3,7-dimethyloct-7-en-1-yl 2-methylpropanoate",C14H26O2,"WE 8:1(7);3Me,7Me/3:0;2Me"
 LMFA07011014,"3,7-dimethyloct-7-en-1-yl 3-methylbutanoate",C15H28O2,"WE 8:1(7);3Me,7Me/4:0;3Me"
@@ -6827,54 +6821,54 @@ LMFA08020068,"(+/-)N-(2-fluoro-ethyl)-2,16-dimethyl-5Z,8Z,11Z,14Z-docosatetraeno
 LMFA08020069,"(+/-)N-(2-fluoro-ethyl)-2,17,17-trimethyl-5Z,8Z,11Z,14Z-docosatetraenoyl amine",C27H46NOF,"NA 2:0;2F/22:4(5Z,8Z,11Z,14Z);2Me,17Me,17Me"
 LMFA08020070,"(+/-)N-(2-fluoro-ethyl)-2,17-dimethyl-5Z,8Z,11Z,14Z-docosatetraenoyl amine",C26H44NOF,"NA 2:0;2F/22:4(5Z,8Z,11Z,14Z);2Me,17Me"
 LMFA08020071,"(+/-)N-(2-fluoro-ethyl)-2-methyl-5Z,8Z,11Z,14Z-tricosatetraenoyl amine",C26H44NOF,"NA 2:0;2F/23:4(5Z,8Z,11Z,14Z);2Me"
-LMFA08040001,"N-(5Z,8Z,11Z,14Z-eicosatetraenoyl)-ethanolamine",C22H37NO2,"NAE 20:4(5Z,8Z,11Z,14Z)"
-LMFA08040002,"N-(11Z,14Z-eicosadienoyl)-ethanolamine",C22H41NO2,"NAE 20:2(11Z,14Z)"
-LMFA08040003,"N-(6Z,9Z,12Z-octadecatrienoyl)-ethanolamine",C20H35NO2,"NAE 18:3(6Z,9Z,12Z)"
-LMFA08040004,"N-(9Z,12Z-octadecadienoyl)-ethanolamine",C20H37NO2,"NAE 18:2(9Z,12Z)"
-LMFA08040005,"N-(11Z,14Z,17Z-eicosatrienoyl)-ethanolamine",C22H39NO2,"NAE 20:3(11Z,14Z,17Z)"
-LMFA08040006,"N-(6Z,9Z,12Z,15Z-octadecatetraenoyl)-ethanolamine",C20H33NO2,"NAE 18:4(6Z,9Z,12Z,15Z)"
-LMFA08040007,"N-(9Z,12Z,15Z-octadecatrienoyl)-ethanolamine",C20H35NO2,"NAE 18:3(9Z,12Z,15Z)"
-LMFA08040008,"N-(5Z,8Z,11Z,14Z,17Z-eicosapentaenoyl)-ethanolamine",C22H35NO2,"NAE 20:5(5Z,8Z,11Z,14Z,17Z)"
-LMFA08040009,"N-(4Z,7Z,10Z,13Z,16Z,19Z-docosahexaenoyl)-ethanolamine",C24H37NO2,"NAE 22:6(4Z,7Z,10Z,13Z,16Z,19Z)"
-LMFA08040010,N-(11Z-eicosaenoyl)-ethanolamine,C22H43NO2,NAE 20:1(11Z)
-LMFA08040011,"N-(8Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H39NO2,"NAE 20:3(8Z,11Z,14Z)"
-LMFA08040015,N-(9Z-octadecenoyl)-ethanolamine,C20H39NO2,NAE 18:1(9Z)
-LMFA08040019,"N-(2-isopropyl-5Z,8Z,11Z,14Z-eicosatetraenoyl)-ethanolamine",C25H43NO2,"NAE 20:4(5Z,8Z,11Z,14Z);2(2:0;2Me)"
-LMFA08040020,"N-(5Z,8Z,11Z,14Z-heneicosatetraenoyl)-ethanolamine",C23H39NO2,"NAE 21:4(5Z,8Z,11Z,14Z)"
-LMFA08040021,"N-(5Z,8Z,11Z,14Z-docosatetraenoyl)-ethanolamine",C24H41NO2,"NAE 22:4(5Z,8Z,11Z,14Z)"
-LMFA08040022,"N-(5Z,8Z,11Z,14Z-tricosatetraenoyl)-ethanolamine",C25H43NO2,"NAE 23:4(5Z,8Z,11Z,14Z)"
-LMFA08040023,"N-(5Z,8Z,11Z,14Z-tetracosatetraenoyl)-ethanolamine",C26H45NO2,"NAE 24:4(5Z,8Z,11Z,14Z)"
-LMFA08040025,"N-(17,17-dimethyl-5Z,8Z,11Z,14Z-docosatetraenoyl)-ethanolamine",C26H45NO2,"NAE 22:4(5Z,8Z,11Z,14Z);17Me,17Me"
-LMFA08040026,"N-(17,17-dimethyl-5Z,8Z,11Z,14Z-heneicosatetraenoyl)-ethanolamine",C25H43NO2,"NAE 21:4(5Z,8Z,11Z,14Z);17Me,17Me"
-LMFA08040027,"N-(17-methyl-5Z,8Z,11Z,14Z-docosatetraenoyl)-ethanolamine",C25H43NO2,"NAE 22:4(5Z,8Z,11Z,14Z);17Me"
-LMFA08040029,"N-((+/-)-5,6-dihydroxy-8Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H39NO4,"NAE 20:3(8Z,11Z,14Z);5OH,6OH"
-LMFA08040030,"N-((+/-)-8,9-dihydroxy-5Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H39NO4,"NAE 20:3(5Z,11Z,14Z);8OH,9OH"
-LMFA08040031,"N-((+/-)-14,15-dihydroxy-5Z,8Z,11Z-eicosatrienoyl)-ethanolamine",C22H39NO4,"NAE 20:3(5Z,8Z,11Z);14OH,15OH"
-LMFA08040032,"N-((+/-)-5(6)-epoxy-8Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H37NO3,"NAE 20:3(8Z,11Z,14Z);5Ep"
-LMFA08040033,"N-((+/-)-8(9)-epoxy-5Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H37NO3,"NAE 20:3(5Z,11Z,14Z);8Ep"
-LMFA08040034,"N-((+/-)-11(12)-epoxy-5Z,8Z,14Z-eicosatrienoyl)-ethanolamine",C22H37NO3,"NAE 20:3(5Z,8Z,14Z);11Ep"
-LMFA08040035,"N-((+/-)-14(15)-epoxy-5Z,8Z,11Z-eicosatrienoyl)-ethanolamine",C22H37NO3,"NAE 20:3(5Z,8Z,11Z);14Ep"
-LMFA08040036,"N-((+/-)-11,12-dihydroxy-5Z,8Z,14Z-eicosatrienoyl)-ethanolamine",C22H39NO4,"NAE 20:3(5Z,8Z,14Z);11OH,12OH"
-LMFA08040037,"N-(5Z,8Z,11Z-eicosatrienoyl)-ethanolamine",C22H39NO2,"NAE 20:3(5Z,8Z,11Z)"
-LMFA08040039,"N-(20-hydroxy-5Z,8Z,11Z,14Z-eicosatetraenoyl)-ethanolamine",C22H37NO3,"NAE 20:4(5Z,8Z,11Z,14Z);20OH"
-LMFA08040040,"N-(15-hydroxy-5Z,8Z,11Z,13E-eicosatetraenoyl)-ethanolamine",C22H37NO3,"NAE 20:4(5Z,8Z,11Z,13E);15OH"
-LMFA08040041,N-(Dodecanoyl)-ethanolamine,C14H29NO2,NAE 12:0
-LMFA08040042,N-(Tetradecanoyl)-ethanolamine,C16H33NO2,NAE 14:0
-LMFA08040043,N-(9Z-hexadecenoyl)-ethanolamine,C18H35NO2,NAE 16:1(9Z)
-LMFA08040045,N-(Pentadecanoyl)-ethanolamine,C17H35NO2,NAE 15:0
-LMFA08040047,"N-(7Z,10Z,13Z,16Z-docosatetraenoyl)-ethanolamine",C24H41NO2,"NAE 22:4(7Z,10Z,13Z,16Z)"
-LMFA08040049,N-(Heptadecanoyl)-ethanolamine,C19H39NO2,NAE 17:0
-LMFA08040051,N-(Octadecanoyl)-ethanolamine,C20H41NO2,NAE 18:0
-LMFA08040052,N-(Docosanoyl)-ethanolamine,C24H49NO2,NAE 22:0
-LMFA08040053,N-(Tricosanoyl)-ethanolamine,C25H51NO2,NAE 23:0
-LMFA08040054,N-(Tetracosanoyl)-ethanolamine,C26H53NO2,NAE 24:0
-LMFA08040055,N-(15Z-tetracosenoyl)-ethanolamine,C26H51NO2,NAE 24:1(15Z)
-LMFA08040064,"N-(5Z,11Z,14Z,17Z-eicosatetraenoyl)-ethanolamine",C22H37NO2,"NAE 20:4(5Z,11Z,14Z,17Z)"
-LMFA08040066,"N-(2-methyl-2Z,6E-eicosadienoyl)-ethanolamine",C23H43NO2,"NAE 20:2(2Z,6E);2Me"
-LMFA08040067,"N-(6Z,9Z,12Z,15Z,18Z,21Z-tetracosahexaenoyl)-ethanolamine",C26H41NO2,"NAE 24:6(6Z,9Z,12Z,15Z,18Z,21Z)"
-LMFA08040068,"N-(17(18)-epoxy-5Z,8Z,11Z,14Z-eicosatetraenoyl)-ethanolamine",C22H35NO3,"NAE 20:4(5Z,8Z,11Z,14Z);17Ep"
-LMFA08040069,"N-(19(20)-epoxy-4Z,7Z,13Z,16Z-docosapentaenoyl)-ethanolamine",C24H37NO3,"NAE 22:4(4Z,7Z,13Z,16Z);19Ep"
-LMFA08040071,"N-(13-hydroxy-9Z,11E-octadecadienoyl)-ethanolamine",C20H37NO3,"NAE 18:2(9Z,11E);13OH"
+LMFA08040001,"N-(5Z,8Z,11Z,14Z-eicosatetraenoyl)-ethanolamine",C22H37NO2,"NAE 40:4(5Z,8Z,11Z,14Z)"
+LMFA08040002,"N-(11Z,14Z-eicosadienoyl)-ethanolamine",C22H41NO2,"NAE 40:2(11Z,14Z)"
+LMFA08040003,"N-(6Z,9Z,12Z-octadecatrienoyl)-ethanolamine",C20H35NO2,"NAE 36:3(6Z,9Z,12Z)"
+LMFA08040004,"N-(9Z,12Z-octadecadienoyl)-ethanolamine",C20H37NO2,"NAE 36:2(9Z,12Z)"
+LMFA08040005,"N-(11Z,14Z,17Z-eicosatrienoyl)-ethanolamine",C22H39NO2,"NAE 40:3(11Z,14Z,17Z)"
+LMFA08040006,"N-(6Z,9Z,12Z,15Z-octadecatetraenoyl)-ethanolamine",C20H33NO2,"NAE 36:4(6Z,9Z,12Z,15Z)"
+LMFA08040007,"N-(9Z,12Z,15Z-octadecatrienoyl)-ethanolamine",C20H35NO2,"NAE 36:3(9Z,12Z,15Z)"
+LMFA08040008,"N-(5Z,8Z,11Z,14Z,17Z-eicosapentaenoyl)-ethanolamine",C22H35NO2,"NAE 40:5(5Z,8Z,11Z,14Z,17Z)"
+LMFA08040009,"N-(4Z,7Z,10Z,13Z,16Z,19Z-docosahexaenoyl)-ethanolamine",C24H37NO2,"NAE 44:6(4Z,7Z,10Z,13Z,16Z,19Z)"
+LMFA08040010,N-(11Z-eicosaenoyl)-ethanolamine,C22H43NO2,NAE 40:1(11Z)
+LMFA08040011,"N-(8Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H39NO2,"NAE 40:3(8Z,11Z,14Z)"
+LMFA08040015,N-(9Z-octadecenoyl)-ethanolamine,C20H39NO2,NAE 36:1(9Z)
+LMFA08040019,"N-(2-isopropyl-5Z,8Z,11Z,14Z-eicosatetraenoyl)-ethanolamine",C25H43NO2,"NAE 40:4(5Z,8Z,11Z,14Z);2(2:0;2Me)"
+LMFA08040020,"N-(5Z,8Z,11Z,14Z-heneicosatetraenoyl)-ethanolamine",C23H39NO2,"NAE 42:4(5Z,8Z,11Z,14Z)"
+LMFA08040021,"N-(5Z,8Z,11Z,14Z-docosatetraenoyl)-ethanolamine",C24H41NO2,"NAE 44:4(5Z,8Z,11Z,14Z)"
+LMFA08040022,"N-(5Z,8Z,11Z,14Z-tricosatetraenoyl)-ethanolamine",C25H43NO2,"NAE 46:4(5Z,8Z,11Z,14Z)"
+LMFA08040023,"N-(5Z,8Z,11Z,14Z-tetracosatetraenoyl)-ethanolamine",C26H45NO2,"NAE 48:4(5Z,8Z,11Z,14Z)"
+LMFA08040025,"N-(17,17-dimethyl-5Z,8Z,11Z,14Z-docosatetraenoyl)-ethanolamine",C26H45NO2,"NAE 44:4(5Z,8Z,11Z,14Z);17Me,17Me"
+LMFA08040026,"N-(17,17-dimethyl-5Z,8Z,11Z,14Z-heneicosatetraenoyl)-ethanolamine",C25H43NO2,"NAE 42:4(5Z,8Z,11Z,14Z);17Me,17Me"
+LMFA08040027,"N-(17-methyl-5Z,8Z,11Z,14Z-docosatetraenoyl)-ethanolamine",C25H43NO2,"NAE 44:4(5Z,8Z,11Z,14Z);17Me"
+LMFA08040029,"N-((+/-)-5,6-dihydroxy-8Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H39NO4,"NAE 40:3(8Z,11Z,14Z);5OH,6OH"
+LMFA08040030,"N-((+/-)-8,9-dihydroxy-5Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H39NO4,"NAE 40:3(5Z,11Z,14Z);8OH,9OH"
+LMFA08040031,"N-((+/-)-14,15-dihydroxy-5Z,8Z,11Z-eicosatrienoyl)-ethanolamine",C22H39NO4,"NAE 40:3(5Z,8Z,11Z);14OH,15OH"
+LMFA08040032,"N-((+/-)-5(6)-epoxy-8Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H37NO3,"NAE 40:3(8Z,11Z,14Z);5Ep"
+LMFA08040033,"N-((+/-)-8(9)-epoxy-5Z,11Z,14Z-eicosatrienoyl)-ethanolamine",C22H37NO3,"NAE 40:3(5Z,11Z,14Z);8Ep"
+LMFA08040034,"N-((+/-)-11(12)-epoxy-5Z,8Z,14Z-eicosatrienoyl)-ethanolamine",C22H37NO3,"NAE 40:3(5Z,8Z,14Z);11Ep"
+LMFA08040035,"N-((+/-)-14(15)-epoxy-5Z,8Z,11Z-eicosatrienoyl)-ethanolamine",C22H37NO3,"NAE 40:3(5Z,8Z,11Z);14Ep"
+LMFA08040036,"N-((+/-)-11,12-dihydroxy-5Z,8Z,14Z-eicosatrienoyl)-ethanolamine",C22H39NO4,"NAE 40:3(5Z,8Z,14Z);11OH,12OH"
+LMFA08040037,"N-(5Z,8Z,11Z-eicosatrienoyl)-ethanolamine",C22H39NO2,"NAE 40:3(5Z,8Z,11Z)"
+LMFA08040039,"N-(20-hydroxy-5Z,8Z,11Z,14Z-eicosatetraenoyl)-ethanolamine",C22H37NO3,"NAE 40:4(5Z,8Z,11Z,14Z);20OH"
+LMFA08040040,"N-(15-hydroxy-5Z,8Z,11Z,13E-eicosatetraenoyl)-ethanolamine",C22H37NO3,"NAE 40:4(5Z,8Z,11Z,13E);15OH"
+LMFA08040041,N-(Dodecanoyl)-ethanolamine,C14H29NO2,NAE 24:0
+LMFA08040042,N-(Tetradecanoyl)-ethanolamine,C16H33NO2,NAE 28:0
+LMFA08040043,N-(9Z-hexadecenoyl)-ethanolamine,C18H35NO2,NAE 32:1(9Z)
+LMFA08040045,N-(Pentadecanoyl)-ethanolamine,C17H35NO2,NAE 30:0
+LMFA08040047,"N-(7Z,10Z,13Z,16Z-docosatetraenoyl)-ethanolamine",C24H41NO2,"NAE 44:4(7Z,10Z,13Z,16Z)"
+LMFA08040049,N-(Heptadecanoyl)-ethanolamine,C19H39NO2,NAE 34:0
+LMFA08040051,N-(Octadecanoyl)-ethanolamine,C20H41NO2,NAE 36:0
+LMFA08040052,N-(Docosanoyl)-ethanolamine,C24H49NO2,NAE 44:0
+LMFA08040053,N-(Tricosanoyl)-ethanolamine,C25H51NO2,NAE 46:0
+LMFA08040054,N-(Tetracosanoyl)-ethanolamine,C26H53NO2,NAE 48:0
+LMFA08040055,N-(15Z-tetracosenoyl)-ethanolamine,C26H51NO2,NAE 48:1(15Z)
+LMFA08040064,"N-(5Z,11Z,14Z,17Z-eicosatetraenoyl)-ethanolamine",C22H37NO2,"NAE 40:4(5Z,11Z,14Z,17Z)"
+LMFA08040066,"N-(2-methyl-2Z,6E-eicosadienoyl)-ethanolamine",C23H43NO2,"NAE 40:2(2Z,6E);2Me"
+LMFA08040067,"N-(6Z,9Z,12Z,15Z,18Z,21Z-tetracosahexaenoyl)-ethanolamine",C26H41NO2,"NAE 48:6(6Z,9Z,12Z,15Z,18Z,21Z)"
+LMFA08040068,"N-(17(18)-epoxy-5Z,8Z,11Z,14Z-eicosatetraenoyl)-ethanolamine",C22H35NO3,"NAE 40:4(5Z,8Z,11Z,14Z);17Ep"
+LMFA08040069,"N-(19(20)-epoxy-4Z,7Z,13Z,16Z-docosapentaenoyl)-ethanolamine",C24H37NO3,"NAE 44:4(4Z,7Z,13Z,16Z);19Ep"
+LMFA08040071,"N-(13-hydroxy-9Z,11E-octadecadienoyl)-ethanolamine",C20H37NO3,"NAE 36:2(9Z,11E);13OH"
 LMFA10000007,"12-[1'Z,3'Z-hexadienyloxy]-9Z,11E-dodecadienoic acid",C18H28O3,"FA 12:2(9Z,11E);12O(6:2(1Z,3Z))"
 LMFA10000008,"12-(1'E-Hexaenyloxy)-9Z,11E-dodecadienoic acid",C18H30O3,"FA 12:2(9Z,11E);12O(6:1(1E))"
 LMFA10000009,"12-[1'E,3'Z-hexadienyloxy]-9Z,11Z-dodecadienoic acid",C18H28O3,"FA 12:2(9Z,11Z);12O(6:2(1E,3Z))"
