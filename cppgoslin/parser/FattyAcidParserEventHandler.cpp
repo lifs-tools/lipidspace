@@ -441,10 +441,18 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
             }
         }
         
-        curr_fa->num_carbon += fa->num_carbon;
+        
+        
         
         for (auto &kv : fa->double_bonds->double_bond_positions) curr_fa->double_bonds->double_bond_positions.insert({kv.first + start_pos - 1, kv.second});
         curr_fa->double_bonds->num_double_bonds = curr_fa->double_bonds->double_bond_positions.size();
+        
+        if (!tmp.contains_key("tetrahydrofuran") and tmp.contains_key("furan")){
+            curr_fa->double_bonds->num_double_bonds += 2;
+            if (uncontains(curr_fa->double_bonds->double_bond_positions, 1 + curr_fa->num_carbon)) curr_fa->double_bonds->double_bond_positions.insert({1 + curr_fa->num_carbon, "E"});
+            if (uncontains(curr_fa->double_bonds->double_bond_positions, 3 + curr_fa->num_carbon)) curr_fa->double_bonds->double_bond_positions.insert({3 + curr_fa->num_carbon, "E"});
+        }
+        curr_fa->num_carbon += fa->num_carbon;
                 
         tmp.set_list("fg_pos", new GenericList());
         tmp.get_list("fg_pos")->add_list(new GenericList());

@@ -191,6 +191,35 @@ void HmdbParserEventHandler::build_lipid(TreeNode *node) {
     
     headgroup = new Headgroup(head_group, 0, use_head_group);
     
+    int true_fa = 0;
+    for (auto fa : *fa_list){
+        true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
+    }
+    int poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+    
+    
+    // make lyso
+    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && (head_group.length() < 3 || head_group.substr(3) != "PIP")){
+        head_group = "L" + head_group;
+        delete headgroup;
+        headgroup = new Headgroup(head_group, 0, use_head_group);
+        poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+    }
+    
+    if (level == SPECIES){
+        if (true_fa == 0 && poss_fa != 0){
+            string hg_name = headgroup->headgroup;
+            delete headgroup;
+            throw ConstraintViolationException("No fatty acyl information lipid class '" + hg_name + "' provided.");
+        }
+    }
+        
+    else if (true_fa != poss_fa && (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES)){
+        string hg_name = headgroup->headgroup;
+        delete headgroup;
+        throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
+    }
+    
     int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
     if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
 

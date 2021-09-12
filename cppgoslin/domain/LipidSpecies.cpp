@@ -30,7 +30,6 @@ using namespace std;
 
 LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
     headgroup = _headgroup;
-    
     info = new LipidSpeciesInfo(headgroup->lipid_class);
     info->level = SPECIES;
     
@@ -57,7 +56,7 @@ LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
             info->double_bonds->num_double_bonds += decorator->get_double_bonds();
         }
     }
-        
+       
 }
 
 

@@ -359,13 +359,55 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
         db->double_bond_positions.insert({12, "Z"});
         fa_list->back()->functional_groups->at("acyl").push_back(new AcylAlkylGroup(new FattyAcid("FA", 18, db)));
     }
-    
     headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
+    
+    int true_fa = 0;
+    for (auto fa : *fa_list){
+        true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
+    }
+    int poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+    
+    
+    // make lyso
+    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && (head_group.length() < 3 || head_group.substr(3) != "PIP")){
+        head_group = "L" + head_group;
+        
+        headgroup->decorators = 0;
+        delete headgroup;
+        headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
+        poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+    }
+    
+    if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
+        head_group = "DL" + head_group;
+        
+        headgroup->decorators = 0;
+        delete headgroup;
+        headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
+        poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+    }
+        
+    
+    if (level == SPECIES){
+        if (true_fa == 0 && poss_fa != 0){
+            string hg_name = headgroup->headgroup;
+            delete headgroup;
+            throw ConstraintViolationException("No fatty acyl information lipid class '" + hg_name + "' provided.");
+        }
+    }
+        
+    else if (true_fa != poss_fa && (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES)){
+        string hg_name = headgroup->headgroup;
+        delete headgroup;
+        throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
+    }
+    
     
     int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
     if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
     
 
+    
     switch (level){
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
         case MOLECULAR_SUBSPECIES: ls = new LipidMolecularSubspecies(headgroup, fa_list); break;
@@ -373,6 +415,7 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
         case ISOMERIC_SUBSPECIES: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
         default: break;
     }
+    
     lipid = new LipidAdduct();
     lipid->lipid = ls;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;

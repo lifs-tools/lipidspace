@@ -175,8 +175,9 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     
     
     // make lyso
-    if (true_fa + 1 == poss_fa && level != SPECIES && head_group->lipid_category == GP && headgroup.substr(3) != "PIP"){
+    if (true_fa + 1 == poss_fa && level != SPECIES && head_group->lipid_category == GP && (headgroup.length() < 3 || headgroup.substr(3) != "PIP")){
         headgroup = "L" + headgroup;
+        head_group->decorators = 0;
         delete head_group;
         head_group = new Headgroup(headgroup, headgroup_decorators);
         poss_fa = LipidClasses::get_instance().lipid_classes.at(head_group->lipid_class).possible_num_fa;

@@ -36,8 +36,10 @@ Headgroup::Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators
 
 
 Headgroup::~Headgroup(){
-    for (auto hgd : *decorators) delete hgd;
-    delete decorators;
+    if (decorators != 0){
+        for (auto hgd : *decorators) delete hgd;
+        delete decorators;
+    }
 }
         
 
