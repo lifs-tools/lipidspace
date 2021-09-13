@@ -197,9 +197,10 @@ void HmdbParserEventHandler::build_lipid(TreeNode *node) {
     }
     int poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     
-    
     // make lyso
-    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && (head_group.length() < 3 || head_group.substr(3) != "PIP")){
+    bool can_be_lyso = contains(LipidClasses::get_instance().lipid_classes, Headgroup::get_class("L" + head_group)) ? contains(LipidClasses::get_instance().lipid_classes.at(Headgroup::get_class("L" + head_group)).special_cases, "Lyso") : 0;
+    
+    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && can_be_lyso){
         head_group = "L" + head_group;
         delete headgroup;
         headgroup = new Headgroup(head_group, 0, use_head_group);
