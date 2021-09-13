@@ -323,7 +323,13 @@ int main(int argc, char** argv){
     lipid_name = "NAPE (12:0/30:4(15Z,18Z,21Z,24Z)/12:0)";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
-    assert(lipid->get_lipid_string() == "NAPE 12:0/30:4(15Z,18Z,21Z,24Z)/12:0");
+    assert(lipid->get_lipid_string() == "PE-N(FA 12:0) 12:0/30:4(15Z,18Z,21Z,24Z)");
+    delete lipid;
+    
+    lipid_name = "NAPE (12:0/0:0/12:0)";
+    lipid = swiss_lipids_parser.parse(lipid_name);
+    assert (lipid);
+    assert(lipid->get_lipid_string() == "LPE-N(FA 12:0) 12:0/0:0");
     delete lipid;
     
     /*

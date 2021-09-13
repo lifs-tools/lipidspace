@@ -96,8 +96,8 @@ void SwissLipidsParserEventHandler::set_nape(TreeNode *node){
     head_group = "PE-N";
     HeadgroupDecorator* hgd = new HeadgroupDecorator("decorator_acyl", -1, 1, 0, true);
     headgroup_decorators->push_back(hgd);
-    hgd->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
-    hgd->functional_groups->at("acyl").push_back(fa_list->at(fa_list->size() - 1));
+    hgd->functional_groups->insert({"decorator_acyl", vector<FunctionalGroup*>()});
+    hgd->functional_groups->at("decorator_acyl").push_back(fa_list->at(fa_list->size() - 1));
     fa_list->pop_back();
 }
 
