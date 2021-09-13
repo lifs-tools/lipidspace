@@ -58,6 +58,7 @@ public:
     int db_position;
     string db_cistrans;
     Headgroup* headgroup;
+    vector<HeadgroupDecorator*> *headgroup_decorators;
         
     SwissLipidsParserEventHandler();
     ~SwissLipidsParserEventHandler();
@@ -76,12 +77,12 @@ public:
     void add_double_bonds(TreeNode *node);
     void add_carbon(TreeNode *node);
     void mediator_event(TreeNode* node);
-    
+    void set_nape(TreeNode *node);
     void set_isomeric_level(TreeNode* node);
     void add_db_position(TreeNode* node);
     void add_db_position_number(TreeNode* node);
     void add_cistrans(TreeNode* node);
-    void se_species_fa(TreeNode *node);
+    void set_species_fa(TreeNode *node);
     void set_head_group_name_se(TreeNode *node);
     void add_one_hydroxyl(TreeNode *node);
     

@@ -64,8 +64,9 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("db_count_pre_event", add_double_bonds);
     reg("carbon_pre_event", add_carbon);
     reg("sl_lcb_species_pre_event", set_species_level);
-    reg("st_species_fa_post_event", se_species_fa);
+    reg("st_species_fa_post_event", set_species_fa);
     reg("fa_lcb_suffix_type_pre_event", add_one_hydroxyl);
+    reg("pl_three_post_event", set_nape);
     
     debug = "";
 }
@@ -87,6 +88,17 @@ void SwissLipidsParserEventHandler::reset_lipid(TreeNode *node) {
     db_position = 0;
     db_cistrans = "";
     headgroup = NULL;
+    headgroup_decorators = new vector<HeadgroupDecorator*>();
+}
+
+
+void SwissLipidsParserEventHandler::set_nape(TreeNode *node){
+    head_group = "PE-N";
+    HeadgroupDecorator* hgd = new HeadgroupDecorator("decorator_acyl", -1, 1, 0, true);
+    headgroup_decorators->push_back(hgd);
+    hgd->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
+    hgd->functional_groups->at("acyl").push_back(fa_list->at(fa_list->size() - 1));
+    fa_list->pop_back();
 }
 
 
@@ -192,7 +204,7 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     lipid = NULL;
     LipidSpecies *ls = NULL;
 
-    headgroup = new Headgroup(head_group, 0, use_head_group);
+    headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
     
     int true_fa = 0;
     for (auto fa : *fa_list){
@@ -201,12 +213,16 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     int poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     
     // make lyso
-    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && (head_group.length() < 3 || head_group.substr(3) != "PIP")){
+    
+    bool can_be_lyso = contains(LipidClasses::get_instance().lipid_classes, Headgroup::get_class("L" + head_group)) ? contains(LipidClasses::get_instance().lipid_classes.at(Headgroup::get_class("L" + head_group)).special_cases, "Lyso") : 0;
+    
+    
+    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && can_be_lyso){
         head_group = "L" + head_group;
         
         headgroup->decorators = 0;
         delete headgroup;
-        headgroup = new Headgroup(head_group, 0, use_head_group);
+        headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
         poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
     
@@ -215,7 +231,7 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
         
         headgroup->decorators = 0;
         delete headgroup;
-        headgroup = new Headgroup(head_group, 0, use_head_group);
+        headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
         poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
     
@@ -299,7 +315,7 @@ void SwissLipidsParserEventHandler::add_carbon(TreeNode *node) {
 
         
 
-void SwissLipidsParserEventHandler::se_species_fa(TreeNode *node){
+void SwissLipidsParserEventHandler::set_species_fa(TreeNode *node){
     head_group += " 27:1";
     fa_list->at(fa_list->size() -1)->num_carbon -= 27;
     fa_list->at(fa_list->size() -1)->double_bonds->num_double_bonds -= 1;
