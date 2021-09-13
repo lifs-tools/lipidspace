@@ -59,6 +59,7 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("hg_threepl_pre_event", set_head_group_name);
     reg("hg_fourpl_pre_event", set_head_group_name);
     reg("hg_dsl_pre_event", set_head_group_name);
+    reg("hg_cpa_pre_event", set_head_group_name);
     reg("ch_pre_event", set_head_group_name);
     reg("hg_che_pre_event", set_head_group_name);
     reg("mediator_const_pre_event", set_head_group_name);
