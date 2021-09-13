@@ -195,7 +195,7 @@ void HmdbParserEventHandler::build_lipid(TreeNode *node) {
     for (auto fa : *fa_list){
         true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
     }
-    int poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+    int poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     
     
     // make lyso
@@ -203,7 +203,16 @@ void HmdbParserEventHandler::build_lipid(TreeNode *node) {
         head_group = "L" + head_group;
         delete headgroup;
         headgroup = new Headgroup(head_group, 0, use_head_group);
-        poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
+    }
+    
+    else if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
+        head_group = "DL" + head_group;
+        
+        headgroup->decorators = 0;
+        delete headgroup;
+        headgroup = new Headgroup(head_group, 0, use_head_group);
+        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
     
     if (level == SPECIES){

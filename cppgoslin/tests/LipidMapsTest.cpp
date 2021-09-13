@@ -74,7 +74,7 @@ int main(int argc, char** argv){
         }
         catch (LipidException &e){
             if (correct_lipid_name.length() > 0){
-                cout << "Exception: " << lipid_names_income.at(i) << endl;
+                cout << "Exception: " << i << ": " << lipid_names_income.at(i) << endl;
                 cout << e.what() << endl;
                 assert(false);
             }

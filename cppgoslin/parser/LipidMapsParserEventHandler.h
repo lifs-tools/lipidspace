@@ -60,7 +60,6 @@ public:
     bool use_head_group;
     int db_position;
     string db_cistrans;
-    Headgroup* headgroup;
     string mod_text;
     int mod_pos;
     int mod_num;
@@ -86,6 +85,7 @@ public:
     void clean_lcb(TreeNode* node);
     void append_fa(TreeNode* node);
     void add_ether(TreeNode* node);
+    void set_sphingoxine(TreeNode* node);
     void add_hydroxyl(TreeNode* node);
     void add_double_bonds(TreeNode* node);
     void add_carbon(TreeNode* node);

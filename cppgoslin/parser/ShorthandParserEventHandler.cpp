@@ -155,7 +155,7 @@ void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
     level = ISOMERIC_SUBSPECIES;
     lipid = NULL;
     adduct = NULL;
-    headgroup = "";
+    head_group = "";
     fa_list.clear();
     current_fa.clear();
     headgroup_decorators = new vector<HeadgroupDecorator*>();
@@ -166,38 +166,47 @@ void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
 
 
 void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
-    Headgroup *head_group = new Headgroup(headgroup, headgroup_decorators);
+    Headgroup *headgroup = new Headgroup(head_group, headgroup_decorators);
     int true_fa = 0;
     for (auto fa : fa_list){
         true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
     }
-    int poss_fa = LipidClasses::get_instance().lipid_classes.at(head_group->lipid_class).possible_num_fa;
+    int poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     
     
     // make lyso
-    if (true_fa + 1 == poss_fa && level != SPECIES && head_group->lipid_category == GP && (headgroup.length() < 3 || headgroup.substr(3) != "PIP")){
-        headgroup = "L" + headgroup;
-        head_group->decorators = 0;
-        delete head_group;
-        head_group = new Headgroup(headgroup, headgroup_decorators);
-        poss_fa = LipidClasses::get_instance().lipid_classes.at(head_group->lipid_class).possible_num_fa;
+    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && (head_group.length() < 3 || head_group.substr(3) != "PIP")){
+        head_group = "L" + head_group;
+        headgroup->decorators = 0;
+        delete headgroup;
+        headgroup = new Headgroup(head_group, headgroup_decorators);
+        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
+    }
+    
+    else if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
+        head_group = "DL" + head_group;
+        
+        headgroup->decorators = 0;
+        delete headgroup;
+        headgroup = new Headgroup(head_group, headgroup_decorators);
+        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
     
     if (level == SPECIES){
         if (true_fa == 0 && poss_fa != 0){
-            string hg_name = head_group->headgroup;
-            delete head_group;
+            string hg_name = headgroup->headgroup;
+            delete headgroup;
             throw ConstraintViolationException("No fatty acyl information lipid class '" + hg_name + "' provided.");
         }
     }
         
     else if (true_fa != poss_fa && (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES)){
-        string hg_name = head_group->headgroup;
-        delete head_group;
+        string hg_name = headgroup->headgroup;
+        delete headgroup;
         throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
     }
     
-    if (contains(LipidClasses::get_instance().lipid_classes.at(head_group->lipid_class).special_cases, "HC")){
+    if (contains(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "HC")){
         fa_list.front()->lipid_FA_bond_type = AMINE;
     }
     
@@ -214,19 +223,19 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     
     switch(level){
         case ISOMERIC_SUBSPECIES:
-            lipid->lipid = new LipidIsomericSubspecies(head_group, &fa_list);
+            lipid->lipid = new LipidIsomericSubspecies(headgroup, &fa_list);
             break;
             
         case STRUCTURAL_SUBSPECIES:
-            lipid->lipid = new LipidStructuralSubspecies(head_group, &fa_list);
+            lipid->lipid = new LipidStructuralSubspecies(headgroup, &fa_list);
             break;
             
         case MOLECULAR_SUBSPECIES:
-            lipid->lipid = new LipidMolecularSubspecies(head_group, &fa_list);
+            lipid->lipid = new LipidMolecularSubspecies(headgroup, &fa_list);
             break;
             
         case SPECIES:
-            lipid->lipid = new LipidSpecies(head_group, &fa_list);
+            lipid->lipid = new LipidSpecies(headgroup, &fa_list);
             break;
             
         default:
@@ -261,7 +270,7 @@ void ShorthandParserEventHandler::add_cycle_element(TreeNode *node){
 
 
 void ShorthandParserEventHandler::set_headgroup_name(TreeNode *node){
-    if (headgroup.size() == 0) headgroup = node->get_text();
+    if (head_group.size() == 0) head_group = node->get_text();
 }
 
 
@@ -335,7 +344,7 @@ void ShorthandParserEventHandler::set_ring_stereo(TreeNode *node){
 
 
 void ShorthandParserEventHandler::post_sphingolipid(TreeNode *node){
-    if (tmp.get_int("sl_hydroxyl") == 0 && headgroup != "Cer" && headgroup != "SPB"){
+    if (tmp.get_int("sl_hydroxyl") == 0 && head_group != "Cer" && head_group != "SPB"){
         set_lipid_level(STRUCTURAL_SUBSPECIES);
     }
 }

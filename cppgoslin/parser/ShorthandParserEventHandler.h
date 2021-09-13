@@ -52,7 +52,7 @@ class ShorthandParserEventHandler : public BaseParserEventHandler<LipidAdduct*> 
 public:
     LipidLevel level;
     LipidAdduct *lipid;
-    string headgroup;
+    string head_group;
     vector<FattyAcid*> fa_list;
     vector<FunctionalGroup*> current_fa;
     Adduct *adduct;

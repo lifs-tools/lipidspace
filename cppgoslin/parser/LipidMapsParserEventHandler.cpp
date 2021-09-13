@@ -35,7 +35,6 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("lipid_post_event", build_lipid);
     
     reg("mediator_pre_event", mediator_event);
-    reg("sphingoxine_pre_event", mediator_event);
     
     reg("sgl_species_pre_event", set_species_level);
     reg("species_fa_pre_event", set_species_level);
@@ -56,8 +55,6 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("hg_lpl_pre_event", set_head_group_name);
     reg("hg_threepl_pre_event", set_head_group_name);
     reg("hg_fourpl_pre_event", set_head_group_name);
-    reg("sphingosine_name_pre_event", set_head_group_name);
-    reg("sphinganine_name_pre_event", set_head_group_name);
     reg("hg_dsl_pre_event", set_head_group_name);
     reg("ch_pre_event", set_head_group_name);
     reg("hg_che_pre_event", set_head_group_name);
@@ -115,7 +112,6 @@ void LipidMapsParserEventHandler::reset_lipid(TreeNode* node){
     db_position = 0;
     db_numbers = -1;
     db_cistrans = "";
-    headgroup = NULL;
     mod_pos = -1;
     mod_num = 1;
     mod_text = "";
@@ -359,13 +355,13 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
         db->double_bond_positions.insert({12, "Z"});
         fa_list->back()->functional_groups->at("acyl").push_back(new AcylAlkylGroup(new FattyAcid("FA", 18, db)));
     }
-    headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
+    Headgroup* headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
     
     int true_fa = 0;
     for (auto fa : *fa_list){
         true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
     }
-    int poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+    int poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     
     
     // make lyso
@@ -375,16 +371,16 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
         headgroup->decorators = 0;
         delete headgroup;
         headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
-        poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
     
-    if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
+    else if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
         head_group = "DL" + head_group;
         
         headgroup->decorators = 0;
         delete headgroup;
         headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
-        poss_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa;
+        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
         
     
