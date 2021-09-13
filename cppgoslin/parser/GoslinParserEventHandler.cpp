@@ -61,7 +61,9 @@ GoslinParserEventHandler::GoslinParserEventHandler() : BaseParserEventHandler<Li
     reg("fa2_unsorted_pre_event", set_molecular_subspecies_level);
     reg("fa3_unsorted_pre_event", set_molecular_subspecies_level);
     reg("fa4_unsorted_pre_event", set_molecular_subspecies_level);
-    
+    reg("slbpa_pre_event", set_molecular_subspecies_level);
+    reg("dlcl_pre_event", set_molecular_subspecies_level);
+    reg("mlcl_pre_event", set_molecular_subspecies_level);
     
     reg("lcb_pre_event", new_lcb);
     reg("lcb_post_event", clean_lcb);

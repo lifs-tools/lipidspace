@@ -45,7 +45,10 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : BaseParserEventHand
     reg("fa2_unsorted_pre_event", set_molecular_subspecies_level);
     reg("fa3_unsorted_pre_event", set_molecular_subspecies_level);
     reg("fa4_unsorted_pre_event", set_molecular_subspecies_level);
-    
+    reg("hg_dg_pre_event", set_molecular_subspecies_level);
+    reg("fa_lpl_molecular_pre_event", set_molecular_subspecies_level);
+    reg("hg_lbpa_pre_event", set_molecular_subspecies_level);
+
     reg("fa_no_hg_pre_event", pure_fa);
     
     reg("hg_sgl_pre_event", set_head_group_name);
