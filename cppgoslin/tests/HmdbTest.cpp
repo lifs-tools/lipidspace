@@ -55,7 +55,7 @@ int main(int argc, char** argv){
     
     for (auto lipid_name : lipid_names){
         lipid = parser.parse(lipid_name);
-        assert(lipid != null);
+        assert(lipid != 0);
     }
     
     cout << "All tests passed without any problem" << endl;
