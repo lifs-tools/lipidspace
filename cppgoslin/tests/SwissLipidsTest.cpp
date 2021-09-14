@@ -53,15 +53,8 @@ int main(int argc, char** argv){
     infile.close();
     
     for (auto &lipid_name : lipid_names){
-        try {
-            lipid = parser.parse(lipid_name);
-            assert(lipid != NULL);
-            delete lipid;
-        }
-        catch (LipidException &e){
-            cout << "Exception: " << lipid_name << endl;
-            cout << e.what() << endl;
-        }
+        lipid = parser.parse(lipid_name);
+        assert(lipid != 0);
     }
     
     
