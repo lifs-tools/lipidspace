@@ -34,6 +34,8 @@ SOFTWARE.
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
 #include "cppgoslin/domain/Headgroup.h"
+#include "cppgoslin/domain/Cycle.h"
+#include "cppgoslin/domain/GenericDatastructures.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
 #include <set>
@@ -57,6 +59,7 @@ public:
     int db_position;
     string db_cistrans;
     Headgroup* headgroup;
+    GenericDictionary furan;
         
     HmdbParserEventHandler();
     ~HmdbParserEventHandler();
@@ -82,6 +85,11 @@ public:
     void add_cistrans(TreeNode* node);
     
     void furan_fa(TreeNode *node);
+    void furan_fa_post(TreeNode *node);
+    void furan_fa_mono(TreeNode *node);
+    void furan_fa_di(TreeNode *node);
+    void furan_fa_first_number(TreeNode *node);
+    void furan_fa_second_number(TreeNode *node);
     void interlink_fa(TreeNode *node);
     void lipid_suffix(TreeNode *node);
     void add_one_hydroxyl(TreeNode *node);

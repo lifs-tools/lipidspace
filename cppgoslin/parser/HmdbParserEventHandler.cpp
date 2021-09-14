@@ -65,10 +65,15 @@ HmdbParserEventHandler::HmdbParserEventHandler() : BaseParserEventHandler<LipidA
     reg("db_count_pre_event", add_double_bonds);
     reg("carbon_pre_event", add_carbon);
     reg("fa_lcb_suffix_type_pre_event", add_one_hydroxyl);
-    reg("furan_fa_pre_event", furan_fa);
     reg("interlink_fa_pre_event", interlink_fa);
     reg("lipid_suffix_pre_event", lipid_suffix);
     reg("methyl_pre_event", add_methyl);
+    reg("furan_fa_pre_event", furan_fa);
+    reg("furan_fa_post_event", furan_fa_post);
+    reg("furan_fa_mono_pre_event", furan_fa_mono);
+    reg("furan_fa_di_pre_event", furan_fa_di);
+    reg("furan_first_number_pre_event", furan_fa_first_number);
+    reg("furan_second_number_pre_event", furan_fa_second_number);
     
 }
 
@@ -89,6 +94,7 @@ void HmdbParserEventHandler::reset_lipid(TreeNode *node) {
     db_position = 0;
     db_cistrans = "";
     headgroup = NULL;
+    furan.remove_all();
 }
 
 
@@ -307,7 +313,67 @@ void HmdbParserEventHandler::add_carbon(TreeNode *node) {
     
 
 void HmdbParserEventHandler::furan_fa(TreeNode *node) {
-    throw UnsupportedLipidException("Furan fatty acyl chains are currently not supported");
+    furan.remove_all();
+}
+
+
+void HmdbParserEventHandler::furan_fa_post(TreeNode *node) {
+    int l = 4 + furan.get_int("len_first") + furan.get_int("len_second");
+    current_fa->num_carbon = l;
+    
+    int start = 1 + furan.get_int("len_first");
+    int end = 3 + start;
+    DoubleBonds *cyclo_db = new DoubleBonds(2);
+    cyclo_db->double_bond_positions.insert({start, "E"});
+    cyclo_db->double_bond_positions.insert({2 + start, "E"});
+    
+    map<string, vector<FunctionalGroup*> > *cyclo_fg = new map<string, vector<FunctionalGroup*> >();
+    cyclo_fg->insert({"Me", vector<FunctionalGroup*>()});
+    
+    if (furan.get_string("type") == "m"){
+        FunctionalGroup *fg = KnownFunctionalGroups::get_functional_group("Me");
+        fg->position = 1 + start;
+        cyclo_fg->at("Me").push_back(fg);
+    }
+        
+    else if (furan.get_string("type") == "d"){
+        FunctionalGroup *fg = KnownFunctionalGroups::get_functional_group("Me");
+        fg->position = 1 + start;
+        cyclo_fg->at("Me").push_back(fg);
+        fg = KnownFunctionalGroups::get_functional_group("Me");
+        fg->position = 2 + start;
+        cyclo_fg->at("Me").push_back(fg);
+    }
+    
+    vector<Element> *bridge_chain = new vector<Element>{ELEMENT_O};
+    Cycle *cycle = new Cycle(end - start + 1 + bridge_chain->size(), start, end, cyclo_db, cyclo_fg, bridge_chain);
+    current_fa->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at("cy").push_back(cycle);
+}
+
+
+
+void HmdbParserEventHandler::furan_fa_mono(TreeNode *node) {
+    furan.set_string("type", "m");
+}
+
+
+
+void HmdbParserEventHandler::furan_fa_di(TreeNode *node) {
+    furan.set_string("type", "d");
+}
+
+
+
+void HmdbParserEventHandler::furan_fa_first_number(TreeNode *node) {
+    furan.set_int("len_first", atoi(node->get_text().c_str()));
+}
+
+
+
+void HmdbParserEventHandler::furan_fa_second_number(TreeNode *node) {
+    furan.set_int("len_second", atoi(node->get_text().c_str()));
+    
 }
     
 
