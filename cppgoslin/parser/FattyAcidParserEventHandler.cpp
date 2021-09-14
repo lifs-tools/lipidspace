@@ -139,13 +139,13 @@ FattyAcidParserEventHandler::FattyAcidParserEventHandler() : BaseParserEventHand
 const map<string, int> FattyAcidParserEventHandler::last_numbers{{"un", 1}, {"hen", 1}, {"do", 2}, {"di", 2}, {"tri", 3}, {"buta", 4}, {"but", 4}, {"tetra", 4}, {"penta", 5}, {"pent", 5}, {"hexa", 6}, {"hex", 6}, {"hepta", 7}, {"hept", 7}, {"octa", 8}, {"oct", 8}, {"nona", 9}, {"non", 9}};
 
 
-const map<string, int> FattyAcidParserEventHandler::second_numbers {{"deca", 10}, {"dec", 10}, {"eicosa", 20}, {"eicos", 20 }, {"cosa", 20}, {"cos", 20}, {"docosa", 20}, {"docos", 20}, {"triaconta", 30}, {"triacont", 30}, {"tetraconta", 40}, {"tetracont", 40}, {"pentaconta", 50}, {"pentacont", 50}, {"hexaconta", 60}, {"hexacont", 60}, {"heptaconta", 70}, {"heptacont", 70}, {"octaconta", 80}, {"octacont", 80}, {"nonaconta", 90}, {"nonacont", 90}};
+const map<string, int> FattyAcidParserEventHandler::second_numbers {{"deca", 10}, {"dec", 10}, {"eicosa", 20}, {"eicos", 20 }, {"cosa", 20}, {"cos", 20}, {"triaconta", 30}, {"triacont", 30}, {"tetraconta", 40}, {"tetracont", 40}, {"pentaconta", 50}, {"pentacont", 50}, {"hexaconta", 60}, {"hexacont", 60}, {"heptaconta", 70}, {"heptacont", 70}, {"octaconta", 80}, {"octacont", 80}, {"nonaconta", 90}, {"nonacont", 90}};
 
 const map<string, string> FattyAcidParserEventHandler::func_groups {{"keto", "oxo"}, {"ethyl", "Et"}, {"hydroxy", "OH"}, {"phospho", "Ph"}, {"oxo", "oxo"}, {"bromo", "Br"}, {"methyl", "Me"}, {"hydroperoxy", "OOH"}, {"homo", ""}, {"Epoxy", "Ep"}, {"fluro", "F"}, {"fluoro", "F"}, {"chloro", "Cl"}, {"methylene", "My"}, {"sulfooxy", "Su"}, {"amino", "NH2"}, {"sulfanyl", "SH"}, {"methoxy", "OMe"}, {"iodo", "I"}, {"cyano", "CN"}, {"nitro", "NO2"}, {"OH", "OH"}, {"thio", "SH"}, {"mercapto", "SH"}, {"carboxy", "COOH"}, {"acetoxy", "Ac"}, {"cysteinyl", "Cys"}, {"phenyl", "Phe"}, {"s-glutathionyl", "SGlu"}, {"s-cysteinyl", "SCys"}, {"butylperoxy", "BOO"}, {"dimethylarsinoyl", "MMAs"}, {"methylsulfanyl", "SMe"}, {"imino", "NH"}, {"s-cysteinylglycinyl", "SCG"}};
 
 const map<string, int> FattyAcidParserEventHandler::ate {{"formate", 1}, {"acetate", 2}, {"butyrate", 4}, {"propionate", 3}, {"valerate", 5}, {"isobutyrate", 4}};
 
-const map<string, int> FattyAcidParserEventHandler::special_numbers {{"meth", 1}, {"etha", 2}, {"eth", 2}, {"propa", 3}, {"isoprop", 3}, {"prop", 3}, {"propi", 3}, {"propio", 3}, {"buta", 4}, {"but", 4}, {"butr", 4},{"furan", 5}, {"valer", 5}, {"eicosa", 20}, {"eicos", 20}, {"icosa", 20}, {"icos", 20}, {"prosta", 20}, {"prost", 20}, {"prostan", 20}};
+const map<string, int> FattyAcidParserEventHandler::special_numbers {{"meth", 1}, {"etha", 2}, {"eth", 2}, {"propa", 3}, {"isoprop", 3}, {"prop", 3}, {"propi", 3}, {"propio", 3}, {"buta", 4}, {"but", 4}, {"butr", 4}, {"furan", 5}, {"valer", 5}, {"eicosa", 20}, {"eicos", 20}, {"icosa", 20}, {"icos", 20}, {"prosta", 20}, {"prost", 20}, {"prostan", 20}};
 
 
 FattyAcidParserEventHandler::~FattyAcidParserEventHandler(){
@@ -378,7 +378,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
                             curr_fa->double_bonds->double_bond_positions.insert({kv.first + cyclo_len, kv.second});
                         }
                         curr_fa->double_bonds->num_double_bonds = curr_fa->double_bonds->double_bond_positions.size();
-                        if (!tmp.contains_key("tetrahydrofuran") and tmp.contains_key("furan")){
+                        if (!tmp.contains_key("tetrahydrofuran") && tmp.contains_key("furan")){
                             curr_fa->double_bonds->num_double_bonds += 2;
                             if (uncontains(curr_fa->double_bonds->double_bond_positions, 1)) curr_fa->double_bonds->double_bond_positions.insert({1, "E"});
                             if (uncontains(curr_fa->double_bonds->double_bond_positions, 3)) curr_fa->double_bonds->double_bond_positions.insert({3, "E"});
