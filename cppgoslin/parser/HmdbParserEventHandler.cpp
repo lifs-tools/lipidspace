@@ -45,6 +45,7 @@ HmdbParserEventHandler::HmdbParserEventHandler() : BaseParserEventHandler<LipidA
     reg("st_species_hg_pre_event", set_head_group_name);
     reg("st_sub1_hg_pre_event", set_head_group_name);
     reg("st_sub2_hg_pre_event", set_head_group_name);
+    reg("ganglioside_names_pre_event", set_head_group_name);
     reg("fa_species_pre_event", set_species_level);
     reg("gl_molecular_pre_event", set_molecular_level);
     reg("unsorted_fa_separator_pre_event", set_molecular_level);
