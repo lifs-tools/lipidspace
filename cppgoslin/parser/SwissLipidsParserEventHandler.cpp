@@ -65,7 +65,8 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
     reg("carbon_pre_event", add_carbon);
     reg("sl_lcb_species_pre_event", set_species_level);
     reg("st_species_fa_post_event", set_species_fa);
-    reg("fa_lcb_suffix_type_pre_event", add_one_hydroxyl);
+    reg("fa_lcb_suffix_type_pre_event", add_fa_lcb_suffix_type);
+    reg("fa_lcb_suffix_number_pre_event", add_suffix_number);
     reg("pl_three_post_event", set_nape);
     
     debug = "";
@@ -89,6 +90,7 @@ void SwissLipidsParserEventHandler::reset_lipid(TreeNode *node) {
     db_cistrans = "";
     headgroup = NULL;
     headgroup_decorators = new vector<HeadgroupDecorator*>();
+    suffix_number = -1;
 }
 
 
@@ -135,15 +137,22 @@ void SwissLipidsParserEventHandler::set_head_group_name_se(TreeNode *node){
 }
 
 
+
+void SwissLipidsParserEventHandler::set_level(LipidLevel _level){
+    level = min(level, _level);
+}
+
+
+
 void SwissLipidsParserEventHandler::set_species_level(TreeNode *node) {
-    level = SPECIES;
+    set_level(SPECIES);
 }
     
 
 
 
 void SwissLipidsParserEventHandler::set_molecular_level(TreeNode *node) {
-    level = MOLECULAR_SUBSPECIES;
+    set_level(MOLECULAR_SUBSPECIES);
 }
 
 
@@ -164,6 +173,7 @@ void SwissLipidsParserEventHandler::new_lcb(TreeNode *node) {
     lcb = new FattyAcid("LCB");
     lcb->lcb = true;
     current_fa = lcb;
+    set_level(STRUCTURAL_SUBSPECIES);
 }
         
         
@@ -306,6 +316,30 @@ void SwissLipidsParserEventHandler::add_one_hydroxyl(TreeNode *node) {
 
 void SwissLipidsParserEventHandler::add_double_bonds(TreeNode *node) {
     current_fa->double_bonds->num_double_bonds += atoi(node->get_text().c_str());
+}
+
+
+
+void SwissLipidsParserEventHandler::add_suffix_number(TreeNode *node){
+    suffix_number = atoi(node->get_text().c_str());
+}
+
+
+
+void SwissLipidsParserEventHandler::add_fa_lcb_suffix_type(TreeNode *node){
+    string suffix_type = node->get_text();
+    if (suffix_type == "me"){
+        suffix_type = "Me";
+        current_fa->num_carbon -= 1;
+    }
+        
+    FunctionalGroup *functional_group = KnownFunctionalGroups::get_functional_group(suffix_type);
+    functional_group->position = suffix_number;
+    if (functional_group->position == -1) set_level(STRUCTURAL_SUBSPECIES);
+    if (uncontains_p(current_fa->functional_groups, suffix_type)) current_fa->functional_groups->insert({suffix_type, vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at(suffix_type).push_back(functional_group);
+            
+    suffix_number = -1;
 }
     
     

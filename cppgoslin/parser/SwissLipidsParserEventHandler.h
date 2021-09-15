@@ -57,6 +57,7 @@ public:
     bool use_head_group;
     int db_position;
     string db_cistrans;
+    int suffix_number;
     Headgroup* headgroup;
     vector<HeadgroupDecorator*> *headgroup_decorators;
         
@@ -68,6 +69,7 @@ public:
     void set_head_group_name(TreeNode *node);
     void set_species_level(TreeNode *node);
     void set_molecular_level(TreeNode *node);
+    void set_level(LipidLevel _level);
     void new_lcb(TreeNode *node);
     void clean_lcb(TreeNode *node);
     void new_fa(TreeNode *node);
@@ -85,6 +87,8 @@ public:
     void set_species_fa(TreeNode *node);
     void set_head_group_name_se(TreeNode *node);
     void add_one_hydroxyl(TreeNode *node);
+    void add_suffix_number(TreeNode *node);
+    void add_fa_lcb_suffix_type(TreeNode *node);
     
 };
 
