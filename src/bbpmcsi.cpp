@@ -1068,59 +1068,7 @@ void BBP_MCSI::outputIsomorphism(vector<Mapping>& localMapping)
 #ifdef GRAPHICS
     int mcs_id=0;
 #endif
-    cout <<"Weight "<< m_weightBBPIso<<": ";
-    while (!globalMapping.empty())
-    {
-        Mapping& mapping=*globalMapping.front();
-        // Output mapping
-        cout << "("<<mapping.vG->index()+m_ig_G->fogNodeEdgeOffset <<","<<m_BC_H->original(mapping.aH)->index()+m_ig_H->fogNodeEdgeOffset <<") ";
-#ifdef GRAPHICS
-        if (m_graphical_display)
-        {
-            m_graphVisualizationG->setVertexMcsID(mapping.vG,++mcs_id);
-            m_graphVisualizationH->setVertexMcsID(m_BC_H->original(mapping.aH),mcs_id);
-        }
-#endif
-        // Enqueue further mappings based on computed matching
-        if (mapping.expand)
-        {
-            //cout << "M ";
-            const vector<MWM::AgentJobPair>& matching=getMatching(mapping.vG,mapping.aH);
-            //cout << matching.size();
-            for (auto itM=matching.begin(); itM != matching.end(); ++itM)
-            {
-                //cout << "("<<itM->matchingAgent <<","<<itM->matchingJob <<"), ";
-                node aG=m_BC_G->repVertex(mapping.vG,itM->matchingAgent);
-                //node vG=m_BC_G->original(aG);
-                node aH=m_BC_H->repVertex(m_BC_H->original(mapping.aH),itM->matchingJob);
-                //cout << " M vG,aG,vH,aH="<<vG<<","<<aG<<","<<m_BC_H->original(aH)<<","<<aH<<" ";
-                LaWeCSExpand laWeCSExpand = MWM_EXPANSION; // default to MWM
-
-                //wType wMatching,wSkippedVertex;
-                if (aG->degree()==1 && aH->degree()==1) // both chidren are bridges, then check if expansion through skipped vertices
-                {
-                    node childaH=aH->firstAdj()->twinNode();
-                    //node childvH=m_BC_H->original(aH);
-                    node childvG=m_BC_G->original(aG->firstAdj()->twinNode());
-                    laWeCSExpand = m_LaWeCSExpand[childvG][childaH];
-                    if (laWeCSExpand == SKIPPED_VERTEX)
-                    {
-                        //cout << "LawMapping vG,vH: "<<m_LaWeCSMapping[childvG][childaH].vG<<","<<m_BC_H->original(m_LaWeCSMapping[childvG][childaH].aH);
-                        globalMapping.push_front(&m_LaWeCSMapping[childvG][childaH]);
-                    }
-                }
-                //cout << "laW="<<laWeCSExpand<< " ";
-                if (laWeCSExpand == MWM_EXPANSION || laWeCSExpand == MWM_AND_SKIPPED_VERTEX)
-                {
-                    for (auto it=m_LocalIso_BBPE_aGToaH[aG][aH].front().begin();it != m_LocalIso_BBPE_aGToaH[aG][aH].front().end(); ++it)
-                    //	if (it->vG != mapping.vG) // do not store given vertex
-                        globalMapping.push_front(&*it);
-                }
-            }
-        }
-        globalMapping.remove(&mapping);
-    }
-    cout << endl;
+    
 #ifdef GRAPHICS
     if (m_graphical_display)
         display();
