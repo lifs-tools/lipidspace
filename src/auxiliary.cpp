@@ -6,470 +6,76 @@
 #include <ogdf/basic/simple_graph_alg.h>
 #pragma warning(pop)
 
-struct ThreadInfo
+
+
+LaWeCSE::LaWeCSE()
 {
-    condition_variable cv_input_modify;
-    //condition_variable cv_work_processed; // notify main, if input is processed
-
-    //mutex mut_input; // unlocked, if there are graph file to be processed or reading is complete - to replace by condition_variable
-    mutex mut_input_modify; // locked if input graphs vector is modified or read
-    //mutex mut_input_full; // locked if input queue is full - to replace by condition_variable
-    mutex mut_bbp_modify; // to insert a pointer to a BBP instance into the BBP vector
-    bool readFinished = false; // graph file, parsed. Workers can stop, if readFinished and graphsInQueue->size()=0
-    queue<InputGraph*>* graphsInQueue = nullptr;
-   // queue<InputGraph*> graphsToDeleteFromMainThread;
-    vector<InputGraph*>* patternsV = nullptr;
-    vector<string>* simpleLabelToString = nullptr;
-    size_t maxMCSInMemory = 0;
-    size_t readQueueSize = 0;
-    LabelFunction* labelFunction = nullptr;
-    size_t graphIndexStart = 0;
-    ofstream* comparedGraphs = nullptr;
-    SimCoefficient simCoefficient = SimCoefficient::SC_WallisEtAl;
-    int maxCliqueTime = 0;
-    wType distance_penalty = WEIGHT_NOT_COMPATIBLE;
-    bool appendCliqueComputationTimeouts = false;
-} threadInfo;
-
-
-
-
-void showtime(clock_t ticks)
-{
-    ticks = ticks * 1000000 / CLOCKS_PER_SEC;
-    clock_t mus=ticks%1000;
-    ticks/=1000;
-    clock_t ms=ticks%1000;
-    ticks/=1000;
-    clock_t seconds= ticks%60;
-    ticks/=60;
-    clock_t minutes= ticks;
-
-    if (minutes > 0)
-        cout << minutes<< " min ";
-    if (seconds> 0 || minutes >0)
-        cout << seconds<<" s ";
-    cout<<ms;
-    if (mus!=0)
-    {
-        cout << "."<<mus/100;
-        mus%=100;
-        if (mus!=0)
-        {
-            cout << mus/10;
-            mus%=10;
-            if (mus !=0)
-                cout <<mus;
-        }
-    }
-    cout <<" ms ";
-    cout << endl;
+    numlabels = static_cast<labelType>(simpleLabelToString.size());
+    
+    labelFunction.sameNodeLabel = 1.0;
+    labelFunction.sameEdgeLabel = 1.0;
+    
+    labelFunction.differentNodeLabel = 0.01;
+    labelFunction.differentEdgeLabel = 0.01;
 }
 
-void deletenode(Graph &G, int nodeIndex)
-{
-    node n;
-    forall_nodes(n,G)
-        if (n->index()==nodeIndex)
-        {
-            G.delNode(n);
-            return;
-        }
-}
 
-void connectnodes(Graph &G, int nodeIndexS, int nodeIndexT)
-{
-    node s=nullptr,t=nullptr,n;
-    forall_nodes(n,G)
-    {
-        if (n->index()==nodeIndexS)
-            s=n;
-        else if (n->index()==nodeIndexT)
-            t=n;
-    }
-    G.newEdge(s,t);
-}
-void readLabelError(unsigned curline, char line[])
-{
-    cerr << "Label File error in line "<<curline<<": "<<line<<endl;
-}
 
-void trim(string &s)
-{
-    string::size_type last = s.find_last_not_of(" \t\r\n");
-    if (last != string::npos)
-        s.erase(last + 1);
-    s.erase(0, s.find_first_not_of(" \t\r\n"));
-}
-
-bool readLableFile(string& labelFileName, LabelFunction &labelFunction,
-        map<string,labelType>& stringLabelToSimpleLabel, vector<string>& simpleLabelToString)
-{
-    ifstream labelFile(labelFileName,ios_base::in);
-    if (!labelFile.is_open())
-    {
-        cerr << "Could not open label file "<<labelFileName<< " for input."<<endl;
-        return false;
-    }
-    // 	labelFunction.weightTable.insert(pair<labelPairType,wType> (1,0.1));
-    char line[11000];
-    stringstream sstr;
-    string str;
-    labelType numlabels = static_cast<labelType>(simpleLabelToString.size());
-    labelType l1,l2;
-    vector<labelType> target;
-
-    unsigned curline=0;
-    while (!labelFile.eof())
-    {
-        ++curline;
-        labelFile.getline(line,10999);
-        sstr.clear();
-        sstr.str(std::string());
-        sstr << line<<endl;
-        if (line[0]=='/') // ignore comment lines
-            continue;
-        if (!(sstr >> str)) // ignore empty lines
-            continue;
-        trim(str);
-        if (str == "DEFAULT_NODE")
+InputGraph* LaWeCSE::makeGraph(string SMILES){
+    const Molecule &mol = callback.molecule;
+    Parser<MoleculeSmilesCallback> parser(callback);
+    
+    InputGraph *newIG=new InputGraph();
+    Graph *newGraph = &newIG->graph;
+    NodeArray<labelType> *newNASimple = new NodeArray<labelType>(*newGraph);
+    newIG->nodeLabel=newNASimple;
+    EdgeArray<labelType> *newEASimple = new EdgeArray<labelType>(*newGraph, 0);
+    newIG->edgeLabel=newEASimple;
+    
+    parser.parse(SMILES);
+    
+    node n,nQueue;
+    adjEntry adj;
+    edge e;
+    
+    for (int i = 0; i < mol.atoms.size(); ++i){
+        n = fognode[i] = newGraph->newNode();
+        string node_edge_label = std::to_string(mol.atoms[i].element);
+        auto it = stringLabelToSimpleLabel.find(node_edge_label);
+        if (it == stringLabelToSimpleLabel.end())
         {
-            if (getline(sstr, str, ';')) // sameNodeLabel
-            {
-                trim(str);
-                if (str=="-")
-                    labelFunction.sameNodeLabel=WEIGHT_NOT_COMPATIBLE;
-                else try
-                    {
-                        labelFunction.sameNodeLabel=stof(str);
-                    }
-                    catch(...)
-                    { readLabelError(curline,line); continue; }
-            }
-            else
-            {	readLabelError(curline,line); continue;	}
-            if (getline(sstr, str, ';')) // differentNodeLabel
-            {
-                trim(str);
-                if (str=="-")
-                    labelFunction.differentNodeLabel=WEIGHT_NOT_COMPATIBLE;
-                else try
-                    {
-                        labelFunction.differentNodeLabel=stof(str);
-                    }
-                    catch(...)
-                    {	readLabelError(curline,line); continue;	}
-            }
-            else
-            {	readLabelError(curline,line); continue;	}
-        }
-        else if (str == "DEFAULT_EDGE")
-        {
-            if (getline(sstr, str, ';')) // sameEdgeLabel
-            {
-                trim(str);
-                if (str=="-")
-                    labelFunction.sameEdgeLabel=WEIGHT_NOT_COMPATIBLE;
-                else try
-                    {
-                        labelFunction.sameEdgeLabel=stof(str);
-                    }
-                    catch(...)
-                    {	readLabelError(curline,line); continue;	}
-            }
-            else
-            {	readLabelError(curline,line); continue;	}
-            if (getline(sstr, str, ';')) // differentEdgeLabel
-            {
-                trim(str);
-                if (str=="-")
-                    labelFunction.differentEdgeLabel=WEIGHT_NOT_COMPATIBLE;
-                else try
-                    {
-                    labelFunction.differentEdgeLabel=stof(str);
-                    }
-                    catch(...)
-                    {	readLabelError(curline,line); continue;	}
-            }
-            else
-            {	readLabelError(curline,line); continue;	}
-        }
-        else if (str == "L") // single weight
-        {
-            if (getline(sstr, str, ';')) // first label
-            {
-                trim(str);
-                if (str.length()>0)
-                {
-                    auto l1it = stringLabelToSimpleLabel.find(str);
-                    if (l1it == stringLabelToSimpleLabel.end())
-                    {
-                        l1=numlabels;
-                        stringLabelToSimpleLabel.insert(pair<string,labelType> (str,numlabels++));
-                        simpleLabelToString.push_back(str);
-                    }
-                    else
-                        l1=l1it->second;
-                }
-                else
-                {	readLabelError(curline,line); continue;	}
-            }
-            else
-            {	readLabelError(curline,line); continue;	}
-            if (getline(sstr, str, ';')) // 2nd label
-            {
-                trim(str);
-                if (str.length()>0)
-                {
-                    auto l2it = stringLabelToSimpleLabel.find(str);
-                    if (l2it == stringLabelToSimpleLabel.end())
-                    {
-                        l2=numlabels;
-                        stringLabelToSimpleLabel.insert(pair<string,labelType> (str,numlabels++));
-                        simpleLabelToString.push_back(str);
-                    }
-                    else
-                        l2=l2it->second;
-                }
-                else
-                {	readLabelError(curline,line); continue;	}
-            }
-            else
-            {	readLabelError(curline,line); continue;	}
-            if (getline(sstr, str, ';')) // weight
-            {
-                trim(str);
-                wType weight=WEIGHT_NOT_COMPATIBLE;
-                if (str != "-") try
-                {
-                    weight=stof(str);
-                }
-                catch(...)
-                { readLabelError(curline,line); continue; }
-                labelPairType labelPair = LABEL_MULTIPLYER * l1 + l2;
-                auto it = labelFunction.weightTable.find(labelPair);
-                if (it == labelFunction.weightTable.end()) // new label pair
-                {
-                    labelFunction.weightTable.insert(pair<labelPairType,wType> (labelPair,weight));
-                }
-                else
-                {
-                    it->second=weight;
-                }
-            }
-            else
-            {	readLabelError(curline,line); continue;	}
-        }
-        else if (str == "TARGET") // target vector
-        {
-            target.clear();
-            while (getline(sstr, str, ';')) // labels
-            {
-                trim(str);
-                if (str.length()>0)
-                {
-                    auto it = stringLabelToSimpleLabel.find(str);
-                    if (it == stringLabelToSimpleLabel.end())
-                    {
-                        target.push_back(numlabels);
-                        stringLabelToSimpleLabel.insert(pair<string,labelType> (str,numlabels++));
-                        simpleLabelToString.push_back(str);
-                    }
-                    else
-                        target.push_back(it->second);
-                }
-            }
-        }
-        else if (str == "V") // weights for target vector
-        {
-            if (getline(sstr, str, ';'))
-            {
-                trim(str);
-                if (str.length()>0)
-                {
-                    auto itl1 = stringLabelToSimpleLabel.find(str);
-                    if (itl1 == stringLabelToSimpleLabel.end())
-                    {
-                        l1=numlabels;
-                        stringLabelToSimpleLabel.insert(pair<string,labelType> (str,numlabels++));
-                        simpleLabelToString.push_back(str);
-                    }
-                    else
-                        l1=itl1->second;
-                }
-                else
-                {	readLabelError(curline,line); continue;	}
-            }
-            else
-            {	readLabelError(curline,line); continue;	}
-            size_t curTarget=0;
-            while (curTarget < target.size() && getline(sstr, str, ';'))
-            {
-                trim(str);
-                if (str.length()==0)
-                {
-                    ++curTarget;
-                    continue;
-                }
-                wType weight=WEIGHT_NOT_COMPATIBLE;
-                if (str != "-") try
-                {
-                    weight=stof(str);
-                }
-                catch(...)
-                { readLabelError(curline,line); continue; }
-                labelPairType labelPair = LABEL_MULTIPLYER * l1 + target[curTarget++];
-                auto it = labelFunction.weightTable.find(labelPair);
-                if (it == labelFunction.weightTable.end()) // new label pair
-                {
-                    labelFunction.weightTable.insert(pair<labelPairType,wType> (labelPair,weight));
-                }
-                else
-                {
-                    it->second=weight;
-                }
-            }
-        }
-    }
-    labelFile.close();
-    return true;
-}
-
-ReadGraphDB::ReadGraphDB(LabelFunction& labelFunction,
-    map<string,labelType> &stringLabelToSimpleLabel, vector<string>& simpleLabelToString,
-    int readQueueSize, const char* fogOutputFilename, const char* compGraphsFileName, unsigned computationThreads,
-    size_t maxMCSInMemory, int maxCliqueTime,  wType distance_penalty, bool removeMultiEdgesAndSelfLoops, bool appendCliqueComputationTimeouts,
-    bool verbose, ComputationType computationType, int argument1, int argument2, bool argument3, bool argument4, SimCoefficient simCoefficient)
-:m_labelFunction(labelFunction),stringLabelToSimpleLabel(stringLabelToSimpleLabel),
- simpleLabelToString(simpleLabelToString),readQueueSize(readQueueSize),
- fogOutputFilename(fogOutputFilename),compGraphsFileName(compGraphsFileName),
- computationThreads(computationThreads),maxMCSInMemory(maxMCSInMemory),m_maxCliqueTime(maxCliqueTime),
- m_distance_penalty(distance_penalty), m_removeMultiEdgesAndSelfLoops(removeMultiEdgesAndSelfLoops),
- m_appendCliqueComputationTimeouts(appendCliqueComputationTimeouts),verbose(verbose), m_computationType(computationType),
- m_argument1(argument1),m_argument2(argument2),m_argument3(argument3),m_argument4(argument4),m_simCoefficient(simCoefficient)
-{
-    if (compGraphsFileName != nullptr)
-    {
-        comparedGraphs.open(compGraphsFileName,ios_base::out);
-        if (!comparedGraphs.is_open())
-            cerr << "Could not open output file "<<compGraphsFileName<<"."<<endl;
-    }
-    threadInfo.labelFunction=&m_labelFunction;
-}
-
-void ReadGraphDB::outputAndDelete(list<BBP_MCSI*>& bbpl, size_t& graph_removal)
-{
-    threadInfo.mut_bbp_modify.lock();
-    for (auto bbpIt=bbpl.begin(); bbpIt != bbpl.end(); ++bbpIt)
-    {
-        wType weight=(*bbpIt)->getSize();
-        InputGraph* pg=(*bbpIt)->get_ig_G();
-        InputGraph* ig=(*bbpIt)->get_ig_H();
-        if (threadInfo.comparedGraphs->is_open())
-        {
-            *(threadInfo.comparedGraphs) << pg->graphIndexToDBIndex+1 << " "<< pg->graphLabel << " " << ig->graphIndexToDBIndex+1 << " "<< ig->graphLabel << " "
-                           << pg->size << " " << ig->size << " " << weight << " "
-                           //<< weight / (pg->size + ig->size -weight) << endl;
-                           << computeSimilarity(weight, pg->size, ig->size, threadInfo.simCoefficient) << endl;
+            stringLabelToSimpleLabel.insert(pair<string,labelType> (node_edge_label,numlabels));
+            (*newNASimple)[n]=numlabels;
+            ++numlabels;
+            simpleLabelToString.push_back(node_edge_label);
         }
         else
-        {
-            if (ig->graphIndexToDBIndex % 1 == 0)
-            cout << pg->graphIndexToDBIndex+1 << " "<< pg->graphLabel << " " << ig->graphIndexToDBIndex+1 << " "<< ig->graphLabel << " "
-                 << pg->size << " " << ig->size << " " << weight << " "
-                 //<< weight / (pg->size + ig->size -weight) << endl;
-                 << computeSimilarity(weight, pg->size, ig->size, threadInfo.simCoefficient) << endl;
-        }
+            (*newNASimple)[n] = it->second;
     }
-    threadInfo.mut_bbp_modify.unlock();
-
-    for (auto bbpIt=bbpl.begin(); bbpIt != bbpl.end(); ++bbpIt)
+    
+    for (int i = 0; i < mol.bonds.size(); ++i)
     {
-        InputGraph* firstGraph=(*bbpIt)->get_ig_G();
-        InputGraph* secondGraph=(*bbpIt)->get_ig_H();
-        delete *bbpIt;
-        // delete second input graph if it was compared to all graphs of pattern file
-        if (firstGraph->graphIndexToDBIndex == threadInfo.graphIndexStart-1)
+        
+        e = newGraph->newEdge(fognode[mol.bonds[i].source], fognode[mol.bonds[i].target]);
+
+        string node_edge_label = std::to_string(mol.bonds[i].order);
+        auto it = stringLabelToSimpleLabel.find(node_edge_label);
+        if (it == stringLabelToSimpleLabel.end())
         {
-            //cout << " S"<< secondGraph->graphIndexToDBIndex+1<<" ";
-            //threadInfo.graphsToDeleteFromMainThread.push(secondGraph);
-            delete secondGraph;
+            stringLabelToSimpleLabel.insert(pair<string,labelType> (node_edge_label,numlabels));
+            (*newEASimple)[e]=numlabels;
+            ++numlabels;
+            simpleLabelToString.push_back(node_edge_label);
         }
+        else
+            (*newEASimple)[e]=it->second;
 
-
-
-/*		InputGraph* ig=(*bbpIt)->get_ig_H();
-        delete *bbpIt;
-        --graph_removal;
-        if (graph_removal == 0)
-        {
-            delete ig;
-            graph_removal=threadInfo.graphIndexStart;
-        }*/
     }
-    bbpl.clear();
-    OGDF_ALLOCATOR::flushPool();
+    delete[]fognode;
+    
+    return newIG;
 }
 
-void ReadGraphDB::computeBBPMCS(int cpu)
-{
-/*	if (cpu>-1){
-        cpu_set_t mask;
-        int status;
-
-        CPU_ZERO(&mask);
-        CPU_SET(cpu, &mask);
-        status = sched_setaffinity(0, sizeof(mask), &mask);
-        if (status != 0)
-        {
-            perror("sched_setaffinity");
-        }
-    }*/
-    InputGraph* ig;
-    list<BBP_MCSI*> bbpl;
-    //int OGDFflushctr=0;
-    size_t graph_removal=threadInfo.graphIndexStart;
-    unique_lock<mutex> lock_cv_input_modify(threadInfo.mut_input_modify);
-    while (true)
-    {
-        threadInfo.cv_input_modify.wait(lock_cv_input_modify, [] {return threadInfo.graphsInQueue->size() > 0 || threadInfo.readFinished; });
-        if (threadInfo.graphsInQueue->size() == 0) // nothing more to do, so return (readFinished must be true here)
-        {
-            lock_cv_input_modify.unlock();
-            threadInfo.cv_input_modify.notify_one();
-            outputAndDelete(bbpl,graph_removal);
-            return;
-        }
-        ig=threadInfo.graphsInQueue->front(); // graph to compare to patterns file
-        //cout << threadInfo.graphsInQueue->size()<<" graphlabels in queue, last: "<<threadInfo.graphsInQueue->back()->graphLabel<<endl;
-        threadInfo.graphsInQueue->pop();
-        //if (threadInfo.graphsInQueue->size()>0 || threadInfo.readFinished) // if there are more graphs, unlock mut_input
-        //    threadInfo.mut_input.unlock();
-        lock_cv_input_modify.unlock();
-        threadInfo.cv_input_modify.notify_one();
-
-        // compute the BBP_MCSs
-
-        for (size_t index1=0; index1<threadInfo.patternsV->size(); ++index1)
-        {
-            InputGraph* pg=(*threadInfo.patternsV)[index1];
-            BBP_MCSI* bbp=new BBP_MCSI(*(threadInfo.labelFunction),*pg,*ig,false,false, threadInfo.simpleLabelToString, threadInfo.maxCliqueTime, threadInfo.distance_penalty);
-            bbp->computeSize();
-            bbpl.push_back(bbp);
-            if (bbpl.size() >= threadInfo.maxMCSInMemory)
-            {
-                //cout << "F";
-                outputAndDelete(bbpl,graph_removal);
-                // if (OGDFflushctr >= 20)
-                // {
-                //     OGDFflushctr=0;
-//                OGDF_ALLOCATOR::flushPool();
-                // }
-            }
-        }
-        lock_cv_input_modify.lock();
-    }
-}
 
 // enum simCoefficients { SC_WallisEtAl, SC_BunkeShearer, SC_Asymmetric, SC_NormalizedJohnson, SC_Johnson, SC_SokalSneath, SC_Kulczynski, SC_McConnaughey };
 wType ReadGraphDB::computeSimilarity(wType wMCS, wType wG, wType wH, SimCoefficient simCoefficient)
@@ -501,45 +107,8 @@ wType ReadGraphDB::computeSimilarity(wType wMCS, wType wG, wType wH, SimCoeffici
 
 int ReadGraphDB::readFile(const char* filename)
 {
-    ifstream graphDB;
-    graphDB.open(filename,ios_base::in);
-    if (!graphDB.is_open())
-    {
-        cerr << "Could not read database "<<filename<<endl;
-        return 1;
-    }
-
-    unsigned graphIndexStart=static_cast<unsigned>(m_inputGraph.size());
-
-    // Threaded comparing with -i
-    thread *bbp_thread= nullptr;
-    if (m_computationType == ComputationType::COMP_I2 && computationThreads>0)
-    {
-        if (verbose || !comparedGraphs.is_open())
-            cout << "Using "<<computationThreads << " threads to compute the MCSs\n";
-        threadInfo.patternsV=&m_inputGraph;
-        threadInfo.graphsInQueue=new queue<InputGraph*>;
-        threadInfo.maxMCSInMemory=maxMCSInMemory;
-        threadInfo.readQueueSize=readQueueSize;
-        threadInfo.simpleLabelToString=&simpleLabelToString;
-        threadInfo.graphIndexStart=graphIndexStart;
-        threadInfo.comparedGraphs=&comparedGraphs;
-        //m_threadInfo.mut_input.lock(); // Inital lock of the input mutex until graphs are read
-        threadInfo.simCoefficient=m_simCoefficient;
-        threadInfo.maxCliqueTime=m_maxCliqueTime;
-        threadInfo.distance_penalty=m_distance_penalty;
-        threadInfo.appendCliqueComputationTimeouts=m_appendCliqueComputationTimeouts;
-        bbp_thread=new thread[computationThreads];
-        for (unsigned t=0; t<computationThreads; ++t)
-            bbp_thread[t]=thread(computeBBPMCS,t+1);
-    }
-
-    //bool checkOuterplanarity = (checkPlanarity % 2 == 1) ? true:false;
-    //bool bcheckPlanarity = ((checkPlanarity/2) % 2 == 1) ? true:false;
-
-    GraphAttributes graphAttributes;
-    char line[5000];
-    stringstream sstr;
+    
+    
     node n,nQueue;
     adjEntry adj;
     edge e;

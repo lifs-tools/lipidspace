@@ -12,6 +12,9 @@
 #pragma warning(push, 0)
 #include <ogdf/basic/Thread.h>
 #pragma warning(pop)
+#include "LipidSpace/smiley.h"
+#include "LipidSpace/molecule.h"
+using namespace Smiley;
 
 
 class LaWeCSE
@@ -21,6 +24,7 @@ private:
 	map<string,labelType> stringLabelToSimpleLabel;
 	vector<string> simpleLabelToString;
     labelType numlabels;
+    MoleculeSmilesCallback callback;
 
 public:
 	LaWeCSE();
