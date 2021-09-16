@@ -1,4 +1,4 @@
-#include <TreeGen.h>
+#include "LipidSpace/TreeGen.h"
 
 /*void OuterPlanarGen::generate(const int size, const float density, ogdf::Graph& G)
 {

@@ -6,9 +6,8 @@
 //
 //
 
-#include <global.h>
-
-#include <hungarian.h>
+#include "LipidSpace/global.h"
+#include "LipidSpace/hungarian.h"
 
 //using std::function;
 /*using std::list;

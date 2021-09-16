@@ -4,7 +4,7 @@
 #pragma warning(push, 0)
 #include <ogdf/basic/Graph.h>
 #pragma warning(pop)
-#include <global.h>
+#include "LipidSpace/global.h"
 
 using namespace ogdf;
 

@@ -1,7 +1,7 @@
 #ifndef AUXILIARY_H
 #define AUXILIARY_H
-#include "LaWeCSE/global.h"
-#include "LaWeCSE/bbpmcsi.h"
+#include "LipidSpace/global.h"
+#include "LipidSpace/bbpmcsi.h"
 #pragma warning(push, 0)
 #include <ogdf/fileformats/GraphIO.h>
 #pragma warning(pop)

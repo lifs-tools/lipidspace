@@ -1,8 +1,8 @@
 #ifndef BBPMCSI_H
 #define BBPMCSI_H
 
-#include "LaWeCSE/global.h"
-#include "LaWeCSE/mwm.h"
+#include "LipidSpace/global.h"
+#include "LipidSpace/mwm.h"
 #pragma warning(push, 0)
 #include <ogdf/decomposition/BCTree.h>
 #pragma warning(pop)
@@ -15,8 +15,8 @@ using namespace sf;
 #pragma warning(push, 0)
 #include <ogdf/planarity/PlanarizationGridLayout.h>
 #pragma warning(pop)
-#include "LaWeCSE/graphVisualization.h"
-#include "LaWeCSE/MCIS2.h"
+#include "LipidSpace/graphVisualization.h"
+#include "LipidSpace/MCIS2.h"
 
 using namespace ogdf;
 using namespace std;

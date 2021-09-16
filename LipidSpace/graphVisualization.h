@@ -9,7 +9,7 @@
 #define GRAPHVISUALIZATION_H_
 
 using namespace std;
-#include <global.h>
+#include "LipidSpace/global.h"
 
 #ifdef GRAPHICS
 #include <ogdf/decomposition/BCTree.h>
