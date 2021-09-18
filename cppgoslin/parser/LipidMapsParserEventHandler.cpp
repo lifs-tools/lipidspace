@@ -302,7 +302,7 @@ void LipidMapsParserEventHandler::add_ether(TreeNode* node){
 void LipidMapsParserEventHandler::add_hydroxyl(TreeNode* node){
     int num_h = atoi(node->get_text().c_str());
     
-    if (Headgroup::get_category(head_group) == SP && (current_fa->lipid_FA_bond_type == LCB_REGULAR || current_fa->lipid_FA_bond_type == LipidFaBondType.LCB_EXCEPTION)) num_h -= 1;
+    if (Headgroup::get_category(head_group) == SP && (current_fa->lipid_FA_bond_type == LCB_REGULAR || current_fa->lipid_FA_bond_type == LCB_EXCEPTION)) num_h -= 1;
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
@@ -320,7 +320,7 @@ void LipidMapsParserEventHandler::add_hydroxyl_lcb(TreeNode* node){
     else if (hydroxyl == "t") num_h = 3;
     
     
-    if (Headgroup::get_category(head_group) == SP && (current_fa->lipid_FA_bond_type == LCB_REGULAR || current_fa->lipid_FA_bond_type == LipidFaBondType.LCB_EXCEPTION)) num_h -= 1;
+    if (Headgroup::get_category(head_group) == SP && (current_fa->lipid_FA_bond_type == LCB_REGULAR || current_fa->lipid_FA_bond_type == LCB_EXCEPTION)) num_h -= 1;
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;

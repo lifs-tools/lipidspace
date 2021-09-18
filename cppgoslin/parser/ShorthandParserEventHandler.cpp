@@ -208,7 +208,7 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     
     
     // make LBC exception
-    if (fa_list->size() > 0 && headgroup->sp_exception) fa_list->front()->set_type(LCB_EXCEPTION);
+    if (fa_list.size() > 0 && headgroup->sp_exception) fa_list.front()->set_type(LCB_EXCEPTION);
     
     // add count numbers for fatty acyl chains
     int fa_it = !fa_list.empty() && (fa_list.front()->lipid_FA_bond_type == LCB_REGULAR || fa_list.front()->lipid_FA_bond_type == LCB_EXCEPTION);

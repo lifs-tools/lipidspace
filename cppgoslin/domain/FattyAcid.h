@@ -48,6 +48,8 @@ public:
     void compute_elements();
     FattyAcid* copy();
     int get_double_bonds();
+    void set_type(LipidFaBondType _lipid_FA_bond_type);
+    ElementTable* get_functional_group_elements();
     static string get_prefix(LipidFaBondType _lipid_FA_bond_type);
     static bool lipid_FA_bond_type_prefix(LipidFaBondType lipid_FA_bond_type);
     const set<string> fg_exceptions {"acyl", "alkyl", "cy", "cc", "acetoxy"};
