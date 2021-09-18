@@ -69,6 +69,7 @@ public:
 
     LipidMapsParserEventHandler();
     ~LipidMapsParserEventHandler();
+    void set_lipid_level(LipidLevel _level);
     void reset_lipid(TreeNode* node);
     void set_molecular_subspecies_level(TreeNode* node);
     void mediator_event(TreeNode* node);

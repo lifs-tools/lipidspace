@@ -25,11 +25,15 @@ SOFTWARE.
 
 #include "FattyAcid.h"
 
-FattyAcid::FattyAcid(string _name, int _num_carbon, DoubleBonds* _double_bonds, map<string, vector<FunctionalGroup*> >* _functional_groups, LipidFaBondType _lipid_FA_bond_type, bool _lcb, int _position) : FunctionalGroup(_name, _position, 1, _double_bonds, false, "", 0, _functional_groups) {
+FattyAcid::FattyAcid(string _name, int _num_carbon, DoubleBonds* _double_bonds, map<string, vector<FunctionalGroup*> >* _functional_groups, LipidFaBondType _lipid_FA_bond_type, int _position) : FunctionalGroup(_name, _position, 1, _double_bonds, false, "", 0, _functional_groups) {
     
     num_carbon = _num_carbon;
     lipid_FA_bond_type = _lipid_FA_bond_type;
-    lcb = _lcb;
+    
+    if (lipid_FA_bond_type == LCB_REGULAR){
+        functional_groups->insert({"[X]", vector<FunctionalGroup*>()});
+        functional_groups->at("[X]").push_back(KnownFunctionalGroups::get_functional_group("X"));
+    }
     
     if (num_carbon < 0 || num_carbon == 1){
         throw ConstraintViolationException("FattyAcid must have at least 2 carbons! Got " + std::to_string(num_carbon));
@@ -56,7 +60,7 @@ FattyAcid* FattyAcid::copy(){
         }
     }
     
-    return new FattyAcid(name, num_carbon, db, fg, lipid_FA_bond_type, lcb, position);
+    return new FattyAcid(name, num_carbon, db, fg, lipid_FA_bond_type, position);
 }
 
 
@@ -68,6 +72,27 @@ string FattyAcid::get_prefix(LipidFaBondType lipid_FA_bond_type){
         default: return "";
     }
 }
+
+
+
+    
+void FattyAcid::set_type(LipidFaBondType lipid_FA_bond_type){
+    lipid_FA_bond_type = lipid_FA_bond_type;
+    if (lipid_FA_bond_type == LCB_REGULAR && uncontains_p(functional_groups, "[X]"){
+        functional_groups->insert({"[X]", vector<FunctionalGroup*>()});
+        functional_groups->at("[X]").push_back(KnownFunctionalGroups::get_functional_group("X"));
+    }
+        
+    else if (contains_p(functional_groups, "[X]"){
+        for (auto fg : functional_groups->at("[X]")){
+            delete fg;
+        }
+        functional_groups->erase("[X]");
+    }
+        
+    name = (lipid_FA_bond_type != LCB_EXCEPTION && lipid_FA_bond_type != LCB_REGULAR) ? "FA" : "LCB";
+}
+                 
 
 
 
@@ -123,6 +148,7 @@ string FattyAcid::to_string(LipidLevel level){
         sort(fg_names.begin(), fg_names.end(), lower_name_sort_function);
         
         for (auto &fg : fg_names){
+            if (fg == "[X]") continue;
             vector<FunctionalGroup*>& fg_list = functional_groups->at(fg);
             if (fg_list.empty()) continue;
             
@@ -143,6 +169,7 @@ string FattyAcid::to_string(LipidLevel level){
         
         
         for (auto &fg : fg_names){
+            if (fg == "[X]") continue;
             vector<FunctionalGroup*> &fg_list = functional_groups->at(fg);
             if (fg_list.empty()) continue;
                 
@@ -187,6 +214,18 @@ string FattyAcid::to_string(LipidLevel level){
 }
 
 
+    
+ElementTable* Fatty::Acid::get_functional_group_elements(){
+    ElementTable *elements = FunctionalGroup::get_functional_group_elements();
+    // subtract the invisible [X] functional group for regular LCBs
+    if (lipid_FA_bond_type == LCB_REGULAR && contains_p(functional_groups, "O"){
+        elements->at(ELEMENT_O) -= 1;
+    }
+        
+    return elements;
+}
+
+
 
 
 void FattyAcid::compute_elements(){
@@ -200,7 +239,7 @@ void FattyAcid::compute_elements(){
         return;
     }
     
-    if (!lcb){
+    if (lipid_FA_bond_type != LCB_EXCEPTION && lipid_FA_bond_type != LCB_REGULAR){
         
         elements->at(ELEMENT_C) = num_carbon; // carbon
         if (lipid_FA_bond_type == ESTER){
@@ -228,7 +267,7 @@ void FattyAcid::compute_elements(){
         elements->at(ELEMENT_C) = num_carbon; // carbon
         elements->at(ELEMENT_H) = (2 * (num_carbon - num_double_bonds) + 1); // hydrogen
         elements->at(ELEMENT_N) = 1; // nitrogen
-        elements->at(ELEMENT_O) = 1; // oxygen
+        //elements->at(ELEMENT_O) = 1; // oxygen
     }
 }
 

@@ -37,7 +37,7 @@ LipidSpeciesInfo::LipidSpeciesInfo (LipidClass lipid_class) : FattyAcid("info") 
 
 ElementTable* LipidSpeciesInfo::get_elements(){
     ElementTable* elements = FattyAcid::get_elements();
-    elements->at(ELEMENT_O) -= (num_ethers == 0);
+    if (lipid_FA_bond_type != LCB_EXCEPTION) elements->at(ELEMENT_O) -= (num_ethers == 0);
     elements->at(ELEMENT_H) += num_ethers == 0 ? 1 : -1;
     
     return elements;
@@ -45,11 +45,13 @@ ElementTable* LipidSpeciesInfo::get_elements(){
 
 
 void LipidSpeciesInfo::add(FattyAcid* _fa){
-    lcb |= _fa->lcb;
-    if (_fa->lipid_FA_bond_type == ETHER_PLASMENYL || _fa->lipid_FA_bond_type == ETHER_PLASMANYL){
+    if ((_fa->lipid_FA_bond_type == ETHER_PLASMENYL || _fa->lipid_FA_bond_type == ETHER_PLASMANYL) && _fa->lipid_FA_bond_type != LCB_EXCEPTION && _fa->lipid_FA_bond_type != LCB_REGULAR){
         num_ethers += 1;
         lipid_FA_bond_type = ETHER_PLASMANYL;
         extended_class = _fa->lipid_FA_bond_type;
+    }
+    else if (_fa->lipid_FA_bond_type != LCB_EXCEPTION || _fa->lipid_FA_bond_type != LCB_REGULAR){
+        lipid_FA_bond_type = _fa->lipid_FA_bond_type;
     }
             
     else{

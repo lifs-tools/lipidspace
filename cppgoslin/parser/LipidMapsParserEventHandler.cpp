@@ -124,11 +124,16 @@ void LipidMapsParserEventHandler::reset_lipid(TreeNode* node){
 }
     
 void LipidMapsParserEventHandler::set_molecular_subspecies_level(TreeNode* node){
-    level = MOLECULAR_SUBSPECIES;
+    set_lipid_level(MOLECULAR_SUBSPECIES);
 }
 
 void LipidMapsParserEventHandler::pure_fa(TreeNode* node){
     head_group = "FA";
+}
+
+
+void LipidMapsParserEventHandler::set_lipid_level(LipidLevel _level){
+    level = min(level, _level);
 }
 
     
@@ -179,7 +184,7 @@ void LipidMapsParserEventHandler::set_omega_head_group_name(TreeNode* node){
     
     
 void LipidMapsParserEventHandler::set_species_level(TreeNode* node){
-    level = SPECIES;
+    set_lipid_level(SPECIES);
 }
    
    
@@ -246,8 +251,9 @@ void LipidMapsParserEventHandler::new_fa(TreeNode *node) {
 
 void LipidMapsParserEventHandler::new_lcb(TreeNode *node) {
     lcb = new FattyAcid("LCB");
-    lcb->lcb = true;
+    lcb->set_type(LCB_REGULAR);
     current_fa = lcb;
+    set_lipid_level(STRUCTURAL_SUBSPECIES);
 }
         
         
@@ -296,7 +302,7 @@ void LipidMapsParserEventHandler::add_ether(TreeNode* node){
 void LipidMapsParserEventHandler::add_hydroxyl(TreeNode* node){
     int num_h = atoi(node->get_text().c_str());
     
-    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && ((head_group != "Cer" && head_group != "LCB") || headgroup_decorators->size() > 0)) num_h -= 1;
+    if (Headgroup::get_category(head_group) == SP && (current_fa->lipid_FA_bond_type == LCB_REGULAR || current_fa->lipid_FA_bond_type == LipidFaBondType.LCB_EXCEPTION)) num_h -= 1;
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
@@ -314,7 +320,7 @@ void LipidMapsParserEventHandler::add_hydroxyl_lcb(TreeNode* node){
     else if (hydroxyl == "t") num_h = 3;
     
     
-    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && ((head_group != "Cer" && head_group != "LCB") || headgroup_decorators->size() > 0)) num_h -= 1;
+    if (Headgroup::get_category(head_group) == SP && (current_fa->lipid_FA_bond_type == LCB_REGULAR || current_fa->lipid_FA_bond_type == LipidFaBondType.LCB_EXCEPTION)) num_h -= 1;
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
@@ -407,6 +413,9 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
     int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
     if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
     
+    
+    // make LBC exception
+    if (fa_list->size() > 0 && headgroup->sp_exception) fa_list->front()->set_type(LCB_EXCEPTION);
 
     
     switch (level){

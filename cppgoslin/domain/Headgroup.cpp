@@ -31,7 +31,7 @@ Headgroup::Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators
     lipid_class = get_class(headgroup);
     use_headgroup = _use_headgroup;
     decorators = (_decorators != 0) ? _decorators : new vector<HeadgroupDecorator*>();
-    sp_exception = lipid_category == SP && (uncontains(exception_headgroups, _headgroup) || decorators->size() > 0);
+    sp_exception = lipid_category == SP && contains(exception_headgroups, _headgroup) && decorators->size() == 0;
 }
 
 
@@ -139,7 +139,7 @@ string Headgroup::get_lipid_string(LipidLevel level){
     for (auto hgd : *decorators){
         if (hgd->suffix) headgoup_string << hgd->to_string(level);
     }
-    if (level == ISOMERIC_SUBSPECIES && sp_exception){
+    if (level == ISOMERIC_SUBSPECIES && lipid_category == SP && !sp_exception){
         headgoup_string << "(1)";
     }
     
@@ -167,10 +167,6 @@ ElementTable* Headgroup::get_elements(){
             elements->at(kv.first) += kv.second * hgd->count;
         }
         delete hgd_elements;
-    }
-    
-    if (lipid_category == SP && contains(exception_headgroups, get_class_string(lipid_class)) && decorators->size() == 0){
-        elements->at(ELEMENT_O) -= 1;
     }
     
     return elements;

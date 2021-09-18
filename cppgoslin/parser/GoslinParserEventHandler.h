@@ -63,6 +63,7 @@ public:
     GoslinParserEventHandler();
     ~GoslinParserEventHandler();
     void reset_lipid(TreeNode *node);
+    void set_lipid_level(LipidLevel _level);
     void set_head_group_name(TreeNode *node);
     void set_species_level(TreeNode *node);
     void set_molecular_subspecies_level(TreeNode *node);

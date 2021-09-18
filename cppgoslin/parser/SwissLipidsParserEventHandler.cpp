@@ -171,7 +171,7 @@ void SwissLipidsParserEventHandler::new_fa(TreeNode *node) {
 
 void SwissLipidsParserEventHandler::new_lcb(TreeNode *node) {
     lcb = new FattyAcid("LCB");
-    lcb->lcb = true;
+    lcb->set_type(LCB_REGULAR);
     current_fa = lcb;
     set_level(STRUCTURAL_SUBSPECIES);
 }
@@ -262,6 +262,9 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     
     int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
     if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
+    
+    // make LBC exception
+    if (fa_list->size() > 0 && headgroup->sp_exception) fa_list->front()->set_type(LCB_EXCEPTION);
 
     switch (level){
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
@@ -293,7 +296,8 @@ void SwissLipidsParserEventHandler::add_hydroxyl(TreeNode *node) {
     else if (old_hydroxyl == "t") num_h = 3;
     
     
-    if (Headgroup::get_category(head_group) == SP && current_fa->lcb && head_group != "Cer" && head_group != "LCB") num_h -= 1;
+    if (Headgroup::get_category(head_group) == SP && (current_fa->lipid_FA_bond_type == LCB_REGULAR || current_fa->lipid_FA_bond_type == LipidFaBondType.LCB_EXCEPTION)) num_h -= 1;
+    
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
     if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});

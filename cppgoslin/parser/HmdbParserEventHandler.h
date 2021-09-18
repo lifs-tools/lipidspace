@@ -63,7 +63,7 @@ public:
         
     HmdbParserEventHandler();
     ~HmdbParserEventHandler();
-    
+    void set_lipid_level(LipidLevel _level);
     void reset_lipid(TreeNode *node);
     void build_lipid(TreeNode *node);
     void set_head_group_name(TreeNode *node);
