@@ -367,7 +367,7 @@ int main(int argc, char** argv){
         assert (fa->position == faCnt);
         switch(faCnt) {
         case 1:
-        assert (fa->lcb == false);
+        assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
         assert (fa->num_carbon == 16);
         num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
         assert (num_hydroxyl == 0);
@@ -375,7 +375,7 @@ int main(int argc, char** argv){
         assert (fa->double_bonds->get_num() == 0);
         break;
         case 2:
-        assert (fa->lcb == false);
+        assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
         assert (fa->num_carbon == 12);
         num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
         assert (num_hydroxyl == 0);
@@ -591,7 +591,7 @@ int main(int argc, char** argv){
     for(FattyAcid* fa : lipid->lipid->get_fa_list()) {
         switch(faCnt) {
         case 1:
-            assert (fa->lcb == true);
+            assert(fa->lipid_FA_bond_type == LCB_EXCEPTION || fa->lipid_FA_bond_type == LCB_REGULAR);
             assert (fa->num_carbon == 16);
             num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
             assert (num_hydroxyl == 1);
@@ -599,7 +599,7 @@ int main(int argc, char** argv){
             assert (fa->double_bonds->get_num() == 1);
             break;
         case 2:
-            assert (fa->lcb == false);
+            assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
             assert (fa->num_carbon == 12);
             num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
             assert (num_hydroxyl == 0);
@@ -626,7 +626,7 @@ int main(int argc, char** argv){
     
     // try to retrieve LipidSpeciesInfo for summary information
     LipidSpeciesInfo *lsi = lipid->lipid->info;
-    assert (lsi->lcb == false);
+    assert(lsi->lipid_FA_bond_type != LCB_EXCEPTION && lsi->lipid_FA_bond_type != LCB_REGULAR);
     assert (lsi->level == ISOMERIC_SUBSPECIES);
     assert (lsi->lipid_FA_bond_type == ESTER);
     assert (lsi->num_carbon == 54);
@@ -642,7 +642,7 @@ int main(int argc, char** argv){
         assert (fa->position == faCnt);
         switch(faCnt) {
         case 1:
-            assert (fa->lcb == false);
+            assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
             assert (fa->num_carbon == 16);
             num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
             assert (num_hydroxyl == 0);
@@ -650,7 +650,7 @@ int main(int argc, char** argv){
             assert (fa->double_bonds->get_num() == 1);
             break;
         case 2:
-            assert (fa->lcb == false);
+            assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
             assert (fa->num_carbon == 18);
             num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
             assert (num_hydroxyl == 0);
@@ -658,7 +658,7 @@ int main(int argc, char** argv){
             assert (fa->double_bonds->get_num() == 0);
             break;
         case 3:
-            assert (fa->lcb == false);
+            assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
             assert (fa->num_carbon == 20);
             num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
             assert (num_hydroxyl == 0);
@@ -683,7 +683,7 @@ int main(int argc, char** argv){
     
     // try to retrieve LipidSpeciesInfo for summary information
     lsi = lipid->lipid->info;
-    assert (lsi->lcb == false);
+    assert(lsi->lipid_FA_bond_type != LCB_EXCEPTION && lsi->lipid_FA_bond_type != LCB_REGULAR);
     assert (lsi->level == STRUCTURAL_SUBSPECIES);
     assert (lsi->lipid_FA_bond_type == ESTER);
     assert (lsi->num_carbon == 48);
@@ -699,7 +699,7 @@ int main(int argc, char** argv){
         assert (fa->position == faCnt);
         switch(faCnt) {
         case 1:
-            assert (fa->lcb == false);
+            assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
             assert (fa->num_carbon == 16);
             num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
             assert (num_hydroxyl == 0);
@@ -707,7 +707,7 @@ int main(int argc, char** argv){
             assert (fa->double_bonds->get_num() == 1);
             break;
         case 2:
-            assert (fa->lcb == false);
+            assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
             assert (fa->num_carbon == 12);
             num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
             assert (num_hydroxyl == 0);
@@ -715,7 +715,7 @@ int main(int argc, char** argv){
             assert (fa->double_bonds->get_num() == 0);
             break;
         case 3:
-            assert (fa->lcb == false);
+            assert(fa->lipid_FA_bond_type != LCB_EXCEPTION && fa->lipid_FA_bond_type != LCB_REGULAR);
             assert (fa->num_carbon == 20);
             num_hydroxyl = contains_p(fa->functional_groups, "OH") ? fa->functional_groups->at("OH").size() : 0;
             assert (num_hydroxyl == 0);

@@ -107,6 +107,7 @@ ElementTable* LipidMolecularSubspecies::get_elements(){
     ElementTable* hg_elements = headgroup->get_elements();
     for (auto &kv : *hg_elements) elements->at(kv.first) += kv.second;
     delete hg_elements;
+
     
     // add elements from all fatty acyl chains
     for (auto fatty_acid : fa_list){

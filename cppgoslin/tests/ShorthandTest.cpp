@@ -51,9 +51,9 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"IPC(1) 18:1(8E);3OH,4OH/24:0;2OH", {"IPC(1) 18:1(8E);3OH,4OH/24:0;2OH", "IPC 18:1(8);(OH)2/24:0;OH", "IPC 18:1;O2/24:0;O", "IPC 42:1;O4"}}, // IPC 42:1;O4
         
-        {"CerP(1) 18:1(4E);3OH/16:0;2OH", {"CerP(1) 18:1(4E);3OH/16:0;2OH", "CerP 18:1(4);OH/16:0;OH", "CerP 18:1;O/16:0;O", "CerP 34:1;O3", "C34H68NO7P"}}, // CerP 34:1;O3 / C34H68NO7P
+        {"CerP(1) 18:1(4E);3OH/16:0;2OH", {"CerP(1) 18:1(4E);3OH/16:0;2OH", "CerP 18:1(4);OH/16:0;OH", "CerP 18:1;O2/16:0;O", "CerP 34:1;O3", "C34H68NO7P"}}, // CerP 34:1;O3 / C34H68NO7P
         
-        {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/26:1(17Z)", {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/26:1(17Z)", "Gal-Gal-Glc-Cer 18:1(4);OH/26:1(17)", "GalGalGlcCer 18:1;O/26:1", "GalGalGlcCer 44:2;O2", "C62H115NO18"}}, // GalGalGlcCer 44:2;O2 / C62H115NO18
+        {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/26:1(17Z)", {"Gal-Gal-Glc-Cer(1) 18:1(4E);3OH/26:1(17Z)", "Gal-Gal-Glc-Cer 18:1(4);OH/26:1(17)", "GalGalGlcCer 18:1;O2/26:1", "GalGalGlcCer 44:2;O2", "C62H115NO18"}}, // GalGalGlcCer 44:2;O2 / C62H115NO18
         
         {"PC 16:0/20:2(5Z,13E);[8-12cy5;11OH;9oxo];15OH", {"PC 16:0/20:2(5Z,13E);[8-12cy5:0;11OH;9oxo];15OH", "PC 16:0/20:2(5,13);[cy5:0;OH;oxo];OH", "PC 16:0_20:4;O3", "PC 36:4;O3"}}, // PC 36:4;O3
         
@@ -65,7 +65,7 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"PE O-18:1(11E);5OMe/22:0;3OH", {"PE O-18:1(11E);5OMe/22:0;3OH", "PE O-18:1(11);OMe/22:0;OH", "PE O-19:1;O_22:0;O", "PE O-41:1;O2", "C46H92NO9P"}}, // PE O-41:1;O2
         
-        {"M(IP)2C(1) 20:0;3OH,4OH/26:0;2OH", {"M(IP)2C(1) 20:0;3OH,4OH/26:0;2OH", "M(IP)2C 20:0;(OH)2/26:0;OH", "M(IP)2C 20:0;O2/26:0;O", "M(IP)2C 46:0;O4"}}, // M(IP)2C 46:0;O4
+        {"M(IP)2C(1) 20:0;3OH,4OH/26:0;2OH", {"M(IP)2C(1) 20:0;3OH,4OH/26:0;2OH", "M(IP)2C 20:0;(OH)2/26:0;OH", "M(IP)2C 20:0;O3/26:0;O", "M(IP)2C 46:0;O4"}}, // M(IP)2C 46:0;O4
         
         {"SPB 18:0;3OH", {"SPB 18:0;3OH", "SPB 18:0;OH", "SPB 18:0;O", "SPB 18:0;O"}}, // SPB 18:0;O
         
@@ -105,7 +105,7 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"LCL 18:2(9Z,12Z)/18:2(9Z,12Z)/18:2(9Z,12Z)/0:0", {"LCL 18:2(9Z,12Z)/18:2(9Z,12Z)/18:2(9Z,12Z)/0:0", "LCL 18:2(9,12)/18:2(9,12)/18:2(9,12)/0:0", "LCL 18:2_18:2_18:2", "LCL 54:6", "C63H112O16P2"}},
         
-        {"MIPC(1) 20:0;3OH,4OH/20:0;2OH", {"MIPC(1) 20:0;3OH,4OH/20:0;2OH", "MIPC 20:0;(OH)2/20:0;OH", "MIPC 20:0;O2/20:0;O", "MIPC 40:0;O4", "C52H102NO18P"}},
+        {"MIPC(1) 20:0;3OH,4OH/20:0;2OH", {"MIPC(1) 20:0;3OH,4OH/20:0;2OH", "MIPC 20:0;(OH)2/20:0;OH", "MIPC 20:0;O3/20:0;O", "MIPC 40:0;O4", "C52H102NO18P"}},
 
         {"LPC 20:1(11Z)/0:0", {"LPC 20:1(11Z)/0:0", "LPC 20:1(11)/0:0", "LPC 20:1", "LPC 20:1", "C28H56NO7P"}},
         
@@ -113,9 +113,9 @@ data = {{"PC 18:1(11Z)/16:0", {"PC 18:1(11Z)/16:0", "PC 18:1(11)/16:0", "PC 18:1
         
         {"LPIM1 19:1(9Z)/0:0", {"LPIM1 19:1(9Z)/0:0", "LPIM1 19:1(9)/0:0", "LPIM1 19:1", "LPIM1 19:1", "C34H63O17P"}},
 
-        {"Hex2Cer(1) 17:1(5E);15Me;3OH,4OH/22:0;2OH", {"Hex2Cer(1) 17:1(5E);15Me;3OH,4OH/22:0;2OH", "Hex2Cer 17:1(5);Me;(OH)2/22:0;OH", "Hex2Cer 18:1;O2/22:0;O", "Hex2Cer 40:1;O4", "C52H99NO15"}},
+        {"Hex2Cer(1) 17:1(5E);15Me;3OH,4OH/22:0;2OH", {"Hex2Cer(1) 17:1(5E);15Me;3OH,4OH/22:0;2OH", "Hex2Cer 17:1(5);Me;(OH)2/22:0;OH", "Hex2Cer 18:1;O3/22:0;O", "Hex2Cer 40:1;O4", "C52H99NO15"}},
         
-        {"Glc-Cer(1) 21:0;[13-15cy3:0];3OH,4OH/22:1(16E);2OH;15oxo", {"Glc-Cer(1) 21:0;[13-15cy3:0];3OH,4OH/22:1(16E);2OH;15oxo", "Glc-Cer 21:0;[cy3:0];(OH)2/22:1(16);OH;oxo", "GlcCer 21:1;O2/22:2;O2", "GlcCer 43:3;O5", "C49H91NO11"}},
+        {"Glc-Cer(1) 21:0;[13-15cy3:0];3OH,4OH/22:1(16E);2OH;15oxo", {"Glc-Cer(1) 21:0;[13-15cy3:0];3OH,4OH/22:1(16E);2OH;15oxo", "Glc-Cer 21:0;[cy3:0];(OH)2/22:1(16);OH;oxo", "GlcCer 21:1;O3/22:2;O2", "GlcCer 43:3;O5", "C49H91NO11"}},
         
         {"FA 8:0;[6-8SScy5:0]", {"FA 8:0;[6-8SScy5:0]", "FA 8:0;[SScy5:0]", "FA 8:1;S2", "FA 8:1;S2", "C8H14O2S2"}},
         
@@ -136,25 +136,140 @@ void assertEqual(string s1, string s2, string message = ""){
 
 int main(int argc, char** argv){
     ShorthandParser parser;
-    /*
-    LipidAdduct *l = parser.parse("PE 20:0");
-    cout << l->get_lipid_string() << endl;
-    delete l;
         
+    LipidAdduct *l = parser.parse("Cer 18:1(8Z);1OH,3OH/24:0");
+    assertEqual(l->get_lipid_string(), "Cer 18:1(8Z);1OH,3OH/24:0");
+    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "Cer 18:1(8);(OH)2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(SPECIES), "Cer 42:1;O2");
+    assertEqual(l->get_sum_formula(), "C42H83NO3");
+    delete l;
     
-    LipidAdduct *lipid = parser.parse("CL O-16:0;3Me,7Me,11Me,15Me/O-16:0;3Me,7Me,11Me,15Me/O-16:0;3Me,7Me,11Me,15Me/O-16:0;3Me,7Me,11Me,15Me");
+    l = parser.parse("Cer 18:1(8);(OH)2/24:0");
+    assertEqual(l->get_lipid_string(), "Cer 18:1(8);(OH)2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(SPECIES), "Cer 42:1;O2");
+    assertEqual(l->get_sum_formula(), "C42H83NO3");
+    delete l;
+    
+    l = parser.parse("Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(SPECIES), "Cer 42:1;O2");
+    assertEqual(l->get_sum_formula(), "C42H83NO3");
+    delete l;
+    
+    l = parser.parse("Cer 42:1;O2");
+    assertEqual(l->get_lipid_string(), "Cer 42:1;O2");
+    assertEqual(l->get_sum_formula(), "C42H83NO3");
+    delete l;
     
     
-    cout << lipid->get_lipid_string(ISOMERIC_SUBSPECIES) << endl;
-    cout << lipid->get_lipid_string(STRUCTURAL_SUBSPECIES) << endl;
-    cout << lipid->get_lipid_string(MOLECULAR_SUBSPECIES) << endl;
-    cout << lipid->get_lipid_string(SPECIES) << endl;
+    
+    l = parser.parse("Gal-Cer(1) 18:1(5Z);3OH/24:0");
+    assertEqual(l->get_lipid_string(), "Gal-Cer(1) 18:1(5Z);3OH/24:0");
+    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "Gal-Cer 18:1(5);OH/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "GalCer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(SPECIES), "GalCer 42:1;O2");
+    assertEqual(l->get_sum_formula(), "C48H93NO8");
+    delete l;
+    
+    l = parser.parse("Gal-Cer 18:1(5);OH/24:0");
+    assertEqual(l->get_lipid_string(), "Gal-Cer 18:1(5);OH/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "GalCer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(SPECIES), "GalCer 42:1;O2");
+    assertEqual(l->get_sum_formula(), "C48H93NO8");
+    delete l;
     
     
-    cout << lipid->get_sum_formula() << endl;
-    delete lipid;
-    return 0;
-    */
+    l = parser.parse("GalCer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(), "GalCer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(SPECIES), "GalCer 42:1;O2");
+    assertEqual(l->get_sum_formula(), "C48H93NO8");
+    delete l;
+    
+    
+    l = parser.parse("GalCer 42:1;O2");
+    assertEqual(l->get_lipid_string(), "GalCer 42:1;O2");
+    assertEqual(l->get_sum_formula(), "C48H93NO8");
+    delete l;
+    
+    
+    
+    l = parser.parse("SPB 18:1(4Z);1OH,3OH");
+    assertEqual(l->get_lipid_string(), "SPB 18:1(4Z);1OH,3OH");
+    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "SPB 18:1(4);(OH)2");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "SPB 18:1;O2");
+    assertEqual(l->get_lipid_string(SPECIES), "SPB 18:1;O2");
+    assertEqual(l->get_sum_formula(), "C18H37NO2");
+    delete l;
+    
+    l = parser.parse("SPB 18:1(4);(OH)2");
+    assertEqual(l->get_lipid_string(), "SPB 18:1(4);(OH)2");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "SPB 18:1;O2");
+    assertEqual(l->get_lipid_string(SPECIES), "SPB 18:1;O2");
+    assertEqual(l->get_sum_formula(), "C18H37NO2");
+    delete l;
+    
+    l = parser.parse("SPB 18:1;O2");
+    assertEqual(l->get_lipid_string(), "SPB 18:1;O2");
+    assertEqual(l->get_lipid_string(SPECIES), "SPB 18:1;O2");
+    assertEqual(l->get_sum_formula(), "C18H37NO2");
+    delete l;
+    
+
+    
+    l = parser.parse("LSM(1) 17:1(4E);3OH");
+    assertEqual(l->get_lipid_string(), "LSM(1) 17:1(4E);3OH");
+    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "LSM 17:1(4);OH");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "LSM 17:1;O2");
+    assertEqual(l->get_lipid_string(SPECIES), "LSM 17:1;O2");
+    assertEqual(l->get_sum_formula(), "C22H47N2O5P");
+    delete l;
+    
+    l = parser.parse("LSM 17:1(4);OH");
+    assertEqual(l->get_lipid_string(), "LSM 17:1(4);OH");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "LSM 17:1;O2");
+    assertEqual(l->get_lipid_string(SPECIES), "LSM 17:1;O2");
+    assertEqual(l->get_sum_formula(), "C22H47N2O5P");
+    delete l;
+    
+    l = parser.parse("LSM 17:1;O2");
+    assertEqual(l->get_lipid_string(), "LSM 17:1;O2");
+    assertEqual(l->get_lipid_string(SPECIES), "LSM 17:1;O2");
+    assertEqual(l->get_sum_formula(), "C22H47N2O5P");
+    delete l;
+    
+
+    
+    l = parser.parse("EPC(1) 14:1(4E);3OH/20:1(11Z)");
+    assertEqual(l->get_lipid_string(), "EPC(1) 14:1(4E);3OH/20:1(11Z)");
+    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "EPC 14:1(4);OH/20:1(11)");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "EPC 14:1;O2/20:1");
+    assertEqual(l->get_lipid_string(SPECIES), "EPC 34:2;O2");
+    assertEqual(l->get_sum_formula(), "C36H71N2O6P");
+    delete l;
+    
+    l = parser.parse("EPC 14:1(4);OH/20:1(11)");
+    assertEqual(l->get_lipid_string(), "EPC 14:1(4);OH/20:1(11)");
+    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "EPC 14:1;O2/20:1");
+    assertEqual(l->get_lipid_string(SPECIES), "EPC 34:2;O2");
+    assertEqual(l->get_sum_formula(), "C36H71N2O6P");
+    delete l;
+    
+    l = parser.parse("EPC 14:1;O2/20:1");
+    assertEqual(l->get_lipid_string(), "EPC 14:1;O2/20:1");
+    assertEqual(l->get_lipid_string(SPECIES), "EPC 34:2;O2");
+    assertEqual(l->get_sum_formula(), "C36H71N2O6P");
+    delete l;
+    
+    l = parser.parse("EPC 34:2;O2");
+    assertEqual(l->get_lipid_string(), "EPC 34:2;O2");
+    assertEqual(l->get_sum_formula(), "C36H71N2O6P");
+    delete l;
+    
+    
+    
     
     
     for (auto &row : data){

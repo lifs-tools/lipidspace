@@ -50,7 +50,7 @@ void LipidSpeciesInfo::add(FattyAcid* _fa){
         lipid_FA_bond_type = ETHER_PLASMANYL;
         extended_class = _fa->lipid_FA_bond_type;
     }
-    else if (_fa->lipid_FA_bond_type != LCB_EXCEPTION || _fa->lipid_FA_bond_type != LCB_REGULAR){
+    else if (_fa->lipid_FA_bond_type == LCB_EXCEPTION || _fa->lipid_FA_bond_type == LCB_REGULAR){
         lipid_FA_bond_type = _fa->lipid_FA_bond_type;
     }
             
