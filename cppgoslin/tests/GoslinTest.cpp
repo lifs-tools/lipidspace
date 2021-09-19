@@ -35,11 +35,61 @@ SOFTWARE.
 using namespace std;
 using namespace goslin;
 
+
+void assert_true(string a, string b, string t = ""){
+    if (a != b){
+        cout << "Assertion: '" << a << "' == '" << b << endl;
+        assert(a == b);
+    }
+}
+
 int main(int argc, char** argv){
     
     LipidAdduct* lipid;
     string test_file = "data/goslin/testfiles/goslin-test.csv";
     GoslinParser parser;
+        
+    LipidAdduct *l = parser.parse("Cer 18:1(8Z);2/24:0");
+    assert_true(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "Cer 18:1(8);(OH)2/24:0");
+    assert_true(l->get_lipid_string(MOLECULAR_SUBSPECIES), "Cer 18:1;O2/24:0");
+    assert_true(l->get_lipid_string(SPECIES), "Cer 42:1;O2");
+    assert_true(l->get_sum_formula(), "C42H83NO3");
+    
+    l = parser.parse("HexCer 18:1(5Z);2/24:0");
+    assert_true(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "HexCer 18:1(5);OH/24:0");
+    assert_true(l->get_lipid_string(MOLECULAR_SUBSPECIES), "HexCer 18:1;O2/24:0");
+    assert_true(l->get_lipid_string(SPECIES), "HexCer 42:1;O2");
+    assert_true(l->get_sum_formula(), "C48H93NO8");
+    
+    l = parser.parse("LSM 17:1(4E);2");
+    assert_true(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "LSM 17:1(4);OH");
+    assert_true(l->get_lipid_string(MOLECULAR_SUBSPECIES), "LSM 17:1;O2");
+    assert_true(l->get_lipid_string(SPECIES), "LSM 17:1;O2");
+    assert_true(l->get_sum_formula(), "C22H47N2O5P");
+    
+    l = parser.parse("LCB 18:1(4E);2");
+    assert_true(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "SPB 18:1(4);(OH)2");
+    assert_true(l->get_lipid_string(MOLECULAR_SUBSPECIES), "SPB 18:1;O2");
+    assert_true(l->get_lipid_string(SPECIES), "SPB 18:1;O2");
+    assert_true(l->get_sum_formula(), "C18H37NO2");
+
+    l = parser.parse("EPC 14:1(4E);2/20:1(11Z)");
+    assert_true(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "EPC 14:1(4);OH/20:1(11)");
+    assert_true(l->get_lipid_string(MOLECULAR_SUBSPECIES), "EPC 14:1;O2/20:1");
+    assert_true(l->get_lipid_string(SPECIES), "EPC 34:2;O2");
+    assert_true(l->get_sum_formula(), "C36H71N2O6P");
+    
+    l = parser.parse("MIPC 18:0;3/24:0");
+    assert_true(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "MIPC 18:0;(OH)2/24:0");
+    assert_true(l->get_lipid_string(MOLECULAR_SUBSPECIES), "MIPC 18:0;O3/24:0");
+    assert_true(l->get_lipid_string(SPECIES), "MIPC 42:0;O3");
+    assert_true(l->get_sum_formula(), "C54H106NO17P");
+    
+    l = parser.parse("EPC 16:2(4E,6E);2/22:1(13Z);1");
+    assert_true(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "EPC 16:2(4,6);OH/22:1(13);OH");
+    assert_true(l->get_lipid_string(MOLECULAR_SUBSPECIES), "EPC 16:2;O2/22:1;O");
+    assert_true(l->get_lipid_string(SPECIES), "EPC 38:3;O3");
+    assert_true(l->get_sum_formula(), "C40H77N2O7P");
     
     
     // test several more lipid names

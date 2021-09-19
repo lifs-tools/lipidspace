@@ -95,7 +95,6 @@ int main(int argc, char** argv){
     delete lipid;
     
     
-    return 0;
     
     // test several more lipid names
     vector<string> lipid_names_income;

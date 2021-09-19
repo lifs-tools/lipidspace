@@ -31,7 +31,9 @@ Headgroup::Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators
     lipid_class = get_class(headgroup);
     use_headgroup = _use_headgroup;
     decorators = (_decorators != 0) ? _decorators : new vector<HeadgroupDecorator*>();
-    sp_exception = lipid_category == SP && contains(exception_headgroups, _headgroup) && decorators->size() == 0;
+    //sp_exception = lipid_category == SP && contains(exception_headgroups, get_class_string(lipid_class)) && decorators->size() == 0;
+    sp_exception = lipid_category == SP && contains(LipidClasses::get_instance().lipid_classes.at(lipid_class).special_cases, "SP_Exception") && decorators->size() == 0;
+    
 }
 
 
