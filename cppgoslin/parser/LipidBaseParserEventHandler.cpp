@@ -27,19 +27,6 @@ SOFTWARE.
 
 
 LipidBaseParserEventHandler::LipidBaseParserEventHandler() : BaseParserEventHandler<LipidAdduct*>() {
-    /*
-    if (SP_EXCEPTION_CLASSES.size() == 0){
-        for (auto synonym : LipidClasses::get_instance().lipid_classes.at(Headgroup::get_class("Cer")).synonyms){ 
-            SP_EXCEPTION_CLASSES.insert(synonym);
-        }
-        for (auto synonym : LipidClasses::get_instance().lipid_classes.at(Headgroup::get_class("SPB")).synonyms){
-            SP_EXCEPTION_CLASSES.insert(synonym);
-        }
-        SP_EXCEPTION_CLASSES.insert("Cer");
-        SP_EXCEPTION_CLASSES.insert("SPB");
-    }
-    */
-    
     fa_list = new vector<FattyAcid*>();
     level = ISOMERIC_SUBSPECIES;
     head_group = "";
@@ -78,6 +65,7 @@ bool LipidBaseParserEventHandler::sp_regular_lcb(){
 Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     Headgroup *headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
     
+    if (use_head_group) return headgroup;
     int true_fa = 0;
     for (auto fa : *fa_list){
         true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
@@ -89,6 +77,7 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     
     if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && can_be_lyso){
         head_group = "L" + head_group;
+        headgroup->decorators->clear();
         delete headgroup;
         headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
         poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
@@ -96,8 +85,7 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     
     else if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
         head_group = "DL" + head_group;
-        
-        headgroup->decorators = 0;
+        headgroup->decorators->clear();
         delete headgroup;
         headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
         poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;

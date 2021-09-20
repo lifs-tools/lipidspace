@@ -205,6 +205,7 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     LipidSpecies *ls = NULL;
 
     Headgroup *headgroup = prepare_headgroup_and_checks();
+    
 
     switch (level){
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;

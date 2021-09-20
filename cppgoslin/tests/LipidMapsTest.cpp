@@ -116,6 +116,7 @@ int main(int argc, char** argv){
     for (uint32_t i = 0; i < lipid_names_income.size(); ++i){
         string lipid_name = lipid_names_income.at(i);
         string correct_lipid_name = lipid_names_outcome.at(i);
+        //cout << lipid_name << endl;
         try {
             lipid = parser.parse(lipid_name);
             assert(lipid != NULL);

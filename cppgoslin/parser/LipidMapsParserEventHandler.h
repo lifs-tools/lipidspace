@@ -34,7 +34,7 @@ SOFTWARE.
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
 #include "cppgoslin/domain/Headgroup.h"
-#include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/parser/LipidBaseParserEventHandler.h"
 #include <string>
 #include <set>
 #include <map>
@@ -47,29 +47,20 @@ using namespace goslin;
 
 static const set<string> head_group_exceptions = {"PA", "PC", "PE", "PG", "PI", "PS"};
 
-class LipidMapsParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
+class LipidMapsParserEventHandler : public LipidBaseParserEventHandler {
 public:
-    LipidLevel level;
-    LipidAdduct *lipid;
-    string head_group;
-    FattyAcid *lcb;
-    vector<FattyAcid*> *fa_list;
-    FattyAcid *current_fa;
     bool omit_fa;
     int db_numbers;
-    bool use_head_group;
     int db_position;
     string db_cistrans;
     string mod_text;
     int mod_pos;
     int mod_num;
-    vector<HeadgroupDecorator*>* headgroup_decorators;
     bool add_omega_linoleoyloxy_Cer;
     
 
     LipidMapsParserEventHandler();
     ~LipidMapsParserEventHandler();
-    void set_lipid_level(LipidLevel _level);
     void reset_lipid(TreeNode* node);
     void set_molecular_subspecies_level(TreeNode* node);
     void mediator_event(TreeNode* node);

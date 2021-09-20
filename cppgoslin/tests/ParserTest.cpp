@@ -185,7 +185,6 @@ int main(int argc, char** argv){
     
     
     
-    
     lipid_name = "PG(22:1(5Z)/12:0)";
     lipid = swiss_lipids_parser.parse(lipid_name);
     assert (lipid);
@@ -285,7 +284,6 @@ int main(int argc, char** argv){
     }
     catch(LipidException &e){
     }
-    
     
     
     
@@ -412,6 +410,7 @@ int main(int argc, char** argv){
     assert (lipid);
     assert(lipid->get_lipid_string() == "DLCL 14:1_8:0");
     delete lipid;
+    
     
     
     lipid_name = "PIP[3'] 17:0/20:4(5Z,8Z,11Z,14Z)";

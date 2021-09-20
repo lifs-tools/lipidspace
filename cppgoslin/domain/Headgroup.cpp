@@ -40,10 +40,8 @@ Headgroup::Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators
 
 
 Headgroup::~Headgroup(){
-    if (decorators != 0){
-        for (auto hgd : *decorators) delete hgd;
-        delete decorators;
-    }
+    for (auto hgd : *decorators) delete hgd;
+    delete decorators;
 }
         
 
@@ -135,13 +133,15 @@ string Headgroup::get_lipid_string(LipidLevel level){
             if (!hgd->suffix) headgoup_string << hgd->to_string(level) << "-";
         }
     }
-        
+    
     // adding headgroup
     headgoup_string << hgs;
-        
+    
     // ading suffixes to the headgroup
     for (auto hgd : *decorators){
-        if (hgd->suffix) headgoup_string << hgd->to_string(level);
+        if (hgd->suffix){
+            headgoup_string << hgd->to_string(level);
+        }
     }
     if (level == ISOMERIC_SUBSPECIES && lipid_category == SP && !sp_exception){
         headgoup_string << "(1)";

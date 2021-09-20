@@ -71,7 +71,6 @@ int main(int argc, char** argv){
         string lipid_name = lipid_names.at(i);
         
         string correct_formula = sum_formulas.at(i);
-        //cout << lipid_name << " " << correct_formula << endl;
         try {
             lipid = lipid_maps_parser.parse(lipid_name);
             assert(lipid != NULL);
