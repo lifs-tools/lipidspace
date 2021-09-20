@@ -23,8 +23,8 @@ SOFTWARE.
 */
 
 
-#ifndef GOSLIN_PARSER_EVENT_HANDLER_H
-#define GOSLIN_PARSER_EVENT_HANDLER_H
+#ifndef LIPID_BASE_PARSER_EVENT_HANDLER_H
+#define LIPID_BASE_PARSER_EVENT_HANDLER_H
 
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/Adduct.h"
@@ -34,7 +34,7 @@ SOFTWARE.
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
-#include "cppgoslin/parser/LipidBaseParserEventHandler.h"
+#include "cppgoslin/parser/BaseParserEventHandler.h"
 #include <string>
 #include <math.h>
 #include <set>
@@ -46,40 +46,25 @@ SOFTWARE.
 using namespace std;
 using namespace goslin;
 
-class GoslinParserEventHandler : public LipidBaseParserEventHandler {
+class LipidBaseParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
 public:
-    int db_position;
-    string db_cistrans;
-    bool unspecified_ether;
+    LipidLevel level;
+    string head_group;
+    FattyAcid *lcb;
+    vector<FattyAcid*> *fa_list;
+    FattyAcid *current_fa;
+    vector<HeadgroupDecorator*> *headgroup_decorators;
+    bool use_head_group;
+    static const set<string> SP_EXCEPTION_CLASSES;
+    Adduct* adduct;
         
-    GoslinParserEventHandler();
-    ~GoslinParserEventHandler();
-    void reset_lipid(TreeNode *node);
-    void set_head_group_name(TreeNode *node);
-    void set_species_level(TreeNode *node);
-    void set_molecular_subspecies_level(TreeNode *node);
-    void new_fa(TreeNode *node);
-    void new_lcb(TreeNode *node);
-    void clean_lcb(TreeNode *node);
-    void append_fa(TreeNode *node);
-    void build_lipid(TreeNode *node);
-    void add_ether(TreeNode *node);
-    void add_old_hydroxyl(TreeNode *node);
-    void add_double_bonds(TreeNode *node);
-    void add_carbon(TreeNode *node);
-    void add_hydroxyl(TreeNode *node);
-    void new_adduct(TreeNode *node);
-    void add_adduct(TreeNode *node);
-    void add_charge(TreeNode *node);
-    void add_charge_sign(TreeNode *node);
-    void set_unspecified_ether(TreeNode *node);
-    
-    void set_isomeric_level(TreeNode* node);
-    void add_db_position(TreeNode* node);
-    void add_db_position_number(TreeNode* node);
-    void add_cistrans(TreeNode* node);
+    LipidBaseParserEventHandler();
+    ~LipidBaseParserEventHandler();
+    void set_lipid_level(LipidLevel _level);
+    bool sp_regular_lcb();
+    Headgroup* prepare_headgroup_and_checks();
 };
 
 
-#endif /* GOSLIN_PARSER_EVENT_HANDLER_H */
+#endif /* LIPID_BASE_PARSER_EVENT_HANDLER_H */
         

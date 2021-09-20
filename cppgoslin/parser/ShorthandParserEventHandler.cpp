@@ -26,9 +26,9 @@ SOFTWARE.
 #include "cppgoslin/parser/ShorthandParserEventHandler.h"
 
 #define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events->insert({x, bind(&ShorthandParserEventHandler::y, this, placeholders::_1)})
-#define FA_I ("fa" + std::to_string(current_fa.size()))
+#define FA_I ("fa" + std::to_string(current_fas.size()))
 
-ShorthandParserEventHandler::ShorthandParserEventHandler() : BaseParserEventHandler<LipidAdduct*>() {
+ShorthandParserEventHandler::ShorthandParserEventHandler() : LipidBaseParserEventHandler() {
     
     reg("lipid_pre_event", reset_lipid);
     reg("lipid_post_event", build_lipid);
@@ -148,12 +148,11 @@ const set<string> ShorthandParserEventHandler::special_types {"acyl", "alkyl", "
 
 void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
     level = ISOMERIC_SUBSPECIES;
-    lipid = NULL;
     adduct = NULL;
     head_group = "";
-    fa_list.clear();
-    current_fa.clear();
-    headgroup_decorators = new vector<HeadgroupDecorator*>();
+    fa_list->clear();
+    current_fas.clear();
+    headgroup_decorators->clear();
     tmp.remove_all();
     
 }
@@ -161,79 +160,32 @@ void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
 
 
 void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
-    Headgroup *headgroup = new Headgroup(head_group, headgroup_decorators);
-    int true_fa = 0;
-    for (auto fa : fa_list){
-        true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
-    }
-    int poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
-    
-    
-    // make lyso
-    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && (head_group.length() < 3 || head_group.substr(3) != "PIP")){
-        head_group = "L" + head_group;
-        headgroup->decorators = 0;
-        delete headgroup;
-        headgroup = new Headgroup(head_group, headgroup_decorators);
-        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
-    }
-    
-    else if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
-        head_group = "DL" + head_group;
-        
-        headgroup->decorators = 0;
-        delete headgroup;
-        headgroup = new Headgroup(head_group, headgroup_decorators);
-        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
-    }
-    
-    if (level == SPECIES){
-        if (true_fa == 0 && poss_fa != 0){
-            string hg_name = headgroup->headgroup;
-            delete headgroup;
-            throw ConstraintViolationException("No fatty acyl information lipid class '" + hg_name + "' provided.");
-        }
-    }
-        
-    else if (true_fa != poss_fa && (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES)){
-        string hg_name = headgroup->headgroup;
-        delete headgroup;
-        throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
-    }
-    
-    if (contains(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "HC")){
-        fa_list.front()->lipid_FA_bond_type = AMINE;
-    }
-    
-    
-    
-    // make LBC exception
-    if (fa_list.size() > 0 && headgroup->sp_exception) fa_list.front()->set_type(LCB_EXCEPTION);
+    Headgroup *headgroup = prepare_headgroup_and_checks();
     
     // add count numbers for fatty acyl chains
-    int fa_it = !fa_list.empty() && (fa_list.front()->lipid_FA_bond_type == LCB_REGULAR || fa_list.front()->lipid_FA_bond_type == LCB_EXCEPTION);
-    for (int it = fa_it; it < (int)fa_list.size(); ++it){
-        fa_list.at(it)->name += std::to_string(it + 1);
+    int fa_it = !fa_list->empty() && (fa_list->front()->lipid_FA_bond_type == LCB_REGULAR || fa_list->front()->lipid_FA_bond_type == LCB_EXCEPTION);
+    for (int it = fa_it; it < (int)fa_list->size(); ++it){
+        fa_list->at(it)->name += std::to_string(it + 1);
     }
     
-    lipid = new LipidAdduct();
+    LipidAdduct *lipid = new LipidAdduct();
     lipid->adduct = adduct;
     
     switch(level){
         case ISOMERIC_SUBSPECIES:
-            lipid->lipid = new LipidIsomericSubspecies(headgroup, &fa_list);
+            lipid->lipid = new LipidIsomericSubspecies(headgroup, fa_list);
             break;
             
         case STRUCTURAL_SUBSPECIES:
-            lipid->lipid = new LipidStructuralSubspecies(headgroup, &fa_list);
+            lipid->lipid = new LipidStructuralSubspecies(headgroup, fa_list);
             break;
             
         case MOLECULAR_SUBSPECIES:
-            lipid->lipid = new LipidMolecularSubspecies(headgroup, &fa_list);
+            lipid->lipid = new LipidMolecularSubspecies(headgroup, fa_list);
             break;
             
         case SPECIES:
-            lipid->lipid = new LipidSpecies(headgroup, &fa_list);
+            lipid->lipid = new LipidSpecies(headgroup, fa_list);
             break;
             
         default:
@@ -246,9 +198,6 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
 }
 
-void ShorthandParserEventHandler::set_lipid_level(LipidLevel _level){
-    level = min(level, _level);
-}
 
 
 
@@ -285,10 +234,10 @@ void ShorthandParserEventHandler::set_carbohydrate(TreeNode *node){
         headgroup_decorators->push_back((HeadgroupDecorator*)functional_group);
     }
     else {
-        if (uncontains_p(current_fa.at(current_fa.size() - 1)->functional_groups, carbohydrate)){
-            current_fa.at(current_fa.size() - 1)->functional_groups->insert({carbohydrate, vector<FunctionalGroup*>()});
+        if (uncontains_p(current_fas.at(current_fas.size() - 1)->functional_groups, carbohydrate)){
+            current_fas.at(current_fas.size() - 1)->functional_groups->insert({carbohydrate, vector<FunctionalGroup*>()});
         }
-        current_fa.at(current_fa.size() - 1)->functional_groups->at(carbohydrate).push_back(functional_group);
+        current_fas.at(current_fas.size() - 1)->functional_groups->at(carbohydrate).push_back(functional_group);
     }
 }
 
@@ -336,8 +285,8 @@ void ShorthandParserEventHandler::set_ring_stereo(TreeNode *node){
 
 
 void ShorthandParserEventHandler::set_lcb(TreeNode *node){
-        fa_list.back()->set_type(LCB_REGULAR);
-        fa_list.back()->name = "LCB";
+        fa_list->back()->set_type(LCB_REGULAR);
+        fa_list->back()->name = "LCB";
 }
 
 
@@ -353,16 +302,16 @@ void ShorthandParserEventHandler::add_pl_species_data(TreeNode *node){
 
 
 void ShorthandParserEventHandler::new_fatty_acyl_chain(TreeNode *node){
-    current_fa.push_back(new FattyAcid("FA"));
+    current_fas.push_back(new FattyAcid("FA"));
     tmp.set_dictionary(FA_I, new GenericDictionary());
 }
 
 
 
 void ShorthandParserEventHandler::add_fatty_acyl_chain(TreeNode *node){
-    string fg_i = "fa" + std::to_string(current_fa.size() - 2);
+    string fg_i = "fa" + std::to_string(current_fas.size() - 2);
     string special_type = "";
-    if (current_fa.size() >= 2 && tmp.contains_key(fg_i) && tmp.get_dictionary(fg_i)->contains_key("fg_name")){
+    if (current_fas.size() >= 2 && tmp.contains_key(fg_i) && tmp.get_dictionary(fg_i)->contains_key("fg_name")){
         string fg_name = tmp.get_dictionary(fg_i)->get_string("fg_name");
         if (contains(special_types, fg_name)){
             special_type = fg_name;
@@ -370,23 +319,23 @@ void ShorthandParserEventHandler::add_fatty_acyl_chain(TreeNode *node){
     }
     
     string fa_i = FA_I;
-    if (current_fa.back()->double_bonds->get_num() != tmp.get_dictionary(fa_i)->get_int("db_count")){
+    if (current_fas.back()->double_bonds->get_num() != tmp.get_dictionary(fa_i)->get_int("db_count")){
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
-    else if (current_fa.back()->double_bonds->get_num() > 0 && current_fa.back()->double_bonds->double_bond_positions.size() == 0){
+    else if (current_fas.back()->double_bonds->get_num() > 0 && current_fas.back()->double_bonds->double_bond_positions.size() == 0){
         set_lipid_level(STRUCTURAL_SUBSPECIES);
     }
     tmp.remove(fa_i);
     
-    FattyAcid* fa = (FattyAcid*)current_fa.back();
-    current_fa.pop_back();
+    FattyAcid* fa = (FattyAcid*)current_fas.back();
+    current_fas.pop_back();
     if (special_type.length() > 0){
         fa->name = special_type;
-        if (uncontains_p(current_fa.back()->functional_groups, special_type)) current_fa.back()->functional_groups->insert({special_type, vector<FunctionalGroup*>()});
-        current_fa.back()->functional_groups->at(special_type).push_back(fa);
+        if (uncontains_p(current_fas.back()->functional_groups, special_type)) current_fas.back()->functional_groups->insert({special_type, vector<FunctionalGroup*>()});
+        current_fas.back()->functional_groups->at(special_type).push_back(fa);
     }
     else {
-        fa_list.push_back(fa);
+        fa_list->push_back(fa);
     }
 }
 
@@ -417,7 +366,7 @@ void ShorthandParserEventHandler::add_double_bond_information(TreeNode *node){
     
     tmp.get_dictionary(fa_i)->remove("db_position");
     tmp.get_dictionary(fa_i)->remove("db_cistrans");
-    current_fa.back()->double_bonds->double_bond_positions.insert({pos, cistrans});
+    current_fas.back()->double_bonds->double_bond_positions.insert({pos, cistrans});
 }
 
 
@@ -442,7 +391,7 @@ void ShorthandParserEventHandler::set_functional_group(TreeNode *node){
 
 void ShorthandParserEventHandler::set_cycle(TreeNode *node){
     tmp.get_dictionary(FA_I)->set_string("fg_name", "cy");
-    current_fa.push_back(new Cycle(0));
+    current_fas.push_back(new Cycle(0));
     
     string fa_i = FA_I;
     tmp.set_dictionary(fa_i, new GenericDictionary());
@@ -454,8 +403,8 @@ void ShorthandParserEventHandler::set_cycle(TreeNode *node){
 void ShorthandParserEventHandler::add_cycle(TreeNode *node){
     string fa_i = FA_I;
     GenericList *cycle_elements = tmp.get_dictionary(fa_i)->get_list("cycle_elements");
-    Cycle *cycle = (Cycle*)current_fa.back();
-    current_fa.pop_back();
+    Cycle *cycle = (Cycle*)current_fas.back();
+    current_fas.pop_back();
     for (int i = 0; i < (int)cycle_elements->list.size(); ++i){
         cycle->bridge_chain->push_back((Element)cycle_elements->get_int(i));
     }
@@ -464,10 +413,10 @@ void ShorthandParserEventHandler::add_cycle(TreeNode *node){
     if (cycle->start > -1 && cycle->end > -1 && cycle->end - cycle->start + 1 + (int)cycle->bridge_chain->size() < cycle->cycle){
         throw ConstraintViolationException("Cycle length '" + std::to_string(cycle->cycle) + "' does not match with cycle description.");
     }
-    if (uncontains_p(current_fa.back()->functional_groups, "cy")){
-        current_fa.back()->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
+    if (uncontains_p(current_fas.back()->functional_groups, "cy")){
+        current_fas.back()->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
     }
-    current_fa.back()->functional_groups->at("cy").push_back(cycle);
+    current_fas.back()->functional_groups->at("cy").push_back(cycle);
 }
 
 
@@ -482,7 +431,7 @@ void ShorthandParserEventHandler::set_hg_acyl(TreeNode *node){
     string fa_i = FA_I;
     tmp.set_dictionary(fa_i, new GenericDictionary());
     tmp.get_dictionary(fa_i)->set_string("fg_name", "decorator_acyl");
-    current_fa.push_back(new HeadgroupDecorator("decorator_acyl", -1, 1, 0, true));
+    current_fas.push_back(new HeadgroupDecorator("decorator_acyl", -1, 1, 0, true));
     tmp.set_dictionary(FA_I, new GenericDictionary());
 }
 
@@ -490,8 +439,8 @@ void ShorthandParserEventHandler::set_hg_acyl(TreeNode *node){
 
 void ShorthandParserEventHandler::add_hg_acyl(TreeNode *node){
     tmp.remove(FA_I);
-    headgroup_decorators->push_back((HeadgroupDecorator*)current_fa.back());
-    current_fa.pop_back();
+    headgroup_decorators->push_back((HeadgroupDecorator*)current_fas.back());
+    current_fas.pop_back();
     tmp.remove(FA_I);
 }
 
@@ -500,7 +449,7 @@ void ShorthandParserEventHandler::add_hg_acyl(TreeNode *node){
 void ShorthandParserEventHandler::set_hg_alkyl(TreeNode *node){
     tmp.set_dictionary(FA_I, new GenericDictionary());
     tmp.get_dictionary(FA_I)->set_string("fg_name", "decorator_alkyl");
-    current_fa.push_back(new HeadgroupDecorator("decorator_alkyl", -1, 1, 0, true));
+    current_fas.push_back(new HeadgroupDecorator("decorator_alkyl", -1, 1, 0, true));
     tmp.set_dictionary(FA_I, new GenericDictionary());
 }
 
@@ -508,8 +457,8 @@ void ShorthandParserEventHandler::set_hg_alkyl(TreeNode *node){
 
 void ShorthandParserEventHandler::add_hg_alkyl(TreeNode *node){
     tmp.remove(FA_I);
-    headgroup_decorators->push_back((HeadgroupDecorator*)current_fa.back());
-    current_fa.pop_back();
+    headgroup_decorators->push_back((HeadgroupDecorator*)current_fas.back());
+    current_fas.pop_back();
     tmp.remove(FA_I);
 }
 
@@ -523,7 +472,7 @@ void ShorthandParserEventHandler::set_linkage_type(TreeNode *node){
 
 void ShorthandParserEventHandler::set_hydrocarbon_chain(TreeNode *node){
     tmp.get_dictionary(FA_I)->set_string("fg_name", "cc");
-    current_fa.push_back(new CarbonChain((FattyAcid*)0));
+    current_fas.push_back(new CarbonChain((FattyAcid*)0));
     tmp.set_dictionary(FA_I, new GenericDictionary());
     tmp.get_dictionary(FA_I)->set_int("linkage_pos", -1);
 }
@@ -533,20 +482,20 @@ void ShorthandParserEventHandler::set_hydrocarbon_chain(TreeNode *node){
 void ShorthandParserEventHandler::add_hydrocarbon_chain(TreeNode *node){
     int linkage_pos = tmp.get_dictionary(FA_I)->get_int("linkage_pos");
     tmp.remove(FA_I);
-    CarbonChain *cc = (CarbonChain*)current_fa.back();
-    current_fa.pop_back();
+    CarbonChain *cc = (CarbonChain*)current_fas.back();
+    current_fas.pop_back();
     cc->position = linkage_pos;
     if (linkage_pos == -1) set_lipid_level(STRUCTURAL_SUBSPECIES);
     
-    if (uncontains_p(current_fa.back()->functional_groups, "cc")) current_fa.back()->functional_groups->insert({"cc", vector<FunctionalGroup*>()});
-    current_fa.back()->functional_groups->at("cc").push_back(cc);
+    if (uncontains_p(current_fas.back()->functional_groups, "cc")) current_fas.back()->functional_groups->insert({"cc", vector<FunctionalGroup*>()});
+    current_fas.back()->functional_groups->at("cc").push_back(cc);
 }
 
 
 
 void ShorthandParserEventHandler::set_acyl_linkage(TreeNode *node){
     tmp.get_dictionary(FA_I)->set_string("fg_name", "acyl");
-    current_fa.push_back(new AcylAlkylGroup((FattyAcid*)0));
+    current_fas.push_back(new AcylAlkylGroup((FattyAcid*)0));
     tmp.set_dictionary(FA_I, new GenericDictionary());
     tmp.get_dictionary(FA_I)->set_int("linkage_pos", -1);
 }
@@ -558,22 +507,22 @@ void ShorthandParserEventHandler::add_acyl_linkage(TreeNode *node){
     int linkage_pos = tmp.get_dictionary(FA_I)->get_int("linkage_pos");
     
     tmp.remove(FA_I);
-    AcylAlkylGroup *acyl = (AcylAlkylGroup*)current_fa.back();
-    current_fa.pop_back();
+    AcylAlkylGroup *acyl = (AcylAlkylGroup*)current_fas.back();
+    current_fas.pop_back();
         
     acyl->position = linkage_pos;
     acyl->set_N_bond_type(linkage_type);
     if (linkage_pos == -1) set_lipid_level(STRUCTURAL_SUBSPECIES);
         
-    if (uncontains_p(current_fa.back()->functional_groups, "acyl")) current_fa.back()->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
-    current_fa.back()->functional_groups->at("acyl").push_back(acyl);
+    if (uncontains_p(current_fas.back()->functional_groups, "acyl")) current_fas.back()->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
+    current_fas.back()->functional_groups->at("acyl").push_back(acyl);
 }
 
 
 
 void ShorthandParserEventHandler::set_alkyl_linkage(TreeNode *node){
     tmp.get_dictionary(FA_I)->set_string("fg_name", "alkyl");
-    current_fa.push_back(new AcylAlkylGroup(0, -1, 1, true));
+    current_fas.push_back(new AcylAlkylGroup(0, -1, 1, true));
     tmp.set_dictionary(FA_I, new GenericDictionary());
     tmp.get_dictionary(FA_I)->set_int("linkage_pos", -1);
 }
@@ -583,52 +532,52 @@ void ShorthandParserEventHandler::set_alkyl_linkage(TreeNode *node){
 void ShorthandParserEventHandler::add_alkyl_linkage(TreeNode *node){
     int linkage_pos = tmp.get_dictionary(FA_I)->get_int("linkage_pos");
     tmp.remove(FA_I);
-    AcylAlkylGroup *alkyl = (AcylAlkylGroup*)current_fa.back();
-    current_fa.pop_back();
+    AcylAlkylGroup *alkyl = (AcylAlkylGroup*)current_fas.back();
+    current_fas.pop_back();
     
     alkyl->position = linkage_pos;
     if (linkage_pos == -1) set_lipid_level(STRUCTURAL_SUBSPECIES);
     
-    if (uncontains_p(current_fa.back()->functional_groups, "alkyl")) current_fa.back()->functional_groups->insert({"alkyl", vector<FunctionalGroup*>()});
-    current_fa.back()->functional_groups->at("alkyl").push_back(alkyl);
+    if (uncontains_p(current_fas.back()->functional_groups, "alkyl")) current_fas.back()->functional_groups->insert({"alkyl", vector<FunctionalGroup*>()});
+    current_fas.back()->functional_groups->at("alkyl").push_back(alkyl);
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_start(TreeNode *node){
-    ((Cycle*)current_fa.back())->start = atoi(node->get_text().c_str());
+    ((Cycle*)current_fas.back())->start = atoi(node->get_text().c_str());
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_end(TreeNode *node){
-    ((Cycle*)current_fa.back())->end = atoi(node->get_text().c_str());
+    ((Cycle*)current_fas.back())->end = atoi(node->get_text().c_str());
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_number(TreeNode *node){
-    ((Cycle*)current_fa.back())->cycle = atoi(node->get_text().c_str());
+    ((Cycle*)current_fas.back())->cycle = atoi(node->get_text().c_str());
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_db_count(TreeNode *node){
-    ((Cycle*)current_fa.back())->double_bonds->num_double_bonds = atoi(node->get_text().c_str());
+    ((Cycle*)current_fas.back())->double_bonds->num_double_bonds = atoi(node->get_text().c_str());
 }
 
 
 
 void ShorthandParserEventHandler::set_cycle_db_positions(TreeNode *node){
-    tmp.get_dictionary(FA_I)->set_int("cycle_db", ((Cycle*)current_fa.back())->double_bonds->get_num());
-    //delete ((Cycle*)current_fa.back())->double_bonds;
-    //((Cycle*)current_fa.back())->double_bonds = new DoubleBonds();
+    tmp.get_dictionary(FA_I)->set_int("cycle_db", ((Cycle*)current_fas.back())->double_bonds->get_num());
+    //delete ((Cycle*)current_fas.back())->double_bonds;
+    //((Cycle*)current_fas.back())->double_bonds = new DoubleBonds();
 }
 
 
 
 void ShorthandParserEventHandler::check_cycle_db_positions(TreeNode *node){
-    if (((Cycle*)current_fa.back())->double_bonds->get_num() != tmp.get_dictionary(FA_I)->get_int("cycle_db")){
+    if (((Cycle*)current_fas.back())->double_bonds->get_num() != tmp.get_dictionary(FA_I)->get_int("cycle_db")){
         throw LipidException("Double bond number in cycle does not correspond to number of double bond positions.");
     }
 }
@@ -637,7 +586,7 @@ void ShorthandParserEventHandler::check_cycle_db_positions(TreeNode *node){
 
 void ShorthandParserEventHandler::set_cycle_db_position(TreeNode *node){
     int pos = atoi(node->get_text().c_str());
-    ((Cycle*)current_fa.back())->double_bonds->double_bond_positions.insert({pos, ""});
+    ((Cycle*)current_fas.back())->double_bonds->double_bond_positions.insert({pos, ""});
     tmp.get_dictionary(FA_I)->set_int("last_db_pos", pos);
 }
 
@@ -645,7 +594,7 @@ void ShorthandParserEventHandler::set_cycle_db_position(TreeNode *node){
 
 void ShorthandParserEventHandler::set_cycle_db_position_cistrans(TreeNode *node){
     int pos = tmp.get_dictionary(FA_I)->get_int("last_db_pos");
-    ((Cycle*)current_fa.back())->double_bonds->double_bond_positions.at(pos) = node->get_text();
+    ((Cycle*)current_fas.back())->double_bonds->double_bond_positions.at(pos) = node->get_text();
 }
 
 
@@ -715,16 +664,16 @@ void ShorthandParserEventHandler::add_functional_group(TreeNode *node){
     gd->remove("fg_cnt");
     gd->remove("fg_stereo");
     
-    if (uncontains_p(current_fa.back()->functional_groups, fg_name)) current_fa.back()->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
-    current_fa.back()->functional_groups->at(fg_name).push_back(functional_group);
+    if (uncontains_p(current_fas.back()->functional_groups, fg_name)) current_fas.back()->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
+    current_fas.back()->functional_groups->at(fg_name).push_back(functional_group);
 }
 
 
 
 void ShorthandParserEventHandler::set_ether_type(TreeNode *node){
     string ether_type = node->get_text();
-    if (ether_type == "O-") ((FattyAcid*)current_fa.back())->lipid_FA_bond_type = ETHER_PLASMANYL;
-    else if (ether_type == "P-") ((FattyAcid*)current_fa.back())->lipid_FA_bond_type = ETHER_PLASMENYL;
+    if (ether_type == "O-") ((FattyAcid*)current_fas.back())->lipid_FA_bond_type = ETHER_PLASMANYL;
+    else if (ether_type == "P-") ((FattyAcid*)current_fas.back())->lipid_FA_bond_type = ETHER_PLASMENYL;
 }
 
 
@@ -753,7 +702,7 @@ void ShorthandParserEventHandler::set_molecular_level(TreeNode *node){
 
 
 void ShorthandParserEventHandler::set_carbon(TreeNode *node){
-    ((FattyAcid*)current_fa.back())->num_carbon = atoi(node->get_text().c_str());
+    ((FattyAcid*)current_fas.back())->num_carbon = atoi(node->get_text().c_str());
 }
 
 
@@ -761,7 +710,7 @@ void ShorthandParserEventHandler::set_carbon(TreeNode *node){
 void ShorthandParserEventHandler::set_double_bond_count(TreeNode *node){
     int db_cnt = atoi(node->get_text().c_str());
     tmp.get_dictionary(FA_I)->set_int("db_count", db_cnt);
-    ((FattyAcid*)current_fa.back())->double_bonds->num_double_bonds = db_cnt;
+    ((FattyAcid*)current_fas.back())->double_bonds->num_double_bonds = db_cnt;
 }
 
 

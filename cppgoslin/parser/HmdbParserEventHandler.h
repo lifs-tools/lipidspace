@@ -36,7 +36,7 @@ SOFTWARE.
 #include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/domain/Cycle.h"
 #include "cppgoslin/domain/GenericDatastructures.h"
-#include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/parser/LipidBaseParserEventHandler.h"
 #include <string>
 #include <set>
 #include <map>
@@ -47,23 +47,14 @@ SOFTWARE.
 using namespace std;
 using namespace goslin;
 
-class HmdbParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
+class HmdbParserEventHandler : public LipidBaseParserEventHandler {
 public:
-    LipidLevel level;
-    LipidAdduct *lipid;
-    string head_group;
-    FattyAcid *lcb;
-    vector<FattyAcid*> *fa_list;
-    FattyAcid *current_fa;
-    bool use_head_group;
     int db_position;
     string db_cistrans;
-    Headgroup* headgroup;
     GenericDictionary furan;
         
     HmdbParserEventHandler();
     ~HmdbParserEventHandler();
-    void set_lipid_level(LipidLevel _level);
     void reset_lipid(TreeNode *node);
     void build_lipid(TreeNode *node);
     void set_head_group_name(TreeNode *node);

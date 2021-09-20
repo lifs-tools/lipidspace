@@ -28,8 +28,7 @@ SOFTWARE.
 #define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events->insert({x, bind(&SwissLipidsParserEventHandler::y, this, placeholders::_1)})
     
 
-SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEventHandler<LipidAdduct*>() {
-    fa_list = new vector<FattyAcid*>();
+SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : LipidBaseParserEventHandler() {
     
     reg("lipid_pre_event", reset_lipid);
     reg("lipid_post_event", build_lipid);
@@ -74,13 +73,11 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : BaseParserEvent
 
 
 SwissLipidsParserEventHandler::~SwissLipidsParserEventHandler(){
-    delete fa_list;
 }
 
 
 void SwissLipidsParserEventHandler::reset_lipid(TreeNode *node) {
     level = ISOMERIC_SUBSPECIES;
-    lipid = NULL;
     head_group = "";
     lcb = NULL;
     fa_list->clear();
@@ -88,8 +85,7 @@ void SwissLipidsParserEventHandler::reset_lipid(TreeNode *node) {
     use_head_group = false;
     db_position = 0;
     db_cistrans = "";
-    headgroup = NULL;
-    headgroup_decorators = new vector<HeadgroupDecorator*>();
+    headgroup_decorators->clear();
     suffix_number = -1;
 }
 
@@ -138,21 +134,15 @@ void SwissLipidsParserEventHandler::set_head_group_name_se(TreeNode *node){
 
 
 
-void SwissLipidsParserEventHandler::set_level(LipidLevel _level){
-    level = min(level, _level);
-}
-
-
-
 void SwissLipidsParserEventHandler::set_species_level(TreeNode *node) {
-    set_level(SPECIES);
+    set_lipid_level(SPECIES);
 }
     
 
 
 
 void SwissLipidsParserEventHandler::set_molecular_level(TreeNode *node) {
-    set_level(MOLECULAR_SUBSPECIES);
+    set_lipid_level(MOLECULAR_SUBSPECIES);
 }
 
 
@@ -173,7 +163,7 @@ void SwissLipidsParserEventHandler::new_lcb(TreeNode *node) {
     lcb = new FattyAcid("LCB");
     lcb->set_type(LCB_REGULAR);
     current_fa = lcb;
-    set_level(STRUCTURAL_SUBSPECIES);
+    set_lipid_level(STRUCTURAL_SUBSPECIES);
 }
         
         
@@ -211,60 +201,10 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
         fa_list->insert(fa_list->begin(), lcb);
     }
     
-    lipid = NULL;
+    LipidAdduct *lipid = NULL;
     LipidSpecies *ls = NULL;
 
-    headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
-    
-    int true_fa = 0;
-    for (auto fa : *fa_list){
-        true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
-    }
-    int poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
-    
-    
-    // make lyso
-    bool can_be_lyso = contains(LipidClasses::get_instance().lipid_classes, Headgroup::get_class("L" + head_group)) ? contains(LipidClasses::get_instance().lipid_classes.at(Headgroup::get_class("L" + head_group)).special_cases, "Lyso") : 0;
-    
-    if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && can_be_lyso){
-        head_group = "L" + head_group;
-        
-        headgroup->decorators = 0;
-        delete headgroup;
-        headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
-        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
-    }
-    
-    else if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
-        head_group = "DL" + head_group;
-        
-        headgroup->decorators = 0;
-        delete headgroup;
-        headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
-        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
-    }
-    
-    
-    
-    if (level == SPECIES){
-        if (true_fa == 0 && poss_fa != 0){
-            string hg_name = headgroup->headgroup;
-            delete headgroup;
-            throw ConstraintViolationException("No fatty acyl information lipid class '" + hg_name + "' provided.");
-        }
-    }
-        
-    else if (true_fa != poss_fa && (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES)){
-        string hg_name = headgroup->headgroup;
-        delete headgroup;
-        throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
-    }
-    
-    int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
-    if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
-    
-    // make LBC exception
-    if (fa_list->size() > 0 && headgroup->sp_exception) fa_list->front()->set_type(LCB_EXCEPTION);
+    Headgroup *headgroup = prepare_headgroup_and_checks();
 
     switch (level){
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
@@ -295,7 +235,7 @@ void SwissLipidsParserEventHandler::add_hydroxyl(TreeNode *node) {
     else if (old_hydroxyl == "d") num_h = 2;
     else if (old_hydroxyl == "t") num_h = 3;
     
-    if (Headgroup::get_category(head_group) == SP && (current_fa->lipid_FA_bond_type == LCB_REGULAR || current_fa->lipid_FA_bond_type == LCB_EXCEPTION) && !((head_group == "Cer" || head_group == "SPB") && headgroup_decorators->size() == 0)) num_h -= 1;
+    if (sp_regular_lcb()) num_h -= 1;
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
@@ -338,7 +278,7 @@ void SwissLipidsParserEventHandler::add_fa_lcb_suffix_type(TreeNode *node){
         
     FunctionalGroup *functional_group = KnownFunctionalGroups::get_functional_group(suffix_type);
     functional_group->position = suffix_number;
-    if (functional_group->position == -1) set_level(STRUCTURAL_SUBSPECIES);
+    if (functional_group->position == -1) set_lipid_level(STRUCTURAL_SUBSPECIES);
     if (uncontains_p(current_fa->functional_groups, suffix_type)) current_fa->functional_groups->insert({suffix_type, vector<FunctionalGroup*>()});
     current_fa->functional_groups->at(suffix_type).push_back(functional_group);
             

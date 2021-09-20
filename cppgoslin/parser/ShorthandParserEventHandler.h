@@ -36,7 +36,7 @@ SOFTWARE.
 #include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
 #include "cppgoslin/domain/GenericDatastructures.h"
-#include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/parser/LipidBaseParserEventHandler.h"
 #include <string>
 #include <math.h>
 #include <set>
@@ -48,15 +48,9 @@ SOFTWARE.
 using namespace std;
 using namespace goslin;
 
-class ShorthandParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
+class ShorthandParserEventHandler : public LipidBaseParserEventHandler {
 public:
-    LipidLevel level;
-    LipidAdduct *lipid;
-    string head_group;
-    vector<FattyAcid*> fa_list;
-    vector<FunctionalGroup*> current_fa;
-    Adduct *adduct;
-    vector<HeadgroupDecorator*> *headgroup_decorators;
+    vector<FunctionalGroup*> current_fas;
     GenericDictionary tmp;
     static const set<string> special_types;
         
@@ -64,7 +58,6 @@ public:
     ~ShorthandParserEventHandler();
     void reset_lipid(TreeNode *node);
     void build_lipid(TreeNode *node);
-    void set_lipid_level(LipidLevel level);
     void add_cycle_element(TreeNode *node);
     void set_headgroup_name(TreeNode *node);
     void set_carbohydrate(TreeNode *node);

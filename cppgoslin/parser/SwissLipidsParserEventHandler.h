@@ -35,7 +35,7 @@ SOFTWARE.
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
-#include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/parser/LipidBaseParserEventHandler.h"
 #include <string>
 #include <set>
 #include <map>
@@ -46,20 +46,11 @@ SOFTWARE.
 using namespace std;
 using namespace goslin;
 
-class SwissLipidsParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
+class SwissLipidsParserEventHandler : public LipidBaseParserEventHandler {
 public:
-    LipidLevel level;
-    LipidAdduct *lipid;
-    string head_group;
-    FattyAcid *lcb;
-    vector<FattyAcid*> *fa_list;
-    FattyAcid *current_fa;
-    bool use_head_group;
     int db_position;
     string db_cistrans;
     int suffix_number;
-    Headgroup* headgroup;
-    vector<HeadgroupDecorator*> *headgroup_decorators;
         
     SwissLipidsParserEventHandler();
     ~SwissLipidsParserEventHandler();
