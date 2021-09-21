@@ -60,6 +60,7 @@ string LipidMolecularSpecies::build_lipid_subspecies_name(LipidLevel level){
         case COMPLETE_STRUCTURE:
         case FULL_STRUCTURE:
         case STRUCTURE_DEFINED:
+        case SN_POSITION:
             if (fa_list.size() > 0){
                 lipid_name << fa_headgroup_separator;
                 int i = 0;

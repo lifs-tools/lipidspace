@@ -204,7 +204,7 @@ int main(int argc, char** argv){
     
     // test several more lipid names
     vector<string> data;
-    vector<LipidLevel> levels {FULL_STRUCTURE, STRUCTURE_DEFINED, MOLECULAR_SPECIES, SPECIES};
+    vector<LipidLevel> levels {FULL_STRUCTURE, STRUCTURE_DEFINED, SN_POSITION, MOLECULAR_SPECIES, SPECIES};
     
     ifstream infile("data/goslin/testfiles/shorthand-test.csv");
     assert(infile.good());
@@ -219,10 +219,10 @@ int main(int argc, char** argv){
         string lipid_name = results->at(0);
         
         LipidAdduct *lipid = parser.parse(lipid_name);
-        string formula = (results->size() > 4 && results->at(4).length() > 0) ? results->at(4) : lipid->get_sum_formula();
+        string formula = (results->size() > levels.size() && results->at(levels.size()).length() > 0) ? results->at(levels.size()) : lipid->get_sum_formula();
         
         
-        if (results->size() > 4){
+        if (results->size() > levels.size()){
             assertEqual(formula, lipid->get_sum_formula(), "test on lipid '" + lipid_name + "'");
         }
         
@@ -232,10 +232,9 @@ int main(int argc, char** argv){
             assertEqual(results->at(l), n, "test 1 on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
             assertEqual(formula, lipid->get_sum_formula(), "test 2 on lipid '" + lipid_name + "' and level '" + std::to_string(lipid_level) + "'");
 
-            
             LipidAdduct *lipid2 = parser.parse(n);
-            for (int ll = l; ll < 4; ++ll){
-                assertEqual(results->at(ll), lipid2->get_lipid_string(levels.at(ll)), "test 3 on lipid '" + lipid_name + "' and level '" + std::to_string(levels.at(ll)) + "'");
+            for (int ll = l; ll < (int)levels.size(); ++ll){
+                assertEqual(results->at(ll), lipid2->get_lipid_string(levels.at(ll)), "test 3 on lipid '" + n + "' / " + results->at(ll) + " vs " + lipid2->get_lipid_string(levels.at(ll)) + " and level '" + std::to_string(levels.at(ll)) + "'");
                 assertEqual(formula, lipid2->get_sum_formula(), "test 4 on lipid '" + lipid_name + "' and level '" + std::to_string(levels.at(l)) + "' mapped to level '" + std::to_string(levels.at(ll)) + "'");
             }
             delete lipid2;

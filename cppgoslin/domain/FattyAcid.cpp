@@ -118,7 +118,7 @@ string FattyAcid::to_string(LipidLevel level){
         return "";
     }
     
-    if (level == MOLECULAR_SPECIES){
+    if (is_level(level, SN_POSITION | MOLECULAR_SPECIES)){
         ElementTable* e = get_elements();
         num_carbons = e->at(ELEMENT_C);
         num_double_bonds = get_double_bonds() - (lipid_FA_bond_type == ETHER_PLASMENYL);
