@@ -109,6 +109,7 @@ void SwissLipidsParserEventHandler::set_isomeric_level(TreeNode* node){
 void SwissLipidsParserEventHandler::add_db_position(TreeNode* node){
     if (current_fa != NULL){
         current_fa->double_bonds->double_bond_positions.insert({db_position, db_cistrans});
+        if (db_cistrans != "E" && db_cistrans != "Z") set_lipid_level(STRUCTURE_DEFINED);
     }
 }
 
@@ -169,6 +170,9 @@ void SwissLipidsParserEventHandler::new_lcb(TreeNode *node) {
         
 
 void SwissLipidsParserEventHandler::clean_lcb(TreeNode *node) {
+    if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
+        set_lipid_level(SN_POSITION);
+    }
     current_fa = NULL;
 }
     

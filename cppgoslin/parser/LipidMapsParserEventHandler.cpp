@@ -144,10 +144,7 @@ void LipidMapsParserEventHandler::set_isomeric_level(TreeNode* node){
 void LipidMapsParserEventHandler::add_db_position(TreeNode* node){
     if (current_fa != NULL){
         current_fa->double_bonds->double_bond_positions.insert({db_position, db_cistrans});
-        
-        if (db_cistrans != "E" && db_cistrans != "Z"){
-            set_lipid_level(STRUCTURE_DEFINED);
-        }
+        if (db_cistrans != "E" && db_cistrans != "Z") set_lipid_level(STRUCTURE_DEFINED);
     }
 }
 
@@ -254,7 +251,7 @@ void LipidMapsParserEventHandler::clean_lcb(TreeNode *node) {
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
-        set_lipid_level(STRUCTURE_DEFINED);
+        set_lipid_level(SN_POSITION);
     }
     current_fa = NULL;
 }
