@@ -23,33 +23,28 @@ SOFTWARE.
 */
 
 
-#include "LipidIsomericSubspecies.h"
+#ifndef LIPID_SN_POSITION_H
+#define LIPID_SN_POSITION_H
 
-LipidIsomericSubspecies::LipidIsomericSubspecies(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidStructuralSubspecies(_headgroup, _fa) {            
-    info->level = ISOMERIC_SUBSPECIES;
+#include <string>
+#include "cppgoslin/domain/LipidExceptions.h"
+#include "cppgoslin/domain/LipidEnums.h"
+#include "cppgoslin/domain/Headgroup.h"
+#include "cppgoslin/domain/LipidMolecularSubspecies.h"
+#include <sstream>
+#include <vector>
+#include "cppgoslin/domain/FattyAcid.h"
+#include <map>
+
+using namespace std;
+using namespace goslin;
+
+class LipidSnPosition : public LipidMolecularSpecies {
+public:
     
-}
+    LipidSnPosition(Headgroup* _headgroup, vector<FattyAcid*> *_fa = NULL);
+    string get_lipid_string(LipidLevel level = NO_LEVEL);
+    LipidLevel get_lipid_level();
+};
 
-
-LipidLevel LipidIsomericSubspecies::get_lipid_level(){
-    return ISOMERIC_SUBSPECIES;
-}
-
-
-string LipidIsomericSubspecies::get_lipid_string(LipidLevel level){
-    switch(level){
-        case NO_LEVEL:
-        case ISOMERIC_SUBSPECIES:
-            return LipidMolecularSubspecies::build_lipid_subspecies_name(ISOMERIC_SUBSPECIES);
-            
-        case SPECIES:
-        case STRUCTURAL_SUBSPECIES:
-        case MOLECULAR_SUBSPECIES:
-        case CATEGORY:
-        case CLASS:
-            return LipidStructuralSubspecies::get_lipid_string(level);
-    
-        default:
-            throw IllegalArgumentException("LipidIsomericSubspecies does not know how to create a lipid string for level " + std::to_string(level));
-    }
-}
+#endif /* LIPID_SN_POSITION_H */

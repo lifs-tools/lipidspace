@@ -23,37 +23,35 @@ SOFTWARE.
 */
 
 
-#include "LipidStructuralSubspecies.h"
-#include <iostream>
+#include "LipidCompleteStructure.h"
 
-using namespace std;
-
-
-LipidStructuralSubspecies::LipidStructuralSubspecies(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidMolecularSubspecies (_headgroup, _fa) {
-    info->level = STRUCTURAL_SUBSPECIES;
+LipidCompleteStructure::LipidCompleteStructure(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidFullStructure(_headgroup, _fa) {            
+    info->level = COMPLETE_STRUCTURE;
+    
 }
 
 
-
-LipidLevel LipidStructuralSubspecies::get_lipid_level(){
-    return STRUCTURAL_SUBSPECIES;
+LipidLevel LipidCompleteStructure::get_lipid_level(){
+    return COMPLETE_STRUCTURE;
 }
 
 
-
-string LipidStructuralSubspecies::get_lipid_string(LipidLevel level) {
+string LipidCompleteStructure::get_lipid_string(LipidLevel level){
     switch(level){
         case NO_LEVEL:
-        case STRUCTURAL_SUBSPECIES:
-            return build_lipid_subspecies_name(STRUCTURAL_SUBSPECIES);
-    
-        case MOLECULAR_SUBSPECIES:
-        case CATEGORY:
-        case CLASS:
+        case COMPLETE_STRUCTURE:
+            return LipidMolecularSubspecies::build_lipid_subspecies_name(COMPLETE_STRUCTURE);
+            
+        case FULL_STRUCTURE:
+        case STRUCTURE_DEFINED:
+        case SN_POSITION:
+        case MOLECULAR_SPECIES:
         case SPECIES:
-            return LipidMolecularSubspecies::get_lipid_string(level);
-        
+        case CLASS:
+        case CATEGORY:
+            return LipidStructuralSubspecies::get_lipid_string(level);
+    
         default:
-            throw RuntimeException("LipidStructuralSubspecies does not know how to create a lipid string for level " + std::to_string(level));
+            throw IllegalArgumentException("LipidIsomericSubspecies does not know how to create a lipid string for level " + std::to_string(level));
     }
 }

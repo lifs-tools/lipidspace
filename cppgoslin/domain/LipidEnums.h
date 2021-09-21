@@ -62,17 +62,19 @@ static const map<LipidCategory, string> CategoryString = {
 };
 
     
-    
+#define is_level(x, y) (((x) & (y)) != 0)
 
 
-enum LipidLevel {NO_LEVEL,
-    UNDEFINED_LEVEL,
-    CATEGORY, // Mediators, Glycerolipids, Glycerophospholipids, Sphingolipids, Steroids, Prenols
-    CLASS, // Glyerophospholipids -> Glycerophosphoinositols (PI)
-    SPECIES, // Phosphatidylinositol (16:0) or PI(16:0)
-    MOLECULAR_SUBSPECIES, // Phosphatidylinositol (8:0-8:0) or PI(8:0-8:0)
-    STRUCTURAL_SUBSPECIES, // Phosphatidylinositol (8:0/8:0) or PI(8:0/8:0)
-    ISOMERIC_SUBSPECIES // e.g. Phosphatidylethanolamine (P-18:0/22:6(4Z,7Z,10Z,13Z,16Z,19Z))
+enum LipidLevel {NO_LEVEL = 1,
+    UNDEFINED_LEVEL = 2,
+    CATEGORY = 4, // Mediators, Glycerolipids, Glycerophospholipids, Sphingolipids, Steroids, Prenols
+    CLASS = 8, // Glyerophospholipids -> Glycerophosphoinositols PI
+    SPECIES = 16, // Phosphatidylinositol 16:0 or PI 16:2;O2
+    MOLECULAR_SPECIES = 32, // Phosphatidylinositol 8:2_8:0 or PI 8:2_8:0;O2
+    SN_POSITION = 64, // Phosphatidylinositol 8:2/8:0 or PI 8:2/8:0;O2
+    STRUCTURE_DEFINED = 128, // Phosphatidylinositol 8:2(4,6)/8:0 or PI 8:2(4,6)/8:0;(OH)2
+    FULL_STRUCTURE = 256, // e.g. Phosphatidylinositol PI 8:2(4Z,6E)/8:2;3OH,7OH
+    COMPLETE_STRUCTURE = 512, // e.g. Phosphatidylinositol PI 8:2(4Z,6E)[S]/8:2;3OH,7OH[R]
 };
 
 

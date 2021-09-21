@@ -23,27 +23,34 @@ SOFTWARE.
 */
 
 
-#ifndef LIPID_MOLECULAR_SUBSPECIES_H
-#define LIPID_MOLECULAR_SUBSPECIES_H
+#include "LipidFullStructure.h"
 
-#include "cppgoslin/domain/FattyAcid.h"
-#include <string>
-#include "cppgoslin/domain/LipidExceptions.h"
-#include "cppgoslin/domain/LipidSpecies.h"
-#include "cppgoslin/domain/LipidEnums.h"
-#include <sstream>
-#include <typeinfo> 
+LipidFullStructure::LipidFullStructure(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidStructureDefined(_headgroup, _fa) {            
+    info->level = FULL_STRUCTURE;
+    
+}
 
-using namespace std;
-using namespace goslin;
 
-class LipidMolecularSubspecies : public LipidSpecies {
-public:
-    LipidMolecularSubspecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa);
-    string build_lipid_subspecies_name(LipidLevel level = NO_LEVEL);
-    string get_lipid_string(LipidLevel level = NO_LEVEL);
-    LipidLevel get_lipid_level();
-    ElementTable* get_elements();
-};
+LipidLevel LipidFullStructure::get_lipid_level(){
+    return FULL_STRUCTURE;
+}
 
-#endif /* LIPID_MOLECULAR_SUBSPECIES_H */
+
+string LipidFullStructure::get_lipid_string(LipidLevel level){
+    switch(level){
+        case NO_LEVEL:
+        case FULL_STRUCTURE:
+            return LipidMolecularSubspecies::build_lipid_subspecies_name(FULL_STRUCTURE);
+            
+        case STRUCTURE_DEFINED:
+        case SN_POSITION:
+        case MOLECULAR_SPECIES:
+        case SPECIES:
+        case CATEGORY:
+        case CLASS:
+            return LipidStructuralSubspecies::get_lipid_string(level);
+    
+        default:
+            throw IllegalArgumentException("LipidFullStructure does not know how to create a lipid string for level " + std::to_string(level));
+    }
+}

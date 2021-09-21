@@ -23,11 +23,11 @@ SOFTWARE.
 */
 
 
-#include "LipidMolecularSubspecies.h"
+#include "LipidMolecularSpecies.h"
 
 
-LipidMolecularSubspecies::LipidMolecularSubspecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidSpecies(_headgroup, _fa) {
-    info->level = MOLECULAR_SUBSPECIES;
+LipidMolecularSpecies::LipidMolecularSpecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidSpecies(_headgroup, _fa) {
+    info->level = MOLECULAR_SPECIES;
     for (auto fatty_acid : fa_list){
         if (contains(fa, fatty_acid->name)){
             throw ConstraintViolationException("FA names must be unique! FA with name " + fatty_acid->name + " was already added!");
@@ -46,10 +46,10 @@ LipidMolecularSubspecies::LipidMolecularSubspecies (Headgroup* _headgroup, vecto
 }
 
 
-string LipidMolecularSubspecies::build_lipid_subspecies_name(LipidLevel level){
-    if (level == NO_LEVEL) level = MOLECULAR_SUBSPECIES;
+string LipidMolecularSpecies::build_lipid_subspecies_name(LipidLevel level){
+    if (level == NO_LEVEL) level = MOLECULAR_SPECIES;
     
-    string fa_separator = (level != MOLECULAR_SUBSPECIES || headgroup->lipid_category == SP) ? "/" : "_";
+    string fa_separator = (level != MOLECULAR_SPECIES || headgroup->lipid_category == SP) ? "/" : "_";
     stringstream lipid_name;
     lipid_name << headgroup->get_lipid_string(level);
     
@@ -57,8 +57,9 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(LipidLevel level){
     string fa_headgroup_separator = (headgroup->lipid_category != ST) ? " " : "/";
     
     switch (level){
-        case ISOMERIC_SUBSPECIES:
-        case STRUCTURAL_SUBSPECIES:
+        case COMPLETE_STRUCTURE:
+        case FULL_STRUCTURE:
+        case STRUCTURE_DEFINED:
             if (fa_list.size() > 0){
                 lipid_name << fa_headgroup_separator;
                 int i = 0;
@@ -95,13 +96,13 @@ string LipidMolecularSubspecies::build_lipid_subspecies_name(LipidLevel level){
 }
 
 
-LipidLevel LipidMolecularSubspecies::get_lipid_level(){
-    return MOLECULAR_SUBSPECIES;
+LipidLevel LipidMolecularSpecies::get_lipid_level(){
+    return MOLECULAR_SPECIES;
 }
 
 
 
-ElementTable* LipidMolecularSubspecies::get_elements(){
+ElementTable* LipidMolecularSpecies::get_elements(){
     ElementTable* elements = create_empty_table();
     
     ElementTable* hg_elements = headgroup->get_elements();
@@ -120,18 +121,18 @@ ElementTable* LipidMolecularSubspecies::get_elements(){
 }
 
 
-string LipidMolecularSubspecies::get_lipid_string(LipidLevel level) {
+string LipidMolecularSpecies::get_lipid_string(LipidLevel level) {
     switch (level){
         case NO_LEVEL:
-        case MOLECULAR_SUBSPECIES:
-            return build_lipid_subspecies_name(MOLECULAR_SUBSPECIES);
+        case MOLECULAR_SPECIES:
+            return build_lipid_subspecies_name(MOLECULAR_SPECIES);
     
-        case CATEGORY:
-        case CLASS:
         case SPECIES:
+        case CLASS:
+        case CATEGORY:
             return LipidSpecies::get_lipid_string(level);
     
         default:
-            throw IllegalArgumentException("LipidMolecularSubspecies does not know how to create a lipid string for level " + std::to_string(level));
+            throw IllegalArgumentException("LipidMolecularSpecies does not know how to create a lipid string for level " + std::to_string(level));
     }
 }
