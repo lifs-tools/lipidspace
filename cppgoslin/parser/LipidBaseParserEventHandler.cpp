@@ -28,7 +28,7 @@ SOFTWARE.
 
 LipidBaseParserEventHandler::LipidBaseParserEventHandler() : BaseParserEventHandler<LipidAdduct*>() {
     fa_list = new vector<FattyAcid*>();
-    level = ISOMERIC_SUBSPECIES;
+    level = FULL_STRUCTURE;
     head_group = "";
     lcb = NULL;
     current_fa = NULL;
@@ -99,7 +99,7 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
         }
     }
         
-    else if (true_fa != poss_fa && (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES)){
+    else if (true_fa != poss_fa && (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED))){
         string hg_name = headgroup->headgroup;
         delete headgroup;
         throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
@@ -112,7 +112,7 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     }
     
     int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
-    if (max_num_fa != (int)fa_list->size()) level = min(level, MOLECULAR_SUBSPECIES);
+    if (max_num_fa != (int)fa_list->size()) set_lipid_level(MOLECULAR_SPECIES);
     
     
     // make LBC exception
@@ -121,5 +121,17 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
 }
     
         
-
+LipidSpecies* LipidBaseParserEventHandler::assemble_lipid(Headgroup *headgroup){
+    LipidSpecies *ls = NULL;
+    switch (level){
+        case COMPLETE_STRUCTURE: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
+        case FULL_STRUCTURE: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
+        case STRUCTURE_DEFINED: ls = new LipidStructuralSubspecies(headgroup, fa_list); break;
+        case SN_POSITION: ls = new LipidStructuralSubspecies(headgroup, fa_list); break;
+        case MOLECULAR_SPECIES: ls = new LipidMolecularSubspecies(headgroup, fa_list); break;
+        case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
+        default: break;
+    }
+    return ls;
+}
         

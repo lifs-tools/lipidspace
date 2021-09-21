@@ -82,7 +82,7 @@ HmdbParserEventHandler::~HmdbParserEventHandler(){
 
 
 void HmdbParserEventHandler::reset_lipid(TreeNode *node) {
-    level = ISOMERIC_SUBSPECIES;
+    level = FULL_STRUCTURE;
     head_group = "";
     lcb = NULL;
     fa_list->clear();
@@ -130,7 +130,7 @@ void HmdbParserEventHandler::set_species_level(TreeNode *node) {
 
 
 void HmdbParserEventHandler::set_molecular_level(TreeNode *node) {
-    set_lipid_level(MOLECULAR_SUBSPECIES);
+    set_lipid_level(MOLECULAR_SPECIES);
 }
 
 
@@ -151,7 +151,7 @@ void HmdbParserEventHandler::new_lcb(TreeNode *node) {
     lcb = new FattyAcid("LCB");
     lcb->set_type(LCB_REGULAR);
     current_fa = lcb;
-    set_lipid_level(STRUCTURAL_SUBSPECIES);
+    set_lipid_level(STRUCTURAL_SPECIES);
 }
         
         
@@ -168,10 +168,10 @@ void HmdbParserEventHandler::append_fa(TreeNode *node) {
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
-        level = min(level, STRUCTURAL_SUBSPECIES);
+        level = min(level, STRUCTURAL_SPECIES);
     }
     
-    if (level == STRUCTURAL_SUBSPECIES || level == ISOMERIC_SUBSPECIES){
+    if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
             current_fa->position = fa_list->size() + 1;
     }
 
@@ -183,26 +183,16 @@ void HmdbParserEventHandler::append_fa(TreeNode *node) {
 
 void HmdbParserEventHandler::build_lipid(TreeNode *node) {
     if (lcb){
-        level = min(level, STRUCTURAL_SUBSPECIES);
+        set_lipid_level(STRUCTURE_DEFINED);
         for (auto& fa : *fa_list) fa->position += 1;
         fa_list->insert(fa_list->begin(), lcb);
     }
     
     
-    LipidAdduct *lipid = NULL;
-    LipidSpecies *ls = NULL;
-    
     Headgroup *headgroup = prepare_headgroup_and_checks();
 
-    switch (level){
-        case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
-        case MOLECULAR_SUBSPECIES: ls = new LipidMolecularSubspecies(headgroup, fa_list); break;
-        case STRUCTURAL_SUBSPECIES: ls = new LipidStructuralSubspecies(headgroup, fa_list); break;
-        case ISOMERIC_SUBSPECIES: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
-        default: break;
-    }
-    lipid = new LipidAdduct();
-    lipid->lipid = ls;
+    LipidAdduct *lipid = new LipidAdduct();
+    lipid->lipid = assemble_lipid(headgroup);
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
 }
     

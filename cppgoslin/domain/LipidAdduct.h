@@ -34,7 +34,6 @@ SOFTWARE.
 #include "cppgoslin/domain/Element.h"
 #include "cppgoslin/domain/LipidSpecies.h"
 #include "cppgoslin/domain/Adduct.h"
-#include "cppgoslin/domain/Fragment.h"
 #include <sstream>
 
 using namespace std;
@@ -44,7 +43,6 @@ class LipidAdduct {
 public:
     LipidSpecies *lipid;
     Adduct *adduct;
-    Fragment *fragment;
     string sum_formula;
     
     LipidAdduct();

@@ -29,8 +29,8 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/Adduct.h"
 #include "cppgoslin/domain/LipidAdduct.h"
-#include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/LipidIsomericSubspecies.h"
+#include "cppgoslin/domain/LipidStructuralSubspecies.h"
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
@@ -63,6 +63,7 @@ public:
     void set_lipid_level(LipidLevel _level);
     bool sp_regular_lcb();
     Headgroup* prepare_headgroup_and_checks();
+    LipidSpecies *assemble_lipid(Headgroup *headgroup);
 };
 
 

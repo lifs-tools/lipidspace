@@ -158,7 +158,7 @@ void FattyAcidParserEventHandler::set_lipid_level(LipidLevel _level){
 
 
 void FattyAcidParserEventHandler::reset_lipid(TreeNode *node) {
-    level = ISOMERIC_SUBSPECIES;
+    level = FULL_STRUCTURE;
     headgroup = "";
     fatty_acyl_stack.clear();
     fatty_acyl_stack.push_back(new FattyAcid("FA"));
@@ -215,16 +215,24 @@ void FattyAcidParserEventHandler::build_lipid(TreeNode *node) {
     lipid = new LipidAdduct();
     
     switch(level){
-        case ISOMERIC_SUBSPECIES:
-            lipid->lipid = new LipidIsomericSubspecies(head_group, &fatty_acyl_stack);
+        case COMPLETE_STRUCTURE:
+            lipid->lipid = new LipidCompleteStructure(head_group, &fatty_acyl_stack);
+            break;
+        
+        case FULL_STRUCTURE:
+            lipid->lipid = new LipidFullStructure(head_group, &fatty_acyl_stack);
             break;
             
         case STRUCTURAL_SUBSPECIES:
-            lipid->lipid = new LipidStructuralSubspecies(head_group, &fatty_acyl_stack);
+            lipid->lipid = new LipidStructureDefined(head_group, &fatty_acyl_stack);
             break;
             
-        case MOLECULAR_SUBSPECIES:
-            lipid->lipid = new LipidMolecularSubspecies(head_group, &fatty_acyl_stack);
+        case STRUCTURAL_SUBSPECIES:
+            lipid->lipid = new LipidSnPosition(head_group, &fatty_acyl_stack);
+            break;
+            
+        case MOLECULAR_SPECIES:
+            lipid->lipid = new LipidMolecularSpecies(head_group, &fatty_acyl_stack);
             break;
             
         case SPECIES:

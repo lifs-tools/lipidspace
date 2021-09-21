@@ -95,7 +95,7 @@ ShorthandParserEventHandler::ShorthandParserEventHandler() : LipidBaseParserEven
     reg("func_group_name_pre_event", set_functional_group_name);
     reg("func_group_count_pre_event", set_functional_group_count);
     reg("stereo_type_pre_event", set_functional_group_stereo);
-    reg("molecular_func_group_name_pre_event", set_molecular_func_group);
+    reg("molecular_func_group_name_pre_event", set_sn_position_func_group);
     
     // set cycle events
     reg("func_group_cycle_pre_event", set_cycle);
@@ -147,7 +147,7 @@ const set<string> ShorthandParserEventHandler::special_types {"acyl", "alkyl", "
 
 
 void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
-    level = ISOMERIC_SUBSPECIES;
+    level = FULL_STRUCTURE;
     adduct = NULL;
     head_group = "";
     fa_list->clear();
@@ -170,30 +170,9 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     
     LipidAdduct *lipid = new LipidAdduct();
     lipid->adduct = adduct;
-    
-    switch(level){
-        case ISOMERIC_SUBSPECIES:
-            lipid->lipid = new LipidIsomericSubspecies(headgroup, fa_list);
-            break;
-            
-        case STRUCTURAL_SUBSPECIES:
-            lipid->lipid = new LipidStructuralSubspecies(headgroup, fa_list);
-            break;
-            
-        case MOLECULAR_SUBSPECIES:
-            lipid->lipid = new LipidMolecularSubspecies(headgroup, fa_list);
-            break;
-            
-        case SPECIES:
-            lipid->lipid = new LipidSpecies(headgroup, fa_list);
-            break;
-            
-        default:
-            break;
-    }
+    lipid->lipid = assemble_lipid(headgroup);
     
     if (tmp.contains_key("num_ethers")) lipid->lipid->info->num_ethers = tmp.get_int("num_ethers");
-    
     
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
 }
@@ -244,7 +223,7 @@ void ShorthandParserEventHandler::set_carbohydrate(TreeNode *node){
 
 
 void ShorthandParserEventHandler::set_carbohydrate_structural(TreeNode *node){
-    set_lipid_level(STRUCTURAL_SUBSPECIES);
+    set_lipid_level(STRUCTURE_DEFINED);
     tmp.set_int("func_group_head", 1);
 }
 
@@ -257,7 +236,7 @@ void ShorthandParserEventHandler::set_carbohydrate_isomeric(TreeNode *node){
 
 
 void ShorthandParserEventHandler::suffix_decorator_molecular(TreeNode *node){
-    headgroup_decorators->push_back(new HeadgroupDecorator(node->get_text(), -1, 1, 0, true, MOLECULAR_SUBSPECIES));
+    headgroup_decorators->push_back(new HeadgroupDecorator(node->get_text(), -1, 1, 0, true, MOLECULAR_SPECIES));
 }
 
 
@@ -323,7 +302,7 @@ void ShorthandParserEventHandler::add_fatty_acyl_chain(TreeNode *node){
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     else if (current_fas.back()->double_bonds->get_num() > 0 && current_fas.back()->double_bonds->double_bond_positions.size() == 0){
-        set_lipid_level(STRUCTURAL_SUBSPECIES);
+        set_lipid_level(STRUCTURE_DEFINED);
     }
     tmp.remove(fa_i);
     
@@ -361,7 +340,7 @@ void ShorthandParserEventHandler::add_double_bond_information(TreeNode *node){
     string cistrans = tmp.get_dictionary(fa_i)->get_string("db_cistrans");
     
     if (cistrans == ""){
-        set_lipid_level(STRUCTURAL_SUBSPECIES);
+        set_lipid_level(STRUCTURE_DEFINED);
     }
     
     tmp.get_dictionary(fa_i)->remove("db_position");
@@ -485,7 +464,7 @@ void ShorthandParserEventHandler::add_hydrocarbon_chain(TreeNode *node){
     CarbonChain *cc = (CarbonChain*)current_fas.back();
     current_fas.pop_back();
     cc->position = linkage_pos;
-    if (linkage_pos == -1) set_lipid_level(STRUCTURAL_SUBSPECIES);
+    if (linkage_pos == -1) set_lipid_level(STRUCTURE_DEFINED);
     
     if (uncontains_p(current_fas.back()->functional_groups, "cc")) current_fas.back()->functional_groups->insert({"cc", vector<FunctionalGroup*>()});
     current_fas.back()->functional_groups->at("cc").push_back(cc);
@@ -512,7 +491,7 @@ void ShorthandParserEventHandler::add_acyl_linkage(TreeNode *node){
         
     acyl->position = linkage_pos;
     acyl->set_N_bond_type(linkage_type);
-    if (linkage_pos == -1) set_lipid_level(STRUCTURAL_SUBSPECIES);
+    if (linkage_pos == -1) set_lipid_level(STRUCTURE_DEFINED);
         
     if (uncontains_p(current_fas.back()->functional_groups, "acyl")) current_fas.back()->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
     current_fas.back()->functional_groups->at("acyl").push_back(acyl);
@@ -536,7 +515,7 @@ void ShorthandParserEventHandler::add_alkyl_linkage(TreeNode *node){
     current_fas.pop_back();
     
     alkyl->position = linkage_pos;
-    if (linkage_pos == -1) set_lipid_level(STRUCTURAL_SUBSPECIES);
+    if (linkage_pos == -1) set_lipid_level(STRUCTURE_DEFINED);
     
     if (uncontains_p(current_fas.back()->functional_groups, "alkyl")) current_fas.back()->functional_groups->insert({"alkyl", vector<FunctionalGroup*>()});
     current_fas.back()->functional_groups->at("alkyl").push_back(alkyl);
@@ -570,8 +549,6 @@ void ShorthandParserEventHandler::set_cycle_db_count(TreeNode *node){
 
 void ShorthandParserEventHandler::set_cycle_db_positions(TreeNode *node){
     tmp.get_dictionary(FA_I)->set_int("cycle_db", ((Cycle*)current_fas.back())->double_bonds->get_num());
-    //delete ((Cycle*)current_fas.back())->double_bonds;
-    //((Cycle*)current_fas.back())->double_bonds = new DoubleBonds();
 }
 
 
@@ -623,9 +600,9 @@ void ShorthandParserEventHandler::set_functional_group_stereo(TreeNode *node){
 
 
 
-void ShorthandParserEventHandler::set_molecular_func_group(TreeNode *node){
+void ShorthandParserEventHandler::set_sn_position_func_group(TreeNode *node){
     tmp.get_dictionary(FA_I)->set_string("fg_name", node->get_text());
-    set_lipid_level(MOLECULAR_SUBSPECIES);
+    set_lipid_level(SN_POSITION);
 }
 
 
@@ -643,7 +620,7 @@ void ShorthandParserEventHandler::add_functional_group(TreeNode *node){
     string fg_ring_stereo = gd->get_string("fg_ring_stereo");
     
     if (fg_pos == -1){
-        set_lipid_level(STRUCTURAL_SUBSPECIES);
+        set_lipid_level(STRUCTURE_DEFINED);
     }
     
     FunctionalGroup *functional_group = 0;
@@ -696,7 +673,7 @@ void ShorthandParserEventHandler::set_species_level(TreeNode *node){
 
 
 void ShorthandParserEventHandler::set_molecular_level(TreeNode *node){
-    set_lipid_level(MOLECULAR_SUBSPECIES);
+    set_lipid_level(MOLECULAR_SPECIES);
 }
 
 
