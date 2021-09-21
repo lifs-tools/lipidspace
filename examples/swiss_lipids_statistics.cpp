@@ -81,19 +81,19 @@ int main(){
         /* checking if lipid name was parsed */
         if (lipidAdduct != NULL){
           ++parsedLipids;
-          LipidSpeciesInfo info = lipidAdduct->lipid->info;
+          LipidSpeciesInfo *info = lipidAdduct->lipid->info;
           string nativeLevelName = "";
           string category = "";
           string species = "";
           try {
-            nativeLevelName = lipidAdduct->get_lipid_string(info.level);
+            nativeLevelName = lipidAdduct->get_lipid_string(info->level);
           } catch (ConstraintViolationException &ce) {
             cout << "Constraint violation:" << endl;
             cout << ce.what() << endl;
           } catch (RuntimeException &re) {
             cout << "Runtime exception while generating native level name for lipid " << lipid_name << endl;
           }
-          slout << info.level << '\t';
+          slout << info->level << '\t';
           slout << nativeLevelName << '\t';
           try {            
             category = lipidAdduct->get_lipid_string(CATEGORY);

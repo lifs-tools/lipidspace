@@ -36,14 +36,19 @@ int main(){
     LipidParser lipid_parser;
     
     /* parsing lipid name into a lipid container data structure */
-    string lipid_name = "PA(12:0_14:1)";
+    string lipid_name = "PA(12:0(2OH)/14:1(3Z))";
     LipidAdduct* lipid = lipid_parser.parse(lipid_name);
     
     /* checking if parsing was successful, otherwise lipid reference remains NULL */
     if (lipid != NULL){
         /* creating lipid name according to the recent lipid nomenclature */
-        cout << lipid->get_lipid_string() << endl;
-        cout << lipid->get_class_name() << endl;
+        cout << "input:\t\t\t\t" << lipid_name << endl;
+        cout << "Full structure level:\t\t" << lipid->get_lipid_string(FULL_STRUCTURE) << endl;
+        cout << "Structure defined level:\t" << lipid->get_lipid_string(STRUCTURE_DEFINED) << endl;
+        cout << "sn-position level:\t\t" << lipid->get_lipid_string(SN_POSITION) << endl;
+        cout << "Molecular species level:\t" << lipid->get_lipid_string(MOLECULAR_SPECIES) << endl;
+        cout << "Species level:\t\t\t" << lipid->get_lipid_string(SPECIES) << endl;
+        cout << "Class name:\t\t\t" << lipid->get_class_name() << endl;
         
         /* important to delete lipid to avoid memory leaks */
         delete lipid;
