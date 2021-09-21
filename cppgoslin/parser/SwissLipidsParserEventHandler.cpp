@@ -181,10 +181,10 @@ void SwissLipidsParserEventHandler::append_fa(TreeNode *node) {
     }
     
     if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
-        set_lipid_level(STRUCTURE_DEFINED);
+        set_lipid_level(SN_POSITION);
     }
     
-    if (is_level(COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
+    if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
             current_fa->position = fa_list->size() + 1;
     }
     

@@ -104,7 +104,7 @@ public:
     void set_functional_group_name(TreeNode *node);
     void set_functional_group_count(TreeNode *node);
     void set_functional_group_stereo(TreeNode *node);
-    void set_molecular_func_group(TreeNode *node);
+    void set_sn_position_func_group(TreeNode *node);
     void add_functional_group(TreeNode *node);
     void set_ether_type(TreeNode *node);
     void set_ether_num(TreeNode *node);

@@ -40,7 +40,7 @@ string LipidCompleteStructure::get_lipid_string(LipidLevel level){
     switch(level){
         case NO_LEVEL:
         case COMPLETE_STRUCTURE:
-            return LipidMolecularSubspecies::build_lipid_subspecies_name(COMPLETE_STRUCTURE);
+            return LipidMolecularSpecies::build_lipid_subspecies_name(COMPLETE_STRUCTURE);
             
         case FULL_STRUCTURE:
         case STRUCTURE_DEFINED:
@@ -49,7 +49,7 @@ string LipidCompleteStructure::get_lipid_string(LipidLevel level){
         case SPECIES:
         case CLASS:
         case CATEGORY:
-            return LipidStructuralSubspecies::get_lipid_string(level);
+            return LipidFullStructure::get_lipid_string(level);
     
         default:
             throw IllegalArgumentException("LipidIsomericSubspecies does not know how to create a lipid string for level " + std::to_string(level));

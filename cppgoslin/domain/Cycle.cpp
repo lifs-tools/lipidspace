@@ -201,7 +201,7 @@ string Cycle::to_string(LipidLevel level){
         cycle_string << start << "-" << end;
     }
     
-    if (is_level(level , FULL_STRUCTURE | COMPLETE_STRUCTURE | STRUCTURE_DEFINED)) && bridge_chain->size() > 0){
+    if (is_level(level , FULL_STRUCTURE | COMPLETE_STRUCTURE | STRUCTURE_DEFINED) && bridge_chain->size() > 0){
         for (auto &e : *bridge_chain) cycle_string << element_shortcut.at(e);
     }
     cycle_string << "cy" << cycle;

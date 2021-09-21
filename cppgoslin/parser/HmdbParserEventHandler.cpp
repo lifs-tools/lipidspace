@@ -151,7 +151,7 @@ void HmdbParserEventHandler::new_lcb(TreeNode *node) {
     lcb = new FattyAcid("LCB");
     lcb->set_type(LCB_REGULAR);
     current_fa = lcb;
-    set_lipid_level(STRUCTURAL_SPECIES);
+    set_lipid_level(STRUCTURE_DEFINED);
 }
         
         
@@ -168,7 +168,7 @@ void HmdbParserEventHandler::append_fa(TreeNode *node) {
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
-        level = min(level, STRUCTURAL_SPECIES);
+        set_lipid_level(SN_POSITION);
     }
     
     if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){

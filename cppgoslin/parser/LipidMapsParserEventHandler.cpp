@@ -267,10 +267,10 @@ void LipidMapsParserEventHandler::append_fa(TreeNode *node) {
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
-        set_lipid_level(STRUCTURE_DEFINED);
+        set_lipid_level(SN_POSITION);
     }
     
-    if (is_level(level, COMPLETE_STURCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
+    if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
             current_fa->position = fa_list->size() + 1;
     }
     
@@ -340,8 +340,6 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
         for (auto fa : *fa_list) fa->position += 1;
         fa_list->insert(fa_list->begin(), lcb);
     }
-    
-    lipid = NULL;
     
     if (add_omega_linoleoyloxy_Cer){
         if (fa_list->size() != 2){

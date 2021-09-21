@@ -334,5 +334,5 @@ CarbonChain* CarbonChain::copy(){
 
 
 string CarbonChain::to_string(LipidLevel level){
-    return (is_level(COMPLETE_STRUCTURE | FULL_STRUCTURE) ? std::to_string(position) : "") + "(" + ((FattyAcid*)functional_groups->at("cc").front())->to_string(level) + ")";
+    return (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE) ? std::to_string(position) : "") + "(" + ((FattyAcid*)functional_groups->at("cc").front())->to_string(level) + ")";
 }

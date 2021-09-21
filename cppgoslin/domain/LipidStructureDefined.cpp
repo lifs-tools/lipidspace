@@ -45,14 +45,14 @@ string LipidStructureDefined::get_lipid_string(LipidLevel level) {
     switch(level){
         case NO_LEVEL:
         case STRUCTURE_DEFINED:
-            return build_lipid_subspecies_name(STRUCTURE_DEFINED);
+            return LipidMolecularSpecies::build_lipid_subspecies_name(STRUCTURE_DEFINED);
     
         case SN_POSITION:
-        case MOLECULAR_SUBSPECIES:
+        case MOLECULAR_SPECIES:
         case SPECIES:
         case CLASS:
         case CATEGORY:
-            return LipidMolecularSubspecies::get_lipid_string(level);
+            return LipidSnPosition::get_lipid_string(level);
         
         default:
             throw RuntimeException("LipidStructureDefined does not know how to create a lipid string for level " + std::to_string(level));

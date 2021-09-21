@@ -187,7 +187,7 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
         throw LipidException("Lipid with unspecified ether bond cannot be treated properly.");
     }
     if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
-        level = min(level, STRUCTURE_DEFINED);
+        set_lipid_level(SN_POSITION);
     }
         
     
@@ -195,7 +195,7 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     
-    if (is_level(level(COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
+    if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
             current_fa->position = fa_list->size() + 1;
     }
     

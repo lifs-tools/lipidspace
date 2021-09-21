@@ -206,7 +206,7 @@ void FattyAcidParserEventHandler::build_lipid(TreeNode *node) {
         int db_right = 0;
         for (auto &kv : curr_fa->double_bonds->double_bond_positions) db_right += kv.second.length() > 0;
         if (db_right != (int)curr_fa->double_bonds->double_bond_positions.size()){
-            set_lipid_level(STRUCTURAL_SUBSPECIES);
+            set_lipid_level(STRUCTURE_DEFINED);
         }
     }
     
@@ -223,11 +223,11 @@ void FattyAcidParserEventHandler::build_lipid(TreeNode *node) {
             lipid->lipid = new LipidFullStructure(head_group, &fatty_acyl_stack);
             break;
             
-        case STRUCTURAL_SUBSPECIES:
+        case STRUCTURE_DEFINED:
             lipid->lipid = new LipidStructureDefined(head_group, &fatty_acyl_stack);
             break;
             
-        case STRUCTURAL_SUBSPECIES:
+        case SN_POSITION:
             lipid->lipid = new LipidSnPosition(head_group, &fatty_acyl_stack);
             break;
             

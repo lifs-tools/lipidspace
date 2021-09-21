@@ -45,13 +45,13 @@ string LipidSnPosition::get_lipid_string(LipidLevel level) {
     switch(level){
         case NO_LEVEL:
         case SN_POSITION:
-            return build_lipid_subspecies_name(SN_POSITION);
+            return LipidMolecularSpecies::build_lipid_subspecies_name(SN_POSITION);
     
         case MOLECULAR_SPECIES:
         case CATEGORY:
         case CLASS:
         case SPECIES:
-            return LipidMolecularSubspecies::get_lipid_string(level);
+            return LipidMolecularSpecies::get_lipid_string(level);
         
         default:
             throw RuntimeException("LipidSnPosition does not know how to create a lipid string for level " + std::to_string(level));

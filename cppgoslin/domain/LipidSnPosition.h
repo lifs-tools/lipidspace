@@ -30,7 +30,7 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/Headgroup.h"
-#include "cppgoslin/domain/LipidMolecularSubspecies.h"
+#include "cppgoslin/domain/LipidMolecularSpecies.h"
 #include <sstream>
 #include <vector>
 #include "cppgoslin/domain/FattyAcid.h"

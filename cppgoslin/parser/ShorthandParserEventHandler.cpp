@@ -302,7 +302,7 @@ void ShorthandParserEventHandler::add_fatty_acyl_chain(TreeNode *node){
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     else if (current_fas.back()->double_bonds->get_num() > 0 && current_fas.back()->double_bonds->double_bond_positions.size() == 0){
-        set_lipid_level(STRUCTURE_DEFINED);
+        set_lipid_level(SN_POSITION);
     }
     tmp.remove(fa_i);
     

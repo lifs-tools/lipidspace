@@ -40,7 +40,7 @@ string LipidFullStructure::get_lipid_string(LipidLevel level){
     switch(level){
         case NO_LEVEL:
         case FULL_STRUCTURE:
-            return LipidMolecularSubspecies::build_lipid_subspecies_name(FULL_STRUCTURE);
+            return LipidMolecularSpecies::build_lipid_subspecies_name(FULL_STRUCTURE);
             
         case STRUCTURE_DEFINED:
         case SN_POSITION:
@@ -48,7 +48,7 @@ string LipidFullStructure::get_lipid_string(LipidLevel level){
         case SPECIES:
         case CATEGORY:
         case CLASS:
-            return LipidStructuralSubspecies::get_lipid_string(level);
+            return LipidStructureDefined::get_lipid_string(level);
     
         default:
             throw IllegalArgumentException("LipidFullStructure does not know how to create a lipid string for level " + std::to_string(level));

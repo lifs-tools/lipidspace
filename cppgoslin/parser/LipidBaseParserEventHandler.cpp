@@ -124,11 +124,11 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
 LipidSpecies* LipidBaseParserEventHandler::assemble_lipid(Headgroup *headgroup){
     LipidSpecies *ls = NULL;
     switch (level){
-        case COMPLETE_STRUCTURE: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
-        case FULL_STRUCTURE: ls = new LipidIsomericSubspecies(headgroup, fa_list); break;
-        case STRUCTURE_DEFINED: ls = new LipidStructuralSubspecies(headgroup, fa_list); break;
-        case SN_POSITION: ls = new LipidStructuralSubspecies(headgroup, fa_list); break;
-        case MOLECULAR_SPECIES: ls = new LipidMolecularSubspecies(headgroup, fa_list); break;
+        case COMPLETE_STRUCTURE: ls = new LipidCompleteStructure(headgroup, fa_list); break;
+        case FULL_STRUCTURE: ls = new LipidFullStructure(headgroup, fa_list); break;
+        case STRUCTURE_DEFINED: ls = new LipidStructureDefined(headgroup, fa_list); break;
+        case SN_POSITION: ls = new LipidSnPosition(headgroup, fa_list); break;
+        case MOLECULAR_SPECIES: ls = new LipidMolecularSpecies(headgroup, fa_list); break;
         case SPECIES: ls = new LipidSpecies(headgroup, fa_list); break;
         default: break;
     }
