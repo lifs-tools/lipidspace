@@ -52,24 +52,34 @@ void assertEqual(string s1, string s2, string message = ""){
 int main(int argc, char** argv){
     ShorthandParser parser;
         
-    LipidAdduct *l = parser.parse("Cer 18:1(8Z);1OH,3OH/24:0");
+    LipidAdduct *l = parser.parse("PE 18:1(8Z);1OH,3OH/24:0");
+    assertEqual(l->get_lipid_string(), "PE 18:1(8Z);1OH,3OH/24:0");
+    assertEqual(l->get_lipid_string(STRUCTURE_DEFINED), "PE 18:1(8);(OH)2/24:0");
+    assertEqual(l->get_lipid_string(SN_POSITION), "PE 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "PE 18:1;O2_24:0");
+    assertEqual(l->get_lipid_string(SPECIES), "PE 42:1;O2");
+    delete l;
+        
+    l = parser.parse("Cer 18:1(8Z);1OH,3OH/24:0");
     assertEqual(l->get_lipid_string(), "Cer 18:1(8Z);1OH,3OH/24:0");
-    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "Cer 18:1(8);(OH)2/24:0");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(STRUCTURE_DEFINED), "Cer 18:1(8);(OH)2/24:0");
+    assertEqual(l->get_lipid_string(SN_POSITION), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "Cer 18:1;O2/24:0");
     assertEqual(l->get_lipid_string(SPECIES), "Cer 42:1;O2");
     assertEqual(l->get_sum_formula(), "C42H83NO3");
     delete l;
     
     l = parser.parse("Cer 18:1(8);(OH)2/24:0");
     assertEqual(l->get_lipid_string(), "Cer 18:1(8);(OH)2/24:0");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(SN_POSITION), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "Cer 18:1;O2/24:0");
     assertEqual(l->get_lipid_string(SPECIES), "Cer 42:1;O2");
     assertEqual(l->get_sum_formula(), "C42H83NO3");
     delete l;
     
     l = parser.parse("Cer 18:1;O2/24:0");
     assertEqual(l->get_lipid_string(), "Cer 18:1;O2/24:0");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "Cer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "Cer 18:1;O2/24:0");
     assertEqual(l->get_lipid_string(SPECIES), "Cer 42:1;O2");
     assertEqual(l->get_sum_formula(), "C42H83NO3");
     delete l;
@@ -83,15 +93,17 @@ int main(int argc, char** argv){
     
     l = parser.parse("Gal-Cer(1) 18:1(5Z);3OH/24:0");
     assertEqual(l->get_lipid_string(), "Gal-Cer(1) 18:1(5Z);3OH/24:0");
-    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "Gal-Cer 18:1(5);OH/24:0");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "GalCer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(STRUCTURE_DEFINED), "Gal-Cer 18:1(5);OH/24:0");
+    assertEqual(l->get_lipid_string(SN_POSITION), "GalCer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "GalCer 18:1;O2/24:0");
     assertEqual(l->get_lipid_string(SPECIES), "GalCer 42:1;O2");
     assertEqual(l->get_sum_formula(), "C48H93NO8");
     delete l;
     
     l = parser.parse("Gal-Cer 18:1(5);OH/24:0");
     assertEqual(l->get_lipid_string(), "Gal-Cer 18:1(5);OH/24:0");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "GalCer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(SN_POSITION), "GalCer 18:1;O2/24:0");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "GalCer 18:1;O2/24:0");
     assertEqual(l->get_lipid_string(SPECIES), "GalCer 42:1;O2");
     assertEqual(l->get_sum_formula(), "C48H93NO8");
     delete l;
@@ -113,15 +125,17 @@ int main(int argc, char** argv){
     
     l = parser.parse("SPB 18:1(4Z);1OH,3OH");
     assertEqual(l->get_lipid_string(), "SPB 18:1(4Z);1OH,3OH");
-    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "SPB 18:1(4);(OH)2");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "SPB 18:1;O2");
+    assertEqual(l->get_lipid_string(STRUCTURE_DEFINED), "SPB 18:1(4);(OH)2");
+    assertEqual(l->get_lipid_string(SN_POSITION), "SPB 18:1;O2");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "SPB 18:1;O2");
     assertEqual(l->get_lipid_string(SPECIES), "SPB 18:1;O2");
     assertEqual(l->get_sum_formula(), "C18H37NO2");
     delete l;
     
     l = parser.parse("SPB 18:1(4);(OH)2");
     assertEqual(l->get_lipid_string(), "SPB 18:1(4);(OH)2");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "SPB 18:1;O2");
+    assertEqual(l->get_lipid_string(SN_POSITION), "SPB 18:1;O2");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "SPB 18:1;O2");
     assertEqual(l->get_lipid_string(SPECIES), "SPB 18:1;O2");
     assertEqual(l->get_sum_formula(), "C18H37NO2");
     delete l;
@@ -136,15 +150,17 @@ int main(int argc, char** argv){
     
     l = parser.parse("LSM(1) 17:1(4E);3OH");
     assertEqual(l->get_lipid_string(), "LSM(1) 17:1(4E);3OH");
-    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "LSM 17:1(4);OH");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "LSM 17:1;O2");
+    assertEqual(l->get_lipid_string(STRUCTURE_DEFINED), "LSM 17:1(4);OH");
+    assertEqual(l->get_lipid_string(SN_POSITION), "LSM 17:1;O2");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "LSM 17:1;O2");
     assertEqual(l->get_lipid_string(SPECIES), "LSM 17:1;O2");
     assertEqual(l->get_sum_formula(), "C22H47N2O5P");
     delete l;
     
     l = parser.parse("LSM 17:1(4);OH");
     assertEqual(l->get_lipid_string(), "LSM 17:1(4);OH");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "LSM 17:1;O2");
+    assertEqual(l->get_lipid_string(SN_POSITION), "LSM 17:1;O2");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "LSM 17:1;O2");
     assertEqual(l->get_lipid_string(SPECIES), "LSM 17:1;O2");
     assertEqual(l->get_sum_formula(), "C22H47N2O5P");
     delete l;
@@ -159,15 +175,17 @@ int main(int argc, char** argv){
     
     l = parser.parse("EPC(1) 14:1(4E);3OH/20:1(11Z)");
     assertEqual(l->get_lipid_string(), "EPC(1) 14:1(4E);3OH/20:1(11Z)");
-    assertEqual(l->get_lipid_string(STRUCTURAL_SUBSPECIES), "EPC 14:1(4);OH/20:1(11)");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "EPC 14:1;O2/20:1");
+    assertEqual(l->get_lipid_string(STRUCTURE_DEFINED), "EPC 14:1(4);OH/20:1(11)");
+    assertEqual(l->get_lipid_string(SN_POSITION), "EPC 14:1;O2/20:1");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "EPC 14:1;O2/20:1");
     assertEqual(l->get_lipid_string(SPECIES), "EPC 34:2;O2");
     assertEqual(l->get_sum_formula(), "C36H71N2O6P");
     delete l;
     
     l = parser.parse("EPC 14:1(4);OH/20:1(11)");
     assertEqual(l->get_lipid_string(), "EPC 14:1(4);OH/20:1(11)");
-    assertEqual(l->get_lipid_string(MOLECULAR_SUBSPECIES), "EPC 14:1;O2/20:1");
+    assertEqual(l->get_lipid_string(SN_POSITION), "EPC 14:1;O2/20:1");
+    assertEqual(l->get_lipid_string(MOLECULAR_SPECIES), "EPC 14:1;O2/20:1");
     assertEqual(l->get_lipid_string(SPECIES), "EPC 34:2;O2");
     assertEqual(l->get_sum_formula(), "C36H71N2O6P");
     delete l;
@@ -186,7 +204,7 @@ int main(int argc, char** argv){
     
     // test several more lipid names
     vector<string> data;
-    vector<LipidLevel> levels {ISOMERIC_SUBSPECIES, STRUCTURAL_SUBSPECIES, MOLECULAR_SUBSPECIES, SPECIES};
+    vector<LipidLevel> levels {FULL_STRUCTURE, STRUCTURE_DEFINED, MOLECULAR_SPECIES, SPECIES};
     
     ifstream infile("data/goslin/testfiles/shorthand-test.csv");
     assert(infile.good());

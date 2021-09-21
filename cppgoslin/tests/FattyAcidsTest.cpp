@@ -100,7 +100,7 @@ int main(int argc, char** argv){
         assertEqual(formula, lipid_formula, "lipid " + lmid + " '" + lipid_name + "': " + formula + " != " + lipid_formula + " (computed)");
         delete lipid2;
         
-        lipid2 = shorthand_parser.parse(lipid->get_lipid_string(MOLECULAR_SUBSPECIES));
+        lipid2 = shorthand_parser.parse(lipid->get_lipid_string(MOLECULAR_SPECIES));
         lipid_formula = lipid2->get_sum_formula();
         
         assertEqual(formula, lipid_formula, "molecular " + lmid + " '" + lipid_name + "': " + formula + " != " + lipid_formula + " (computed)");

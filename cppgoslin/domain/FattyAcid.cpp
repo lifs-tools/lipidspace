@@ -129,7 +129,7 @@ string FattyAcid::to_string(LipidLevel level){
     fa_string << num_carbons << ":" << num_double_bonds;
     
     
-    if (level != MOLECULAR_SPECIES && double_bonds->double_bond_positions.size() > 0){
+    if (!is_level(level, SN_POSITION | MOLECULAR_SPECIES) && double_bonds->double_bond_positions.size() > 0){
         fa_string << "(";
         
         int i = 0;
