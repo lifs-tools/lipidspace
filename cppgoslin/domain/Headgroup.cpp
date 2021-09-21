@@ -120,7 +120,7 @@ string Headgroup::get_lipid_string(LipidLevel level){
     stringstream headgoup_string;
             
     // adding prefixes to the headgroup
-    if (level != ISOMERIC_SUBSPECIES && level != STRUCTURAL_SUBSPECIES){
+    if (!is_level(COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED)){
         vector<string> prefixes;
         for (auto hgd : *decorators){
             if (!hgd->suffix) prefixes.push_back(hgd->to_string(level));
@@ -143,7 +143,7 @@ string Headgroup::get_lipid_string(LipidLevel level){
             headgoup_string << hgd->to_string(level);
         }
     }
-    if (level == ISOMERIC_SUBSPECIES && lipid_category == SP && !sp_exception){
+    if (is_level(COMPLETE_STRUCTURE | FULL_STRUCTURE) && lipid_category == SP && !sp_exception){
         headgoup_string << "(1)";
     }
     

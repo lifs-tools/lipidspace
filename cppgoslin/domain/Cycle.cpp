@@ -197,31 +197,31 @@ void Cycle::compute_elements(){
 string Cycle::to_string(LipidLevel level){
     stringstream cycle_string;
     cycle_string << "[";
-    if (start != -1 && level == ISOMERIC_SUBSPECIES){
+    if (start != -1 && is_level(level, FULL_STRUCTURE | COMPLETE_STRUCTURE)){
         cycle_string << start << "-" << end;
     }
     
-    if ((level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES) && bridge_chain->size() > 0){
+    if (is_level(level , FULL_STRUCTURE | COMPLETE_STRUCTURE | STRUCTURE_DEFINED)) && bridge_chain->size() > 0){
         for (auto &e : *bridge_chain) cycle_string << element_shortcut.at(e);
     }
     cycle_string << "cy" << cycle;
     
     cycle_string << ":" << double_bonds->num_double_bonds;
     
-    if (level == ISOMERIC_SUBSPECIES || level == STRUCTURAL_SUBSPECIES){
+    if (is_level(level , FULL_STRUCTURE | COMPLETE_STRUCTURE | STRUCTURE_DEFINED)){
         if (double_bonds->double_bond_positions.size() > 0){
             int i = 0;
             cycle_string << "(";
             for (auto &kv : double_bonds->double_bond_positions){
                 if (i++ > 0) cycle_string << ",";
-                if (level == ISOMERIC_SUBSPECIES) cycle_string << kv.first << kv.second;
+                if (is_level(level, FULL_STRUCTURE | COMPLETE_STRUCTURE)) cycle_string << kv.first << kv.second;
                 else  cycle_string << kv.first;
             }
             cycle_string << ")";
         }
     }
     
-    if (level == ISOMERIC_SUBSPECIES){
+    if (is_level(level, FULL_STRUCTURE | COMPLETE_STRUCTURE)){
         vector<string> fg_names;
         for (auto &kv : *functional_groups) fg_names.push_back(kv.first);
         sort(fg_names.begin(), fg_names.end(), lower_name_sort_function);
@@ -240,7 +240,7 @@ string Cycle::to_string(LipidLevel level){
         }
     }
     
-    else if (level == STRUCTURAL_SUBSPECIES){
+    else if (level == STRUCTURE_DEFINED){
         vector<string> fg_names;
         for (auto &kv : *functional_groups) fg_names.push_back(kv.first);
         sort(fg_names.begin(), fg_names.end(), lower_name_sort_function);
@@ -266,7 +266,7 @@ string Cycle::to_string(LipidLevel level){
     }
                 
     cycle_string << "]";
-    if (stereochemistry.length() > 0) cycle_string << "[" << stereochemistry << "]";
+    if (level == COMPLETE_STRUCTURE && stereochemistry.length() > 0) cycle_string << "[" << stereochemistry << "]";
     
     return cycle_string.str();
 }

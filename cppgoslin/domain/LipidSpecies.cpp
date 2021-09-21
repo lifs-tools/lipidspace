@@ -41,13 +41,6 @@ LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
         }
     }
     
-    /*
-    if (headgroup->sp_exception){
-        if (uncontains_p(info->functional_groups, "OH")) info->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
-        info->functional_groups->at("OH").push_back(KnownFunctionalGroups::get_functional_group("OH"));
-    }
-    */
-    
     
     for (auto decorator : *headgroup->decorators){
         if (decorator->name == "decorator_alkyl" || decorator->name == "decorator_acyl"){
@@ -130,10 +123,12 @@ ElementTable* LipidSpecies::get_elements(){
     ElementTable* elements = create_empty_table();
     
     switch(info->level){
-        case STRUCTURAL_SUBSPECIES:
-        case ISOMERIC_SUBSPECIES:
+        case COMPLETE_STRUCTURE:
+        case FULL_STRUCTURE:
+        case STRUCTURE_DEFINED:
+        case SN_POSITION:
+        case MOLECULAR_SPECIES:
         case SPECIES:
-        case MOLECULAR_SUBSPECIES:
             break;
 
         default:    

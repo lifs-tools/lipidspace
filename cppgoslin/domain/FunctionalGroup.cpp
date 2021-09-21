@@ -134,7 +134,7 @@ void FunctionalGroup::compute_elements(){
         
 string FunctionalGroup::to_string(LipidLevel level){
     string fg_string = "";
-    if (level == ISOMERIC_SUBSPECIES){
+    if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE)){
         if ('0' <= name[0] && name[0] <= '9'){
             fg_string = (position > -1) ? (std::to_string(position) + ring_stereo + "(" + name + ")") : name;
         }
@@ -145,7 +145,7 @@ string FunctionalGroup::to_string(LipidLevel level){
     else{
         fg_string = (count > 1) ? ("(" + name + ")" + std::to_string(count)) : name;
     }
-    if (stereochemistry.length() > 0 && level == ISOMERIC_SUBSPECIES){
+    if (stereochemistry.length() > 0 && is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE)){
         fg_string += "[" + stereochemistry + "]";
     }
             
