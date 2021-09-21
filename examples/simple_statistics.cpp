@@ -41,7 +41,11 @@ int main(){
             
         /* read in file with lipid names, one per row */
         vector<string> lipidnames;
-        ifstream infile("../data/goslin/lipidnames.txt");
+        ifstream infile("../data/goslin/testfiles/lipidnames.txt");
+        if (!infile.is_open()){
+            cout << "Cannot find example file 'lipidnames.txt', exit." << endl;
+            return -1;
+        }
         string line;
         while (getline(infile, line)){
             line = strip(line, ' ');

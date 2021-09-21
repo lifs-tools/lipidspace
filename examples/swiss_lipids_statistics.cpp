@@ -42,7 +42,11 @@ int main(){
     
     /* read in file with lipid names, one per row */
     vector<string> lipidnames;
-    ifstream infile("../data/goslin/swisslipids-names-only.tsv");
+    ifstream infile("../data/goslin/examplelists/swisslipids-names-only.tsv");
+    if (!infile.is_open()){
+        cout << "Cannot find example file 'swisslipids-names-only.tsv', exit." << endl;
+        return -1;
+    }
     string line;
     while (getline(infile, line)){
       line = strip(line, ' ');
