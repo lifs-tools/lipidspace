@@ -83,6 +83,7 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
         poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
     
+    
     else if (true_fa + 2 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && head_group == "CL"){
         head_group = "DL" + head_group;
         headgroup->decorators->clear();
@@ -106,14 +107,15 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     }
     
     
-    
-    if (contains(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "HC")){
-        fa_list->front()->lipid_FA_bond_type = AMINE;
+    if (contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class)){
+        
+        if (contains(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "HC")){
+            fa_list->front()->lipid_FA_bond_type = AMINE;
+        }
+        
+        int max_num_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa;
+        if (max_num_fa != (int)fa_list->size()) set_lipid_level(MOLECULAR_SPECIES);
     }
-    
-    int max_num_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa : 0;
-    if (max_num_fa != (int)fa_list->size()) set_lipid_level(MOLECULAR_SPECIES);
-    
     
     // make LBC exception
     if (fa_list->size() > 0 && headgroup->sp_exception) fa_list->front()->set_type(LCB_EXCEPTION);
