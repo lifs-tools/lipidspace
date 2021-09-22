@@ -709,6 +709,7 @@ void Parser<T>::fill_tree(TreeNode *node, DPNode *dp_node){
 template <class T>
 T Parser<T>::parse(string text_to_parse, bool throw_error){
     
+    text_to_parse = strip(text_to_parse, ' ');
     string old_lipid = text_to_parse;
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
     parser_event_handler->content = NULL;
