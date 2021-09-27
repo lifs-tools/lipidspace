@@ -763,6 +763,10 @@ void FattyAcidParserEventHandler::set_dioic(TreeNode *node) {
     
     int pos = (tmp.get_list("fg_pos")->list.size() == 2) ? tmp.get_list("fg_pos")->get_list(1)->get_int(0) : fatty_acyl_stack.back()->num_carbon;
     fatty_acyl_stack.back()->num_carbon -= 1;
+    if (tmp.contains_key("reduction")) {
+        GenericList *gl = tmp.get_list("reduction");
+        pos -= gl->list.size();
+    }
     FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group("COOH");
     func_group->position = pos - 1;
     if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "COOH")) fatty_acyl_stack.back()->functional_groups->insert({"COOH", vector<FunctionalGroup*>()});
@@ -871,7 +875,13 @@ void FattyAcidParserEventHandler::add_cyclo(TreeNode *node) {
 
 
 void FattyAcidParserEventHandler::reduction(TreeNode *node) {
-    fatty_acyl_stack.back()->num_carbon -= tmp.get_list("fg_pos")->list.size();
+    int reduction_num = tmp.get_list("fg_pos")->list.size();
+    fatty_acyl_stack.back()->num_carbon -= reduction_num;
+    for (auto &kv : *(fatty_acyl_stack.back()->functional_groups)){
+        for (auto &func_group : kv.second){
+            func_group->shift_positions(-reduction_num);
+        }
+    }
     tmp.set_list("reduction", new GenericList());
     for (int i = 0; i < (int)tmp.get_list("fg_pos")->list.size(); ++i){
         tmp.get_list("reduction")->add_int(tmp.get_list("fg_pos")->get_list(i)->get_int(0));
