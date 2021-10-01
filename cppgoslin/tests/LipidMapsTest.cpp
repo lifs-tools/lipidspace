@@ -40,7 +40,7 @@ using namespace goslin;
 
 void assert_true(string a, string b, string t = ""){
     if (a != b){
-        cout << "Assertion: '" << a << "' == '" << b << endl;
+        cout << "Assertion: '" << a << "' == '" << b << " (" << t << ")" << endl;
         assert(a == b);
     }
 }
@@ -129,7 +129,7 @@ int main(int argc, char** argv){
             assert(lipid != NULL);
             if (correct_lipid_name != "Unsupported lipid" && correct_lipid_name.length() > 0){
                 //cout << lipid_name << "  |  " << lipid->get_lipid_string() << "  |  " << correct_lipid_name << " (reference)" << endl;
-                assert_true(correct_lipid_name, lipid->get_lipid_string(), lipid->get_lipid_string() + " != " + correct_lipid_name + " (reference)");
+                assert_true(correct_lipid_name, lipid->get_lipid_string(), lipid_name + ": " + lipid->get_lipid_string() + " != " + correct_lipid_name + " (reference)");
             }
             delete lipid;
         }

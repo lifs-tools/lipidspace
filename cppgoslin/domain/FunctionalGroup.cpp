@@ -221,10 +221,10 @@ string HeadgroupDecorator::to_string(LipidLevel level){
     string decorator_string = "";
     if (lowest_visible_level == NO_LEVEL || lowest_visible_level <= level){
         if (contains_p(functional_groups, "decorator_alkyl") && functional_groups->at("decorator_alkyl").size() > 0){
-            decorator_string = (level != SPECIES) ? functional_groups->at("decorator_alkyl").at(0)->to_string(level) : "Alk";
+            decorator_string = (level > SPECIES) ? functional_groups->at("decorator_alkyl").at(0)->to_string(level) : "Alk";
         }
         else if (contains_p(functional_groups, "decorator_acyl") && functional_groups->at("decorator_acyl").size() > 0){
-            decorator_string = (level != SPECIES) ? ("FA " + functional_groups->at("decorator_acyl").at(0)->to_string(level)) : "FA";
+            decorator_string = (level > SPECIES) ? ("FA " + functional_groups->at("decorator_acyl").at(0)->to_string(level)) : "FA";
         }
         else {
             decorator_string = name;

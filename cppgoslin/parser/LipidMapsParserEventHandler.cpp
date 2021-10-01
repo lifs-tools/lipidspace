@@ -92,6 +92,7 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : LipidBaseParserEven
     reg("mod_pos_pre_event", set_mod_pos);
     reg("mod_num_pre_event", set_mod_num);
     reg("single_mod_post_event", add_functional_group);
+    reg("special_cer_prefix_pre_event", add_ACer);
     
     debug = "";
 } 
@@ -141,6 +142,40 @@ void LipidMapsParserEventHandler::set_isomeric_level(TreeNode* node){
 }
 
 
+const map<string, int> LipidMapsParserEventHandler::acer_heads{
+    {"1-O-myristoyl", 14},
+    {"1-O-palmitoyl", 16},
+    {"1-O-stearoyl", 18},
+    {"1-O-eicosanoyl", 20},
+    {"1-O-behenoyl", 22},
+    {"1-O-lignoceroyl", 24},
+    {"1-O-cerotoyl", 26},
+    {"1-O-pentacosanoyl", 25},
+    {"1-O-carboceroyl", 28},
+    {"1-O-tricosanoyl", 30},
+    {"1-O-lignoceroyl-omega-linoleoyloxy", 24},
+    {"1-O-stearoyl-omega-linoleoyloxy", 18}};
+    
+    
+void LipidMapsParserEventHandler::add_ACer(TreeNode *node){
+    string head = node->get_text();
+    head_group = "ACer";
+    
+    if (uncontains(acer_heads, head)){
+        throw LipidException("ACer head group '" + head + "' unknown");
+    }
+    
+    HeadgroupDecorator *hgd = new HeadgroupDecorator("decorator_acyl", -1, 1, 0, true);
+    int acer_num = acer_heads.at(head);
+    hgd->functional_groups->insert({"decorator_acyl", vector<FunctionalGroup*>{new FattyAcid("FA", acer_num)}});
+    headgroup_decorators->push_back(hgd);
+    
+    if (head == "1-O-lignoceroyl-omega-linoleoyloxy" || head == "1-O-stearoyl-omega-linoleoyloxy"){
+        add_omega_linoleoyloxy_Cer = true;
+    }
+}
+        
+        
 void LipidMapsParserEventHandler::add_db_position(TreeNode* node){
     if (current_fa != NULL){
         current_fa->double_bonds->double_bond_positions.insert({db_position, db_cistrans});
@@ -160,7 +195,7 @@ void LipidMapsParserEventHandler::add_cistrans(TreeNode* node){
     
     
 void LipidMapsParserEventHandler::set_head_group_name(TreeNode* node){
-    head_group = node->get_text();
+    if (head_group.length() == 0) head_group = node->get_text();
 }
 
 

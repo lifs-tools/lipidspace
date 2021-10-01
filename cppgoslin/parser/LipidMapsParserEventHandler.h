@@ -89,6 +89,12 @@ public:
     void add_db_position_number(TreeNode* node);
     void add_cistrans(TreeNode* node);
     void set_omega_head_group_name(TreeNode* node);
+    void add_ACer(TreeNode* node);
+    
+    static const map<string, int> acer_heads;
         
 };
+
+
+
 #endif /* LIPID_MAPS_PARSER_EVENT_HANDLER_H */
