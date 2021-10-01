@@ -606,7 +606,6 @@ void ShorthandParserEventHandler::set_sn_position_func_group(TreeNode *node){
 }
 
 
-
 void ShorthandParserEventHandler::add_functional_group(TreeNode *node){
     string fa_i = FA_I;
     GenericDictionary *gd = tmp.get_dictionary(FA_I);
@@ -635,6 +634,7 @@ void ShorthandParserEventHandler::add_functional_group(TreeNode *node){
     functional_group->count = fg_cnt;
     functional_group->stereochemistry = fg_stereo;
     functional_group->ring_stereo = fg_ring_stereo;
+    
     
     gd->remove("fg_pos");
     gd->remove("fg_name");
