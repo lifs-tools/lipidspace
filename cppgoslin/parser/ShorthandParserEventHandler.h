@@ -52,6 +52,7 @@ public:
     vector<FunctionalGroup*> current_fas;
     GenericDictionary tmp;
     static const set<string> special_types;
+    bool acer_species;
         
     ShorthandParserEventHandler();
     ~ShorthandParserEventHandler();
@@ -116,6 +117,8 @@ public:
     void add_adduct(TreeNode *node);
     void add_charge(TreeNode *node);
     void add_charge_sign(TreeNode *node);
+    void set_acer(TreeNode *node);
+    void set_acer_species(TreeNode *node);
     
 };
 

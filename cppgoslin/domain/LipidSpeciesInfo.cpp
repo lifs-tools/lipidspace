@@ -25,7 +25,8 @@ SOFTWARE.
 
 #include "LipidSpeciesInfo.h"
 
-LipidSpeciesInfo::LipidSpeciesInfo (LipidClass lipid_class) : FattyAcid("info") {
+LipidSpeciesInfo::LipidSpeciesInfo (LipidClass _lipid_class) : FattyAcid("info") {
+    lipid_class = _lipid_class;
     level = NO_LEVEL;
     num_ethers = 0;
     num_specified_fa = 0;
@@ -33,6 +34,31 @@ LipidSpeciesInfo::LipidSpeciesInfo (LipidClass lipid_class) : FattyAcid("info") 
     ClassMap &lipid_classes = LipidClasses::get_instance().lipid_classes;
     total_fa = contains(lipid_classes, lipid_class) ? lipid_classes.at(lipid_class).max_num_fa : 0;
 }
+
+
+
+LipidSpeciesInfo *LipidSpeciesInfo::copy(){
+    LipidSpeciesInfo *lsi = new LipidSpeciesInfo(lipid_class);
+    lsi->level = level;
+    lsi->num_ethers = num_ethers;
+    lsi->num_specified_fa = num_specified_fa;
+    lsi->position = position;
+    lsi->total_fa = total_fa;
+    lsi->extended_class = extended_class;
+    lsi->num_carbon = num_carbon;
+    delete lsi->double_bonds;
+    lsi->double_bonds = double_bonds->copy();
+    lsi->lipid_FA_bond_type = lipid_FA_bond_type;
+    
+    for (auto kv : *functional_groups){
+        lsi->functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
+        for (auto func_group : kv.second){
+            lsi->functional_groups->at(kv.first).push_back(func_group->copy());
+        }
+    }
+    return lsi;
+}
+
 
 
 ElementTable* LipidSpeciesInfo::get_elements(){

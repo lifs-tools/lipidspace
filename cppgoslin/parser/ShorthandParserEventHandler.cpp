@@ -132,6 +132,8 @@ ShorthandParserEventHandler::ShorthandParserEventHandler() : LipidBaseParserEven
     reg("hg_pip_d_pre_event", suffix_decorator_molecular);
     reg("hg_pip_t_pre_event", suffix_decorator_molecular);
     reg("hg_PE_PS_type_pre_event", suffix_decorator_species);
+    reg("acer_hg_post_event", set_acer);
+    reg("acer_species_post_event", set_acer_species);
     
     
     debug = "";
@@ -154,12 +156,13 @@ void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
     current_fas.clear();
     headgroup_decorators->clear();
     tmp.remove_all();
-    
+    acer_species = false;
 }
 
 
 
 void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
+    if (acer_species) fa_list->at(0)->num_carbon -= 2;
     Headgroup *headgroup = prepare_headgroup_and_checks();
     
     // add count numbers for fatty acyl chains
@@ -177,6 +180,24 @@ void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
 }
 
+
+void ShorthandParserEventHandler::set_acer(TreeNode *node){
+    head_group = "ACer";
+    HeadgroupDecorator *hgd = new HeadgroupDecorator("decorator_acyl", -1, 1, 0, true);
+    hgd->functional_groups->insert({"decorator_acyl", vector<FunctionalGroup*>{fa_list->back()}});
+    fa_list->pop_back();
+    headgroup_decorators->push_back(hgd);
+}
+    
+    
+void ShorthandParserEventHandler::set_acer_species(TreeNode *node){
+    head_group = "ACer";
+    set_lipid_level(SPECIES);
+    HeadgroupDecorator *hgd = new HeadgroupDecorator("decorator_acyl", -1, 1, 0, true);
+    hgd->functional_groups->insert({"decorator_acyl", vector<FunctionalGroup*>{new FattyAcid("FA", 2)}});
+    headgroup_decorators->push_back(hgd);
+    acer_species = true;
+}
 
 
 

@@ -43,8 +43,10 @@ public:
     int num_specified_fa;
     int total_fa;
     LipidFaBondType extended_class;
+    LipidClass lipid_class;
     
-    LipidSpeciesInfo (LipidClass lipid_class);
+    LipidSpeciesInfo (LipidClass _lipid_class);
+    LipidSpeciesInfo* copy();
     void add(FattyAcid* _fa);
     ElementTable* get_elements();
     string to_string();
