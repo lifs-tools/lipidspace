@@ -240,12 +240,20 @@ void LipidMapsParserEventHandler::set_mod_num(TreeNode* node){
     
     
 void LipidMapsParserEventHandler::add_functional_group(TreeNode* node){
-    FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group(mod_text);
-    functional_group->position = mod_pos;
-    functional_group->count = mod_num;
-    string fg_name = functional_group->name;
-    if (uncontains_p(current_fa->functional_groups, fg_name)) current_fa->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
-    current_fa->functional_groups->at(fg_name).push_back(functional_group);
+    if (mod_text != "Cp"){
+        FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group(mod_text);
+        functional_group->position = mod_pos;
+        functional_group->count = mod_num;
+        string fg_name = functional_group->name;
+        if (uncontains_p(current_fa->functional_groups, fg_name)) current_fa->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
+        current_fa->functional_groups->at(fg_name).push_back(functional_group);
+    }
+    else {
+        current_fa->num_carbon += 1;
+        Cycle *cycle = new Cycle(3, mod_pos, mod_pos + 2);
+        if (uncontains_p(current_fa->functional_groups, "cy")) current_fa->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
+        current_fa->functional_groups->at("cy").push_back(cycle);
+    }
 }
 
 
