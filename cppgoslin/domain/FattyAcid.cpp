@@ -133,10 +133,16 @@ string FattyAcid::to_string(LipidLevel level){
         fa_string << "(";
         
         int i = 0;
-        for (auto &kv : double_bonds->double_bond_positions){
+        
+        
+        vector<int> db_keys;
+        for (auto &kv : double_bonds->double_bond_positions) db_keys.push_back(kv.first);
+        sort(db_keys.begin(), db_keys.end());
+        
+        for (auto key : db_keys){
             if (i++ > 0) fa_string << ",";
-            fa_string << kv.first;
-            if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE)) fa_string << kv.second;
+            fa_string << key;
+            if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE)) fa_string << double_bonds->double_bond_positions.at(key);
         }
         fa_string << ")";
     }

@@ -212,10 +212,16 @@ string Cycle::to_string(LipidLevel level){
         if (double_bonds->double_bond_positions.size() > 0){
             int i = 0;
             cycle_string << "(";
-            for (auto &kv : double_bonds->double_bond_positions){
+            
+            vector<int> db_keys;
+            for (auto &kv : double_bonds->double_bond_positions) db_keys.push_back(kv.first);
+            sort(db_keys.begin(), db_keys.end());
+            
+            for (auto key : db_keys){
+                string value = double_bonds->double_bond_positions.at(key);
                 if (i++ > 0) cycle_string << ",";
-                if (is_level(level, FULL_STRUCTURE | COMPLETE_STRUCTURE)) cycle_string << kv.first << kv.second;
-                else  cycle_string << kv.first;
+                if (is_level(level, FULL_STRUCTURE | COMPLETE_STRUCTURE)) cycle_string << key << value;
+                else  cycle_string << key;
             }
             cycle_string << ")";
         }
