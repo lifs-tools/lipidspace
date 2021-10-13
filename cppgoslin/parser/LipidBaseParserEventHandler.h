@@ -34,6 +34,7 @@ SOFTWARE.
 #include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/parser/Parser.h"
 #include <string>
 #include <math.h>
 #include <set>

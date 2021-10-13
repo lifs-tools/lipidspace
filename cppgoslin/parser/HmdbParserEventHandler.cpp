@@ -74,6 +74,12 @@ HmdbParserEventHandler::HmdbParserEventHandler() : LipidBaseParserEventHandler()
     reg("furan_first_number_pre_event", furan_fa_first_number);
     reg("furan_second_number_pre_event", furan_fa_second_number);
     
+    
+    reg("adduct_info_pre_event", new_adduct);
+    reg("adduct_pre_event", add_adduct);
+    reg("charge_pre_event", add_charge);
+    reg("charge_sign_pre_event", add_charge_sign);
+    
 }
 
 
@@ -90,6 +96,7 @@ void HmdbParserEventHandler::reset_lipid(TreeNode *node) {
     use_head_group = false;
     db_position = 0;
     db_cistrans = "";
+    adduct = 0;
     furan.remove_all();
 }
 
@@ -197,6 +204,7 @@ void HmdbParserEventHandler::build_lipid(TreeNode *node) {
 
     LipidAdduct *lipid = new LipidAdduct();
     lipid->lipid = assemble_lipid(headgroup);
+    lipid->adduct = adduct;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
 }
     
@@ -331,6 +339,32 @@ void HmdbParserEventHandler::interlink_fa(TreeNode *node) {
 
 void HmdbParserEventHandler::lipid_suffix(TreeNode *node) {
     //throw UnsupportedLipidException("Lipids with suffix '" + node->get_text() + "' are currently not supported");
+}
+    
+    
+
+void HmdbParserEventHandler::new_adduct(TreeNode *node) {
+    adduct = new Adduct("", "");
+}
+    
+    
+
+void HmdbParserEventHandler::add_adduct(TreeNode *node) {
+    adduct->adduct_string = node->get_text();
+}
+    
+    
+
+void HmdbParserEventHandler::add_charge(TreeNode *node) {
+    adduct->charge = atoi(node->get_text().c_str());
+}
+    
+    
+
+void HmdbParserEventHandler::add_charge_sign(TreeNode *node) {
+    string sign = node->get_text();
+    if (sign == "+") adduct->set_charge_sign(1);
+    else if (sign == "-") adduct->set_charge_sign(-1);
 }
 
         

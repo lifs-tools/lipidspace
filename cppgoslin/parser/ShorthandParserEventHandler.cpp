@@ -714,7 +714,7 @@ void ShorthandParserEventHandler::set_double_bond_count(TreeNode *node){
 
 
 void ShorthandParserEventHandler::new_adduct(TreeNode *node){
-    adduct = new Adduct("", "", 0, 0);
+    adduct = new Adduct("", "");
 }
 
 

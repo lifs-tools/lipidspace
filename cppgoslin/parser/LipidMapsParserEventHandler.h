@@ -91,6 +91,10 @@ public:
     void add_cistrans(TreeNode* node);
     void set_omega_head_group_name(TreeNode* node);
     void add_ACer(TreeNode* node);
+    void new_adduct(TreeNode *node);
+    void add_adduct(TreeNode *node);
+    void add_charge(TreeNode *node);
+    void add_charge_sign(TreeNode *node);
     
     static const map<string, int> acer_heads;
         

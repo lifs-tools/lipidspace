@@ -94,6 +94,12 @@ LipidMapsParserEventHandler::LipidMapsParserEventHandler() : LipidBaseParserEven
     reg("single_mod_post_event", add_functional_group);
     reg("special_cer_prefix_pre_event", add_ACer);
     
+    
+    reg("adduct_info_pre_event", new_adduct);
+    reg("adduct_pre_event", add_adduct);
+    reg("charge_pre_event", add_charge);
+    reg("charge_sign_pre_event", add_charge_sign);
+    
     debug = "";
 } 
 
@@ -111,6 +117,7 @@ void LipidMapsParserEventHandler::reset_lipid(TreeNode* node){
     use_head_group = false;
     omit_fa = false;
     db_position = 0;
+    adduct = 0;
     db_numbers = -1;
     db_cistrans = "";
     mod_pos = -1;
@@ -397,7 +404,34 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
     
     LipidAdduct *lipid = new LipidAdduct();
     lipid->lipid = assemble_lipid(headgroup);
+    lipid->adduct = adduct;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
+}
+    
+    
+
+void LipidMapsParserEventHandler::new_adduct(TreeNode *node) {
+    adduct = new Adduct("", "");
+}
+    
+    
+
+void LipidMapsParserEventHandler::add_adduct(TreeNode *node) {
+    adduct->adduct_string = node->get_text();
+}
+    
+    
+
+void LipidMapsParserEventHandler::add_charge(TreeNode *node) {
+    adduct->charge = atoi(node->get_text().c_str());
+}
+    
+    
+
+void LipidMapsParserEventHandler::add_charge_sign(TreeNode *node) {
+    string sign = node->get_text();
+    if (sign == "+") adduct->set_charge_sign(1);
+    else if (sign == "-") adduct->set_charge_sign(-1);
 }
     
         

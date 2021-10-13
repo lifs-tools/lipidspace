@@ -282,7 +282,7 @@ void GoslinParserEventHandler::add_hydroxyl(TreeNode *node) {
     
 
 void GoslinParserEventHandler::new_adduct(TreeNode *node) {
-    adduct = new Adduct("", "", 0, 0);
+    adduct = new Adduct("", "");
 }
     
     

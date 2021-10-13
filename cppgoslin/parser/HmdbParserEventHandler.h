@@ -84,6 +84,10 @@ public:
     void lipid_suffix(TreeNode *node);
     void add_one_hydroxyl(TreeNode *node);
     void add_methyl(TreeNode *node);
+    void new_adduct(TreeNode *node);
+    void add_adduct(TreeNode *node);
+    void add_charge(TreeNode *node);
+    void add_charge_sign(TreeNode *node);
     
 };
 

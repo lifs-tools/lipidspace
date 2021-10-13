@@ -46,8 +46,8 @@ class SumFormulaParser : public Parser<ElementTable*> {
         ~SumFormulaParser();
         
     public:
-        SumFormulaParser(SumFormulaParser const&)               = delete;
-        void operator=(SumFormulaParser const&)  = delete;
+        SumFormulaParser(SumFormulaParser const&) = delete;
+        void operator=(SumFormulaParser const&) = delete;
 };
 
 

@@ -79,6 +79,10 @@ public:
     void add_one_hydroxyl(TreeNode *node);
     void add_suffix_number(TreeNode *node);
     void add_fa_lcb_suffix_type(TreeNode *node);
+    void new_adduct(TreeNode *node);
+    void add_adduct(TreeNode *node);
+    void add_charge(TreeNode *node);
+    void add_charge_sign(TreeNode *node);
     
 };
 

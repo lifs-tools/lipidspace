@@ -29,12 +29,17 @@ SOFTWARE.
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/Element.h"
-#include "cppgoslin/parser/SumFormulaParser.h"
+#include "cppgoslin/domain/StringFunctions.h"
+//#include "cppgoslin/parser/SumFormulaParser.h"
 #include <sstream>
+#include <map>
 
 
-
+using namespace goslin;
 using namespace std;
+
+
+
 
 
 class Adduct {
@@ -43,13 +48,33 @@ public:
     string adduct_string;
     int charge;
     int charge_sign;
-    static SumFormulaParser adduct_sum_formula_parser;
     
-    Adduct(string _sum_formula, string _adduct_string, int _charge, int _sign);
+    static const map<string, int> adduct_charges;
+    
+    Adduct(string _sum_formula, string _adduct_string, int _charge = 1, int _sign = 1);
     void set_charge_sign(int sign);
     string get_lipid_string();
     ElementTable* get_elements();
     int get_charge();
 };
+
+
+
+class KnownAdducts {
+    public:
+        static KnownAdducts& get_instance()
+        {
+            static KnownAdducts instance;
+            return instance;
+        }
+    private:
+        KnownAdducts();
+        
+    public:
+        map<string, ElementTable> known_adducts;
+        KnownAdducts(KnownAdducts const&) = delete;
+        void operator=(KnownAdducts const&) = delete;
+};
+
 
 #endif /* ADDUCT_H */

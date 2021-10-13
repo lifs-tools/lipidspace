@@ -68,6 +68,12 @@ SwissLipidsParserEventHandler::SwissLipidsParserEventHandler() : LipidBaseParser
     reg("fa_lcb_suffix_number_pre_event", add_suffix_number);
     reg("pl_three_post_event", set_nape);
     
+    
+    reg("adduct_info_pre_event", new_adduct);
+    reg("adduct_pre_event", add_adduct);
+    reg("charge_pre_event", add_charge);
+    reg("charge_sign_pre_event", add_charge_sign);
+    
     debug = "";
 }
 
@@ -82,6 +88,7 @@ void SwissLipidsParserEventHandler::reset_lipid(TreeNode *node) {
     lcb = NULL;
     fa_list->clear();
     current_fa = NULL;
+    adduct = 0;
     use_head_group = false;
     db_position = 0;
     db_cistrans = "";
@@ -209,6 +216,7 @@ void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     
     LipidAdduct *lipid = new LipidAdduct();
     lipid->lipid = assemble_lipid(headgroup);
+    lipid->adduct = adduct;
     BaseParserEventHandler<LipidAdduct*>::content = lipid;
 }
     
@@ -291,5 +299,31 @@ void SwissLipidsParserEventHandler::set_species_fa(TreeNode *node){
     head_group += " 27:1";
     fa_list->at(fa_list->size() -1)->num_carbon -= 27;
     fa_list->at(fa_list->size() -1)->double_bonds->num_double_bonds -= 1;
+}
+    
+    
+
+void SwissLipidsParserEventHandler::new_adduct(TreeNode *node) {
+    adduct = new Adduct("", "");
+}
+    
+    
+
+void SwissLipidsParserEventHandler::add_adduct(TreeNode *node) {
+    adduct->adduct_string = node->get_text();
+}
+    
+    
+
+void SwissLipidsParserEventHandler::add_charge(TreeNode *node) {
+    adduct->charge = atoi(node->get_text().c_str());
+}
+    
+    
+
+void SwissLipidsParserEventHandler::add_charge_sign(TreeNode *node) {
+    string sign = node->get_text();
+    if (sign == "+") adduct->set_charge_sign(1);
+    else if (sign == "-") adduct->set_charge_sign(-1);
 }
         
