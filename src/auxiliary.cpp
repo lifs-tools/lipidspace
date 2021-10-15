@@ -38,7 +38,9 @@ InputGraph* LaWeCSE::makeGraph(string SMILES){
     adjEntry adj;
     edge e;
     
+    cout << endl << mol.atoms.size() << endl;
     node *fognode = new node[mol.atoms.size()];
+    
     for (int i = 0; i < mol.atoms.size(); ++i){
         n = fognode[i] = newGraph->newNode();
         string node_edge_label = std::to_string(mol.atoms[i].element);
@@ -123,12 +125,11 @@ InputGraph* LaWeCSE::makeGraph(string SMILES){
 }
 
 
-double LaWeCSE::computeSimilarity(InputGraph* firstGraph, InputGraph* secondGraph){
-    double sim = 0;
+void LaWeCSE::computeSimilarity(InputGraph* firstGraph, InputGraph* secondGraph, int* values){
     {
         BBP_MCSI compC(m_labelFunction, *firstGraph, *secondGraph, false, false, &simpleLabelToString, -1, WEIGHT_NOT_COMPATIBLE);
         compC.computeIsomorphism();
-        sim = compC.getSize() / (firstGraph->size + secondGraph->size - compC.getSize());
+        values[0] = firstGraph->size + secondGraph->size - compC.getSize();
+        values[1] = compC.getSize();
     }
-    return sim;
 }

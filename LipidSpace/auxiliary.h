@@ -28,7 +28,7 @@ private:
 
 public:
 	LaWeCSE();
-	double computeSimilarity(InputGraph*, InputGraph*);
+	void computeSimilarity(InputGraph*, InputGraph*, int*);
     InputGraph* makeGraph(string);
 };
 #endif
