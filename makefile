@@ -25,7 +25,7 @@ static: cppgoslin/parser/KnownGrammars.h src/domain/LipidClasses.cpp ${obj}
 	${AR} rcs ${abin} ${obj}
 
 	
-cppgoslin/parser/KnownGrammars.h: data/goslin/Goslin.g4 data/goslin/GoslinFragments.g4 data/goslin/LipidMaps.g4 data/goslin/SwissLipids.g4
+cppgoslin/parser/KnownGrammars.h: data/goslin/Goslin.g4 data/goslin/LipidMaps.g4 data/goslin/LipidMaps.g4 data/goslin/SwissLipids.g4 data/goslin/HMDB.g4
 	${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp && ./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h"
 	
 
@@ -33,19 +33,19 @@ cppgoslin/domain/ClassesEnum.h: src/domain/LipidClasses.cpp
 
 
 src/domain/LipidClasses.cpp: data/goslin/lipid-list.csv cppgoslin/parser/KnownGrammars.h
-	${CC} ${opt} -I . -o writeLipidEnums writeLipidEnums.cpp src/domain/StringFunctions.cpp ${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp && ./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h"/parser/SumFormulaParserEventHandler.cpp ${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp && ./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h"/parser/ParserClasses.cpp && ./writeLipidEnums "src/domain/LipidClasses.cpp"
+	${CC} ${opt} -I . -o writeLipidEnums writeLipidEnums.cpp src/domain/StringFunctions.cpp src/parser/SumFormulaParserEventHandler.cpp src/parser/ParserClasses.cpp && ./writeLipidEnums "src/domain/LipidClasses.cpp"
 	
 
 	
-cppgoslin/domain/%.o: src/domain/%.cpp cppgoslin/parser/KnownGrammars.h src/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h
+src/domain/%.o: src/domain/%.cpp cppgoslin/parser/KnownGrammars.h src/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h
 	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
 	
-cppgoslin/parser/%.o: src/parser/%.cpp cppgoslin/parser/KnownGrammars.h src/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h cppgoslin/parser/Parser_impl.h cppgoslin/parser/BaseParserEventHandler_impl.h
+src/parser/%.o: src/parser/%.cpp cppgoslin/parser/KnownGrammars.h src/domain/LipidClasses.cpp cppgoslin/domain/ClassesEnum.h cppgoslin/parser/Parser_impl.h cppgoslin/parser/BaseParserEventHandler_impl.h
 	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
 	
-cppgoslin/tests/%.o: cppgoslin/tests/%.cpp libcppGoslin.so
+src/tests/%.o: src/tests/%.cpp libcppGoslin.so
 	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
 clean:

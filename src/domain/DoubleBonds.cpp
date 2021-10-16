@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "cppgoslin/domain/Adduct.hDoubleBonds.h"
+#include "cppgoslin/domain/DoubleBonds.h"
 
 DoubleBonds::DoubleBonds(int num){
     num_double_bonds = num;
