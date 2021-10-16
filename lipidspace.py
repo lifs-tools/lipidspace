@@ -1,12 +1,18 @@
 from pygoslin.parser.Parser import *
+from pygoslin.domain.FattyAcid import FattyAcid
 from pygoslin.domain.LipidFaBondType import LipidFaBondType
 from pygoslin.domain.LipidLevel import LipidLevel
 from pygoslin.domain.FunctionalGroup import *
 from pygoslin.domain.Element import Element
 import sys
 from math import sqrt
-import pandas as pd
 import numpy as np
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+from scipy.spatial.distance import directed_hausdorff
+
 
 # load precomputed class distance matrix
 parser = LipidParser()
@@ -19,10 +25,52 @@ with open("data/classes-matrix.csv") as infile:
 
 
 
+def cut_cycle(fa):
+    # if a fatty acid contains a cycle, cut everything from the cycle beginning
+    
+    if "cy" not in fa.functional_groups: return fa
+
+    fa = fa.copy()
+    if fa.functional_groups["cy"][0].start > -1:
+        start = fa.functional_groups["cy"][0].start
+        
+        # shrink numbers of carbon
+        fa.num_carbon = start - 1
+        
+        # cut all double bonds
+        if type(fa.double_bonds) == int:
+            fa.double_bonds = max(fa.double_bonds, (start - 1) // 2)
+        else:
+            for key in set(fa.double_bonds.keys()):
+                if key >= start:
+                    del fa.double_bonds[key]
+                    
+        # cut all functional groups
+        del fa.functional_groups["cy"]
+        del_fgs = []
+        for fg, fg_list in fa.functional_groups.items():
+            keep_fg = []
+            for func_group in fg_list:
+                if 0 <= func_group.position < start:
+                    keep_fg.append(func_group)
+            if len(keep_fg) > 0:
+                fa.functional_groups[fg] = keep_fg
+            else:
+                del_fgs.append(fg)
+                
+        for fg in del_fgs: del fa.functional_groups[fg]
+        
+        return fa
+        
+    else:
+        return FattyAcid("FA", 2, lipid_FA_bond_type = fa.lipid_FA_bond_type)
+
 
 def fatty_acyl_similarity(fa1, fa2):
     
     inter, union = 0, 0
+    fa1, fa2 = cut_cycle(fa1), cut_cycle(fa2)
+    
     
     lcbs = {LipidFaBondType.LCB_REGULAR, LipidFaBondType.LCB_EXCEPTION}
     
@@ -104,7 +152,6 @@ def fatty_acyl_similarity(fa1, fa2):
     # compare functional groups
     for key in fa1.functional_groups.keys():
         if key == "[X]": continue
-        if key == "cy": raise Exception("Cycles not supported, yet")
             
         func_group = get_functional_group(key)
         elements = sum([v for k, v in func_group.get_elements().items() if k != Element.H]) + func_group.get_double_bonds()
@@ -125,7 +172,6 @@ def fatty_acyl_similarity(fa1, fa2):
             
     for key in (fa2.functional_groups.keys() - fa1.functional_groups.keys()):
         if key == "[X]": continue
-        if key == "cy": raise Exception("Cycles not supported, yet")
     
         func_group = get_functional_group(key)
         elements = sum([v for k, v in func_group.get_elements().items() if k != Element.H]) + func_group.get_double_bonds()
@@ -134,6 +180,10 @@ def fatty_acyl_similarity(fa1, fa2):
         union += elements * num
             
     return union, inter
+
+
+
+
 
 
 
@@ -160,9 +210,26 @@ def lipid_similarity(lipid1, lipid2, class_matrix):
 
 
 
+
+
+
+
 def create_table(lipid_list_file):
+    print("reading '%s'" % lipid_list_file)
+    
     # load and parse lipids
-    lipid_list = [parser.parse(l) for l in open(lipid_list_file, "rt").read().split("\n") if len(l) > 0]
+    #lipid_list = [parser.parse(l.strip('"')) for l in open(lipid_list_file, "rt").read().split("\n") if len(l) > 0]
+    lipid_list = []
+    for l in open(lipid_list_file, "rt").read().split("\n"):
+        if len(l) > 0:
+            try:
+                lipid_list.append(parser.parse(l.strip('"')))
+                                  
+            except Exception:
+                print("Error: lipid '%s' cannot be parsed" % l)
+                exit()
+    
+    
     n = len(lipid_list)
     
     # compute distances
@@ -182,7 +249,45 @@ def create_table(lipid_list_file):
 
     return pd.DataFrame(data)
 
-def main(argv):
+
+
+
+
+
+def compute_PCA(data_frame):
+    features = [l for l in data_frame if l[:2] == "LP"]
+    x = data_frame.loc[:, features].values# Separating out the target
+    y = data_frame.loc[:,['Class']].values# Standardizing the features
+    x = StandardScaler().fit_transform(x)
+    pca = PCA(n_components = 2)
+    return pca.fit_transform(x)
+
+
+
+
+
+
+def compute_hausdorff_matrix(PCAs, lipid_lists):
+    n = len(lipid_lists)
+    distance_matrix = [[0] * n for i in range(n)]
+    
+    for i in range(n - 1):
+        for j in range(i + 1, n):
+            distance_matrix[j][i] = distance_matrix[i][j] = directed_hausdorff(PCAs[i], PCAs[j])[0]
+    
+    lipidomes = [ll.split("/")[-1] for ll in lipid_lists]
+    data = {ll: col for ll, col in zip(lipidomes, distance_matrix)}
+    data["ID"] = lipidomes
+    return pd.DataFrame(data)
+    
+
+
+
+
+def main(argv):   
+    
+    plot_pca = False
+    store_tables = False
     
     if len(argv) < 4:
         print("usage: python3 %s output_folder lipid_list[csv], ..." % argv[0])
@@ -196,10 +301,54 @@ def main(argv):
     lipidome_tables = [create_table(input_list) for input_list in input_lists]
     
     # store all tables
-    for table, input_list in zip(lipidome_tables, input_lists):
-        input_list = input_list.split("/")[-1]
-        file_name = "%s.xlsx" % ".".join(input_list.split(".")[:-1]) if input_list.find(".") > -1 else "%s.xlsx" % input_list
-        table.to_excel("%s/%s" % (output_folder, file_name), index = False)
+    if store_tables:
+        for table, input_list in zip(lipidome_tables, input_lists):
+            input_list = input_list.split("/")[-1]
+            file_name = "%s.xlsx" % ".".join(input_list.split(".")[:-1]) if input_list.find(".") > -1 else "%s.xlsx" % input_list
+            file_name = "%s/%s" % (output_folder, file_name)
+            print("storing '%s'" % file_name)
+            table.to_excel(file_name, index = False)
+        
+    
+    # compute all PCAs
+    print("computing principal components for all tables")
+    PCAs = [compute_PCA(table) for table in lipidome_tables]
+    
+    # plot all PCAs
+    if plot_pca:
+        print("storing principal components for all tables")
+        for pca, df, input_list in zip(PCAs, lipidome_tables, input_lists):
+            principalDf = pd.DataFrame(data = pca, columns = ['principal component 1', 'principal component 2'])
+            finalDf = pd.concat([principalDf, df[['Class']]], axis = 1)
+            
+            fig = plt.figure(figsize = (8, 8))
+            ax = fig.add_subplot(1, 1, 1) 
+            ax.set_xlabel('Principal Component 1', fontsize = 15)
+            ax.set_ylabel('Principal Component 2', fontsize = 15)
+            ax.set_title('2 component PCA', fontsize = 20)
+
+            targets = set(df["Class"])
+            #for target, color in zip(targets, colors):
+            for target in targets:
+                indicesToKeep = finalDf['Class'] == target
+                #if target != "PC": continue
+                ax.scatter(finalDf.loc[indicesToKeep, 'principal component 1'],
+                        finalDf.loc[indicesToKeep, 'principal component 2'],
+                        label = target)
+                
+            ax.legend()
+            ax.grid()
+            
+            input_list = input_list.split("/")[-1]
+            file_name = "%s.pdf" % ".".join(input_list.split(".")[:-1]) if input_list.find(".") > -1 else "%s.pdf" % input_list
+            file_name = "%s/%s" % (output_folder, file_name)
+            print("storing '%s'" % file_name)
+            plt.savefig(file_name, dpi = 300)
+    
+    
+    # create hausdorff distance matrix
+    hausdorff_distances = compute_hausdorff_matrix(PCAs, input_lists)
+    hausdorff_distances.to_excel("%s/hausdorff_distances.xlsx" % output_folder, index = False)
     
 if __name__ == "__main__":
     main(sys.argv)

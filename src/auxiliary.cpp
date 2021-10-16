@@ -38,7 +38,6 @@ InputGraph* LaWeCSE::makeGraph(string SMILES){
     adjEntry adj;
     edge e;
     
-    cout << endl << mol.atoms.size() << endl;
     node *fognode = new node[mol.atoms.size()];
     
     for (int i = 0; i < mol.atoms.size(); ++i){

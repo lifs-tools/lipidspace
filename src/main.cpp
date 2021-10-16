@@ -73,7 +73,8 @@ int main(){
         vector<string>* lipid_data = split_string(line, '\t', '"');
         if (lipid_data == 0) continue;
         lipid_names.push_back(lipid_data->at(0));
-        graphs.push_back(cse.makeGraph(lipid_data->at(1)));
+        cout << "reading: " << lipid_names.back() << endl;
+        graphs.push_back(lipid_data->at(1) != "$" ? cse.makeGraph(lipid_data->at(1)): 0);
         delete lipid_data;
     }
     infile.close();
@@ -93,13 +94,39 @@ int main(){
         
         int i = ii / n;
         int j = ii % n;
-        if (i <= j){
+        
+        if (i == j) {
+            if (graphs.at(i) != 0){
+                matrix[j][i][0] = matrix[i][j][0] = graphs.at(i)->size;
+                matrix[j][i][1] = matrix[i][j][1] = graphs.at(i)->size;
+            }
+            else {
+                matrix[j][i][0] = matrix[i][j][0] = 1;
+                matrix[j][i][1] = matrix[i][j][1] = 1;
+            }
+        }
+        
+        else if (i <= j){
             
             #pragma omp critical
             {
                 cout << lipid_names.at(i) << " / " << lipid_names.at(j) << " | " << i << " " << j << " / " << n << endl;
             }
-            cse.computeSimilarity(graphs.at(i), graphs.at(j), matrix[i][j]);
+            if (graphs.at(i) != 0 && graphs.at(j) != 0) cse.computeSimilarity(graphs.at(i), graphs.at(j), matrix[i][j]);
+            else {
+                if (graphs.at(i) == 0 && graphs.at(j) == 0) {
+                    matrix[j][i][0] = matrix[i][j][0] = 1;
+                    matrix[j][i][1] = matrix[i][j][1] = 1;
+                }
+                else if (graphs.at(i) == 0){
+                    matrix[j][i][0] = matrix[i][j][0] = graphs.at(j)->size;
+                    matrix[j][i][1] = matrix[i][j][1] = 1;
+                }
+                else {
+                    matrix[j][i][0] = matrix[i][j][0] = graphs.at(i)->size;
+                    matrix[j][i][1] = matrix[i][j][1] = 1;
+                }
+            }
             matrix[j][i][0] = matrix[i][j][0];
             matrix[j][i][1] = matrix[i][j][1];
             
@@ -111,14 +138,13 @@ int main(){
     ofstream off("data/classes-matrix.csv");
     
     for (int i = 0; i < n; ++i){
-        off << lipid_names.at(i) << "\t" << lipid_names.at(i) << "\t" << graphs.at(i)->size << "\t" << graphs.at(i)->size << endl;
-        for (int j = i + 1; j < n; ++j){
+        for (int j = i; j < n; ++j){
             off << lipid_names.at(i) << "\t" << lipid_names.at(j) << "\t" << matrix[i][j][0] << "\t" << matrix[i][j][1] << endl;
         }
     }
     
     
     for (auto graph : graphs){
-        delete graph;
+        if (graph != 0) delete graph;
     }
 }
