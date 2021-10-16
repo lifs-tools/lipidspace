@@ -64,7 +64,7 @@ int main(){
     vector<string> lipid_names;
     vector<InputGraph*> graphs;
     
-    string file_name = "lipid_classes.csv";
+    string file_name = "data/lipid_classes.csv";
     
     ifstream infile(file_name);
     string line;
@@ -108,7 +108,7 @@ int main(){
     }
     
     
-    ofstream off("classes-matrix.csv");
+    ofstream off("data/classes-matrix.csv");
     
     for (int i = 0; i < n; ++i){
         off << lipid_names.at(i) << "\t" << lipid_names.at(i) << "\t" << graphs.at(i)->size << "\t" << graphs.at(i)->size << endl;

@@ -34,11 +34,13 @@ targets = set(df["Class"])
 #for target, color in zip(targets, colors):
 for target in targets:
     indicesToKeep = finalDf['Class'] == target
-    ax.scatter(finalDf.loc[indicesToKeep, 'principal component 1']
-               , finalDf.loc[indicesToKeep, 'principal component 2']
-               #, c = color
-               , s = 50)
+    #if target != "PC": continue
+    ax.scatter(finalDf.loc[indicesToKeep, 'principal component 1'],
+               finalDf.loc[indicesToKeep, 'principal component 2'],
+               label = target)
     
-ax.legend(targets)
+    
+    
+ax.legend()
 ax.grid()
 plt.savefig(output_figure, dpi = 300)

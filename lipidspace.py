@@ -4,9 +4,21 @@ from pygoslin.domain.LipidLevel import LipidLevel
 from pygoslin.domain.FunctionalGroup import *
 from pygoslin.domain.Element import Element
 import sys
+from math import sqrt
+import pandas as pd
+import numpy as np
 
-WEIGHT_ATOM_DIFFER = 1
-WEIGHT_BOND_DIFFER = 1
+# load precomputed class distance matrix
+parser = LipidParser()
+class_matrix = {}
+with open("data/classes-matrix.csv") as infile:
+    for line in infile:
+        tokens = line.strip().split("\t")
+        class_matrix["%s/%s" % (tokens[0], tokens[1])] = (abs(int(tokens[2])), abs(int(tokens[3])))
+        class_matrix["%s/%s" % (tokens[1], tokens[0])] = (abs(int(tokens[2])), abs(int(tokens[3])))
+
+
+
 
 def fatty_acyl_similarity(fa1, fa2):
     
@@ -148,27 +160,9 @@ def lipid_similarity(lipid1, lipid2, class_matrix):
 
 
 
-
-def main(argv):
-    
-    if len(argv) < 3:
-        print("usage: python3 %s lipid_list[csv] output_matrix[csv]" % argv[0])
-        exit()
-        
-    input_list = argv[1]
-    output_matrix = argv[2]
-
-    # load precomputed class distance matrix
-    class_matrix = {}
-    with open("classes-matrix.csv") as infile:
-        for line in infile:
-            tokens = line.strip().split("\t")
-            class_matrix["%s/%s" % (tokens[0], tokens[1])] = (abs(int(tokens[2])), abs(int(tokens[3])))
-            class_matrix["%s/%s" % (tokens[1], tokens[0])] = (abs(int(tokens[2])), abs(int(tokens[3])))
-
+def create_table(lipid_list_file):
     # load and parse lipids
-    parser = GoslinParser()
-    lipid_list = [parser.parse(l) for l in open(input_list, "rt").read().split("\n") if len(l) > 0]
+    lipid_list = [parser.parse(l) for l in open(lipid_list_file, "rt").read().split("\n") if len(l) > 0]
     n = len(lipid_list)
     
     # compute distances
@@ -177,14 +171,35 @@ def main(argv):
         for j in range(i + 1, n):
             union, inter = lipid_similarity(lipid_list[i], lipid_list[j], class_matrix)
             distance = 1 / (inter / union) - 1
-            distance_matrix[i][j] = distance
-            distance_matrix[j][i] = distance
+            distance_matrix[j][i] = distance_matrix[i][j] = sqrt(distance)
     
-    with open(output_matrix, "wt") as out:
-        out.write("ID\tName\tClass\t%s\n" % "\t".join("LP%i" % (i + 1) for i in range(n)))
-        for i in range(n):
-            out.write("LP%i\t%s\t%s" % ((i + 1), lipid_list[i].get_lipid_string(), lipid_list[i].get_lipid_string(LipidLevel.CLASS)))
-            out.write("\t%s\n" % "\t".join("%0.4f" % d for d in distance_matrix[i]))
+    data = {}
+    data["ID"]  = ["LP%i" % (i + 1) for i in range(n)]
+    data["Species"] = [l.get_lipid_string() for l in lipid_list]
+    data["Class"] = [l.get_lipid_string(LipidLevel.CLASS) for l in lipid_list]
+    for i, col in enumerate(distance_matrix):
+        data["LP%i" % (i + 1)] = col
+
+    return pd.DataFrame(data)
+
+def main(argv):
+    
+    if len(argv) < 4:
+        print("usage: python3 %s output_folder lipid_list[csv], ..." % argv[0])
+        print("you need at least two lipidomes")
+        exit()
+        
+    output_folder = argv[1]
+    input_lists = argv[2:]
+    
+    # create all tables
+    lipidome_tables = [create_table(input_list) for input_list in input_lists]
+    
+    # store all tables
+    for table, input_list in zip(lipidome_tables, input_lists):
+        input_list = input_list.split("/")[-1]
+        file_name = "%s.xlsx" % ".".join(input_list.split(".")[:-1]) if input_list.find(".") > -1 else "%s.xlsx" % input_list
+        table.to_excel("%s/%s" % (output_folder, file_name), index = False)
     
 if __name__ == "__main__":
     main(sys.argv)
