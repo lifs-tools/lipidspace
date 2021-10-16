@@ -1,16 +1,16 @@
-10-HDoHE
-11-HDoHE
-11-HETE
-12-HEPE
-12-HETE
-12-HHTrE
-12-OxoETE
-13-HODE
-15-HETE
-16-HDoHE
-8-HETE
-9-HODE
-AA
+(+/-)-10-hydroxy-4Z,7Z,11E,13Z,16Z,19Z-docosahexaenoic acid
+(+/-)-11-hydroxy-4Z,7Z,9E,13Z,16Z,19Z-docosahexaenoic acid
+11-hydroxy-5E,8Z,12Z,14Z-eicosatetraenoic acid
+(+/-)-12-hydroxy-5Z,8Z,10E,14Z,17Z-eicosapentaenoic acid
+ 12-hydroxy-5E,8Z,10Z,14Z-eicosatetraenoic acid
+12S-hydroxy-5Z,8E,10E-heptadecatrienoic acid
+12-oxo-5Z,8Z,10E,14Z-eicosatetraenoic acid
+13S-hydroxy-9Z,11E-octadecadienoic acid
+15-hydroxy-5E,8Z,11Z,13Z-eicosatetraenoic acid
+(+/-)-16-hydroxy-4Z,7Z,10Z,13Z,17E,19Z-docosahexaenoic acid
+8-hydroxy-5E,9Z,11Z,14Z-eicosatetraenoic acid
+9-hydroxy-10E,12Z-octadecadienoic acid
+5Z,8Z,11Z,14Z-eicosatetraenoic acid 
 Cer 16:1;2/16:0
 Cer 16:1;2/18:0
 Cer 16:1;2/20:0
@@ -95,8 +95,8 @@ DAG 20:0-16:0
 DAG 20:4-16:0
 DAG 20:4-18:0
 DAG 20:4-18:1
-DHA
-EPA
+4Z,7Z,10Z,13Z,16Z,19Z-docosahexaenoic acid
+5Z,8Z,11Z,14Z,17Z-eicosapentaenoic acid
 Hex2Cer 18:0;2/16:0
 Hex2Cer 18:0;2/18:0
 Hex2Cer 18:0;2/20:0
@@ -436,6 +436,6 @@ TAG 20:4-20:2-16:0
 TAG 20:5-16:0-16:0
 TAG 22:4-16:0-16:0
 TAG 22:4-16:0-18:1
-tetranor-12-HETE
-TXB2
-TXB3
+2,3,4,5-tetranor-12-hydroxy-5E,8Z,10Z,14Z-eicosatetraenoic acid
+FA 20:2;15OH;[8-12cy5;9OH,11OH;11oxy]
+FA 20:3;15OH;[8-12cy5;9OH,11OH;11oxy]

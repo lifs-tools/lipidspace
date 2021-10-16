@@ -276,8 +276,8 @@ def compute_hausdorff_matrix(PCAs, lipid_lists):
             distance_matrix[j][i] = distance_matrix[i][j] = directed_hausdorff(PCAs[i], PCAs[j])[0]
     
     lipidomes = [ll.split("/")[-1] for ll in lipid_lists]
-    data = {ll: col for ll, col in zip(lipidomes, distance_matrix)}
-    data["ID"] = lipidomes
+    data = {"ID": lipidomes}
+    for ll, col in zip(lipidomes, distance_matrix): data[ll] = col
     return pd.DataFrame(data)
     
 
@@ -286,8 +286,8 @@ def compute_hausdorff_matrix(PCAs, lipid_lists):
 
 def main(argv):   
     
-    plot_pca = False
-    store_tables = False
+    plot_pca = True
+    store_tables = True
     
     if len(argv) < 4:
         print("usage: python3 %s output_folder lipid_list[csv], ..." % argv[0])
