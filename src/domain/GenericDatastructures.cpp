@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "GenericDatastructures.h"
+#include "cppgoslin/domain/GenericDatastructures.h"
 
 
 GenericList::~GenericList(){

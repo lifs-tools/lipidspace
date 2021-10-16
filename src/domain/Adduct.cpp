@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "Adduct.h"
+#include "cppgoslin/domain/Adduct.h"
 
 
 

@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "LipidSpeciesInfo.h"
+#include "cppgoslin/domain/LipidSpeciesInfo.h"
 
 LipidSpeciesInfo::LipidSpeciesInfo (LipidClass _lipid_class) : FattyAcid("info") {
     lipid_class = _lipid_class;

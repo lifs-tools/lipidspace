@@ -23,26 +23,36 @@ SOFTWARE.
 */
 
 
-#include "DoubleBonds.h"
+#include "cppgoslin/domain/LipidSnPosition.h"
 
-DoubleBonds::DoubleBonds(int num){
-    num_double_bonds = num;
+using namespace std;
+
+
+LipidSnPosition::LipidSnPosition(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidMolecularSpecies (_headgroup, _fa) {
+    info->level = SN_POSITION;
 }
 
 
-DoubleBonds* DoubleBonds::copy(){
-    DoubleBonds* db = new DoubleBonds(num_double_bonds);
-    for (auto &kv : double_bond_positions){
-        db->double_bond_positions.insert({kv.first, kv.second});
-    }
-    return db;
+
+LipidLevel LipidSnPosition::get_lipid_level(){
+    return SN_POSITION;
 }
 
 
-int DoubleBonds::get_num(){
-    if (double_bond_positions.size() > 0 && (int)double_bond_positions.size() != num_double_bonds)
-        throw ConstraintViolationException("Number of double bonds '" + std::to_string(num_double_bonds) + "' does not match to number of double bond positions '" + std::to_string(double_bond_positions.size()) + "'");
+
+string LipidSnPosition::get_lipid_string(LipidLevel level) {
+    switch(level){
+        case NO_LEVEL:
+        case SN_POSITION:
+            return LipidMolecularSpecies::build_lipid_subspecies_name(SN_POSITION);
+    
+        case MOLECULAR_SPECIES:
+        case CATEGORY:
+        case CLASS:
+        case SPECIES:
+            return LipidMolecularSpecies::get_lipid_string(level);
         
-    return num_double_bonds;
+        default:
+            throw RuntimeException("LipidSnPosition does not know how to create a lipid string for level " + std::to_string(level));
+    }
 }
-

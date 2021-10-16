@@ -23,10 +23,7 @@ SOFTWARE.
 */
 
 
-#include "LipidStructureDefined.h"
-#include <iostream>
-
-using namespace std;
+#include "cppgoslin/domain/LipidStructureDefined.h"
 
 
 LipidStructureDefined::LipidStructureDefined(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidSnPosition (_headgroup, _fa) {

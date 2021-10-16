@@ -23,34 +23,35 @@ SOFTWARE.
 */
 
 
-#include "LipidFullStructure.h"
+#include "cppgoslin/domain/LipidCompleteStructure.h"
 
-LipidFullStructure::LipidFullStructure(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidStructureDefined(_headgroup, _fa) {            
-    info->level = FULL_STRUCTURE;
+LipidCompleteStructure::LipidCompleteStructure(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidFullStructure(_headgroup, _fa) {            
+    info->level = COMPLETE_STRUCTURE;
     
 }
 
 
-LipidLevel LipidFullStructure::get_lipid_level(){
-    return FULL_STRUCTURE;
+LipidLevel LipidCompleteStructure::get_lipid_level(){
+    return COMPLETE_STRUCTURE;
 }
 
 
-string LipidFullStructure::get_lipid_string(LipidLevel level){
+string LipidCompleteStructure::get_lipid_string(LipidLevel level){
     switch(level){
         case NO_LEVEL:
-        case FULL_STRUCTURE:
-            return LipidMolecularSpecies::build_lipid_subspecies_name(FULL_STRUCTURE);
+        case COMPLETE_STRUCTURE:
+            return LipidMolecularSpecies::build_lipid_subspecies_name(COMPLETE_STRUCTURE);
             
+        case FULL_STRUCTURE:
         case STRUCTURE_DEFINED:
         case SN_POSITION:
         case MOLECULAR_SPECIES:
         case SPECIES:
-        case CATEGORY:
         case CLASS:
-            return LipidStructureDefined::get_lipid_string(level);
+        case CATEGORY:
+            return LipidFullStructure::get_lipid_string(level);
     
         default:
-            throw IllegalArgumentException("LipidFullStructure does not know how to create a lipid string for level " + std::to_string(level));
+            throw IllegalArgumentException("LipidIsomericSubspecies does not know how to create a lipid string for level " + std::to_string(level));
     }
 }

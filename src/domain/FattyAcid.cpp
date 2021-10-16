@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "FattyAcid.h"
+#include "cppgoslin/domain/FattyAcid.h"
 
 FattyAcid::FattyAcid(string _name, int _num_carbon, DoubleBonds* _double_bonds, map<string, vector<FunctionalGroup*> >* _functional_groups, LipidFaBondType _lipid_FA_bond_type, int _position) : FunctionalGroup(_name, _position, 1, _double_bonds, false, "", 0, _functional_groups) {
     

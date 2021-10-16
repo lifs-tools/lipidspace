@@ -23,9 +23,8 @@ SOFTWARE.
 */
 
 
-#include "LipidSpecies.h"
+#include "cppgoslin/domain/LipidSpecies.h"
 
-#include <iostream>
 using namespace std;
 
 LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){

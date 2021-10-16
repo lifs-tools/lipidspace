@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "LipidAdduct.h"
+#include "cppgoslin/domain/LipidAdduct.h"
 
 
 LipidAdduct::LipidAdduct(){
