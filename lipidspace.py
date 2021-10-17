@@ -10,14 +10,20 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import scale, normalize
 import matplotlib.pyplot as plt
+import os
 from scipy.spatial.distance import directed_hausdorff
+from scipy import linalg as LA
+
+
+script_path = "/".join(os.path.realpath(__file__).split("/")[:-1])
 
 
 # load precomputed class distance matrix
 parser = LipidParser()
 class_matrix = {}
-with open("data/classes-matrix.csv") as infile:
+with open("%s/data/classes-matrix.csv" % script_path) as infile:
     for line in infile:
         tokens = line.strip().split("\t")
         class_matrix["%s/%s" % (tokens[0], tokens[1])] = (abs(int(tokens[2])), abs(int(tokens[3])))
@@ -64,6 +70,9 @@ def cut_cycle(fa):
         
     else:
         return FattyAcid("FA", 2, lipid_FA_bond_type = fa.lipid_FA_bond_type)
+
+
+
 
 
 def fatty_acyl_similarity(fa1, fa2):
@@ -223,7 +232,8 @@ def create_table(lipid_list_file):
     for l in open(lipid_list_file, "rt").read().split("\n"):
         if len(l) > 0:
             try:
-                lipid_list.append(parser.parse(l.strip('"')))
+                l = l.split("\t")[0].strip('"')
+                lipid_list.append(parser.parse(l))
                                   
             except Exception:
                 print("Error: lipid '%s' cannot be parsed" % l)
@@ -238,7 +248,7 @@ def create_table(lipid_list_file):
         for j in range(i + 1, n):
             union, inter = lipid_similarity(lipid_list[i], lipid_list[j], class_matrix)
             distance = 1 / (inter / union) - 1
-            distance_matrix[j][i] = distance_matrix[i][j] = sqrt(distance)
+            distance_matrix[j][i] = distance_matrix[i][j] = distance #sqrt(distance)
     
     data = {}
     data["ID"]  = ["LP%i" % (i + 1) for i in range(n)]
@@ -257,10 +267,9 @@ def create_table(lipid_list_file):
 def compute_PCA(data_frame):
     features = [l for l in data_frame if l[:2] == "LP"]
     x = data_frame.loc[:, features].values# Separating out the target
-    y = data_frame.loc[:,['Class']].values# Standardizing the features
     x = StandardScaler().fit_transform(x)
-    pca = PCA(n_components = 2)
-    return pca.fit_transform(x)
+    pca = PCA(n_components = min(100, len(x)))
+    return (pca, pca.fit_transform(x))
 
 
 
@@ -273,7 +282,7 @@ def compute_hausdorff_matrix(PCAs, lipid_lists):
     
     for i in range(n - 1):
         for j in range(i + 1, n):
-            distance_matrix[j][i] = distance_matrix[i][j] = directed_hausdorff(PCAs[i], PCAs[j])[0]
+            distance_matrix[j][i] = distance_matrix[i][j] = directed_hausdorff(PCAs[i][1][:,:2], PCAs[j][1][:,:2])[0]
     
     lipidomes = [ll.split("/")[-1] for ll in lipid_lists]
     data = {"ID": lipidomes}
@@ -281,17 +290,60 @@ def compute_hausdorff_matrix(PCAs, lipid_lists):
     return pd.DataFrame(data)
     
 
+def principal_component_analysis(data, dims_rescaled_data=2):
+    """
+    returns: data transformed in 2 dims/columns + regenerated original data
+    pass in: data as 2D NumPy array
+    """
+    m, n = data.shape
+    
+    # mean center the data
+    data -= data.mean(axis = 0)
+    
+    # calculate the covariance matrix
+    R = np.cov(data, rowvar = False)
+    
+    # calculate eigenvectors & eigenvalues of the covariance matrix
+    # use 'eigh' rather than 'eig' since R is symmetric, 
+    # the performance gain is substantial
+    evals, evecs = LA.eigh(R)
+    
+    
+    # sort eigenvalue in decreasing order
+    idx = np.argsort(evals)[::-1]
+    evecs = evecs[:,idx]
+    
+    # sort eigenvectors according to same index
+    evals = evals[idx]
+    
+    # select the first n eigenvectors (n is desired dimension
+    # of rescaled data array, or dims_rescaled_data)
+    evecs = evecs[:, :dims_rescaled_data]
+
+    
+    # carry out the transformation on the data using eigenvectors
+    # and return the re-scaled data, eigenvalues, and eigenvectors
+    return np.dot(evecs.T, data.T).T, evals, evecs
 
 
-
-def main(argv):   
+def main(argv):
+    
+    
+    a = np.matrix([[1, 2, 3], [2, 4, -1], [3, -1, 7]], dtype=np.float64)
+    
+    
+    pca = PCA(n_components = 3)
+    print(pca.fit_transform(scale(a)))
+    print(pca.explained_variance_ratio_)
+    
+    exit()
+    
     
     plot_pca = True
-    store_tables = True
+    store_tables = False
     
-    if len(argv) < 4:
+    if len(argv) < 3:
         print("usage: python3 %s output_folder lipid_list[csv], ..." % argv[0])
-        print("you need at least two lipidomes")
         exit()
         
     output_folder = argv[1]
@@ -318,14 +370,14 @@ def main(argv):
     if plot_pca:
         print("storing principal components for all tables")
         for pca, df, input_list in zip(PCAs, lipidome_tables, input_lists):
-            principalDf = pd.DataFrame(data = pca, columns = ['principal component 1', 'principal component 2'])
+            principalDf = pd.DataFrame(data = pca[1][:,:2], columns = ['principal component 1', 'principal component 2'])
             finalDf = pd.concat([principalDf, df[['Class']]], axis = 1)
             
             fig = plt.figure(figsize = (8, 8))
             ax = fig.add_subplot(1, 1, 1) 
-            ax.set_xlabel('Principal Component 1', fontsize = 15)
-            ax.set_ylabel('Principal Component 2', fontsize = 15)
-            ax.set_title('2 component PCA', fontsize = 20)
+            ax.set_xlabel('Principal Component 1 (%0.1f %%)' % (pca[0].explained_variance_ratio_[0] * 100), fontsize = 15)
+            ax.set_ylabel('Principal Component 2 (%0.1f %%)' % (pca[0].explained_variance_ratio_[1] * 100), fontsize = 15)
+            ax.set_title("'%s' PCA" % input_list, fontsize = 20)
 
             targets = set(df["Class"])
             #for target, color in zip(targets, colors):
@@ -346,9 +398,13 @@ def main(argv):
             plt.savefig(file_name, dpi = 300)
     
     
+    if len(input_lists) == 1: return
+    
+    
     # create hausdorff distance matrix
     hausdorff_distances = compute_hausdorff_matrix(PCAs, input_lists)
     hausdorff_distances.to_excel("%s/hausdorff_distances.xlsx" % output_folder, index = False)
+    
     
 if __name__ == "__main__":
     main(sys.argv)

@@ -1,17 +1,23 @@
 CC = g++ -std=c++11
 MARCH = -mtune=native
-bin = lipidSpace
+bin_pre = precompute_classes
 opt = -O3 ${MARCH} -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fopenmp
-obj = src/MCIS2NK.o src/TreeGen.o src/auxiliary.o src/bbpmcsi.o src/graphVisualization.o src/hungarian.o src/main.o src/mwm.o
+obj_pre = src/MCIS2NK.o src/TreeGen.o src/auxiliary.o src/bbpmcsi.o src/graphVisualization.o src/hungarian.o src/main_precompute.o src/mwm.o
 
-main: ${bin}
+bin = lipidspace
+obj = src/lipidspace.o
+
+main: ${bin_pre} ${bin}
 
 ${bin}: ${obj}
-	${CC} ${opt} ${obj} -o ${bin} -L ~/workspace/lib -lOGDF -lCOIN
+	${CC} ${opt} ${obj} -o ${bin} -lpython3.8 -lcppGoslin
+
+${bin_pre}: ${obj_pre}
+	${CC} ${opt} ${obj_pre} -o ${bin_pre} -L ~/workspace/lib -lOGDF -lCOIN
 	
 %.o: %.cpp
-	${CC} ${opt} -I . -I ~/workspace/include -o $@ -c $<
+	${CC} ${opt} -I /usr/include/eigen3 -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
 
 clean:
-	rm -f ${obj}
-	rm -f ${bin}
+	rm -f ${obj_pre}
+	rm -f ${bin_pre}
