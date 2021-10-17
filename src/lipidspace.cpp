@@ -90,6 +90,7 @@ void LipidSpace::cut_cycle(FattyAcid* fa){
         if (fa->double_bonds->double_bond_positions.size() > 0) {
             fa->double_bonds->num_double_bonds = fa->double_bonds->double_bond_positions.size();
         }
+        
                     
         // cut all functional groups
         for (FunctionalGroup* func_group : fa->functional_groups->at("cy")){
