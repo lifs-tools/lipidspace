@@ -87,6 +87,9 @@ void LipidSpace::cut_cycle(FattyAcid* fa){
         for (auto key : db){
             if (key >= start) fa->double_bonds->double_bond_positions.erase(key);
         }
+        if (fa->double_bonds->double_bond_positions.size() > 0) {
+            fa->double_bonds->num_double_bonds = fa->double_bonds->double_bond_positions.size();
+        }
                     
         // cut all functional groups
         for (FunctionalGroup* func_group : fa->functional_groups->at("cy")){
@@ -319,13 +322,9 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     }
     union_num = class_matrix.at(key)[0];
     inter_num = class_matrix.at(key)[1];
-    
     int l = min(lipid1->lipid->fa_list.size(), lipid2->lipid->fa_list.size());
     for (int i = 0; i < l; ++i){
-        int un, in;
-        fatty_acyl_similarity(lipid1->lipid->fa_list.at(i), lipid2->lipid->fa_list.at(i), un, in);
-        union_num += un;
-        inter_num += in;
+        fatty_acyl_similarity(lipid1->lipid->fa_list.at(i), lipid2->lipid->fa_list.at(i), union_num, inter_num);
     }
       
       
@@ -449,13 +448,14 @@ int main(int argc, char** argv) {
     }
         
     string output_folder = argv[1];
-    vector<string> input_lists;
-    for (int i = 2; i < argc; ++i) input_lists.push_back(argv[i]);
-    
+    vector<Table*> tables;
     LipidSpace lipid_space;
-    Table* table = lipid_space.create_Table(input_lists.at(0));
-    cout << table->m.block(0, 0, table->m.rows(), 2) << endl;
     
-    delete table;
+    for (int i = 2; i < argc; ++i) tables.push_back(lipid_space.create_Table(argv[i]));
     
+    cout << tables.size() << endl;
+    
+    for (auto table : tables) delete table;
+
+    return 0;
 }

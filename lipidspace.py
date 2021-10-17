@@ -85,8 +85,13 @@ def fatty_acyl_similarity(fa1, fa2):
     
     bond_types = set([fa1.lipid_FA_bond_type, fa2.lipid_FA_bond_type])
     if len(bond_types) == 1: # both equal
-        if LipidFaBondType.ESTER in bond_types: union += 2 # one oxygen plus one double bond
-        if LipidFaBondType.ETHER_PLASMENYL in bond_types: union += 1 # one double bond
+        if LipidFaBondType.ESTER in bond_types:
+            union += 2 # one oxygen plus one double bond
+            inter += 2
+            
+        if LipidFaBondType.ETHER_PLASMENYL in bond_types:
+            union += 1 # one double bond
+            union += 1
         
     elif LipidFaBondType.ESTER in bond_types and LipidFaBondType.ETHER_PLASMENYL in bond_types:
         union += 3
@@ -200,11 +205,13 @@ def lipid_similarity(lipid1, lipid2, class_matrix):
     key = "%s/%s" % (lipid1.get_extended_class(), lipid2.get_extended_class())
     union, inter = class_matrix[key]
     
+    
     for fa1, fa2 in zip(lipid1.lipid.fa_list, lipid2.lipid.fa_list):
         u, i = fatty_acyl_similarity(fa1, fa2)
         union += u
         inter += i
-        
+    
+    
     fa_list_1, fa_list_2 = lipid1.lipid.fa_list, lipid2.lipid.fa_list
     if len(fa_list_1) < len(fa_list_2):
         fa_list_1, fa_list_2 = fa_list_2, fa_list_1
@@ -250,6 +257,7 @@ def create_table(lipid_list_file):
             distance = 1 / (inter / union) - 1
             distance_matrix[j][i] = distance_matrix[i][j] = distance #sqrt(distance)
     
+    
     data = {}
     data["ID"]  = ["LP%i" % (i + 1) for i in range(n)]
     data["Species"] = [l.get_lipid_string() for l in lipid_list]
@@ -293,7 +301,7 @@ def compute_hausdorff_matrix(PCAs, lipid_lists):
 
 def main(argv):
     
-    plot_pca = True
+    plot_pca = False
     store_tables = False
     
     if len(argv) < 3:
@@ -314,11 +322,12 @@ def main(argv):
             file_name = "%s/%s" % (output_folder, file_name)
             print("storing '%s'" % file_name)
             table.to_excel(file_name, index = False)
-        
+
     
     # compute all PCAs
     print("computing principal components for all tables")
     PCAs = [compute_PCA(table) for table in lipidome_tables]
+    
     
     # plot all PCAs
     if plot_pca:
