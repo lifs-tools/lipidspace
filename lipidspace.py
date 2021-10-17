@@ -290,7 +290,9 @@ def compute_hausdorff_matrix(PCAs, lipid_lists):
     
     for i in range(n - 1):
         for j in range(i + 1, n):
-            distance_matrix[j][i] = distance_matrix[i][j] = directed_hausdorff(PCAs[i][1][:,:2], PCAs[j][1][:,:2])[0]
+            m1, m2 = PCAs[i][1][:,:2], PCAs[j][1][:,:2]
+            h = max(directed_hausdorff(m1, m2)[0], directed_hausdorff(m2, m1)[0])
+            distance_matrix[j][i] = distance_matrix[i][j] = sqrt(h)
     
     lipidomes = [ll.split("/")[-1] for ll in lipid_lists]
     data = {"ID": lipidomes}

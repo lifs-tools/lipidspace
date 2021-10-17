@@ -36,6 +36,7 @@ public:
     MatrixXd compute_PCA(MatrixXd m);
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
+    double compute_hausdorff_distance(MatrixXd m1, MatrixXd m2, int cols = 2);
 };
 
 
@@ -439,7 +440,33 @@ MatrixXd LipidSpace::compute_PCA(MatrixXd m){
 }
 
 
+
+
+double LipidSpace::compute_hausdorff_distance(MatrixXd m1, MatrixXd m2, int cols){
+    MatrixXd a = m1.leftCols(cols);
+    MatrixXd c = m2.leftCols(cols);
+    
+    double hausdorff = 0;
+    for (int i = 0; i < a.rows(); ++i){
+        VectorXd b = a.row(0);
+        MatrixXd d = c.rowwise() - b.transpose();
+        d = d.array().square();
+        MatrixXd e = d.rowwise().sum();
+        hausdorff = max(hausdorff, e.minCoeff());
+    }
+    for (int i = 0; i < c.rows(); ++i){
+        VectorXd b = c.row(0);
+        MatrixXd d = a.rowwise() - b.transpose();
+        d = d.array().square();
+        MatrixXd e = d.rowwise().sum();
+        hausdorff = max(hausdorff, e.minCoeff());
+    }
+    
+    return sqrt(hausdorff);
+}
+
 int main(int argc, char** argv) {
+    
     bool plot_pca = true;
     bool store_Tables = true;
     
@@ -448,13 +475,43 @@ int main(int argc, char** argv) {
         exit(-1);
     }
         
+    // getting input
     string output_folder = argv[1];
+    vector<string> input_lists;
+    for (int i = 2; i < argc; ++i) input_lists.push_back(argv[i]);
+    
+        
     vector<Table*> tables;
     LipidSpace lipid_space;
+    int n = input_lists.size();
+    for (int i = 0; i < n; ++i) tables.push_back(lipid_space.create_Table(input_lists.at(i)));
     
-    for (int i = 2; i < argc; ++i) tables.push_back(lipid_space.create_Table(argv[i]));
+    // computing the hausdorff distance matrix for all lipidomes
+    MatrixXd distance_matrix = MatrixXd::Zero(n, n);
+    for (int i = 0; i < n - 1; ++i){
+        for (int j = i + 1; j < n; ++j){
+            distance_matrix(i, j) = lipid_space.compute_hausdorff_distance(tables.at(i)->m, tables.at(j)->m);
+            distance_matrix(j, i) = distance_matrix(i, j);
+        }
+    }
     
-    cout << tables.size() << endl;
+    // storing hausdorff distance matrix into file
+    ofstream off(output_folder + "/hausdorff_distances.csv");
+    vector<string> striped_names;
+    off << "ID";
+    for (int i = 0; i < n; ++i){
+        vector<string>* tokens = split_string(input_lists.at(i), '/', '"');
+        off << "\t" << tokens->back();
+        striped_names.push_back(tokens->back());
+        delete tokens;
+    } off << endl;
+    
+    for (int i = 0; i < n; ++i){
+        off << striped_names.at(i);
+        for (int j = 0; j < n; ++j){
+            off << "\t" << distance_matrix(i, j);
+        } off << endl;
+    }
     
     for (auto table : tables) delete table;
 
