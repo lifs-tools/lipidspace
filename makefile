@@ -16,8 +16,14 @@ ${bin_pre}: ${obj_pre}
 	${CC} ${opt} ${obj_pre} -o ${bin_pre} -L ~/workspace/lib -lOGDF -lCOIN
 	
 %.o: %.cpp
-	${CC} ${opt} -I /usr/include/eigen3 -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
+	${CC} ${opt} -I /usr/local/include/eigen3 -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
 
 clean:
 	rm -f ${obj_pre}
 	rm -f ${bin_pre}
+
+yeast:
+	./lipidspace output Yeast/BY4741_24 Yeast/BY4741_37 Yeast/Elo1_24 Yeast/Elo1_37 Yeast/Elo2_24 Yeast/Elo2_37 Yeast/Elo3_24 Yeast/Elo3_37
+
+test:
+	./lipidspace output examples/GP.csv examples/SP.csv
