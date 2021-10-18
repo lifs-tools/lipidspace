@@ -11,16 +11,17 @@
  
 using namespace std;
 using namespace Eigen;
-
+namespace plt = matplotlibcpp;
 
 
 class Table {
 public:
+    string file_name;
     vector<string> species;
     vector<string> classes;
     MatrixXd m;
     
-    Table(int len) : m(len, len){}
+    Table(string lipid_list_file, int len) : file_name(lipid_list_file), m(len, len){}
 };
 
 
@@ -371,6 +372,10 @@ Table* LipidSpace::create_Table(string lipid_list_file){
         line = strip(tokens->at(0), '"');
         delete tokens;
         
+        tokens = goslin::split_string(line, '\t', '"');
+        line = strip(tokens->at(0), '"');
+        delete tokens;
+        
         try {
             LipidAdduct* l = parser.parse(line);
             for (auto fa : l->lipid->fa_list) cut_cycle(fa);
@@ -378,11 +383,12 @@ Table* LipidSpace::create_Table(string lipid_list_file){
         }
         catch (exception &e) {
             cout << "Error: lipid '" << line << "' cannot be parsed" << endl;
+            exit(-1);
         }
     }
     
     int n = lipids.size();
-    Table* table = new Table(n);
+    Table* table = new Table(lipid_list_file, n);
     
     // compute distances
     MatrixXd distance_matrix(n, n);
@@ -481,10 +487,60 @@ int main(int argc, char** argv) {
     for (int i = 2; i < argc; ++i) input_lists.push_back(argv[i]);
     
         
+    // compute PCA matrixes for each lipidome
     vector<Table*> tables;
     LipidSpace lipid_space;
     int n = input_lists.size();
     for (int i = 0; i < n; ++i) tables.push_back(lipid_space.create_Table(input_lists.at(i)));
+    
+    
+    // plotting all lipidome PCAs
+    if (plot_pca){
+        for (auto table : tables){
+            
+            string output_file_name = table->file_name;
+            vector<string>* tokens = split_string(output_file_name, '/');
+            output_file_name = tokens->back();
+            delete tokens;
+            
+            if (output_file_name.find(".") != string::npos){
+                tokens = split_string(output_file_name, '.');
+                stringstream output_stream;
+                for (int i = 0; i < tokens->size() - 1; ++i) output_stream << tokens->at(i);
+                output_stream << ".pdf";
+                output_file_name = output_stream.str();
+                delete tokens;
+            }
+            else {
+                output_file_name += ".pdf";
+            }
+            output_file_name = output_folder + "/" + output_file_name;
+            
+            map<string, vector<int>> indexes;
+            for (int i = 0; i < table->classes.size(); ++i){
+                string lipid_class = table->classes.at(i);
+                if (uncontains(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
+                indexes.at(lipid_class).push_back(i);
+            }
+            
+            for (auto kv : indexes){
+                vector<double> x;
+                vector<double> y;
+                for (auto i : kv.second){
+                    x.push_back(table->m(i, 0));
+                    y.push_back(table->m(i, 1));
+                }
+                
+                map<string, string> keywords = {{"label", kv.first}};
+                plt::scatter(x, y, 2, keywords);
+            }
+            cout << "storing '" << output_file_name << "'" << endl;
+            plt::legend();
+            plt::save(output_file_name);
+        }
+    }
+    
+    
     
     // computing the hausdorff distance matrix for all lipidomes
     MatrixXd distance_matrix = MatrixXd::Zero(n, n);
