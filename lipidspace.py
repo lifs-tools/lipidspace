@@ -254,7 +254,7 @@ def create_table(lipid_list_file):
     for i in range(n - 1):
         for j in range(i + 1, n):
             union, inter = lipid_similarity(lipid_list[i], lipid_list[j], class_matrix)
-            distance = 1 / (inter / union) - 1
+            distance = union / inter - 1
             distance_matrix[j][i] = distance_matrix[i][j] = distance #sqrt(distance)
     
     
