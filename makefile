@@ -27,3 +27,6 @@ yeast:
 
 test:
 	./lipidspace output examples/GP.csv examples/SP.csv
+	
+example:
+	./lipidspace output examples/mouse-brain.csv examples/mouse-heart.csv examples/mouse-platelet.csv examples/human-plasma.csv examples/human-platelet.csv

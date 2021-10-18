@@ -40,12 +40,13 @@ public:
     MatrixXd compute_PCA(MatrixXd m);
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
-    double compute_hausdorff_distance(MatrixXd m1, MatrixXd m2, int cols = 3);
+    double compute_hausdorff_distance(Table* l1, Table* l2, int cols = 2);
     void plot_PCA(Table* table, string output_folder);
     MatrixXd compute_hausdorff_matrix(vector<Table*>* tables);
     void report_hausdorff_matrix(vector<string>* input_lists, MatrixXd distance_matrix, string output_folder);
     Table* compute_global_distance_matrix(vector<Table*>* tables);
     void separate_matrixes(vector<Table*>* lipidomes, Table* global_lipidome);
+    void normalize_intensities(vector<Table*>* lipidomes, Table* global_lipidome);
 };
 
 
@@ -459,21 +460,29 @@ MatrixXd LipidSpace::compute_PCA(MatrixXd m){
 
 
 
-double LipidSpace::compute_hausdorff_distance(MatrixXd m1, MatrixXd m2, int cols){
-    MatrixXd a = m1.leftCols(cols);
-    MatrixXd c = m2.leftCols(cols);
+double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2, int cols){
+    MatrixXd m1 = l1->m.leftCols(cols);
+    MatrixXd m2 = l2->m.leftCols(cols);
+    
+    m1.conservativeResize(m1.rows(), cols + 1);
+    m1.col(cols) = l1->intensities;
+    
+    m2.conservativeResize(m2.rows(), cols + 1);
+    m2.col(cols) = l2->intensities;
+    
+    
     
     double hausdorff = 0;
-    for (int i = 0; i < a.rows(); ++i){
-        VectorXd b = a.row(0);
-        MatrixXd d = c.rowwise() - b.transpose();
+    for (int i = 0; i < m1.rows(); ++i){
+        VectorXd b = m1.row(0);
+        MatrixXd d = m2.rowwise() - b.transpose();
         d = d.array().square();
         MatrixXd e = d.rowwise().sum();
         hausdorff = max(hausdorff, e.minCoeff());
     }
-    for (int i = 0; i < c.rows(); ++i){
-        VectorXd b = c.row(0);
-        MatrixXd d = a.rowwise() - b.transpose();
+    for (int i = 0; i < m2.rows(); ++i){
+        VectorXd b = m2.row(0);
+        MatrixXd d = m1.rowwise() - b.transpose();
         d = d.array().square();
         MatrixXd e = d.rowwise().sum();
         hausdorff = max(hausdorff, e.minCoeff());
@@ -486,12 +495,12 @@ double LipidSpace::compute_hausdorff_distance(MatrixXd m1, MatrixXd m2, int cols
 
 
 
-MatrixXd LipidSpace::compute_hausdorff_matrix(vector<Table*>* tables){
-    int n = tables->size();
+MatrixXd LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes){
+    int n = lipidomes->size();
     MatrixXd distance_matrix = MatrixXd::Zero(n, n);
     for (int i = 0; i < n - 1; ++i){
         for (int j = i + 1; j < n; ++j){
-            distance_matrix(i, j) = compute_hausdorff_distance(tables->at(i)->m, tables->at(j)->m);
+            distance_matrix(i, j) = compute_hausdorff_distance(lipidomes->at(i), lipidomes->at(j));
             distance_matrix(j, i) = distance_matrix(i, j);
         }
     }
@@ -552,8 +561,8 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         plt::scatter(x, y, 2, keywords);
     }
     cout << "storing '" << output_file_name << "'" << endl;
-    map<string, string> keywords_legend = {{"size", "6"}};
-    plt::legend();
+    map<string, string> keywords_legend = {{"fontsize", "6"}};
+    plt::legend(keywords_legend);
     plt::save(output_file_name);
     plt::close();
 }
@@ -585,6 +594,9 @@ void LipidSpace::report_hausdorff_matrix(vector<string>* input_lists, MatrixXd d
 
 
 Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
+    
+    cout << "Computing pairwise distance matrix for " << lipidomes->size() << " lipids" << endl;
+    
     
     set<string> registered_lipids;
     Table* global_lipidome = new Table("global_lipidome");
@@ -633,20 +645,25 @@ void LipidSpace::separate_matrixes(vector<Table*>* lipidomes, Table* global_lipi
     }
     
     
-    MatrixXd m = global_lipidome->m.block(0, 0, (int)global_lipidome->m.rows(), 1);
-    double global_stdev = sqrt((m.array().square()).sum() / (double)global_lipidome->m.rows());
-    cout << global_stdev << endl;
-    
-    
     for (auto lipidome : *lipidomes){
         vector<int> indexes;
         for (auto lipid_species : lipidome->species) indexes.push_back(lipid_indexes.at(lipid_species));
         lipidome->m = global_lipidome->m.leftCols(2)(indexes, all);
+    }
+}
+
+
+
+
+
+void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_lipidome){
+    MatrixXd m = global_lipidome->m.block(0, 0, (int)global_lipidome->m.rows(), 1);
+    double global_stdev = sqrt((m.array().square()).sum() / (double)global_lipidome->m.rows());
+    
+    for (auto lipidome : *lipidomes){
         VectorXd v = lipidome->intensities.array() - ((double)lipidome->intensities.sum() / (double)lipidome->intensities.rows());
         double stdev = sqrt((v.array().square()).sum() / (double)v.rows());
         lipidome->intensities = lipidome->intensities.array() / global_stdev * stdev;
-        lipidome->m.conservativeResize(lipidome->m.rows(), lipidome->m.cols() + 1);
-        lipidome->m.col(lipidome->m.cols() - 1) = lipidome->intensities;
     }
 }
 
@@ -682,7 +699,6 @@ int main(int argc, char** argv) {
     
 
     // cutting the global PCA matrix back to a matrix for each lipidome
-    // and normalize their intensities
     lipid_space.separate_matrixes(&lipidomes, global_lipidome);
     
     
@@ -694,6 +710,13 @@ int main(int argc, char** argv) {
             lipid_space.plot_PCA(table, output_folder);
         }
     }
+    
+    
+    
+    // normalize and incorporate intensities
+    lipid_space.normalize_intensities(&lipidomes, global_lipidome);
+    
+    
     
     
     if (lipidomes.size() > 1){
