@@ -567,10 +567,6 @@ void LipidSpace::report_hausdorff_matrix(vector<string>* input_lists, MatrixXd d
 
 
 
-Table* LipidSpace::create_input_table(){
-    
-}
-
 
 
 
