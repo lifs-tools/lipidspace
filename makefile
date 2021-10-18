@@ -23,10 +23,10 @@ clean:
 	rm -f ${bin_pre}
 
 yeast:
-	./lipidspace output Yeast/BY4741_24 Yeast/BY4741_37 Yeast/Elo1_24 Yeast/Elo1_37 Yeast/Elo2_24 Yeast/Elo2_37 Yeast/Elo3_24 Yeast/Elo3_37
+	./lipidspace output lists Yeast/BY4741_24 Yeast/BY4741_37 Yeast/Elo1_24 Yeast/Elo1_37 Yeast/Elo2_24 Yeast/Elo2_37 Yeast/Elo3_24 Yeast/Elo3_37
 
 test:
-	./lipidspace output examples/GP.csv examples/SP.csv
+	./lipidspace output lists examples/GP.csv examples/SP.csv
 	
 example:
-	./lipidspace output examples/mouse-brain.csv examples/mouse-heart.csv examples/mouse-platelet.csv examples/human-plasma.csv examples/human-platelet.csv
+	./lipidspace output lists examples/mouse-brain.csv examples/mouse-heart.csv examples/mouse-platelet.csv examples/human-plasma.csv examples/human-platelet.csv
