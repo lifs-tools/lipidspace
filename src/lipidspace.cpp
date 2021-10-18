@@ -353,7 +353,7 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         }
     }
     
-    cout << key << " -> " << union_num << " " << inter_num << endl;
+    //cout << key << " -> " << union_num << " " << inter_num << endl;
 }
 
 
@@ -479,6 +479,10 @@ double LipidSpace::compute_hausdorff_distance(MatrixXd m1, MatrixXd m2, int cols
 
 
 
+
+
+
+
 MatrixXd LipidSpace::compute_hausdorff_matrix(vector<Table*>* tables){
     int n = tables->size();
     MatrixXd distance_matrix = MatrixXd::Zero(n, n);
@@ -534,6 +538,7 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     cout << "storing '" << output_file_name << "'" << endl;
     plt::legend();
     plt::save(output_file_name);
+    plt::close();
 }
 
 
@@ -557,6 +562,13 @@ void LipidSpace::report_hausdorff_matrix(vector<string>* input_lists, MatrixXd d
             off << "\t" << distance_matrix(i, j);
         } off << endl;
     }
+}
+
+
+
+
+Table* LipidSpace::create_input_table(){
+    
 }
 
 
