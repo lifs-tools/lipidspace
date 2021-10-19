@@ -10,13 +10,13 @@ obj = src/lipidspace.o
 main: ${bin_pre} ${bin}
 
 ${bin}: ${obj}
-	${CC} ${opt} ${obj} -o ${bin} -lpython3.8 -lcppGoslin
+	${CC} -fopenmp ${obj} -o ${bin} -lpython3.8 -lcppGoslin
 
 ${bin_pre}: ${obj_pre}
 	${CC} ${opt} ${obj_pre} -o ${bin_pre} -L ~/workspace/lib -lOGDF -lCOIN
 	
 %.o: %.cpp
-	${CC} ${opt} -I /usr/local/include/eigen3 -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
+	${CC} ${opt} -I /usr/local/include/eigen3 -I /usr/local/include -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
 
 clean:
 	rm -f ${obj_pre}

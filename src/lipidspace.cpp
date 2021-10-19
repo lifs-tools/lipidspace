@@ -9,10 +9,13 @@
 #include <math.h>
 #include <algorithm>
 #include <sys/stat.h>
+#include <Spectra/SymEigsSolver.h>
+#include <Eigen/Core>
  
 using namespace std;
 using namespace Eigen;
-namespace plt = matplotlibcpp;
+namespace plt = matplotlibcpp; 
+using namespace Spectra;
 
 
 class Table {
@@ -33,6 +36,7 @@ public:
     LipidParser parser;
     map<string, int*> class_matrix;
     vector<LipidAdduct*> all_lipids;
+    int cols_for_pca;
     
     LipidSpace();
     ~LipidSpace();
@@ -42,7 +46,7 @@ public:
     MatrixXd compute_PCA(MatrixXd m);
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
-    double compute_hausdorff_distance(Table* l1, Table* l2, int cols = 2);
+    double compute_hausdorff_distance(Table* l1, Table* l2);
     void plot_PCA(Table* table, string output_folder);
     MatrixXd compute_hausdorff_matrix(vector<Table*>* tables);
     void report_hausdorff_matrix(vector<Table*>* l, MatrixXd distance_matrix, string output_folder);
@@ -58,6 +62,8 @@ public:
 
 
 LipidSpace::LipidSpace(){
+    cols_for_pca = 2;
+    
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
     if (!infile.good()){
@@ -470,24 +476,58 @@ ArrayXd LipidSpace::compute_PCA_variances(MatrixXd m){
 
 MatrixXd LipidSpace::compute_PCA(MatrixXd m){
     // scale and transform the matrix
+    
     int r = m.rows();
     m = m.rowwise() - (m.rowwise().mean()).transpose();
     VectorXd norm = (r / m.array().square().colwise().sum()).sqrt();
     for (int i = 0; i < r; ++i) m.block(0, i, r, 1) *= norm[i];
+
+    int n = m.rows();    
     
     // calculate the covariance matrix
     MatrixXd centered = m.rowwise() - m.colwise().mean();
-    MatrixXd cov = (centered.adjoint() * centered) / double(m.rows() - 1);
+    MatrixXd cov = (centered.adjoint() * centered) / double(n - 1);
+
+    
+
+    // Construct matrix operation object using the wrapper class DenseSymMatProd
+    DenseSymMatProd<double> op(cov);
+ 
+    // Construct eigen solver object, requesting the largest three eigenvalues
+    SymEigsSolver<DenseSymMatProd<double>> eigs(op, min(n - 1, cols_for_pca), min(n, cols_for_pca * 3));
+ 
+    // Initialize and compute
+    eigs.init();
+    int nconv = eigs.compute(SortRule::LargestAlge);
+ 
+    // Retrieve results
+    if (eigs.info() != CompInfo::Successful){
+        cerr << "Error: could not perform principal component analysis." << endl;
+        exit(-1);
+    }
+    MatrixXd evecs = eigs.eigenvectors();
+    
+    return (evecs.transpose() * m.transpose()).transpose();
+    /*
+    cout << eigs.eigenvalues() << endl << endl;
+    cout << nnn.block(0, 0, 20, 2) << endl;
+
     
     // calculate eigenvectors of the covariance matrix
     SelfAdjointEigenSolver<MatrixXd> eigensolver(cov);
     
+    cout << "4" << endl;
+    
     // reverse the order of columns
     MatrixXd evecs = eigensolver.eigenvectors();
     MatrixXd rev = evecs.rowwise().reverse();
+    cout << "5" << endl;
     
     // carry out the transformation on the data using eigenvectors
-    return (rev.transpose() * m.transpose()).transpose();
+    MatrixXd nn = (rev.transpose() * m.transpose()).transpose();
+    cout << nn.block(0, 0, 20, 2) << endl;
+    return nn;
+    */
 }
 
 
@@ -497,16 +537,16 @@ MatrixXd LipidSpace::compute_PCA(MatrixXd m){
 
 
 
-double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2, int cols){
-    MatrixXd m1 = l1->m.leftCols(cols);
-    MatrixXd m2 = l2->m.leftCols(cols);
+double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
+    MatrixXd m1 = l1->m;
+    MatrixXd m2 = l2->m;
     
     
-    m1.conservativeResize(m1.rows(), cols + 1);
-    m1.col(cols) = l1->intensities;
+    m1.conservativeResize(m1.rows(), cols_for_pca + 1);
+    m1.col(cols_for_pca) = l1->intensities;
     
-    m2.conservativeResize(m2.rows(), cols + 1);
-    m2.col(cols) = l2->intensities;
+    m2.conservativeResize(m2.rows(), cols_for_pca + 1);
+    m2.col(cols_for_pca) = l2->intensities;
     
     double hausdorff = 0;
     for (int i = 0; i < m1.rows(); ++i){
@@ -581,7 +621,7 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         indexes.at(lipid_class).push_back(i);
     }
     
-    ArrayXd variances = compute_PCA_variances(table->m);
+    //ArrayXd variances = compute_PCA_variances(table->m);
     for (auto kv : indexes){
         vector<double> x;
         vector<double> y;
@@ -591,11 +631,13 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         }
         stringstream xlabel;
         xlabel.precision(1);
-        xlabel << fixed << "Principal component 1 (" << (variances(0) * 100) << " %)";
+        //xlabel << fixed << "Principal component 1 (" << (variances(0) * 100) << " %)";
+        xlabel << fixed << "Principal component 1";
         
         stringstream ylabel;
         ylabel.precision(1);
-        ylabel << fixed << "Principal component 2 (" << (variances(1) * 100) << " %)";
+        //ylabel << fixed << "Principal component 2 (" << (variances(1) * 100) << " %)";
+        ylabel << fixed << "Principal component 2";
         
         plt::xlabel(xlabel.str());
         plt::ylabel(ylabel.str());
@@ -604,14 +646,16 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         label << kv.first << " (" << x.size() << ")";
         map<string, string> keywords = {{"label", label.str()}};
         plt::scatter(x, y, 2, keywords);
-        plt::scatter(x, y);
         
     }
+    cout << "storing '" << output_file_name << "'" << endl;
+    
     map<string, string> keywords_legend = {{"fontsize", "6"}};
     plt::legend(keywords_legend);
     plt::save(output_file_name);
     plt::close();
 }
+
 
 
 
@@ -668,10 +712,16 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
     // compute distances
     int n = global_lipidome->lipids.size();
     cout << "Computing pairwise distance matrix for " << n << " lipids" << endl;
-    MatrixXd distance_matrix(n, n);
-    for (int i = 0; i < n - 1; ++i){
-        distance_matrix(i, i) = 0;
-        for (int j = i + 1; j < n; ++j){
+    MatrixXd distance_matrix = MatrixXd::Zero(n, n);
+    
+    #pragma omp parallel for
+    for (int ii = 0; ii < n * n; ++ii){
+        int i = ii / n;
+        int j = ii % n;
+        
+        if (i < j){
+    //for (int i = 0; i < n - 1; ++i){
+    //    for (int j = i + 1; j < n; ++j){
             int union_num, inter_num;
             lipid_similarity(global_lipidome->lipids.at(i), global_lipidome->lipids.at(j), union_num, inter_num);
             double distance = (double)union_num / (double)inter_num - 1.;
@@ -694,17 +744,16 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
 
 void LipidSpace::separate_matrixes(vector<Table*>* lipidomes, Table* global_lipidome){
     map<string, int> lipid_indexes;
-    vector<int> all;
+    vector<int> all = {0, 1};
     for (int i = 0; i < global_lipidome->species.size(); ++i){
         lipid_indexes.insert({global_lipidome->species.at(i), i});
-        all.push_back(i);
     }
     
     
     for (auto lipidome : *lipidomes){
         vector<int> indexes;
         for (auto lipid_species : lipidome->species) indexes.push_back(lipid_indexes.at(lipid_species));
-        lipidome->m = global_lipidome->m.leftCols(2)(indexes, all);
+        lipidome->m = global_lipidome->m(indexes, all);
     }
 }
 
@@ -826,10 +875,12 @@ void print_help(){
 
 
 
-int main(int argc, char** argv) {
-    
+
+int main(int argc, char** argv) {    
     bool plot_pca = true;
     bool store_Tables = true;
+    Eigen::initParallel();
+    
     
     if (argc < 4) {
         print_help();
@@ -868,7 +919,6 @@ int main(int argc, char** argv) {
     // compute PCA matrixes for the complete lipidome
     Table* global_lipidome = lipid_space.compute_global_distance_matrix(&lipidomes);
     
-
     // cutting the global PCA matrix back to a matrix for each lipidome
     lipid_space.separate_matrixes(&lipidomes, global_lipidome);
     
@@ -877,9 +927,11 @@ int main(int argc, char** argv) {
     // plotting all lipidome PCAs
     if (plot_pca){
         lipid_space.plot_PCA(global_lipidome, output_folder);
+        /*
         for (auto table : lipidomes){
             lipid_space.plot_PCA(table, output_folder);
         }
+        */
     }
     
     
