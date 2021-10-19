@@ -116,7 +116,7 @@ string LipidSpecies::get_extended_class(){
     }
     
     else if (special_case && info->extended_class == ETHER_PLASMENYL){
-        return class_name + "-p";
+        return class_name + "-P";
     }
     
     return class_name;

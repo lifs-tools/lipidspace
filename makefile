@@ -70,13 +70,8 @@ dist-clean: clean
 install: ${bin}
 	mkdir -p ${install_dir}/lib
 	mkdir -p ${install_dir}/include
-	mkdir -p ${install_dir}/include/cppgoslin
-	mkdir -p ${install_dir}/include/cppgoslin/domain
-	mkdir -p ${install_dir}/include/cppgoslin/parser
+	cp -r cppgoslin ${install_dir}/include
 	cp ${bin} ${install_dir}/lib
-	cp cppgoslin/cppgoslin.h ${install_dir}/include/cppgoslin/.
-	cp cppgoslin/domain/*.h  ${install_dir}/include/cppgoslin/domain/.
-	cp cppgoslin/parser/*.h  ${install_dir}/include/cppgoslin/parser/.
 	
 	
 ShorthandTest: src/tests/ShorthandTest.o
