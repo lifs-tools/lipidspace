@@ -303,27 +303,8 @@ def compute_hausdorff_matrix(PCAs, lipid_lists):
 
 def main(argv):
     
-    a = np.matrix([[1,2,3,4], [5,6,7,8],[9,10,11,12], [13,14,15,16]], dtype=np.float64)
-    b = np.matrix([[1,2,3,4], [5,6,7,8],[9,10,11,12], [13,14,15,16]], dtype=np.float64)
-    print(a)
-    a = normalize(a)
-    print(a)
     
-    
-    b -= b.mean(axis = 0)
-    print(b)
-    
-    
-    from statistics import stdev
-    print(stdev([0.73029674, 0.60647843, 0.56821647, 0.55009133]))
-    
-    
-    exit()
-    
-    
-    
-    
-    plot_pca = False
+    plot_pca = True
     store_tables = False
     
     if len(argv) < 3:

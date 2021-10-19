@@ -8,6 +8,7 @@
 #include <cppgoslin/cppgoslin.h>
 #include <math.h>
 #include <algorithm>
+#include <sys/stat.h>
  
 using namespace std;
 using namespace Eigen;
@@ -60,7 +61,7 @@ LipidSpace::LipidSpace(){
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
     if (!infile.good()){
-        cout << "Error: file 'data/classes-matrix.csv' not found." << endl;
+        cerr << "Error: file 'data/classes-matrix.csv' not found." << endl;
         exit(-1);
     }
     string line;
@@ -352,7 +353,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
 void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int& union_num, int& inter_num){
     string key = lipid1->get_extended_class() + "/" + lipid2->get_extended_class();
     if (!contains(class_matrix, key)){
-        cout << "Error: key '" << key << "' not in precomputed class matrix" << endl;
+        cerr << "Error: key '" << key << "' not in precomputed class matrix" << endl;
         exit(-1);
     }
     union_num = class_matrix.at(key)[0];
@@ -396,7 +397,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
     // load and parse lipids
     ifstream infile(lipid_list_file);
     if (!infile.good()){
-        cout << "Error: file '" << lipid_list_file << "' not found." << endl;
+        cerr << "Error: file '" << lipid_list_file << "' not found." << endl;
         exit(-1);
     }
     string line;
@@ -435,7 +436,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
             for (auto fa : l->lipid->fa_list) cut_cycle(fa);
         }
         catch (exception &e) {
-            cout << "Error: lipid '" << line << "' cannot be parsed" << endl;
+            cerr << "Error: lipid '" << line << "' cannot be parsed" << endl;
             exit(-1);
         }
         
@@ -500,12 +501,12 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2, int cols){
     MatrixXd m1 = l1->m.leftCols(cols);
     MatrixXd m2 = l2->m.leftCols(cols);
     
+    
     m1.conservativeResize(m1.rows(), cols + 1);
     m1.col(cols) = l1->intensities;
     
     m2.conservativeResize(m2.rows(), cols + 1);
     m2.col(cols) = l2->intensities;
-
     
     double hausdorff = 0;
     for (int i = 0; i < m1.rows(); ++i){
@@ -572,6 +573,7 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     }
     output_file_name = output_folder + "/" + output_file_name;
     
+    
     map<string, vector<int>> indexes;
     for (int i = 0; i < table->classes.size(); ++i){
         string lipid_class = table->classes.at(i);
@@ -602,8 +604,9 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         label << kv.first << " (" << x.size() << ")";
         map<string, string> keywords = {{"label", label.str()}};
         plt::scatter(x, y, 2, keywords);
+        plt::scatter(x, y);
+        
     }
-    cout << "storing '" << output_file_name << "'" << endl;
     map<string, string> keywords_legend = {{"fontsize", "6"}};
     plt::legend(keywords_legend);
     plt::save(output_file_name);
@@ -719,7 +722,7 @@ void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_
     for (auto lipidome : *lipidomes){
         VectorXd v = lipidome->intensities.array() - ((double)lipidome->intensities.sum() / (double)lipidome->intensities.rows());
         double stdev = sqrt((v.array().square()).sum() / (double)v.rows());
-        lipidome->intensities = lipidome->intensities.array() / global_stdev * stdev;
+        lipidome->intensities = lipidome->intensities.array() / stdev * global_stdev;
     }
 }
 
@@ -735,20 +738,22 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
     // load and parse lipids
     ifstream infile(table_file);
     if (!infile.good()){
-        cout << "Error: file '" << table_file << "' not found." << endl;
+        cerr << "Error: file '" << table_file << "' not found." << endl;
         exit(-1);
     }
     string line;
     
 
-    set<string> NA_VALUES = {"NA", "nan", "N/A", "O"};
+    set<string> NA_VALUES = {"NA", "nan", "N/A", "O", "", "n/a", "NaN"};
     vector<vector<int>> intensities;
     
     
     int line_cnt = 0;
+    int num_cols = 0;
     while (getline(infile, line)){
         if (line_cnt++ == 0){
-            vector<string>* tokens = split_string(line, ',');
+            vector<string>* tokens = split_string(line, ',', '"', true);
+            num_cols = tokens->size();
             for (int i = 1; i < tokens->size(); ++i){
                 lipidomes->push_back(new Table(tokens->at(i)));
                 intensities.push_back(vector<int>());
@@ -758,13 +763,23 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
         }
         if (line.length() == 0) continue;
                                                                           
-        vector<string>* tokens = split_string(line, ',');
+        vector<string>* tokens = split_string(line, ',', '"', true);
+        if (tokens->size() != num_cols) {
+            cerr << "Error in line '" << line_cnt << "' number of cells does not match with number of column labels" << endl;
+            exit(-1);
+        }
+        
         LipidAdduct* l = 0;
         try {
             l = parser.parse(tokens->at(0));
         }
         catch (exception &e) {
-            cout << "Error: lipid '" << tokens->at(0) << "' cannot be parsed" << endl;
+            cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed" << endl;
+            exit(-1);
+        }
+        
+        if (l == 0) {
+            cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed" << endl;
             exit(-1);
         }
             
@@ -783,7 +798,6 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
                 lipidome->classes.push_back(l->get_lipid_string(CLASS));
                 intensities.at(i - 1).push_back(atof(val.c_str()));
             }
-            
         }
         for (auto fa : l->lipid->fa_list) cut_cycle(fa);
         
@@ -803,10 +817,10 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
 
 
 void print_help(){
-    cout << "usage: " << endl;
-    cout << "  > ./lipidspace output_folder table lipid_table[csv]" << endl;
-    cout << "  > ./lipidspace output_folder lists lipid_list[csv], ..." << endl;
-    cout << "modes either 'table' or 'lisds'." << endl;
+    cerr << "usage: " << endl;
+    cerr << "  > ./lipidspace output_folder table lipid_table[csv]" << endl;
+    cerr << "  > ./lipidspace output_folder lists lipid_list[csv], ..." << endl;
+    cerr << "modes either 'table' or 'lisds'." << endl;
 }
 
 
@@ -825,6 +839,12 @@ int main(int argc, char** argv) {
     // getting input
     string output_folder = argv[1];
     string mode = argv[2];
+    
+    struct stat buffer;
+    if (stat (output_folder.c_str(), &buffer) != 0){
+        cerr << "Error: output folder '" << output_folder << "' does not exist." << endl;
+        exit(-1);
+    }
     
     
     if (mode != "table" && mode != "lists") {
@@ -863,10 +883,8 @@ int main(int argc, char** argv) {
     }
     
     
-    
     // normalize and incorporate intensities
     lipid_space.normalize_intensities(&lipidomes, global_lipidome);
-    
     
     
     
