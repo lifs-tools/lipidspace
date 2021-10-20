@@ -415,8 +415,8 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     union_num = class_matrix.at(key)[0];
     inter_num = class_matrix.at(key)[1];
     
-    int min_u = 0, min_i = 0;
-    double min_q = 1e9;
+    int max_u = 0, max_i = 0;
+    double max_q = 0;
     
     vector<FattyAcid*>* orig_fa_list_1 = &lipid1->lipid->fa_list;
     vector<FattyAcid*>* orig_fa_list_2 = &lipid2->lipid->fa_list;
@@ -461,15 +461,17 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         }
         
         double q = (double)ii / (double)uu;
-        if (min_q > q){
-            min_q = q;
-            min_u = uu;
-            min_i = ii;
+        if (max_q < q){
+            max_q = q;
+            max_u = uu;
+            max_i = ii;
         }
         delete for_del;
+        
     }
-    union_num += min_u;
-    inter_num += min_i;
+    
+    union_num += max_u;
+    inter_num += max_i;
 }
 
 
@@ -725,7 +727,6 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         label << kv.first << " (" << x.size() << ")";
         map<string, string> keywords = {{"label", label.str()}};
         plt::scatter(x, y, 2, keywords);
-        
     }
     cout << "storing '" << output_file_name << "'" << endl;
     
@@ -792,6 +793,7 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
     int n = global_lipidome->lipids.size();
     cout << "Computing pairwise distance matrix for " << n << " lipids" << endl;
     MatrixXd distance_matrix = MatrixXd::Zero(n, n);
+    
     
     #pragma omp parallel for
     for (int ii = 0; ii < n * n; ++ii){
