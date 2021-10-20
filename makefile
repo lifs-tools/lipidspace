@@ -46,7 +46,7 @@ src/parser/%.o: src/parser/%.cpp cppgoslin/parser/KnownGrammars.h src/domain/Lip
 	
 	
 src/tests/%.o: src/tests/%.cpp libcppGoslin.so
-	${CC} ${opt} -I. -fPIC -o $@ -c $<
+	${CC} -fopenmp ${opt} -I. -fPIC -o $@ -c $<
 	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
@@ -96,7 +96,7 @@ SwissLipidsTest: src/tests/SwissLipidsTest.o
 	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest src/tests/SwissLipidsTest.o libcppGoslin.so
 	
 HmdbTest: src/tests/HmdbTest.o
-	${CC} -I. ${opt} -Bstatic -o HmdbTest src/tests/HmdbTest.o libcppGoslin.so
+	${CC} -fopenmp -I. ${opt} -Bstatic -o HmdbTest src/tests/HmdbTest.o libcppGoslin.so
 	
 FattyAcidsTest: src/tests/FattyAcidsTest.o
 	${CC} -I. ${opt} -Bstatic -o FattyAcidsTest src/tests/FattyAcidsTest.o libcppGoslin.so

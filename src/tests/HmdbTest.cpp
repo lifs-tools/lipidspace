@@ -44,8 +44,6 @@ void assert_true(string a, string b, string t = ""){
 }
 
 int main(int argc, char** argv){
-    
-    LipidAdduct* lipid;
     string test_file = "data/goslin/testfiles/hmdb-test.csv";
     HmdbParser parser;
     
@@ -112,9 +110,11 @@ int main(int argc, char** argv){
     infile.close();
     
     
+    #pragma omp parallel for
     for (auto lipid_name : lipid_names){
-        lipid = parser.parse(lipid_name);
+        LipidAdduct* lipid = parser.parse(lipid_name);
         assert(lipid != 0);
+        delete lipid;
     }
     
     cout << "All tests passed without any problem" << endl;

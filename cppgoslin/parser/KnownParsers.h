@@ -40,6 +40,7 @@ public:
     FattyAcidParser();
     ~FattyAcidParser();
     LipidAdduct* parse(string lipid_name, bool throw_error = true);
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
@@ -47,6 +48,7 @@ class ShorthandParser : public Parser<LipidAdduct*> {
 public:
     ShorthandParser();
     ~ShorthandParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
@@ -54,6 +56,7 @@ class GoslinParser : public Parser<LipidAdduct*> {
 public:
     GoslinParser();
     ~GoslinParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
@@ -61,6 +64,7 @@ class LipidMapsParser : public Parser<LipidAdduct*> {
 public:
     LipidMapsParser();
     ~LipidMapsParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
@@ -68,6 +72,7 @@ class SwissLipidsParser : public Parser<LipidAdduct*> {
 public:
     SwissLipidsParser();
     ~SwissLipidsParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
@@ -75,6 +80,7 @@ class HmdbParser : public Parser<LipidAdduct*> {
 public:
     HmdbParser();
     ~HmdbParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 

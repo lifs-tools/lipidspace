@@ -39,17 +39,6 @@ LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
             fa_list.push_back(fatty_acid);
         }
     }
-    
-    /*
-    for (auto decorator : *headgroup->decorators){
-        if (decorator->name == "decorator_alkyl" || decorator->name == "decorator_acyl"){
-            ElementTable* e = decorator->get_elements();
-            info->num_carbon += e->at(ELEMENT_C);
-            delete e;
-            info->double_bonds->num_double_bonds += decorator->get_double_bonds();
-        }
-    }
-    */
 }
 
 

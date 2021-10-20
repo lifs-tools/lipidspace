@@ -26,65 +26,127 @@ SOFTWARE.
 #include "cppgoslin/parser/KnownParsers.h"
 
 FattyAcidParser::FattyAcidParser() : Parser<LipidAdduct*>(new FattyAcidParserEventHandler(), GrammarString(fatty_acid_grammar), DEFAULT_QUOTE){
-        
+    Headgroup::init();
 }
 
 
 FattyAcidParser::~FattyAcidParser(){
     delete parser_event_handler;
 }
-        
+
+LipidAdduct* FattyAcidParser::parse_parallel(string lipid_name, bool b, BaseParserEventHandler<LipidAdduct*>* bpeh){
+    FattyAcidParserEventHandler* h = new FattyAcidParserEventHandler();
+    LipidAdduct* l = Parser<LipidAdduct*>::parse_parallel(to_lower(lipid_name), b, h);
+    delete h;
+    return l;
+}
+
 LipidAdduct* FattyAcidParser::parse(string lipid_name, bool throw_error){
     return Parser<LipidAdduct*>::parse(to_lower(lipid_name), throw_error);
 }
 
 
 
-ShorthandParser::ShorthandParser() : Parser<LipidAdduct*>(new ShorthandParserEventHandler(), GrammarString(shorthand_grammar), DEFAULT_QUOTE){
-        
-}
 
+
+
+
+ShorthandParser::ShorthandParser() : Parser<LipidAdduct*>(new ShorthandParserEventHandler(), GrammarString(shorthand_grammar), DEFAULT_QUOTE){
+    Headgroup::init();
+}
 
 ShorthandParser::~ShorthandParser(){
     delete parser_event_handler;
 }
 
-
-GoslinParser::GoslinParser() : Parser<LipidAdduct*>(new GoslinParserEventHandler(), GrammarString(goslin_grammar), DEFAULT_QUOTE){
-        
+LipidAdduct* ShorthandParser::parse_parallel(string lipid_name, bool b, BaseParserEventHandler<LipidAdduct*>* bpeh){
+    ShorthandParserEventHandler* h = new ShorthandParserEventHandler();
+    LipidAdduct* l = Parser<LipidAdduct*>::parse_parallel(lipid_name, b, h);
+    delete h;
+    return l;
 }
 
+
+
+
+
+GoslinParser::GoslinParser() : Parser<LipidAdduct*>(new GoslinParserEventHandler(), GrammarString(goslin_grammar), DEFAULT_QUOTE){
+    Headgroup::init();
+}
 
 GoslinParser::~GoslinParser(){
     delete parser_event_handler;
 }
 
+LipidAdduct* GoslinParser::parse_parallel(string lipid_name, bool b, BaseParserEventHandler<LipidAdduct*>* bpeh){
+    GoslinParserEventHandler* h = new GoslinParserEventHandler();
+    LipidAdduct* l = Parser<LipidAdduct*>::parse_parallel(lipid_name, b, h);
+    delete h;
+    return l;
+}
+
+
+
+
+
 
 LipidMapsParser::LipidMapsParser() : Parser<LipidAdduct*>(new LipidMapsParserEventHandler(), GrammarString(lipid_maps_grammar), DEFAULT_QUOTE){
-        
+    Headgroup::init();
 }
 
 LipidMapsParser::~LipidMapsParser(){
     delete parser_event_handler;
 }
 
+LipidAdduct* LipidMapsParser::parse_parallel(string lipid_name, bool b, BaseParserEventHandler<LipidAdduct*>* bpeh){
+    LipidMapsParserEventHandler* h = new LipidMapsParserEventHandler();
+    LipidAdduct* l = Parser<LipidAdduct*>::parse_parallel(lipid_name, b, h);
+    delete h;
+    return l;
+}
+
+
+
+
+
 
 SwissLipidsParser::SwissLipidsParser() : Parser<LipidAdduct*>(new SwissLipidsParserEventHandler(), GrammarString(swiss_lipids_grammar), DEFAULT_QUOTE){
-        
+    Headgroup::init();
 }
 
 SwissLipidsParser::~SwissLipidsParser(){
     delete parser_event_handler;
 }
 
+LipidAdduct* SwissLipidsParser::parse_parallel(string lipid_name, bool b, BaseParserEventHandler<LipidAdduct*>* bpeh){
+    SwissLipidsParserEventHandler* h = new SwissLipidsParserEventHandler();
+    LipidAdduct* l = Parser<LipidAdduct*>::parse_parallel(lipid_name, b, h);
+    delete h;
+    return l;
+}
+
+
+
+
+
 
 HmdbParser::HmdbParser() : Parser<LipidAdduct*>(new HmdbParserEventHandler(), GrammarString(hmdb_grammar), DEFAULT_QUOTE){
-        
+    Headgroup::init();
 }
 
 HmdbParser::~HmdbParser(){
     delete parser_event_handler;
 }
+
+LipidAdduct* HmdbParser::parse_parallel(string lipid_name, bool b, BaseParserEventHandler<LipidAdduct*>* bpeh){
+    HmdbParserEventHandler* h = new HmdbParserEventHandler();
+    LipidAdduct* l = Parser<LipidAdduct*>::parse_parallel(lipid_name, b, h);
+    delete h;
+    return l;
+}
+
+
+
 
 
 

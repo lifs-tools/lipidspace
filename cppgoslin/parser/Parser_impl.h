@@ -663,6 +663,24 @@ void Parser<T>::raise_events(TreeNode *node){
 
 
 
+template <class T>
+void Parser<T>::raise_events_parallel(TreeNode *node, BaseParserEventHandler<T>* bpeh){
+    if (node != NULL){
+        string node_rule_name = node->fire_event ? NTtoRule.at(node->rule_index) : "";
+        if (node->fire_event) bpeh->handle_event(node_rule_name + "_pre_event", node);
+        
+        if (node->left != NULL) { // node.terminal is != None when node is leaf
+            raise_events_parallel(node->left, bpeh);
+            if (node->right != NULL) raise_events_parallel(node->right, bpeh);
+        }
+            
+        if (node->fire_event) bpeh->handle_event(node_rule_name + "_post_event", node);
+    }
+}
+
+
+
+
 
 // filling the syntax tree including events
 template <class T>
@@ -721,13 +739,36 @@ T Parser<T>::parse(string text_to_parse, bool throw_error){
     
     return parser_event_handler->content;
 }
+
+
+
+// re-implementation of Cocke-Younger-Kasami algorithm
+template <class T>
+T Parser<T>::parse_parallel(string text_to_parse, bool throw_error, BaseParserEventHandler<T>* bpeh){
+    
+    text_to_parse = strip(text_to_parse, ' ');
+    string old_lipid = text_to_parse;
+    if (used_eof) text_to_parse += string(1, EOF_SIGN);
+    bpeh->content = 0;
+    
+    TreeNode* pt = parse_regular(text_to_parse, true);
+    if (throw_error && pt == 0){
+        delete bpeh;
+        throw LipidParsingException("Lipid '" + old_lipid + "' can not be parsed by grammar '" + grammar_name + "'");
+    }
+    raise_events_parallel(pt, bpeh);
+    delete pt;
+    
+    return bpeh->content;
+}
     
     
     
     
 template <class T>
-void Parser<T>::parse_regular(string text_to_parse){
+TreeNode* Parser<T>::parse_regular(string text_to_parse, bool parallel){
     word_in_grammar = false;
+    TreeNode* parse_tree = 0;
     
     int n = text_to_parse.length();
     // dp stands for dynamic programming, nothing else
@@ -803,10 +844,16 @@ void Parser<T>::parse_regular(string text_to_parse){
         
         for (int i = n - 1; i > 0; --i){
             if (contains_p(DP[0][i], START_RULE)){
-                word_in_grammar = true;
-                TreeNode parse_tree(START_RULE, contains(NTtoRule, START_RULE));
-                fill_tree(&parse_tree, DP[0][i]->at(START_RULE));
-                raise_events(&parse_tree);
+                if (!parallel){
+                    word_in_grammar = true;
+                    TreeNode parse_tree(START_RULE, contains(NTtoRule, START_RULE));
+                    fill_tree(&parse_tree, DP[0][i]->at(START_RULE));
+                    raise_events(&parse_tree);
+                }
+                else {
+                    parse_tree = new TreeNode(START_RULE, contains(NTtoRule, START_RULE));
+                    fill_tree(parse_tree, DP[0][i]->at(START_RULE));
+                }
                 break;
             }
         }
@@ -824,5 +871,7 @@ void Parser<T>::parse_regular(string text_to_parse){
     }
     delete[] DP;
     delete[] Ks;
+    
+    return parse_tree;
 }
 

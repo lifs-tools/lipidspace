@@ -49,6 +49,7 @@ public:
     
     Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators = 0, bool _use_headgroup = false);
     ~Headgroup();
+    static void init();
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     ElementTable* get_elements();
     static LipidCategory get_category(string _headgroup);

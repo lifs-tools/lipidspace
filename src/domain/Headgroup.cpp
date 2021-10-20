@@ -43,6 +43,32 @@ Headgroup::~Headgroup(){
     for (auto hgd : *decorators) delete hgd;
     delete decorators;
 }
+
+
+
+void Headgroup::init(){
+    if (!StringCategory.size()){
+        for (const auto& kvp : LipidClasses::get_instance().lipid_classes){
+            LipidCategory category = kvp.second.lipid_category;
+            for (auto hg : kvp.second.synonyms){
+                StringCategory.insert(pair<string, LipidCategory>(hg, category));
+            }
+        }
+        
+        
+        for (auto kvp : LipidClasses::get_instance().lipid_classes){
+            LipidClass l_class = kvp.first;
+            for (auto hg : kvp.second.synonyms){
+                StringClass.insert({hg, l_class});
+            }
+        }
+        
+        for (auto kvp : LipidClasses::get_instance().lipid_classes){
+            ClassString.insert({kvp.first, kvp.second.synonyms.at(0)});
+        }
+    }
+}
+
         
 
 LipidCategory Headgroup::get_category(string _headgroup){
