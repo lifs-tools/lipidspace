@@ -60,7 +60,6 @@ public:
 
 
 
-
 LipidSpace::LipidSpace(){
     cols_for_pca = 2;
     
@@ -412,6 +411,8 @@ Table* LipidSpace::load_list(string lipid_list_file){
     Table* lipidome = new Table(lipid_list_file);
     vector<double> intensities;
     vector<string> lipids;
+    
+    int pos_all = all_lipids.size();
     while (getline(infile, line)){
         if (line.length() == 0) continue;
         
@@ -431,22 +432,25 @@ Table* LipidSpace::load_list(string lipid_list_file){
         }
         lipids.push_back(line);
         lipidome->lipids.push_back(0);
+        all_lipids.push_back(0);
         lipidome->species.push_back("");
         lipidome->classes.push_back("");
     }
+    
     
     
     #pragma omp parallel for
     for (int i = 0; i < lipids.size(); ++i) { 
         string line = lipids.at(i);
         try {
-            LipidAdduct* l = parser.parse(line);
+            LipidAdduct* l = parser.parse_parallel(line);
             // deleting adduct since not necessary
             if (l->adduct != 0){
                 delete l->adduct;
                 l->adduct = 0;
             }
-            all_lipids.push_back(l);
+            
+            all_lipids.at(pos_all + i) = l;
             lipidome->lipids.at(i) = l;
             lipidome->species.at(i) = l->get_lipid_string();
             lipidome->classes.at(i) = l->get_lipid_string(CLASS);
@@ -520,26 +524,6 @@ MatrixXd LipidSpace::compute_PCA(MatrixXd m){
     MatrixXd evecs = eigs.eigenvectors();
     
     return (evecs.transpose() * m.transpose()).transpose();
-    /*
-    cout << eigs.eigenvalues() << endl << endl;
-    cout << nnn.block(0, 0, 20, 2) << endl;
-
-    
-    // calculate eigenvectors of the covariance matrix
-    SelfAdjointEigenSolver<MatrixXd> eigensolver(cov);
-    
-    cout << "4" << endl;
-    
-    // reverse the order of columns
-    MatrixXd evecs = eigensolver.eigenvectors();
-    MatrixXd rev = evecs.rowwise().reverse();
-    cout << "5" << endl;
-    
-    // carry out the transformation on the data using eigenvectors
-    MatrixXd nn = (rev.transpose() * m.transpose()).transpose();
-    cout << nn.block(0, 0, 20, 2) << endl;
-    return nn;
-    */
 }
 
 
