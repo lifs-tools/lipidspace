@@ -16,7 +16,7 @@ ${bin_pre}: ${obj_pre}
 	${CC} ${opt} ${obj_pre} -o ${bin_pre} -L ~/workspace/lib -lOGDF -lCOIN
 	
 %.o: %.cpp
-	${CC} -fopenmp ${opt} -I /usr/local/include/eigen3 -I /usr/local/include -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
+	${CC} -fopenmp ${opt} -I LipidSpace/Eigen -I LipidSpace/Spectra/include/Spectra -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
 
 clean:
 	rm -f ${obj_pre}

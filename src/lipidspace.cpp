@@ -37,6 +37,9 @@ public:
     map<string, int*> class_matrix;
     vector<LipidAdduct*> all_lipids;
     int cols_for_pca;
+    static const vector< vector< vector<int> > > orders;
+    static const vector<int> order_len;
+    
     
     LipidSpace();
     ~LipidSpace();
@@ -87,6 +90,54 @@ LipidSpace::LipidSpace(){
 }
 
 
+const vector<int> LipidSpace::order_len{1, 1, 2, 6, 24};
+    
+const vector< vector< vector<int> > > LipidSpace::orders{
+    {
+        {}
+    },
+    {
+        {0}
+    },
+    {
+        {0, 1},
+        {1, 0}
+    },
+    {
+        {0, 1, 2},
+        {0, 2, 1},
+        {1, 0, 2},
+        {1, 2, 0},
+        {2, 0, 1},
+        {2, 1, 0}
+    },
+    {
+        {0, 1, 2, 3},
+        {0, 2, 1, 3},
+        {1, 0, 2, 3},
+        {1, 2, 0, 3},
+        {2, 0, 1, 3},
+        {2, 1, 0, 3},
+        {0, 1, 3, 2},
+        {0, 2, 3, 1},
+        {1, 0, 3, 2},
+        {1, 2, 3, 0},
+        {2, 0, 3, 1},
+        {2, 1, 3, 0},
+        {0, 3, 1, 2},
+        {0, 3, 2, 1},
+        {1, 3, 0, 2},
+        {1, 3, 2, 0},
+        {2, 3, 0, 1},
+        {2, 3, 1, 0},
+        {3, 0, 1, 2},
+        {3, 0, 2, 1},
+        {3, 1, 0, 2},
+        {3, 1, 2, 0},
+        {3, 2, 0, 1},
+        {3, 2, 1, 0}
+    }
+};
 
 
 
@@ -363,30 +414,62 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     }
     union_num = class_matrix.at(key)[0];
     inter_num = class_matrix.at(key)[1];
-    int l = min(lipid1->lipid->fa_list.size(), lipid2->lipid->fa_list.size());
-    for (int i = 0; i < l; ++i){
-        fatty_acyl_similarity(lipid1->lipid->fa_list.at(i), lipid2->lipid->fa_list.at(i), union_num, inter_num);
+    
+    int min_u = 0, min_i = 0;
+    double min_q = 1e9;
+    
+    vector<FattyAcid*>* orig_fa_list_1 = &lipid1->lipid->fa_list;
+    vector<FattyAcid*>* orig_fa_list_2 = &lipid2->lipid->fa_list;
+    
+    if (orig_fa_list_1->size() < orig_fa_list_2->size()){
+        vector<FattyAcid*>* tmp = orig_fa_list_1;
+        orig_fa_list_1 = orig_fa_list_2;
+        orig_fa_list_2 = tmp;
     }
-      
-      
-    vector<FattyAcid*>* fa_list_1 = &lipid1->lipid->fa_list;
-    vector<FattyAcid*>* fa_list_2 = &lipid2->lipid->fa_list;
-    if (fa_list_1->size() < fa_list_2->size()){
-        fa_list_1 = &lipid2->lipid->fa_list;
-        fa_list_2 = &lipid1->lipid->fa_list;
-    }
+    int len_fa2 = orig_fa_list_2->size();
+    
+    for(int ol = 0; ol < order_len.at(len_fa2); ++ol){
+        int uu = 0, ii = 0;
         
-    if (fa_list_1->size() > fa_list_2->size()){
-        for (int i = fa_list_2->size(); i < fa_list_1->size(); ++i){
-            FattyAcid* fa = fa_list_1->at(i);
-            union_num += fa->get_double_bonds();
-            ElementTable* e = fa->get_elements();
-            for (auto kv : *e){
-                if (kv.first != ELEMENT_H) union_num += kv.second;
-            }
-            delete e;
+        vector<FattyAcid*>* fa_list_1 = orig_fa_list_1;
+        vector<FattyAcid*>* fa_list_2 = new vector<FattyAcid*>();
+        vector<FattyAcid*>* for_del = fa_list_2;
+        
+        if (len_fa2 > 0){
+            for (int index : orders.at(len_fa2).at(ol)) fa_list_2->push_back(orig_fa_list_2->at(index));
         }
+        
+    
+        int l = min(fa_list_1->size(), fa_list_2->size());
+        for (int i = 0; i < l; ++i){
+            fatty_acyl_similarity(fa_list_1->at(i), fa_list_2->at(i), uu, ii);
+        }
+        
+        
+        
+            
+        if (fa_list_1->size() > fa_list_2->size()){
+            for (int i = fa_list_2->size(); i < fa_list_1->size(); ++i){
+                FattyAcid* fa = fa_list_1->at(i);
+                uu += fa->get_double_bonds();
+                ElementTable* e = fa->get_elements();
+                for (auto kv : *e){
+                    if (kv.first != ELEMENT_H) uu += kv.second;
+                }
+                delete e;
+            }
+        }
+        
+        double q = (double)ii / (double)uu;
+        if (min_q > q){
+            min_q = q;
+            min_u = uu;
+            min_i = ii;
+        }
+        delete for_del;
     }
+    union_num += min_u;
+    inter_num += min_i;
 }
 
 
@@ -806,7 +889,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
         }
         if (line.length() == 0) continue;
         
-    }
+
                                                                           
         vector<string>* tokens = split_string(line, ',', '"', true);
         if (tokens->size() != num_cols) {
