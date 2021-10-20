@@ -491,8 +491,8 @@ ArrayXd LipidSpace::compute_PCA_variances(MatrixXd m){
 
 
 MatrixXd LipidSpace::compute_PCA(MatrixXd m){
+    cout << "Running principal component analysis" << endl;
     // scale and transform the matrix
-    
     int r = m.rows();
     m = m.rowwise() - (m.rowwise().mean()).transpose();
     VectorXd norm = (r / m.array().square().colwise().sum()).sqrt();
@@ -716,8 +716,6 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
         int j = ii % n;
         
         if (i < j){
-    //for (int i = 0; i < n - 1; ++i){
-    //    for (int j = i + 1; j < n; ++j){
             int union_num, inter_num;
             lipid_similarity(global_lipidome->lipids.at(i), global_lipidome->lipids.at(j), union_num, inter_num);
             double distance = (double)union_num / (double)inter_num - 1.;
@@ -807,6 +805,8 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
             continue;
         }
         if (line.length() == 0) continue;
+        
+    }
                                                                           
         vector<string>* tokens = split_string(line, ',', '"', true);
         if (tokens->size() != num_cols) {
@@ -845,15 +845,14 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
             }
         }
         for (auto fa : l->lipid->fa_list) cut_cycle(fa);
-        
-        for (int i = 0; i < lipidomes->size(); ++i){
-            vector<int> &vi = intensities.at(i);
-            VectorXd v(vi.size());
-            for (int j = 0; j < vi.size(); ++j) v(j) = vi.at(j);
-            lipidomes->at(i)->intensities = v;
-        }
-        
         delete tokens;
+    }
+        
+    for (int i = 0; i < lipidomes->size(); ++i){
+        vector<int> &vi = intensities.at(i);
+        VectorXd v(vi.size());
+        for (int j = 0; j < vi.size(); ++j) v(j) = vi.at(j);
+        lipidomes->at(i)->intensities = v;
     }
 }
 
