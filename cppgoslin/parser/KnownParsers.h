@@ -92,6 +92,7 @@ public:
     LipidParser();
     ~LipidParser();
     LipidAdduct* parse(string lipid_name);
+    LipidAdduct* parse_parallel(string lipid_name);
 };      
 
 #endif /* KNOWN_PARSERS_H */

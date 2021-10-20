@@ -177,3 +177,17 @@ LipidAdduct* LipidParser::parse(string lipid_name){
     }
     throw LipidException("Lipid not found");
 }
+    
+    
+LipidAdduct* LipidParser::parse_parallel(string lipid_name){
+    lastSuccessfulParser = 0;
+    
+    for (auto parser : parser_list) {
+        LipidAdduct *lipid = parser->parse_parallel(lipid_name, false);
+        if (lipid){
+            lastSuccessfulParser = parser;
+            return lipid;
+        }
+    }
+    throw LipidException("Lipid not found");
+}
