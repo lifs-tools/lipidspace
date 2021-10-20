@@ -411,12 +411,14 @@ Table* LipidSpace::load_list(string lipid_list_file){
     
     Table* lipidome = new Table(lipid_list_file);
     vector<double> intensities;
+    vector<string> lipids;
     while (getline(infile, line)){
         if (line.length() == 0) continue;
         
         vector<string>* tokens = goslin::split_string(line, '\n', '"');
         line = strip(tokens->at(0), '"');
         delete tokens;
+        
         
         if (line.find('\t') != string::npos){
             tokens = goslin::split_string(line, '\t', '"');
@@ -427,7 +429,16 @@ Table* LipidSpace::load_list(string lipid_list_file){
         else {
             intensities.push_back(1);
         }
-        
+        lipids.push_back(line);
+        lipidome->lipids.push_back(0);
+        lipidome->species.push_back("");
+        lipidome->classes.push_back("");
+    }
+    
+    
+    #pragma omp parallel for
+    for (int i = 0; i < lipids.size(); ++i) { 
+        string line = lipids.at(i);
         try {
             LipidAdduct* l = parser.parse(line);
             // deleting adduct since not necessary
@@ -436,20 +447,21 @@ Table* LipidSpace::load_list(string lipid_list_file){
                 l->adduct = 0;
             }
             all_lipids.push_back(l);
-            lipidome->lipids.push_back(l);
-            lipidome->species.push_back(l->get_lipid_string());
-            lipidome->classes.push_back(l->get_lipid_string(CLASS));
+            lipidome->lipids.at(i) = l;
+            lipidome->species.at(i) = l->get_lipid_string();
+            lipidome->classes.at(i) = l->get_lipid_string(CLASS);
             for (auto fa : l->lipid->fa_list) cut_cycle(fa);
         }
         catch (exception &e) {
             cerr << "Error: lipid '" << line << "' cannot be parsed" << endl;
             exit(-1);
         }
-        
-        VectorXd intens(intensities.size());
-        for (int i = 0; i < intensities.size(); ++i) intens(i) = intensities.at(i);
-        lipidome->intensities = intens;
     }
+    
+    VectorXd intens(intensities.size());
+    for (int i = 0; i < intensities.size(); ++i) intens(i) = intensities.at(i);
+    lipidome->intensities = intens;
+    
     
     return lipidome;
 }
