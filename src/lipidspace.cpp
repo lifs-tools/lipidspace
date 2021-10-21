@@ -756,12 +756,14 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
     MatrixXd m1 = l1->m;
     MatrixXd m2 = l2->m;
     
+    // add intensities to hausdorff matrix
     
     m1.conservativeResize(m1.rows(), cols_for_pca + 1);
     m1.col(cols_for_pca) = l1->intensities;
     
     m2.conservativeResize(m2.rows(), cols_for_pca + 1);
     m2.col(cols_for_pca) = l2->intensities;
+    
     
     double hausdorff = 0;
     for (int i = 0; i < m1.rows(); ++i){
@@ -984,7 +986,7 @@ void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_
     for (auto lipidome : *lipidomes){
         VectorXd v = lipidome->intensities.array() - ((double)lipidome->intensities.sum() / (double)lipidome->intensities.rows());
         double stdev = sqrt((v.array().square()).sum() / (double)v.rows());
-        lipidome->intensities = lipidome->intensities.array() / stdev * global_stdev;
+        if (stdev > 1e-16) lipidome->intensities = lipidome->intensities.array() / stdev * global_stdev;
     }
 }
 
