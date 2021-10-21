@@ -852,24 +852,25 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
             x.push_back(table->m(i, 0));
             y.push_back(table->m(i, 1));
         }
-        stringstream xlabel;
-        xlabel.precision(1);
-        //xlabel << fixed << "Principal component 1 (" << (variances(0) * 100) << " %)";
-        xlabel << fixed << "Principal component 1";
-        
-        stringstream ylabel;
-        ylabel.precision(1);
-        //ylabel << fixed << "Principal component 2 (" << (variances(1) * 100) << " %)";
-        ylabel << fixed << "Principal component 2";
-        
-        plt::xlabel(xlabel.str());
-        plt::ylabel(ylabel.str());
-        
         stringstream label;
         label << kv.first << " (" << x.size() << ")";
-        map<string, string> keywords = {{"label", label.str()}};
-        plt::scatter(x, y, 2, keywords);
+        plt::scatter(x, y, 3, {{"label", label.str()}});
+        plt::annotate(kv.first, 0, 0);
     }
+    
+    stringstream xlabel;
+    xlabel.precision(1);
+    //xlabel << fixed << "Principal component 1 (" << (variances(0) * 100) << " %)";
+    xlabel << fixed << "Principal component 1";
+    
+    stringstream ylabel;
+    ylabel.precision(1);
+    //ylabel << fixed << "Principal component 2 (" << (variances(1) * 100) << " %)";
+    ylabel << fixed << "Principal component 2";
+    
+    plt::xlabel(xlabel.str());
+    plt::ylabel(ylabel.str());
+    
     cout << "storing '" << output_file_name << "'" << endl;
     plt::xticks((vector<int>){});
     plt::yticks((vector<int>){});
@@ -945,7 +946,8 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
         if (i < j){
             int union_num, inter_num;
             lipid_similarity(global_lipidome->lipids.at(i), global_lipidome->lipids.at(j), union_num, inter_num);
-            double distance = (double)union_num / (double)inter_num - 1.;
+            //double distance = (double)union_num / (double)inter_num - 1.;
+            double distance = 1 - (double)inter_num / (double)union_num;
             distance_matrix(i, j) = distance;
             distance_matrix(j, i) = distance;
         }
