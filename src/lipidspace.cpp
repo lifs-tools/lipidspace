@@ -80,6 +80,7 @@ public:
     void normalize_intensities(vector<Table*>* lipidomes, Table* global_lipidome);
     void load_table(string table_file, vector<Table*>* lipidomes);
     void plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string output_folder);
+    void store_distance_table(Table* lipidome, string output_folder);
 };
 
 
@@ -949,7 +950,7 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
             distance_matrix(j, i) = distance;
         }
     }
-    global_lipidome->m = compute_PCA(distance_matrix);
+    global_lipidome->m = distance_matrix;
     
     return global_lipidome;
 }
@@ -1085,6 +1086,27 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
 
 
 
+void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
+    string output_file = output_folder + "/distance_matrix.csv";
+    
+    ofstream table_stream(output_file);
+    table_stream << "ID";
+    for (auto lipid : lipidome->species) table_stream << "\t" << lipid;
+    table_stream << endl;
+    
+    for (int i = 0; i < lipidome->species.size(); ++i){
+        table_stream << lipidome->species.at(i);
+        for (int j = 0; j < lipidome->species.size(); ++j){
+            table_stream << "\t" << lipidome->m(i, j);
+        }
+        table_stream << endl;
+    }
+    
+}
+
+
+
+
 
 void print_help(){
     cerr << "usage: " << endl;
@@ -1130,7 +1152,7 @@ int main(int argc, char** argv) {
     lipid_space.keep_sn_position = false;
     bool plot_pca = true; 
     bool plot_pca_lipidomes = false;
-    bool store_Tables = false;
+    bool storing_distance_table = true;
     
     
     // loadig each lipidome
@@ -1145,10 +1167,20 @@ int main(int argc, char** argv) {
     // compute PCA matrixes for the complete lipidome
     Table* global_lipidome = lipid_space.compute_global_distance_matrix(&lipidomes);
     
+    
+    // storing the distance matrix
+    if (storing_distance_table){
+        lipid_space.store_distance_table(global_lipidome, output_folder);
+    }
+    
+    
+    // perform the principal component analysis
+    global_lipidome->m = lipid_space.compute_PCA(global_lipidome->m);
+    
+        
     // cutting the global PCA matrix back to a matrix for each lipidome
     lipid_space.separate_matrixes(&lipidomes, global_lipidome);
-    
-    
+
     
     // plotting all lipidome PCAs
     if (plot_pca){
