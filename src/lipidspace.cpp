@@ -18,6 +18,26 @@ namespace plt = matplotlibcpp;
 using namespace Spectra;
 
 
+
+
+
+
+class Node {
+public:
+    set<int> indexes;
+    Node* left_child;
+    Node* right_child;
+    double distance;
+    
+    Node(int index);
+    Node(Node* n1, Node* n2, double d);
+    ~Node();
+    double* plot(int i);
+};
+
+
+
+
 class Table {
 public:
     string file_name;
@@ -57,10 +77,121 @@ public:
     void separate_matrixes(vector<Table*>* lipidomes, Table* global_lipidome);
     void normalize_intensities(vector<Table*>* lipidomes, Table* global_lipidome);
     void load_table(string table_file, vector<Table*>* lipidomes);
+    void plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string output_folder);
 };
 
 
 
+Node::Node(int index){
+    indexes.insert(index);
+    left_child = 0;
+    right_child = 0;
+    distance = 0;
+}
+
+Node::~Node(){
+    if (left_child) delete left_child;
+    if (right_child) delete right_child;
+}
+    
+Node::Node(Node* n1, Node* n2, double d){
+    left_child = n1;
+    right_child = n2;
+    for (auto i : n1->indexes) indexes.insert(i);
+    for (auto i : n2->indexes) indexes.insert(i);
+    distance = d;
+}
+
+double* Node::plot(int cnt){
+    if (left_child == 0) return new double[3]{(double)cnt, 0, (double)cnt + 1};
+
+    double* left_result = left_child->plot(cnt);
+    double xl = left_result[0];
+    double yl = left_result[1];
+    cnt = left_result[2];
+    delete []left_result;
+    
+    double* right_result = right_child->plot(cnt);
+    double xr = right_result[0];
+    double yr = right_result[1];
+    cnt = right_result[2];
+    delete []right_result;
+    
+    double yn = distance;
+    
+    
+    plt::plot((vector<double>){xl, xl}, (vector<double>){yl, yn}, (map<string, string>){{"color", "black"}});
+    plt::plot((vector<double>){xr, xr}, (vector<double>){yr, yn}, (map<string, string>){{"color", "black"}});
+    plt::plot((vector<double>){xl, xr}, (vector<double>){yn, yn}, (map<string, string>){{"color", "black"}});
+    
+    return new double[3]{(xl + xr) / 2, yn, (double)cnt};
+}
+
+
+double single_linkage(Node* n1, Node* n2, MatrixXd m){
+    int mi1 = 0, mi2 = 0;
+    double v = 1e9;
+    for (auto index1 : n1->indexes){
+        for (auto index2 : n2->indexes){
+            if (v > m(index1, index2)){
+                v = m(index1, index2);
+                mi1 = index1;
+                mi2 = index2;
+            }
+        }
+    }
+    return v;
+}
+
+
+void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string output_folder){
+    string output_file = output_folder + "/" + "dendrogram.pdf";
+    
+    cout << "Storing dendrogram at '" << output_file << "'" << endl;
+    vector<string> ticks;
+    int n = m.rows();
+    for (int i = 0; i < n; ++i){
+        vector<string>* tokens = split_string(lipidomes->at(i)->file_name, '/', '"');
+        ticks.push_back(tokens->back());
+        delete tokens;
+    }
+    
+    vector<Node*> nodes;
+    for (int i = 0; i < n; ++i) nodes.push_back(new Node(i));
+    
+    while (nodes.size() > 1){
+        double min_val = 1e9;
+        int ii = 0, jj = 0;
+        for (int i = 0; i < nodes.size() - 1; ++i){
+            for (int j = i + 1; j < nodes.size(); ++j){
+                double val = single_linkage(nodes.at(i), nodes.at(j), m);
+                if (min_val > val){
+                    min_val = val;
+                    ii = i;
+                    jj = j;
+                }
+            }
+        }
+        
+        Node* node1 = nodes.at(ii);
+        Node* node2 = nodes.at(jj);
+        nodes.erase(nodes.begin() + jj);
+        nodes.erase(nodes.begin() + ii);
+        nodes.push_back(new Node(node1, node2, min_val));
+    }
+    
+    
+    double* ret = nodes.front()->plot(1);
+    delete []ret;
+    delete nodes.front();
+    
+    vector<int> x;
+    for (int i = 1; i <= m.rows(); ++i) x.push_back(i);
+    plt::xticks(x, ticks, {{"rotation", "45"}, {"horizontalalignment", "right"}});
+    
+    plt::save(output_file);
+    plt::close();
+}
 
 
 LipidSpace::LipidSpace(){
@@ -1007,11 +1138,9 @@ int main(int argc, char** argv) {
     // plotting all lipidome PCAs
     if (plot_pca){
         lipid_space.plot_PCA(global_lipidome, output_folder);
-        /*
         for (auto table : lipidomes){
             lipid_space.plot_PCA(table, output_folder);
         }
-        */
     }
     
     
@@ -1028,12 +1157,20 @@ int main(int argc, char** argv) {
         
         // storing hausdorff distance matrix into file
         lipid_space.report_hausdorff_matrix(&lipidomes, distance_matrix, output_folder);
+        
+        // ploting the dendrogram
+        lipid_space.plot_dendrogram(&lipidomes, distance_matrix, output_folder);
     }
     
     
     // free all allocated data
     for (auto table : lipidomes) delete table;
     delete global_lipidome;
+    
+    
+    if (plot_pca){
+        Py_Finalize();
+    }
     
     return 0;
 }
