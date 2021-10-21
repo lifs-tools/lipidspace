@@ -19,6 +19,7 @@ using namespace Spectra;
 
 
 
+enum Linkage {SINGLE, COMLETE};
 
 
 
@@ -128,12 +129,12 @@ double* Node::plot(int cnt){
 }
 
 
-double single_linkage(Node* n1, Node* n2, MatrixXd m){
+double single_linkage(Node* n1, Node* n2, MatrixXd m, Linkage linkage = COMLETE){
     int mi1 = 0, mi2 = 0;
-    double v = 1e9;
+    double v = 1e9 * (linkage == SINGLE);
     for (auto index1 : n1->indexes){
         for (auto index2 : n2->indexes){
-            if (v > m(index1, index2)){
+            if ((linkage == COMLETE && v < m(index1, index2)) || (linkage == SINGLE && v > m(index1, index2))){
                 v = m(index1, index2);
                 mi1 = index1;
                 mi2 = index2;
@@ -187,7 +188,9 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string o
     
     vector<int> x;
     for (int i = 1; i <= m.rows(); ++i) x.push_back(i);
-    plt::xticks(x, ticks, {{"rotation", "45"}, {"horizontalalignment", "right"}});
+    plt::xticks(x, ticks, {{"rotation", "45"}, {"horizontalalignment", "right"}, {"fontsize", "4"}});
+    plt::yticks((vector<int>){});
+    plt::title("Hierarchy of lipidomes");
     
     plt::save(output_file);
     plt::close();
@@ -1088,8 +1091,8 @@ void print_help(){
 
 
 int main(int argc, char** argv) {    
-    bool plot_pca = true;
-    bool store_Tables = true;
+    bool plot_pca = false;
+    bool store_Tables = false;
     Eigen::initParallel();
     
     
@@ -1168,7 +1171,7 @@ int main(int argc, char** argv) {
     delete global_lipidome;
     
     
-    if (plot_pca){
+    if (plot_pca || lipidomes.size() > 1){
         Py_Finalize();
     }
     
