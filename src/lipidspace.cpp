@@ -60,6 +60,7 @@ public:
     int cols_for_pca;
     static const vector< vector< vector<int> > > orders;
     static const vector<int> order_len;
+    bool keep_sn_position;
     
     
     LipidSpace();
@@ -198,7 +199,10 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string o
 
 
 LipidSpace::LipidSpace(){
+    Eigen::initParallel();
+    
     cols_for_pca = 2;
+    keep_sn_position = false;
     
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -600,8 +604,9 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
             max_u = uu;
             max_i = ii;
         }
-        delete for_del;
         
+        delete for_del;
+        if (keep_sn_position) break;
     }
     
     union_num += max_u;
@@ -865,9 +870,9 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         plt::scatter(x, y, 2, keywords);
     }
     cout << "storing '" << output_file_name << "'" << endl;
-    
-    map<string, string> keywords_legend = {{"fontsize", "6"}};
-    plt::legend(keywords_legend);
+    plt::xticks((vector<int>){});
+    plt::yticks((vector<int>){});
+    plt::legend({{"fontsize", "5"}});
     plt::save(output_file_name);
     plt::close();
 }
@@ -1092,10 +1097,8 @@ void print_help(){
 
 
 
-int main(int argc, char** argv) {    
-    bool plot_pca = false;
-    bool store_Tables = false;
-    Eigen::initParallel();
+int main(int argc, char** argv) {
+    
     
     
     if (argc < 4) {
@@ -1123,6 +1126,13 @@ int main(int argc, char** argv) {
     vector<Table*> lipidomes;
     
     
+    
+    lipid_space.keep_sn_position = false;
+    bool plot_pca = true; 
+    bool plot_pca_lipidomes = false;
+    bool store_Tables = false;
+    
+    
     // loadig each lipidome
     if (mode == "lists"){
         for (int i = 3; i < argc; ++i) lipidomes.push_back(lipid_space.load_list(argv[i]));
@@ -1143,6 +1153,8 @@ int main(int argc, char** argv) {
     // plotting all lipidome PCAs
     if (plot_pca){
         lipid_space.plot_PCA(global_lipidome, output_folder);
+    }
+    if (plot_pca_lipidomes){
         for (auto table : lipidomes){
             lipid_space.plot_PCA(table, output_folder);
         }
@@ -1173,7 +1185,7 @@ int main(int argc, char** argv) {
     delete global_lipidome;
     
     
-    if (plot_pca || lipidomes.size() > 1){
+    if (plot_pca || plot_pca_lipidomes || lipidomes.size() > 1){
         Py_Finalize();
     }
     
