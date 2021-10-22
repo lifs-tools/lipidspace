@@ -1293,7 +1293,7 @@ void print_help(){
     cerr << "usage: " << endl;
     cerr << "  > ./lipidspace output_folder table lipid_table[csv]" << endl;
     cerr << "  > ./lipidspace output_folder lists lipid_list[csv], ..." << endl;
-    cerr << "modes either 'table' or 'lisds'." << endl;
+    cerr << "modes either 'table' or 'lists'." << endl;
 }
 
 
@@ -1301,9 +1301,6 @@ void print_help(){
 
 
 int main(int argc, char** argv) {
-    
-    
-    
     if (argc < 4) {
         print_help();
         exit(-1);
