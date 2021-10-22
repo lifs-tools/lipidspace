@@ -61,6 +61,7 @@ public:
     static const vector< vector< vector<int> > > orders;
     static const vector<int> order_len;
     bool keep_sn_position;
+    bool ignore_unknown_lipids;
     
     
     LipidSpace();
@@ -204,6 +205,7 @@ LipidSpace::LipidSpace(){
     
     cols_for_pca = 2;
     keep_sn_position = false;
+    ignore_unknown_lipids = false;
     
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -664,6 +666,8 @@ Table* LipidSpace::load_list(string lipid_list_file){
     
     
     
+    vector<int> remove;
+    
     #pragma omp parallel for
     for (int i = 0; i < lipids.size(); ++i) { 
         string line = lipids.at(i);
@@ -682,8 +686,26 @@ Table* LipidSpace::load_list(string lipid_list_file){
             for (auto fa : l->lipid->fa_list) cut_cycle(fa);
         }
         catch (exception &e) {
-            cerr << "Error: lipid '" << line << "' cannot be parsed" << endl;
-            exit(-1);
+            if (ignore_unknown_lipids){
+                cerr << "Warning: ignoring lipid '" << line << "' in file '" << lipid_list_file << "'" << endl;
+                remove.push_back(i);
+            }
+            else {
+                cerr << "Error: lipid '" << line << "' cannot be parsed in file '" << lipid_list_file << "'" << endl;
+                exit(-1);
+            }
+        }
+    }
+    
+    if (ignore_unknown_lipids && remove.size() > 0){
+        sort(remove.begin(), remove.end());
+        for (int i = remove.size() - 1; i >= 0; --i){
+            int index = remove.at(i);
+            all_lipids.erase(all_lipids.begin() + pos_all + index);
+            lipidome->lipids.erase(lipidome->lipids.begin() + index);
+            lipidome->species.erase(lipidome->species.begin() + index);
+            lipidome->classes.erase(lipidome->classes.begin() + index);
+            intensities.erase(intensities.begin() + index);
         }
     }
     
@@ -847,6 +869,7 @@ double pairwise_sum(MatrixXd m){
 
 
 
+#define sq(x) ((x) * (x))   
 MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
     VectorXd label_xx = xx(seq(0, l - 1));
     VectorXd label_yy = yy(seq(0, l - 1));
@@ -864,35 +887,34 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
     MatrixXd r(all_xx.size(), 2);
     r << all_xx, all_yy;
     
-    
-    
-#define sq(x) ((x) * (x))    
+     
     double ps = pairwise_sum(r) / sq(xx.size());
     double nf_x = sigma_x / ps; // normalization factor
     double nf_y = sigma_y / ps; // normalization factor
     
+    // do 30 iterations to find an equilibrium of pulling and pushing forces
+    #define pseq seq(l, all_xx.size() - 1)
+    #define lseq seq(0, l - 1)
     for (int i = 0; i < 30; ++i){
         
         for (int ii = 0; ii < l; ++ii){
             double l_xx = label_xx(ii);
             double l_yy = label_yy(ii);
             
-            
             VectorXd distances = ((all_xx.array() - l_xx).array().square() + (all_yy.array() - l_yy).array().square()).array().sqrt();
             
             // apply pushing force
-            VectorXd force_x = nf_x * (all_xx.array() - l_xx + 1e-16) / (distances.array().square() + 1e-16);
-            VectorXd force_y = nf_y * (all_yy.array() - l_yy + 1e-16) / (distances.array().square() + 1e-16);
+            VectorXd force_x = nf_x * (all_xx(pseq).array() - l_xx + 1e-16) / (distances(pseq).array().square() + 1e-16);
+            VectorXd force_y = nf_y * (all_yy(pseq).array() - l_yy + 1e-16) / (distances(pseq).array().square() + 1e-16);
+            VectorXd force_x_label = 5 * nf_x * (all_xx(lseq).array() - l_xx + 1e-16) / (distances(lseq).array().square() + 1e-16);
+            VectorXd force_y_label = 5 * nf_y * (all_yy(lseq).array() - l_yy + 1e-16) / (distances(lseq).array().square() + 1e-16);
             
-            label_xx(ii) -= force_x.array().sum();
-            label_yy(ii) -= force_y.array().sum();
-            
-            l_xx -= force_x.array().sum();
-            l_yy -= force_y.array().sum();
+            l_xx -= (force_x.array().sum() + force_x_label.array().sum());
+            l_yy -= (force_y.array().sum() + force_y_label.array().sum());
 
             // apply pulling force
             label_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.7;
-            label_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.7;
+            label_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.8;
             
             
             all_xx(ii) = label_xx(ii);
@@ -1000,8 +1022,8 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     plt::xlabel(xlabel.str());
     plt::ylabel(ylabel.str());
     
-    plt::xlim(min_x, max_x);
-    plt::ylim(min_y, max_y);
+    plt::xlim(min_x * 1.1, max_x * 1.1);
+    plt::ylim(min_y * 1.1, max_y * 1.1);
     
     cout << "storing '" << output_file_name << "'" << endl;
     plt::xticks((vector<int>){});
@@ -1180,12 +1202,12 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
             l = parser.parse(tokens->at(0));
         }
         catch (exception &e) {
-            cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed" << endl;
+            cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed in file '" << table_file << "'" << endl;
             exit(-1);
         }
         
         if (l == 0) {
-            cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed" << endl;
+            cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed in file '" << table_file << "'" << endl;
             exit(-1);
         }
             
@@ -1283,7 +1305,8 @@ int main(int argc, char** argv) {
     
     
     
-    lipid_space.keep_sn_position = false;
+    lipid_space.keep_sn_position = true;
+    lipid_space.ignore_unknown_lipids = true;
     bool plot_pca = true; 
     bool plot_pca_lipidomes = false;
     bool storing_distance_table = true;
