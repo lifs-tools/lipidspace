@@ -895,32 +895,41 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
     // do 30 iterations to find an equilibrium of pulling and pushing forces
     #define pseq seq(l, all_xx.size() - 1)
     #define lseq seq(0, l - 1)
+    
+    VectorXd* ones = new VectorXd[l];
+    for (int i = 0; i < l; ++i){
+        ones[i] = VectorXd::Zero(l);
+        ones[i].array() += 1;
+        ones[i](i) = 0;
+    }
+    
     for (int i = 0; i < 30; ++i){
         
         for (int ii = 0; ii < l; ++ii){
             double l_xx = label_xx(ii);
             double l_yy = label_yy(ii);
-            
+
             VectorXd distances = ((all_xx.array() - l_xx).array().square() + (all_yy.array() - l_yy).array().square()).array().sqrt();
             
             // apply pushing force
-            VectorXd force_x = nf_x * (all_xx(pseq).array() - l_xx + 1e-16) / (distances(pseq).array().square() + 1e-16);
-            VectorXd force_y = nf_y * (all_yy(pseq).array() - l_yy + 1e-16) / (distances(pseq).array().square() + 1e-16);
-            VectorXd force_x_label = 5 * nf_x * (all_xx(lseq).array() - l_xx + 1e-16) / (distances(lseq).array().square() + 1e-16);
-            VectorXd force_y_label = 5 * nf_y * (all_yy(lseq).array() - l_yy + 1e-16) / (distances(lseq).array().square() + 1e-16);
+            VectorXd force_x = nf_x * (all_xx(pseq).array() - l_xx) / (distances(pseq).array().square() + 1e-16);
+            VectorXd force_y = nf_y * (all_yy(pseq).array() - l_yy) / (distances(pseq).array().square() + 1e-16);
+            VectorXd force_x_label = 50 * nf_x * (all_xx(lseq).array() - l_xx) / (distances(lseq).array().square() + 1e-16);
+            VectorXd force_y_label = 30 * nf_y * (all_yy(lseq).array() - l_yy) / (distances(lseq).array().square() + 1e-16);
             
-            l_xx -= (force_x.array().sum() + force_x_label.array().sum());
-            l_yy -= (force_y.array().sum() + force_y_label.array().sum());
+            l_xx -= (force_x.array().sum() + (force_x_label.array() * ones[ii].array()).sum());
+            l_yy -= (force_y.array().sum() + (force_y_label.array() * ones[ii].array()).sum());
+            
+            //if (ii == 20) cout << force_x.array().sum() << " " << force_x_label.array().sum() << " | " << force_x_label << endl;
 
             // apply pulling force
-            label_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.7;
-            label_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.8;
-            
-            
+            label_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.6;
+            label_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.6;
             all_xx(ii) = label_xx(ii);
             all_yy(ii) = label_yy(ii);
         }
     }
+    delete []ones;
     
         
     MatrixXd m(label_xx.size(), 2);
@@ -970,6 +979,7 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     for (auto kv : indexes){
         vector<double> x;
         vector<double> y;
+        vector<double> intens;
         double mx = 0, my = 0;
         for (auto i : kv.second){
             double vx = table->m(i, 0), vy = table->m(i, 1);
@@ -981,6 +991,7 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
             my += vy;
             min_y = min(min_y, vy);
             max_y = max(max_y, vy);
+            intens.push_back(table->intensities(i));
         }
         mean_x.push_back(mx / (double)x.size());
         mean_y.push_back(my / (double)y.size());
@@ -989,7 +1000,7 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         label << kv.first << " (" << x.size() << ")";
         labels.push_back(label.str());
         //plt::scatter(x, y, 3, {{"label", label.str()}});
-        plt::scatter(x, y, 3);
+        plt::scatter(x, y, intens);
     }
     
     for (int i = 0; i < table->m.rows(); ++i){
@@ -997,12 +1008,13 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         mean_y.push_back(table->m(i, 1));
     }
 
+    
     // plot the annotations
     VectorXd xx = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(mean_x.data(), mean_x.size());
     VectorXd yy = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(mean_y.data(), mean_y.size());
     MatrixXd label_m = automated_annotation(xx, yy, labels.size());
     for (int i = 0; i < labels.size(); ++i){
-        plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
+        plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"color", "#aaaaaa"}, {"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
     }
     min_x = min(min_x, (double)label_m.leftCols(1).minCoeff());
     max_x = max(max_x, (double)label_m.leftCols(1).maxCoeff());
@@ -1028,7 +1040,6 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     cout << "storing '" << output_file_name << "'" << endl;
     plt::xticks((vector<int>){});
     plt::yticks((vector<int>){});
-    //plt::legend({{"fontsize", "5"}});
     plt::save(output_file_name);
     plt::close();
 }
@@ -1086,8 +1097,13 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
     }
     
     
-    // compute distances
+    // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
+    global_lipidome->intensities = VectorXd::Zero(n);
+    global_lipidome->intensities.array() += 3;
+    
+    
+    // compute distances
     cout << "Computing pairwise distance matrix for " << n << " lipids" << endl;
     MatrixXd distance_matrix = MatrixXd::Zero(n, n);
     

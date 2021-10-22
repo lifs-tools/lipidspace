@@ -327,9 +327,11 @@ inline bool annotate(std::string annotation, double x, double y, double tx, doub
     }
     
     PyObject* arrowprops = PyDict_New();
-    PyDict_SetItemString(arrowprops, "arrowstyle", PyUnicode_FromString("->"));
+    PyDict_SetItemString(arrowprops, "arrowstyle", PyUnicode_FromString("-|>"));
+    PyDict_SetItemString(arrowprops, "linestyle", PyUnicode_FromString("--"));
     PyDict_SetItemString(arrowprops, "connectionstyle", PyUnicode_FromString("angle3,angleA=0,angleB=-90"));
     PyDict_SetItemString(arrowprops, "linewidth", PyUnicode_FromString("0.5"));
+    PyDict_SetItemString(arrowprops, "color", PyUnicode_FromString("#aaaaaa"));
     PyDict_SetItemString(kwargs, "arrowprops", arrowprops);
     
     PyObject* args = PyTuple_New(1);
@@ -1003,6 +1005,44 @@ void imshow(const cv::Mat &image, const std::map<std::string, std::string> &keyw
 }
 #endif // WITH_OPENCV
 #endif // WITHOUT_NUMPY
+
+template<typename NumericX, typename NumericY>
+bool scatter(const std::vector<NumericX>& x,
+             const std::vector<NumericY>& y,
+             const std::vector<double>& s, // The marker size in points**2
+             const std::map<std::string, std::string> & keywords = {})
+{
+    detail::_interpreter::get();
+
+    assert(x.size() == y.size());
+
+    PyObject* xarray = detail::get_array(x);
+    PyObject* yarray = detail::get_array(y);
+    
+    PyObject* sarray = PyList_New(s.size());
+    for(size_t i = 0; i < s.size(); ++i) {
+        PyList_SetItem(sarray, i, PyFloat_FromDouble(s.at(i)));
+    }
+
+    PyObject* kwargs = PyDict_New();
+    PyDict_SetItemString(kwargs, "s", sarray);
+    for (const auto& it : keywords)
+    {
+        PyDict_SetItemString(kwargs, it.first.c_str(), PyString_FromString(it.second.c_str()));
+    }
+
+    PyObject* plot_args = PyTuple_New(2);
+    PyTuple_SetItem(plot_args, 0, xarray);
+    PyTuple_SetItem(plot_args, 1, yarray);
+
+    PyObject* res = PyObject_Call(detail::_interpreter::get().s_python_function_scatter, plot_args, kwargs);
+
+    Py_DECREF(plot_args);
+    Py_DECREF(kwargs);
+    if(res) Py_DECREF(res);
+
+    return res;
+}
 
 template<typename NumericX, typename NumericY>
 bool scatter(const std::vector<NumericX>& x,
