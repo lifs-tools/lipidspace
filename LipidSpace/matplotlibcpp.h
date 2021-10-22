@@ -305,22 +305,33 @@ inline void backend(const std::string& name)
     detail::s_backend = name;
 }
 
-inline bool annotate(std::string annotation, double x, double y, const std::map<std::string, std::string> &keywords = {})
+inline bool annotate(std::string annotation, double x, double y, double tx, double ty, const std::map<std::string, std::string> &keywords = {})
 {
     detail::_interpreter::get();
 
-    PyObject * xy = PyTuple_New(2);
+    PyObject* kwargs = PyDict_New();
     PyObject * str = PyString_FromString(annotation.c_str());
 
-    PyTuple_SetItem(xy,0,PyFloat_FromDouble(x));
-    PyTuple_SetItem(xy,1,PyFloat_FromDouble(y));
-
-    PyObject* kwargs = PyDict_New();
+    PyObject * xy = PyTuple_New(2);
+    PyTuple_SetItem(xy, 0, PyFloat_FromDouble(x));
+    PyTuple_SetItem(xy, 1, PyFloat_FromDouble(y));
+    PyDict_SetItemString(kwargs, "xy", xy);
+    
+    PyObject * xytext = PyTuple_New(2);
+    PyTuple_SetItem(xytext, 0, PyFloat_FromDouble(tx));
+    PyTuple_SetItem(xytext, 1, PyFloat_FromDouble(ty));
+    PyDict_SetItemString(kwargs, "xytext", xytext);
+    
     for (auto it = keywords.begin(); it != keywords.end(); ++it) {
         PyDict_SetItemString(kwargs, it->first.c_str(), PyUnicode_FromString(it->second.c_str()));
     }
-    PyDict_SetItemString(kwargs, "xy", xy);
-
+    
+    PyObject* arrowprops = PyDict_New();
+    PyDict_SetItemString(arrowprops, "arrowstyle", PyUnicode_FromString("->"));
+    PyDict_SetItemString(arrowprops, "connectionstyle", PyUnicode_FromString("angle3,angleA=0,angleB=-90"));
+    PyDict_SetItemString(arrowprops, "linewidth", PyUnicode_FromString("0.5"));
+    PyDict_SetItemString(kwargs, "arrowprops", arrowprops);
+    
     PyObject* args = PyTuple_New(1);
     PyTuple_SetItem(args, 0, str);
 

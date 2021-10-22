@@ -816,6 +816,100 @@ MatrixXd LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes){
 
 
 
+struct pad {
+    Index size() const { return out_size; }
+    Index operator[] (Index i) const { return std::max<Index>(0,i-(out_size-in_size)); }
+    Index in_size, out_size;
+};
+
+double pairwise_sum(MatrixXd m){
+    int l = m.rows();
+    
+    MatrixXd D(l, l);
+    MatrixXd E(l, l);
+    vector<int> v1;
+    vector<int> v2;
+    vector<int> v3;
+    for (int i = 0; i < l; ++i){
+        v1.push_back(i);
+        v2.push_back(0);
+        v3.push_back(1);
+    }
+    D = m.leftCols(1)(seq(0, l - 1), pad{1, l});
+    D = (D - D.transpose().eval()).array().square();
+    E = m.rightCols(1)(seq(0, l - 1), pad{1, l});
+    E = (E - E.transpose().eval()).array().square();
+    D = (D + E).array().sqrt();
+    
+    return D.sum();
+}
+
+
+
+
+MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
+    VectorXd label_xx = xx(seq(0, l - 1));
+    VectorXd label_yy = yy(seq(0, l - 1));
+    VectorXd orig_label_xx = xx(seq(0, l - 1));
+    VectorXd orig_label_yy = yy(seq(0, l - 1));
+    
+    double sigma_x = sqrt((xx.array() - (xx.array().mean())).square().sum() / (double)xx.size());
+    double sigma_y = sqrt((yy.array() - (yy.array().mean())).square().sum() / (double)yy.size());
+    
+    VectorXd all_xx(xx.size() + label_xx.size());
+    all_xx << label_xx, xx;
+    VectorXd all_yy(yy.size() + label_yy.size());
+    all_yy << label_yy, yy;
+    
+    MatrixXd r(all_xx.size(), 2);
+    r << all_xx, all_yy;
+    
+    
+    
+#define sq(x) ((x) * (x))    
+    double ps = pairwise_sum(r) / sq(xx.size());
+    double nf_x = sigma_x / ps; // normalization factor
+    double nf_y = sigma_y / ps; // normalization factor
+    
+    for (int i = 0; i < 100; ++i){
+        
+        for (int ii = 0; ii < l; ++ii){
+            double l_xx = label_xx(ii);
+            double l_yy = label_yy(ii);
+            
+            
+            VectorXd distances = ((all_xx.array() - l_xx).array().square() + (all_yy.array() - l_yy).array().square()).array().sqrt();
+            
+            // apply pushing force
+            VectorXd force_x = nf_x * (all_xx.array() - l_xx + 1e-16) / (distances.array().square() + 1e-16);
+            VectorXd force_y = nf_y * (all_yy.array() - l_yy + 1e-16) / (distances.array().square() + 1e-16);
+            
+            label_xx(ii) -= force_x.array().sum();
+            label_yy(ii) -= force_y.array().sum();
+            
+            l_xx -= force_x.array().sum();
+            l_yy -= force_y.array().sum();
+
+            // apply pulling force
+            label_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.7;
+            label_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.7;
+            
+            
+            all_xx(ii) = label_xx(ii);
+            all_yy(ii) = label_yy(ii);
+        }
+    }
+    
+        
+    MatrixXd m(label_xx.size(), 2);
+    m << label_xx, label_yy;
+    
+    return m;
+}
+
+
+
+
 
 void LipidSpace::plot_PCA(Table* table, string output_folder){
     string output_file_name = table->file_name;
@@ -844,19 +938,43 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         indexes.at(lipid_class).push_back(i);
     }
     
-    //ArrayXd variances = compute_PCA_variances(table->m);
+    vector<double> mean_x;
+    vector<double> mean_y;
+    vector<string> labels;
+    
+    // plot the dots
     for (auto kv : indexes){
         vector<double> x;
         vector<double> y;
+        labels.push_back(kv.first);
+        double mx = 0, my = 0;
         for (auto i : kv.second){
             x.push_back(table->m(i, 0));
+            mx += x.back();
             y.push_back(table->m(i, 1));
+            my += y.back();
         }
+        mean_x.push_back(mx / (double)x.size());
+        mean_y.push_back(my / (double)y.size());
+        
         stringstream label;
         label << kv.first << " (" << x.size() << ")";
         plt::scatter(x, y, 3, {{"label", label.str()}});
-        plt::annotate(kv.first, 0, 0);
     }
+    
+    for (int i = 0; i < table->m.rows(); ++i){
+        mean_x.push_back(table->m(i, 0));
+        mean_y.push_back(table->m(i, 1));
+    }
+
+    // plot the annotations
+    VectorXd xx = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(mean_x.data(), mean_x.size());
+    VectorXd yy = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(mean_y.data(), mean_y.size());
+    MatrixXd label_m = automated_annotation(xx, yy, labels.size());
+    for (int i = 0; i < labels.size(); ++i){
+        plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"fontsize", "7"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
+    }
+    
     
     stringstream xlabel;
     xlabel.precision(1);
