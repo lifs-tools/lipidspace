@@ -2,15 +2,12 @@
 #include <Eigen/Dense>
 #include "LipidSpace/matplotlibcpp.h"
 #include <vector>
-#include <cmath>
-#include <iostream>
 #include <string>
-#include <cppgoslin/cppgoslin.h>
+#include "cppgoslin/cppgoslin.h"
 #include <math.h>
 #include <algorithm>
 #include <sys/stat.h>
 #include <Spectra/SymEigsSolver.h>
-#include <Eigen/Core>
  
 using namespace std;
 using namespace Eigen;
@@ -1218,13 +1215,25 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
             l = parser.parse(tokens->at(0));
         }
         catch (exception &e) {
-            cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed in file '" << table_file << "'" << endl;
-            exit(-1);
+            if (ignore_unknown_lipids){
+                cerr << "Warning: ignoring lipid '" << tokens->at(0) << "' in file '" << table_file << "'" << endl;
+                continue;
+            }
+            else {
+                cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed in file '" << table_file << "'" << endl;
+                exit(-1);
+            }
         }
         
         if (l == 0) {
-            cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed in file '" << table_file << "'" << endl;
-            exit(-1);
+            if (ignore_unknown_lipids){
+                cerr << "Warning: ignoring lipid '" << tokens->at(0) << "' in file '" << table_file << "'" << endl;
+                continue;
+            }
+            else {
+                cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed in file '" << table_file << "'" << endl;
+                exit(-1);
+            }
         }
             
         // deleting adduct since not necessary
@@ -1320,7 +1329,7 @@ int main(int argc, char** argv) {
     vector<Table*> lipidomes;
     
     
-    
+    // parameters to change
     lipid_space.keep_sn_position = true;
     lipid_space.ignore_unknown_lipids = true;
     bool plot_pca = true; 
