@@ -871,7 +871,7 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
     double nf_x = sigma_x / ps; // normalization factor
     double nf_y = sigma_y / ps; // normalization factor
     
-    for (int i = 0; i < 100; ++i){
+    for (int i = 0; i < 30; ++i){
         
         for (int ii = 0; ii < l; ++ii){
             double l_xx = label_xx(ii);
@@ -942,24 +942,32 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     vector<double> mean_y;
     vector<string> labels;
     
+    double min_x = 0, max_x = 0, min_y = 0, max_y = 0;
+    
     // plot the dots
     for (auto kv : indexes){
         vector<double> x;
         vector<double> y;
-        labels.push_back(kv.first);
         double mx = 0, my = 0;
         for (auto i : kv.second){
-            x.push_back(table->m(i, 0));
-            mx += x.back();
-            y.push_back(table->m(i, 1));
-            my += y.back();
+            double vx = table->m(i, 0), vy = table->m(i, 1);
+            x.push_back(vx);
+            mx += vx;
+            min_x = min(min_x, vx);
+            max_x = max(max_x, vx);
+            y.push_back(vy);
+            my += vy;
+            min_y = min(min_y, vy);
+            max_y = max(max_y, vy);
         }
         mean_x.push_back(mx / (double)x.size());
         mean_y.push_back(my / (double)y.size());
         
         stringstream label;
         label << kv.first << " (" << x.size() << ")";
-        plt::scatter(x, y, 3, {{"label", label.str()}});
+        labels.push_back(label.str());
+        //plt::scatter(x, y, 3, {{"label", label.str()}});
+        plt::scatter(x, y, 3);
     }
     
     for (int i = 0; i < table->m.rows(); ++i){
@@ -972,9 +980,12 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     VectorXd yy = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(mean_y.data(), mean_y.size());
     MatrixXd label_m = automated_annotation(xx, yy, labels.size());
     for (int i = 0; i < labels.size(); ++i){
-        plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"fontsize", "7"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
+        plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
     }
-    
+    min_x = min(min_x, (double)label_m.leftCols(1).minCoeff());
+    max_x = max(max_x, (double)label_m.leftCols(1).maxCoeff());
+    min_y = min(min_y, (double)label_m.rightCols(1).minCoeff());
+    max_y = max(max_y, (double)label_m.rightCols(1).maxCoeff());
     
     stringstream xlabel;
     xlabel.precision(1);
@@ -989,10 +1000,13 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     plt::xlabel(xlabel.str());
     plt::ylabel(ylabel.str());
     
+    plt::xlim(min_x, max_x);
+    plt::ylim(min_y, max_y);
+    
     cout << "storing '" << output_file_name << "'" << endl;
     plt::xticks((vector<int>){});
     plt::yticks((vector<int>){});
-    plt::legend({{"fontsize", "5"}});
+    //plt::legend({{"fontsize", "5"}});
     plt::save(output_file_name);
     plt::close();
 }
