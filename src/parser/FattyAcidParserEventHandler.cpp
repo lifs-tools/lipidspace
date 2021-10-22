@@ -262,7 +262,8 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
     if (tmp.contains_key("length_pattern")) {
         
         string length_pattern = tmp.get_string("length_pattern");
-        int num[tmp.get_list("length_tokens")->list.size()];
+        const int n_len = tmp.get_list("length_tokens")->list.size();
+        int* num = new int[n_len];
         for (int i = 0; i < (int)tmp.get_list("length_tokens")->list.size(); ++i) num[i] = tmp.get_list("length_tokens")->get_int(i);
         
         int l = 0, d = 0;
@@ -305,6 +306,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
         
         curr_fa->num_carbon += l;
         if (curr_fa->double_bonds->double_bond_positions.size() == 0 && d > 0) curr_fa->double_bonds->num_double_bonds = d;
+        delete []num;
     }
     
     

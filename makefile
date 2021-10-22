@@ -12,7 +12,7 @@ parser = src/parser/ParserClasses.o src/parser/KnownParsers.o src/parser/GoslinP
 obj = ${domain} ${parser}
 
 
-opt = -O3 ${MARCH} -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
+opt = -O3 ${MARCH} -Wvla -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
 
 
 main: ${bin}
