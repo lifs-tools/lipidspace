@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <sys/stat.h>
 #include <Spectra/SymEigsSolver.h>
+#include <chrono>
 
 #define sq(x) ((x) * (x))   
  
@@ -409,42 +410,29 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
             inter_num += 1;
         }
     }
+    
+    else if (contains(bond_types, ESTER)){
+        if (contains(bond_types, ETHER_PLASMENYL)){
+            union_num += 3;
+        }
         
-    else if (contains(bond_types, ESTER) && contains(bond_types, ETHER_PLASMENYL)){
-        union_num += 3;
+        else if (contains(bond_types, ETHER_PLASMANYL)){
+            union_num += 2;
+        }
+        
+        else if (contains(bond_types, LCB_REGULAR) || contains(bond_types, LCB_EXCEPTION)){
+            union_num += 2;
+        }
     }
-        
-    else if (contains(bond_types, ESTER) && contains(bond_types, ETHER_PLASMANYL)){
-        union_num += 2;
+    
+    else if (contains(bond_types, LCB_EXCEPTION) || contains(bond_types, LCB_REGULAR)){
+        if (contains(bond_types, ETHER_PLASMENYL)){
+            union_num += 1;
+        }
     }
         
     else if (contains(bond_types, ETHER_PLASMENYL) && contains(bond_types, ETHER_PLASMANYL)){
         union_num += 1;
-    }
-        
-    else if (contains(bond_types, LCB_REGULAR) && contains(bond_types, ESTER)){
-        union_num += 2;
-    }
-        
-    else if (contains(bond_types, LCB_EXCEPTION) && contains(bond_types, ESTER)){
-        union_num += 2;
-    }
-        
-    else if (contains(bond_types, LCB_REGULAR) && contains(bond_types, ETHER_PLASMANYL)){
-    }
-        
-    else if (contains(bond_types, LCB_EXCEPTION) && contains(bond_types, ETHER_PLASMANYL)){
-    }
-        
-    else if (contains(bond_types, LCB_REGULAR) && contains(bond_types, ETHER_PLASMENYL)){
-        union_num += 1;
-    }
-        
-    else if (contains(bond_types, LCB_EXCEPTION) && contains(bond_types, ETHER_PLASMENYL)){
-        union_num += 1;
-    }
-        
-    else if (contains(bond_types, LCB_EXCEPTION) && contains(bond_types, LCB_REGULAR)){
     }
         
     else { 
@@ -797,43 +785,25 @@ MatrixXd LipidSpace::compute_PCA(MatrixXd m){
 
 
 
+inline double dist(VectorXd v, MatrixXd m){
+    // distcance is standard eucleadian distcance or l2-norm
+    return ((m.rowwise() - v.transpose()).rowwise().squaredNorm()).minCoeff();
+}
+
 
 
 double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
+    // add intensities to hausdorff matrix
     MatrixXd m1(l1->m.rows(), cols_for_pca + 1);
     m1 << l1->m.leftCols(cols_for_pca), l1->intensities;
     
     MatrixXd m2(l2->m.rows(), cols_for_pca + 1);
     m2 << l2->m.leftCols(cols_for_pca), l2->intensities;
-    /*
-    MatrixXd m1 = l1->m;
-    MatrixXd m2 = l2->m;
     
-    // add intensities to hausdorff matrix
-    
-    m1.conservativeResize(m1.rows(), cols_for_pca + 1);
-    m1.col(cols_for_pca) = l1->intensities;
-    
-    m2.conservativeResize(m2.rows(), cols_for_pca + 1);
-    m2.col(cols_for_pca) = l2->intensities;
-    */
     
     double hausdorff = 0;
-    for (int i = 0; i < m1.rows(); ++i){
-        VectorXd b = m1.row(i);
-        MatrixXd d = m2.rowwise() - b.transpose();
-        d = d.array().square();
-        MatrixXd e = d.rowwise().sum();
-        hausdorff = max(hausdorff, e.minCoeff());
-    }
-    for (int i = 0; i < m2.rows(); ++i){
-        VectorXd b = m2.row(i);
-        MatrixXd d = m1.rowwise() - b.transpose();
-        d = d.array().square();
-        MatrixXd e = d.rowwise().sum();
-        hausdorff = max(hausdorff, e.minCoeff());
-    }
-    
+    for (auto row : m1.rowwise()) hausdorff = max(hausdorff, dist(row, m2));
+    for (int i = 0; i < m2.rows(); ++i) hausdorff = max(hausdorff, dist(m2.row(i), m1));
     return sqrt(hausdorff);
 }
 
@@ -869,19 +839,14 @@ struct pad {
     Index in_size, out_size;
 };
 
+
+
 double pairwise_sum(MatrixXd m){
     int l = m.rows();
     
     MatrixXd D(l, l);
     MatrixXd E(l, l);
-    vector<int> v1;
-    vector<int> v2;
-    vector<int> v3;
-    for (int i = 0; i < l; ++i){
-        v1.push_back(i);
-        v2.push_back(0);
-        v3.push_back(1);
-    }
+    
     D = m.leftCols(1)(seq(0, l - 1), pad{1, l});
     D = (D - D.transpose().eval()).array().square();
     E = m.rightCols(1)(seq(0, l - 1), pad{1, l});
@@ -1028,7 +993,6 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
         stringstream label;
         label << kv.first << " (" << x.size() << ")";
         labels.push_back(label.str());
-        //plt::scatter(x, y, 3, {{"label", label.str()}});
         plt::scatter(x, y, intens);
     }
     
@@ -1360,10 +1324,10 @@ int main(int argc, char** argv) {
     
     
     // parameters to change
-    lipid_space.keep_sn_position = true;
+    lipid_space.keep_sn_position = false;
     lipid_space.ignore_unknown_lipids = true;
     bool plot_pca = true; 
-    bool plot_pca_lipidomes = true;
+    bool plot_pca_lipidomes = false;
     bool storing_distance_table = true;
     
     
@@ -1376,8 +1340,12 @@ int main(int argc, char** argv) {
         lipid_space.load_table(argv[3], &lipidomes);
     }
     
+    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
     // compute PCA matrixes for the complete lipidome
     Table* global_lipidome = lipid_space.compute_global_distance_matrix(&lipidomes);
+    chrono::steady_clock::time_point end = chrono::steady_clock::now();
+    cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
+    cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
     
     
     // storing the distance matrix
@@ -1386,8 +1354,12 @@ int main(int argc, char** argv) {
     }
     
     
+    begin = chrono::steady_clock::now();
     // perform the principal component analysis
     global_lipidome->m = lipid_space.compute_PCA(global_lipidome->m);
+    end = chrono::steady_clock::now();
+    cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
+    cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
     
         
     // cutting the global PCA matrix back to a matrix for each lipidome
@@ -1412,6 +1384,7 @@ int main(int argc, char** argv) {
     
     if (lipidomes.size() > 1){
         
+        begin = chrono::steady_clock::now();
         // computing the hausdorff distance matrix for all lipidomes
         MatrixXd distance_matrix = lipid_space.compute_hausdorff_matrix(&lipidomes);
         
@@ -1421,6 +1394,9 @@ int main(int argc, char** argv) {
         
         // ploting the dendrogram
         lipid_space.plot_dendrogram(&lipidomes, distance_matrix, output_folder);
+        end = chrono::steady_clock::now();
+        cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
+        cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
     }
     
     
