@@ -8,12 +8,13 @@
 #include <algorithm>
 #include <sys/stat.h>
 #include <Spectra/SymEigsSolver.h>
+
+#define sq(x) ((x) * (x))   
  
 using namespace std;
 using namespace Eigen;
 namespace plt = matplotlibcpp; 
 using namespace Spectra;
-
 
 
 enum Linkage {SINGLE, COMLETE};
@@ -129,6 +130,12 @@ double* Node::plot(int cnt){
 }
 
 
+
+
+
+
+
+
 double single_linkage(Node* n1, Node* n2, MatrixXd m, Linkage linkage = COMLETE){
     int mi1 = 0, mi2 = 0;
     double v = 1e9 * (linkage == SINGLE);
@@ -143,6 +150,13 @@ double single_linkage(Node* n1, Node* n2, MatrixXd m, Linkage linkage = COMLETE)
     }
     return v;
 }
+
+
+
+
+
+
+
 
 
 void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string output_folder){
@@ -197,6 +211,12 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string o
 }
 
 
+
+
+
+
+
+
 LipidSpace::LipidSpace(){
     Eigen::initParallel();
     
@@ -226,6 +246,8 @@ LipidSpace::LipidSpace(){
         delete tokens;
     }
 }
+
+
 
 
 const vector<int> LipidSpace::order_len{1, 1, 2, 6, 24};
@@ -778,6 +800,12 @@ MatrixXd LipidSpace::compute_PCA(MatrixXd m){
 
 
 double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
+    MatrixXd m1(l1->m.rows(), cols_for_pca + 1);
+    m1 << l1->m.leftCols(cols_for_pca), l1->intensities;
+    
+    MatrixXd m2(l2->m.rows(), cols_for_pca + 1);
+    m2 << l2->m.leftCols(cols_for_pca), l2->intensities;
+    /*
     MatrixXd m1 = l1->m;
     MatrixXd m2 = l2->m;
     
@@ -788,7 +816,7 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
     
     m2.conservativeResize(m2.rows(), cols_for_pca + 1);
     m2.col(cols_for_pca) = l2->intensities;
-    
+    */
     
     double hausdorff = 0;
     for (int i = 0; i < m1.rows(); ++i){
@@ -866,7 +894,6 @@ double pairwise_sum(MatrixXd m){
 
 
 
-#define sq(x) ((x) * (x))   
 MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
     VectorXd label_xx = xx(seq(0, l - 1));
     VectorXd label_yy = yy(seq(0, l - 1));
@@ -889,9 +916,6 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
     double nf_x = sigma_x / ps; // normalization factor
     double nf_y = sigma_y / ps; // normalization factor
     
-    // do 30 iterations to find an equilibrium of pulling and pushing forces
-    #define pseq seq(l, all_xx.size() - 1)
-    #define lseq seq(0, l - 1)
     
     VectorXd* ones = new VectorXd[l];
     for (int i = 0; i < l; ++i){
@@ -900,13 +924,18 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
         ones[i](i) = 0;
     }
     
+    #define pseq seq(l, all_xx.size() - 1)
+    #define lseq seq(0, l - 1)
+    
+    // do 30 iterations to find an equilibrium of pulling and pushing forces
+    // for the label positions
     for (int i = 0; i < 30; ++i){
         
         for (int ii = 0; ii < l; ++ii){
             double l_xx = label_xx(ii);
             double l_yy = label_yy(ii);
 
-            VectorXd distances = ((all_xx.array() - l_xx).array().square() + (all_yy.array() - l_yy).array().square()).array().sqrt();
+            VectorXd distances = ((all_xx.array() - l_xx).square() + (all_yy.array() - l_yy).square()).sqrt();
             
             // apply pushing force
             VectorXd force_x = nf_x * (all_xx(pseq).array() - l_xx) / (distances(pseq).array().square() + 1e-16);
@@ -916,8 +945,6 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
             
             l_xx -= (force_x.array().sum() + (force_x_label.array() * ones[ii].array()).sum());
             l_yy -= (force_y.array().sum() + (force_y_label.array() * ones[ii].array()).sum());
-            
-            //if (ii == 20) cout << force_x.array().sum() << " " << force_x_label.array().sum() << " | " << force_x_label << endl;
 
             // apply pulling force
             label_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.6;
@@ -939,8 +966,8 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
 
 
 
-void LipidSpace::plot_PCA(Table* table, string output_folder){
-    string output_file_name = table->file_name;
+void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
+    string output_file_name = lipidome->file_name;
     vector<string>* tokens = split_string(output_file_name, '/');
     output_file_name = tokens->back();
     delete tokens;
@@ -960,8 +987,8 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     
     
     map<string, vector<int>> indexes;
-    for (int i = 0; i < table->classes.size(); ++i){
-        string lipid_class = table->classes.at(i);
+    for (int i = 0; i < lipidome->classes.size(); ++i){
+        string lipid_class = lipidome->classes.at(i);
         if (uncontains(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
         indexes.at(lipid_class).push_back(i);
     }
@@ -972,6 +999,11 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
     
     double min_x = 0, max_x = 0, min_y = 0, max_y = 0;
     
+    VectorXd intensities = lipidome->intensities;
+    VectorXd v = intensities.array() - ((double)intensities.sum() / (double)intensities.rows());
+    double stdev = sqrt((v.array().square()).sum() / (double)v.rows());
+    if (stdev > 1e-16) intensities = intensities.array() / stdev * 3;
+    
     // plot the dots
     for (auto kv : indexes){
         vector<double> x;
@@ -979,7 +1011,7 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         vector<double> intens;
         double mx = 0, my = 0;
         for (auto i : kv.second){
-            double vx = table->m(i, 0), vy = table->m(i, 1);
+            double vx = lipidome->m(i, 0), vy = lipidome->m(i, 1);
             x.push_back(vx);
             mx += vx;
             min_x = min(min_x, vx);
@@ -988,7 +1020,7 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
             my += vy;
             min_y = min(min_y, vy);
             max_y = max(max_y, vy);
-            intens.push_back(table->intensities(i));
+            intens.push_back(intensities(i));
         }
         mean_x.push_back(mx / (double)x.size());
         mean_y.push_back(my / (double)y.size());
@@ -1000,9 +1032,9 @@ void LipidSpace::plot_PCA(Table* table, string output_folder){
         plt::scatter(x, y, intens);
     }
     
-    for (int i = 0; i < table->m.rows(); ++i){
-        mean_x.push_back(table->m(i, 0));
-        mean_y.push_back(table->m(i, 1));
+    for (int i = 0; i < lipidome->m.rows(); ++i){
+        mean_x.push_back(lipidome->m(i, 0));
+        mean_y.push_back(lipidome->m(i, 1));
     }
 
     
@@ -1310,6 +1342,7 @@ int main(int argc, char** argv) {
     string output_folder = argv[1];
     string mode = argv[2];
     
+    // check if output folder exists
     struct stat buffer;
     if (stat (output_folder.c_str(), &buffer) != 0){
         cerr << "Error: output folder '" << output_folder << "' does not exist." << endl;
@@ -1330,7 +1363,7 @@ int main(int argc, char** argv) {
     lipid_space.keep_sn_position = true;
     lipid_space.ignore_unknown_lipids = true;
     bool plot_pca = true; 
-    bool plot_pca_lipidomes = false;
+    bool plot_pca_lipidomes = true;
     bool storing_distance_table = true;
     
     
