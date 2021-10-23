@@ -107,10 +107,10 @@ void FunctionalGroup::shift_positions(int shift){
 ElementTable* FunctionalGroup::get_functional_group_elements(){
     ElementTable* _elements = create_empty_table();
     
-    for (auto &kv : *functional_groups){
+    for (auto kv : *functional_groups){
         for (auto func_group : kv.second){
             ElementTable* fg_elements = func_group->get_elements();
-            for (auto &el : *fg_elements){
+            for (auto el : *fg_elements){
                 _elements->at(el.first) += el.second * func_group->count;
             }
             delete fg_elements;

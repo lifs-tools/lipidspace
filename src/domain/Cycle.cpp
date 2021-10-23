@@ -145,8 +145,7 @@ void Cycle::shift_positions(int shift){
     
 
 void Cycle::compute_elements(){
-    delete elements;
-    elements = create_empty_table();
+    for (auto el : element_order) elements->at(el) = 0;
     elements->at(ELEMENT_H) = -2 - 2 * double_bonds->num_double_bonds;
     
     for (auto &chain_element : *bridge_chain){
