@@ -195,6 +195,7 @@ FunctionalGroup* KnownFunctionalGroups::get_functional_group(string fg_name){
     if(contains(k.known_functional_groups, fg_name)){
         return k.known_functional_groups.at(fg_name)->copy();
     }
+    return 0;
     throw RuntimeException("Name '" + fg_name + "' not registered in functional group list");
 }
 
