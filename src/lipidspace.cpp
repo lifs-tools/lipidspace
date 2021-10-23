@@ -25,14 +25,15 @@ enum Linkage {SINGLE, COMLETE};
 class Node {
 public:
     set<int> indexes;
+    string name;
     Node* left_child;
     Node* right_child;
     double distance;
     
-    Node(int index);
+    Node(int index, string _name);
     Node(Node* n1, Node* n2, double d);
     ~Node();
-    double* plot(int i);
+    double* plot(int i, vector<string>* sorted_ticks);
 };
 
 
@@ -84,8 +85,9 @@ public:
 
 
 
-Node::Node(int index){
+Node::Node(int index, string _name){
     indexes.insert(index);
+    name = _name;
     left_child = 0;
     right_child = 0;
     distance = 0;
@@ -104,16 +106,19 @@ Node::Node(Node* n1, Node* n2, double d){
     distance = d;
 }
 
-double* Node::plot(int cnt){
-    if (left_child == 0) return new double[3]{(double)cnt, 0, (double)cnt + 1};
+double* Node::plot(int cnt, vector<string>* sorted_ticks){
+    if (left_child == 0){
+        sorted_ticks->push_back(name);
+        return new double[3]{(double)cnt, 0, (double)cnt + 1};
+    }
 
-    double* left_result = left_child->plot(cnt);
+    double* left_result = left_child->plot(cnt, sorted_ticks);
     double xl = left_result[0];
     double yl = left_result[1];
     cnt = left_result[2];
     delete []left_result;
     
-    double* right_result = right_child->plot(cnt);
+    double* right_result = right_child->plot(cnt, sorted_ticks);
     double xr = right_result[0];
     double yr = right_result[1];
     cnt = right_result[2];
@@ -172,7 +177,7 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string o
     }
     
     vector<Node*> nodes;
-    for (int i = 0; i < n; ++i) nodes.push_back(new Node(i));
+    for (int i = 0; i < n; ++i) nodes.push_back(new Node(i, ticks.at(i)));
     
     while (nodes.size() > 1){
         double min_val = 1e9;
@@ -195,14 +200,14 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string o
         nodes.push_back(new Node(node1, node2, min_val));
     }
     
-    
-    double* ret = nodes.front()->plot(1);
+    vector<string> sorted_ticks;
+    double* ret = nodes.front()->plot(1, &sorted_ticks);
     delete []ret;
     delete nodes.front();
     
     vector<int> x;
     for (int i = 1; i <= m.rows(); ++i) x.push_back(i);
-    plt::xticks(x, ticks, {{"rotation", "45"}, {"horizontalalignment", "right"}, {"fontsize", "4"}});
+    plt::xticks(x, sorted_ticks, {{"rotation", "45"}, {"horizontalalignment", "right"}, {"fontsize", "4"}});
     plt::yticks((vector<int>){});
     plt::title("Hierarchy of lipidomes");
     
@@ -1347,7 +1352,7 @@ int main(int argc, char** argv) {
     
     
     // parameters to change
-    lipid_space.keep_sn_position = false;
+    lipid_space.keep_sn_position = true;
     lipid_space.ignore_unknown_lipids = true;
     bool plot_pca = true; 
     bool plot_pca_lipidomes = false;
