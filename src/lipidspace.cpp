@@ -471,22 +471,16 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     inter_num += min(fa1->num_carbon - m1 - db1, fa2->num_carbon - m1 - db2);
     union_num += max(fa1->num_carbon - m2 - db1, fa2->num_carbon - m2 - db2);
     
+    if (fa1->functional_groups->size() == 0 && fa2->functional_groups->size() == 0) return;
+    
+    
     
     // compare functional groups
     for (auto kv : *(fa1->functional_groups)){
         string key = kv.first;
         if (key == "[X]") continue;
             
-        FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group(key);
-        int elements = func_group->get_double_bonds();
-        ElementTable* e = func_group->get_elements();
-        for (auto ekv : *e){
-            if (ekv.first != ELEMENT_H) elements += ekv.second;
-        }
-        delete e;
-        delete func_group;
-        
-        
+        // functional group occurs in both fatty acids
         if (contains_p(fa2->functional_groups, key)){ // functional group occurs in both fatty acids
             
             // both func groups contain position information
@@ -505,45 +499,80 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
                 union_num += unions.size();
             }
         }
+        // functional group occurs only in first fatty acid
         else {
-            int num = 0;
-            if (fa1->functional_groups->at(key).at(0)->position > -1){
-                num = fa1->functional_groups->at(key).size();
+            FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group(key);
+            if (func_group){
+                int elements = func_group->get_double_bonds();
+                ElementTable* e = func_group->get_elements();
+                for (auto ekv : *e){
+                    if (ekv.first != ELEMENT_H) elements += ekv.second;
+                }
+                delete e;
+                delete func_group;
+                
+                int num = 0;
+                if (fa1->functional_groups->at(key).at(0)->position > -1){
+                    num = fa1->functional_groups->at(key).size();
+                }
+                else {
+                    for (auto f : fa1->functional_groups->at(key)) num += f->count;
+                }
+                union_num += elements * num;
             }
             else {
-                for (auto f : fa1->functional_groups->at(key)) num += f->count;
+                for (auto fg : kv.second){
+                    union_num += fg->get_double_bonds();
+                    ElementTable* e = fg->get_elements();
+                    for (auto ekv : *e){
+                        if (ekv.first != ELEMENT_H) union_num += ekv.second;
+                    }
+                    delete e;
+                }
             }
-            union_num += elements * num;
         }
     }
     
     vector<string> keys_fa1;
     for (auto kv : *(fa1->functional_groups)) keys_fa1.push_back(kv.first);
     vector<string> keys_fa2;
-    for (auto kv : *(fa2->functional_groups)) keys_fa1.push_back(kv.first);
+    for (auto kv : *(fa2->functional_groups)) keys_fa2.push_back(kv.first);
     vector<string> diff;
     set_difference(keys_fa2.begin(), keys_fa2.end(), keys_fa1.begin(), keys_fa1.end(), inserter(diff, diff.begin()));
     
+    // functional group occurs only in second fatty acid
     for (auto key : diff){
         if (key == "[X]") continue;
     
         FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group(key);
-        int elements = func_group->get_double_bonds();
-        ElementTable* e = func_group->get_elements();
-        for (auto ekv : *e){
-            if (ekv.first != ELEMENT_H) elements += ekv.second;
-        }
-        delete e;
-        delete func_group;
-        
-        int num = 0;
-        if (fa2->functional_groups->at(key).at(0)->position > -1){
-            num = fa2->functional_groups->at(key).size();
+        if (func_group){
+            int elements = func_group->get_double_bonds();
+            ElementTable* e = func_group->get_elements();
+            for (auto ekv : *e){
+                if (ekv.first != ELEMENT_H) elements += ekv.second;
+            }
+            delete e;
+            delete func_group;
+            
+            int num = 0;
+            if (fa2->functional_groups->at(key).at(0)->position > -1){
+                num = fa2->functional_groups->at(key).size();
+            }
+            else {
+                for (auto f : fa2->functional_groups->at(key)) num += f->count;
+            }
+            union_num += elements * num;
         }
         else {
-            for (auto f : fa2->functional_groups->at(key)) num += f->count;
+            for (auto fg : fa2->functional_groups->at(key)){
+                union_num += fg->get_double_bonds();
+                ElementTable* e = fg->get_elements();
+                for (auto ekv : *e){
+                    if (ekv.first != ELEMENT_H) union_num += ekv.second;
+                }
+                delete e;
+            } 
         }
-        union_num += elements * num;
     }
 }
 
