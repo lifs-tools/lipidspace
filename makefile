@@ -26,10 +26,13 @@ yeast:
 	./lipidspace output lists Yeast/BY4741_24 Yeast/BY4741_37 Yeast/Elo1_24 Yeast/Elo1_37 Yeast/Elo2_24 Yeast/Elo2_37 Yeast/Elo3_24 Yeast/Elo3_37
 	
 fly:
-	./lipidspace output lists Drosophila/DmBraiPF  Drosophila/DmBraiYF  Drosophila/DmFaboPF  Drosophila/DmFaboYF  Drosophila/DmGutPF  Drosophila/DmGutYF  Drosophila/DmLipoPF  Drosophila/DmLipoYF  Drosophila/DmSaglPF  Drosophila/DmSaglYF  Drosophila/DmWidsPF  Drosophila/DmWidsYF
+	./lipidspace -i output lists Drosophila/DmBraiPF  Drosophila/DmBraiYF  Drosophila/DmFaboPF  Drosophila/DmFaboYF  Drosophila/DmGutPF  Drosophila/DmGutYF  Drosophila/DmLipoPF  Drosophila/DmLipoYF  Drosophila/DmSaglPF  Drosophila/DmSaglYF  Drosophila/DmWidsPF  Drosophila/DmWidsYF
 
 test:
 	./lipidspace output lists examples/GP.csv examples/SP.csv
 	
 example:
 	./lipidspace output lists examples/mouse-brain.csv examples/mouse-heart.csv examples/mouse-platelet.csv examples/human-plasma.csv examples/human-platelet.csv
+	
+lung:
+	./lipidspace output lists Lung/ID22_T_1  Lung/ID23_T_1  Lung/ID24_T_1  Lung/ID26_T_1  Lung/ID29_A_1  Lung/ID30_A_1  Lung/ID31_A_1  Lung/ID32_A_1 Lung/ID22_T_2  Lung/ID23_T_2  Lung/ID24_T_2  Lung/ID26_T_2  Lung/ID29_A_2  Lung/ID30_A_2  Lung/ID31_A_2  Lung/ID32_A_2 Lung/ID23_A_1  Lung/ID24_A_1  Lung/ID26_A_1  Lung/ID28_A_1  Lung/ID29_T_1  Lung/ID30_T_1  Lung/ID31_T_1  Lung/ID23_A_2  Lung/ID24_A_2  Lung/ID26_A_2  Lung/ID28_A_2  Lung/ID29_T_2  Lung/ID30_T_2  Lung/ID31_T_2
