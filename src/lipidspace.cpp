@@ -57,8 +57,7 @@ public:
     map<string, int*> class_matrix;
     vector<LipidAdduct*> all_lipids;
     int cols_for_pca;
-    static const vector< vector< vector<int> > > orders;
-    static const vector<int> order_len;
+    static const vector< vector< vector< vector<int> > > > orders;
     bool keep_sn_position;
     bool ignore_unknown_lipids;
     
@@ -250,53 +249,49 @@ LipidSpace::LipidSpace(){
 
 
 
-
-const vector<int> LipidSpace::order_len{1, 1, 2, 6, 24};
-    
-const vector< vector< vector<int> > > LipidSpace::orders{
+const vector< vector< vector< vector<int> > > > LipidSpace::orders{
+    {{{}}},
+    {{{}}},
     {
-        {}
+        {{0, 0}, {1, 1}}, 
+        {{0, 1}, {1, 0}}
     },
     {
-        {0}
+        {{0, 0}, {1, 1}, {2, 2}},
+        {{0, 1}, {1, 0}, {2, 2}},
+        {{0, 0}, {1, 2}, {2, 1}},
+        {{0, 1}, {1, 2}, {2, 0}},
+        {{0, 2}, {1, 0}, {2, 1}},
+        {{0, 2}, {1, 1}, {2, 0}}
     },
     {
-        {0, 1},
-        {1, 0}
-    },
-    {
-        {0, 1, 2},
-        {0, 2, 1},
-        {1, 0, 2},
-        {1, 2, 0},
-        {2, 0, 1},
-        {2, 1, 0}
-    },
-    {
-        {0, 1, 2, 3},
-        {0, 2, 1, 3},
-        {1, 0, 2, 3},
-        {1, 2, 0, 3},
-        {2, 0, 1, 3},
-        {2, 1, 0, 3},
-        {0, 1, 3, 2},
-        {0, 2, 3, 1},
-        {1, 0, 3, 2},
-        {1, 2, 3, 0},
-        {2, 0, 3, 1},
-        {2, 1, 3, 0},
-        {0, 3, 1, 2},
-        {0, 3, 2, 1},
-        {1, 3, 0, 2},
-        {1, 3, 2, 0},
-        {2, 3, 0, 1},
-        {2, 3, 1, 0},
-        {3, 0, 1, 2},
-        {3, 0, 2, 1},
-        {3, 1, 0, 2},
-        {3, 1, 2, 0},
-        {3, 2, 0, 1},
-        {3, 2, 1, 0}
+        {{0, 0}, {1, 1}, {2, 2}, {3, 3}},
+        {{0, 0}, {1, 1}, {2, 3}, {2, 3}},
+        {{0, 0}, {1, 2}, {2, 1}, {3, 3}},
+        {{0, 0}, {1, 2}, {2, 3}, {3, 1}},
+        {{0, 0}, {1, 3}, {2, 1}, {3, 2}},
+        {{0, 0}, {1, 3}, {2, 2}, {3, 1}},
+        
+        {{0, 1}, {1, 0}, {2, 2}, {3, 3}},
+        {{0, 1}, {1, 0}, {2, 3}, {3, 2}},
+        {{0, 1}, {1, 2}, {2, 0}, {3, 3}},
+        {{0, 1}, {1, 2}, {2, 3}, {3, 0}},
+        {{0, 1}, {1, 3}, {2, 0}, {3, 2}},
+        {{0, 1}, {1, 3}, {2, 2}, {3, 0}},
+        
+        {{0, 2}, {1, 0}, {2, 1}, {3, 3}},
+        {{0, 2}, {1, 0}, {2, 3}, {3, 1}},
+        {{0, 2}, {1, 1}, {2, 0}, {3, 3}},
+        {{0, 2}, {1, 1}, {2, 3}, {3, 0}},
+        {{0, 2}, {1, 3}, {2, 0}, {3, 1}},
+        {{0, 2}, {1, 3}, {2, 1}, {3, 0}},
+        
+        {{0, 3}, {1, 0}, {2, 1}, {3, 2}},
+        {{0, 3}, {1, 0}, {2, 2}, {3, 1}},
+        {{0, 3}, {1, 1}, {2, 0}, {3, 2}},
+        {{0, 3}, {1, 1}, {2, 2}, {3, 0}},
+        {{0, 3}, {1, 2}, {2, 0}, {3, 1}},
+        {{0, 3}, {1, 2}, {2, 1}, {3, 0}}
     }
 };
 
@@ -394,9 +389,7 @@ void LipidSpace::cut_cycle(FattyAcid* fa){
 
 
 void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& union_num, int& inter_num){
-    
     set<LipidFaBondType> lcbs = {LCB_REGULAR, LCB_EXCEPTION};
-    
     set<LipidFaBondType> bond_types = {fa1->lipid_FA_bond_type, fa2->lipid_FA_bond_type};
     
     
@@ -438,6 +431,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     else { 
         throw LipidException("Cannot compute similarity between chains");
     }
+
     
     // compare lengths
     int m1 = contains(lcbs, fa1->lipid_FA_bond_type) * 2;
@@ -471,6 +465,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     // add all single bonds
     inter_num += min(fa1->num_carbon - m1 - db1, fa2->num_carbon - m1 - db2);
     union_num += max(fa1->num_carbon - m2 - db1, fa2->num_carbon - m2 - db2);
+    
     
     // compare functional groups
     for (auto kv : *(fa1->functional_groups)){
@@ -563,8 +558,6 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     union_num = class_matrix.at(key)[0];
     inter_num = class_matrix.at(key)[1];
     
-    int max_u = 0, max_i = 0;
-    double max_q = 0;
     
     vector<FattyAcid*>* orig_fa_list_1 = &lipid1->lipid->fa_list;
     vector<FattyAcid*>* orig_fa_list_2 = &lipid2->lipid->fa_list;
@@ -574,53 +567,83 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         orig_fa_list_1 = orig_fa_list_2;
         orig_fa_list_2 = tmp;
     }
+    int len_fa1 = orig_fa_list_1->size();
     int len_fa2 = orig_fa_list_2->size();
     
-    for(int ol = 0; ol < order_len.at(len_fa2); ++ol){
-        int uu = 0, ii = 0;
-        
-        vector<FattyAcid*>* fa_list_1 = orig_fa_list_1;
-        vector<FattyAcid*>* fa_list_2 = new vector<FattyAcid*>();
-        vector<FattyAcid*>* for_del = fa_list_2;
-        
-        if (len_fa2 > 0){
-            for (int index : orders.at(len_fa2).at(ol)) fa_list_2->push_back(orig_fa_list_2->at(index));
-        }
-        
+    if (len_fa1 == 0 && len_fa2 == 0) return;
     
-        int l = min(fa_list_1->size(), fa_list_2->size());
+    
+    if (keep_sn_position || (len_fa1 <= 1 && len_fa2 <= 1)){
+        int l = min(orig_fa_list_1->size(), orig_fa_list_2->size());
         for (int i = 0; i < l; ++i){
-            fatty_acyl_similarity(fa_list_1->at(i), fa_list_2->at(i), uu, ii);
+            fatty_acyl_similarity(orig_fa_list_1->at(i), orig_fa_list_2->at(i), union_num, inter_num);
         }
         
-        
-        
-            
-        if (fa_list_1->size() > fa_list_2->size()){
-            for (int i = fa_list_2->size(); i < fa_list_1->size(); ++i){
-                FattyAcid* fa = fa_list_1->at(i);
-                uu += fa->get_double_bonds();
+        if (orig_fa_list_1->size() > orig_fa_list_2->size()){
+            for (int i = orig_fa_list_2->size(); i < orig_fa_list_1->size(); ++i){
+                FattyAcid* fa = orig_fa_list_1->at(i);
+                union_num += fa->get_double_bonds();
                 ElementTable* e = fa->get_elements();
                 for (auto kv : *e){
-                    if (kv.first != ELEMENT_H) uu += kv.second;
+                    if (kv.first != ELEMENT_H) union_num += kv.second;
                 }
                 delete e;
             }
         }
-        
-        double q = (double)ii / (double)uu;
-        if (max_q < q){
-            max_q = q;
-            max_u = uu;
-            max_i = ii;
-        }
-        
-        delete for_del;
-        if (keep_sn_position) break;
     }
     
-    union_num += max_u;
-    inter_num += max_i;
+    else {
+        int clen = len_fa1 * len_fa1;
+        int** cache = new int*[clen];
+        for (int i = 0; i < clen; ++i) cache[i] = 0;
+        
+        for (int i = 0; i < len_fa2; ++i){
+            for (int j = 0; j < len_fa1; ++j){
+                int uu = 0, ii = 0;
+                fatty_acyl_similarity(orig_fa_list_1->at(j), orig_fa_list_2->at(i), uu, ii);
+                cache[i * len_fa1 + j] = new int[2]{uu, ii};
+            }
+        }
+        
+        if (len_fa1 > len_fa2){
+            for (int j = 0; j < len_fa1; ++j){
+                
+                int uu = orig_fa_list_1->at(j)->get_double_bonds();
+                ElementTable* e = orig_fa_list_1->at(j)->get_elements();
+                for (auto kv : *e){
+                    if (kv.first != ELEMENT_H) uu += kv.second;
+                }
+                delete e;
+                for (int i = len_fa2; i < len_fa1; ++i) cache[i * len_fa1 + j] = new int[2]{uu, 0};
+            }
+        }
+        
+        int max_u = 0, max_i = 0;
+        double max_q = 0;
+        
+        for (int i = 0; i < orders.at(len_fa1).size(); ++i){
+            int uu = 0, ii = 0;
+            for (auto order : orders.at(len_fa1).at(i)){
+                int* cell = cache[order.at(0) * len_fa1 + order.at(1)];
+                uu += cell[0];
+                ii += cell[1];
+            }
+            double q = (double)ii / (double)uu;
+            if (max_q < q){
+                max_q = q;
+                max_u = uu;
+                max_i = ii;
+            }
+        }
+        
+        
+        
+        for (int i = 0; i < clen; ++i) { delete []cache[i]; }
+        delete []cache;
+        
+        union_num += max_u;
+        inter_num += max_i;
+    }
 }
 
 
