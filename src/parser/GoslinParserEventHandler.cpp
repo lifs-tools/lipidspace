@@ -91,6 +91,7 @@ GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandl
     reg("lpl_o_pre_event", set_molecular_subspecies_level);
     reg("hg_lpl_oc_pre_event", set_unspecified_ether);
     reg("hg_pl_oc_pre_event", set_unspecified_ether);
+    reg("plasmalogen_pre_event", set_plasmalogen);
     debug = "";
 }
 
@@ -109,6 +110,12 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
     db_position = 0;
     db_cistrans = "";
     unspecified_ether = false;
+    plasmalogen = 0;
+}
+
+
+void GoslinParserEventHandler::set_plasmalogen(TreeNode *node) {
+    plasmalogen = node->get_text()[0];
 }
 
 
@@ -217,6 +224,20 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
         fa_list->insert(fa_list->begin(), lcb);
     }
     
+    if (plasmalogen && fa_list->size()){
+        switch (plasmalogen){
+            case 'o':
+            case 'O':
+                fa_list->at(0)->lipid_FA_bond_type = ETHER_PLASMANYL;
+                break;
+                
+            case 'p':
+            case 'P':
+                fa_list->at(0)->lipid_FA_bond_type = ETHER_PLASMENYL;
+                break;
+        }
+    }
+    
     Headgroup *headgroup = prepare_headgroup_and_checks();
     
     LipidAdduct *lipid = new LipidAdduct();
@@ -229,6 +250,10 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     
 
 void GoslinParserEventHandler::add_ether(TreeNode *node) {
+    if (plasmalogen){
+        throw ConstraintViolationException("Plasmalogen notation invalid, use O- instead.");
+    }
+    
     string ether = node->get_text();
     if (ether == "a") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
     else if (ether == "p"){

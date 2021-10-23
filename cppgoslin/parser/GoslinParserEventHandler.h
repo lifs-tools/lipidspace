@@ -50,6 +50,7 @@ public:
     int db_position;
     string db_cistrans;
     bool unspecified_ether;
+    char plasmalogen;
         
     GoslinParserEventHandler();
     ~GoslinParserEventHandler();
@@ -72,6 +73,7 @@ public:
     void add_charge(TreeNode *node);
     void add_charge_sign(TreeNode *node);
     void set_unspecified_ether(TreeNode *node);
+    void set_plasmalogen(TreeNode *node);
     
     void set_isomeric_level(TreeNode* node);
     void add_db_position(TreeNode* node);
