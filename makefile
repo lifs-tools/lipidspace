@@ -36,3 +36,6 @@ example:
 	
 lung:
 	./lipidspace output lists Lung/ID22_T_1  Lung/ID23_T_1  Lung/ID24_T_1  Lung/ID26_T_1  Lung/ID29_A_1  Lung/ID30_A_1  Lung/ID31_A_1  Lung/ID32_A_1 Lung/ID22_T_2  Lung/ID23_T_2  Lung/ID24_T_2  Lung/ID26_T_2  Lung/ID29_A_2  Lung/ID30_A_2  Lung/ID31_A_2  Lung/ID32_A_2 Lung/ID23_A_1  Lung/ID24_A_1  Lung/ID26_A_1  Lung/ID28_A_1  Lung/ID29_T_1  Lung/ID30_T_1  Lung/ID31_T_1  Lung/ID23_A_2  Lung/ID24_A_2  Lung/ID26_A_2  Lung/ID28_A_2  Lung/ID29_T_2  Lung/ID30_T_2  Lung/ID31_T_2
+	
+platelet:
+	./lipidspace -i output lists Platelet/Human_1_Unst.txt  Platelet/Human_3_Unst.txt  Platelet/Human_5_Unst.txt  Platelet/Mouse_1_Unst.txt  Platelet/Mouse_3_Unst.txt Platelet/Human_2_Unst.txt  Platelet/Human_4_Unst.txt  Platelet/Human_6_Unst.txt  Platelet/Mouse_2_Unst.txt  Platelet/Mouse_4_Unst.txt
