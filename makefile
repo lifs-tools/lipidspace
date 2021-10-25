@@ -23,7 +23,7 @@ clean:
 	rm -f ${bin_pre}
 
 yeast:
-	./lipidspace output lists Yeast/BY4741_24 Yeast/BY4741_37 Yeast/Elo1_24 Yeast/Elo1_37 Yeast/Elo2_24 Yeast/Elo2_37 Yeast/Elo3_24 Yeast/Elo3_37
+	./lipidspace -u output lists Yeast/BY4741_24 Yeast/BY4741_37 Yeast/Elo1_24 Yeast/Elo1_37 Yeast/Elo2_24 Yeast/Elo2_37 Yeast/Elo3_24 Yeast/Elo3_37
 	
 fly:
 	./lipidspace -i output lists Drosophila/DmBraiPF  Drosophila/DmBraiYF  Drosophila/DmFaboPF  Drosophila/DmFaboYF  Drosophila/DmGutPF  Drosophila/DmGutYF  Drosophila/DmLipoPF  Drosophila/DmLipoYF  Drosophila/DmSaglPF  Drosophila/DmSaglYF  Drosophila/DmWidsPF  Drosophila/DmWidsYF

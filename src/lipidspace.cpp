@@ -18,7 +18,7 @@ namespace plt = matplotlibcpp;
 using namespace Spectra;
 
 
-enum Linkage {SINGLE, COMLETE};
+enum Linkage {SINGLE, COMPLETE};
 
 
 
@@ -62,6 +62,7 @@ public:
     bool keep_sn_position;
     bool ignore_unknown_lipids;
     bool unboundend_distance;
+    bool without_quant;
     
     
     LipidSpace();
@@ -142,12 +143,12 @@ double* Node::plot(int cnt, vector<string>* sorted_ticks){
 
 
 
-double linkage(Node* n1, Node* n2, MatrixXd m, Linkage linkage = COMLETE){
+double linkage(Node* n1, Node* n2, MatrixXd m, Linkage linkage = COMPLETE){
     int mi1 = 0, mi2 = 0;
     double v = 1e9 * (linkage == SINGLE);
     for (auto index1 : n1->indexes){
         for (auto index2 : n2->indexes){
-            if ((linkage == COMLETE && v < m(index1, index2)) || (linkage == SINGLE && v > m(index1, index2))){
+            if ((linkage == COMPLETE && v < m(index1, index2)) || (linkage == SINGLE && v > m(index1, index2))){
                 v = m(index1, index2);
                 mi1 = index1;
                 mi2 = index2;
@@ -185,7 +186,7 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, MatrixXd m, string o
         int ii = 0, jj = 0;
         for (int i = 0; i < nodes.size() - 1; ++i){
             for (int j = i + 1; j < nodes.size(); ++j){
-                double val = linkage(nodes.at(i), nodes.at(j), m, SINGLE);
+                double val = linkage(nodes.at(i), nodes.at(j), m, COMPLETE);
                 if (min_val > val){
                     min_val = val;
                     ii = i;
@@ -230,6 +231,7 @@ LipidSpace::LipidSpace(){
     keep_sn_position = false;
     ignore_unknown_lipids = false;
     unboundend_distance = false;
+    without_quant = false;
     
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -674,8 +676,6 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
             }
         }
         
-        
-        
         for (int i = 0; i < clen; ++i) { delete []cache[i]; }
         delete []cache;
         
@@ -744,6 +744,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
                 delete l->adduct;
                 l->adduct = 0;
             }
+            
             
             all_lipids.at(pos_all + i) = l;
             lipidome->lipids.at(i) = l;
@@ -814,11 +815,9 @@ MatrixXd LipidSpace::compute_PCA(MatrixXd m){
     int n = m.rows();    
     
     // calculate the covariance matrix
-    MatrixXd centered = m.rowwise() - m.colwise().mean();
-    MatrixXd cov = (centered.adjoint() * centered) / double(n - 1);
+    MatrixXd cov = (m.adjoint() * m) / double(n - 1);
 
     
-
     // Construct matrix operation object using the wrapper class DenseSymMatProd
     DenseSymMatProd<double> op(cov);
  
@@ -834,9 +833,8 @@ MatrixXd LipidSpace::compute_PCA(MatrixXd m){
         cerr << "Error: could not perform principal component analysis." << endl;
         exit(-1);
     }
-    MatrixXd evecs = eigs.eigenvectors();
     
-    return (evecs.transpose() * m.transpose()).transpose();
+    return (eigs.eigenvectors().transpose() * m.transpose()).transpose();
 }
 
 
@@ -853,12 +851,19 @@ inline double dist(VectorXd v, MatrixXd m){
 
 double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
     // add intensities to hausdorff matrix
-    MatrixXd m1(l1->m.rows(), min((int)l1->m.cols(), (int)cols_for_pca) + 1);
-    m1 << l1->m.leftCols(min((int)l1->m.cols(), (int)cols_for_pca)), l1->intensities;
     
-    MatrixXd m2(l2->m.rows(), min((int)l2->m.cols(), (int)cols_for_pca) + 1);
-    m2 << l2->m.leftCols(min((int)l2->m.cols(), (int)cols_for_pca)), l2->intensities;
-    
+    MatrixXd m1, m2;
+    if (without_quant){
+        m1 = l1->m;
+        m2 = l2->m;
+    }
+    else {
+        m1 = MatrixXd(l1->m.rows(), min((int)l1->m.cols(), (int)cols_for_pca) + 1);
+        m1 << l1->m.leftCols(min((int)l1->m.cols(), (int)cols_for_pca)), l1->intensities;
+        m2 = MatrixXd(l2->m.rows(), min((int)l2->m.cols(), (int)cols_for_pca) + 1);
+        m2 << l2->m.leftCols(min((int)l2->m.cols(), (int)cols_for_pca)), l2->intensities;
+    }
+
     
     double hausdorff = 0;
     for (auto row : m1.rowwise()) hausdorff = max(hausdorff, dist(row, m2));
@@ -937,8 +942,8 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
     
      
     double ps = pairwise_sum(r) / sq(xx.size());
-    double nf_x = sigma_x / ps; // normalization factor
-    double nf_y = sigma_y / ps; // normalization factor
+    double nf_x = 0.2 * sigma_x / ps; // normalization factor
+    double nf_y = 0.2 * sigma_y / ps; // normalization factor
     
     
     #define pseq seq(2 * l, all_xx.size() - 1)
@@ -1036,7 +1041,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
             my += vy;
             min_y = min(min_y, vy);
             max_y = max(max_y, vy);
-            intens.push_back(intensities(i));
+            intens.push_back(intensities(i) > 1 ? log(intensities(i)) : 0.1);
         }
         mean_x.push_back(mx / (double)x.size());
         mean_y.push_back(my / (double)y.size());
@@ -1311,7 +1316,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
         all_lipids.push_back(l);
         for (int i = 1; i < tokens->size(); ++i){
             string val = tokens->at(i);
-            if (!contains(NA_VALUES, val)){
+            if (!contains(NA_VALUES, val) && (l->get_lipid_string(CATEGORY) == "GL" || l->get_lipid_string(CATEGORY) == "GP")){
                 Table* lipidome = lipidomes->at(i - 1);
                 lipidome->lipids.push_back(l);
                 lipidome->species.push_back(l->get_lipid_string());
@@ -1367,6 +1372,7 @@ void print_help(){
     cerr << " -h\t\tshow this help message" << endl;
     cerr << " -sn\t\tignore sn-positions, compare all pairwise fatty acyl chains" << endl;
     cerr << " -i\t\tignore unknown lipids (default: exit with error)" << endl;
+    cerr << " -q\t\tignore quantitative data if present (default: guess what, consider them)" << endl;
     cerr << " -d\t\tstore distance tables" << endl;
     cerr << " -p\t\tplot only figure for global principal component analysis" << endl;
     cerr << " -u\t\tunbounded distance to inf (default: 0 <= distance <= 1)" << endl;
@@ -1382,13 +1388,14 @@ int main(int argc, char** argv) {
     bool plot_pca_lipidomes = true;
     bool storing_distance_table = false;
     bool unboundend_distance = false;
+    bool without_quant = false;
     
     if (argc < 4) {
         print_help();
         exit(-1);
     }
     
-    map<string, int> options = {{"-sn", 0}, {"-i", 1}, {"-d", 2}, {"-p", 3}, {"-h", 4}, {"--help", 4}, {"-u", 5}};
+    map<string, int> options = {{"-sn", 0}, {"-i", 1}, {"-d", 2}, {"-p", 3}, {"-h", 4}, {"--help", 4}, {"-u", 5}, {"-q", 6}};
     
     
     int num_opt = 0;
@@ -1403,6 +1410,7 @@ int main(int argc, char** argv) {
             case 3: plot_pca_lipidomes = false; break;
             case 4: print_help(); return 0;
             case 5: unboundend_distance = true; break;
+            case 6: without_quant = true; break;
         }
     }
     
@@ -1431,6 +1439,7 @@ int main(int argc, char** argv) {
     lipid_space.keep_sn_position = keep_sn_position;
     lipid_space.ignore_unknown_lipids = ignore_unknown_lipids;
     lipid_space.unboundend_distance = unboundend_distance;
+    lipid_space.without_quant = without_quant;
     
     
     // loadig each lipidome
