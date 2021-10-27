@@ -1,5 +1,4 @@
 #include <iostream>
-#include <Eigen/Dense>
 #include "LipidSpace/matplotlibcpp.h"
 #include <vector>
 #include <string>
@@ -7,16 +6,12 @@
 #include <math.h>
 #include <algorithm>
 #include <sys/stat.h>
-#include <Spectra/SymEigsSolver.h>
 #include <chrono>
 #include <LipidSpace/Matrix.h>
 
-#define sq(x) ((x) * (x))   
  
 using namespace std;
-using namespace Eigen;
 namespace plt = matplotlibcpp; 
-using namespace Spectra;
 
 
 enum Linkage {SINGLE, COMPLETE};
@@ -69,7 +64,7 @@ public:
     LipidSpace();
     ~LipidSpace();
     Table* load_list(string lipid_list_file);
-    Array compute_PCA_variances(Mat &m, Array a);
+    void compute_PCA_variances(Mat &m, Array &a);
     void cut_cycle(FattyAcid* fa);
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
@@ -225,8 +220,6 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Mat &m, string outpu
 
 
 LipidSpace::LipidSpace(){
-    Eigen::initParallel();
-    
     cols_for_pca = 7;
     keep_sn_position = false;
     ignore_unknown_lipids = false;
@@ -446,8 +439,8 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     int m1 = contains(lcbs, fa1->lipid_FA_bond_type) * 2;
     int m2 = contains(lcbs, fa2->lipid_FA_bond_type) * 2;
     
-    inter_num += min(fa1->num_carbon - m1, fa2->num_carbon - m1);
-    union_num += max(fa1->num_carbon - m2, fa2->num_carbon - m2);
+    inter_num += mmin(fa1->num_carbon - m1, fa2->num_carbon - m1);
+    union_num += mmax(fa1->num_carbon - m2, fa2->num_carbon - m2);
     
     
     // compare double bonds
@@ -467,13 +460,13 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
         db1 = fa1->double_bonds->get_num();
         db2 = fa2->double_bonds->get_num();
             
-        inter_num += min(db1, db2);
-        union_num += max(db1, db2);
+        inter_num += mmin(db1, db2);
+        union_num += mmax(db1, db2);
     }
     
     // add all single bonds
-    inter_num += min(fa1->num_carbon - m1 - db1, fa2->num_carbon - m1 - db2);
-    union_num += max(fa1->num_carbon - m2 - db1, fa2->num_carbon - m2 - db2);
+    inter_num += mmin(fa1->num_carbon - m1 - db1, fa2->num_carbon - m1 - db2);
+    union_num += mmax(fa1->num_carbon - m2 - db1, fa2->num_carbon - m2 - db2);
     
     if (fa1->functional_groups->size() == 0 && fa2->functional_groups->size() == 0) return;
     
@@ -614,7 +607,7 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     
     
     if (keep_sn_position || (len_fa1 <= 1 && len_fa2 <= 1)){
-        int l = min(orig_fa_list_1->size(), orig_fa_list_2->size());
+        int l = mmin(orig_fa_list_1->size(), orig_fa_list_2->size());
         for (int i = 0; i < l; ++i){
             fatty_acyl_similarity(orig_fa_list_1->at(i), orig_fa_list_2->at(i), union_num, inter_num);
         }
@@ -771,7 +764,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
             lipidome->lipids.erase(lipidome->lipids.begin() + index);
             lipidome->species.erase(lipidome->species.begin() + index);
             lipidome->classes.erase(lipidome->classes.begin() + index);
-            lipidome->intensities.erase(intensities.begin() + index);
+            lipidome->intensities.erase(lipidome->intensities.begin() + index);
         }
     }
     
@@ -787,7 +780,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
 
 
 
-ArrayXd LipidSpace::compute_PCA_variances(Mat &m, Array &a){
+void LipidSpace::compute_PCA_variances(Mat &m, Array &a){
     double total_var = 0;
     for (int c = 0; c < m.cols; c++){
         double var = 0;
@@ -806,27 +799,21 @@ ArrayXd LipidSpace::compute_PCA_variances(Mat &m, Array &a){
 
 
 
-inline double dist(VectorXd v, MatrixXd m){
-    // distcance is standard eucleadian distcance or l2-norm
-    return ((m.rowwise() - v.transpose()).rowwise().squaredNorm()).minCoeff();
-}
-
-
 
 double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
     // add intensities to hausdorff matrix
-    Mat m1, m2;
+    Mat tm1, tm2;
     if (without_quant){
-        m1(l1->m, true);
-        m2(l2->m, true);
+        tm1.rewrite_transpose(l1->m);
+        tm2.rewrite_transpose(l2->m);
     }
     else {
-        m1(l1->m);
-        m1.add_column(l1->intensities);
-        m1.transpose();
-        m2(l2->m);
-        m2.add_column(l2->intensities);
-        m2.transpose();
+        tm1.rewrite(l1->m);
+        tm1.add_column(l1->intensities);
+        tm1.transpose();
+        tm2.rewrite(l2->m);
+        tm2.add_column(l2->intensities);
+        tm2.transpose();
     }
     assert(tm1.rows == tm2.rows);
     
@@ -882,52 +869,41 @@ void LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes, Mat &distan
 
 
 
-
-
-
-
-struct pad {
-    Index size() const { return out_size; }
-    Index operator[] (Index i) const { return std::max<Index>(0,i-(out_size-in_size)); }
-    Index in_size, out_size;
-};
-
-
-
-double pairwise_sum(MatrixXd m){
-    int l = m.rows();
+double pairwise_sum(Mat &m){
+    assert(m.cols == 2);
+    Mat tm(m, true);
     
-    MatrixXd D(l, l);
-    MatrixXd E(l, l);
-    
-    D = m.leftCols(1)(seq(0, l - 1), pad{1, l});
-    D = (D - D.transpose().eval()).array().square();
-    E = m.rightCols(1)(seq(0, l - 1), pad{1, l});
-    E = (E - E.transpose().eval()).array().square();
-    D = (D + E).array().sqrt();
-    
-    return D.sum();
+    double dist_sum = 0;
+    for (int tm2c = 0; tm2c < tm.cols; tm2c++){
+        double* tm2col = tm.data() + (tm2c * tm.rows);
+        for (int tm1c = 0; tm1c < tm.cols; ++tm1c){
+            double* tm1col = tm.data() + (tm1c * tm.rows);
+            double dist = sq(tm1col[0] - tm2col[0]);
+            dist += sq(tm1col[1] - tm2col[1]);
+            dist_sum += sqrt(dist);
+        }
+    }
+    return dist_sum;
 }
 
 
 
-
-MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
-    VectorXd label_xx = xx(seq(0, l - 1));
-    VectorXd label_yy = yy(seq(0, l - 1));
-    VectorXd orig_label_xx = xx(seq(0, l - 1));
-    VectorXd orig_label_yy = yy(seq(0, l - 1));
+void automated_annotation(Array &xx, Array &yy, int l, Mat &label_points){
+    Array label_xx(&xx, l);
+    Array label_yy(&yy, l);
+    Array orig_label_xx(&xx, l);
+    Array orig_label_yy(&yy, l);
     
-    double sigma_x = sqrt((xx.array() - (xx.array().mean())).square().sum() / (double)xx.size());
-    double sigma_y = sqrt((yy.array() - (yy.array().mean())).square().sum() / (double)yy.size());
+    double sigma_x = xx.stdev();
+    double sigma_y = yy.stdev();
     
-    VectorXd all_xx(xx.size() + label_xx.size());
-    all_xx << label_xx, xx;
-    VectorXd all_yy(yy.size() + label_yy.size());
-    all_yy << label_yy, yy;
-    
-    MatrixXd r(all_xx.size(), 2);
-    r << all_xx, all_yy;
+    Array all_xx(&label_xx);
+    all_xx.add(xx);
+    Array all_yy(&label_yy);
+    all_yy.add(yy);
+    Mat r;
+    r.add_column(all_xx);
+    r.add_column(all_yy);
     
      
     double ps = pairwise_sum(r) / sq(xx.size());
@@ -940,6 +916,7 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
     
     // do 30 iterations to find an equilibrium of pulling and pushing forces
     // for the label positions
+    /*
     for (int i = 0; i < 30; ++i){
         
         for (int ii = 0; ii < l; ++ii){
@@ -964,12 +941,12 @@ MatrixXd automated_annotation(VectorXd xx, VectorXd yy, int l){
             all_yy(ii) = label_yy(ii);
         }
     }
+    */
     
         
-    MatrixXd m(label_xx.size(), 2);
-    m << label_xx, label_yy;
-    
-    return m;
+    label_points.reset(0, 0);
+    label_points.add_column(label_xx);
+    label_points.add_column(label_yy);
 }
 
 
@@ -1003,8 +980,8 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
         indexes.at(lipid_class).push_back(i);
     }
     
-    vector<double> mean_x;
-    vector<double> mean_y;
+    Array mean_x;
+    Array mean_y;
     vector<string> labels;
     
     double min_x = 0, max_x = 0, min_y = 0, max_y = 0;
@@ -1012,7 +989,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     Array intensities(lipidome->intensities);
     double mean = 0, stdev = 0;
     for (auto val : intensities) mean += val;
-    mean /= (double)val.size();
+    mean /= (double)intensities.size();
     
     for (auto val : intensities) stdev += sq(val - mean);
     stdev = sqrt(stdev / (double)intensities.size());
@@ -1035,11 +1012,11 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
             double vx = lipidome->m(i, 0), vy = lipidome->m(i, 1);
             x.push_back(vx);
             mx += vx;
-            min_x = min(min_x, vx);
+            min_x = mmin(min_x, vx);
             max_x = max(max_x, vx);
             y.push_back(vy);
             my += vy;
-            min_y = min(min_y, vy);
+            min_y = mmin(min_y, vy);
             max_y = max(max_y, vy);
             intens.push_back(intensities[i] > 1 ? log(intensities[i]) : 0.1);
         }
@@ -1052,36 +1029,37 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
         plt::scatter(x, y, intens);
     }
     
-    for (int i = 0; i < lipidome->m.rows(); ++i){
+    for (int i = 0; i < lipidome->m.rows; ++i){
         mean_x.push_back(lipidome->m(i, 0));
         mean_y.push_back(lipidome->m(i, 1));
     }
 
     
     // plot the annotations
-    VectorXd xx = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(mean_x.data(), mean_x.size());
-    VectorXd yy = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(mean_y.data(), mean_y.size());
-    MatrixXd label_m = automated_annotation(xx, yy, labels.size());
+    Mat label_m;
+    automated_annotation(mean_x, mean_y, labels.size(), label_m);
+    
     for (int i = 0; i < labels.size(); ++i){
         plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"color", "#aaaaaa"}, {"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
     }
-    min_x = min(min_x, (double)label_m.leftCols(1).minCoeff());
-    max_x = max(max_x, (double)label_m.leftCols(1).maxCoeff());
-    min_y = min(min_y, (double)label_m.rightCols(1).minCoeff());
-    max_y = max(max_y, (double)label_m.rightCols(1).maxCoeff());
+    min_x = mmin(min_x, label_m.col_min(0));
+    max_x = mmax(max_x, label_m.col_max(0));
+    min_y = mmin(min_y, label_m.col_min(label_m.cols - 1));
+    max_y = mmax(max_y, label_m.col_max(label_m.cols - 1));
     
     
     cout << "Running principal component analysis" << endl;
-    VectorXd pca_variances = compute_PCA_variances(lipidome->m);
+    Array pca_variances;
+    compute_PCA_variances(lipidome->m, pca_variances);
     
     stringstream xlabel;
     xlabel.precision(1);
-    xlabel << fixed << "Principal component 1 (" << (pca_variances(0) * 100) << " %)";
+    xlabel << fixed << "Principal component 1 (" << (pca_variances[0] * 100) << " %)";
     //xlabel << fixed << "Principal component 1";
     
     stringstream ylabel;
     ylabel.precision(1);
-    ylabel << fixed << "Principal component 2 (" << (pca_variances(1) * 100) << " %)";
+    ylabel << fixed << "Principal component 2 (" << (pca_variances[1] * 100) << " %)";
     //ylabel << fixed << "Principal component 2";
     
     plt::xlabel(xlabel.str());
@@ -1152,7 +1130,7 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
     
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
-    global_lipidome->intensities.resize(n)
+    global_lipidome->intensities.resize(n);
     for (int i = 0; i < n; ++i)global_lipidome->intensities[i] = 3;
     
     
@@ -1215,9 +1193,9 @@ void LipidSpace::separate_matrixes(vector<Table*>* lipidomes, Table* global_lipi
     
     
     for (auto lipidome : *lipidomes){
-        vector<int> indexes;
+        Indexes indexes;
         for (auto lipid_species : lipidome->species) indexes.push_back(lipid_indexes.at(lipid_species));
-        lipidome->m = global_lipidome->m(indexes, all);
+        lipidome->m.rewrite(global_lipidome->m, indexes);
     }
 }
 
@@ -1232,7 +1210,7 @@ void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_
     Mat &m = global_lipidome->m;
     
     double global_stdev = 0;
-    for (int i = 0; i < m.rows; ++i) global_lipidome += sq(m.m[i]);
+    for (int i = 0; i < m.rows; ++i) global_stdev += sq(m.m[i]);
     global_stdev = sqrt(global_stdev / (double)m.rows);
     
     
@@ -1241,7 +1219,7 @@ void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_
         Array &intensities = lipidome->intensities;
         double mean = 0, stdev = 0;
         for (auto val : intensities) mean += val;
-        mean /= (double)val.size();
+        mean /= (double)intensities.size();
         
         for (auto val : intensities) stdev += sq(val - mean);
         stdev = sqrt(stdev / (double)intensities.size());
@@ -1274,7 +1252,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
     
 
     set<string> NA_VALUES = {"NA", "nan", "N/A", "O", "", "n/a", "NaN"};
-    vector<vector<int>> intensities;
+    vector<Array> intensities;
     
     
     int line_cnt = 0;
@@ -1285,7 +1263,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
             num_cols = tokens->size();
             for (int i = 1; i < tokens->size(); ++i){
                 lipidomes->push_back(new Table(tokens->at(i)));
-                intensities.push_back(vector<int>());
+                intensities.push_back(Array());
             }
             delete tokens;
             continue;
@@ -1347,7 +1325,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
     }
         
     for (int i = 0; i < lipidomes->size(); ++i){
-        lipidomes->at(i)->intensities(intensities.at(i));
+        lipidomes->at(i)->intensities.reset(intensities.at(i));
     }
 }
 
@@ -1482,7 +1460,9 @@ int main(int argc, char** argv) {
     
     begin = chrono::steady_clock::now();
     // perform the principal component analysis
-    global_lipidome->m = lipid_space.compute_PCA(global_lipidome->m);
+    Mat tmp;
+    global_lipidome->m.PCA(tmp, lipid_space.cols_for_pca);
+    global_lipidome->m.rewrite(tmp);
     end = chrono::steady_clock::now();
     cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
     cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;

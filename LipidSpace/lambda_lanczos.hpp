@@ -295,23 +295,12 @@ public:
     }
 
     size_t run(real_t<T>& eigvalue, std::vector<T>& eigvec) const{
-        std::vector<real_t<T>> eigvalues(4);
-        std::vector<std::vector<T>> eigvecs(4);
+        std::vector<real_t<T>> eigvalues(1);
+        std::vector<std::vector<T>> eigvecs(1);
         auto retval = run(eigvalues, eigvecs);
         eigvalue = eigvalues[0];
-        std::cout << "haha " << eigvalues[1] << std::endl;
         eigvec = std::move(eigvecs[0]);
         return retval;
-    }
-
-    size_t run(std::vector<real_t<T>>& eigvalues, std::vector<std::vector<T>>& eigvecs, int n) const{
-        /*
-        for (int i = 0; i < n; ++i){
-            eigvalues.push_back(0);
-            eigvecs.push_back(std::vector<T>());
-        }*/
-        
-        return rrun(eigvalues, eigvecs);
     }
 };
 

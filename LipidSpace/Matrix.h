@@ -11,10 +11,21 @@ using lambda_lanczos::LambdaLanczos;
 using namespace std;
 
 #define sq(x) ((x) * (x))
+#define mmin(x, y) ((x) < (y) ? (x) : (y))
+#define mmax(x, y) ((x) > (y) ? (x) : (y))
+
+typedef vector<int> Indexes;
 
 
-class Array : public vector<double>{
-    Array(Array &a);
+class Array : public vector<double> {
+public:
+    Array();
+    Array(Array *a, int l = -1);
+    void reset(Array &a);
+    double mean();
+    double stdev();
+    void add(Array &a);
+    void add(vector<double> &a);
 };
 
 
@@ -26,20 +37,25 @@ public:
     
     Mat();
     Mat(const Array &copy, int _rows, int _cols);
-    Mat(vector<Array> &copy);
+    Mat(vector<vector<double>> &copy);
     Mat(int _rows, int _cols);
+    Mat(Mat &mat, bool transpose = false);
     void reset(int _rows, int _cols);
-    void rewrite(vector<Array> &copy);
+    void rewrite_transpose(Mat &copy);
+    void rewrite(vector<vector<double>> &copy);
+    void rewrite(Mat &copy, const Indexes &ri = {}, const Indexes &ci = {});
     void rand_fill();
     void scale();
+    double col_min(int c);
+    double col_max(int c);
     void transpose();
     double pairwise_sum(Mat &m);
     void mult(Mat& A, Mat& B, bool transA = false, bool transB = false, double alpha = 1.0);
     void covariance_matrix(Mat &covar);
     void compute_eigen_data(Array &eigenvalues, Mat& eigenvectors, int top_n);
-    void PCA(Mat &pca, int dimensions);
+    void PCA(Mat &pca, int dimensions = 2);
     void add_column(Array &col);
-    inline double* data();
+    double* data();
     friend ostream& operator << (ostream& os, const Mat& m){
         for (int r = 0; r < m.rows; ++r){
             for (int c = 0; c < m.cols; c++){
