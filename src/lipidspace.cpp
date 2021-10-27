@@ -803,12 +803,11 @@ ArrayXd LipidSpace::compute_PCA_variances(MatrixXd m){
 
 
 
-
 MatrixXd LipidSpace::compute_PCA(MatrixXd m){
     cout << "Running principal component analysis" << endl;
     // scale and transform the matrix
     int r = m.rows();
-    m = m.rowwise() - (m.rowwise().mean()).transpose();
+    m = m.rowwise() - (m.colwise().mean());
     VectorXd norm = (r / m.array().square().colwise().sum()).sqrt();
     for (int i = 0; i < r; ++i) m.block(0, i, r, 1) *= norm[i];
 
@@ -1316,7 +1315,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
         all_lipids.push_back(l);
         for (int i = 1; i < tokens->size(); ++i){
             string val = tokens->at(i);
-            if (!contains(NA_VALUES, val) && (l->get_lipid_string(CATEGORY) == "GL" || l->get_lipid_string(CATEGORY) == "GP")){
+            if (!contains(NA_VALUES, val)){
                 Table* lipidome = lipidomes->at(i - 1);
                 lipidome->lipids.push_back(l);
                 lipidome->species.push_back(l->get_lipid_string());
