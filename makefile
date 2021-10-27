@@ -10,7 +10,7 @@ obj = src/lipidspace.o src/Matrix.o
 main: ${bin_pre} ${bin}
 
 ${bin}: ${obj}
-	${CC} -fopenmp ${obj} -o ${bin} -lpython3.8 -lcppGoslin
+	${CC} -fopenmp ${obj} -o ${bin} -lpython3.8 -lcppGoslin -L /usr/lib/x86_64-linux-gnu/openblas-openmp -l openblas
 
 ${bin_pre}: ${obj_pre}
 	${CC} ${opt} ${obj_pre} -o ${bin_pre} -L ~/workspace/lib -lOGDF -lCOIN

@@ -1,12 +1,18 @@
 #include "LipidSpace/Matrix.h"
 
     
-Matrix::Matrix(){
+Array::Array(Array &a) : vector<double>() {
+    reserve(a.size());
+    for (auto val : a) push_back(val);
+}
+    
+    
+Mat::Mat(){
     rows = 0;
     cols = 0;
 }
 
-Matrix::Matrix(const Array &copy, int _rows, int _cols){
+Mat::Mat(const Array &copy, int _rows, int _cols){
     cols = _cols;
     rows = _rows;
     m.clear();
@@ -14,12 +20,21 @@ Matrix::Matrix(const Array &copy, int _rows, int _cols){
     for (double v : copy) m.push_back(v);
 }
 
-Matrix::Matrix(vector<Array> &copy){
+Mat::Mat(vector<Array> &copy){
     rewrite(copy);
 }
 
 
-void Matrix::rewrite(vector<Array> &copy){
+
+void Mat::add_column(Array &col){
+    assert(cols == col.size());
+    cols += 1;
+    m.reserve(cols * rows);
+    for (auto val : col) m.push_back(val);
+}
+
+
+void Mat::rewrite(vector<Array> &copy){
     cols = copy.size();
     rows = copy[0].size();
     m.clear();
@@ -30,11 +45,11 @@ void Matrix::rewrite(vector<Array> &copy){
 }
 
 
-Matrix::Matrix(int _rows, int _cols){
+Mat::Mat(int _rows, int _cols){
     reset(_rows, _cols);
 }
 
-void Matrix::reset(int _rows, int _cols){
+void Mat::reset(int _rows, int _cols){
     rows = _rows;
     cols = _cols;
     m.clear();
@@ -43,13 +58,32 @@ void Matrix::reset(int _rows, int _cols){
 }
 
 
-void Matrix::rand_fill(){
+void Mat::rand_fill(){
     for (int i = 0; i < cols * rows; ++i) m[i] = 2 * (rand() / (double)RAND_MAX) - 1.;
 }
 
 
+double Mat::pairwise_sum(Mat &m){
+    assert(m.cols == 2);
+    Mat tm(m, true);
+    
+    double dist_sum = 0;
+    for (int tm2c = 0; tm2c < tm.cols; tm2c++){
+        double* tm2col = tm.data() + (tm2c * tm.rows);
+        for (int tm1c = 0; tm1c < tm.cols; ++tm1c){
+            double* tm1col = tm.data() + (tm1c * tm.rows);
+            double dist = sq(tm1col[0] - tm2col[0]);
+            dist += sq(tm1col[1] - tm2col[1]);
+            dist_sum += sqrt(dist);
+        }
+    }
+    return dist_sum;
+}
 
-void Matrix::scale(){
+
+
+
+void Mat::scale(){
     for (int c = 0; c < cols; c++){
         // estimating the mean
         double mean = 0;
@@ -76,7 +110,7 @@ void Matrix::scale(){
 }
 
 
-void Matrix::transpose(){
+void Mat::transpose(){
     double *tmp = new double[cols * rows];
     #pragma omp parallel for
     for (int i = 0; i < cols * rows; ++i) tmp[i] = m[i];
@@ -93,7 +127,7 @@ void Matrix::transpose(){
 }
 
 
-void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int top_n){
+void Mat::compute_eigen_data(Array &eigenvalues, Mat& eigenvectors, int top_n){
     assert(rows == cols);
         
     // Prepare matrix-vector multiplication routine used in Lanczos algorithm
@@ -110,7 +144,7 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
 }
 
 
-void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
+void Mat::mult(Mat& A, Mat& B, bool transA, bool transB, double alpha){
     assert((transA ? A.rows : A.cols) == (transB ? B.cols : B.rows));
     
     int mm = transA ? A.cols : A.rows;
@@ -121,7 +155,7 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
 }
 
 
-void Matrix::PCA(Matrix &pca, int dimensions){
+void Mat::PCA(Mat &pca, int dimensions){
         scale();
         Mat cov_matrix;
         covariance_matrix(cov_matrix);
@@ -133,8 +167,13 @@ void Matrix::PCA(Matrix &pca, int dimensions){
     }
 
 
-void Matrix::covariance_matrix(Matrix &covar){
+void Mat::covariance_matrix(Mat &covar){
     covar.reset(cols, cols);
     double factor = 1. / ((double)cols - 1);
     covar.mult(*this, *this, true, false, factor);
+}
+
+
+double* Mat::data(){
+    return m.data();
 }

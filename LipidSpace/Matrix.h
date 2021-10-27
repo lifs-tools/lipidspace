@@ -7,32 +7,40 @@
 #include <cassert>
 #include <cblas.h>
 
+using lambda_lanczos::LambdaLanczos;
 using namespace std;
 
-#define Array vector< double >
 #define sq(x) ((x) * (x))
 
-class Matrix {
+
+class Array : public vector<double>{
+    Array(Array &a);
+};
+
+
+class Mat {
 public:
     Array m;
     int rows;
     int cols;
     
-    Matrix();
-    Matrix(const Array &copy, int _rows, int _cols);
-    Matrix(vector<Array> &copy);
-    Matrix(int _rows, int _cols);
+    Mat();
+    Mat(const Array &copy, int _rows, int _cols);
+    Mat(vector<Array> &copy);
+    Mat(int _rows, int _cols);
     void reset(int _rows, int _cols);
     void rewrite(vector<Array> &copy);
     void rand_fill();
     void scale();
     void transpose();
-    void mult(Matrix& A, Matrix& B, bool transA = false, bool transB = false, double alpha = 1.0);
-    void covariance_matrix(Matrix &covar);
-    void compute_eigen_data(Matrix &M, Array &eigenvalues, Matrix& eigenvectors, int top_n);
-    void PCA(Matrix &pca, int dimensions);
+    double pairwise_sum(Mat &m);
+    void mult(Mat& A, Mat& B, bool transA = false, bool transB = false, double alpha = 1.0);
+    void covariance_matrix(Mat &covar);
+    void compute_eigen_data(Array &eigenvalues, Mat& eigenvectors, int top_n);
+    void PCA(Mat &pca, int dimensions);
+    void add_column(Array &col);
     inline double* data();
-    friend ostream& operator << (ostream& os, const Matrix& m){
+    friend ostream& operator << (ostream& os, const Mat& m){
         for (int r = 0; r < m.rows; ++r){
             for (int c = 0; c < m.cols; c++){
                 os << m.m[c * m.rows + r] << " ";
