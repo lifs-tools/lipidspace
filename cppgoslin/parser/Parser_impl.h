@@ -731,6 +731,7 @@ T Parser<T>::parse(string text_to_parse, bool throw_error){
     string old_lipid = text_to_parse;
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
     parser_event_handler->content = NULL;
+    error_message = "";
     
     parse_regular(text_to_parse);
     if (throw_error && !word_in_grammar){
@@ -738,6 +739,12 @@ T Parser<T>::parse(string text_to_parse, bool throw_error){
     }
     
     return parser_event_handler->content;
+}
+
+
+template <class T>
+string Parser<T>::get_error_message(){
+    return error_message;
 }
 
 
@@ -750,6 +757,7 @@ T Parser<T>::parse_parallel(string text_to_parse, bool throw_error, BaseParserEv
     string old_lipid = text_to_parse;
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
     bpeh->content = 0;
+    error_message = "";
     
     TreeNode* pt = parse_regular(text_to_parse, true);
     if (throw_error && pt == 0){
@@ -857,7 +865,23 @@ TreeNode* Parser<T>::parse_regular(string text_to_parse, bool parallel){
                 break;
             }
         }
-    
+        
+        if (!word_in_grammar){
+                for (int i = n - 1; i > 0; --i){
+                    if (DP[0][i]->size() > 0){
+                        long first_rule = 0;
+                        for (auto kv : *DP[0][i]){
+                            first_rule = kv.first;
+                            break;
+                        }
+                        
+                        TreeNode parse_tree(first_rule, contains(NTtoRule, first_rule));
+                        fill_tree(&parse_tree, DP[0][i]->at(first_rule));
+                        error_message = parse_tree.get_text();
+                        break;
+                    }
+                }
+            }
     }
     
     // delete tables

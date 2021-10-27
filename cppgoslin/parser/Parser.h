@@ -76,7 +76,7 @@ public:
     bool word_in_grammar;
     string grammar_name;
     bool used_eof;
-    
+    string error_message;
     
     
     Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar_filename, char _quote = DEFAULT_QUOTE);
@@ -94,6 +94,7 @@ public:
     vector< vector<uint64_t>* >* collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index);
     vector< vector<uint64_t>* >* collect_backwards(uint64_t child_rule_index, unsigned parent_rule_index, set<uint64_t>* visited, vector<uint64_t>* path, vector< vector<uint64_t>* >* collection);
     void fill_tree(TreeNode *node, DPNode *dp_node);
+    string get_error_message();
     
     void raise_events(TreeNode *node);
     void raise_events_parallel(TreeNode *node, BaseParserEventHandler<T>*);
