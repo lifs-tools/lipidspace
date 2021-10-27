@@ -1171,7 +1171,6 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
         }
     }
     cout << endl;
-    global_lipidome->m = distance_matrix;
     
     return global_lipidome;
 }
@@ -1186,11 +1185,9 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
 
 void LipidSpace::separate_matrixes(vector<Table*>* lipidomes, Table* global_lipidome){
     map<string, int> lipid_indexes;
-    vector<int> all = {0, 1};
     for (int i = 0; i < global_lipidome->species.size(); ++i){
         lipid_indexes.insert({global_lipidome->species.at(i), i});
     }
-    
     
     for (auto lipidome : *lipidomes){
         Indexes indexes;
@@ -1460,14 +1457,14 @@ int main(int argc, char** argv) {
     
     begin = chrono::steady_clock::now();
     // perform the principal component analysis
-    Mat tmp;
-    global_lipidome->m.PCA(tmp, lipid_space.cols_for_pca);
-    global_lipidome->m.rewrite(tmp);
+    Mat pca;
+    global_lipidome->m.PCA(pca, lipid_space.cols_for_pca);
+    global_lipidome->m.rewrite(pca);
     end = chrono::steady_clock::now();
     cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
     cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
     
-        
+       
     // cutting the global PCA matrix back to a matrix for each lipidome
     lipid_space.separate_matrixes(&lipidomes, global_lipidome);
 

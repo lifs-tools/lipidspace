@@ -52,16 +52,16 @@ Mat::Mat(){
     cols = 0;
 }
 
-Mat::Mat(const Array &copy, int _rows, int _cols){
+Mat::Mat(const Array &a, int _rows, int _cols){
     cols = _cols;
     rows = _rows;
     m.clear();
     m.reserve(cols * rows);
-    for (double v : copy) m.push_back(v);
+    for (double v : a) m.push_back(v);
 }
 
-Mat::Mat(vector<vector<double>> &copy){
-    rewrite(copy);
+Mat::Mat(vector<vector<double>> &mat){
+    rewrite(mat);
 }
 
 
@@ -84,26 +84,31 @@ void Mat::rewrite_transpose(Mat &mat){
 }
 
 
-void Mat::rewrite(Mat &copy, const Indexes &ri, const Indexes &ci){
-    assert(ri.size() > 0 || ci.size() > 0);
+void Mat::rewrite(Mat &mat, const Indexes &ri, const Indexes &ci){
     m.clear();
-    if (ci.size() == 0){
-        cols = copy.cols;
+    if (ci.size() == 0 && ri.size() == 0){
+        cols = mat.cols;
+        rows = mat.rows;
+        m.reserve(cols * rows);
+        for (auto val : mat.m) m.push_back(val);
+    }
+    else if (ci.size() == 0){
+        cols = mat.cols;
         rows = ri.size();
         m.reserve(cols * rows);
         for (int c = 0; c < cols; c++){
             for (auto r : ri){
-                m.push_back(copy(r, c));
+                m.push_back(mat(r, c));
             }
         }
     }
     else if (ri.size() == 0){
         cols = ci.size();
-        rows = copy.rows;
+        rows = mat.rows;
         m.reserve(cols * rows);
         for (auto c : ci){
             for (int r = 0; r < rows; r++){
-                m.push_back(copy(r, c));
+                m.push_back(mat(r, c));
             }
         }
     }
@@ -113,7 +118,7 @@ void Mat::rewrite(Mat &copy, const Indexes &ri, const Indexes &ci){
         m.reserve(cols * rows);
         for (auto c : ci){
             for (auto r : ri){
-                m.push_back(copy(r, c));
+                m.push_back(mat(r, c));
             }
         }
     }
@@ -161,12 +166,12 @@ double Mat::col_max(int c){
 
 
     
-void Mat::rewrite(vector<vector<double>> &copy){
-    cols = copy.size();
-    rows = copy[0].size();
+void Mat::rewrite(vector<vector<double>> &mat){
+    cols = mat.size();
+    rows = mat[0].size();
     m.clear();
     m.reserve(cols * rows);
-    for (auto col : copy){
+    for (auto col : mat){
         for (auto val : col) m.push_back(val);
     }
 }
