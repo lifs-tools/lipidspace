@@ -26,6 +26,12 @@ public:
     double stdev();
     void add(Array &a);
     void add(vector<double> &a);
+    void compute_distances(Array &x, double dx, Array &y, double dy);
+    friend ostream& operator << (ostream& os, const Array& a){
+        for (auto val : a) os << val << " ";
+        os << endl;
+        return os;
+    }
 };
 
 

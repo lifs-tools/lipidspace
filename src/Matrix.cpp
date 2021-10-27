@@ -45,6 +45,13 @@ void Array::reset(Array &a){
     reserve(a.size());
     for (auto val : a) push_back(val);
 }
+
+
+void Array::compute_distances(Array &x, double dx, Array &y, double dy){
+    assert(x.size() == y.size());
+    resize(x.size());
+    for (int i = 0 ; i < x.size(); ++i) at(i) = sq(x[i] - dx) + sq(y[i] - dy);
+}
     
     
 Mat::Mat(){
@@ -124,6 +131,9 @@ void Mat::rewrite(Mat &mat, const Indexes &ri, const Indexes &ci){
     }
         
 }
+
+
+
 
 
 

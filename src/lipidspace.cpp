@@ -906,42 +906,38 @@ void automated_annotation(Array &xx, Array &yy, int l, Mat &label_points){
     r.add_column(all_yy);
     
      
-    double ps = pairwise_sum(r) / sq(xx.size());
-    double nf_x = 0.2 * sigma_x / ps; // normalization factor
-    double nf_y = 0.2 * sigma_y / ps; // normalization factor
-    
-    
-    #define pseq seq(2 * l, all_xx.size() - 1)
-    #define lseq seq(0, 2 * l - 1)
+    double ps = pairwise_sum(r) / sq(all_xx.size());
+    double nf_x = 0.7 * sigma_x / ps; // normalization factor
+    double nf_y = 0.7 * sigma_y / ps; // normalization factor
+
     
     // do 30 iterations to find an equilibrium of pulling and pushing forces
     // for the label positions
-    /*
-    for (int i = 0; i < 30; ++i){
-        
+    for (int rep = 0; rep < 30; ++rep){
+        //cout << "in: " << label_xx[0] << endl;
         for (int ii = 0; ii < l; ++ii){
-            double l_xx = label_xx(ii);
-            double l_yy = label_yy(ii);
-
-            VectorXd distances = ((all_xx.array() - l_xx).square() + (all_yy.array() - l_yy).square()).sqrt();
+            double l_xx = label_xx[ii];
+            double l_yy = label_yy[ii];
+            
+            Array distances;
+            distances.compute_distances(all_xx, l_xx, all_yy, l_yy);
             
             // apply pushing force
-            VectorXd force_x = nf_x * (all_xx(pseq).array() - l_xx) / (distances(pseq).array().square() + 1e-16);
-            VectorXd force_y = nf_y * (all_yy(pseq).array() - l_yy) / (distances(pseq).array().square() + 1e-16);
-            VectorXd force_x_label = 50 * nf_x * (all_xx(lseq).array() - l_xx) / (distances(lseq).array().square() + 1e-16);
-            VectorXd force_y_label = 30 * nf_y * (all_yy(lseq).array() - l_yy) / (distances(lseq).array().square() + 1e-16);
+            double force_x = 0, force_y = 0;
+            for (int i = 0; i < 2 * l; ++i){
+                force_x += ((i < 2 * l) ? 50.0 : 1) * nf_x * (all_xx[i] - l_xx) / (distances[i] + 1e-16);
+                force_y += ((i < 2 * l) ? 30.0 : 1) * nf_y * (all_yy[i] - l_yy) / (distances[i] + 1e-16);
+            }
             
-            l_xx -= (force_x.array().sum() + force_x_label.array().sum());
-            l_yy -= (force_y.array().sum() + force_y_label.array().sum());
-
+            l_xx -= force_x;
+            l_yy -= force_y;
+            
             // apply pulling force
-            label_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.6;
-            label_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.6;
-            all_xx(ii) = label_xx(ii);
-            all_yy(ii) = label_yy(ii);
-        }
+            label_xx[ii] = orig_label_xx[ii] + (l_xx - orig_label_xx[ii]) * 0.6;
+            label_yy[ii] = orig_label_yy[ii] + (l_yy - orig_label_yy[ii]) * 0.6;
+            all_xx[ii] = label_xx[ii];
+            all_yy[ii] = label_yy[ii];
     }
-    */
     
         
     label_points.reset(0, 0);
@@ -1039,6 +1035,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     Mat label_m;
     automated_annotation(mean_x, mean_y, labels.size(), label_m);
     
+    
     for (int i = 0; i < labels.size(); ++i){
         plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"color", "#aaaaaa"}, {"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
     }
@@ -1048,7 +1045,6 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     max_y = mmax(max_y, label_m.col_max(label_m.cols - 1));
     
     
-    cout << "Running principal component analysis" << endl;
     Array pca_variances;
     compute_PCA_variances(lipidome->m, pca_variances);
     
@@ -1457,9 +1453,12 @@ int main(int argc, char** argv) {
     
     begin = chrono::steady_clock::now();
     // perform the principal component analysis
-    Mat pca;
-    global_lipidome->m.PCA(pca, lipid_space.cols_for_pca);
-    global_lipidome->m.rewrite(pca);
+    {
+        Mat pca;
+        cout << "Running principal component analysis" << endl;
+        global_lipidome->m.PCA(pca, lipid_space.cols_for_pca);
+        global_lipidome->m.rewrite(pca);
+    }
     end = chrono::steady_clock::now();
     cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
     cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
