@@ -1,4 +1,4 @@
-#include "LipidSpace/Matrixrix.h"
+#include "LipidSpace/Matrix.h"
 
     
 Matrix::Matrix(){
@@ -94,7 +94,7 @@ void Matrix::transpose(){
 
 
 void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int top_n){
-    assert(M.rows == M.cols);
+    assert(rows == cols);
         
     // Prepare matrix-vector multiplication routine used in Lanczos algorithm
     auto mv_mul = [&](const vector<double>& in, vector<double>& out) {
@@ -102,7 +102,7 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
     };
     
     // Execute Lanczos algorithm
-    LambdaLanczos<double> engine(mv_mul, M.rows, true); // true means to calculate the largest eigenvalue.
+    LambdaLanczos<double> engine(mv_mul, rows, true); // true means to calculate the largest eigenvalue.
     eigenvalues.resize(top_n);
     vector<Array> eigvecs(top_n);
     int itern = engine.run(eigenvalues, eigvecs);
@@ -119,6 +119,18 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
     reset(mm, nn);
     cblas_dgemm(CblasColMajor, transA ? CblasTrans : CblasNoTrans, transB ? CblasTrans : CblasNoTrans, mm, nn, kk, alpha, A.data(), A.rows, B.data(), B.rows, 0.0, data(), rows);
 }
+
+
+void Matrix::PCA(Matrix &pca, int dimensions){
+        scale();
+        Mat cov_matrix;
+        covariance_matrix(cov_matrix);
+        Array eigenvalues;
+        Mat eigenvectors;
+        cov_matrix.compute_eigen_data(eigenvalues, eigenvectors, dimensions);
+        pca.mult(eigenvectors, *this, true, true);
+        pca.transpose();
+    }
 
 
 void Matrix::covariance_matrix(Matrix &covar){

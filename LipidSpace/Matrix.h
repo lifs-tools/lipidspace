@@ -1,4 +1,3 @@
-#include "LipidSpace/Matrixrix.h"
 #include "LipidSpace/lambda_lanczos.hpp"
 
 #include <vector>
@@ -31,6 +30,7 @@ public:
     void mult(Matrix& A, Matrix& B, bool transA = false, bool transB = false, double alpha = 1.0);
     void covariance_matrix(Matrix &covar);
     void compute_eigen_data(Matrix &M, Array &eigenvalues, Matrix& eigenvectors, int top_n);
+    void PCA(Matrix &pca, int dimensions);
     inline double* data();
     friend ostream& operator << (ostream& os, const Matrix& m){
         for (int r = 0; r < m.rows; ++r){

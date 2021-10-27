@@ -5,7 +5,7 @@ opt = -fopenmp -std=c++11 -O3 ${MARCH} -fstack-protector-strong -D_FORTIFY_SOURC
 obj_pre = src/MCIS2NK.o src/TreeGen.o src/auxiliary.o src/bbpmcsi.o src/graphVisualization.o src/hungarian.o src/main_precompute.o src/mwm.o
 
 bin = lipidspace
-obj = src/lipidspace.o
+obj = src/lipidspace.o src/Matrix.o
 
 main: ${bin_pre} ${bin}
 
