@@ -54,12 +54,12 @@ void Array::compute_distances(Array &x, double dx, Array &y, double dy){
 }
     
     
-Mat::Mat(){
+Matrix::Matrix(){
     rows = 0;
     cols = 0;
 }
 
-Mat::Mat(const Array &a, int _rows, int _cols){
+Matrix::Matrix(const Array &a, int _rows, int _cols){
     cols = _cols;
     rows = _rows;
     m.clear();
@@ -67,18 +67,18 @@ Mat::Mat(const Array &a, int _rows, int _cols){
     for (double v : a) m.push_back(v);
 }
 
-Mat::Mat(vector<vector<double>> &mat){
+Matrix::Matrix(vector<vector<double>> &mat){
     rewrite(mat);
 }
 
 
-Mat::Mat(Mat &mat, bool transpose){
+Matrix::Matrix(Matrix &mat, bool transpose){
     if (transpose) rewrite_transpose(mat);
     else rewrite(mat);
 }
 
     
-void Mat::rewrite_transpose(Mat &mat){
+void Matrix::rewrite_transpose(Matrix &mat){
     cols = mat.rows;
     rows = mat.cols;
     m.clear();
@@ -91,7 +91,7 @@ void Mat::rewrite_transpose(Mat &mat){
 }
 
 
-void Mat::rewrite(Mat &mat, const Indexes &ri, const Indexes &ci){
+void Matrix::rewrite(Matrix &mat, const Indexes &ri, const Indexes &ci){
     m.clear();
     if (ci.size() == 0 && ri.size() == 0){
         cols = mat.cols;
@@ -137,7 +137,7 @@ void Mat::rewrite(Mat &mat, const Indexes &ri, const Indexes &ci){
 
 
 
-void Mat::add_column(Array &col){
+void Matrix::add_column(Array &col){
     if (cols > 0){
         assert(rows == col.size());
         cols += 1;
@@ -154,7 +154,7 @@ void Mat::add_column(Array &col){
 
 
 
-double Mat::col_min(int c){
+double Matrix::col_min(int c){
     assert(0 <= c && c < cols && rows > 0);
     double min_val = m[c * rows];
     for (int it = c * rows + 1; it < (c + 1) * rows; it++){
@@ -165,7 +165,7 @@ double Mat::col_min(int c){
 
 
 
-double Mat::col_max(int c){
+double Matrix::col_max(int c){
     assert(0 <= c && c < cols && rows > 0);
     double max_val = m[c * rows];
     for (int it = c * rows + 1; it < (c + 1) * rows; it++){
@@ -176,7 +176,7 @@ double Mat::col_max(int c){
 
 
     
-void Mat::rewrite(vector<vector<double>> &mat){
+void Matrix::rewrite(vector<vector<double>> &mat){
     cols = mat.size();
     rows = mat[0].size();
     m.clear();
@@ -187,11 +187,11 @@ void Mat::rewrite(vector<vector<double>> &mat){
 }
 
 
-Mat::Mat(int _rows, int _cols){
+Matrix::Matrix(int _rows, int _cols){
     reset(_rows, _cols);
 }
 
-void Mat::reset(int _rows, int _cols){
+void Matrix::reset(int _rows, int _cols){
     rows = _rows;
     cols = _cols;
     m.clear();
@@ -200,14 +200,14 @@ void Mat::reset(int _rows, int _cols){
 }
 
 
-void Mat::rand_fill(){
+void Matrix::rand_fill(){
     for (int i = 0; i < cols * rows; ++i) m[i] = 2 * (rand() / (double)RAND_MAX) - 1.;
 }
 
 
-double Mat::pairwise_sum(Mat &m){
+double Matrix::pairwise_sum(Matrix &m){
     assert(m.cols == 2);
-    Mat tm(m, true);
+    Matrix tm(m, true);
     
     double dist_sum = 0;
     for (int tm2c = 0; tm2c < tm.cols; tm2c++){
@@ -225,7 +225,7 @@ double Mat::pairwise_sum(Mat &m){
 
 
 
-void Mat::scale(){
+void Matrix::scale(){
     for (int c = 0; c < cols; c++){
         // estimating the mean
         double mean = 0;
@@ -252,7 +252,7 @@ void Mat::scale(){
 }
 
 
-void Mat::transpose(){
+void Matrix::transpose(){
     double *tmp = new double[cols * rows];
     #pragma omp parallel for
     for (int i = 0; i < cols * rows; ++i) tmp[i] = m[i];
@@ -269,7 +269,7 @@ void Mat::transpose(){
 }
 
 
-void Mat::compute_eigen_data(Array &eigenvalues, Mat& eigenvectors, int top_n){
+void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int top_n){
     assert(rows == cols);
         
     // Prepare matrix-vector multiplication routine used in Lanczos algorithm
@@ -288,7 +288,7 @@ void Mat::compute_eigen_data(Array &eigenvalues, Mat& eigenvectors, int top_n){
 }
 
 
-void Mat::mult(Mat& A, Mat& B, bool transA, bool transB, double alpha){
+void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
     assert((transA ? A.rows : A.cols) == (transB ? B.cols : B.rows));
     
     int mm = transA ? A.cols : A.rows;
@@ -299,25 +299,25 @@ void Mat::mult(Mat& A, Mat& B, bool transA, bool transB, double alpha){
 }
 
 
-void Mat::PCA(Mat &pca, int dimensions){
+void Matrix::PCA(Matrix &pca, int dimensions){
     scale();
-    Mat cov_matrix;
+    Matrix cov_matrix;
     covariance_matrix(cov_matrix);
     Array eigenvalues;
-    Mat eigenvectors;
+    Matrix eigenvectors;
     cov_matrix.compute_eigen_data(eigenvalues, eigenvectors, dimensions);
     pca.mult(eigenvectors, *this, true, true);
     pca.transpose();
 }
 
 
-void Mat::covariance_matrix(Mat &covar){
+void Matrix::covariance_matrix(Matrix &covar){
     covar.reset(cols, cols);
     double factor = 1. / ((double)cols - 1);
     covar.mult(*this, *this, true, false, factor);
 }
 
 
-double* Mat::data(){
+double* Matrix::data(){
     return m.data();
 }

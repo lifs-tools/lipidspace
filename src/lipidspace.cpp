@@ -42,7 +42,7 @@ public:
     vector<string> classes;
     vector<LipidAdduct*> lipids;
     Array intensities;
-    Mat m;
+    Matrix m;
     
     Table(string lipid_list_file) : file_name(lipid_list_file) {}
 };
@@ -64,19 +64,19 @@ public:
     LipidSpace();
     ~LipidSpace();
     Table* load_list(string lipid_list_file);
-    void compute_PCA_variances(Mat &m, Array &a);
+    void compute_PCA_variances(Matrix &m, Array &a);
     void cut_cycle(FattyAcid* fa);
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
     double compute_hausdorff_distance(Table* l1, Table* l2);
     void plot_PCA(Table* table, string output_folder);
-    void compute_hausdorff_matrix(vector<Table*>* tables, Mat &m);
-    void report_hausdorff_matrix(vector<Table*>* l, Mat &distance_matrix, string output_folder);
+    void compute_hausdorff_matrix(vector<Table*>* tables, Matrix &m);
+    void report_hausdorff_matrix(vector<Table*>* l, Matrix &distance_matrix, string output_folder);
     Table* compute_global_distance_matrix(vector<Table*>* tables);
     void separate_matrixes(vector<Table*>* lipidomes, Table* global_lipidome);
     void normalize_intensities(vector<Table*>* lipidomes, Table* global_lipidome);
     void load_table(string table_file, vector<Table*>* lipidomes);
-    void plot_dendrogram(vector<Table*>* lipidomes, Mat &m, string output_folder);
+    void plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string output_folder);
     void store_distance_table(Table* lipidome, string output_folder);
 };
 
@@ -138,7 +138,7 @@ double* Node::plot(int cnt, vector<string>* sorted_ticks){
 
 
 
-double linkage(Node* n1, Node* n2, Mat &m, Linkage linkage = COMPLETE){
+double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
     int mi1 = 0, mi2 = 0;
     double v = 1e9 * (linkage == SINGLE);
     for (auto index1 : n1->indexes){
@@ -161,7 +161,7 @@ double linkage(Node* n1, Node* n2, Mat &m, Linkage linkage = COMPLETE){
 
 
 
-void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Mat &m, string output_folder){
+void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string output_folder){
     string output_file = output_folder + "/" + "dendrogram.pdf";
     
     cout << "Storing dendrogram at '" << output_file << "'" << endl;
@@ -780,7 +780,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
 
 
 
-void LipidSpace::compute_PCA_variances(Mat &m, Array &a){
+void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
     double total_var = 0;
     for (int c = 0; c < m.cols; c++){
         double var = 0;
@@ -802,7 +802,7 @@ void LipidSpace::compute_PCA_variances(Mat &m, Array &a){
 
 double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
     // add intensities to hausdorff matrix
-    Mat tm1, tm2;
+    Matrix tm1, tm2;
     if (without_quant){
         tm1.rewrite_transpose(l1->m);
         tm2.rewrite_transpose(l2->m);
@@ -856,7 +856,7 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
 
 
 
-void LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes, Mat &distance_matrix){
+void LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes, Matrix &distance_matrix){
     int n = lipidomes->size();
     distance_matrix.reset(n, n);
     for (int i = 0; i < n - 1; ++i){
@@ -869,9 +869,9 @@ void LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes, Mat &distan
 
 
 
-double pairwise_sum(Mat &m){
+double pairwise_sum(Matrix &m){
     assert(m.cols == 2);
-    Mat tm(m, true);
+    Matrix tm(m, true);
     
     double dist_sum = 0;
     for (int tm2c = 0; tm2c < tm.cols; tm2c++){
@@ -888,7 +888,7 @@ double pairwise_sum(Mat &m){
 
 
 
-void automated_annotation(Array &xx, Array &yy, int l, Mat &label_points){
+void automated_annotation(Array &xx, Array &yy, int l, Matrix &label_points){
     Array label_xx(&xx, l);
     Array label_yy(&yy, l);
     Array orig_label_xx(&xx, l);
@@ -901,7 +901,7 @@ void automated_annotation(Array &xx, Array &yy, int l, Mat &label_points){
     all_xx.add(xx);
     Array all_yy(&label_yy);
     all_yy.add(yy);
-    Mat r;
+    Matrix r;
     r.add_column(all_xx);
     r.add_column(all_yy);
     
@@ -914,7 +914,6 @@ void automated_annotation(Array &xx, Array &yy, int l, Mat &label_points){
     // do 30 iterations to find an equilibrium of pulling and pushing forces
     // for the label positions
     for (int rep = 0; rep < 30; ++rep){
-        //cout << "in: " << label_xx[0] << endl;
         for (int ii = 0; ii < l; ++ii){
             double l_xx = label_xx[ii];
             double l_yy = label_yy[ii];
@@ -924,22 +923,24 @@ void automated_annotation(Array &xx, Array &yy, int l, Mat &label_points){
             
             // apply pushing force
             double force_x = 0, force_y = 0;
-            for (int i = 0; i < 2 * l; ++i){
-                force_x += ((i < 2 * l) ? 50.0 : 1) * nf_x * (all_xx[i] - l_xx) / (distances[i] + 1e-16);
-                force_y += ((i < 2 * l) ? 30.0 : 1) * nf_y * (all_yy[i] - l_yy) / (distances[i] + 1e-16);
+            for (int i = 0; i < all_xx.size(); ++i){
+                force_x += ((i < l) ? 50.0 : 1) * nf_x * (all_xx(i) - l_xx) / (distances(i) + 1e-16);
+                force_y += ((i < l) ? 30.0 : 1) * nf_y * (all_yy(i) - l_yy) / (distances(i) + 1e-16);
             }
             
             l_xx -= force_x;
             l_yy -= force_y;
             
             // apply pulling force
-            label_xx[ii] = orig_label_xx[ii] + (l_xx - orig_label_xx[ii]) * 0.6;
-            label_yy[ii] = orig_label_yy[ii] + (l_yy - orig_label_yy[ii]) * 0.6;
-            all_xx[ii] = label_xx[ii];
-            all_yy[ii] = label_yy[ii];
+            label_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.6;
+            label_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.6;
+            all_xx(ii) = label_xx(ii);
+            all_yy(ii) = label_yy(ii);
+        }
     }
     
-        
+    
+    
     label_points.reset(0, 0);
     label_points.add_column(label_xx);
     label_points.add_column(label_yy);
@@ -1032,7 +1033,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
 
     
     // plot the annotations
-    Mat label_m;
+    Matrix label_m;
     automated_annotation(mean_x, mean_y, labels.size(), label_m);
     
     
@@ -1078,7 +1079,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
 
 
 
-void LipidSpace::report_hausdorff_matrix(vector<Table*>* lipidomes, Mat &distance_matrix, string output_folder){
+void LipidSpace::report_hausdorff_matrix(vector<Table*>* lipidomes, Matrix &distance_matrix, string output_folder){
     ofstream off(output_folder + "/hausdorff_distances.csv");
     vector<string> striped_names;
     int n = distance_matrix.rows;
@@ -1132,7 +1133,7 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
     
     // compute distances
     cout << "Computing pairwise distance matrix for " << n << " lipids" << endl;
-    Mat& distance_matrix = global_lipidome->m;
+    Matrix& distance_matrix = global_lipidome->m;
     distance_matrix.reset(n, n);
     
     
@@ -1200,7 +1201,7 @@ void LipidSpace::separate_matrixes(vector<Table*>* lipidomes, Table* global_lipi
 
 
 void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_lipidome){
-    Mat &m = global_lipidome->m;
+    Matrix &m = global_lipidome->m;
     
     double global_stdev = 0;
     for (int i = 0; i < m.rows; ++i) global_stdev += sq(m.m[i]);
@@ -1454,7 +1455,7 @@ int main(int argc, char** argv) {
     begin = chrono::steady_clock::now();
     // perform the principal component analysis
     {
-        Mat pca;
+        Matrix pca;
         cout << "Running principal component analysis" << endl;
         global_lipidome->m.PCA(pca, lipid_space.cols_for_pca);
         global_lipidome->m.rewrite(pca);
@@ -1488,7 +1489,7 @@ int main(int argc, char** argv) {
         
         begin = chrono::steady_clock::now();
         // computing the hausdorff distance matrix for all lipidomes
-        Mat distance_matrix;
+        Matrix distance_matrix;
         lipid_space.compute_hausdorff_matrix(&lipidomes, distance_matrix);
         
         

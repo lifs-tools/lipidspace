@@ -67,7 +67,7 @@ public:
 
     size_t n = v.size();
     for(size_t i = 0; i < n; ++i) {
-      v[i] = rand(mt);
+      v[i] = 1; //rand(mt);
     }
   }
 };
@@ -83,7 +83,8 @@ public:
 
     size_t n = v.size();
     for(size_t i = 0; i < n; ++i) {
-      v[i] = std::complex<T>(rand(mt), rand(mt));
+      //v[i] = std::complex<T>(rand(mt), rand(mt));
+      v[i] = std::complex<T>(1, 1);
     }
   }
 };
