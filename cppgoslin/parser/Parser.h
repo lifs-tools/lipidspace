@@ -41,6 +41,7 @@ SOFTWARE.
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <math.h>
 
 enum Content {NoContext, InLineComment, InLongComment, InQuote};
 enum MatchWords {NoMatch, LineCommentStart, LineCommentEnd, LongCommentStart, LongCommentEnd, Quote};
@@ -69,6 +70,9 @@ public:
     map<uint64_t, set<uint64_t>> NTtoNT;
     map<uint64_t, string> NTtoRule;
     map<uint64_t, vector<uint64_t>*> substitution;
+    vector<set<uint64_t>> newNTtoNT;
+    uint64_t newNTsize;
+    uint64_t newShift;
     vector<Bitfield*> right_pair;
     int avg_pair;
     char quote;

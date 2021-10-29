@@ -89,9 +89,7 @@ class Bitfield {
     
 public:
     uint64_t *field;
-    uint64_t *superfield;
     uint64_t field_len;
-    uint64_t superfield_len;
     uint64_t num_size;
     uint64_t length;
     
