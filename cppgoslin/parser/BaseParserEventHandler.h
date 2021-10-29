@@ -49,6 +49,8 @@ public:
     set<string> rule_names;
     T content;
     string debug;
+    string error_message;
+    bool word_in_grammar;
     
     BaseParserEventHandler();
     virtual ~BaseParserEventHandler();

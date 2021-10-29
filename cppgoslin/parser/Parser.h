@@ -77,10 +77,8 @@ public:
     int avg_pair;
     char quote;
     BaseParserEventHandler<T> *parser_event_handler;
-    bool word_in_grammar;
     string grammar_name;
     bool used_eof;
-    string error_message;
     
     
     Parser(BaseParserEventHandler<T> *_parserEventHandler, string grammar_filename, char _quote = DEFAULT_QUOTE);
@@ -104,9 +102,9 @@ public:
     void raise_events_parallel(TreeNode *node, BaseParserEventHandler<T>*);
     
     virtual T parse(string text_to_parse, bool throw_error = true);
-    virtual T parse_parallel(string text_to_parse, bool throw_error = true, BaseParserEventHandler<T>* = 0);
+    virtual T parse_parallel(string text_to_parse, bool throw_error = true, BaseParserEventHandler<T>* bpeh = 0);
     
-    TreeNode* parse_regular(string text_to_parse, bool parallel = false);
+    TreeNode* parse_regular(string text_to_parse, BaseParserEventHandler<T>* bpeh = 0);
 };
 
 

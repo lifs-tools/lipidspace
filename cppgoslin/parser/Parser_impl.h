@@ -103,7 +103,6 @@ template <class T>
 void Parser<T>::read_grammar(string grammar){
     
     next_free_rule_index = START_RULE;
-    word_in_grammar = false;
     grammar_name = "";
     used_eof = false;
     map<string, uint64_t> ruleToNT;
@@ -350,9 +349,6 @@ void Parser<T>::read_grammar(string grammar){
     }
     
     
-    
-    
-    // experimental
     newNTsize = ceil(log((double)next_free_rule_index) / log(2.));
     if (newNTsize <= 12){
         newNTtoNT.resize((1 << (newNTsize << 1)) + 1);
@@ -750,10 +746,11 @@ T Parser<T>::parse(string text_to_parse, bool throw_error){
     string old_lipid = text_to_parse;
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
     parser_event_handler->content = NULL;
-    error_message = "";
+    parser_event_handler->error_message = "";
+    parser_event_handler->word_in_grammar = false;
     
     parse_regular(text_to_parse);
-    if (throw_error && !word_in_grammar){
+    if (throw_error && !parser_event_handler->word_in_grammar){
         throw LipidParsingException("Lipid '" + old_lipid + "' can not be parsed by grammar '" + grammar_name + "'");
     }
     
@@ -763,7 +760,7 @@ T Parser<T>::parse(string text_to_parse, bool throw_error){
 
 template <class T>
 string Parser<T>::get_error_message(){
-    return error_message;
+    return parser_event_handler->error_message;
 }
 
 
@@ -776,12 +773,16 @@ T Parser<T>::parse_parallel(string text_to_parse, bool throw_error, BaseParserEv
     string old_lipid = text_to_parse;
     if (used_eof) text_to_parse += string(1, EOF_SIGN);
     bpeh->content = 0;
-    error_message = "";
+    bpeh->word_in_grammar = false;
+    bpeh->error_message = "";
     
-    TreeNode* pt = parse_regular(text_to_parse, true);
+    TreeNode* pt = parse_regular(text_to_parse, bpeh);
     if (throw_error && pt == 0){
         delete bpeh;
         throw LipidParsingException("Lipid '" + old_lipid + "' can not be parsed by grammar '" + grammar_name + "'");
+    }
+    else {
+        
     }
     raise_events_parallel(pt, bpeh);
     delete pt;
@@ -793,8 +794,8 @@ T Parser<T>::parse_parallel(string text_to_parse, bool throw_error, BaseParserEv
     
     
 template <class T>
-TreeNode* Parser<T>::parse_regular(string text_to_parse, bool parallel){
-    word_in_grammar = false;
+TreeNode* Parser<T>::parse_regular(string text_to_parse, BaseParserEventHandler<T>* bpeh){
+    bool word_in_grammar = false;
     TreeNode* parse_tree = 0;
     
     int n = text_to_parse.length();
@@ -851,22 +852,14 @@ TreeNode* Parser<T>::parse_regular(string text_to_parse, bool parallel){
                                 
                                 if (b->find(index_pair_2.first)){
                                     uint64_t key = (index_pair_1.first << newShift) | index_pair_2.first;
+                                    //uint64_t key = (index_pair_1.first << SHIFT) | index_pair_2.first;
                                     
                                     DPNode *content = new DPNode(index_pair_1.first, index_pair_2.first, index_pair_1.second, index_pair_2.second);
                                     DPnodes.push_back(content);
                                     //for (auto rule_index : NTtoNT.at(key)){
-                                    //cout << "addr: " << newNTtoNT[key] << endl;
-                                    if (newNTsize <= 12){
-                                        for (auto rule_index : newNTtoNT[key]){
-                                            DPji->insert({rule_index, content});
-                                        }
+                                    for (auto rule_index : ((newNTsize <= 12) ? newNTtoNT[key] : NTtoNT.at(key))){
+                                        DPji->insert({rule_index, content});
                                     }
-                                    else {
-                                        for (auto rule_index : NTtoNT.at(key)){
-                                            DPji->insert({rule_index, content});
-                                        }
-                                    }
-                                    
                                 }
                             }
                         }
@@ -880,13 +873,15 @@ TreeNode* Parser<T>::parse_regular(string text_to_parse, bool parallel){
         
         for (int i = n - 1; i > 0; --i){
             if (contains_p(DP[0][i], START_RULE)){
-                if (!parallel){
-                    word_in_grammar = true;
+                word_in_grammar = true;
+                if (bpeh == 0){
+                    parser_event_handler->word_in_grammar = true;
                     TreeNode parse_tree(START_RULE, contains(NTtoRule, START_RULE));
                     fill_tree(&parse_tree, DP[0][i]->at(START_RULE));
                     raise_events(&parse_tree);
                 }
                 else {
+                    bpeh->word_in_grammar = true;
                     parse_tree = new TreeNode(START_RULE, contains(NTtoRule, START_RULE));
                     fill_tree(parse_tree, DP[0][i]->at(START_RULE));
                 }
@@ -895,21 +890,26 @@ TreeNode* Parser<T>::parse_regular(string text_to_parse, bool parallel){
         }
         
         if (!word_in_grammar){
-                for (int i = n - 1; i > 0; --i){
-                    if (DP[0][i]->size() > 0){
-                        long first_rule = 0;
-                        for (auto kv : *DP[0][i]){
-                            first_rule = kv.first;
-                            break;
-                        }
-                        
-                        TreeNode parse_tree(first_rule, contains(NTtoRule, first_rule));
-                        fill_tree(&parse_tree, DP[0][i]->at(first_rule));
-                        error_message = parse_tree.get_text();
+            for (int i = n - 1; i > 0; --i){
+                if (DP[0][i]->size() > 0){
+                    long first_rule = 0;
+                    for (auto kv : *DP[0][i]){
+                        first_rule = kv.first;
                         break;
                     }
+                    
+                    TreeNode parse_tree(first_rule, contains(NTtoRule, first_rule));
+                    fill_tree(&parse_tree, DP[0][i]->at(first_rule));
+                    if (bpeh){
+                        bpeh->error_message = parse_tree.get_text();
+                    }
+                    else {
+                        parser_event_handler->error_message = parse_tree.get_text();
+                    }
+                    break;
                 }
             }
+        }
     }
     
     // delete tables

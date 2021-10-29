@@ -120,20 +120,20 @@ int main(int argc, char** argv){
     }
     infile.close();
         
-    for (uint32_t i = 0; i < lipid_names_income.size(); ++i){
+    #pragma omp parallel for
+    for (int i = 0; i < (int)lipid_names_income.size(); ++i){
         string lipid_name = lipid_names_income.at(i);
         string correct_lipid_name = lipid_names_outcome.at(i);
         //cout << lipid_name << endl;
         try {
-            lipid = parser.parse(lipid_name);
-            assert(lipid != NULL);
+            LipidAdduct* l = parser.parse_parallel(lipid_name);
+            assert(l != NULL);
             if (correct_lipid_name != "Unsupported lipid" && correct_lipid_name.length() > 0){
-                //cout << lipid_name << "  |  " << lipid->get_lipid_string() << "  |  " << correct_lipid_name << " (reference)" << endl;
-                assert_true(correct_lipid_name, lipid->get_lipid_string(), lipid_name + ": " + lipid->get_lipid_string() + " != " + correct_lipid_name + " (reference)");
+                assert_true(correct_lipid_name, l->get_lipid_string(), lipid_name + ": " + l->get_lipid_string() + " != " + correct_lipid_name + " (reference)");
             }
-            delete lipid;
+            delete l;
         }
-        catch (LipidException &e){
+        catch (exception &e){
             if (correct_lipid_name.length() > 0){
                 cout << "Exception: " << i << ": " << lipid_names_income.at(i) << endl;
                 cout << e.what() << endl;

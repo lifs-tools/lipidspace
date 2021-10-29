@@ -2,7 +2,7 @@ install_dir = /usr
 CC = g++ -std=c++11
 #CC = clang++-10
 AR = ar
-MARCH = -mtune=native
+MARCH = -march=native
 bin = libcppGoslin.so
 abin = libcppGoslin.a
 domain = src/domain/Adduct.o src/domain/LipidMolecularSpecies.o src/domain/LipidSnPosition.o src/domain/LipidStructureDefined.o src/domain/FattyAcid.o src/domain/LipidAdduct.o src/domain/LipidSpecies.o src/domain/LipidFullStructure.o src/domain/LipidCompleteStructure.o src/domain/LipidSpeciesInfo.o src/domain/StringFunctions.o src/domain/LipidClasses.o src/domain/DoubleBonds.o src/domain/FunctionalGroup.o src/domain/Headgroup.o src/domain/Cycle.o src/domain/GenericDatastructures.o
@@ -87,7 +87,7 @@ MassesTest: src/tests/MassesTest.o
 	${CC} -I. ${opt} -Bstatic -o MassesTest src/tests/MassesTest.o libcppGoslin.so
 	
 LipidMapsTest: src/tests/LipidMapsTest.o
-	${CC} -I. ${opt} -Bstatic -o LipidMapsTest src/tests/LipidMapsTest.o libcppGoslin.so
+	${CC} -I. ${opt} -fopenmp -Bstatic -o LipidMapsTest src/tests/LipidMapsTest.o libcppGoslin.so
 	
 GoslinTest: src/tests/GoslinTest.o
 	${CC} -I. ${opt} -Bstatic -o GoslinTest src/tests/GoslinTest.o libcppGoslin.so

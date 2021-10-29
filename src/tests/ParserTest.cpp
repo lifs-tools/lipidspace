@@ -76,7 +76,7 @@ int main(int argc, char** argv){
     // check lipids maps parser for headless FA
     lipid_name = "15:6(2Z,4E,6Z,8E,12E,14)(6Me,8Me,10Me[S],13Me)";
     lipid = lipid_maps_parser.parse(lipid_name);
-    assert (lipid_maps_parser.word_in_grammar);
+    assert (lipid_maps_parser.parser_event_handler->word_in_grammar);
     assert (lipid);
     delete lipid;
     
