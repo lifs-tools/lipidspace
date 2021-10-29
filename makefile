@@ -1,7 +1,6 @@
 CC = g++
-MARCH = -mtune=native
 bin_pre = precompute_classes
-opt = -fopenmp -std=c++11 -O3 ${MARCH} -fstack-protector-strong -D_FORTIFY_SOURCE=2
+opt = -std=c++17 -O3 -march=native -fopenmp 
 obj_pre = src/MCIS2NK.o src/TreeGen.o src/auxiliary.o src/bbpmcsi.o src/graphVisualization.o src/hungarian.o src/main_precompute.o src/mwm.o
 
 bin = lipidspace
@@ -10,13 +9,13 @@ obj = src/lipidspace.o src/Matrix.o
 main: ${bin_pre} ${bin}
 
 ${bin}: ${obj}
-	${CC} -fopenmp ${obj} -o ${bin} -lpython3.8 -lcppGoslin -L /usr/lib/x86_64-linux-gnu/openblas-openmp -l openblas
+	${CC} -fopenmp ${obj} -o ${bin} -lpython3.8 -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 
 ${bin_pre}: ${obj_pre}
 	${CC} ${opt} ${obj_pre} -o ${bin_pre} -L ~/workspace/lib -lOGDF -lCOIN
 	
 %.o: %.cpp
-	${CC} -fopenmp ${opt} -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
+	${CC} ${opt} -I /usr/include/python3.8 -I . -I ~/workspace/include -o $@ -c $<
 
 clean:
 	rm -f ${obj_pre}

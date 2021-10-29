@@ -1,17 +1,21 @@
 #include "LipidSpace/Matrix.h"
 
+
 Array::Array() : vector<double>(){
 }
+
+Array::Array(int len, double val) : vector<double> (len, val){
+}
     
-Array::Array(Array *a, int l) : vector<double>() {
+Array::Array(const Array &a, int l) : vector<double>() {
     if (l != -1){
-        assert(0 < l && l <= a->size());
+        assert(0 < l && l <= a.size());
         reserve(l);
-        for (int i = 0; i < l; ++i) push_back(a->at(i));
+        for (int i = 0; i < l; ++i) push_back(a.at(i));
     }
     else {
-        reserve(a->size());
-        for (auto val : *a) push_back(val);
+        reserve(a.size());
+        for (auto val : a) push_back(val);
     }
 }
 
@@ -297,6 +301,7 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
     reset(mm, nn);
     cblas_dgemm(CblasColMajor, transA ? CblasTrans : CblasNoTrans, transB ? CblasTrans : CblasNoTrans, mm, nn, kk, alpha, A.data(), A.rows, B.data(), B.rows, 0.0, data(), rows);
 }
+
 
 
 void Matrix::PCA(Matrix &pca, int dimensions){

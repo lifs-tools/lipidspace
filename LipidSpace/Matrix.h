@@ -20,7 +20,8 @@ typedef vector<int> Indexes;
 class Array : public vector<double> {
 public:
     Array();
-    Array(Array *a, int l = -1);
+    Array(int len, double val);
+    Array(const Array &a, int l = -1);
     void reset(Array &a);
     double mean();
     double stdev();

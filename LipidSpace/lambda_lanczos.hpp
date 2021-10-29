@@ -9,7 +9,6 @@
 #include <limits>
 #include <cmath>
 #include <numeric>
-#include <random>
 #include <algorithm>
 #include <utility>
 #include "lambda_lanczos_util.hpp"
@@ -60,14 +59,10 @@ public:
    * For complex type, the real and imaginary part of each element will be initialized in
    * the range of [-1, 1].
    */
-  static void init(std::vector<T>& v) {
-    std::random_device dev;
-    std::mt19937 mt(dev());
-    std::uniform_real_distribution<T> rand((T)(-1.0), (T)(1.0));
-
+  static void init(std::vector<T>& v){
     size_t n = v.size();
     for(size_t i = 0; i < n; ++i) {
-      v[i] = 1; //rand(mt);
+      v[i] = 1;
     }
   }
 };
@@ -77,13 +72,8 @@ template <typename T>
 struct VectorRandomInitializer<std::complex<T>> {
 public:
   static void init(std::vector<std::complex<T>>& v) {
-    std::random_device dev;
-    std::mt19937 mt(dev());
-    std::uniform_real_distribution<T> rand((T)(-1.0), (T)(1.0));
-
     size_t n = v.size();
     for(size_t i = 0; i < n; ++i) {
-      //v[i] = std::complex<T>(rand(mt), rand(mt));
       v[i] = std::complex<T>(1, 1);
     }
   }
@@ -205,74 +195,74 @@ public:
 
         size_t itern = this->max_iteration;
         for(size_t k = 1; k <= this->max_iteration; ++k) {
-        /* au = (A + offset*E)uk, here E is the identity matrix */
-        std::vector<T> au(n, 0.0); // Temporal storage to store matrix-vector multiplication result
-        this->mv_mul(u[k-1], au);
-        
-        for(size_t i = 0; i < n; ++i) {
-            au[i] += u[k-1][i] * this->eigenvalue_offset;
-        }
+            /* au = (A + offset*E)uk, here E is the identity matrix */
+            std::vector<T> au(n, 0.0); // Temporal storage to store matrix-vector multiplication result
+            this->mv_mul(u[k-1], au);
+            
+            for(size_t i = 0; i < n; ++i) {
+                au[i] += u[k-1][i] * this->eigenvalue_offset;
+            }
 
-        alpha.push_back(std::real(util::inner_prod(u[k-1], au)));
+            alpha.push_back(std::real(util::inner_prod(u[k-1], au)));
 
-        u.push_back(std::move(au));
-        for(size_t i = 0; i < n; ++i) {
-            if(k == 1) {
-            u[k][i] = u[k][i] - alpha[k-1]*u[k-1][i];
+            u.push_back(std::move(au));
+            for(size_t i = 0; i < n; ++i) {
+                if(k == 1) {
+                u[k][i] = u[k][i] - alpha[k-1]*u[k-1][i];
+                } else {
+                u[k][i] = u[k][i] - beta[k-2]*u[k-2][i] - alpha[k-1]*u[k-1][i];
+                }
+            }
+
+            util::schmidt_orth(u[k], u.begin(), u.end()-1);
+
+            beta.push_back(util::norm(u[k]));
+
+            for (size_t iroot = 0; iroot < nroot; ++iroot) {
+                evs[iroot] =
+                tridiagonal::find_mth_eigenvalue(alpha, beta,
+                                                this->find_maximum ? alpha.size()-1-iroot : iroot,
+                                                this->eps * this->tridiag_eps_ratio);
+            }
+
+            const real_t<T> zero_threshold = util::minimum_effective_decimal<real_t<T>>()*1e-1;
+            if(beta.back() < zero_threshold) {
+                itern = k;
+                break;
+            }
+
+            util::normalize(u[k]);
+
+            /*
+            * only break loop if convergence condition is met for all roots
+            */
+            bool break_cond = true;
+            for(size_t iroot = 0; iroot < nroot; ++iroot) {
+                const auto& ev = evs[iroot];
+                const auto& pev = pevs[iroot];
+                if (std::abs(ev - pev) >= std::min(std::abs(ev), std::abs(pev)) * this->eps){
+                break_cond = false;
+                break;
+                }
+            }
+
+            if (break_cond) {
+                itern = k;
+                break;
             } else {
-            u[k][i] = u[k][i] - beta[k-2]*u[k-2][i] - alpha[k-1]*u[k-1][i];
+                pevs = evs;
             }
-        }
-
-        util::schmidt_orth(u[k], u.begin(), u.end()-1);
-
-        beta.push_back(util::norm(u[k]));
-
-        for (size_t iroot = 0; iroot < nroot; ++iroot) {
-            evs[iroot] =
-            tridiagonal::find_mth_eigenvalue(alpha, beta,
-                                            this->find_maximum ? alpha.size()-1-iroot : iroot,
-                                            this->eps * this->tridiag_eps_ratio);
-        }
-
-        const real_t<T> zero_threshold = util::minimum_effective_decimal<real_t<T>>()*1e-1;
-        if(beta.back() < zero_threshold) {
-            itern = k;
-            break;
-        }
-
-        util::normalize(u[k]);
-
-        /*
-        * only break loop if convergence condition is met for all roots
-        */
-        bool break_cond = true;
-        for(size_t iroot = 0; iroot < nroot; ++iroot) {
-            const auto& ev = evs[iroot];
-            const auto& pev = pevs[iroot];
-            if (std::abs(ev - pev) >= std::min(std::abs(ev), std::abs(pev)) * this->eps){
-            break_cond = false;
-            break;
-            }
-        }
-
-        if (break_cond) {
-            itern = k;
-            break;
-        } else {
-            pevs = evs;
-        }
         }
 
         eigvalues = evs;
         beta.back() = 0.0;
 
         for(size_t iroot = 0; iroot < nroot; ++iroot) {
-        auto& eigvec = eigvecs[iroot];
-        auto& ev = eigvalues[iroot];
+            auto& eigvec = eigvecs[iroot];
+            auto& ev = eigvalues[iroot];
 
-        eigvec = eigenvector(alpha, beta, u, ev);
-        ev -= this->eigenvalue_offset;
+            eigvec = eigenvector(alpha, beta, u, ev);
+            ev -= this->eigenvalue_offset;
         }
 
         return itern;

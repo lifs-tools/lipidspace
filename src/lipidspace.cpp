@@ -889,17 +889,22 @@ double pairwise_sum(Matrix &m){
 
 
 void automated_annotation(Array &xx, Array &yy, int l, Matrix &label_points){
-    Array label_xx(&xx, l);
-    Array label_yy(&yy, l);
-    Array orig_label_xx(&xx, l);
-    Array orig_label_yy(&yy, l);
+    Array label_xx(xx, l);
+    Array label_yy(yy, l);
+    double max_int = (double)(~0u) * 0.5;
+    for (int i = 0; i < l; ++i){
+        label_xx(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
+        label_yy(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
+    }
+    Array orig_label_xx(label_xx);
+    Array orig_label_yy(label_yy);
     
     double sigma_x = xx.stdev();
     double sigma_y = yy.stdev();
     
-    Array all_xx(&label_xx);
+    Array all_xx(label_xx);
     all_xx.add(xx);
-    Array all_yy(&label_yy);
+    Array all_yy(label_yy);
     all_yy.add(yy);
     Matrix r;
     r.add_column(all_xx);
@@ -907,13 +912,15 @@ void automated_annotation(Array &xx, Array &yy, int l, Matrix &label_points){
     
      
     double ps = pairwise_sum(r) / sq(all_xx.size());
-    double nf_x = 0.7 * sigma_x / ps; // normalization factor
-    double nf_y = 0.7 * sigma_y / ps; // normalization factor
+    double nf_x = 0.5 * sigma_x / ps; // normalization factor
+    double nf_y = 0.5 * sigma_y / ps; // normalization factor
 
     
     // do 30 iterations to find an equilibrium of pulling and pushing forces
     // for the label positions
     for (int rep = 0; rep < 30; ++rep){
+        Array new_xx(l, 0);
+        Array new_yy(l, 0);
         for (int ii = 0; ii < l; ++ii){
             double l_xx = label_xx[ii];
             double l_yy = label_yy[ii];
@@ -924,18 +931,22 @@ void automated_annotation(Array &xx, Array &yy, int l, Matrix &label_points){
             // apply pushing force
             double force_x = 0, force_y = 0;
             for (int i = 0; i < all_xx.size(); ++i){
-                force_x += ((i < l) ? 50.0 : 1) * nf_x * (all_xx(i) - l_xx) / (distances(i) + 1e-16);
-                force_y += ((i < l) ? 30.0 : 1) * nf_y * (all_yy(i) - l_yy) / (distances(i) + 1e-16);
+                force_x += ((i < l) ? 50.0 : 1.) * nf_x * (all_xx(i) - l_xx) / (distances(i) + 1e-16);
+                force_y += ((i < l) ? 30.0 : 1.) * nf_y * (all_yy(i) - l_yy) / (distances(i) + 1e-16);
             }
             
             l_xx -= force_x;
             l_yy -= force_y;
             
             // apply pulling force
-            label_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.6;
-            label_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.6;
-            all_xx(ii) = label_xx(ii);
-            all_yy(ii) = label_yy(ii);
+            new_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.6;
+            new_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.6;
+        }
+        for (int i = 0; i < l; ++i){
+            label_xx(i) = new_xx(i);
+            all_xx(i) = new_xx(i);
+            label_yy(i) = new_yy(i);
+            all_yy(i) = new_yy(i);
         }
     }
     
@@ -1038,7 +1049,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     
     
     for (int i = 0; i < labels.size(); ++i){
-        plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"color", "#aaaaaa"}, {"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
+        plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"color", "#bbbbbb"}, {"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
     }
     min_x = mmin(min_x, label_m.col_min(0));
     max_x = mmax(max_x, label_m.col_max(0));
@@ -1359,10 +1370,10 @@ void print_help(){
     cerr << " -h\t\tshow this help message" << endl;
     cerr << " -sn\t\tignore sn-positions, compare all pairwise fatty acyl chains" << endl;
     cerr << " -i\t\tignore unknown lipids (default: exit with error)" << endl;
-    cerr << " -q\t\tignore quantitative data if present (default: guess what, consider them)" << endl;
+    cerr << " -q\t\tignore quantitative data, if present (default: guess what, consider them)" << endl;
     cerr << " -d\t\tstore distance tables" << endl;
     cerr << " -p\t\tplot only figure for global principal component analysis" << endl;
-    cerr << " -u\t\tunbounded distance to inf (default: 0 <= distance <= 1)" << endl;
+    cerr << " -u\t\tunbounded lipid distance to inf (default: 0 <= distance <= 1)" << endl;
 }
 
 
@@ -1450,7 +1461,6 @@ int main(int argc, char** argv) {
     if (storing_distance_table){
         lipid_space.store_distance_table(global_lipidome, output_folder);
     }
-    
     
     begin = chrono::steady_clock::now();
     // perform the principal component analysis
