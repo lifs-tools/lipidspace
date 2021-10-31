@@ -36,8 +36,6 @@ GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandl
     reg("hg_mlcl_pre_event", set_head_group_name);
     reg("hg_pl_pre_event", set_head_group_name);
     reg("hg_lpl_pre_event", set_head_group_name);
-    reg("hg_lpl_o_pre_event", set_head_group_name);
-    reg("hg_pl_o_pre_event", set_head_group_name);
     reg("hg_lsl_pre_event", set_head_group_name);
     reg("hg_dsl_pre_event", set_head_group_name);
     reg("st_pre_event", set_head_group_name);
@@ -88,9 +86,6 @@ GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandl
     
     
     reg("lpl_pre_event", set_molecular_subspecies_level);
-    reg("lpl_o_pre_event", set_molecular_subspecies_level);
-    reg("hg_lpl_oc_pre_event", set_unspecified_ether);
-    reg("hg_pl_oc_pre_event", set_unspecified_ether);
     reg("plasmalogen_pre_event", set_plasmalogen);
     debug = "";
 }
@@ -115,12 +110,12 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
 
 
 void GoslinParserEventHandler::set_plasmalogen(TreeNode *node) {
-    plasmalogen = node->get_text()[0];
+    plasmalogen = toupper(node->get_text()[0]);
 }
 
 
 void GoslinParserEventHandler::set_unspecified_ether(TreeNode *node) {
-    unspecified_ether = true;
+    //unspecified_ether = true;
 }
 
 void GoslinParserEventHandler::set_head_group_name(TreeNode *node) {
@@ -224,18 +219,8 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
         fa_list->insert(fa_list->begin(), lcb);
     }
     
-    if (plasmalogen && fa_list->size()){
-        switch (plasmalogen){
-            case 'o':
-            case 'O':
-                fa_list->at(0)->lipid_FA_bond_type = ETHER_PLASMANYL;
-                break;
-                
-            case 'p':
-            case 'P':
-                fa_list->at(0)->lipid_FA_bond_type = ETHER_PLASMENYL;
-                break;
-        }
+    if (plasmalogen && fa_list->size() && lcb == 0){
+        fa_list->at(0)->lipid_FA_bond_type = plasmalogen == 'O' ? ETHER_PLASMANYL : ETHER_PLASMENYL;
     }
     
     Headgroup *headgroup = prepare_headgroup_and_checks();
