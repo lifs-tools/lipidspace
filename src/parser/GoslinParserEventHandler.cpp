@@ -235,16 +235,13 @@ void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     
 
 void GoslinParserEventHandler::add_ether(TreeNode *node) {
-    if (plasmalogen){
-        throw ConstraintViolationException("Plasmalogen notation invalid, use O- instead.");
-    }
-    
     string ether = node->get_text();
     if (ether == "a") current_fa->lipid_FA_bond_type = ETHER_PLASMANYL;
     else if (ether == "p"){
         current_fa->lipid_FA_bond_type = ETHER_PLASMENYL;
         current_fa->double_bonds->num_double_bonds = max(0, current_fa->double_bonds->num_double_bonds - 1);
     }
+    plasmalogen = 0;
 }
     
     
