@@ -64,6 +64,7 @@ public:
     double col_max(int c);
     void transpose();
     double pairwise_sum(Matrix &m);
+    void pad_cols_4();
     void mult(Matrix& A, Matrix& B, bool transA = false, bool transB = false, double alpha = 1.0);
     void covariance_matrix(Matrix &covar);
     void compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int top_n);

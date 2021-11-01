@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <chrono>
 #include <LipidSpace/Matrix.h>
+#include <immintrin.h>
 
  
 using namespace std;
@@ -802,19 +803,16 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
 
 double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
     // add intensities to hausdorff matrix
-    Matrix tm1, tm2;
-    if (without_quant){
-        tm1.rewrite_transpose(l1->m);
-        tm2.rewrite_transpose(l2->m);
-    }
-    else {
-        tm1.rewrite(l1->m);
+    Matrix tm1(l1->m);
+    Matrix tm2(l2->m);
+    if (!without_quant){
         tm1.add_column(l1->intensities);
-        tm1.transpose();
-        tm2.rewrite(l2->m);
         tm2.add_column(l2->intensities);
-        tm2.transpose();
     }
+    tm1.pad_cols_4(); // pad matrix columns with zeros to perform faster intrinsics
+    tm2.pad_cols_4();
+    tm1.transpose();
+    tm2.transpose();
     assert(tm1.rows == tm2.rows);
     
     double max_h = 0;
@@ -823,24 +821,34 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
         double min_h = 1e9;
         double* tm2col = tm2.data() + (tm2c * tm2.rows);
         for (int tm1c = 0; tm1c < tm1.cols; ++tm1c){
-            double dist = 0;
+            __m256d dist = {0, 0, 0, 0};
             double* tm1col = tm1.data() + (tm1c * tm1.rows);
-            for (int r = 0; r < tm1.rows; r++){
-                dist += sq(tm1col[r] - tm2col[r]);
+            for (int r = 0; r < tm1.rows; r += 4){
+                __m256d val1 = _mm256_loadu_pd(&tm1col[r]);
+                __m256d val2 = _mm256_loadu_pd(&tm2col[r]);
+                __m256d sub = _mm256_sub_pd(val1, val2);
+                dist = _mm256_fmadd_pd(sub, sub, dist);
             }
-            min_h = mmin(min_h, dist);
+            double distance = dist[0] + dist[1] + dist[2] + dist[3];
+            min_h = mmin(min_h, distance);
         }
         max_h = mmax(max_h, min_h);
     }
     
     for (int tm1c = 0; tm1c < tm1.cols; ++tm1c){
         double min_h = 1e9;
+        double* tm1col = tm1.data() + (tm1c * tm1.rows);
         for (int tm2c = 0; tm2c < tm2.cols; tm2c++){
-            double dist = 0;
-            for (int r = 0; r < tm1.rows; r++){
-                dist += sq(tm1(r, tm1c) - tm2(r, tm2c));
+            __m256d dist = {0, 0, 0, 0};
+            double* tm2col = tm2.data() + (tm2c * tm2.rows);
+            for (int r = 0; r < tm1.rows; r += 4){
+                __m256d val1 = _mm256_loadu_pd(&tm1col[r]);
+                __m256d val2 = _mm256_loadu_pd(&tm2col[r]);
+                __m256d sub = _mm256_sub_pd(val1, val2);
+                dist = _mm256_fmadd_pd(sub, sub, dist);
             }
-            min_h = mmin(min_h, dist);
+            double distance = dist[0] + dist[1] + dist[2] + dist[3];
+            min_h = mmin(min_h, distance);
         }
         max_h = mmax(max_h, min_h);
     }
@@ -859,8 +867,12 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
 void LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes, Matrix &distance_matrix){
     int n = lipidomes->size();
     distance_matrix.reset(n, n);
-    for (int i = 0; i < n - 1; ++i){
-        for (int j = i + 1; j < n; ++j){
+            
+    #pragma omp parallel for
+    for (int ii = 0; ii < sq(n); ++ii){ 
+        int i = ii / n;
+        int j = ii % n;
+        if (i < j){
             distance_matrix(i, j) = compute_hausdorff_distance(lipidomes->at(i), lipidomes->at(j));
             distance_matrix(j, i) = distance_matrix(i, j);
         }
@@ -1398,7 +1410,13 @@ int main(int argc, char** argv) {
     
     int num_opt = 0;
     while (true){
-        if (uncontains(options, string(argv[1 + num_opt]))) break;
+        if (uncontains(options, string(argv[1 + num_opt]))){
+            if (argv[1 + num_opt][0] == '-'){
+                cerr << "Error: option " << argv[1 + num_opt] << " unknown." << endl;
+                exit(-1);
+            }
+            break;
+        }
         int opt = options.at(argv[1 + num_opt++]);
         
         switch (opt){
@@ -1438,6 +1456,7 @@ int main(int argc, char** argv) {
     lipid_space.ignore_unknown_lipids = ignore_unknown_lipids;
     lipid_space.unboundend_distance = unboundend_distance;
     lipid_space.without_quant = without_quant;
+    lipid_space.cols_for_pca = 7;
     
     
     // loadig each lipidome
@@ -1497,11 +1516,11 @@ int main(int argc, char** argv) {
     
     if (lipidomes.size() > 1){
         
-        begin = chrono::steady_clock::now();
         // computing the hausdorff distance matrix for all lipidomes
         Matrix distance_matrix;
+        begin = chrono::steady_clock::now();
         lipid_space.compute_hausdorff_matrix(&lipidomes, distance_matrix);
-        
+        end = chrono::steady_clock::now();
         
         // storing hausdorff distance matrix into file
         if (storing_distance_table)
@@ -1509,7 +1528,6 @@ int main(int argc, char** argv) {
         
         // ploting the dendrogram
         lipid_space.plot_dendrogram(&lipidomes, distance_matrix, output_folder);
-        end = chrono::steady_clock::now();
         cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
         cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
     }

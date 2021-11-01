@@ -229,6 +229,17 @@ double Matrix::pairwise_sum(Matrix &m){
 
 
 
+void Matrix::pad_cols_4(){
+    if (cols & 3 == 0) return;
+    int add_cols = (4 - (cols & 3));
+    cols += add_cols;
+    m.reserve(cols * rows);
+    for (int i = 0; i < add_cols * rows; ++i) m.push_back(0);
+}
+
+
+
+
 void Matrix::scale(){
     for (int c = 0; c < cols; c++){
         // estimating the mean
