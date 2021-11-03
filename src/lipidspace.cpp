@@ -1,15 +1,4 @@
-#include <iostream>
-#include "LipidSpace/matplotlibcpp.h"
-#include <vector>
-#include <string>
-#include "cppgoslin/cppgoslin.h"
-#include <math.h>
-#include <algorithm>
-#include <sys/stat.h>
-#include <chrono>
-#include <LipidSpace/Matrix.h>
-#include <immintrin.h>
-
+#include "LipidSpace/lipidspace.h"
  
 using namespace std;
 namespace plt = matplotlibcpp; 

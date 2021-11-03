@@ -16,13 +16,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    main.cpp \
-    lipidspacegui.cpp \
-    canvas.cpp
+    src/MainWindow.cpp \
+    src/lipidspacegui.cpp \
+    src/Matrix.cpp \
+    src/lipidspace.cpp \
+    src/canvas.cpp
 
 HEADERS += \
-    lipidspacegui.h \
-    canvas.h
+    LipidSpace/lipidspacegui.h \
+    LipidSpace/canvas.h \
+    LipidSpace/Matrix.h \
+    LipidSpace/lipidspace.h \
+    LipidSpace/matplotlibcpp.h 
 
 FORMS += \
     lipidspacegui.ui
