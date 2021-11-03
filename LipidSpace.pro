@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 INCLUDEPATH += /usr/include/python3.8
+LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 
 SOURCES += \
     src/MainWindow.cpp \

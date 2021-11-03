@@ -1289,3 +1289,22 @@ void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
 }
 
 
+
+void LipidSpace::run_analysis(){
+    if (lipidomes.size() == 0) return;
+    
+    // compute PCA matrixes for the complete lipidome
+    compute_global_distance_matrix();
+    
+    // perform the principal component analysis
+    {
+        Matrix pca;
+        global_lipidome->m.PCA(pca, cols_for_pca);
+        global_lipidome->m.rewrite(pca);
+    }
+    
+    // cutting the global PCA matrix back to a matrix for each lipidome
+    separate_matrixes();
+    normalize_intensities();
+}
+

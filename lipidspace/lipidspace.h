@@ -85,6 +85,7 @@ public:
     void load_table(string table_file);
     //void plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string output_folder);
     void store_distance_table(Table* lipidome, string output_folder);
+    void run_analysis();
 };
 
 
