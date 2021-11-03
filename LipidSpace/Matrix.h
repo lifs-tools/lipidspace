@@ -35,7 +35,7 @@ public:
     }
     
     inline double& operator ()(int i){
-        if (i < 0 || size() <= i){
+        if (i < 0 || (int)size() <= i){
             throw "Constrain violation, 0 <= i <=" + std::to_string(size());
         }
         return at(i);

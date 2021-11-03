@@ -1,4 +1,4 @@
-#include "lipidspacegui.h"
+#include "LipidSpace/lipidspacegui.h"
 #include "ui_lipidspacegui.h"
 
 LipidSpaceGUI::LipidSpaceGUI(QWidget *parent)

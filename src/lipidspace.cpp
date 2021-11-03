@@ -1,77 +1,6 @@
 #include "LipidSpace/lipidspace.h"
  
-using namespace std;
-namespace plt = matplotlibcpp; 
-
-
-enum Linkage {SINGLE, COMPLETE};
-
-
-
-class Node {
-public:
-    set<int> indexes;
-    string name;
-    Node* left_child;
-    Node* right_child;
-    double distance;
-    
-    Node(int index, string _name);
-    Node(Node* n1, Node* n2, double d);
-    ~Node();
-    double* plot(int i, vector<string>* sorted_ticks);
-};
-
-
-
-
-class Table {
-public:
-    string file_name;
-    vector<string> species;
-    vector<string> classes;
-    vector<LipidAdduct*> lipids;
-    Array intensities;
-    Matrix m;
-    
-    Table(string lipid_list_file) : file_name(lipid_list_file) {}
-};
-
-
-class LipidSpace {
-public:
-    LipidParser parser;
-    map<string, int*> class_matrix;
-    vector<LipidAdduct*> all_lipids;
-    int cols_for_pca;
-    static const vector< vector< vector< vector<int> > > > orders;
-    bool keep_sn_position;
-    bool ignore_unknown_lipids;
-    bool unboundend_distance;
-    bool without_quant;
-    
-    
-    LipidSpace();
-    ~LipidSpace();
-    Table* load_list(string lipid_list_file);
-    void compute_PCA_variances(Matrix &m, Array &a);
-    void cut_cycle(FattyAcid* fa);
-    void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
-    void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
-    double compute_hausdorff_distance(Table* l1, Table* l2);
-    void plot_PCA(Table* table, string output_folder);
-    void compute_hausdorff_matrix(vector<Table*>* tables, Matrix &m);
-    void report_hausdorff_matrix(vector<Table*>* l, Matrix &distance_matrix, string output_folder);
-    Table* compute_global_distance_matrix(vector<Table*>* tables);
-    void separate_matrixes(vector<Table*>* lipidomes, Table* global_lipidome);
-    void normalize_intensities(vector<Table*>* lipidomes, Table* global_lipidome);
-    void load_table(string table_file, vector<Table*>* lipidomes);
-    void plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string output_folder);
-    void store_distance_table(Table* lipidome, string output_folder);
-};
-
-
-
+ 
 Node::Node(int index, string _name){
     indexes.insert(index);
     name = _name;
@@ -169,8 +98,8 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string ou
     while (nodes.size() > 1){
         double min_val = 1e9;
         int ii = 0, jj = 0;
-        for (int i = 0; i < nodes.size() - 1; ++i){
-            for (int j = i + 1; j < nodes.size(); ++j){
+        for (int i = 0; i < (int)nodes.size() - 1; ++i){
+            for (int j = i + 1; j < (int)nodes.size(); ++j){
                 double val = linkage(nodes.at(i), nodes.at(j), m, COMPLETE);
                 if (min_val > val){
                     min_val = val;
@@ -644,7 +573,7 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         int max_u = 0, max_i = 0;
         double max_q = 0;
         
-        for (int i = 0; i < orders.at(len_fa1).size(); ++i){
+        for (int i = 0; i < (int)orders.at(len_fa1).size(); ++i){
             int uu = 0, ii = 0;
             for (auto order : orders.at(len_fa1).at(i)){
                 int* cell = cache[order.at(0) * len_fa1 + order.at(1)];
@@ -717,7 +646,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
     vector<int> remove;
     
     #pragma omp parallel for
-    for (int i = 0; i < lipids.size(); ++i) { 
+    for (int i = 0; (int)i < lipids.size(); ++i) { 
         string line = lipids.at(i);
         try {
             LipidAdduct* l = parser.parse_parallel(line);
@@ -931,7 +860,7 @@ void automated_annotation(Array &xx, Array &yy, int l, Matrix &label_points){
             
             // apply pushing force
             double force_x = 0, force_y = 0;
-            for (int i = 0; i < all_xx.size(); ++i){
+            for (int i = 0; i < (int)all_xx.size(); ++i){
                 force_x += ((i < l) ? 50.0 : 1.) * nf_x * (all_xx(i) - l_xx) / (distances(i) + 1e-16);
                 force_y += ((i < l) ? 30.0 : 1.) * nf_y * (all_yy(i) - l_yy) / (distances(i) + 1e-16);
             }
@@ -971,7 +900,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     if (output_file_name.find(".") != string::npos){
         tokens = split_string(output_file_name, '.');
         stringstream output_stream;
-        for (int i = 0; i < tokens->size() - 1; ++i) output_stream << tokens->at(i);
+        for (int i = 0; i < (int)tokens->size() - 1; ++i) output_stream << tokens->at(i);
         output_stream << ".pdf";
         output_file_name = output_stream.str();
         delete tokens;
@@ -983,7 +912,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     
     
     map<string, vector<int>> indexes;
-    for (int i = 0; i < lipidome->classes.size(); ++i){
+    for (int i = 0; i < (int)lipidome->classes.size(); ++i){
         string lipid_class = lipidome->classes.at(i);
         if (uncontains(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
         indexes.at(lipid_class).push_back(i);
@@ -1005,7 +934,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     
     if (stdev > 1e-16){
         stdev = 5. / stdev;
-        for (int i = 0; i < intensities.size(); ++i) {
+        for (int i = 0; (int)i < intensities.size(); ++i) {
             intensities[i] *= stdev;
         }
     }
@@ -1049,7 +978,7 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     automated_annotation(mean_x, mean_y, labels.size(), label_m);
     
     
-    for (int i = 0; i < labels.size(); ++i){
+    for (int i = 0; (int)i < labels.size(); ++i){
         plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"color", "#bbbbbb"}, {"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
     }
     min_x = mmin(min_x, label_m.col_min(0));
@@ -1125,7 +1054,7 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
     Table* global_lipidome = new Table("global_lipidome");
     
     for (auto lipidome : *lipidomes){
-        for (int i = 0; i < lipidome->species.size(); ++i){
+        for (int i = 0; (int)i < lipidome->species.size(); ++i){
             string lipid_species = lipidome->species.at(i);
             if (contains(registered_lipids, lipid_species)) continue;
             registered_lipids.insert(lipid_species);
@@ -1194,7 +1123,7 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
 
 void LipidSpace::separate_matrixes(vector<Table*>* lipidomes, Table* global_lipidome){
     map<string, int> lipid_indexes;
-    for (int i = 0; i < global_lipidome->species.size(); ++i){
+    for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
         lipid_indexes.insert({global_lipidome->species.at(i), i});
     }
     
@@ -1232,7 +1161,7 @@ void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_
         
         if (stdev > 1e-16){
             stdev = global_stdev / stdev;
-            for (int i = 0; i < intensities.size(); ++i) {
+            for (int i = 0; i < (int)intensities.size(); ++i) {
                 intensities[i] *= stdev;
             }
         }
@@ -1267,7 +1196,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
         if (line_cnt++ == 0){
             vector<string>* tokens = split_string(line, ',', '"', true);
             num_cols = tokens->size();
-            for (int i = 1; i < tokens->size(); ++i){
+            for (int i = 1; i < (int)tokens->size(); ++i){
                 lipidomes->push_back(new Table(tokens->at(i)));
                 intensities.push_back(Array());
             }
@@ -1316,7 +1245,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
             l->adduct = 0;
         }
         all_lipids.push_back(l);
-        for (int i = 1; i < tokens->size(); ++i){
+        for (int i = 1; i < (int)tokens->size(); ++i){
             string val = tokens->at(i);
             if (!contains(NA_VALUES, val)){
                 Table* lipidome = lipidomes->at(i - 1);
@@ -1330,7 +1259,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
         delete tokens;
     }
         
-    for (int i = 0; i < lipidomes->size(); ++i){
+    for (int i = 0; i < (int)lipidomes->size(); ++i){
         lipidomes->at(i)->intensities.reset(intensities.at(i));
     }
 }
@@ -1346,9 +1275,9 @@ void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
     for (auto lipid : lipidome->species) table_stream << "\t" << lipid;
     table_stream << endl;
     
-    for (int i = 0; i < lipidome->species.size(); ++i){
+    for (int i = 0; i < (int)lipidome->species.size(); ++i){
         table_stream << lipidome->species.at(i);
-        for (int j = 0; j < lipidome->species.size(); ++j){
+        for (int j = 0; j < (int)lipidome->species.size(); ++j){
             table_stream << "\t" << lipidome->m(i, j);
         }
         table_stream << endl;
@@ -1359,177 +1288,3 @@ void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
 }
 
 
-
-
-
-void print_help(){
-    cerr << "usage: " << endl;
-    cerr << "  > ./lipidspace [options] output_folder table lipid_table[csv]" << endl;
-    cerr << "  > ./lipidspace [options] output_folder lists lipid_list[csv], ..." << endl;
-    cerr << "modes either 'table' or 'lists'." << endl << endl;
-    cerr << "options:" << endl;
-    cerr << " -h\t\tshow this help message" << endl;
-    cerr << " -sn\t\tignore sn-positions, compare all pairwise fatty acyl chains" << endl;
-    cerr << " -i\t\tignore unknown lipids (default: exit with error)" << endl;
-    cerr << " -q\t\tignore quantitative data, if present (default: guess what, consider them)" << endl;
-    cerr << " -d\t\tstore distance tables" << endl;
-    cerr << " -p\t\tplot only figure for global principal component analysis" << endl;
-    cerr << " -u\t\tunbounded lipid distance to inf (default: 0 <= distance <= 1)" << endl;
-}
-
-
-
-int main(int argc, char** argv) {
-    // parameters to change
-    bool keep_sn_position = true;
-    bool ignore_unknown_lipids = false;
-    bool plot_pca = true; 
-    bool plot_pca_lipidomes = true;
-    bool storing_distance_table = false;
-    bool unboundend_distance = false;
-    bool without_quant = false;
-    
-    if (argc < 4) {
-        print_help();
-        exit(-1);
-    }
-    
-    map<string, int> options = {{"-sn", 0}, {"-i", 1}, {"-d", 2}, {"-p", 3}, {"-h", 4}, {"--help", 4}, {"-u", 5}, {"-q", 6}};
-    
-    
-    int num_opt = 0;
-    while (true){
-        if (uncontains(options, string(argv[1 + num_opt]))){
-            if (argv[1 + num_opt][0] == '-'){
-                cerr << "Error: option " << argv[1 + num_opt] << " unknown." << endl;
-                exit(-1);
-            }
-            break;
-        }
-        int opt = options.at(argv[1 + num_opt++]);
-        
-        switch (opt){
-            case 0: keep_sn_position = false; break;
-            case 1: ignore_unknown_lipids = true; break;
-            case 2: storing_distance_table = true; break;
-            case 3: plot_pca_lipidomes = false; break;
-            case 4: print_help(); return 0;
-            case 5: unboundend_distance = true; break;
-            case 6: without_quant = true; break;
-        }
-    }
-    
-        
-    // getting input
-    string output_folder = argv[1 + num_opt];
-    string mode = argv[2 + num_opt];
-    
-    // check if output folder exists
-    struct stat buffer;
-    if (stat (output_folder.c_str(), &buffer) != 0){
-        cerr << "Error: output folder '" << output_folder << "' does not exist." << endl;
-        exit(-1);
-    }
-    
-    
-    if (mode != "table" && mode != "lists") {
-        print_help();
-        exit(-1);
-    }
-    
-    LipidSpace lipid_space;
-    vector<Table*> lipidomes;
-    
-    
-    lipid_space.keep_sn_position = keep_sn_position;
-    lipid_space.ignore_unknown_lipids = ignore_unknown_lipids;
-    lipid_space.unboundend_distance = unboundend_distance;
-    lipid_space.without_quant = without_quant;
-    lipid_space.cols_for_pca = 7;
-    
-    
-    // loadig each lipidome
-    if (mode == "lists"){
-        for (int i = 3 + num_opt; i < argc; ++i) lipidomes.push_back(lipid_space.load_list(argv[i]));
-    }
-    // loading lipid matrix
-    else {
-        lipid_space.load_table(argv[3 + num_opt], &lipidomes);
-    }
-    
-    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
-    // compute PCA matrixes for the complete lipidome
-    Table* global_lipidome = lipid_space.compute_global_distance_matrix(&lipidomes);
-    chrono::steady_clock::time_point end = chrono::steady_clock::now();
-    cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
-    cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
-    
-    
-    // storing the distance matrix
-    if (storing_distance_table){
-        lipid_space.store_distance_table(global_lipidome, output_folder);
-    }
-    
-    begin = chrono::steady_clock::now();
-    // perform the principal component analysis
-    {
-        Matrix pca;
-        cout << "Running principal component analysis" << endl;
-        global_lipidome->m.PCA(pca, lipid_space.cols_for_pca);
-        global_lipidome->m.rewrite(pca);
-    }
-    end = chrono::steady_clock::now();
-    cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
-    cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
-    
-       
-    // cutting the global PCA matrix back to a matrix for each lipidome
-    lipid_space.separate_matrixes(&lipidomes, global_lipidome);
-
-    
-    // plotting all lipidome PCAs
-    if (plot_pca && lipidomes.size() > 1){
-        lipid_space.plot_PCA(global_lipidome, output_folder);
-    }
-    if (plot_pca_lipidomes){
-        for (auto table : lipidomes){
-            lipid_space.plot_PCA(table, output_folder);
-        }
-    }
-    
-    
-    // normalize and incorporate intensities
-    lipid_space.normalize_intensities(&lipidomes, global_lipidome);
-    
-    
-    
-    if (lipidomes.size() > 1){
-        
-        // computing the hausdorff distance matrix for all lipidomes
-        Matrix distance_matrix;
-        begin = chrono::steady_clock::now();
-        lipid_space.compute_hausdorff_matrix(&lipidomes, distance_matrix);
-        end = chrono::steady_clock::now();
-        
-        // storing hausdorff distance matrix into file
-        if (storing_distance_table)
-            lipid_space.report_hausdorff_matrix(&lipidomes, distance_matrix, output_folder);
-        
-        // ploting the dendrogram
-        lipid_space.plot_dendrogram(&lipidomes, distance_matrix, output_folder);
-        cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
-        cout << "Time difference = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[us]" << endl << endl;
-    }
-    
-    
-    // free all allocated data
-    for (auto table : lipidomes) delete table;
-    delete global_lipidome;
-    
-    
-    if (plot_pca || plot_pca_lipidomes || lipidomes.size() > 1){
-        Py_Finalize();
-    }
-    
-    return 0;
-}
