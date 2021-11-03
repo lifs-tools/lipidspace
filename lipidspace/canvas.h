@@ -10,6 +10,7 @@
 #include <QMouseEvent>
 #include <iostream>
 #include <math.h>
+#include "lipidspace/lipidspace.h"
 
 using namespace std;
 
@@ -21,11 +22,13 @@ class Canvas : public QWidget
 public:
 
     explicit Canvas(QWidget *parent = nullptr);
+    ~Canvas();
     void wheelEvent(QWheelEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
-    
+    void setLipidSpace(LipidSpace *_lipid_space);
+    void refreshCanvas();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -36,10 +39,13 @@ private:
     bool antialiased;
     QPixmap pixmap;
     double scaling;
+    double basescale;
     QPoint offset;
     bool mousePressed;
     QPoint deltaMouse;
     QPoint oldOffset;
+    LipidSpace *lipid_space;
+    double PRECESION_FACTOR;
 };
 
 #endif /* CANVAS_H */

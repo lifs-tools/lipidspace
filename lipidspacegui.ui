@@ -36,7 +36,7 @@
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
-       <widget class="Canvas" name="widget" native="true"/>
+       <widget class="Canvas" name="canvas" native="true"/>
       </item>
      </layout>
     </item>
