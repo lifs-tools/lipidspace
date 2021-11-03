@@ -314,7 +314,6 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
 }
 
 
-
 void Matrix::PCA(Matrix &pca, int dimensions){
     scale();
     Matrix cov_matrix;
