@@ -310,7 +310,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
     }
     
     
-    if (contains_p(curr_fa->functional_groups, "noyloxy")){
+    if (contains_val_p(curr_fa->functional_groups, "noyloxy")){
         if (headgroup == "FA") headgroup = "FAHFA";
         
         while (!curr_fa->functional_groups->at("noyloxy").empty()){
@@ -320,14 +320,14 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
             AcylAlkylGroup* acyl = new AcylAlkylGroup(fa);
             acyl->position = fa->position;
             
-            if (uncontains_p(curr_fa->functional_groups, "acyl")) curr_fa->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
+            if (uncontains_val_p(curr_fa->functional_groups, "acyl")) curr_fa->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
             curr_fa->functional_groups->at("acyl").push_back(acyl);
         }
         curr_fa->functional_groups->erase("noyloxy");
     }
         
-    else if (contains_p(curr_fa->functional_groups, "nyloxy") || contains_p(curr_fa->functional_groups, "yloxy")){
-        string yloxy = contains_p(curr_fa->functional_groups, "nyloxy") ? "nyloxy" : "yloxy";
+    else if (contains_val_p(curr_fa->functional_groups, "nyloxy") || contains_val_p(curr_fa->functional_groups, "yloxy")){
+        string yloxy = contains_val_p(curr_fa->functional_groups, "nyloxy") ? "nyloxy" : "yloxy";
         while (!curr_fa->functional_groups->at(yloxy).empty()){
             FattyAcid* fa = (FattyAcid*)curr_fa->functional_groups->at(yloxy).back();
             curr_fa->functional_groups->at(yloxy).pop_back();        
@@ -335,7 +335,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
             AcylAlkylGroup* alkyl = new AcylAlkylGroup(fa, -1, 1, true);
             alkyl->position = fa->position;
             
-            if (uncontains_p(curr_fa->functional_groups, "alkyl")) curr_fa->functional_groups->insert({"alkyl", vector<FunctionalGroup*>()});
+            if (uncontains_val_p(curr_fa->functional_groups, "alkyl")) curr_fa->functional_groups->insert({"alkyl", vector<FunctionalGroup*>()});
             curr_fa->functional_groups->at("alkyl").push_back(alkyl);
         }
         curr_fa->functional_groups->erase(yloxy);
@@ -376,7 +376,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
                         if (tmp.contains_key("furan")) curr_fa->shift_positions(-1);
                         
                         for (auto &kv : *(fa->functional_groups)){
-                            if (uncontains_p(curr_fa->functional_groups, kv.first)) {
+                            if (uncontains_val_p(curr_fa->functional_groups, kv.first)) {
                                 curr_fa->functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
                             }
                             for (auto &func_group : kv.second) curr_fa->functional_groups->at(kv.first).push_back(func_group);
@@ -390,8 +390,8 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
                         curr_fa->double_bonds->num_double_bonds = curr_fa->double_bonds->double_bond_positions.size();
                         if (!tmp.contains_key("tetrahydrofuran") && tmp.contains_key("furan")){
                             curr_fa->double_bonds->num_double_bonds += 2;
-                            if (uncontains(curr_fa->double_bonds->double_bond_positions, 1)) curr_fa->double_bonds->double_bond_positions.insert({1, "E"});
-                            if (uncontains(curr_fa->double_bonds->double_bond_positions, 3)) curr_fa->double_bonds->double_bond_positions.insert({3, "E"});
+                            if (uncontains_val(curr_fa->double_bonds->double_bond_positions, 1)) curr_fa->double_bonds->double_bond_positions.insert({1, "E"});
+                            if (uncontains_val(curr_fa->double_bonds->double_bond_positions, 3)) curr_fa->double_bonds->double_bond_positions.insert({3, "E"});
                         }
                             
                         tmp.set_int("cyclo_yl", 1);
@@ -412,13 +412,13 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
                             }
                             if (fg_name.length() > 0){
                                 fg->position = fa->position;
-                                if (uncontains_p(curr_fa->functional_groups, fg_name)) curr_fa->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
+                                if (uncontains_val_p(curr_fa->functional_groups, fg_name)) curr_fa->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
                                 curr_fa->functional_groups->at(fg_name).push_back(fg);
                             }
                         }
                         if (fg_name.length() == 0){
                             CarbonChain *cc = new CarbonChain(fa, fa->position);
-                            if (uncontains_p(curr_fa->functional_groups, "cc")) curr_fa->functional_groups->insert({"cc", vector<FunctionalGroup*>()});
+                            if (uncontains_val_p(curr_fa->functional_groups, "cc")) curr_fa->functional_groups->insert({"cc", vector<FunctionalGroup*>()});
                             curr_fa->functional_groups->at("cc").push_back(cc);
                         }
                     }
@@ -429,7 +429,7 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
         }
     }
         
-    if (contains_p(curr_fa->functional_groups, "cyclo")){
+    if (contains_val_p(curr_fa->functional_groups, "cyclo")){
         FattyAcid *fa = (FattyAcid*)curr_fa->functional_groups->at("cyclo").front();
         curr_fa->functional_groups->erase("cyclo");
         if (!tmp.contains_key("cyclo_len")) tmp.set_int("cyclo_len", 5);
@@ -437,13 +437,13 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
         int end_pos = curr_fa->num_carbon + tmp.get_int("cyclo_len");
         fa->shift_positions(start_pos - 1);
         
-        if (contains_p(curr_fa->functional_groups, "cy")){
+        if (contains_val_p(curr_fa->functional_groups, "cy")){
             for (auto &cy : curr_fa->functional_groups->at("cy")){
                 cy->shift_positions(start_pos - 1);
             }
         }
         for (auto &kv : *(fa->functional_groups)){
-            if (uncontains_p(curr_fa->functional_groups, kv.first)){
+            if (uncontains_val_p(curr_fa->functional_groups, kv.first)){
                 curr_fa->functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
             }
             for (auto &func_group : kv.second){
@@ -459,8 +459,8 @@ void FattyAcidParserEventHandler::set_fatty_acid(TreeNode *node) {
         
         if (!tmp.contains_key("tetrahydrofuran") and tmp.contains_key("furan")){
             curr_fa->double_bonds->num_double_bonds += 2;
-            if (uncontains(curr_fa->double_bonds->double_bond_positions, 1 + curr_fa->num_carbon)) curr_fa->double_bonds->double_bond_positions.insert({1 + curr_fa->num_carbon, "E"});
-            if (uncontains(curr_fa->double_bonds->double_bond_positions, 3 + curr_fa->num_carbon)) curr_fa->double_bonds->double_bond_positions.insert({3 + curr_fa->num_carbon, "E"});
+            if (uncontains_val(curr_fa->double_bonds->double_bond_positions, 1 + curr_fa->num_carbon)) curr_fa->double_bonds->double_bond_positions.insert({1 + curr_fa->num_carbon, "E"});
+            if (uncontains_val(curr_fa->double_bonds->double_bond_positions, 3 + curr_fa->num_carbon)) curr_fa->double_bonds->double_bond_positions.insert({3 + curr_fa->num_carbon, "E"});
         }
         curr_fa->num_carbon += fa->num_carbon;
                 
@@ -507,9 +507,9 @@ void FattyAcidParserEventHandler::set_fatty_acyl_type(TreeNode *node) {
     string t = node->get_text();
     
     if (endswith(t, "ol")) headgroup = "FOH";
-    else if (contains(noic_set, t)) headgroup = "FA";
-    else if (contains(nal_set, t)) headgroup = "FAL";
-    else if (contains(acetate_set, t)) headgroup = "WE";
+    else if (contains_val(noic_set, t)) headgroup = "FA";
+    else if (contains_val(nal_set, t)) headgroup = "FAL";
+    else if (contains_val(acetate_set, t)) headgroup = "WE";
     else if (t == "ne"){
         headgroup = "HC";
         fatty_acyl_stack.back()->lipid_FA_bond_type = AMINE;
@@ -542,8 +542,8 @@ void FattyAcidParserEventHandler::add_double_bond_information(TreeNode *node) {
     
     
     if (cistrans != "E" && cistrans != "Z") cistrans = "";
-    if (uncontains(fatty_acyl_stack.back()->double_bonds->double_bond_positions, pos) || fatty_acyl_stack.back()->double_bonds->double_bond_positions.at(pos).length() == 0){
-        if (uncontains(fatty_acyl_stack.back()->double_bonds->double_bond_positions, pos)){
+    if (uncontains_val(fatty_acyl_stack.back()->double_bonds->double_bond_positions, pos) || fatty_acyl_stack.back()->double_bonds->double_bond_positions.at(pos).length() == 0){
+        if (uncontains_val(fatty_acyl_stack.back()->double_bonds->double_bond_positions, pos)){
             fatty_acyl_stack.back()->double_bonds->double_bond_positions.insert({pos, cistrans});
         }
         else {
@@ -580,7 +580,7 @@ void FattyAcidParserEventHandler::check_db(TreeNode *node) {
         for (auto &kv : tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->dictionary){
             int k = atoi(kv.first.c_str());
             string v = tmp.get_dictionary(FA_I)->get_dictionary("fg_pos_summary")->get_string(kv.first);
-            if (k > 0 && uncontains(curr_fa->double_bonds->double_bond_positions, k) && (v == "E" || v == "Z" || v == "")){
+            if (k > 0 && uncontains_val(curr_fa->double_bonds->double_bond_positions, k) && (v == "E" || v == "Z" || v == "")){
                 curr_fa->double_bonds->double_bond_positions.insert({k, v});
                 curr_fa->double_bonds->num_double_bonds = curr_fa->double_bonds->double_bond_positions.size();
             }
@@ -658,7 +658,7 @@ void FattyAcidParserEventHandler::add_functional_group(TreeNode *node) {
     
     FunctionalGroup *fg = 0;
     if (t != "acetoxy"){
-        if (uncontains(func_groups, t)){
+        if (uncontains_val(func_groups, t)){
             throw LipidException("Unknown functional group: '" + t + "'");
         }
         t = func_groups.at(t);
@@ -670,7 +670,7 @@ void FattyAcidParserEventHandler::add_functional_group(TreeNode *node) {
     }
     
     FattyAcid* fa = fatty_acyl_stack.back();
-    if (uncontains_p(fa->functional_groups, t)) fa->functional_groups->insert({t, vector<FunctionalGroup*>()});
+    if (uncontains_val_p(fa->functional_groups, t)) fa->functional_groups->insert({t, vector<FunctionalGroup*>()});
     int l = tmp.get_list("fg_pos")->list.size();
     for (int i = 0; i < l; ++i){
         int pos = tmp.get_list("fg_pos")->get_list(i)->get_int(0);
@@ -719,7 +719,7 @@ void FattyAcidParserEventHandler::rearrange_cycle(TreeNode *node) {
         
     FattyAcid* curr_fa = fatty_acyl_stack.back();
     int start = tmp.get_list("fg_pos")->get_list(0)->get_int(0);
-    if (contains_p(curr_fa->functional_groups, "cy")){
+    if (contains_val_p(curr_fa->functional_groups, "cy")){
         for (auto &cy : curr_fa->functional_groups->at("cy")){
             int shift_val = start - cy->position;
             if (shift_val == 0) continue;
@@ -771,7 +771,7 @@ void FattyAcidParserEventHandler::set_dioic(TreeNode *node) {
     }
     FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group("COOH");
     func_group->position = pos - 1;
-    if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "COOH")) fatty_acyl_stack.back()->functional_groups->insert({"COOH", vector<FunctionalGroup*>()});
+    if (uncontains_val_p(fatty_acyl_stack.back()->functional_groups, "COOH")) fatty_acyl_stack.back()->functional_groups->insert({"COOH", vector<FunctionalGroup*>()});
     fatty_acyl_stack.back()->functional_groups->at("COOH").push_back(func_group);
 }
 
@@ -781,7 +781,7 @@ void FattyAcidParserEventHandler::set_dial(TreeNode *node) {
     int pos = curr_fa->num_carbon;
     FunctionalGroup *fg = KnownFunctionalGroups::get_functional_group("oxo");
     fg->position = pos;
-    if (uncontains_p(curr_fa->functional_groups, "oxo")) curr_fa->functional_groups->insert({"oxo", vector<FunctionalGroup*>()});
+    if (uncontains_val_p(curr_fa->functional_groups, "oxo")) curr_fa->functional_groups->insert({"oxo", vector<FunctionalGroup*>()});
     curr_fa->functional_groups->at("oxo").push_back(fg);
 }
 
@@ -832,14 +832,14 @@ void FattyAcidParserEventHandler::add_cyclo(TreeNode *node) {
     set<string> remove_list;
     FattyAcid *curr_fa = fatty_acyl_stack.back();
     
-    if (contains_p(curr_fa->functional_groups, "noyloxy")){
+    if (contains_val_p(curr_fa->functional_groups, "noyloxy")){
         vector<int> remove_item;
         int i = 0;
         for (auto &func_group : curr_fa->functional_groups->at("noyloxy")){
             if (start <= func_group->position && func_group->position <= end){
                 CarbonChain *cc = new CarbonChain((FattyAcid*)func_group, func_group->position);
                 
-                if (uncontains_p(curr_fa->functional_groups, "cc")) curr_fa->functional_groups->insert({"cc", vector<FunctionalGroup*>()});
+                if (uncontains_val_p(curr_fa->functional_groups, "cc")) curr_fa->functional_groups->insert({"cc", vector<FunctionalGroup*>()});
                 curr_fa->functional_groups->at("cc").push_back(cc);
                 remove_item.push_back(i);
             }
@@ -854,7 +854,7 @@ void FattyAcidParserEventHandler::add_cyclo(TreeNode *node) {
         int i = 0;
         for (auto &func_group : kv.second){
             if (start <= func_group->position && func_group->position <= end){
-                if (uncontains_p(cyclo_fg, kv.first)) cyclo_fg->insert({kv.first, vector<FunctionalGroup*>()});
+                if (uncontains_val_p(cyclo_fg, kv.first)) cyclo_fg->insert({kv.first, vector<FunctionalGroup*>()});
                 cyclo_fg->at(kv.first).push_back(func_group);
                 remove_item.push_back(i);
             }
@@ -871,7 +871,7 @@ void FattyAcidParserEventHandler::add_cyclo(TreeNode *node) {
     }
     
     Cycle *cycle = new Cycle(end - start + 1 + bridge_chain->size(), start, end, cyclo_db, cyclo_fg, bridge_chain);
-    if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "cy")) fatty_acyl_stack.back()->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
+    if (uncontains_val_p(fatty_acyl_stack.back()->functional_groups, "cy")) fatty_acyl_stack.back()->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
     fatty_acyl_stack.back()->functional_groups->at("cy").push_back(cycle);
 }
 
@@ -940,7 +940,7 @@ void FattyAcidParserEventHandler::add_recursion(TreeNode *node) {
         else {
             fname = headgroup;
         }
-        if (uncontains_p(curr_fa->functional_groups, fname)) curr_fa->functional_groups->insert({fname, vector<FunctionalGroup*>()});
+        if (uncontains_val_p(curr_fa->functional_groups, fname)) curr_fa->functional_groups->insert({fname, vector<FunctionalGroup*>()});
         curr_fa->functional_groups->at(fname).push_back(fa);
         tmp.set_int("added_func_group", 1);
 }
@@ -982,7 +982,7 @@ void FattyAcidParserEventHandler::set_yl_ending(TreeNode *node) {
             for (auto &func_group : kv.second){
                 if (func_group->position <= l){
                     remove_item.push_back(i);
-                    if (uncontains_p(fa->functional_groups, kv.first)) fa->functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
+                    if (uncontains_val_p(fa->functional_groups, kv.first)) fa->functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
                     func_group->position = l + 1 - func_group->position;
                     fa->functional_groups->at(kv.first).push_back(func_group);
                 }
@@ -1012,7 +1012,7 @@ void FattyAcidParserEventHandler::set_yl_ending(TreeNode *node) {
     curr_fa->num_carbon -= l;
     fg->position = l;
     curr_fa->shift_positions(-l);
-    if (uncontains_p(curr_fa->functional_groups, fname)) curr_fa->functional_groups->insert({fname, vector<FunctionalGroup*>()});
+    if (uncontains_val_p(curr_fa->functional_groups, fname)) curr_fa->functional_groups->insert({fname, vector<FunctionalGroup*>()});
     curr_fa->functional_groups->at(fname).push_back(fg);
 }
 
@@ -1045,7 +1045,7 @@ void FattyAcidParserEventHandler::add_hydroxyls(TreeNode *node) {
             int pos = sorted_pos.at(i);
             FunctionalGroup *fg_insert = fg_oh->copy();
             fg_insert->position = pos;
-            if (uncontains_p(fatty_acyl_stack.back()->functional_groups, "OH")) fatty_acyl_stack.back()->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+            if (uncontains_val_p(fatty_acyl_stack.back()->functional_groups, "OH")) fatty_acyl_stack.back()->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
             fatty_acyl_stack.back()->functional_groups->at("OH").push_back(fg_insert);
         }
         delete fg_oh;
@@ -1075,7 +1075,7 @@ void FattyAcidParserEventHandler::set_iso(TreeNode *node) {
         curr_fa->num_carbon -= 1;
         FunctionalGroup *fg = KnownFunctionalGroups::get_functional_group("Me");
         fg->position = 2;
-        if (uncontains_p(curr_fa->functional_groups, "Me")) curr_fa->functional_groups->insert({"Me", vector<FunctionalGroup*>()});
+        if (uncontains_val_p(curr_fa->functional_groups, "Me")) curr_fa->functional_groups->insert({"Me", vector<FunctionalGroup*>()});
         curr_fa->functional_groups->at("Me").push_back(fg);
 }
 

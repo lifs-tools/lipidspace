@@ -168,7 +168,7 @@ void LipidMapsParserEventHandler::add_ACer(TreeNode *node){
     string head = node->get_text();
     head_group = "ACer";
     
-    if (uncontains(acer_heads, head)){
+    if (uncontains_val(acer_heads, head)){
         throw LipidException("ACer head group '" + head + "' unknown");
     }
     
@@ -252,13 +252,13 @@ void LipidMapsParserEventHandler::add_functional_group(TreeNode* node){
         functional_group->position = mod_pos;
         functional_group->count = mod_num;
         string fg_name = functional_group->name;
-        if (uncontains_p(current_fa->functional_groups, fg_name)) current_fa->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
+        if (uncontains_val_p(current_fa->functional_groups, fg_name)) current_fa->functional_groups->insert({fg_name, vector<FunctionalGroup*>()});
         current_fa->functional_groups->at(fg_name).push_back(functional_group);
     }
     else {
         current_fa->num_carbon += 1;
         Cycle *cycle = new Cycle(3, mod_pos, mod_pos + 2);
-        if (uncontains_p(current_fa->functional_groups, "cy")) current_fa->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
+        if (uncontains_val_p(current_fa->functional_groups, "cy")) current_fa->functional_groups->insert({"cy", vector<FunctionalGroup*>()});
         current_fa->functional_groups->at("cy").push_back(cycle);
     }
 }
@@ -344,7 +344,7 @@ void LipidMapsParserEventHandler::add_hydroxyl(TreeNode* node){
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
-    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    if (uncontains_val_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
     current_fa->functional_groups->at("OH").push_back(functional_group);
 }
 
@@ -361,7 +361,7 @@ void LipidMapsParserEventHandler::add_hydroxyl_lcb(TreeNode* node){
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
-    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    if (uncontains_val_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
     current_fa->functional_groups->at("OH").push_back(functional_group);
 }
     
@@ -392,7 +392,7 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
         if (fa_list->size() != 2){
             throw LipidException("omega-linoleoyloxy-Cer with a different combination to one long chain base and one fatty acyl chain unknown");
         }
-        if (uncontains_p(fa_list->back()->functional_groups, "acyl")) fa_list->back()->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
+        if (uncontains_val_p(fa_list->back()->functional_groups, "acyl")) fa_list->back()->functional_groups->insert({"acyl", vector<FunctionalGroup*>()});
         
         DoubleBonds* db = new DoubleBonds(2);
         db->double_bond_positions.insert({9, "Z"});

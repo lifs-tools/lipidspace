@@ -241,18 +241,18 @@ void SwissLipidsParserEventHandler::add_hydroxyl(TreeNode *node) {
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
-    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    if (uncontains_val_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
     current_fa->functional_groups->at("OH").push_back(functional_group);
 }
 
 
 void SwissLipidsParserEventHandler::add_one_hydroxyl(TreeNode *node) {
-    if (contains_p(current_fa->functional_groups, "OH") && current_fa->functional_groups->at("OH").at(0)->position == -1){
+    if (contains_val_p(current_fa->functional_groups, "OH") && current_fa->functional_groups->at("OH").at(0)->position == -1){
         current_fa->functional_groups->at("OH").at(0)->count += 1;
     }
     else {
         FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
-        if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+        if (uncontains_val_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
         current_fa->functional_groups->at("OH").push_back(functional_group);
     }
 }
@@ -281,7 +281,7 @@ void SwissLipidsParserEventHandler::add_fa_lcb_suffix_type(TreeNode *node){
     FunctionalGroup *functional_group = KnownFunctionalGroups::get_functional_group(suffix_type);
     functional_group->position = suffix_number;
     if (functional_group->position == -1) set_lipid_level(STRUCTURE_DEFINED);
-    if (uncontains_p(current_fa->functional_groups, suffix_type)) current_fa->functional_groups->insert({suffix_type, vector<FunctionalGroup*>()});
+    if (uncontains_val_p(current_fa->functional_groups, suffix_type)) current_fa->functional_groups->insert({suffix_type, vector<FunctionalGroup*>()});
     current_fa->functional_groups->at(suffix_type).push_back(functional_group);
             
     suffix_number = -1;

@@ -223,7 +223,7 @@ void HmdbParserEventHandler::add_methyl(TreeNode *node) {
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("Me");
     functional_group->position = current_fa->num_carbon - (node->get_text() == "i-" ? 1 : 2);
     current_fa->num_carbon -= 1;
-    if (uncontains_p(current_fa->functional_groups, "Me")) current_fa->functional_groups->insert({"Me", vector<FunctionalGroup*>()});
+    if (uncontains_val_p(current_fa->functional_groups, "Me")) current_fa->functional_groups->insert({"Me", vector<FunctionalGroup*>()});
     current_fa->functional_groups->at("Me").push_back(functional_group);
 }
     
@@ -239,18 +239,18 @@ void HmdbParserEventHandler::add_hydroxyl(TreeNode *node) {
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;
-    if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+    if (uncontains_val_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
     current_fa->functional_groups->at("OH").push_back(functional_group);
 }
 
 
 void HmdbParserEventHandler::add_one_hydroxyl(TreeNode *node) {
-    if (contains_p(current_fa->functional_groups, "OH") && current_fa->functional_groups->at("OH").at(0)->position == -1){
+    if (contains_val_p(current_fa->functional_groups, "OH") && current_fa->functional_groups->at("OH").at(0)->position == -1){
         current_fa->functional_groups->at("OH").at(0)->count += 1;
     }
     else {
         FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
-        if (uncontains_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+        if (uncontains_val_p(current_fa->functional_groups, "OH")) current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
         current_fa->functional_groups->at("OH").push_back(functional_group);
     }
 }

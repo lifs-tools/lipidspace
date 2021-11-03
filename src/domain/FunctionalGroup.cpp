@@ -192,7 +192,7 @@ KnownFunctionalGroups KnownFunctionalGroups::k;
 
 FunctionalGroup* KnownFunctionalGroups::get_functional_group(string fg_name){
     //static KnownFunctionalGroups k;
-    if(contains(k.known_functional_groups, fg_name)){
+    if(contains_val(k.known_functional_groups, fg_name)){
         return k.known_functional_groups.at(fg_name)->copy();
     }
     return 0;
@@ -221,7 +221,7 @@ string HeadgroupDecorator::to_string(LipidLevel level){
 
     string decorator_string = "";
     if (lowest_visible_level == NO_LEVEL || lowest_visible_level <= level){
-        if (contains_p(functional_groups, "decorator_alkyl")){
+        if (contains_val_p(functional_groups, "decorator_alkyl")){
             if (functional_groups->at("decorator_alkyl").size() > 0){
                 decorator_string = (level > SPECIES) ? functional_groups->at("decorator_alkyl").at(0)->to_string(level) : "Alk";
             }
@@ -229,7 +229,7 @@ string HeadgroupDecorator::to_string(LipidLevel level){
                 decorator_string = "Alk";
             }
         }
-        else if (contains_p(functional_groups, "decorator_acyl")){
+        else if (contains_val_p(functional_groups, "decorator_acyl")){
             if (functional_groups->at("decorator_acyl").size() > 0){
                 decorator_string = (level > SPECIES) ? ("FA " + functional_groups->at("decorator_acyl").at(0)->to_string(level)) : "FA";
             }

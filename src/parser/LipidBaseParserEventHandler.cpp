@@ -56,7 +56,7 @@ void LipidBaseParserEventHandler::set_lipid_level(LipidLevel _level){
 
 
 bool LipidBaseParserEventHandler::sp_regular_lcb(){
-    return Headgroup::get_category(head_group) == SP && contains(LCB_STATES, current_fa->lipid_FA_bond_type) && !(contains(LipidBaseParserEventHandler::SP_EXCEPTION_CLASSES, head_group) && headgroup_decorators->size() == 0);
+    return Headgroup::get_category(head_group) == SP && contains_val(LCB_STATES, current_fa->lipid_FA_bond_type) && !(contains_val(LipidBaseParserEventHandler::SP_EXCEPTION_CLASSES, head_group) && headgroup_decorators->size() == 0);
     
 }
 
@@ -70,17 +70,17 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     for (auto fa : *fa_list){
         true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
     }
-    int poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
+    int poss_fa = contains_val(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     
     // make lyso
-    bool can_be_lyso = contains(LipidClasses::get_instance().lipid_classes, Headgroup::get_class("L" + head_group)) ? contains(LipidClasses::get_instance().lipid_classes.at(Headgroup::get_class("L" + head_group)).special_cases, "Lyso") : 0;
+    bool can_be_lyso = contains_val(LipidClasses::get_instance().lipid_classes, Headgroup::get_class("L" + head_group)) ? contains_val(LipidClasses::get_instance().lipid_classes.at(Headgroup::get_class("L" + head_group)).special_cases, "Lyso") : 0;
     
     if (true_fa + 1 == poss_fa && level != SPECIES && headgroup->lipid_category == GP && can_be_lyso){
         head_group = "L" + head_group;
         headgroup->decorators->clear();
         delete headgroup;
         headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
-        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
+        poss_fa = contains_val(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
     
     
@@ -89,7 +89,7 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
         headgroup->decorators->clear();
         delete headgroup;
         headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
-        poss_fa = contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
+        poss_fa = contains_val(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class) ? LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).possible_num_fa : 0;
     }
     
     if (level == SPECIES){
@@ -107,9 +107,9 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     }
     
     
-    if (contains(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class)){
+    if (contains_val(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class)){
         
-        if (contains(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "HC")){
+        if (contains_val(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "HC")){
             fa_list->front()->lipid_FA_bond_type = AMINE;
         }
         

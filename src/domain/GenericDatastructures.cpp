@@ -263,7 +263,7 @@ void GenericDictionary::del(pair<int, void*> &x){
 
 void GenericDictionary::set_int(string key, int i){
     void* vi = new int(i);
-    if (contains(dictionary, key)){
+    if (contains_val(dictionary, key)){
         del(dictionary.at(key));
         dictionary.at(key) = {TYPE_INT, vi};
     }
@@ -278,7 +278,7 @@ int GenericDictionary::get_int(string key){
 
 void GenericDictionary::set_long(string key, long l){
     void* vl = new long(l);
-    if (contains(dictionary, key)){
+    if (contains_val(dictionary, key)){
         del(dictionary.at(key));
         dictionary.at(key) = {TYPE_INT, vl};
     }
@@ -293,7 +293,7 @@ long GenericDictionary::get_long(string key){
 
 void GenericDictionary::set_float(string key, float f){
     void* vf = new float(f);
-    if (contains(dictionary, key)){
+    if (contains_val(dictionary, key)){
         del(dictionary.at(key));
         dictionary.at(key) = {TYPE_INT, vf};
     }
@@ -308,7 +308,7 @@ float GenericDictionary::get_float(string key){
 
 void GenericDictionary::set_double(string key, double d){
     void* vd = new double(d);
-    if (contains(dictionary, key)){
+    if (contains_val(dictionary, key)){
         del(dictionary.at(key));
         dictionary.at(key) = {TYPE_INT, vd};
     }
@@ -323,7 +323,7 @@ double GenericDictionary::get_double(string key){
 
 void GenericDictionary::set_string(string key, string s){
     void* vs = new string(s);
-    if (contains(dictionary, key)){
+    if (contains_val(dictionary, key)){
         del(dictionary.at(key));
         dictionary.at(key) = {TYPE_INT, vs};
     }
@@ -337,7 +337,7 @@ string GenericDictionary::get_string(string key){
 }
 
 void GenericDictionary::set_list(string key, GenericList* v){
-    if (contains(dictionary, key)){
+    if (contains_val(dictionary, key)){
         del(dictionary.at(key));
         dictionary.at(key) = {TYPE_INT, v};
     }
@@ -352,7 +352,7 @@ GenericList* GenericDictionary::get_list(string key){
 
 
 void GenericDictionary::set_dictionary(string key, GenericDictionary* dict){
-    if (contains(dictionary, key)){
+    if (contains_val(dictionary, key)){
         del(dictionary.at(key));
         dictionary.at(key) = {TYPE_INT, dict};
     }
@@ -367,6 +367,6 @@ GenericDictionary* GenericDictionary::get_dictionary(string key){
 }
 
 bool GenericDictionary::contains_key(string key){
-    return contains(dictionary, key);
+    return contains_val(dictionary, key);
 }
 

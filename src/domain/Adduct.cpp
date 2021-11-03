@@ -88,7 +88,7 @@ string Adduct::get_lipid_string(){
 ElementTable* Adduct::get_elements(){
     ElementTable* elements = create_empty_table();
     
-    if (contains(adduct_charges, adduct_string)){
+    if (contains_val(adduct_charges, adduct_string)){
         if (adduct_charges.at(adduct_string) != get_charge()){
             throw ConstraintViolationException("Provided charge '" + std::to_string(get_charge()) + "' in contradiction to adduct '" + adduct_string + "' charge '" + std::to_string(adduct_charges.at(adduct_string)) + "'.");
         }

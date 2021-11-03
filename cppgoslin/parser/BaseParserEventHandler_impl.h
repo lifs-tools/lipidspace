@@ -59,11 +59,11 @@ void BaseParserEventHandler<T>::sanity_check(){
 template <class T> 
 void BaseParserEventHandler<T>::handle_event(string event_name, TreeNode *node){
     if (debug == "full"){
-        string reg_event = contains_p(registered_events, event_name) ? "*" : "";
+        string reg_event = contains_val_p(registered_events, event_name) ? "*" : "";
         cout << event_name << reg_event << ": \"" << node->get_text() << "\"" << endl;
     }
         
-    if (contains_p(registered_events, event_name)){
+    if (contains_val_p(registered_events, event_name)){
         if (debug != "" && debug != "full"){
             cout << event_name << ": \"" << node->get_text() << "\"" << endl;
         }

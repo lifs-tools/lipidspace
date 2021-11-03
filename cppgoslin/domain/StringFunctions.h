@@ -37,10 +37,10 @@ SOFTWARE.
 #include <cctype>
 
 
-#define contains(X, Y) ((X).find(Y) != (X).end())
-#define contains_p(X, Y) ((X)->find(Y) != (X)->end())
-#define uncontains(X, Y) ((X).find(Y) == (X).end())
-#define uncontains_p(X, Y) ((X)->find(Y) == (X)->end())
+#define contains_val(X, Y) ((X).find(Y) != (X).end())
+#define contains_val_p(X, Y) ((X)->find(Y) != (X)->end())
+#define uncontains_val(X, Y) ((X).find(Y) == (X).end())
+#define uncontains_val_p(X, Y) ((X)->find(Y) == (X)->end())
 
 static const char DEFAULT_QUOTE = '\'';
 

@@ -29,7 +29,7 @@ SOFTWARE.
 LipidMolecularSpecies::LipidMolecularSpecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidSpecies(_headgroup, _fa) {
     info->level = MOLECULAR_SPECIES;
     for (auto fatty_acid : fa_list){
-        if (contains(fa, fatty_acid->name)){
+        if (contains_val(fa, fatty_acid->name)){
             throw ConstraintViolationException("FA names must be unique! FA with name " + fatty_acid->name + " was already added!");
         }
         fa.insert({fatty_acid->name, fatty_acid});

@@ -78,12 +78,12 @@ string FattyAcid::get_prefix(LipidFaBondType lipid_FA_bond_type){
     
 void FattyAcid::set_type(LipidFaBondType _lipid_FA_bond_type){
     lipid_FA_bond_type = _lipid_FA_bond_type;
-    if (lipid_FA_bond_type == LCB_REGULAR && uncontains_p(functional_groups, "[X]")){
+    if (lipid_FA_bond_type == LCB_REGULAR && uncontains_val_p(functional_groups, "[X]")){
         functional_groups->insert({"[X]", vector<FunctionalGroup*>()});
         functional_groups->at("[X]").push_back(KnownFunctionalGroups::get_functional_group("X"));
     }
         
-    else if (contains_p(functional_groups, "[X]")){
+    else if (contains_val_p(functional_groups, "[X]")){
         for (auto fg : functional_groups->at("[X]")){
             delete fg;
         }
@@ -179,7 +179,7 @@ string FattyAcid::to_string(LipidLevel level){
             vector<FunctionalGroup*> &fg_list = functional_groups->at(fg);
             if (fg_list.empty()) continue;
                 
-            if (contains(fg_exceptions, fg)){
+            if (contains_val(fg_exceptions, fg)){
                 fa_string << ";";
                 int i = 0;
                 for (auto func_group : fg_list){
@@ -225,7 +225,7 @@ ElementTable* FattyAcid::get_functional_group_elements(){
     ElementTable *elements = FunctionalGroup::get_functional_group_elements();
     
     // subtract the invisible [X] functional group for regular LCBs
-    if (lipid_FA_bond_type == LCB_REGULAR && contains_p(functional_groups, "O")){
+    if (lipid_FA_bond_type == LCB_REGULAR && contains_val_p(functional_groups, "O")){
         elements->at(ELEMENT_O) -= 1;
     }
         

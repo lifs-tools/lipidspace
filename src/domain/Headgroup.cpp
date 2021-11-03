@@ -34,7 +34,7 @@ Headgroup::Headgroup(string _headgroup, vector<HeadgroupDecorator*>* _decorators
     if (_decorators != 0){
         for (auto decorator : *_decorators) decorators->push_back(decorator);
     }
-    sp_exception = lipid_category == SP && contains(LipidClasses::get_instance().lipid_classes.at(lipid_class).special_cases, "SP_Exception") && decorators->size() == 0;
+    sp_exception = lipid_category == SP && contains_val(LipidClasses::get_instance().lipid_classes.at(lipid_class).special_cases, "SP_Exception") && decorators->size() == 0;
     
 }
 
@@ -171,7 +171,7 @@ string Headgroup::get_lipid_string(LipidLevel level){
 ElementTable* Headgroup::get_elements(){
     ClassMap &lipid_classes = LipidClasses::get_instance().lipid_classes;
     
-    if (use_headgroup || uncontains(lipid_classes, lipid_class)){
+    if (use_headgroup || uncontains_val(lipid_classes, lipid_class)){
         throw RuntimeException("Element table cannot be computed for lipid '" + headgroup + "'");
     }
     

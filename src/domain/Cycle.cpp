@@ -76,7 +76,7 @@ void Cycle::rearrange_functional_groups(FunctionalGroup* parent, int shift){
     double_bonds = new DoubleBonds();
     
     for (auto &kv : *functional_groups){
-        if (!contains_p(parent->functional_groups, kv.first)){
+        if (!contains_val_p(parent->functional_groups, kv.first)){
             parent->functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
         }
         parent->functional_groups->at(kv.first).insert(parent->functional_groups->at(kv.first).end(), functional_groups->at(kv.first).begin(), functional_groups->at(kv.first).end());
@@ -112,7 +112,7 @@ void Cycle::rearrange_functional_groups(FunctionalGroup* parent, int shift){
         
         for (auto func_group : kv.second){
             if (start <= func_group->position && func_group->position <= end && func_group != this){
-                if (!contains_p(functional_groups, kv.first)){
+                if (!contains_val_p(functional_groups, kv.first)){
                     functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
                 }
                 functional_groups->at(kv.first).push_back(func_group);

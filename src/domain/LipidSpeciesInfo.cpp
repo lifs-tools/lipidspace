@@ -32,7 +32,7 @@ LipidSpeciesInfo::LipidSpeciesInfo (LipidClass _lipid_class) : FattyAcid("info")
     num_specified_fa = 0;
     extended_class = ESTER;
     ClassMap &lipid_classes = LipidClasses::get_instance().lipid_classes;
-    total_fa = contains(lipid_classes, lipid_class) ? lipid_classes.at(lipid_class).max_num_fa : 0;
+    total_fa = contains_val(lipid_classes, lipid_class) ? lipid_classes.at(lipid_class).max_num_fa : 0;
 }
 
 
@@ -84,7 +84,7 @@ void LipidSpeciesInfo::add(FattyAcid* _fa){
         num_specified_fa += 1;
     }
     for (auto &kv : *(_fa->functional_groups)){
-        if (uncontains_p(functional_groups, kv.first)) functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
+        if (uncontains_val_p(functional_groups, kv.first)) functional_groups->insert({kv.first, vector<FunctionalGroup*>()});
         for (auto func_group : kv.second) {
             functional_groups->at(kv.first).push_back(func_group->copy());
         }
