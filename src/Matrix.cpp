@@ -1,4 +1,4 @@
-#include "LipidSpace/Matrix.h"
+#include "lipidspace/Matrix.h"
 
 
 Array::Array() : vector<double>(){

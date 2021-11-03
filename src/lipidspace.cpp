@@ -1,4 +1,4 @@
-#include "LipidSpace/lipidspace.h"
+#include "lipidspace/lipidspace.h"
  
  
 Node::Node(int index, string _name){
@@ -22,6 +22,7 @@ Node::Node(Node* n1, Node* n2, double d){
     distance = d;
 }
 
+/*
 double* Node::plot(int cnt, vector<string>* sorted_ticks){
     if (left_child == 0){
         sorted_ticks->push_back(name);
@@ -49,7 +50,7 @@ double* Node::plot(int cnt, vector<string>* sorted_ticks){
     
     return new double[3]{(xl + xr) / 2, yn, (double)cnt};
 }
-
+*/
 
 
 
@@ -58,14 +59,11 @@ double* Node::plot(int cnt, vector<string>* sorted_ticks){
 
 
 double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
-    int mi1 = 0, mi2 = 0;
     double v = 1e9 * (linkage == SINGLE);
     for (auto index1 : n1->indexes){
         for (auto index2 : n2->indexes){
             if ((linkage == COMPLETE && v < m(index1, index2)) || (linkage == SINGLE && v > m(index1, index2))){
                 v = m(index1, index2);
-                mi1 = index1;
-                mi2 = index2;
             }
         }
     }
@@ -78,7 +76,7 @@ double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
 
 
 
-
+/*
 
 void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string output_folder){
     string output_file = output_folder + "/" + "dendrogram.pdf";
@@ -131,7 +129,7 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string ou
     plt::close();
 }
 
-
+*/
 
 
 
@@ -144,6 +142,7 @@ LipidSpace::LipidSpace(){
     ignore_unknown_lipids = false;
     unboundend_distance = false;
     without_quant = false;
+    global_lipidome = 0;
     
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -220,6 +219,8 @@ const vector< vector< vector< vector<int> > > > LipidSpace::orders{
 
 LipidSpace::~LipidSpace(){
     for (auto lipid : all_lipids) delete lipid;
+    if (global_lipidome) delete global_lipidome;
+    for (auto table : lipidomes) delete table;
 }
 
 
@@ -228,7 +229,7 @@ LipidSpace::~LipidSpace(){
 
 
 void LipidSpace::cut_cycle(FattyAcid* fa){
-    if (uncontains_p(fa->functional_groups, "cy")) return;
+    if (uncontains_val_p(fa->functional_groups, "cy")) return;
 
     if (((Cycle*)fa->functional_groups->at("cy").at(0))->start > -1){
         int start = ((Cycle*)fa->functional_groups->at("cy").at(0))->start;
@@ -272,7 +273,7 @@ void LipidSpace::cut_cycle(FattyAcid* fa){
                 for (auto func_group : fa->functional_groups->at(fg)) all_fg.push_back(func_group);
                 fa->functional_groups->at(fg).clear();
                 for (auto func_group : all_fg){
-                    if (contains(keep_fg, func_group)){
+                    if (contains_val(keep_fg, func_group)){
                         fa->functional_groups->at(fg).push_back(func_group);
                     }
                     else {
@@ -315,37 +316,37 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     
     
     if (bond_types.size() == 1){ // both equal
-        if (contains(bond_types, ESTER)){
+        if (contains_val(bond_types, ESTER)){
             union_num += 2; // one oxygen plus one double bond
             inter_num += 2;
         }
-        if (contains(bond_types, ETHER_PLASMENYL)){
+        if (contains_val(bond_types, ETHER_PLASMENYL)){
             union_num += 1; // one double bond
             inter_num += 1;
         }
     }
     
-    else if (contains(bond_types, ESTER)){
-        if (contains(bond_types, ETHER_PLASMENYL)){
+    else if (contains_val(bond_types, ESTER)){
+        if (contains_val(bond_types, ETHER_PLASMENYL)){
             union_num += 3;
         }
         
-        else if (contains(bond_types, ETHER_PLASMANYL)){
+        else if (contains_val(bond_types, ETHER_PLASMANYL)){
             union_num += 2;
         }
         
-        else if (contains(bond_types, LCB_REGULAR) || contains(bond_types, LCB_EXCEPTION)){
+        else if (contains_val(bond_types, LCB_REGULAR) || contains_val(bond_types, LCB_EXCEPTION)){
             union_num += 2;
         }
     }
     
-    else if (contains(bond_types, LCB_EXCEPTION) || contains(bond_types, LCB_REGULAR)){
-        if (contains(bond_types, ETHER_PLASMENYL)){
+    else if (contains_val(bond_types, LCB_EXCEPTION) || contains_val(bond_types, LCB_REGULAR)){
+        if (contains_val(bond_types, ETHER_PLASMENYL)){
             union_num += 1;
         }
     }
         
-    else if (contains(bond_types, ETHER_PLASMENYL) && contains(bond_types, ETHER_PLASMANYL)){
+    else if (contains_val(bond_types, ETHER_PLASMENYL) && contains_val(bond_types, ETHER_PLASMANYL)){
         union_num += 1;
     }
         
@@ -355,8 +356,8 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
 
     
     // compare lengths
-    int m1 = contains(lcbs, fa1->lipid_FA_bond_type) * 2;
-    int m2 = contains(lcbs, fa2->lipid_FA_bond_type) * 2;
+    int m1 = contains_val(lcbs, fa1->lipid_FA_bond_type) * 2;
+    int m2 = contains_val(lcbs, fa2->lipid_FA_bond_type) * 2;
     
     inter_num += mmin(fa1->num_carbon - m1, fa2->num_carbon - m1);
     union_num += mmax(fa1->num_carbon - m2, fa2->num_carbon - m2);
@@ -367,7 +368,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     if (fa1->double_bonds->double_bond_positions.size() > 0 && fa2->double_bonds->double_bond_positions.size() > 0){
         int common = 0;
         for (auto kv : fa1->double_bonds->double_bond_positions){
-            common += contains(fa2->double_bonds->double_bond_positions, kv.first) && fa2->double_bonds->double_bond_positions.at(kv.first) == kv.second;
+            common += contains_val(fa2->double_bonds->double_bond_positions, kv.first) && fa2->double_bonds->double_bond_positions.at(kv.first) == kv.second;
         }
         
         inter_num += common;
@@ -397,7 +398,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
         if (key == "[X]") continue;
             
         // functional group occurs in both fatty acids
-        if (contains_p(fa2->functional_groups, key)){ // functional group occurs in both fatty acids
+        if (contains_val_p(fa2->functional_groups, key)){ // functional group occurs in both fatty acids
             
             // both func groups contain position information
             if (fa1->functional_groups->at(key).at(0)->position > -1 && fa2->functional_groups->at(key).at(0)->position > -1){
@@ -503,7 +504,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
 
 void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int& union_num, int& inter_num){
     string key = lipid1->get_extended_class() + "/" + lipid2->get_extended_class();
-    if (!contains(class_matrix, key)){
+    if (!contains_val(class_matrix, key)){
         cerr << "Error: key '" << key << "' not in precomputed class matrix" << endl;
         exit(-1);
     }
@@ -532,7 +533,7 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         }
         
         if (orig_fa_list_1->size() > orig_fa_list_2->size()){
-            for (int i = orig_fa_list_2->size(); i < orig_fa_list_1->size(); ++i){
+            for (int i = (int)orig_fa_list_2->size(); i < (int)orig_fa_list_1->size(); ++i){
                 FattyAcid* fa = orig_fa_list_1->at(i);
                 union_num += fa->get_double_bonds();
                 ElementTable* e = fa->get_elements();
@@ -646,7 +647,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
     vector<int> remove;
     
     #pragma omp parallel for
-    for (int i = 0; (int)i < lipids.size(); ++i) { 
+    for (int i = 0; i < (int)lipids.size(); ++i) { 
         string line = lipids.at(i);
         try {
             LipidAdduct* l = parser.parse_parallel(line);
@@ -782,8 +783,8 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
 
 
 
-void LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes, Matrix &distance_matrix){
-    int n = lipidomes->size();
+void LipidSpace::compute_hausdorff_matrix(Matrix &distance_matrix){
+    int n = lipidomes.size();
     distance_matrix.reset(n, n);
             
     #pragma omp parallel for
@@ -791,7 +792,7 @@ void LipidSpace::compute_hausdorff_matrix(vector<Table*>* lipidomes, Matrix &dis
         int i = ii / n;
         int j = ii % n;
         if (i < j){
-            distance_matrix(i, j) = compute_hausdorff_distance(lipidomes->at(i), lipidomes->at(j));
+            distance_matrix(i, j) = compute_hausdorff_distance(lipidomes.at(i), lipidomes.at(j));
             distance_matrix(j, i) = distance_matrix(i, j);
         }
     }
@@ -889,7 +890,7 @@ void automated_annotation(Array &xx, Array &yy, int l, Matrix &label_points){
 
 
 
-
+/*
 
 void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     string output_file_name = lipidome->file_name;
@@ -1013,20 +1014,20 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
     plt::close();
 }
 
+*/
 
 
 
 
 
 
-
-void LipidSpace::report_hausdorff_matrix(vector<Table*>* lipidomes, Matrix &distance_matrix, string output_folder){
+void LipidSpace::report_hausdorff_matrix(Matrix &distance_matrix, string output_folder){
     ofstream off(output_folder + "/hausdorff_distances.csv");
     vector<string> striped_names;
     int n = distance_matrix.rows;
     off << "ID";
     for (int i = 0; i < n; ++i){
-        vector<string>* tokens = split_string(lipidomes->at(i)->file_name, '/', '"');
+        vector<string>* tokens = split_string(lipidomes.at(i)->file_name, '/', '"');
         off << "\t" << tokens->back();
         striped_names.push_back(tokens->back());
         delete tokens;
@@ -1049,14 +1050,16 @@ void LipidSpace::report_hausdorff_matrix(vector<Table*>* lipidomes, Matrix &dist
 
 
 
-Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
+void LipidSpace::compute_global_distance_matrix(){
+    if (global_lipidome) delete global_lipidome;
+        
     set<string> registered_lipids;
-    Table* global_lipidome = new Table("global_lipidome");
+    global_lipidome = new Table("global_lipidome");
     
-    for (auto lipidome : *lipidomes){
-        for (int i = 0; (int)i < lipidome->species.size(); ++i){
+    for (auto lipidome : lipidomes){
+        for (int i = 0; i < (int)lipidome->species.size(); ++i){
             string lipid_species = lipidome->species.at(i);
-            if (contains(registered_lipids, lipid_species)) continue;
+            if (contains_val(registered_lipids, lipid_species)) continue;
             registered_lipids.insert(lipid_species);
             
             global_lipidome->species.push_back(lipid_species);
@@ -1109,8 +1112,6 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
         }
     }
     cout << endl;
-    
-    return global_lipidome;
 }
 
 
@@ -1121,13 +1122,13 @@ Table* LipidSpace::compute_global_distance_matrix(vector<Table*>* lipidomes){
 
 
 
-void LipidSpace::separate_matrixes(vector<Table*>* lipidomes, Table* global_lipidome){
+void LipidSpace::separate_matrixes(){
     map<string, int> lipid_indexes;
     for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
         lipid_indexes.insert({global_lipidome->species.at(i), i});
     }
     
-    for (auto lipidome : *lipidomes){
+    for (auto lipidome : lipidomes){
         Indexes indexes;
         for (auto lipid_species : lipidome->species) indexes.push_back(lipid_indexes.at(lipid_species));
         lipidome->m.rewrite(global_lipidome->m, indexes);
@@ -1141,7 +1142,7 @@ void LipidSpace::separate_matrixes(vector<Table*>* lipidomes, Table* global_lipi
 
 
 
-void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_lipidome){
+void LipidSpace::normalize_intensities(){
     Matrix &m = global_lipidome->m;
     
     double global_stdev = 0;
@@ -1149,7 +1150,7 @@ void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_
     global_stdev = sqrt(global_stdev / (double)m.rows);
     
     
-    for (auto lipidome : *lipidomes){
+    for (auto lipidome : lipidomes){
         
         Array &intensities = lipidome->intensities;
         double mean = 0, stdev = 0;
@@ -1174,7 +1175,7 @@ void LipidSpace::normalize_intensities(vector<Table*>* lipidomes, Table* global_
 
 
 
-void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
+void LipidSpace::load_table(string table_file){
     cout << "reading table '" << table_file << "'" << endl;
     
     // load and parse lipids
@@ -1197,7 +1198,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
             vector<string>* tokens = split_string(line, ',', '"', true);
             num_cols = tokens->size();
             for (int i = 1; i < (int)tokens->size(); ++i){
-                lipidomes->push_back(new Table(tokens->at(i)));
+                lipidomes.push_back(new Table(tokens->at(i)));
                 intensities.push_back(Array());
             }
             delete tokens;
@@ -1208,7 +1209,7 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
 
                                                                           
         vector<string>* tokens = split_string(line, ',', '"', true);
-        if (tokens->size() != num_cols) {
+        if ((int)tokens->size() != num_cols) {
             cerr << "Error in line '" << line_cnt << "' number of cells does not match with number of column labels" << endl;
             exit(-1);
         }
@@ -1247,8 +1248,8 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
         all_lipids.push_back(l);
         for (int i = 1; i < (int)tokens->size(); ++i){
             string val = tokens->at(i);
-            if (!contains(NA_VALUES, val)){
-                Table* lipidome = lipidomes->at(i - 1);
+            if (!contains_val(NA_VALUES, val)){
+                Table* lipidome = lipidomes.at(i - 1);
                 lipidome->lipids.push_back(l);
                 lipidome->species.push_back(l->get_lipid_string());
                 lipidome->classes.push_back(l->get_lipid_string(CLASS));
@@ -1259,8 +1260,8 @@ void LipidSpace::load_table(string table_file, vector<Table*>* lipidomes){
         delete tokens;
     }
         
-    for (int i = 0; i < (int)lipidomes->size(); ++i){
-        lipidomes->at(i)->intensities.reset(intensities.at(i));
+    for (int i = 0; i < (int)lipidomes.size(); ++i){
+        lipidomes.at(i)->intensities.reset(intensities.at(i));
     }
 }
 

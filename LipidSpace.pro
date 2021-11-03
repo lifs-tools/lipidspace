@@ -23,15 +23,15 @@ SOURCES += \
     src/MainWindow.cpp \
     src/lipidspacegui.cpp \
     src/Matrix.cpp \
-    #src/lipidspace.cpp \
+    src/lipidspace.cpp \
     src/canvas.cpp
 
 HEADERS += \
-    LipidSpace/lipidspacegui.h \
-    LipidSpace/canvas.h \
-    LipidSpace/Matrix.h \
-    #LipidSpace/lipidspace.h \
-    LipidSpace/matplotlibcpp.h
+    lipidspace/lipidspacegui.h \
+    lipidspace/canvas.h \
+    lipidspace/Matrix.h \
+    LipidSpace/lipidspace.h \
+    lipidspace/matplotlibcpp.h
 
 FORMS += \
     lipidspacegui.ui

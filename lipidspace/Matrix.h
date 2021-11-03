@@ -1,9 +1,8 @@
-#include "LipidSpace/lambda_lanczos.hpp"
+#include "lipidspace/lambda_lanczos.hpp"
 
 #include <vector>
 #include <math.h>
 #include <iostream>
-#include <chrono>
 #include <cassert>
 #include <cblas.h>
 

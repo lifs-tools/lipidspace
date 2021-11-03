@@ -1,4 +1,4 @@
-#include "LipidSpace/canvas.h"
+#include "lipidspace/canvas.h"
 
 
 Canvas::Canvas(QWidget *parent)

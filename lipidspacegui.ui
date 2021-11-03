@@ -5,7 +5,7 @@
    <customwidget>
     <class>Canvas</class>
     <extends>QWidget</extends>
-    <header>LipidSpace/canvas.h</header>
+    <header>lipidspace/canvas.h</header>
     <addpagemethod>addPage</addpagemethod>
     <propertyspecifications>
      <stringpropertyspecification name="fileName" notr="true" type="singleline" />
