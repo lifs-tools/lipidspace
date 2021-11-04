@@ -4,10 +4,12 @@
 PointSet::PointSet(int _len){
     len = _len;
     points = new QPointF[len];
+    intensities = new double[len];
 }
 
 PointSet::~PointSet(){
     delete []points;
+    delete []intensities;
 }
 
 
@@ -155,6 +157,7 @@ void Canvas::refreshCanvas(){
             y_max = max(y_max, yval);
             pointSets.back()->points[r].setX(xval);
             pointSets.back()->points[r].setY(yval);
+            pointSets.back()->intensities[r] = global_lipidome->intensities[r];
         }
     }
     else {
@@ -171,6 +174,7 @@ void Canvas::refreshCanvas(){
         for (int r = 0; r < lipidome->m.rows; ++r){
             pointSets.back()->points[r].setX(lipidome->m(r, 0) * PRECESION_FACTOR);
             pointSets.back()->points[r].setY(lipidome->m(r, 1) * PRECESION_FACTOR);
+            pointSets.back()->intensities[r] = lipidome->intensities[r];
         }
     }
     minMax.setRect(x_min, x_max, y_min, y_max);
@@ -185,8 +189,6 @@ void Canvas::refreshCanvas(){
     
     
     int tileRows = ceil((double)numTiles / (double)tileColumns);
-    double w_space = (double)width() * 0.02;
-    double h_space = (double)height() * 0.02;
     double w_rect = (double)width() * ((1. - 0.02 * ((double)tileColumns + 1.)) / (double)tileColumns);
     double h_rect = (double)height() * ((1. - 0.02 * ((double)tileRows + 1.)) / (double)tileRows);
     
@@ -205,28 +207,36 @@ void Canvas::paintEvent(QPaintEvent *){
     if (!pointSets.size()) return;
     
     
-    QPen pen2;
-    pen2.setWidth(10 * basescale);
-    pen2.setCapStyle(Qt::RoundCap);
-    pen2.setColor(QColor(0, 0, 0, 255));
     
     QPainter painter(this);
-    painter.setPen(pen);
-    pen.setWidth(10 * basescale);
-    pen.setCapStyle(Qt::RoundCap);
     painter.setBrush(brush);
     if (antialiased)
         painter.setRenderHint(QPainter::Antialiasing, true);
 
-    pen.setColor(QColor(255, 0, 0, 128));
-
+            
     for (auto pointSet : pointSets){
-        painter.save();
-        painter.translate(offset);
-        painter.translate(QPointF(pointSet->bound.x(), pointSet->bound.y()));
-        painter.scale(scaling / basescale, scaling / basescale);
-        painter.drawPoints(pointSet->points, pointSet->len);
-        painter.restore();
+        for (int i = 0; i < pointSet->len; ++i){
+            painter.save();
+            
+            painter.setClipRect(pointSet->bound);
+            
+            painter.translate(offset);
+            painter.translate(QPointF(pointSet->bound.x(), pointSet->bound.y()));
+            
+            double intens = pointSet->intensities[i] > 1 ? log(pointSet->intensities[i]) : 0.5; 
+            
+            painter.scale(scaling / basescale, scaling / basescale);
+            
+            
+            QPen pen;
+            pen.setColor(QColor(255, 0, 0, 128));
+            pen.setWidth(5. * intens * basescale);
+            pen.setCapStyle(Qt::RoundCap);
+            painter.setPen(pen);
+            
+            painter.drawPoint(pointSet->points[i]);
+            painter.restore();
+        }
     }
     
     

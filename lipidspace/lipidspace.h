@@ -13,6 +13,7 @@
 //#include "LipidSpace/matplotlibcpp.h"
 #include "lipidspace/Matrix.h"
 
+#define STD_POINT_SIZE 3
  
 using namespace std;
 //namespace plt = matplotlibcpp; 

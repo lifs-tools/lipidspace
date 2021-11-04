@@ -33,12 +33,17 @@ void LipidSpaceGUI::quitProgram(){
 
 
 void LipidSpaceGUI::openTable(){
-    
+    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid table", ".", "Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
+    if (file_name.length()){
+        lipid_space->load_table(file_name.toUtf8().constData());
+        lipid_space->run_analysis();
+        ui->canvas->refreshCanvas();
+    }
 }
 
 
 void LipidSpaceGUI::openLists(){
-    QStringList files = QFileDialog::getOpenFileNames(this, "Select one or more lipid lists", ".", "Lists (*.csv *.tsv *.txt)");
+    QStringList files = QFileDialog::getOpenFileNames(this, "Select one or more lipid lists", ".", "Lists *.csv *.tsv *.txt (*.csv *.tsv *.txt)");
     if (files.size()){
         for (QString file_name : files){
             lipid_space->lipidomes.push_back(lipid_space->load_list(file_name.toUtf8().constData()));

@@ -18,6 +18,7 @@ using namespace std;
 class PointSet {
 public:
     QPointF* points;
+    double* intensities;
     QRectF bound;
     int len;
     
@@ -48,7 +49,6 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    QPen pen;
     QBrush brush;
     bool antialiased;
     QPixmap pixmap;

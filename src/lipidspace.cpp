@@ -635,7 +635,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
             delete tokens;
         }
         else {
-            lipidome->intensities.push_back(1);
+            lipidome->intensities.push_back(STD_POINT_SIZE);
         }
         lipids.push_back(line);
         lipidome->lipids.push_back(0);
@@ -1072,7 +1072,7 @@ void LipidSpace::compute_global_distance_matrix(){
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
     global_lipidome->intensities.resize(n);
-    for (int i = 0; i < n; ++i)global_lipidome->intensities[i] = 3;
+    for (int i = 0; i < n; ++i)global_lipidome->intensities[i] = STD_POINT_SIZE;
     
     
     // compute distances
