@@ -19,6 +19,7 @@ public:
     ~LipidSpaceGUI();
     
     
+    
 public slots:
     void quitProgram();
     void openLists();

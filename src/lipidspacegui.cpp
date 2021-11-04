@@ -16,7 +16,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
     lipid_space->lipidomes.push_back(lipid_space->load_list("examples/500lipids.csv"));
     lipid_space->run_analysis();
     ui->canvas->refreshCanvas();
-    ui->canvas->update();
     */
 }
 
@@ -24,6 +23,8 @@ LipidSpaceGUI::~LipidSpaceGUI()
 {
     delete ui;
 }
+
+
 
 
 void LipidSpaceGUI::quitProgram(){
@@ -44,6 +45,5 @@ void LipidSpaceGUI::openLists(){
         }
         lipid_space->run_analysis();
         ui->canvas->refreshCanvas();
-        ui->canvas->update();
     }
 }

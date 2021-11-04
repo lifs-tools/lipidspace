@@ -15,6 +15,18 @@
 using namespace std;
 
 
+class PointSet {
+public:
+    QPointF* points;
+    QRectF bound;
+    int len;
+    
+    PointSet(int);
+    ~PointSet();
+    
+};
+
+
 class Canvas : public QWidget
 {
     Q_OBJECT
@@ -27,6 +39,8 @@ public:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void resizeEvent(QResizeEvent* event);
+
     void setLipidSpace(LipidSpace *_lipid_space);
     void refreshCanvas();
 
@@ -40,12 +54,17 @@ private:
     QPixmap pixmap;
     double scaling;
     double basescale;
-    QPoint offset;
+    QPointF offset;
     bool mousePressed;
-    QPoint deltaMouse;
-    QPoint oldOffset;
+    QPointF deltaMouse;
+    QPointF oldOffset;
     LipidSpace *lipid_space;
     double PRECESION_FACTOR;
+    int numTiles;
+    int tileColumns;
+    vector<PointSet*> pointSets;
+    QRectF minMax;
+    QPointF oldSize;
 };
 
 #endif /* CANVAS_H */
