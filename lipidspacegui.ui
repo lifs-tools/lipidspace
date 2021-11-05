@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>LipidSpaceGUI</class>
- <customwidgets>
-   <customwidget>
-    <class>Canvas</class>
-    <extends>QWidget</extends>
-    <header>lipidspace/canvas.h</header>
-    <addpagemethod>addPage</addpagemethod>
-    <propertyspecifications>
-     <stringpropertyspecification name="fileName" notr="true" type="singleline" />
-     <stringpropertyspecification name="text" type="richtext" />
-    </propertyspecifications>
-   </customwidget>
-  </customwidgets>
  <widget class="QMainWindow" name="LipidSpaceGUI">
   <property name="geometry">
    <rect>
@@ -60,7 +48,14 @@
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuAnalysis">
+    <property name="title">
+     <string>Analysis</string>
+    </property>
+    <addaction name="actionRemove_all_lipidomes"/>
+   </widget>
    <addaction name="menuLipidSpace"/>
+   <addaction name="menuAnalysis"/>
   </widget>
   <action name="actionLoad_list_s">
    <property name="text">
@@ -77,7 +72,19 @@
     <string>&amp;Quit</string>
    </property>
   </action>
+  <action name="actionRemove_all_lipidomes">
+   <property name="text">
+    <string>Remove all lipidomes</string>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Canvas</class>
+   <extends>QWidget</extends>
+   <header>lipidspace/canvas.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

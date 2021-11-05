@@ -1,15 +1,14 @@
 #include "lipidspace/canvas.h"
 
 
-PointSet::PointSet(int _len){
+PointSet::PointSet(int _len, Table *_table){
     len = _len;
+    table = _table;
     points = new QPointF[len];
-    intensities = new double[len];
 }
 
 PointSet::~PointSet(){
     delete []points;
-    delete []intensities;
 }
 
 
@@ -29,6 +28,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     basescale = -1;
     oldSize.setX(width());
     oldSize.setX(height());
+    color_counter = 0;
 }
 
 
@@ -36,6 +36,10 @@ Canvas::~Canvas(){
     for (auto pointSet : pointSets) delete pointSet;
 }
 
+
+
+const int Canvas::ALPHA = 128;
+const vector<QColor> Canvas::COLORS{QColor(239, 50, 36, ALPHA), QColor(241, 85, 35, ALPHA), QColor(249, 155, 30, ALPHA), QColor(249, 189, 25, ALPHA), QColor(243, 236, 58, ALPHA), QColor(208, 221, 55, ALPHA), QColor(98, 177, 70, ALPHA), QColor(20, 150, 206, ALPHA), QColor(61, 94, 172, ALPHA), QColor(70, 49, 145, ALPHA), QColor(124, 54, 151, ALPHA), QColor(167, 30, 72, ALPHA)};
 
 
 void Canvas::mousePressEvent(QMouseEvent *event){
@@ -91,10 +95,10 @@ void Canvas::setLipidSpace(LipidSpace *_lipid_space){
 void Canvas::resizeEvent(QResizeEvent* ){
     if (!lipid_space || !pointSets.size()) return;
     int tileRows = ceil((double)numTiles / (double)tileColumns);
-    double w_space = (double)width() * 0.02;
-    double h_space = (double)height() * 0.02;
-    double w_rect = (double)width() * ((1. - 0.02 * ((double)tileColumns + 1.)) / (double)tileColumns);
-    double h_rect = (double)height() * ((1. - 0.02 * ((double)tileRows + 1.)) / (double)tileRows);
+    double w_space = (double)width() * MARGIN;
+    double h_space = (double)height() * MARGIN;
+    double w_rect = (double)width() * ((1. - MARGIN * ((double)tileColumns + 1.)) / (double)tileColumns);
+    double h_rect = (double)height() * ((1. - MARGIN * ((double)tileRows + 1.)) / (double)tileRows);
     
     
     double dx = w_space;
@@ -130,9 +134,28 @@ void Canvas::resizeEvent(QResizeEvent* ){
 }
 
 
+
+void Canvas::resetCanvas(){
+    
+    colorMap.clear();
+    color_counter = 0;
+    numTiles = 0;
+    tileColumns = 0;
+    for (auto pointSet : pointSets) delete pointSet;
+    pointSets.clear();
+    oldSize.setX(0);
+    oldSize.setY(0);
+    update();
+}
+
+
+
+
 void Canvas::refreshCanvas(){
     if (!lipid_space) return;
     
+    colorMap.clear();
+    color_counter = 0;
     Table* global_lipidome = lipid_space->global_lipidome;
     numTiles = 1 + lipid_space->lipidomes.size();
     tileColumns = ceil(sqrt((double)numTiles));
@@ -147,7 +170,7 @@ void Canvas::refreshCanvas(){
     double y_min = 0;
     double y_max = 0;
     if (global_lipidome->m.cols >= 2){
-        pointSets.push_back(new PointSet(global_lipidome->m.rows));
+        pointSets.push_back(new PointSet(global_lipidome->m.rows, global_lipidome));
         for (int r = 0; r < global_lipidome->m.rows; ++r){
             double xval = global_lipidome->m(r, 0) * PRECESION_FACTOR;
             double yval = global_lipidome->m(r, 1) * PRECESION_FACTOR;
@@ -157,7 +180,7 @@ void Canvas::refreshCanvas(){
             y_max = max(y_max, yval);
             pointSets.back()->points[r].setX(xval);
             pointSets.back()->points[r].setY(yval);
-            pointSets.back()->intensities[r] = global_lipidome->intensities[r];
+            //pointSets.back()->table->intensities[r] = global_lipidome->intensities[r];
         }
     }
     else {
@@ -170,11 +193,11 @@ void Canvas::refreshCanvas(){
     
     
     for (Table* lipidome : lipid_space->lipidomes){
-        pointSets.push_back(new PointSet(lipidome->m.rows));
+        pointSets.push_back(new PointSet(lipidome->m.rows, lipidome));
         for (int r = 0; r < lipidome->m.rows; ++r){
             pointSets.back()->points[r].setX(lipidome->m(r, 0) * PRECESION_FACTOR);
             pointSets.back()->points[r].setY(lipidome->m(r, 1) * PRECESION_FACTOR);
-            pointSets.back()->intensities[r] = lipidome->intensities[r];
+            //pointSets.back()->intensities[r] = lipidome->intensities[r];
         }
     }
     minMax.setRect(x_min, x_max, y_min, y_max);
@@ -189,8 +212,8 @@ void Canvas::refreshCanvas(){
     
     
     int tileRows = ceil((double)numTiles / (double)tileColumns);
-    double w_rect = (double)width() * ((1. - 0.02 * ((double)tileColumns + 1.)) / (double)tileColumns);
-    double h_rect = (double)height() * ((1. - 0.02 * ((double)tileRows + 1.)) / (double)tileRows);
+    double w_rect = (double)width() * ((1. - MARGIN * ((double)tileColumns + 1.)) / (double)tileColumns);
+    double h_rect = (double)height() * ((1. - MARGIN * ((double)tileRows + 1.)) / (double)tileRows);
     
     double ox = w_rect * 0.5 - ((x_max + x_min) / 2 / basescale);
     double oy = h_rect * 0.5 - ((y_max + y_min) / 2 / basescale);
@@ -203,33 +226,42 @@ void Canvas::refreshCanvas(){
 }
 
     
-void Canvas::paintEvent(QPaintEvent *){
-    if (!pointSets.size()) return;
-    
-    
-    
+void Canvas::paintEvent(QPaintEvent *event){
+    const QRect & rect = event->rect();
     QPainter painter(this);
     painter.setBrush(brush);
-    if (antialiased)
-        painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.eraseRect(rect);
+    painter.setRenderHint(QPainter::Antialiasing);
+    
+    if (!pointSets.size()) return;
 
             
     for (auto pointSet : pointSets){
         for (int i = 0; i < pointSet->len; ++i){
             painter.save();
             
+            // setting clipping area
             painter.setClipRect(pointSet->bound);
             
+            
+            // transform area to according section
             painter.translate(offset);
             painter.translate(QPointF(pointSet->bound.x(), pointSet->bound.y()));
             
-            double intens = pointSet->intensities[i] > 1 ? log(pointSet->intensities[i]) : 0.5; 
+            // checking lipid class and selecting color
+            string lipid_class = pointSet->table->classes[i];
+            if (uncontains_val(colorMap, lipid_class)){
+                colorMap.insert({lipid_class, COLORS[color_counter++]});
+            }
+            
+            double intens = pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5; 
             
             painter.scale(scaling / basescale, scaling / basescale);
             
             
+            // setting up pen for painter
             QPen pen;
-            pen.setColor(QColor(255, 0, 0, 128));
+            pen.setColor(colorMap[lipid_class]);
             pen.setWidth(5. * intens * basescale);
             pen.setCapStyle(Qt::RoundCap);
             painter.setPen(pen);
@@ -241,13 +273,9 @@ void Canvas::paintEvent(QPaintEvent *){
     
     
     
-    painter.setRenderHint(QPainter::Antialiasing, false);
     painter.setPen(palette().dark().color());
     painter.setBrush(Qt::NoBrush);
     
-    for (auto pointSet : pointSets){
-        painter.drawRect(pointSet->bound);
-    }    
-    
+    for (auto pointSet : pointSets) painter.drawRect(pointSet->bound);
     painter.drawRect(QRect(0, 0, width() - 1, height() - 1));
 }

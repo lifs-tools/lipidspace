@@ -11,6 +11,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
+    connect(ui->actionRemove_all_lipidomes, SIGNAL(triggered()), this, SLOT(resetAnalysis()));
     
     /*
     lipid_space->lipidomes.push_back(lipid_space->load_list("examples/500lipids.csv"));
@@ -39,6 +40,12 @@ void LipidSpaceGUI::openTable(){
         lipid_space->run_analysis();
         ui->canvas->refreshCanvas();
     }
+}
+
+
+void LipidSpaceGUI::resetAnalysis(){
+    lipid_space->reset_analysis();
+    ui->canvas->resetCanvas();
 }
 
 

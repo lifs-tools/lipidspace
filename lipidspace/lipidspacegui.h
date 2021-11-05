@@ -24,6 +24,7 @@ public slots:
     void quitProgram();
     void openLists();
     void openTable();
+    void resetAnalysis();
 
 private:
     Ui::LipidSpaceGUI *ui;

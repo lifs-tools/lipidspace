@@ -31,7 +31,7 @@ HEADERS += \
     lipidspace/lipidspacegui.h \
     lipidspace/canvas.h \
     lipidspace/Matrix.h \
-    LipidSpace/lipidspace.h \
+    lipidspace/lipidspace.h \
     lipidspace/matplotlibcpp.h
 
 FORMS += \

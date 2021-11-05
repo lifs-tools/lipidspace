@@ -1308,3 +1308,18 @@ void LipidSpace::run_analysis(){
     normalize_intensities();
 }
 
+
+
+void LipidSpace::reset_analysis(){
+    
+    for (auto lipid : all_lipids) delete lipid;
+    all_lipids.clear();
+    
+    for (auto lipidome : lipidomes) delete lipidome;
+    lipidomes.clear();
+    
+    if (global_lipidome){
+        delete global_lipidome;
+        global_lipidome = 0;
+    }
+}
