@@ -37,8 +37,6 @@ class Canvas : public QWidget
     Q_OBJECT
 
 public:
-    static const vector<QColor> COLORS;
-    static const int ALPHA;
 
     explicit Canvas(QWidget *parent = nullptr);
     ~Canvas();
@@ -66,7 +64,7 @@ private:
     QPointF deltaMouse;
     QPointF oldOffset;
     LipidSpace *lipid_space;
-    double PRECESION_FACTOR;
+    int alpha;
     int numTiles;
     int tileColumns;
     vector<PointSet*> pointSets;
@@ -74,6 +72,9 @@ private:
     QPointF oldSize;
     map<string, QColor> colorMap;
     int color_counter;
+    
+    static const vector<QColor> COLORS;
+    static const double PRECESION_FACTOR;
 };
 
 #endif /* CANVAS_H */

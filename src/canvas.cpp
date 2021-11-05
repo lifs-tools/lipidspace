@@ -20,7 +20,6 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     setAutoFillBackground(true);
     lipid_space = 0;
     basescale = 1;
-    PRECESION_FACTOR = 10000.;
     numTiles = 0;
     tileColumns = 0;
     offset.setX(0);
@@ -29,6 +28,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     oldSize.setX(width());
     oldSize.setX(height());
     color_counter = 0;
+    alpha = 128;
 }
 
 
@@ -38,8 +38,10 @@ Canvas::~Canvas(){
 
 
 
-const int Canvas::ALPHA = 128;
+const double Canvas::PRECESION_FACTOR = 10000.;
 const vector<QColor> Canvas::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
+
+
 
 
 void Canvas::mousePressEvent(QMouseEvent *event){
@@ -70,6 +72,21 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
 
     
 void Canvas::wheelEvent(QWheelEvent *event){
+    
+    
+    QPoint mouse = event->pos();
+    int bound_num = -1;
+    for (int i = 0; i < (int)pointSets.size(); ++i){
+        PointSet *pointSet = pointSets[i];
+        QRectF &bound = pointSet->bound;
+        if (bound.x() <= mouse.x() && mouse.x() <= bound.x() + bound.width() && bound.x() <= mouse.x() && mouse.x() <= bound.x() + bound.width()){
+            bound_num = i;
+            break;
+        }
+            
+    }
+    if (bound_num < 0) return;
+    
     double old_scaling = scaling;
     if (event->angleDelta().y() < 0){
         if (scaling > 0.2) scaling /= 1.1;
@@ -77,9 +94,11 @@ void Canvas::wheelEvent(QWheelEvent *event){
     else {
         scaling *= 1.1;
     }
-    QPoint mouse = event->pos();
-    offset.setX(mouse.x() + (offset.x() - mouse.x()) / old_scaling * scaling);
-    offset.setY(mouse.y() + (offset.y() - mouse.y()) / old_scaling * scaling);
+    QRectF &bound = pointSets[bound_num]->bound;
+    double mx = mouse.x() - bound.x();
+    double my = mouse.y() - bound.y();
+    offset.setX(mx + (offset.x() - mx) / old_scaling * scaling);
+    offset.setY(my + (offset.y() - my) / old_scaling * scaling);
     
     update();
 }
@@ -262,7 +281,7 @@ void Canvas::paintEvent(QPaintEvent *event){
             // setting up pen for painter
             QPen pen;
             QColor qcolor = colorMap[lipid_class];
-            qcolor.setAlpha(ALPHA);
+            qcolor.setAlpha(alpha);
             pen.setColor(qcolor);
             pen.setWidth(7. * intens * basescale);
             pen.setCapStyle(Qt::RoundCap);

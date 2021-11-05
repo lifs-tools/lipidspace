@@ -54,8 +54,27 @@
     </property>
     <addaction name="actionRemove_all_lipidomes"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <widget class="QMenu" name="menuTile_layout">
+     <property name="title">
+      <string>Tile layout</string>
+     </property>
+     <addaction name="actionAutomatically"/>
+     <addaction name="separator"/>
+     <addaction name="action2_columns"/>
+     <addaction name="action3_columns"/>
+     <addaction name="action4_columns"/>
+     <addaction name="action5_columns"/>
+    </widget>
+    <addaction name="actionSet_transparency"/>
+    <addaction name="menuTile_layout"/>
+   </widget>
    <addaction name="menuLipidSpace"/>
    <addaction name="menuAnalysis"/>
+   <addaction name="menuView"/>
   </widget>
   <action name="actionLoad_list_s">
    <property name="text">
@@ -75,6 +94,36 @@
   <action name="actionRemove_all_lipidomes">
    <property name="text">
     <string>Remove all lipidomes</string>
+   </property>
+  </action>
+  <action name="actionSet_transparency">
+   <property name="text">
+    <string>Set transparency</string>
+   </property>
+  </action>
+  <action name="actionAutomatically">
+   <property name="text">
+    <string>Automatically</string>
+   </property>
+  </action>
+  <action name="action2_columns">
+   <property name="text">
+    <string>2 columns</string>
+   </property>
+  </action>
+  <action name="action3_columns">
+   <property name="text">
+    <string>3 columns</string>
+   </property>
+  </action>
+  <action name="action4_columns">
+   <property name="text">
+    <string>4 columns</string>
+   </property>
+  </action>
+  <action name="action5_columns">
+   <property name="text">
+    <string>5 columns</string>
    </property>
   </action>
  </widget>
