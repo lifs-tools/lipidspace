@@ -39,7 +39,7 @@ Canvas::~Canvas(){
 
 
 const int Canvas::ALPHA = 128;
-const vector<QColor> Canvas::COLORS{QColor(239, 50, 36, ALPHA), QColor(241, 85, 35, ALPHA), QColor(249, 155, 30, ALPHA), QColor(249, 189, 25, ALPHA), QColor(243, 236, 58, ALPHA), QColor(208, 221, 55, ALPHA), QColor(98, 177, 70, ALPHA), QColor(20, 150, 206, ALPHA), QColor(61, 94, 172, ALPHA), QColor(70, 49, 145, ALPHA), QColor(124, 54, 151, ALPHA), QColor(167, 30, 72, ALPHA)};
+const vector<QColor> Canvas::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
 
 
 void Canvas::mousePressEvent(QMouseEvent *event){
@@ -251,7 +251,7 @@ void Canvas::paintEvent(QPaintEvent *event){
             // checking lipid class and selecting color
             string lipid_class = pointSet->table->classes[i];
             if (uncontains_val(colorMap, lipid_class)){
-                colorMap.insert({lipid_class, COLORS[color_counter++]});
+                colorMap.insert({lipid_class, COLORS[color_counter++ % COLORS.size()]});
             }
             
             double intens = pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5; 
@@ -261,8 +261,10 @@ void Canvas::paintEvent(QPaintEvent *event){
             
             // setting up pen for painter
             QPen pen;
-            pen.setColor(colorMap[lipid_class]);
-            pen.setWidth(5. * intens * basescale);
+            QColor qcolor = colorMap[lipid_class];
+            qcolor.setAlpha(ALPHA);
+            pen.setColor(qcolor);
+            pen.setWidth(7. * intens * basescale);
             pen.setCapStyle(Qt::RoundCap);
             painter.setPen(pen);
             
