@@ -33,6 +33,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     color_counter = 0;
     alpha = 128;
     mainWindow = 0;
+    setMouseTracking(true);
 }
 
 
@@ -64,15 +65,46 @@ void Canvas::mouseReleaseEvent(QMouseEvent *){
 
 
 void Canvas::mouseMoveEvent(QMouseEvent *event){
+    QPoint mouse = event->pos();
+    
     if (mousePressed){
-        offset.setX(oldOffset.x() + (event->pos().x() - deltaMouse.x()));
-        offset.setY(oldOffset.y() + (event->pos().y() - deltaMouse.y()));
+        offset.setX(oldOffset.x() + (mouse.x() - deltaMouse.x()));
+        offset.setY(oldOffset.y() + (mouse.y() - deltaMouse.y()));
         update();
         return;
     }
+    // check if mouse is hovering over a lipid bubble
+    int bound_num = -1;
+    for (int i = 0; i < (int)pointSets.size(); ++i){
+        PointSet *pointSet = pointSets[i];
+        QRectF &bound = pointSet->bound;
+        if (bound.x() <= mouse.x() && mouse.x() <= bound.x() + bound.width() && bound.y() <= mouse.y() && mouse.y() <= bound.y() + bound.height()){
+            bound_num = i;
+            break;
+        }
+            
+    }
+    if (bound_num < 0) return;
     
+    int lipid_num = -1;
+    PointSet *pointSet = pointSets[bound_num];
+    QPointF *points = pointSet->points;
     
-    showMessage("haha");
+    QStringList lipid_names;
+    for (int i = 0; i < pointSet->len; ++i){
+        double xx = points[i].x() / basescale * scaling + offset.x() + pointSet->bound.x();
+        double yy = points[i].y() / basescale * scaling + offset.y() + pointSet->bound.y();
+        double intens = pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5; 
+        double margin = POINT_BASE_SIZE * 0.5 * intens * scaling;
+        if (sq(mouse.x() - xx) + sq(mouse.y() - yy) <= sq(margin)){
+            lipid_names.push_back(QString(pointSet->table->species[i].c_str()));
+        }
+    }
+    double intens = pointSet->table->intensities[0] > 1 ? log(pointSet->table->intensities[0]) : 0.5;
+    double mgn = 3.5 * intens * scaling;
+    
+    if (!lipid_names.size()) showMessage("");
+    else showMessage(lipid_names.join(", "));
 }
 
 
@@ -300,10 +332,10 @@ void Canvas::paintEvent(QPaintEvent *event){
             
             // setting up pen for painter
             QPen pen;
-            QColor qcolor = colorMap[lipid_class];
+            QColor qcolor = i > 0 ? colorMap[lipid_class] : QColor(0, 0, 0, 255);
             qcolor.setAlpha(alpha);
             pen.setColor(qcolor);
-            pen.setWidth(7. * intens * basescale);
+            pen.setWidth(POINT_BASE_SIZE * intens * basescale);
             pen.setCapStyle(Qt::RoundCap);
             painter.setPen(pen);
             

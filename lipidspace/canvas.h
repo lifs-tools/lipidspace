@@ -19,6 +19,7 @@
 using namespace std;
 
 #define MARGIN 0.01
+#define POINT_BASE_SIZE 7.0
 
 
 class PointSet {

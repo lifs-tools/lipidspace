@@ -12,7 +12,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
     connect(ui->actionRemove_all_lipidomes, SIGNAL(triggered()), this, SLOT(resetAnalysis()));
-    connect(ui->canvas, SIGNAL(showMessage(QString message)), this, SLOT(showMessage(QString message)));
+    connect(ui->canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
 }
 
 LipidSpaceGUI::~LipidSpaceGUI()
