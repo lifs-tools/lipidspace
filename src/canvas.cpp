@@ -5,6 +5,9 @@ PointSet::PointSet(int _len, Table *_table){
     len = _len;
     table = _table;
     points = new QPointF[len];
+    
+    QFileInfo qFileInfo(table->file_name.c_str());
+    title = qFileInfo.baseName();
 }
 
 PointSet::~PointSet(){
@@ -29,6 +32,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     oldSize.setX(height());
     color_counter = 0;
     alpha = 128;
+    mainWindow = 0;
 }
 
 
@@ -64,7 +68,11 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         offset.setX(oldOffset.x() + (event->pos().x() - deltaMouse.x()));
         offset.setY(oldOffset.y() + (event->pos().y() - deltaMouse.y()));
         update();
+        return;
     }
+    
+    
+    showMessage("haha");
 }
 
 
@@ -79,7 +87,7 @@ void Canvas::wheelEvent(QWheelEvent *event){
     for (int i = 0; i < (int)pointSets.size(); ++i){
         PointSet *pointSet = pointSets[i];
         QRectF &bound = pointSet->bound;
-        if (bound.x() <= mouse.x() && mouse.x() <= bound.x() + bound.width() && bound.x() <= mouse.x() && mouse.x() <= bound.x() + bound.width()){
+        if (bound.x() <= mouse.x() && mouse.x() <= bound.x() + bound.width() && bound.y() <= mouse.y() && mouse.y() <= bound.y() + bound.height()){
             bound_num = i;
             break;
         }
@@ -105,8 +113,9 @@ void Canvas::wheelEvent(QWheelEvent *event){
 
 
 
-void Canvas::setLipidSpace(LipidSpace *_lipid_space){
+void Canvas::setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow){
     lipid_space = _lipid_space;
+    mainWindow = _mainWindow;
 }
 
 
@@ -176,7 +185,7 @@ void Canvas::refreshCanvas(){
     colorMap.clear();
     color_counter = 0;
     Table* global_lipidome = lipid_space->global_lipidome;
-    numTiles = 1 + lipid_space->lipidomes.size();
+    numTiles = (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
     tileColumns = ceil(sqrt((double)numTiles));
     
     
@@ -188,37 +197,48 @@ void Canvas::refreshCanvas(){
     double x_max = 0;
     double y_min = 0;
     double y_max = 0;
-    if (global_lipidome->m.cols >= 2){
-        pointSets.push_back(new PointSet(global_lipidome->m.rows, global_lipidome));
-        for (int r = 0; r < global_lipidome->m.rows; ++r){
-            double xval = global_lipidome->m(r, 0) * PRECESION_FACTOR;
-            double yval = global_lipidome->m(r, 1) * PRECESION_FACTOR;
+    // add only global lipidome when we have more than one lipidome
+    if (lipid_space->lipidomes.size() > 1){
+        if (global_lipidome->m.cols >= 2){
+            pointSets.push_back(new PointSet(global_lipidome->m.rows, global_lipidome));
+            
+            for (int r = 0; r < global_lipidome->m.rows; ++r){
+                double xval = global_lipidome->m(r, 0) * PRECESION_FACTOR;
+                double yval = global_lipidome->m(r, 1) * PRECESION_FACTOR;
+                x_min = min(x_min, xval);
+                x_max = max(x_max, xval);
+                y_min = min(y_min, yval);
+                y_max = max(y_max, yval);
+                pointSets.back()->points[r].setX(xval);
+                pointSets.back()->points[r].setY(yval);
+            }
+        }
+        else {
+            return;
+        }
+        x_min *= 1.1;
+        x_max *= 1.1;
+        y_min *= 1.1;
+        y_max *= 1.1;
+    }
+    
+    for (Table* lipidome : lipid_space->lipidomes){
+        pointSets.push_back(new PointSet(lipidome->m.rows, lipidome));
+        for (int r = 0; r < lipidome->m.rows; ++r){
+            double xval = lipidome->m(r, 0) * PRECESION_FACTOR;
+            double yval = lipidome->m(r, 1) * PRECESION_FACTOR;
             x_min = min(x_min, xval);
             x_max = max(x_max, xval);
             y_min = min(y_min, yval);
             y_max = max(y_max, yval);
             pointSets.back()->points[r].setX(xval);
             pointSets.back()->points[r].setY(yval);
-            //pointSets.back()->table->intensities[r] = global_lipidome->intensities[r];
         }
-    }
-    else {
-        return;
     }
     x_min *= 1.1;
     x_max *= 1.1;
     y_min *= 1.1;
     y_max *= 1.1;
-    
-    
-    for (Table* lipidome : lipid_space->lipidomes){
-        pointSets.push_back(new PointSet(lipidome->m.rows, lipidome));
-        for (int r = 0; r < lipidome->m.rows; ++r){
-            pointSets.back()->points[r].setX(lipidome->m(r, 0) * PRECESION_FACTOR);
-            pointSets.back()->points[r].setY(lipidome->m(r, 1) * PRECESION_FACTOR);
-            //pointSets.back()->intensities[r] = lipidome->intensities[r];
-        }
-    }
     minMax.setRect(x_min, x_max, y_min, y_max);
     
     
@@ -297,6 +317,14 @@ void Canvas::paintEvent(QPaintEvent *event){
     painter.setPen(palette().dark().color());
     painter.setBrush(Qt::NoBrush);
     
-    for (auto pointSet : pointSets) painter.drawRect(pointSet->bound);
+    QFont f("Helvetica", 8);
+    painter.setFont(f);
+    
+    for (auto pointSet : pointSets){
+        QRectF textBound(pointSet->bound);
+        textBound.setX(textBound.x() + 5);
+        painter.drawText(textBound, Qt::AlignTop | Qt::AlignLeft, pointSet->title);
+        painter.drawRect(pointSet->bound);
+    }
     painter.drawRect(QRect(0, 0, width() - 1, height() - 1));
 }

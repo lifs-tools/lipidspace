@@ -3,11 +3,13 @@
 
 #include <QBrush>
 #include <QPen>
+#include <QFileInfo>
 #include <QPixmap>
 #include <QWidget>
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>
+#include <QMainWindow>
 #include <iostream>
 #include <vector>
 #include <map>
@@ -25,6 +27,7 @@ public:
     Table* table;
     QRectF bound;
     int len;
+    QString title;
     
     PointSet(int, Table* _table);
     ~PointSet();
@@ -46,12 +49,15 @@ public:
     void mouseReleaseEvent(QMouseEvent *event);
     void resizeEvent(QResizeEvent* event);
 
-    void setLipidSpace(LipidSpace *_lipid_space);
+    void setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow);
     void refreshCanvas();
     void resetCanvas();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    
+signals:
+    void showMessage(QString message);
 
 private:
     QBrush brush;
@@ -72,6 +78,7 @@ private:
     QPointF oldSize;
     map<string, QColor> colorMap;
     int color_counter;
+    QMainWindow *mainWindow;
     
     static const vector<QColor> COLORS;
     static const double PRECESION_FACTOR;

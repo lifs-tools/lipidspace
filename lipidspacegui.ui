@@ -76,6 +76,7 @@
    <addaction name="menuAnalysis"/>
    <addaction name="menuView"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad_list_s">
    <property name="text">
     <string>Import &amp;list(s)</string>

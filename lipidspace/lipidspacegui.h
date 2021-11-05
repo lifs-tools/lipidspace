@@ -25,6 +25,7 @@ public slots:
     void openLists();
     void openTable();
     void resetAnalysis();
+    void showMessage(QString message);
 
 private:
     Ui::LipidSpaceGUI *ui;
