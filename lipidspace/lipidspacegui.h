@@ -33,6 +33,7 @@ public slots:
     void updateGUI();
     void showHideDendrogram();
     void showHideGlobalLipidome();
+    void showHideQuant();
     void setAutomaticLayout();
     void set1ColumnLayout();
     void set2ColumnLayout();
@@ -40,10 +41,12 @@ public slots:
     void set4ColumnLayout();
     void set5ColumnLayout();
     void set6ColumnLayout();
+    void setSnPositions();
 
 private:
     Ui::LipidSpaceGUI *ui;
     LipidSpace* lipid_space;
+    bool showQuant;
     bool showDendrogram;
     bool showGlobalLipidome;
     TileLayout tileLayout;

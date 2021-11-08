@@ -16,7 +16,7 @@ PointSet::~PointSet(){
 
 
 Canvas::Canvas(QWidget *parent) : QWidget(parent){
-    mousePressed = false;
+    mousePressed = Qt::NoButton;
     antialiased = true;
     scaling = 1.;
     setBackgroundRole(QPalette::Base);
@@ -35,8 +35,13 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     mainWindow = 0;
     setMouseTracking(true);
     tileLayout = 0;
+    showQuant = true;
     showDendrogram = true;
     showGlobalLipidome = true;
+    movePointSet.setRect(0, 0, 0, 0);
+    movePointSetStart.setX(0.);
+    movePointSetStart.setY(0.);
+    moveSet = -1;
 }
 
 
@@ -46,36 +51,104 @@ Canvas::~Canvas(){
 
 
 
+
+
+
 const double Canvas::PRECESION_FACTOR = 10000.;
 const vector<QColor> Canvas::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
 
 
 
 
+
+
+
 void Canvas::mousePressEvent(QMouseEvent *event){
-    if (!mousePressed){
-        mousePressed = true;
+    if (mousePressed == Qt::NoButton){
+        mousePressed = event->button();
         deltaMouse = event->pos();
         oldOffset = QPoint(offset.x(), offset.y());
+        
+        if (mousePressed == Qt::RightButton){
+            QPoint mouse = event->pos();
+            int bound_num = -1;
+            for (int i = 0; i < (int)pointSets.size(); ++i){
+                PointSet *pointSet = pointSets[i];
+                QRectF &bound = pointSet->bound;
+                if (bound.x() <= mouse.x() && mouse.x() <= bound.x() + bound.width() && bound.y() <= mouse.y() && mouse.y() <= bound.y() + bound.height()){
+                    bound_num = i;
+                    break;
+                }
+            }
+            if (bound_num >= showGlobalLipidome){
+                movePointSet.setRect(pointSets[bound_num]->bound.x(), pointSets[bound_num]->bound.y(), pointSets[bound_num]->bound.width(), pointSets[bound_num]->bound.height());
+                movePointSetStart.setX(pointSets[bound_num]->bound.x());
+                movePointSetStart.setY(pointSets[bound_num]->bound.y());
+                moveSet = bound_num;
+            }
+        }
     }
+    
     
 }
 
 
-void Canvas::mouseReleaseEvent(QMouseEvent *){
-    mousePressed = false;
+
+
+
+
+void Canvas::mouseReleaseEvent(QMouseEvent *event){
+    
+    if (mousePressed == Qt::RightButton){
+        int bound_num = -1;
+        QPoint mouse = event->pos();
+        for (int i = 0; i < (int)pointSets.size(); ++i){
+            PointSet *pointSet = pointSets[i];
+            QRectF &bound = pointSet->bound;
+            if (bound.x() <= mouse.x() && mouse.x() <= bound.x() + bound.width() && bound.y() <= mouse.y() && mouse.y() <= bound.y() + bound.height()){
+                bound_num = i;
+                break;
+            }
+                
+        }
+        if (bound_num >= showGlobalLipidome && moveSet > -1) {
+            if (bound_num != moveSet){
+                swap(pointSets[moveSet]->bound, pointSets[bound_num]->bound);
+                swap(pointSets[moveSet], pointSets[bound_num]);
+                swap(lipid_space->lipidomes[moveSet], lipid_space->lipidomes[bound_num]);
+            }
+        }
+    }
+    
+    mousePressed = Qt::NoButton;
+    movePointSet.setRect(0, 0, 0, 0);
+    moveSet = -1;
+    update();
 }
+
+
+
+
 
 
 void Canvas::mouseMoveEvent(QMouseEvent *event){
     QPoint mouse = event->pos();
     
-    if (mousePressed){
+    if (mousePressed == Qt::LeftButton){
         offset.setX(oldOffset.x() + (mouse.x() - deltaMouse.x()));
         offset.setY(oldOffset.y() + (mouse.y() - deltaMouse.y()));
         update();
         return;
     }
+    
+    else if (mousePressed == Qt::RightButton && pointSets.size() > 2){
+        movePointSet.setRect(movePointSetStart.x() + (mouse.x() - deltaMouse.x()),movePointSetStart.y() + (mouse.y() - deltaMouse.y()), movePointSet.width(), movePointSet.height());
+        update();
+        return;
+    }
+    
+    
+    
     // check if mouse is hovering over a lipid bubble
     int bound_num = -1;
     for (int i = 0; i < (int)pointSets.size(); ++i){
@@ -90,6 +163,8 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     if (bound_num < 0) return;
     
     
+    
+    
     PointSet *pointSet = pointSets[bound_num];
     QPointF *points = pointSet->points;
     
@@ -97,7 +172,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     for (int i = 0; i < pointSet->len; ++i){
         double xx = points[i].x() / basescale * scaling + offset.x() + pointSet->bound.x();
         double yy = points[i].y() / basescale * scaling + offset.y() + pointSet->bound.y();
-        double intens = pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5; 
+        double intens = showQuant ? (pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5) : 1.;
         double margin = POINT_BASE_SIZE * 0.5 * intens * scaling;
         if (sq(mouse.x() - xx) + sq(mouse.y() - yy) <= sq(margin)){
             lipid_names.push_back(QString(pointSet->table->species[i].c_str()));
@@ -221,6 +296,11 @@ void Canvas::setLayout(int _tileLayout){
 }
 
 
+void Canvas::showHideQuant(bool _showQuant){
+    showQuant = _showQuant;
+}
+
+
 void Canvas::showHideDendrogram(bool _showDendrogram){
     showDendrogram = _showDendrogram;
 }
@@ -241,8 +321,8 @@ void Canvas::refreshCanvas(){
     colorMap.clear();
     color_counter = 0;
     Table* global_lipidome = lipid_space->global_lipidome;
-    numTiles = (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
-    tileColumns = ceil(sqrt((double)numTiles));
+    numTiles = (lipid_space->lipidomes.size() > 1 && showGlobalLipidome) + lipid_space->lipidomes.size();
+    tileColumns = tileLayout == 0 ? ceil(sqrt((double)numTiles)) : tileLayout;
     
     
     if (!global_lipidome) return;
@@ -325,7 +405,6 @@ void Canvas::refreshCanvas(){
 void Canvas::paintEvent(QPaintEvent *event){
     const QRect & rect = event->rect();
     QPainter painter(this);
-    painter.setBrush(brush);
     painter.eraseRect(rect);
     painter.setRenderHint(QPainter::Antialiasing);
     
@@ -350,7 +429,7 @@ void Canvas::paintEvent(QPaintEvent *event){
                 colorMap.insert({lipid_class, COLORS[color_counter++ % COLORS.size()]});
             }
             
-            double intens = pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5; 
+            double intens = showQuant ? (pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5) : 1.;
             
             painter.scale(scaling / basescale, scaling / basescale);
             
@@ -384,4 +463,13 @@ void Canvas::paintEvent(QPaintEvent *event){
         painter.drawRect(pointSet->bound);
     }
     painter.drawRect(QRect(0, 0, width() - 1, height() - 1));
+    
+    
+    if (movePointSet.width() > 0){
+        QPen movePen;
+        QColor qc = QColor(0, 110, 255, 50);
+        movePen.setColor(qc);
+        painter.setPen(movePen);
+        painter.fillRect(movePointSet, qc);
+    }
 }

@@ -14,6 +14,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
     connect(ui->canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
     
     connect(ui->actionAutomatically, SIGNAL(triggered()), this, SLOT(setAutomaticLayout()));
+    connect(ui->actionShow_quantitative_information, SIGNAL(triggered()), this, SLOT(showHideQuant()));
     connect(ui->actionShow_global_lipidome, SIGNAL(triggered()), this, SLOT(showHideGlobalLipidome()));
     connect(ui->actionShow_dendrogram, SIGNAL(triggered()), this, SLOT(showHideDendrogram()));
     connect(ui->action1_column, SIGNAL(triggered()), this, SLOT(set1ColumnLayout()));
@@ -22,8 +23,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
     connect(ui->action4_columns, SIGNAL(triggered()), this, SLOT(set4ColumnLayout()));
     connect(ui->action5_columns, SIGNAL(triggered()), this, SLOT(set5ColumnLayout()));
     connect(ui->action6_columns, SIGNAL(triggered()), this, SLOT(set6ColumnLayout()));
+    connect(ui->actionIgnoring_lipid_sn_positions, SIGNAL(triggered()), this, SLOT(setSnPositions()));
     
     tileLayout = AUTOMATIC;
+    showQuant = true;
     showDendrogram = true;
     showGlobalLipidome = true;
     updating = false;
@@ -97,6 +100,12 @@ void LipidSpaceGUI::showHideGlobalLipidome(){
     updateGUI();
 }
 
+void LipidSpaceGUI::showHideQuant(){
+    showQuant = ui->actionShow_quantitative_information->isChecked();
+    ui->canvas->showHideQuant(showQuant);
+    ui->canvas->update();
+}
+
 
 void LipidSpaceGUI::setAutomaticLayout(){
     if (updating) return;
@@ -147,6 +156,14 @@ void LipidSpaceGUI::set6ColumnLayout(){
 }
 
 
+void LipidSpaceGUI::setSnPositions(){
+    lipid_space->keep_sn_position = !ui->actionIgnoring_lipid_sn_positions->isChecked();
+    lipid_space->run_analysis();
+    updateGUI();
+    ui->canvas->refreshCanvas();
+}
+
+
 void LipidSpaceGUI::updateGUI(){
     updating = true;
     
@@ -173,6 +190,7 @@ void LipidSpaceGUI::updateGUI(){
     
     updating = false;
     ui->canvas->setLayout((int)tileLayout);
+    ui->canvas->showHideQuant(showQuant);
     ui->canvas->showHideDendrogram(showDendrogram);
     ui->canvas->showHideGlobalLipidome(showGlobalLipidome);
     ui->canvas->refreshCanvas();

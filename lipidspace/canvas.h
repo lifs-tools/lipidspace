@@ -19,7 +19,7 @@
 using namespace std;
 
 #define MARGIN 0.01
-#define POINT_BASE_SIZE 7.0
+#define POINT_BASE_SIZE 2.0
 
 class PointSet {
 public:
@@ -54,8 +54,9 @@ public:
     void resetCanvas();
     
     void setLayout(int tileLayout);
-    void showHideDendrogram(bool showDendrogram);
-    void showHideGlobalLipidome(bool showGlobalLipidome);
+    void showHideQuant(bool _showQuant);
+    void showHideDendrogram(bool _showDendrogram);
+    void showHideGlobalLipidome(bool _showGlobalLipidome);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -64,13 +65,12 @@ signals:
     void showMessage(QString message);
 
 private:
-    QBrush brush;
     bool antialiased;
     QPixmap pixmap;
     double scaling;
     double basescale;
     QPointF offset;
-    bool mousePressed;
+    Qt::MouseButton mousePressed;
     QPointF deltaMouse;
     QPointF oldOffset;
     LipidSpace *lipid_space;
@@ -79,10 +79,14 @@ private:
     int tileColumns;
     vector<PointSet*> pointSets;
     QRectF minMax;
+    QRectF movePointSet;
+    QPointF movePointSetStart;
+    int moveSet;
     QPointF oldSize;
     map<string, QColor> colorMap;
     int color_counter;
     QMainWindow *mainWindow;
+    bool showQuant;
     bool showDendrogram;
     bool showGlobalLipidome;
     int tileLayout;

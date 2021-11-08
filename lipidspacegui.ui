@@ -53,6 +53,7 @@
      <string>Analysis</string>
     </property>
     <addaction name="actionRemove_all_lipidomes"/>
+    <addaction name="actionIgnoring_lipid_sn_positions"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -76,6 +77,7 @@
     <addaction name="separator"/>
     <addaction name="actionShow_global_lipidome"/>
     <addaction name="actionShow_dendrogram"/>
+    <addaction name="actionShow_quantitative_information"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -204,6 +206,25 @@
   <action name="actionLog_messages">
    <property name="text">
     <string>Log messages</string>
+   </property>
+  </action>
+  <action name="actionShow_quantitative_information">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show quantitative information</string>
+   </property>
+  </action>
+  <action name="actionIgnoring_lipid_sn_positions">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ignoring lipid sn-positions</string>
    </property>
   </action>
  </widget>

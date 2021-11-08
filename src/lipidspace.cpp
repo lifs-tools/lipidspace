@@ -138,7 +138,7 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string ou
 
 LipidSpace::LipidSpace(){
     cols_for_pca = 7;
-    keep_sn_position = false;
+    keep_sn_position = true;
     ignore_unknown_lipids = false;
     unboundend_distance = false;
     without_quant = false;
