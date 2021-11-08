@@ -4,8 +4,7 @@
 LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::LipidSpaceGUI),
-    lipid_space(_lipid_space)
-{
+    lipid_space(_lipid_space){
     ui->setupUi(this);
     ui->canvas->setInputClasses(lipid_space, this);
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
@@ -14,13 +13,24 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
     connect(ui->actionRemove_all_lipidomes, SIGNAL(triggered()), this, SLOT(resetAnalysis()));
     connect(ui->canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
     
+    connect(ui->actionAutomatically, SIGNAL(triggered()), this, SLOT(setAutomaticLayout()));
+    connect(ui->actionShow_global_lipidome, SIGNAL(triggered()), this, SLOT(showHideGlobalLipidome()));
+    connect(ui->actionShow_dendrogram, SIGNAL(triggered()), this, SLOT(showHideDendrogram()));
+    connect(ui->action1_column, SIGNAL(triggered()), this, SLOT(set1ColumnLayout()));
+    connect(ui->action2_columns, SIGNAL(triggered()), this, SLOT(set2ColumnLayout()));
+    connect(ui->action3_columns, SIGNAL(triggered()), this, SLOT(set3ColumnLayout()));
+    connect(ui->action4_columns, SIGNAL(triggered()), this, SLOT(set4ColumnLayout()));
+    connect(ui->action5_columns, SIGNAL(triggered()), this, SLOT(set5ColumnLayout()));
+    connect(ui->action6_columns, SIGNAL(triggered()), this, SLOT(set6ColumnLayout()));
+    
     tileLayout = AUTOMATIC;
     showDendrogram = true;
     showGlobalLipidome = true;
+    updating = false;
+    updateGUI();
 }
 
-LipidSpaceGUI::~LipidSpaceGUI()
-{
+LipidSpaceGUI::~LipidSpaceGUI(){
     delete ui;
 }
 
@@ -37,6 +47,7 @@ void LipidSpaceGUI::openTable(){
     if (file_name.length()){
         try {
             lipid_space->load_table(file_name.toUtf8().constData());
+            updateGUI();
             lipid_space->run_analysis();
             ui->canvas->refreshCanvas();
         }
@@ -55,6 +66,7 @@ void LipidSpaceGUI::openTable(){
                 resetAnalysis();
                 
                 lipid_space->load_table(file_name.toUtf8().constData());
+                updateGUI();
                 lipid_space->run_analysis();
                 ui->canvas->refreshCanvas();
             }
@@ -66,6 +78,7 @@ void LipidSpaceGUI::openTable(){
 void LipidSpaceGUI::resetAnalysis(){
     lipid_space->reset_analysis();
     ui->canvas->resetCanvas();
+    updateGUI();
 }
 
 
@@ -74,8 +87,95 @@ void LipidSpaceGUI::showMessage(QString message){
 }
 
 
-void updateGUI(){
+void LipidSpaceGUI::showHideDendrogram(){
+    showDendrogram = ui->actionShow_dendrogram->isChecked();
+    updateGUI();
+}
+
+void LipidSpaceGUI::showHideGlobalLipidome(){
+    showGlobalLipidome = ui->actionShow_global_lipidome->isChecked();
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::setAutomaticLayout(){
+    if (updating) return;
+    tileLayout = AUTOMATIC;
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::set1ColumnLayout(){
+    if (updating) return;
+    tileLayout = ONE_COLULMN;
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::set2ColumnLayout(){
+    if (updating) return;
+    tileLayout = TWO_COLUMNS;
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::set3ColumnLayout(){
+    if (updating) return;
+    tileLayout = THREE_COLUMNS;
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::set4ColumnLayout(){
+    if (updating) return;
+    tileLayout = FOUR_COLUMNS;
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::set5ColumnLayout(){
+    if (updating) return;
+    tileLayout = FIVE_COLUMNS;
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::set6ColumnLayout(){
+    if (updating) return;
+    tileLayout = SIX_COLUMNS;
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::updateGUI(){
+    updating = true;
     
+    ui->menuAnalysis->setEnabled(lipid_space->lipidomes.size());
+    ui->menuView->setEnabled(lipid_space->lipidomes.size());
+    
+    ui->actionAutomatically->setChecked(false);
+    ui->action1_column->setChecked(false);
+    ui->action2_columns->setChecked(false);
+    ui->action3_columns->setChecked(false);
+    ui->action4_columns->setChecked(false);
+    ui->action5_columns->setChecked(false);
+    ui->action6_columns->setChecked(false);
+    
+    switch(tileLayout){
+        case AUTOMATIC: ui->actionAutomatically->setChecked(true); break;
+        case ONE_COLULMN: ui->action1_column->setChecked(true); break;
+        case TWO_COLUMNS: ui->action2_columns->setChecked(true); break;
+        case THREE_COLUMNS: ui->action3_columns->setChecked(true); break;
+        case FOUR_COLUMNS: ui->action4_columns->setChecked(true); break;
+        case FIVE_COLUMNS: ui->action5_columns->setChecked(true); break;
+        case SIX_COLUMNS: ui->action6_columns->setChecked(true); break;
+    }
+    
+    updating = false;
+    ui->canvas->setLayout((int)tileLayout);
+    ui->canvas->showHideDendrogram(showDendrogram);
+    ui->canvas->showHideGlobalLipidome(showGlobalLipidome);
+    ui->canvas->refreshCanvas();
 }
 
 
@@ -86,6 +186,7 @@ void LipidSpaceGUI::openLists(){
             for (QString file_name : files){
                 lipid_space->lipidomes.push_back(lipid_space->load_list(file_name.toUtf8().constData()));
             }
+            updateGUI();
             lipid_space->run_analysis();
             ui->canvas->refreshCanvas();
         }
@@ -105,6 +206,7 @@ void LipidSpaceGUI::openLists(){
                 for (QString file_name : files){
                     lipid_space->lipidomes.push_back(lipid_space->load_list(file_name.toUtf8().constData()));
                 }
+                updateGUI();
                 lipid_space->run_analysis();
                 ui->canvas->refreshCanvas();
             }

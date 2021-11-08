@@ -21,7 +21,6 @@ using namespace std;
 #define MARGIN 0.01
 #define POINT_BASE_SIZE 7.0
 
-
 class PointSet {
 public:
     QPointF* points;
@@ -53,6 +52,10 @@ public:
     void setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow);
     void refreshCanvas();
     void resetCanvas();
+    
+    void setLayout(int tileLayout);
+    void showHideDendrogram(bool showDendrogram);
+    void showHideGlobalLipidome(bool showGlobalLipidome);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -80,6 +83,9 @@ private:
     map<string, QColor> colorMap;
     int color_counter;
     QMainWindow *mainWindow;
+    bool showDendrogram;
+    bool showGlobalLipidome;
+    int tileLayout;
     
     static const vector<QColor> COLORS;
     static const double PRECESION_FACTOR;

@@ -34,6 +34,9 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     alpha = 128;
     mainWindow = 0;
     setMouseTracking(true);
+    tileLayout = 0;
+    showDendrogram = true;
+    showGlobalLipidome = true;
 }
 
 
@@ -213,6 +216,25 @@ void Canvas::resetCanvas(){
 
 
 
+void Canvas::setLayout(int _tileLayout){
+    tileLayout = _tileLayout;
+}
+
+
+void Canvas::showHideDendrogram(bool _showDendrogram){
+    showDendrogram = _showDendrogram;
+}
+
+
+void Canvas::showHideGlobalLipidome(bool _showGlobalLipidome){
+    showGlobalLipidome = _showGlobalLipidome;
+}
+
+
+
+
+
+
 void Canvas::refreshCanvas(){
     if (!lipid_space) return;
     
@@ -232,7 +254,7 @@ void Canvas::refreshCanvas(){
     double y_min = 0;
     double y_max = 0;
     // add only global lipidome when we have more than one lipidome
-    if (lipid_space->lipidomes.size() > 1){
+    if (lipid_space->lipidomes.size() > 1 && showGlobalLipidome){
         if (global_lipidome->m.cols >= 2){
             pointSets.push_back(new PointSet(global_lipidome->m.rows, global_lipidome));
             

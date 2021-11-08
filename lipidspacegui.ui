@@ -64,10 +64,12 @@
      </property>
      <addaction name="actionAutomatically"/>
      <addaction name="separator"/>
+     <addaction name="action1_column"/>
      <addaction name="action2_columns"/>
      <addaction name="action3_columns"/>
      <addaction name="action4_columns"/>
      <addaction name="action5_columns"/>
+     <addaction name="action6_columns"/>
     </widget>
     <addaction name="actionSet_transparency"/>
     <addaction name="menuTile_layout"/>
@@ -75,9 +77,17 @@
     <addaction name="actionShow_global_lipidome"/>
     <addaction name="actionShow_dendrogram"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+    <addaction name="actionLog_messages"/>
+   </widget>
    <addaction name="menuLipidSpace"/>
    <addaction name="menuAnalysis"/>
    <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad_list_s">
@@ -106,38 +116,94 @@
    </property>
   </action>
   <action name="actionAutomatically">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Automatically</string>
    </property>
   </action>
   <action name="action2_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>2 columns</string>
    </property>
   </action>
   <action name="action3_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>3 columns</string>
    </property>
   </action>
   <action name="action4_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>4 columns</string>
    </property>
   </action>
   <action name="action5_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>5 columns</string>
    </property>
   </action>
   <action name="actionShow_global_lipidome">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Show global lipidome</string>
    </property>
   </action>
   <action name="actionShow_dendrogram">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Show dendrogram</string>
+   </property>
+  </action>
+  <action name="action1_column">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1 column</string>
+   </property>
+  </action>
+  <action name="action6_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>6 columns</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionLog_messages">
+   <property name="text">
+    <string>Log messages</string>
    </property>
   </action>
  </widget>

@@ -8,6 +8,7 @@
 #include "lipidspace/lipidspace.h"
 #include "cppgoslin/cppgoslin.h"
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }
 QT_END_NAMESPACE
@@ -30,6 +31,15 @@ public slots:
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();
+    void showHideDendrogram();
+    void showHideGlobalLipidome();
+    void setAutomaticLayout();
+    void set1ColumnLayout();
+    void set2ColumnLayout();
+    void set3ColumnLayout();
+    void set4ColumnLayout();
+    void set5ColumnLayout();
+    void set6ColumnLayout();
 
 private:
     Ui::LipidSpaceGUI *ui;
@@ -37,6 +47,7 @@ private:
     bool showDendrogram;
     bool showGlobalLipidome;
     TileLayout tileLayout;
+    bool updating;
     
 };
 #endif // LIPIDSPACEGUI_H
