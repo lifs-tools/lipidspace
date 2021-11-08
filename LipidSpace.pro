@@ -21,7 +21,7 @@ INCLUDEPATH += /usr/include/python3.8
 LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 
 SOURCES += \
-    managelipidomes.cpp \
+    src/managelipidomes.cpp \
     src/MainWindow.cpp \
     src/lipidspacegui.cpp \
     src/Matrix.cpp \
@@ -34,7 +34,7 @@ HEADERS += \
     lipidspace/Matrix.h \
     lipidspace/lipidspace.h \
     lipidspace/matplotlibcpp.h \
-    managelipidomes.h
+    lipidspace/managelipidomes.h
 
 FORMS += \
     lipidspacegui.ui \

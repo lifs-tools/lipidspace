@@ -53,6 +53,7 @@
      <string>Analysis</string>
     </property>
     <addaction name="actionRemove_all_lipidomes"/>
+    <addaction name="actionManage_lipidomes"/>
     <addaction name="actionIgnoring_lipid_sn_positions"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -225,6 +226,11 @@
    </property>
    <property name="text">
     <string>Ignoring lipid sn-positions</string>
+   </property>
+  </action>
+  <action name="actionManage_lipidomes">
+   <property name="text">
+    <string>Manage lipidomes</string>
    </property>
   </action>
  </widget>

@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/managelipidomes.h"
 #include "cppgoslin/cppgoslin.h"
 
 
@@ -42,6 +43,7 @@ public slots:
     void set5ColumnLayout();
     void set6ColumnLayout();
     void setSnPositions();
+    void openManageLipidomesWindow();
 
 private:
     Ui::LipidSpaceGUI *ui;

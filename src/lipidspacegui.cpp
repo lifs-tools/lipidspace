@@ -1,10 +1,7 @@
 #include "lipidspace/lipidspacegui.h"
 
 
-LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::LipidSpaceGUI),
-    lipid_space(_lipid_space){
+LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent) , ui(new Ui::LipidSpaceGUI), lipid_space(_lipid_space){
     ui->setupUi(this);
     ui->canvas->setInputClasses(lipid_space, this);
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
@@ -24,6 +21,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent)
     connect(ui->action5_columns, SIGNAL(triggered()), this, SLOT(set5ColumnLayout()));
     connect(ui->action6_columns, SIGNAL(triggered()), this, SLOT(set6ColumnLayout()));
     connect(ui->actionIgnoring_lipid_sn_positions, SIGNAL(triggered()), this, SLOT(setSnPositions()));
+    connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
     
     tileLayout = AUTOMATIC;
     showQuant = true;
@@ -161,6 +159,13 @@ void LipidSpaceGUI::setSnPositions(){
     lipid_space->run_analysis();
     updateGUI();
     ui->canvas->refreshCanvas();
+}
+
+
+void LipidSpaceGUI::openManageLipidomesWindow(){
+    ManageLipidomes manageLipidomes(lipid_space);
+    manageLipidomes.setModal(true);
+    manageLipidomes.exec();
 }
 
 

@@ -11,9 +11,15 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Manage lipidomes</string>
   </property>
-  <widget class="QListView" name="listView">
+  <property name="whatsThis">
+   <string notr="true"/>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <widget class="QListWidget" name="listView">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -23,7 +29,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="removeSelectedButton">
    <property name="geometry">
     <rect>
      <x>280</x>
@@ -36,7 +42,7 @@
     <string>Remove selected</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QPushButton" name="removeAllButton">
    <property name="geometry">
     <rect>
      <x>280</x>
@@ -49,7 +55,7 @@
     <string>Remove all</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_3">
+  <widget class="QPushButton" name="okButton">
    <property name="geometry">
     <rect>
      <x>230</x>
@@ -62,7 +68,7 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_4">
+  <widget class="QPushButton" name="cancelButton">
    <property name="geometry">
     <rect>
      <x>320</x>
