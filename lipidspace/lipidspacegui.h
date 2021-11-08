@@ -44,6 +44,7 @@ public slots:
     void set6ColumnLayout();
     void setSnPositions();
     void openManageLipidomesWindow();
+    void runAnalysis();
 
 private:
     Ui::LipidSpaceGUI *ui;

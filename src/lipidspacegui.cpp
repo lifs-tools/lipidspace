@@ -7,7 +7,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
-    connect(ui->actionRemove_all_lipidomes, SIGNAL(triggered()), this, SLOT(resetAnalysis()));
     connect(ui->canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
     
     connect(ui->actionAutomatically, SIGNAL(triggered()), this, SLOT(setAutomaticLayout()));
@@ -31,6 +30,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     updateGUI();
 }
 
+
+
+
 LipidSpaceGUI::~LipidSpaceGUI(){
     delete ui;
 }
@@ -48,9 +50,7 @@ void LipidSpaceGUI::openTable(){
     if (file_name.length()){
         try {
             lipid_space->load_table(file_name.toUtf8().constData());
-            updateGUI();
-            lipid_space->run_analysis();
-            ui->canvas->refreshCanvas();
+            runAnalysis();
         }
         catch (exception &e) {
             QMessageBox msgBox(this);
@@ -67,13 +67,23 @@ void LipidSpaceGUI::openTable(){
                 resetAnalysis();
                 
                 lipid_space->load_table(file_name.toUtf8().constData());
-                updateGUI();
-                lipid_space->run_analysis();
-                ui->canvas->refreshCanvas();
+                runAnalysis();
+            }
+            else {
+                resetAnalysis();
             }
         }
     }
 }
+
+
+
+void LipidSpaceGUI::runAnalysis(){
+    updateGUI();
+    lipid_space->run_analysis();
+    ui->canvas->refreshCanvas();
+}
+
 
 
 void LipidSpaceGUI::resetAnalysis(){
@@ -163,7 +173,9 @@ void LipidSpaceGUI::setSnPositions(){
 
 
 void LipidSpaceGUI::openManageLipidomesWindow(){
-    ManageLipidomes manageLipidomes(lipid_space);
+    ManageLipidomes manageLipidomes(lipid_space, this);
+    connect(&manageLipidomes, SIGNAL(runAnalysis()), this, SLOT(runAnalysis()));
+    connect(&manageLipidomes, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     manageLipidomes.setModal(true);
     manageLipidomes.exec();
 }
@@ -209,9 +221,7 @@ void LipidSpaceGUI::openLists(){
             for (QString file_name : files){
                 lipid_space->lipidomes.push_back(lipid_space->load_list(file_name.toUtf8().constData()));
             }
-            updateGUI();
-            lipid_space->run_analysis();
-            ui->canvas->refreshCanvas();
+            runAnalysis();
         }
         catch (exception &e) {
             QMessageBox msgBox(this);
@@ -229,9 +239,7 @@ void LipidSpaceGUI::openLists(){
                 for (QString file_name : files){
                     lipid_space->lipidomes.push_back(lipid_space->load_list(file_name.toUtf8().constData()));
                 }
-                updateGUI();
-                lipid_space->run_analysis();
-                ui->canvas->refreshCanvas();
+                runAnalysis();
             }
             else {
                 resetAnalysis();

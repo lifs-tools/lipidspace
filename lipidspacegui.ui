@@ -52,7 +52,6 @@
     <property name="title">
      <string>Analysis</string>
     </property>
-    <addaction name="actionRemove_all_lipidomes"/>
     <addaction name="actionManage_lipidomes"/>
     <addaction name="actionIgnoring_lipid_sn_positions"/>
    </widget>
