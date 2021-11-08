@@ -646,7 +646,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
     
     vector<int> remove;
     
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int i = 0; i < (int)lipids.size(); ++i) { 
         string line = lipids.at(i);
         try {
@@ -665,6 +665,13 @@ Table* LipidSpace::load_list(string lipid_list_file){
             for (auto fa : l->lipid->fa_list) cut_cycle(fa);
         }
         catch (exception &e) {
+            if (!ignore_unknown_lipids){
+                throw LipidException(string(e.what()) + ": lipid '" + line + "' cannot be parsed.");
+            }
+            else {
+                remove.push_back(i);
+            }
+            /*
             if (ignore_unknown_lipids){
                 cerr << "Warning: ignoring lipid '" << line << "' in file '" << lipid_list_file << "'" << endl;
                 remove.push_back(i);
@@ -673,6 +680,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
                 cerr << "Error: lipid '" << line << "' cannot be parsed in file '" << lipid_list_file << "'" << endl;
                 exit(-1);
             }
+            */
         }
     }
     
@@ -1219,24 +1227,20 @@ void LipidSpace::load_table(string table_file){
             l = parser.parse(tokens->at(0));
         }
         catch (exception &e) {
-            if (ignore_unknown_lipids){
-                cerr << "Warning: ignoring lipid '" << tokens->at(0) << "' in file '" << table_file << "'" << endl;
-                continue;
+            if (!ignore_unknown_lipids){
+                throw LipidException(string(e.what()) + ": lipid '" + tokens->at(0) + "' cannot be parsed.");
             }
             else {
-                cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed in file '" << table_file << "'" << endl;
-                exit(-1);
+               continue;
             }
         }
         
         if (l == 0) {
-            if (ignore_unknown_lipids){
-                cerr << "Warning: ignoring lipid '" << tokens->at(0) << "' in file '" << table_file << "'" << endl;
-                continue;
+            if (!ignore_unknown_lipids){
+                throw LipidException("Lipid '" + tokens->at(0) + "' cannot be parsed.");
             }
             else {
-                cerr << "Error: lipid '" << tokens->at(0) << "' cannot be parsed in file '" << table_file << "'" << endl;
-                exit(-1);
+               continue;
             }
         }
             

@@ -323,6 +323,7 @@ void Matrix::PCA(Matrix &pca, int dimensions){
     cov_matrix.compute_eigen_data(eigenvalues, eigenvectors, dimensions);
     pca.mult(eigenvectors, *this, true, true);
     pca.transpose();
+    eigenvectors.transpose();
 }
 
 

@@ -71,6 +71,9 @@
     </widget>
     <addaction name="actionSet_transparency"/>
     <addaction name="menuTile_layout"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_global_lipidome"/>
+    <addaction name="actionShow_dendrogram"/>
    </widget>
    <addaction name="menuLipidSpace"/>
    <addaction name="menuAnalysis"/>
@@ -125,6 +128,16 @@
   <action name="action5_columns">
    <property name="text">
     <string>5 columns</string>
+   </property>
+  </action>
+  <action name="actionShow_global_lipidome">
+   <property name="text">
+    <string>Show global lipidome</string>
+   </property>
+  </action>
+  <action name="actionShow_dendrogram">
+   <property name="text">
+    <string>Show dendrogram</string>
    </property>
   </action>
  </widget>

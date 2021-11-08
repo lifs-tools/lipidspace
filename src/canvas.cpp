@@ -17,7 +17,7 @@ PointSet::~PointSet(){
 
 Canvas::Canvas(QWidget *parent) : QWidget(parent){
     mousePressed = false;
-    antialiased = false;
+    antialiased = true;
     scaling = 1.;
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
@@ -86,7 +86,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     }
     if (bound_num < 0) return;
     
-    int lipid_num = -1;
+    
     PointSet *pointSet = pointSets[bound_num];
     QPointF *points = pointSet->points;
     
@@ -100,8 +100,6 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
             lipid_names.push_back(QString(pointSet->table->species[i].c_str()));
         }
     }
-    double intens = pointSet->table->intensities[0] > 1 ? log(pointSet->table->intensities[0]) : 0.5;
-    double mgn = 3.5 * intens * scaling;
     
     if (!lipid_names.size()) showMessage("");
     else showMessage(lipid_names.join(", "));
@@ -152,6 +150,7 @@ void Canvas::setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow)
 
 
 
+
 void Canvas::resizeEvent(QResizeEvent* ){
     if (!lipid_space || !pointSets.size()) return;
     int tileRows = ceil((double)numTiles / (double)tileColumns);
@@ -195,6 +194,7 @@ void Canvas::resizeEvent(QResizeEvent* ){
 
 
 
+
 void Canvas::resetCanvas(){
     
     colorMap.clear();
@@ -206,6 +206,8 @@ void Canvas::resetCanvas(){
     oldSize.setX(0);
     oldSize.setY(0);
     update();
+    scaling = 1;
+    basescale = 1;
 }
 
 
@@ -273,18 +275,18 @@ void Canvas::refreshCanvas(){
     y_max *= 1.1;
     minMax.setRect(x_min, x_max, y_min, y_max);
     
-    
-    if ((x_max - x_min) / (double)width() > (y_max - y_min) / (double)height()){
-        basescale = (x_max - x_min) / (double)width();
-    }
-    else {
-        basescale = (y_max - y_min) / (double)height();
-    }
-    
-    
     int tileRows = ceil((double)numTiles / (double)tileColumns);
     double w_rect = (double)width() * ((1. - MARGIN * ((double)tileColumns + 1.)) / (double)tileColumns);
     double h_rect = (double)height() * ((1. - MARGIN * ((double)tileRows + 1.)) / (double)tileRows);
+    
+    if ((x_max - x_min) / (double)w_rect > (y_max - y_min) / (double)h_rect){
+        basescale = (x_max - x_min) / (double)w_rect;
+    }
+    else {
+        basescale = (y_max - y_min) / (double)h_rect;
+    }
+    
+    
     
     double ox = w_rect * 0.5 - ((x_max + x_min) / 2 / basescale);
     double oy = h_rect * 0.5 - ((y_max + y_min) / 2 / basescale);
@@ -292,9 +294,10 @@ void Canvas::refreshCanvas(){
     offset.setY(oy);
     
     
-    
     resizeEvent(0);
 }
+
+
 
     
 void Canvas::paintEvent(QPaintEvent *event){
