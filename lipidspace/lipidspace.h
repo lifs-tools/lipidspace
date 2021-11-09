@@ -9,9 +9,10 @@
 #include <algorithm>
 #include <sys/stat.h>
 #include <immintrin.h>
+#include <QtCore>
 
 //#include "LipidSpace/matplotlibcpp.h"
-#include "lipidspace/Matrix.h"
+#include "lipidspace/AssistanceFunctions.h"
 
 #define STD_POINT_SIZE 3
  
@@ -19,41 +20,11 @@ using namespace std;
 //namespace plt = matplotlibcpp; 
 
 
-enum Linkage {SINGLE, COMPLETE};
 
-
-
-class Node {
-public:
-    set<int> indexes;
-    string name;
-    Node* left_child;
-    Node* right_child;
-    double distance;
-    
-    Node(int index, string _name);
-    Node(Node* n1, Node* n2, double d);
-    ~Node();
-    double* plot(int i, vector<string>* sorted_ticks);
-};
-
-
-
-
-class Table {
-public:
-    string file_name;
-    vector<string> species;
-    vector<string> classes;
-    vector<LipidAdduct*> lipids;
-    Array intensities;
-    Matrix m;
-    
-    Table(string lipid_list_file) : file_name(lipid_list_file) {}
-};
 
 
 class LipidSpace {
+    
 public:
     LipidParser parser;
     map<string, int*> class_matrix;
@@ -66,9 +37,9 @@ public:
     bool without_quant;
     vector<Table*> lipidomes;
     Table* global_lipidome;
+    Progress *progress;
     
-    
-    
+
     LipidSpace();
     ~LipidSpace();
     Table* load_list(string lipid_list_file);
@@ -86,7 +57,8 @@ public:
     void load_table(string table_file);
     //void plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string output_folder);
     void store_distance_table(Table* lipidome, string output_folder);
-    void run_analysis();
+    void run_analysis(Progress *progress = 0);
+    std::thread run_analysis_thread(Progress *_progress);
     void reset_analysis();
 };
 

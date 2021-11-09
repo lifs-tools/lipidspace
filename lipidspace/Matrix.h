@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cassert>
 #include <cblas.h>
+#include <QtCore>
 
 using lambda_lanczos::LambdaLanczos;
 using namespace std;
@@ -17,6 +18,7 @@ typedef vector<int> Indexes;
 
 
 class Array : public vector<double> {
+    
 public:
     Array();
     Array(int len, double val);
@@ -42,7 +44,9 @@ public:
 };
 
 
-class Matrix {
+class Matrix : public QObject {
+    Q_OBJECT
+    
 public:
     Array m;
     int rows;
@@ -86,5 +90,6 @@ public:
         return m[c * rows + r];
     }
     
-    
+signals:
+    void set_step();
 };

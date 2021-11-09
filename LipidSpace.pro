@@ -21,10 +21,12 @@ INCLUDEPATH += /usr/include/python3.8
 LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 
 SOURCES += \
+    src/progressbar.cpp \
     src/managelipidomes.cpp \
     src/MainWindow.cpp \
     src/lipidspacegui.cpp \
     src/Matrix.cpp \
+    src/AssistanceFunctions.cpp \
     src/lipidspace.cpp \
     src/canvas.cpp
 
@@ -33,12 +35,15 @@ HEADERS += \
     lipidspace/canvas.h \
     lipidspace/Matrix.h \
     lipidspace/lipidspace.h \
+    lipidspace/AssistanceFunctions.h \
     lipidspace/matplotlibcpp.h \
-    lipidspace/managelipidomes.h
+    lipidspace/managelipidomes.h \
+    lipidspace/progressbar.h
 
 FORMS += \
     lipidspacegui.ui \
-    managelipidomes.ui
+    managelipidomes.ui \
+    progressbar.ui
 
 TRANSLATIONS += \
     LipidSpace_en_US.ts

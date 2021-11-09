@@ -1,27 +1,6 @@
 #include "lipidspace/lipidspace.h"
  
  
-Node::Node(int index, string _name){
-    indexes.insert(index);
-    name = _name;
-    left_child = 0;
-    right_child = 0;
-    distance = 0;
-}
-
-Node::~Node(){
-    if (left_child) delete left_child;
-    if (right_child) delete right_child;
-}
-    
-Node::Node(Node* n1, Node* n2, double d){
-    left_child = n1;
-    right_child = n2;
-    for (auto i : n1->indexes) indexes.insert(i);
-    for (auto i : n2->indexes) indexes.insert(i);
-    distance = d;
-}
-
 /*
 double* Node::plot(int cnt, vector<string>* sorted_ticks){
     if (left_child == 0){
@@ -136,13 +115,14 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string ou
 
 
 
-LipidSpace::LipidSpace(){
+LipidSpace::LipidSpace() {
     cols_for_pca = 7;
     keep_sn_position = true;
     ignore_unknown_lipids = false;
     unboundend_distance = false;
     without_quant = false;
     global_lipidome = 0;
+    progress = 0;
     
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -1082,7 +1062,6 @@ void LipidSpace::compute_global_distance_matrix(){
     global_lipidome->intensities.resize(n);
     for (int i = 0; i < n; ++i)global_lipidome->intensities[i] = STD_POINT_SIZE;
     
-    
     // compute distances
     cout << "Computing pairwise distance matrix for " << n << " lipids" << endl;
     Matrix& distance_matrix = global_lipidome->m;
@@ -1092,6 +1071,14 @@ void LipidSpace::compute_global_distance_matrix(){
     double total_num = (n * (n - 1)) >> 1;
     double tn = 0;
     double next_announce = 10;
+    double next_tp = 1;
+    
+    if (progress){
+        int n = global_lipidome->lipids.size();
+        progress->max_progress = (n * (n - 1));
+        progress->set_max(progress->max_progress);
+    }    
+    
     
     #pragma omp parallel for
     for (int ii = 0; ii < n * n; ++ii){
@@ -1100,23 +1087,32 @@ void LipidSpace::compute_global_distance_matrix(){
         
         if (i < j){
             
+            bool go_on = true;
             #pragma omp critical
             {
+                if (progress){
+                    go_on = !progress->stop_progress;
+                    if (++progress->current_progress / total_num * 100. >= next_tp){
+                        progress->set(progress->current_progress);
+                        next_tp += 1;
+                    }
+                }
                 if (++tn / total_num * 100. >= next_announce){
                     cout << next_announce << "% ";
                     cout.flush();
                     next_announce += 10;
                 }
             }
-            
-            int union_num, inter_num;
-            lipid_similarity(global_lipidome->lipids.at(i), global_lipidome->lipids.at(j), union_num, inter_num);
-            double distance = unboundend_distance ?
-                (double)union_num / (double)inter_num - 1. // unboundend distance [0; inf[
-                            :
-                1 - (double)inter_num / (double)union_num; // bounded distance [0; 1]
-            distance_matrix(i, j) = distance;
-            distance_matrix(j, i) = distance;
+            if (go_on){
+                int union_num, inter_num;
+                lipid_similarity(global_lipidome->lipids.at(i), global_lipidome->lipids.at(j), union_num, inter_num);
+                double distance = unboundend_distance ?
+                    (double)union_num / (double)inter_num - 1. // unboundend distance [0; inf[
+                                :
+                    1 - (double)inter_num / (double)union_num; // bounded distance [0; 1]
+                distance_matrix(i, j) = distance;
+                distance_matrix(j, i) = distance;
+            }
         }
     }
     cout << endl;
@@ -1293,23 +1289,55 @@ void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
 }
 
 
+std::thread LipidSpace::run_analysis_thread(Progress *_progress) {
+    return std::thread([=] { run_analysis(_progress); });
+}
 
-void LipidSpace::run_analysis(){
+
+void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
     
+    if (_progress){
+        progress = _progress;
+        progress->set(0);
+    }
+    
     // compute PCA matrixes for the complete lipidome
-    compute_global_distance_matrix();
+    if (!progress || !progress->stop_progress){
+        compute_global_distance_matrix();
+    }
+    
+    
+    
     
     // perform the principal component analysis
-    {
+    if (!progress || !progress->stop_progress){
+        // set the step size for the next analyses
+        if (progress){
+            progress->prepare_steps(5);
+            progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
+        }
         Matrix pca;
         global_lipidome->m.PCA(pca, cols_for_pca);
         global_lipidome->m.rewrite(pca);
+        if (progress){
+            progress->disconnect(&global_lipidome->m, SIGNAL(set_step()), 0, 0);
+        }
     }
+        
+    
     
     // cutting the global PCA matrix back to a matrix for each lipidome
-    separate_matrixes();
-    normalize_intensities();
+    if (!progress || !progress->stop_progress){
+        separate_matrixes();
+        normalize_intensities();
+        if (progress){
+            progress->set_step();
+        }
+    }
+    if (progress){
+        progress->finish();
+    }
 }
 
 
@@ -1327,3 +1355,6 @@ void LipidSpace::reset_analysis(){
         global_lipidome = 0;
     }
 }
+
+
+

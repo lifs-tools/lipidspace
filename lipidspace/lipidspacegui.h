@@ -6,8 +6,10 @@
 #include <QMessageBox>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
 #include "cppgoslin/cppgoslin.h"
+#include <thread>
 
 
 QT_BEGIN_NAMESPACE
@@ -54,6 +56,8 @@ private:
     bool showGlobalLipidome;
     TileLayout tileLayout;
     bool updating;
+    Progressbar *progressbar;
+    Progress *progress;
     
 };
 #endif // LIPIDSPACEGUI_H

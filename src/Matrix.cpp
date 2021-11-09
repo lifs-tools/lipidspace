@@ -58,12 +58,12 @@ void Array::compute_distances(Array &x, double dx, Array &y, double dy){
 }
     
     
-Matrix::Matrix(){
+Matrix::Matrix() : QObject(){
     rows = 0;
     cols = 0;
 }
 
-Matrix::Matrix(const Array &a, int _rows, int _cols){
+Matrix::Matrix(const Array &a, int _rows, int _cols) : QObject() {
     cols = _cols;
     rows = _rows;
     m.clear();
@@ -71,12 +71,12 @@ Matrix::Matrix(const Array &a, int _rows, int _cols){
     for (double v : a) m.push_back(v);
 }
 
-Matrix::Matrix(vector<vector<double>> &mat){
+Matrix::Matrix(vector<vector<double>> &mat) : QObject(){
     rewrite(mat);
 }
 
 
-Matrix::Matrix(Matrix &mat, bool transpose){
+Matrix::Matrix(Matrix &mat, bool transpose) : QObject(){
     if (transpose) rewrite_transpose(mat);
     else rewrite(mat);
 }
@@ -315,15 +315,25 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
 
 
 void Matrix::PCA(Matrix &pca, int dimensions){
+    // Scale data
     scale();
+    set_step();
+    
+    // compute covariance matrix
     Matrix cov_matrix;
     covariance_matrix(cov_matrix);
+    set_step();
+    
+    // compute eigenvectors
     Array eigenvalues;
     Matrix eigenvectors;
     cov_matrix.compute_eigen_data(eigenvalues, eigenvectors, dimensions);
+    set_step();
+    
+    // multiply the eigenvectors with the original matrix
     pca.mult(eigenvectors, *this, true, true);
     pca.transpose();
-    eigenvectors.transpose();
+    set_step();
 }
 
 

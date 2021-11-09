@@ -49,6 +49,8 @@ public:
     void mouseReleaseEvent(QMouseEvent *event);
     void resizeEvent(QResizeEvent* event);
 
+public slots:
+    
     void setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow);
     void refreshCanvas();
     void resetCanvas();

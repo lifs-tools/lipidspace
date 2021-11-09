@@ -28,6 +28,16 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     showGlobalLipidome = true;
     updating = false;
     updateGUI();
+    
+    progressbar = new Progressbar(this);
+    progress = new Progress();
+    connect(progress, SIGNAL(finish()), progressbar, SLOT(finish()));
+    connect(progress, SIGNAL(set_current(int)), progressbar, SLOT(set_current(int)));
+    connect(progress, SIGNAL(set_max(int)), progressbar, SLOT(set_max(int)));
+    connect(progressbar, SIGNAL(refreshCanvas()), ui->canvas, SLOT(refreshCanvas()));
+    connect(progressbar, SIGNAL(interrupt()), progress, SLOT(interrupt()));
+    connect(progressbar, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
+    progressbar->setModal(true);
 }
 
 
@@ -35,6 +45,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 LipidSpaceGUI::~LipidSpaceGUI(){
     delete ui;
+    delete progress;
+    delete progressbar;
 }
 
 
@@ -80,8 +92,15 @@ void LipidSpaceGUI::openTable(){
 
 void LipidSpaceGUI::runAnalysis(){
     updateGUI();
+    /*
     lipid_space->run_analysis();
     ui->canvas->refreshCanvas();
+    */
+    
+    std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
+    progressbar->exec();
+    runAnalysisThread.join();
+    
 }
 
 
