@@ -1,13 +1,19 @@
 #include "lipidspace/canvas.h"
 
 
-PointSet::PointSet(int _len, Table *_table){
+PointSet::PointSet(int _len, Table *_table, bool _is_dendrogram){
     len = _len;
     table = _table;
     points = new QPointF[len];
+    is_dendrogram = _is_dendrogram;
     
-    QFileInfo qFileInfo(table->file_name.c_str());
-    title = qFileInfo.baseName();
+    if (!is_dendrogram){
+        QFileInfo qFileInfo(table->file_name.c_str());
+        title = qFileInfo.baseName();
+    }
+    else {
+        title = "Dendrogram";
+    }
 }
 
 PointSet::~PointSet(){
@@ -80,7 +86,7 @@ void Canvas::mousePressEvent(QMouseEvent *event){
                     break;
                 }
             }
-            if (bound_num >= showGlobalLipidome){
+            if (bound_num >= (showGlobalLipidome + showDendrogram)){
                 movePointSet.setRect(pointSets[bound_num]->bound.x(), pointSets[bound_num]->bound.y(), pointSets[bound_num]->bound.width(), pointSets[bound_num]->bound.height());
                 movePointSetStart.setX(pointSets[bound_num]->bound.x());
                 movePointSetStart.setY(pointSets[bound_num]->bound.y());
@@ -111,7 +117,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event){
             }
                 
         }
-        if (bound_num >= showGlobalLipidome && moveSet > -1) {
+        if (bound_num >= (showGlobalLipidome + showDendrogram) && moveSet > -1) {
             if (bound_num != moveSet){
                 swap(pointSets[moveSet]->bound, pointSets[bound_num]->bound);
                 swap(pointSets[moveSet], pointSets[bound_num]);
@@ -134,21 +140,6 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event){
 void Canvas::mouseMoveEvent(QMouseEvent *event){
     QPoint mouse = event->pos();
     
-    if (mousePressed == Qt::LeftButton){
-        offset.setX(oldOffset.x() + (mouse.x() - deltaMouse.x()));
-        offset.setY(oldOffset.y() + (mouse.y() - deltaMouse.y()));
-        update();
-        return;
-    }
-    
-    else if (mousePressed == Qt::RightButton && pointSets.size() > 2){
-        movePointSet.setRect(movePointSetStart.x() + (mouse.x() - deltaMouse.x()),movePointSetStart.y() + (mouse.y() - deltaMouse.y()), movePointSet.width(), movePointSet.height());
-        update();
-        return;
-    }
-    
-    
-    
     // check if mouse is hovering over a lipid bubble
     int bound_num = -1;
     for (int i = 0; i < (int)pointSets.size(); ++i){
@@ -161,6 +152,28 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
             
     }
     if (bound_num < 0) return;
+    
+    if (mousePressed == Qt::LeftButton){
+        if (bound_num == 0 && showDendrogram){
+            
+        }
+        else {
+            offset.setX(oldOffset.x() + (mouse.x() - deltaMouse.x()));
+            offset.setY(oldOffset.y() + (mouse.y() - deltaMouse.y()));
+            update();
+        }
+        return;
+    }
+    
+    else if (mousePressed == Qt::RightButton && pointSets.size() > 2){
+        movePointSet.setRect(movePointSetStart.x() + (mouse.x() - deltaMouse.x()),movePointSetStart.y() + (mouse.y() - deltaMouse.y()), movePointSet.width(), movePointSet.height());
+        update();
+        return;
+    }
+    
+    
+    
+    
     
     
     
@@ -203,18 +216,23 @@ void Canvas::wheelEvent(QWheelEvent *event){
     }
     if (bound_num < 0) return;
     
-    double old_scaling = scaling;
-    if (event->angleDelta().y() < 0){
-        if (scaling > 0.2) scaling /= 1.1;
+    if (bound_num == 0 && showDendrogram){
+        
     }
     else {
-        scaling *= 1.1;
+        double old_scaling = scaling;
+        if (event->angleDelta().y() < 0){
+            if (scaling > 0.2) scaling /= 1.1;
+        }
+        else {
+            scaling *= 1.1;
+        }
+        QRectF &bound = pointSets[bound_num]->bound;
+        double mx = mouse.x() - bound.x();
+        double my = mouse.y() - bound.y();
+        offset.setX(mx + (offset.x() - mx) / old_scaling * scaling);
+        offset.setY(my + (offset.y() - my) / old_scaling * scaling);
     }
-    QRectF &bound = pointSets[bound_num]->bound;
-    double mx = mouse.x() - bound.x();
-    double my = mouse.y() - bound.y();
-    offset.setX(mx + (offset.x() - mx) / old_scaling * scaling);
-    offset.setY(my + (offset.y() - my) / old_scaling * scaling);
     
     update();
 }
@@ -321,7 +339,7 @@ void Canvas::refreshCanvas(){
     colorMap.clear();
     color_counter = 0;
     Table* global_lipidome = lipid_space->global_lipidome;
-    numTiles = (lipid_space->lipidomes.size() > 1 && showGlobalLipidome) + lipid_space->lipidomes.size();
+    numTiles = (lipid_space->lipidomes.size() > 1 && showDendrogram) + (lipid_space->lipidomes.size() > 1 && showGlobalLipidome) + lipid_space->lipidomes.size();
     tileColumns = tileLayout == 0 ? ceil(sqrt((double)numTiles)) : tileLayout;
     
     
@@ -333,6 +351,12 @@ void Canvas::refreshCanvas(){
     double x_max = 0;
     double y_min = 0;
     double y_max = 0;
+    
+    if (showDendrogram){
+        pointSets.push_back(new PointSet(0, 0, true));
+    }
+    
+    
     // add only global lipidome when we have more than one lipidome
     if (lipid_space->lipidomes.size() > 1 && showGlobalLipidome){
         if (global_lipidome->m.cols >= 2){
@@ -412,6 +436,7 @@ void Canvas::paintEvent(QPaintEvent *event){
 
             
     for (auto pointSet : pointSets){
+        if (pointSet->is_dendrogram) continue;
         for (int i = 0; i < pointSet->len; ++i){
             painter.save();
             

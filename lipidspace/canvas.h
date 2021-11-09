@@ -28,8 +28,9 @@ public:
     QRectF bound;
     int len;
     QString title;
+    bool is_dendrogram;
     
-    PointSet(int, Table* _table);
+    PointSet(int, Table* _table, bool _is_dendrogram = false);
     ~PointSet();
     
 };
