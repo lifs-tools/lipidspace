@@ -50,14 +50,17 @@
    </widget>
    <widget class="QMenu" name="menuAnalysis">
     <property name="title">
-     <string>Analysis</string>
+     <string>&amp;Analysis</string>
     </property>
     <addaction name="actionManage_lipidomes"/>
+    <addaction name="separator"/>
     <addaction name="actionIgnoring_lipid_sn_positions"/>
+    <addaction name="actionIgnore_quantitative_information"/>
+    <addaction name="actionUnbound_lipid_distance_metric"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
     <widget class="QMenu" name="menuTile_layout">
      <property name="title">
@@ -81,7 +84,7 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
     <addaction name="actionLog_messages"/>
@@ -230,6 +233,22 @@
   <action name="actionManage_lipidomes">
    <property name="text">
     <string>Manage lipidomes</string>
+   </property>
+  </action>
+  <action name="actionIgnore_quantitative_information">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ignore quantitative information</string>
+   </property>
+  </action>
+  <action name="actionUnbound_lipid_distance_metric">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Unbound lipid distance metric</string>
    </property>
   </action>
  </widget>

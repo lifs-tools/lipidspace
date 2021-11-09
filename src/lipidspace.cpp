@@ -121,7 +121,7 @@ LipidSpace::LipidSpace() {
     ignore_unknown_lipids = false;
     unboundend_distance = false;
     without_quant = false;
-    global_lipidome = 0;
+    global_lipidome = new Table("global_lipidome");
     progress = 0;
     
     // load precomputed class distance matrix
@@ -1039,10 +1039,14 @@ void LipidSpace::report_hausdorff_matrix(Matrix &distance_matrix, string output_
 
 
 void LipidSpace::compute_global_distance_matrix(){
-    if (global_lipidome) delete global_lipidome;
-        
+    global_lipidome->species.clear();
+    global_lipidome->classes.clear();
+    global_lipidome->lipids.clear();
+    global_lipidome->intensities.clear();
+    global_lipidome->m.reset(1, 1);
+    
+    
     set<string> registered_lipids;
-    global_lipidome = new Table("global_lipidome");
     
     for (auto lipidome : lipidomes){
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
@@ -1050,9 +1054,12 @@ void LipidSpace::compute_global_distance_matrix(){
             if (contains_val(registered_lipids, lipid_species)) continue;
             registered_lipids.insert(lipid_species);
             
+            //cout << i << " " << lipidome->classes.size() << " " << lipidome->lipids.size() << endl;
+            //cout << lipidome->lipids.at(i)->get_lipid_string() << endl;
             global_lipidome->species.push_back(lipid_species);
             global_lipidome->classes.push_back(lipidome->classes.at(i));
             global_lipidome->lipids.push_back(lipidome->lipids.at(i));
+            //cout << "out" << endl;
         }
     }
     
@@ -1060,7 +1067,7 @@ void LipidSpace::compute_global_distance_matrix(){
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
     global_lipidome->intensities.resize(n);
-    for (int i = 0; i < n; ++i)global_lipidome->intensities[i] = STD_POINT_SIZE;
+    for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = STD_POINT_SIZE;
     
     // compute distances
     cout << "Computing pairwise distance matrix for " << n << " lipids" << endl;
@@ -1107,9 +1114,9 @@ void LipidSpace::compute_global_distance_matrix(){
                 int union_num, inter_num;
                 lipid_similarity(global_lipidome->lipids.at(i), global_lipidome->lipids.at(j), union_num, inter_num);
                 double distance = unboundend_distance ?
-                    (double)union_num / (double)inter_num - 1. // unboundend distance [0; inf[
+                    ((double)union_num / (double)inter_num - 1.) // unboundend distance [0; inf[
                                 :
-                    1 - (double)inter_num / (double)union_num; // bounded distance [0; 1]
+                    (1. - (double)inter_num / (double)union_num); // bounded distance [0; 1]
                 distance_matrix(i, j) = distance;
                 distance_matrix(j, i) = distance;
             }
@@ -1302,11 +1309,11 @@ void LipidSpace::run_analysis(Progress *_progress){
         progress->set(0);
     }
     
+    
     // compute PCA matrixes for the complete lipidome
     if (!progress || !progress->stop_progress){
         compute_global_distance_matrix();
     }
-    
     
     
     
@@ -1325,6 +1332,7 @@ void LipidSpace::run_analysis(Progress *_progress){
         }
     }
         
+    
     
     
     // cutting the global PCA matrix back to a matrix for each lipidome
@@ -1350,10 +1358,11 @@ void LipidSpace::reset_analysis(){
     for (auto lipidome : lipidomes) delete lipidome;
     lipidomes.clear();
     
-    if (global_lipidome){
-        delete global_lipidome;
-        global_lipidome = 0;
-    }
+    global_lipidome->species.clear();
+    global_lipidome->classes.clear();
+    global_lipidome->lipids.clear();
+    global_lipidome->intensities.clear();
+    global_lipidome->m.reset(1, 1);
 }
 
 

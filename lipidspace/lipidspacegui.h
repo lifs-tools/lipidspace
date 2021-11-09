@@ -37,6 +37,8 @@ public slots:
     void showHideDendrogram();
     void showHideGlobalLipidome();
     void showHideQuant();
+    void toggleQuant();
+    void toggleBoundMetric();
     void setAutomaticLayout();
     void set1ColumnLayout();
     void set2ColumnLayout();

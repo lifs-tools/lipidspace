@@ -21,6 +21,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->action6_columns, SIGNAL(triggered()), this, SLOT(set6ColumnLayout()));
     connect(ui->actionIgnoring_lipid_sn_positions, SIGNAL(triggered()), this, SLOT(setSnPositions()));
     connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
+    connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
+    connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
+            
     
     tileLayout = AUTOMATIC;
     showQuant = true;
@@ -92,11 +95,6 @@ void LipidSpaceGUI::openTable(){
 
 void LipidSpaceGUI::runAnalysis(){
     updateGUI();
-    /*
-    lipid_space->run_analysis();
-    ui->canvas->refreshCanvas();
-    */
-    
     std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
     progressbar->exec();
     runAnalysisThread.join();
@@ -114,6 +112,19 @@ void LipidSpaceGUI::resetAnalysis(){
 
 void LipidSpaceGUI::showMessage(QString message){
     statusBar()->showMessage(message);
+}
+
+
+void LipidSpaceGUI::toggleQuant(){
+    lipid_space->without_quant = ui->actionIgnore_quantitative_information->isChecked();
+    runAnalysis();
+}
+
+
+
+void LipidSpaceGUI::toggleBoundMetric(){
+    lipid_space->unboundend_distance = ui->actionUnbound_lipid_distance_metric->isChecked();
+    runAnalysis();
 }
 
 
