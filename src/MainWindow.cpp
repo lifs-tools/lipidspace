@@ -151,12 +151,11 @@ int main(int argc, char** argv) {
     if (lipid_space.lipidomes.size() > 1){
         
         // computing the hausdorff distance matrix for all lipidomes
-        Matrix distance_matrix;
-        lipid_space.compute_hausdorff_matrix(distance_matrix);
+        lipid_space.compute_hausdorff_matrix();
         
         // storing hausdorff distance matrix into file
         if (storing_distance_table)
-            lipid_space.report_hausdorff_matrix(distance_matrix, output_folder);
+            lipid_space.report_hausdorff_matrix(output_folder);
         
         // ploting the dendrogram
         //lipid_space.plot_dendrogram(&lipidomes, distance_matrix, output_folder);

@@ -54,15 +54,14 @@ signals:
 class Node {
 public:
     set<int> indexes;
-    string name;
     Node* left_child;
     Node* right_child;
     double distance;
     
-    Node(int index, string _name);
+    Node(int index);
     Node(Node* n1, Node* n2, double d);
     ~Node();
-    double* plot(int i, vector<string>* sorted_ticks);
+    double* execute(int i, Array* points, vector<int>* sorted_ticks);
 };
 
 

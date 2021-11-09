@@ -1,41 +1,6 @@
 #include "lipidspace/lipidspace.h"
  
  
-/*
-double* Node::plot(int cnt, vector<string>* sorted_ticks){
-    if (left_child == 0){
-        sorted_ticks->push_back(name);
-        return new double[3]{(double)cnt, 0, (double)cnt + 1};
-    }
-
-    double* left_result = left_child->plot(cnt, sorted_ticks);
-    double xl = left_result[0];
-    double yl = left_result[1];
-    cnt = left_result[2];
-    delete []left_result;
-    
-    double* right_result = right_child->plot(cnt, sorted_ticks);
-    double xr = right_result[0];
-    double yr = right_result[1];
-    cnt = right_result[2];
-    delete []right_result;
-    
-    double yn = distance;
-    
-    
-    plt::plot((vector<double>){xl, xl}, (vector<double>){yl, yn}, (map<string, string>){{"color", "black"}});
-    plt::plot((vector<double>){xr, xr}, (vector<double>){yr, yn}, (map<string, string>){{"color", "black"}});
-    plt::plot((vector<double>){xl, xr}, (vector<double>){yn, yn}, (map<string, string>){{"color", "black"}});
-    
-    return new double[3]{(xl + xr) / 2, yn, (double)cnt};
-}
-*/
-
-
-
-
-
-
 
 double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
     double v = 1e9 * (linkage == SINGLE);
@@ -51,33 +16,21 @@ double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
 
 
 
-
-
-
-
-/*
-
-void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string output_folder){
-    string output_file = output_folder + "/" + "dendrogram.pdf";
+void LipidSpace::create_dendrogram(){
+    dendrogram_sorting.clear();
+    dendrogram_points.clear();
     
-    cout << "Storing dendrogram at '" << output_file << "'" << endl;
-    vector<string> ticks;
-    int n = m.rows;
-    for (int i = 0; i < n; ++i){
-        vector<string>* tokens = split_string(lipidomes->at(i)->file_name, '/', '"');
-        ticks.push_back(tokens->back());
-        delete tokens;
-    }
+    int n = hausdorff_distances.rows;
     
     vector<Node*> nodes;
-    for (int i = 0; i < n; ++i) nodes.push_back(new Node(i, ticks.at(i)));
+    for (int i = 0; i < n; ++i) nodes.push_back(new Node(i));
     
     while (nodes.size() > 1){
         double min_val = 1e9;
         int ii = 0, jj = 0;
         for (int i = 0; i < (int)nodes.size() - 1; ++i){
             for (int j = i + 1; j < (int)nodes.size(); ++j){
-                double val = linkage(nodes.at(i), nodes.at(j), m, COMPLETE);
+                double val = linkage(nodes.at(i), nodes.at(j), hausdorff_distances, COMPLETE);
                 if (min_val > val){
                     min_val = val;
                     ii = i;
@@ -93,22 +46,10 @@ void LipidSpace::plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string ou
         nodes.push_back(new Node(node1, node2, min_val));
     }
     
-    vector<string> sorted_ticks;
-    double* ret = nodes.front()->plot(1, &sorted_ticks);
+    double* ret = nodes.front()->execute(1, &dendrogram_points, &dendrogram_sorting);
     delete []ret;
     delete nodes.front();
-    
-    vector<int> x;
-    for (int i = 1; i <= m.rows; ++i) x.push_back(i);
-    plt::xticks(x, sorted_ticks, {{"rotation", "45"}, {"horizontalalignment", "right"}, {"fontsize", "4"}});
-    plt::yticks((vector<int>){});
-    plt::title("Hierarchy of lipidomes");
-    
-    plt::save(output_file);
-    plt::close();
 }
-
-*/
 
 
 
@@ -771,17 +712,18 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
 
 
 
-void LipidSpace::compute_hausdorff_matrix(Matrix &distance_matrix){
+void LipidSpace::compute_hausdorff_matrix(){
+    
     int n = lipidomes.size();
-    distance_matrix.reset(n, n);
+    hausdorff_distances.reset(n, n);
             
     #pragma omp parallel for
     for (int ii = 0; ii < sq(n); ++ii){ 
         int i = ii / n;
         int j = ii % n;
         if (i < j){
-            distance_matrix(i, j) = compute_hausdorff_distance(lipidomes.at(i), lipidomes.at(j));
-            distance_matrix(j, i) = distance_matrix(i, j);
+            hausdorff_distances(i, j) = compute_hausdorff_distance(lipidomes.at(i), lipidomes.at(j));
+            hausdorff_distances(j, i) = hausdorff_distances(i, j);
         }
     }
 }
@@ -1009,10 +951,10 @@ void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
 
 
 
-void LipidSpace::report_hausdorff_matrix(Matrix &distance_matrix, string output_folder){
+void LipidSpace::report_hausdorff_matrix(string output_folder){
     ofstream off(output_folder + "/hausdorff_distances.csv");
     vector<string> striped_names;
-    int n = distance_matrix.rows;
+    int n = hausdorff_distances.rows;
     off << "ID";
     for (int i = 0; i < n; ++i){
         vector<string>* tokens = split_string(lipidomes.at(i)->file_name, '/', '"');
@@ -1024,7 +966,7 @@ void LipidSpace::report_hausdorff_matrix(Matrix &distance_matrix, string output_
     for (int i = 0; i < n; ++i){
         off << striped_names.at(i);
         for (int j = 0; j < n; ++j){
-            off << "\t" << distance_matrix(i, j);
+            off << "\t" << hausdorff_distances(i, j);
         } off << endl;
     }
 }
@@ -1321,7 +1263,7 @@ void LipidSpace::run_analysis(Progress *_progress){
     if (!progress || !progress->stop_progress){
         // set the step size for the next analyses
         if (progress){
-            progress->prepare_steps(5);
+            progress->prepare_steps(7);
             progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
         }
         Matrix pca;
@@ -1343,6 +1285,21 @@ void LipidSpace::run_analysis(Progress *_progress){
             progress->set_step();
         }
     }
+    
+    if (!progress || !progress->stop_progress){
+        compute_hausdorff_matrix();
+        if (progress){
+            progress->set_step();
+        }
+    }
+    
+    if (!progress || !progress->stop_progress){
+        create_dendrogram();
+        if (progress){
+            progress->set_step();
+        }
+    }
+    
     if (progress){
         progress->finish();
     }

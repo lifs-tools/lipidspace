@@ -38,6 +38,9 @@ public:
     vector<Table*> lipidomes;
     Table* global_lipidome;
     Progress *progress;
+    Array dendrogram_points;
+    vector<int> dendrogram_sorting;
+    Matrix hausdorff_distances;
     
 
     LipidSpace();
@@ -49,13 +52,13 @@ public:
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
     double compute_hausdorff_distance(Table* l1, Table* l2);
     //void plot_PCA(Table* table, string output_folder);
-    void compute_hausdorff_matrix(Matrix &m);
-    void report_hausdorff_matrix(Matrix &distance_matrix, string output_folder);
+    void compute_hausdorff_matrix();
+    void report_hausdorff_matrix(string output_folder);
     void compute_global_distance_matrix();
     void separate_matrixes();
     void normalize_intensities();
     void load_table(string table_file);
-    //void plot_dendrogram(vector<Table*>* lipidomes, Matrix &m, string output_folder);
+    void create_dendrogram();
     void store_distance_table(Table* lipidome, string output_folder);
     void run_analysis(Progress *progress = 0);
     std::thread run_analysis_thread(Progress *_progress);

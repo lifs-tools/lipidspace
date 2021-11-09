@@ -1,8 +1,7 @@
 #include "lipidspace/AssistanceFunctions.h"
 
-Node::Node(int index, string _name){
+Node::Node(int index){
     indexes.insert(index);
-    name = _name;
     left_child = 0;
     right_child = 0;
     distance = 0;
@@ -20,6 +19,46 @@ Node::Node(Node* n1, Node* n2, double d){
     for (auto i : n2->indexes) indexes.insert(i);
     distance = d;
 }
+
+
+double* Node::execute(int cnt, Array* points, vector<int>* sorted_ticks){
+    if (left_child == 0){
+        sorted_ticks->push_back(*indexes.begin());
+        return new double[3]{(double)cnt, 0, (double)cnt + 1};
+    }
+
+    double* left_result = left_child->execute(cnt, points, sorted_ticks);
+    double xl = left_result[0];
+    double yl = left_result[1];
+    cnt = left_result[2];
+    delete []left_result;
+    
+    double* right_result = right_child->execute(cnt, points, sorted_ticks);
+    double xr = right_result[0];
+    double yr = right_result[1];
+    cnt = right_result[2];
+    delete []right_result;
+    
+    double yn = distance;
+    
+    points->push_back(xl);
+    points->push_back(yl);
+    points->push_back(xl);
+    points->push_back(yn);
+    
+    points->push_back(xr);
+    points->push_back(yr);
+    points->push_back(xr);
+    points->push_back(yn);
+    
+    points->push_back(xl);
+    points->push_back(yn);
+    points->push_back(xr);
+    points->push_back(yn);
+    
+    return new double[3]{(xl + xr) / 2, yn, (double)cnt};
+}
+
 
 Progress::Progress(){
     current_progress = 0;

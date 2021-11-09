@@ -29,6 +29,8 @@ public:
     int len;
     QString title;
     bool is_dendrogram;
+    QVector<QLineF> lines;
+    QVector<QString> dendrogram_titles;
     
     PointSet(int, Table* _table, bool _is_dendrogram = false);
     ~PointSet();
@@ -71,11 +73,14 @@ private:
     bool antialiased;
     QPixmap pixmap;
     double scaling;
+    double scaling_dendrogram;
     double basescale;
     QPointF offset;
+    QPointF offset_dendrogram;
     Qt::MouseButton mousePressed;
     QPointF deltaMouse;
     QPointF oldOffset;
+    QPointF oldOffset_dendrogram;
     LipidSpace *lipid_space;
     int alpha;
     int numTiles;

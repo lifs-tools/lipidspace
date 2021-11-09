@@ -25,6 +25,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     mousePressed = Qt::NoButton;
     antialiased = true;
     scaling = 1.;
+    scaling_dendrogram = 1.;
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
     lipid_space = 0;
@@ -33,6 +34,8 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     tileColumns = 0;
     offset.setX(0);
     offset.setY(0);
+    offset_dendrogram.setX(0);
+    offset_dendrogram.setY(0);
     basescale = -1;
     oldSize.setX(width());
     oldSize.setX(height());
@@ -74,6 +77,7 @@ void Canvas::mousePressEvent(QMouseEvent *event){
         mousePressed = event->button();
         deltaMouse = event->pos();
         oldOffset = QPoint(offset.x(), offset.y());
+        oldOffset_dendrogram = QPoint(offset_dendrogram.x(), offset_dendrogram.y());
         
         if (mousePressed == Qt::RightButton){
             QPoint mouse = event->pos();
@@ -154,14 +158,15 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     if (bound_num < 0) return;
     
     if (mousePressed == Qt::LeftButton){
-        if (bound_num == 0 && showDendrogram){
-            
+        if (bound_num == 0 && showDendrogram && lipid_space->lipidomes.size() > 1){
+            offset_dendrogram.setX(oldOffset_dendrogram.x() + (mouse.x() - deltaMouse.x()));
+            offset_dendrogram.setY(oldOffset_dendrogram.y() + (mouse.y() - deltaMouse.y()));
         }
         else {
             offset.setX(oldOffset.x() + (mouse.x() - deltaMouse.x()));
             offset.setY(oldOffset.y() + (mouse.y() - deltaMouse.y()));
-            update();
         }
+        update();
         return;
     }
     
@@ -216,8 +221,19 @@ void Canvas::wheelEvent(QWheelEvent *event){
     }
     if (bound_num < 0) return;
     
-    if (bound_num == 0 && showDendrogram){
-        
+    if (bound_num == 0 && showDendrogram && lipid_space->lipidomes.size() > 1){
+        double old_scaling = scaling_dendrogram;
+        if (event->angleDelta().y() < 0){
+            if (scaling_dendrogram > 0.2) scaling_dendrogram /= 1.1;
+        }
+        else {
+            scaling_dendrogram *= 1.1;
+        }
+        QRectF &bound = pointSets[bound_num]->bound;
+        double mx = mouse.x() - bound.x();
+        double my = mouse.y() - bound.y();
+        offset_dendrogram.setX(mx + (offset_dendrogram.x() - mx) / old_scaling * scaling_dendrogram);
+        offset_dendrogram.setY(my + (offset_dendrogram.y() - my) / old_scaling * scaling_dendrogram);
     }
     else {
         double old_scaling = scaling;
@@ -352,8 +368,11 @@ void Canvas::refreshCanvas(){
     double y_min = 0;
     double y_max = 0;
     
-    if (showDendrogram){
+    if (showDendrogram && lipid_space->lipidomes.size() > 1){
         pointSets.push_back(new PointSet(0, 0, true));
+        for (int i = 0; i < (int)lipid_space->dendrogram_points.size(); i += 4){
+            pointSets.back()->lines.push_back(QLineF(lipid_space->dendrogram_points[i] * 7 * 5, -lipid_space->dendrogram_points[i + 1] * 5, lipid_space->dendrogram_points[i + 2] * 7 * 5, -lipid_space->dendrogram_points[i + 3] * 5));
+        }
     }
     
     
@@ -414,6 +433,16 @@ void Canvas::refreshCanvas(){
     
     
     
+    
+    if (showDendrogram && lipid_space->lipidomes.size() > 1){
+        int off = (lipid_space->lipidomes.size() > 1 && showDendrogram) + (lipid_space->lipidomes.size() > 1 && showGlobalLipidome);
+        for (int i : lipid_space->dendrogram_sorting){
+            pointSets[0]->dendrogram_titles.push_back(pointSets.at(off + i)->title);
+        }
+    }
+    
+    
+    
     double ox = w_rect * 0.5 - ((x_max + x_min) / 2 / basescale);
     double oy = h_rect * 0.5 - ((y_max + y_min) / 2 / basescale);
     offset.setX(ox);
@@ -434,6 +463,33 @@ void Canvas::paintEvent(QPaintEvent *event){
     
     if (!pointSets.size()) return;
 
+    if (showDendrogram && lipid_space->lipidomes.size() > 1){
+        QPen pen;
+        pen.setColor(QColor(0, 0, 0, 255));
+        pen.setWidth(2);
+        painter.setPen(pen);
+        
+        painter.save();
+        
+        // setting clipping area
+        painter.setClipRect(pointSets[0]->bound);
+        
+        // transform area to according section
+        painter.translate(offset_dendrogram);
+        painter.scale(scaling_dendrogram / 5., scaling_dendrogram / 5.);
+        
+        painter.drawLines(pointSets[0]->lines);
+        int i = 7;
+        QFont f("Helvetica", 2 * 5);
+        painter.setFont(f);
+        for (QString title : pointSets[0]->dendrogram_titles){
+            painter.rotate(-90);
+            painter.drawText(QRect(-202 * 5, (i - 20) * 5, 200 * 5, 40 * 5), Qt::AlignVCenter | Qt::AlignRight, title);
+            painter.rotate(90);
+            i += 7;
+        }
+        painter.restore();
+    }
             
     for (auto pointSet : pointSets){
         if (pointSet->is_dendrogram) continue;
