@@ -98,6 +98,7 @@ private:
     bool showDendrogram;
     bool showGlobalLipidome;
     int tileLayout;
+    double dendrogram_factor;
     
     static const vector<QColor> COLORS;
     static const double PRECESION_FACTOR;

@@ -51,6 +51,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent){
     movePointSetStart.setX(0.);
     movePointSetStart.setY(0.);
     moveSet = -1;
+    dendrogram_factor = 1;
 }
 
 
@@ -296,11 +297,14 @@ void Canvas::resizeEvent(QResizeEvent* ){
         offset.setX(offset.x() + (mx - oldSize.x()));
         offset.setY(offset.y() + (my - oldSize.y()));
     }
+    if (oldSize.x() > 0 && oldSize.y() > 0){
+        offset_dendrogram.setX(offset_dendrogram.x() + (mx - oldSize.x()));
+        offset_dendrogram.setY(offset_dendrogram.y() + (my - oldSize.y()));
+    }
     
     oldSize.setX(mx);
     oldSize.setY(my);
-    
-    
+
     update();
 }
 
@@ -359,22 +363,56 @@ void Canvas::refreshCanvas(){
     tileColumns = tileLayout == 0 ? ceil(sqrt((double)numTiles)) : tileLayout;
     
     
+    int tileRows = ceil((double)numTiles / (double)tileColumns);
+    double w_rect = (double)width() * ((1. - MARGIN * ((double)tileColumns + 1.)) / (double)tileColumns);
+    double h_rect = (double)height() * ((1. - MARGIN * ((double)tileRows + 1.)) / (double)tileRows);
+    
     if (!global_lipidome) return;
     
     pointSets.clear();
+    
+    
+    if (showDendrogram && lipid_space->lipidomes.size() > 1){
+        double x_min_d = 1e9;
+        double x_max_d = 0;
+        double y_min_d = 1e9;
+        double y_max_d = 0;
+        
+        pointSets.push_back(new PointSet(0, 0, true));
+        for (int i = 0; i < (int)lipid_space->dendrogram_points.size(); i += 4){
+            pointSets.back()->lines.push_back(QLineF(lipid_space->dendrogram_points[i], -lipid_space->dendrogram_points[i + 1], lipid_space->dendrogram_points[i + 2], -lipid_space->dendrogram_points[i + 3]));
+            
+            
+            x_min_d = min(x_min_d, lipid_space->dendrogram_points[i]);
+            x_max_d = max(x_max_d, lipid_space->dendrogram_points[i]);
+            x_min_d = min(x_min_d, lipid_space->dendrogram_points[i + 2]);
+            x_max_d = max(x_max_d, lipid_space->dendrogram_points[i + 2]);
+            y_min_d = min(y_min_d, lipid_space->dendrogram_points[i + 1]);
+            y_max_d = max(y_max_d, lipid_space->dendrogram_points[i + 1]);
+            y_min_d = min(y_min_d, lipid_space->dendrogram_points[i + 3]);
+            y_max_d = max(y_max_d, lipid_space->dendrogram_points[i + 3]);
+            
+        }
+        
+        dendrogram_factor = w_rect / (x_max_d - x_min_d) * 0.9;
+        double factor_y_d = h_rect / (y_max_d - y_min_d) * 0.7;
+        
+        for (QLineF &line : pointSets.back()->lines){
+            line.setLine(line.x1() * dendrogram_factor, line.y1() * factor_y_d, line.x2() * dendrogram_factor, line.y2() * factor_y_d);
+        }
+        
+        
+        offset_dendrogram.setX((double)width() * MARGIN + w_rect * 0.5 - (x_max_d + x_min_d) * 0.5 * dendrogram_factor);
+        offset_dendrogram.setY((double)height() * MARGIN + h_rect * 0.85);
+    }
+    
+    
+    
     
     double x_min = 0;
     double x_max = 0;
     double y_min = 0;
     double y_max = 0;
-    
-    if (showDendrogram && lipid_space->lipidomes.size() > 1){
-        pointSets.push_back(new PointSet(0, 0, true));
-        for (int i = 0; i < (int)lipid_space->dendrogram_points.size(); i += 4){
-            pointSets.back()->lines.push_back(QLineF(lipid_space->dendrogram_points[i] * 7 * 5, -lipid_space->dendrogram_points[i + 1] * 5, lipid_space->dendrogram_points[i + 2] * 7 * 5, -lipid_space->dendrogram_points[i + 3] * 5));
-        }
-    }
-    
     
     // add only global lipidome when we have more than one lipidome
     if (lipid_space->lipidomes.size() > 1 && showGlobalLipidome){
@@ -420,10 +458,6 @@ void Canvas::refreshCanvas(){
     y_max *= 1.1;
     minMax.setRect(x_min, x_max, y_min, y_max);
     
-    int tileRows = ceil((double)numTiles / (double)tileColumns);
-    double w_rect = (double)width() * ((1. - MARGIN * ((double)tileColumns + 1.)) / (double)tileColumns);
-    double h_rect = (double)height() * ((1. - MARGIN * ((double)tileRows + 1.)) / (double)tileRows);
-    
     if ((x_max - x_min) / (double)w_rect > (y_max - y_min) / (double)h_rect){
         basescale = (x_max - x_min) / (double)w_rect;
     }
@@ -466,7 +500,7 @@ void Canvas::paintEvent(QPaintEvent *event){
     if (showDendrogram && lipid_space->lipidomes.size() > 1){
         QPen pen;
         pen.setColor(QColor(0, 0, 0, 255));
-        pen.setWidth(2);
+        pen.setWidth(1);
         painter.setPen(pen);
         
         painter.save();
@@ -476,17 +510,17 @@ void Canvas::paintEvent(QPaintEvent *event){
         
         // transform area to according section
         painter.translate(offset_dendrogram);
-        painter.scale(scaling_dendrogram / 5., scaling_dendrogram / 5.);
+        painter.scale(scaling_dendrogram, scaling_dendrogram);
         
         painter.drawLines(pointSets[0]->lines);
-        int i = 7;
-        QFont f("Helvetica", 2 * 5);
+        double di = 0;
+        QFont f("Helvetica", 2);
         painter.setFont(f);
         for (QString title : pointSets[0]->dendrogram_titles){
             painter.rotate(-90);
-            painter.drawText(QRect(-202 * 5, (i - 20) * 5, 200 * 5, 40 * 5), Qt::AlignVCenter | Qt::AlignRight, title);
+            painter.drawText(QRect(-202, (di - 20), 200, 40), Qt::AlignVCenter | Qt::AlignRight, title);
             painter.rotate(90);
-            i += 7;
+            di += dendrogram_factor;
         }
         painter.restore();
     }

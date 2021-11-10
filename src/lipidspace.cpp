@@ -46,7 +46,7 @@ void LipidSpace::create_dendrogram(){
         nodes.push_back(new Node(node1, node2, min_val));
     }
     
-    double* ret = nodes.front()->execute(1, &dendrogram_points, &dendrogram_sorting);
+    double* ret = nodes.front()->execute(0, &dendrogram_points, &dendrogram_sorting);
     delete []ret;
     delete nodes.front();
 }
@@ -1243,6 +1243,8 @@ std::thread LipidSpace::run_analysis_thread(Progress *_progress) {
 }
 
 
+bool mysort(double* a, double* b){ return a[0] < b[0];}
+
 void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
     
@@ -1303,6 +1305,38 @@ void LipidSpace::run_analysis(Progress *_progress){
     if (progress){
         progress->finish();
     }
+    
+    
+    /*
+    Matrix aa(global_lipidome->m.rows, lipidomes.size());
+    map<string, int> species_to_index;
+    for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
+        species_to_index.insert({global_lipidome->species[i], i});
+    }
+    
+    for (int c = 0; c < (int)lipidomes.size(); c++){
+        auto lipidome = lipidomes[c];
+        for (int r = 0; r < (int)lipidome->species.size(); ++r){
+            aa(species_to_index[lipidome->species[r]], c) = lipidome->intensities(r);
+        }
+    }
+    {
+        Matrix p;
+        aa.transpose();
+        aa.PCA(p, 2);
+        aa.rewrite(p);
+    }
+    
+    vector<double*> lst;
+    for (int r = 0; r < aa.rows; ++r){
+        lst.push_back(new double[2]{sq(aa(r, 0)) + sq(aa(r, 1)), (double)r});
+    }
+    sort(lst.begin(), lst.end(), mysort);
+    for (auto row : lst){
+        //cout << row[0] << " " << global_lipidome->species[(int)row[1]] << endl;
+        cout << row[0] << " " << lipidomes[(int)row[1]]->file_name << endl;
+    }
+    */
 }
 
 
