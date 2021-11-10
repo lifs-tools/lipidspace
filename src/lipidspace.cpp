@@ -556,7 +556,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
             delete tokens;
         }
         else {
-            lipidome->intensities.push_back(STD_POINT_SIZE);
+            lipidome->intensities.push_back(1);
         }
         lipids.push_back(line);
         lipidome->lipids.push_back(0);
@@ -730,224 +730,6 @@ void LipidSpace::compute_hausdorff_matrix(){
 
 
 
-double pairwise_sum(Matrix &m){
-    assert(m.cols == 2);
-    Matrix tm(m, true);
-    
-    double dist_sum = 0;
-    for (int tm2c = 0; tm2c < tm.cols; tm2c++){
-        double* tm2col = tm.data() + (tm2c * tm.rows);
-        for (int tm1c = 0; tm1c < tm.cols; ++tm1c){
-            double* tm1col = tm.data() + (tm1c * tm.rows);
-            double dist = sq(tm1col[0] - tm2col[0]);
-            dist += sq(tm1col[1] - tm2col[1]);
-            dist_sum += sqrt(dist);
-        }
-    }
-    return dist_sum;
-}
-
-
-
-void automated_annotation(Array &xx, Array &yy, int l, Matrix &label_points){
-    Array label_xx(xx, l);
-    Array label_yy(yy, l);
-    double max_int = (double)(~0u) * 0.5;
-    for (int i = 0; i < l; ++i){
-        label_xx(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
-        label_yy(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
-    }
-    Array orig_label_xx(label_xx);
-    Array orig_label_yy(label_yy);
-    
-    double sigma_x = xx.stdev();
-    double sigma_y = yy.stdev();
-    
-    Array all_xx(label_xx);
-    all_xx.add(xx);
-    Array all_yy(label_yy);
-    all_yy.add(yy);
-    Matrix r;
-    r.add_column(all_xx);
-    r.add_column(all_yy);
-    
-     
-    double ps = pairwise_sum(r) / sq(all_xx.size());
-    double nf_x = 0.5 * sigma_x / ps; // normalization factor
-    double nf_y = 0.5 * sigma_y / ps; // normalization factor
-
-    
-    // do 30 iterations to find an equilibrium of pulling and pushing forces
-    // for the label positions
-    for (int rep = 0; rep < 30; ++rep){
-        Array new_xx(l, 0);
-        Array new_yy(l, 0);
-        for (int ii = 0; ii < l; ++ii){
-            double l_xx = label_xx[ii];
-            double l_yy = label_yy[ii];
-            
-            Array distances;
-            distances.compute_distances(all_xx, l_xx, all_yy, l_yy);
-            
-            // apply pushing force
-            double force_x = 0, force_y = 0;
-            for (int i = 0; i < (int)all_xx.size(); ++i){
-                force_x += ((i < l) ? 50.0 : 1.) * nf_x * (all_xx(i) - l_xx) / (distances(i) + 1e-16);
-                force_y += ((i < l) ? 30.0 : 1.) * nf_y * (all_yy(i) - l_yy) / (distances(i) + 1e-16);
-            }
-            
-            l_xx -= force_x;
-            l_yy -= force_y;
-            
-            // apply pulling force
-            new_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.6;
-            new_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.6;
-        }
-        for (int i = 0; i < l; ++i){
-            label_xx(i) = new_xx(i);
-            all_xx(i) = new_xx(i);
-            label_yy(i) = new_yy(i);
-            all_yy(i) = new_yy(i);
-        }
-    }
-    
-    
-    
-    label_points.reset(0, 0);
-    label_points.add_column(label_xx);
-    label_points.add_column(label_yy);
-}
-
-
-
-/*
-
-void LipidSpace::plot_PCA(Table* lipidome, string output_folder){
-    string output_file_name = lipidome->file_name;
-    vector<string>* tokens = split_string(output_file_name, '/');
-    output_file_name = tokens->back();
-    delete tokens;
-    
-    if (output_file_name.find(".") != string::npos){
-        tokens = split_string(output_file_name, '.');
-        stringstream output_stream;
-        for (int i = 0; i < (int)tokens->size() - 1; ++i) output_stream << tokens->at(i);
-        output_stream << ".pdf";
-        output_file_name = output_stream.str();
-        delete tokens;
-    }
-    else {
-        output_file_name += ".pdf";
-    }
-    output_file_name = output_folder + "/" + output_file_name;
-    
-    
-    map<string, vector<int>> indexes;
-    for (int i = 0; i < (int)lipidome->classes.size(); ++i){
-        string lipid_class = lipidome->classes.at(i);
-        if (uncontains(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
-        indexes.at(lipid_class).push_back(i);
-    }
-    
-    Array mean_x;
-    Array mean_y;
-    vector<string> labels;
-    
-    double min_x = 0, max_x = 0, min_y = 0, max_y = 0;
-    
-    Array intensities(lipidome->intensities);
-    double mean = 0, stdev = 0;
-    for (auto val : intensities) mean += val;
-    mean /= (double)intensities.size();
-    
-    for (auto val : intensities) stdev += sq(val - mean);
-    stdev = sqrt(stdev / (double)intensities.size());
-    
-    if (stdev > 1e-16){
-        stdev = 5. / stdev;
-        for (int i = 0; (int)i < intensities.size(); ++i) {
-            intensities[i] *= stdev;
-        }
-    }
-    
-    
-    // plot the dots
-    for (auto kv : indexes){
-        vector<double> x;
-        vector<double> y;
-        vector<double> intens;
-        double mx = 0, my = 0;
-        for (auto i : kv.second){
-            double vx = lipidome->m(i, 0), vy = lipidome->m(i, 1);
-            x.push_back(vx);
-            mx += vx;
-            min_x = mmin(min_x, vx);
-            max_x = max(max_x, vx);
-            y.push_back(vy);
-            my += vy;
-            min_y = mmin(min_y, vy);
-            max_y = max(max_y, vy);
-            intens.push_back(intensities[i] > 1 ? log(intensities[i]) : 0.1);
-        }
-        mean_x.push_back(mx / (double)x.size());
-        mean_y.push_back(my / (double)y.size());
-        
-        stringstream label;
-        label << kv.first << " (" << x.size() << ")";
-        labels.push_back(label.str());
-        plt::scatter(x, y, intens);
-    }
-    
-    for (int i = 0; i < lipidome->m.rows; ++i){
-        mean_x.push_back(lipidome->m(i, 0));
-        mean_y.push_back(lipidome->m(i, 1));
-    }
-
-    
-    // plot the annotations
-    Matrix label_m;
-    automated_annotation(mean_x, mean_y, labels.size(), label_m);
-    
-    
-    for (int i = 0; (int)i < labels.size(); ++i){
-        plt::annotate(labels.at(i), mean_x.at(i), mean_y.at(i), label_m(i, 0), label_m(i, 1), {{"color", "#bbbbbb"}, {"fontsize", "6"}, {"weight", "bold"}, {"verticalalignment", "center"}, {"horizontalalignment", "center"}});
-    }
-    min_x = mmin(min_x, label_m.col_min(0));
-    max_x = mmax(max_x, label_m.col_max(0));
-    min_y = mmin(min_y, label_m.col_min(label_m.cols - 1));
-    max_y = mmax(max_y, label_m.col_max(label_m.cols - 1));
-    
-    
-    Array pca_variances;
-    compute_PCA_variances(lipidome->m, pca_variances);
-    
-    stringstream xlabel;
-    xlabel.precision(1);
-    xlabel << fixed << "Principal component 1 (" << (pca_variances[0] * 100) << " %)";
-    //xlabel << fixed << "Principal component 1";
-    
-    stringstream ylabel;
-    ylabel.precision(1);
-    ylabel << fixed << "Principal component 2 (" << (pca_variances[1] * 100) << " %)";
-    //ylabel << fixed << "Principal component 2";
-    
-    plt::xlabel(xlabel.str());
-    plt::ylabel(ylabel.str());
-    
-    plt::xlim(min_x * 1.1, max_x * 1.1);
-    plt::ylim(min_y * 1.1, max_y * 1.1);
-    
-    cout << "storing '" << output_file_name << "'" << endl;
-    plt::xticks((vector<int>){});
-    plt::yticks((vector<int>){});
-    plt::save(output_file_name);
-    plt::close();
-}
-
-*/
-
-
-
 
 
 
@@ -995,13 +777,9 @@ void LipidSpace::compute_global_distance_matrix(){
             string lipid_species = lipidome->species.at(i);
             if (contains_val(registered_lipids, lipid_species)) continue;
             registered_lipids.insert(lipid_species);
-            
-            //cout << i << " " << lipidome->classes.size() << " " << lipidome->lipids.size() << endl;
-            //cout << lipidome->lipids.at(i)->get_lipid_string() << endl;
             global_lipidome->species.push_back(lipid_species);
             global_lipidome->classes.push_back(lipidome->classes.at(i));
             global_lipidome->lipids.push_back(lipidome->lipids.at(i));
-            //cout << "out" << endl;
         }
     }
     
@@ -1009,17 +787,14 @@ void LipidSpace::compute_global_distance_matrix(){
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
     global_lipidome->intensities.resize(n);
-    for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = STD_POINT_SIZE;
+    for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = 1;
     
     // compute distances
-    cout << "Computing pairwise distance matrix for " << n << " lipids" << endl;
     Matrix& distance_matrix = global_lipidome->m;
     distance_matrix.reset(n, n);
     
     
     double total_num = (n * (n - 1)) >> 1;
-    double tn = 0;
-    double next_announce = 10;
     double next_tp = 1;
     
     if (progress){
@@ -1046,11 +821,6 @@ void LipidSpace::compute_global_distance_matrix(){
                         next_tp += 1;
                     }
                 }
-                if (++tn / total_num * 100. >= next_announce){
-                    cout << next_announce << "% ";
-                    cout.flush();
-                    next_announce += 10;
-                }
             }
             if (go_on){
                 int union_num, inter_num;
@@ -1064,7 +834,6 @@ void LipidSpace::compute_global_distance_matrix(){
             }
         }
     }
-    cout << endl;
 }
 
 

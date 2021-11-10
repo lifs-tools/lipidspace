@@ -19,7 +19,9 @@
 using namespace std;
 
 #define MARGIN 0.01
-#define POINT_BASE_SIZE 2.0
+#define POINT_BASE_SIZE 4.0
+#define PRECESION_FACTOR 10000.
+#define LABEL_COLOR 200, 200, 200, 255
 
 class PointSet {
 public:
@@ -31,10 +33,15 @@ public:
     bool is_dendrogram;
     QVector<QLineF> lines;
     QVector<QString> dendrogram_titles;
+    vector<QString> labels;
+    vector<QPointF> label_points;
+    vector<QPointF> class_means;
+    
     
     PointSet(int, Table* _table, bool _is_dendrogram = false);
     ~PointSet();
-    
+    void set_labels();
+    void automated_annotation(Array &xx, Array &yy, Matrix &label_points);
 };
 
 
@@ -99,9 +106,10 @@ private:
     bool showGlobalLipidome;
     int tileLayout;
     double dendrogram_factor;
+    QImage logo;
+    QColor label_color;
     
     static const vector<QColor> COLORS;
-    static const double PRECESION_FACTOR;
 };
 
 #endif /* CANVAS_H */

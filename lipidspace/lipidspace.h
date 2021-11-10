@@ -4,23 +4,16 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "cppgoslin/cppgoslin.h"
 #include <math.h>
 #include <algorithm>
 #include <sys/stat.h>
 #include <immintrin.h>
 #include <QtCore>
-
-//#include "LipidSpace/matplotlibcpp.h"
+#include "cppgoslin/cppgoslin.h"
 #include "lipidspace/AssistanceFunctions.h"
 
-#define STD_POINT_SIZE 3
  
 using namespace std;
-//namespace plt = matplotlibcpp; 
-
-
-
 
 
 class LipidSpace {

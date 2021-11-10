@@ -21,7 +21,147 @@ PointSet::~PointSet(){
 }
 
 
-Canvas::Canvas(QWidget *parent) : QWidget(parent){
+double pairwise_sum(Matrix &m){
+    assert(m.cols == 2);
+    Matrix tm(m, true);
+    
+    double dist_sum = 0;
+    for (int tm2c = 0; tm2c < tm.cols; tm2c++){
+        double* tm2col = tm.data() + (tm2c * tm.rows);
+        for (int tm1c = 0; tm1c < tm.cols; ++tm1c){
+            double* tm1col = tm.data() + (tm1c * tm.rows);
+            double dist = sq(tm1col[0] - tm2col[0]);
+            dist += sq(tm1col[1] - tm2col[1]);
+            dist_sum += sqrt(dist);
+        }
+    }
+    return dist_sum;
+}
+
+
+
+void PointSet::set_labels(){
+
+    map<string, vector<int>> indexes;
+    for (int i = 0; i < (int)table->classes.size(); ++i){
+        string lipid_class = table->classes.at(i);
+        if (uncontains_val(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
+        indexes.at(lipid_class).push_back(i);
+    }
+    
+    Array mean_x;
+    Array mean_y;
+    
+    // plot the dots
+    for (auto kv : indexes){
+        double mx = 0, my = 0;
+        for (auto i : kv.second){
+            mx += table->m(i, 0);
+            my += table->m(i, 1);
+        }
+        mean_x.push_back(mx / (double)kv.second.size());
+        mean_y.push_back(my / (double)kv.second.size());
+        class_means.push_back(QPointF(mx / (double)kv.second.size() * PRECESION_FACTOR, my / (double)kv.second.size() * PRECESION_FACTOR));
+        
+        stringstream label;
+        label << kv.first << " (" << kv.second.size() << ")";
+        labels.push_back(QString(label.str().c_str()));
+    }
+    
+    for (int i = 0; i < table->m.rows; ++i){
+        mean_x.push_back(table->m(i, 0));
+        mean_y.push_back(table->m(i, 1));
+    }
+
+    
+    // plot the annotations
+    Matrix label_m;
+    automated_annotation(mean_x, mean_y, label_m);
+    for (int r = 0; r < label_m.rows; ++r){
+        label_points.push_back(QPointF(label_m(r, 0) * PRECESION_FACTOR, label_m(r, 1) * PRECESION_FACTOR));
+    }
+}
+
+
+
+void PointSet::automated_annotation(Array &xx, Array &yy, Matrix &label_points){
+    int l = labels.size();
+    Array label_xx(xx, l);
+    Array label_yy(yy, l);
+    double max_int = (double)(~0u) * 0.5;
+    for (int i = 0; i < l; ++i){
+        label_xx(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
+        label_yy(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
+    }
+    Array orig_label_xx(label_xx);
+    Array orig_label_yy(label_yy);
+    
+    double sigma_x = xx.stdev();
+    double sigma_y = yy.stdev();
+    
+    Array all_xx(label_xx);
+    all_xx.add(xx);
+    Array all_yy(label_yy);
+    all_yy.add(yy);
+    Matrix r;
+    r.add_column(all_xx);
+    r.add_column(all_yy);
+    
+     
+    double ps = pairwise_sum(r) / sq(all_xx.size());
+    double nf_x = 0.5 * sigma_x / ps; // normalization factor
+    double nf_y = 0.5 * sigma_y / ps; // normalization factor
+
+    
+    // do 30 iterations to find an equilibrium of pulling and pushing forces
+    // for the label positions
+    for (int rep = 0; rep < 30; ++rep){
+        Array new_xx(l, 0);
+        Array new_yy(l, 0);
+        for (int ii = 0; ii < l; ++ii){
+            double l_xx = label_xx[ii];
+            double l_yy = label_yy[ii];
+            
+            Array distances;
+            distances.compute_distances(all_xx, l_xx, all_yy, l_yy);
+            
+            // apply pushing force
+            double force_x = 0, force_y = 0;
+            for (int i = 0; i < (int)all_xx.size(); ++i){
+                force_x += ((i < l) ? 50.0 : 1.) * nf_x * (all_xx(i) - l_xx) / (distances(i) + 1e-16);
+                force_y += ((i < l) ? 30.0 : 1.) * nf_y * (all_yy(i) - l_yy) / (distances(i) + 1e-16);
+            }
+            
+            l_xx -= force_x;
+            l_yy -= force_y;
+            
+            // apply pulling force
+            new_xx(ii) = orig_label_xx(ii) + (l_xx - orig_label_xx(ii)) * 0.6;
+            new_yy(ii) = orig_label_yy(ii) + (l_yy - orig_label_yy(ii)) * 0.6;
+        }
+        for (int i = 0; i < l; ++i){
+            label_xx(i) = new_xx(i);
+            all_xx(i) = new_xx(i);
+            label_yy(i) = new_yy(i);
+            all_yy(i) = new_yy(i);
+        }
+    }
+    
+    
+    
+    label_points.reset(0, 0);
+    label_points.add_column(label_xx);
+    label_points.add_column(label_yy);
+}
+
+
+
+
+
+
+
+
+Canvas::Canvas(QWidget *parent) : QWidget(parent), logo("LipidSpace.png"), label_color(LABEL_COLOR) {
     mousePressed = Qt::NoButton;
     antialiased = true;
     scaling = 1.;
@@ -61,15 +201,7 @@ Canvas::~Canvas(){
 
 
 
-
-
-
-const double Canvas::PRECESION_FACTOR = 10000.;
 const vector<QColor> Canvas::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
-
-
-
-
 
 
 
@@ -350,9 +482,6 @@ void Canvas::showHideGlobalLipidome(bool _showGlobalLipidome){
 
 
 
-
-
-
 void Canvas::refreshCanvas(){
     if (!lipid_space) return;
     
@@ -429,6 +558,7 @@ void Canvas::refreshCanvas(){
                 pointSets.back()->points[r].setX(xval);
                 pointSets.back()->points[r].setY(yval);
             }
+            pointSets.back()->set_labels();
         }
         else {
             return;
@@ -451,6 +581,7 @@ void Canvas::refreshCanvas(){
             pointSets.back()->points[r].setX(xval);
             pointSets.back()->points[r].setY(yval);
         }
+        pointSets.back()->set_labels();
     }
     x_min *= 1.1;
     x_max *= 1.1;
@@ -495,7 +626,18 @@ void Canvas::paintEvent(QPaintEvent *event){
     painter.eraseRect(rect);
     painter.setRenderHint(QPainter::Antialiasing);
     
-    if (!pointSets.size()) return;
+    if (!pointSets.size()){
+        painter.fillRect(QRect(0, 0, width(), height()), Qt::white);
+        double val = min(width(), height()) * 0.7;
+        painter.drawImage(QRectF((width() - val) * 0.5, (height() - val) * 0.5, val, val), logo);
+        return;
+    }
+    
+    
+    // set background
+    painter.fillRect(QRect(0, 0, width(), height()), QColor(245, 245, 245, 255));
+    
+    
 
     if (showDendrogram && lipid_space->lipidomes.size() > 1){
         QPen pen;
@@ -503,10 +645,12 @@ void Canvas::paintEvent(QPaintEvent *event){
         pen.setWidth(1);
         painter.setPen(pen);
         
-        painter.save();
+        QPainterPath path;
+        path.addRoundedRect(pointSets[0]->bound, 10, 10);
+        painter.fillPath(path, Qt::white);
         
-        // setting clipping area
-        painter.setClipRect(pointSets[0]->bound);
+        painter.save();
+        painter.setClipRect(pointSets[0]->bound); // setting clipping area
         
         // transform area to according section
         painter.translate(offset_dendrogram);
@@ -527,6 +671,12 @@ void Canvas::paintEvent(QPaintEvent *event){
             
     for (auto pointSet : pointSets){
         if (pointSet->is_dendrogram) continue;
+        
+        QPainterPath path;
+        path.addRoundedRect(pointSet->bound, 10, 10);
+        painter.fillPath(path, Qt::white);
+        
+        // drawing the points
         for (int i = 0; i < pointSet->len; ++i){
             painter.save();
             
@@ -561,6 +711,68 @@ void Canvas::paintEvent(QPaintEvent *event){
             painter.drawPoint(pointSet->points[i]);
             painter.restore();
         }
+        
+        // drawing the labels
+        
+        // setting up the font type
+        QFont f("Helvetica", 3 * basescale);
+        painter.setFont(f);
+        QPen penf;
+        penf.setColor(label_color);
+        
+        QPen pen_arr;
+        pen_arr.setColor(label_color);
+        pen_arr.setWidth(0.2 * basescale);
+        pen_arr.setStyle(Qt::DashLine);
+        
+        for (int i = 0; i < (int)pointSet->labels.size(); ++i){
+            painter.save();                             
+            painter.setClipRect(pointSet->bound);       // setting clipping area
+            painter.translate(offset);                  // transform area to according section
+            painter.translate(QPointF(pointSet->bound.x(), pointSet->bound.y()));
+            painter.scale(scaling / basescale, scaling / basescale);
+            
+            
+            // draw the actual label
+            painter.setPen(penf);
+            painter.drawText(QRect(pointSet->label_points[i].x() - 100 * basescale, pointSet->label_points[i].y() - 10 * basescale, 200 * basescale, 20 * basescale), Qt::AlignVCenter | Qt::AlignCenter, pointSet->labels[i]);
+            
+            double hypothenuse = sqrt(sq(pointSet->label_points[i].x() - pointSet->class_means[i].x()) + sq(pointSet->label_points[i].y() - pointSet->class_means[i].y()));
+            
+            double angle = asin((pointSet->label_points[i].y() - pointSet->class_means[i].y()) / hypothenuse) / M_PI * 180;
+            
+        
+            
+            // draw the arrow
+            painter.setPen(pen_arr);
+            
+            QPointF rotate_point = pointSet->label_points[i].x() < pointSet->class_means[i].x() ? pointSet->label_points[i] : pointSet->class_means[i];
+            double sign = 1 - 2 * (pointSet->label_points[i].x() < pointSet->class_means[i].x());
+            
+            painter.translate(rotate_point);
+            painter.rotate(sign * angle);
+            QRectF rectangle(0, -hypothenuse * 0.1, hypothenuse, hypothenuse * 0.2);
+            double const startAngle = 16 * 20;
+            double const endAngle   = 16 * 160;
+            double const spanAngle = endAngle - startAngle;
+            painter.drawArc(rectangle, startAngle, spanAngle);
+            
+            //TODO
+            /*
+            QPen pen_head;
+            pen_head.setColor(label_color);
+            painter.setPen(pen_head);
+            QPolygonF polygon;
+            polygon << QPointF(0.5 * basescale, -0.5 * basescale) << QPointF(0.8 * basescale);
+            QPainterPath head_path;
+            head_path.addPolygon(myPolygon);
+            painter.fillPath(head_path, label_color);
+            */
+            
+            painter.restore();
+        }
+        
+        
     }
     
     
@@ -571,6 +783,7 @@ void Canvas::paintEvent(QPaintEvent *event){
     QFont f("Helvetica", 8);
     painter.setFont(f);
     
+    /*
     for (auto pointSet : pointSets){
         QRectF textBound(pointSet->bound);
         textBound.setX(textBound.x() + 5);
@@ -578,8 +791,9 @@ void Canvas::paintEvent(QPaintEvent *event){
         painter.drawRect(pointSet->bound);
     }
     painter.drawRect(QRect(0, 0, width() - 1, height() - 1));
+    */
     
-    
+    // show shaddow window when moving tile
     if (movePointSet.width() > 0){
         QPen movePen;
         QColor qc = QColor(0, 110, 255, 50);
