@@ -41,7 +41,7 @@ double pairwise_sum(Matrix &m){
 
 
 void PointSet::set_labels(){
-
+    cout << "in" << endl;
     map<string, vector<int>> indexes;
     for (int i = 0; i < (int)table->classes.size(); ++i){
         string lipid_class = table->classes.at(i);
@@ -80,6 +80,7 @@ void PointSet::set_labels(){
     for (int r = 0; r < label_m.rows; ++r){
         label_points.push_back(QPointF(label_m(r, 0) * PRECESION_FACTOR, label_m(r, 1) * PRECESION_FACTOR));
     }
+    cout << "out" << endl;
 }
 
 
