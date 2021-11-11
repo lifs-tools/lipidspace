@@ -41,14 +41,12 @@ double pairwise_sum(Matrix &m){
 
 
 void PointSet::set_labels(){
-    cout << "in" << endl;
     map<string, vector<int>> indexes;
     for (int i = 0; i < (int)table->classes.size(); ++i){
         string lipid_class = table->classes.at(i);
         if (uncontains_val(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
         indexes.at(lipid_class).push_back(i);
     }
-    
     Array mean_x;
     Array mean_y;
     
@@ -80,7 +78,6 @@ void PointSet::set_labels(){
     for (int r = 0; r < label_m.rows; ++r){
         label_points.push_back(QPointF(label_m(r, 0) * PRECESION_FACTOR, label_m(r, 1) * PRECESION_FACTOR));
     }
-    cout << "out" << endl;
 }
 
 
@@ -485,6 +482,9 @@ void Canvas::showHideGlobalLipidome(bool _showGlobalLipidome){
 
 void Canvas::refreshCanvas(){
     if (!lipid_space) return;
+    if (!lipid_space->analysis_finished) return;
+    
+    
     
     colorMap.clear();
     color_counter = 0;
@@ -497,7 +497,6 @@ void Canvas::refreshCanvas(){
     double w_rect = (double)width() * ((1. - MARGIN * ((double)tileColumns + 1.)) / (double)tileColumns);
     double h_rect = (double)height() * ((1. - MARGIN * ((double)tileRows + 1.)) / (double)tileRows);
     
-    if (!global_lipidome) return;
     
     pointSets.clear();
     
@@ -634,6 +633,7 @@ void Canvas::paintEvent(QPaintEvent *event){
         return;
     }
     
+    if (!lipid_space->analysis_finished) return;
     
     // set background
     painter.fillRect(QRect(0, 0, width(), height()), QColor(245, 245, 245, 255));

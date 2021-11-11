@@ -34,6 +34,7 @@ public:
     Array dendrogram_points;
     vector<int> dendrogram_sorting;
     Matrix hausdorff_distances;
+    bool analysis_finished;
     
 
     LipidSpace();

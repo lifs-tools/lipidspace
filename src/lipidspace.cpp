@@ -64,6 +64,7 @@ LipidSpace::LipidSpace() {
     without_quant = false;
     global_lipidome = new Table("global_lipidome");
     progress = 0;
+    analysis_finished = false;
     
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -140,7 +141,7 @@ const vector< vector< vector< vector<int> > > > LipidSpace::orders{
 
 LipidSpace::~LipidSpace(){
     for (auto lipid : all_lipids) delete lipid;
-    if (global_lipidome) delete global_lipidome;
+    delete global_lipidome;
     for (auto table : lipidomes) delete table;
 }
 
@@ -1016,6 +1017,7 @@ bool mysort(double* a, double* b){ return a[0] < b[0];}
 
 void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
+    analysis_finished = false;
     
     if (_progress){
         progress = _progress;
@@ -1074,7 +1076,7 @@ void LipidSpace::run_analysis(Progress *_progress){
     if (progress){
         progress->finish();
     }
-    
+    analysis_finished = true;
     
     /*
     Matrix aa(global_lipidome->m.rows, lipidomes.size());
@@ -1111,6 +1113,7 @@ void LipidSpace::run_analysis(Progress *_progress){
 
 
 void LipidSpace::reset_analysis(){
+    analysis_finished = false;
     
     for (auto lipid : all_lipids) delete lipid;
     all_lipids.clear();
