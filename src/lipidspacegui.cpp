@@ -94,18 +94,19 @@ void LipidSpaceGUI::openTable(){
 
 
 void LipidSpaceGUI::runAnalysis(){
+    ui->canvas->enableView(false);
     updateGUI();
     std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
     progressbar->exec();
     runAnalysisThread.join();
-    
+    ui->canvas->enableView(true);
 }
 
 
 
 void LipidSpaceGUI::resetAnalysis(){
-    lipid_space->reset_analysis();
     ui->canvas->resetCanvas();
+    lipid_space->reset_analysis();
     updateGUI();
 }
 

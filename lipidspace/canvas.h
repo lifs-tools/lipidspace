@@ -19,9 +19,10 @@
 using namespace std;
 
 #define MARGIN 0.01
-#define POINT_BASE_SIZE 3.0
-#define PRECESION_FACTOR 10000.
+#define POINT_BASE_SIZE 2.0
+#define PRECESION_FACTOR 1.
 #define LABEL_COLOR 200, 200, 200, 255
+#define ALPHA 128
 
 class PointSet {
 public:
@@ -69,6 +70,8 @@ public slots:
     void showHideQuant(bool _showQuant);
     void showHideDendrogram(bool _showDendrogram);
     void showHideGlobalLipidome(bool _showGlobalLipidome);
+    
+    void enableView(bool);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -77,7 +80,7 @@ signals:
     void showMessage(QString message);
 
 private:
-    bool antialiased;
+    bool view_enabled;
     QPixmap pixmap;
     double scaling;
     double scaling_dendrogram;
