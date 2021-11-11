@@ -728,15 +728,12 @@ void Canvas::paintEvent(QPaintEvent *event){
             painter.scale(scaling * basescale, scaling * basescale);
             
             // setting up pen for painter
-            QPen pen;
             QColor qcolor = colorMap[lipid_class];
             qcolor.setAlpha(alpha);
-            pen.setColor(qcolor);
-            pen.setWidth(qreal(POINT_BASE_SIZE * intens));
-            pen.setCapStyle(Qt::RoundCap);
-            painter.setPen(pen);
             
-            painter.drawPoint(pointSet->points[i]);
+            QPainterPath path;
+            path.addEllipse(pointSet->points[i], intens, intens);
+            painter.fillPath(path, qcolor);
             painter.restore();
         }
         
@@ -760,7 +757,7 @@ void Canvas::paintEvent(QPaintEvent *event){
             
             // draw the actual label
             painter.setPen(pen_arr);
-            QRectF labelPosition(pointSet->label_points[i].x() - 0.5 * basescale, pointSet->label_points[i].y() - 0.2 * basescale, basescale, 0.4 * basescale);
+            QRectF labelPosition(pointSet->label_points[i].x() - 5 * basescale, pointSet->label_points[i].y() - 2 * basescale, 10 * basescale, 4 * basescale);
             QRectF boundingRect;
             painter.drawText(labelPosition, Qt::AlignCenter, pointSet->labels[i], &boundingRect);
             
@@ -773,14 +770,10 @@ void Canvas::paintEvent(QPaintEvent *event){
             // Search for label arrow starting point
             QPointF new_start;
             bool found = find_start(boundingRect, pointSet->class_means[i], new_start);
-            if (!found){
-                painter.restore();
-                continue;
-            }
+            if (!found) continue;
             
             double hypothenuse = sqrt(sq(new_start.x() - pointSet->class_means[i].x()) + sq(new_start.y() - pointSet->class_means[i].y()));
             double angle = asin((new_start.y() - pointSet->class_means[i].y()) / hypothenuse) / M_PI * 180.;
-            
             painter.save();
             painter.setClipRect(pointSet->bound);       // setting clipping area
             painter.translate(offset);                  // transform area to according section

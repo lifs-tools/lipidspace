@@ -19,7 +19,7 @@
 using namespace std;
 
 #define MARGIN 0.01
-#define POINT_BASE_SIZE 2.0
+#define POINT_BASE_SIZE 1.8
 #define PRECESION_FACTOR 1.
 #define LABEL_COLOR 200, 200, 200, 255
 #define ALPHA 128
