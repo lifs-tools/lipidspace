@@ -316,11 +316,11 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     
     QStringList lipid_names;
     for (int i = 0; i < pointSet->len; ++i){
-        double xx = points[i].x() * basescale * scaling + offset.x() + pointSet->bound.x();
-        double yy = points[i].y() * basescale * scaling + offset.y() + pointSet->bound.y();
+        double xx = (mouse.x() - offset.x() - pointSet->bound.x()) / (basescale * scaling);
+        double yy = (mouse.y() - offset.y() - pointSet->bound.y()) / (basescale * scaling);
         double intens = showQuant ? (pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5) : 1.;
-        double margin = sq(POINT_BASE_SIZE * 0.5 * intens * scaling);
-        if (sq(mouse.x() - xx) + sq(mouse.y() - yy) <= margin){
+        double margin = sq(POINT_BASE_SIZE * 0.5 * intens);
+        if (sq(xx - points[i].x()) + sq(points[i].y() - yy) <= margin){
             lipid_names.push_back(QString(pointSet->table->species[i].c_str()));
         }
     }
@@ -631,11 +631,8 @@ void Canvas::enableView(bool view){
 
 
 
-double angle(double x1, double y1, double x2, double y2){
-    return acos((x1 * x2 + y1 * y2) / (sqrt(sq(x1) + sq(y1)) * sqrt(sq(x2) + sq(y2))));
-}
-
-
+// is a straight line from the center of a bounding box to a target intersecting
+// with the bounding box, if yes where??
 bool find_start(QRectF &bound, QPointF target, QPointF &inter){
     QLineF path(bound.center().x(), bound.center().y(), target.x(), target.y());
     
@@ -716,30 +713,23 @@ void Canvas::paintEvent(QPaintEvent *event){
         
         // drawing the points
         for (int i = 0; i < pointSet->len; ++i){
-            painter.save();
-            
-            // setting clipping area
-            painter.setClipRect(pointSet->bound);
-            
-            
-            // transform area to according section
-            painter.translate(offset);
-            painter.translate(QPointF(pointSet->bound.x(), pointSet->bound.y()));
-            
             // checking lipid class and selecting color
             string lipid_class = pointSet->table->classes[i];
             if (uncontains_val(colorMap, lipid_class)){
                 colorMap.insert({lipid_class, COLORS[color_counter++ % COLORS.size()]});
             }
             
+            painter.save();
+            painter.setClipRect(pointSet->bound); // setting clipping area
+            painter.translate(offset); // transform area to according section
+            painter.translate(QPointF(pointSet->bound.x(), pointSet->bound.y()));
+            
             double intens = showQuant ? (pointSet->table->intensities[i] > 1 ? log(pointSet->table->intensities[i]) : 0.5) : 1.;
-            
             painter.scale(scaling * basescale, scaling * basescale);
-            
             
             // setting up pen for painter
             QPen pen;
-            QColor qcolor = i > 0 ? colorMap[lipid_class] : QColor(0, 0, 0, 255);
+            QColor qcolor = colorMap[lipid_class];
             qcolor.setAlpha(alpha);
             pen.setColor(qcolor);
             pen.setWidth(qreal(POINT_BASE_SIZE * intens));
