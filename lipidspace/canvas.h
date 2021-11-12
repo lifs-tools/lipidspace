@@ -9,7 +9,9 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>
+#include <QGraphicsView>
 #include <QMainWindow>
+#include <QGraphicsItem>
 #include <iostream>
 #include <vector>
 #include <map>
@@ -24,12 +26,11 @@ using namespace std;
 #define LABEL_COLOR 200, 200, 200, 255
 #define ALPHA 128
 
-class PointSet {
+class PointSet : public QGraphicsItem {
 public:
-    QPointF* points;
-    Table* table;
+    vector<QPointF> points;
+    Table* lipidome;
     QRectF bound;
-    int len;
     QString title;
     bool is_dendrogram;
     QVector<QLineF> lines;
@@ -37,15 +38,79 @@ public:
     vector<QString> labels;
     vector<QPointF> label_points;
     vector<QPointF> class_means;
+    map<string, QColor> colorMap;
+    int color_counter;
     
+    static const vector<QColor> COLORS;
     
-    PointSet(int, Table* _table, bool _is_dendrogram = false);
+    PointSet(Table* _lipidome, bool _is_dendrogram = false);
     ~PointSet();
     void set_labels();
     void automated_annotation(Array &xx, Array &yy, Matrix &label_points);
+    
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
+    QRectF boundingRect() const override;
 };
 
 
+
+class Canvas : public QGraphicsView
+{
+    Q_OBJECT
+
+public:
+    Canvas(QWidget *parent = nullptr);
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void resizeEvent(QResizeEvent *);
+    
+protected Q_SLOTS:
+  void wheelEvent(QWheelEvent *event)
+  {
+    if(event->delta() > 0){
+        scale(1.1, 1.1);
+    }
+    else {
+        scale(1. / 1.1, 1. / 1.1);
+    }
+  }
+    
+public slots:
+    
+    void setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow);
+    void refreshCanvas();
+    void resetCanvas();
+    
+    void setLayout(int tileLayout);
+    void showHideQuant(bool _showQuant);
+    void showHideDendrogram(bool _showDendrogram);
+    void showHideGlobalLipidome(bool _showGlobalLipidome);
+    
+    void enableView(bool);
+    
+
+signals:
+    void showMessage(QString message);
+    
+    
+    
+private:
+    QMainWindow *mainWindow;
+    LipidSpace *lipid_space;
+    
+    bool showQuant;
+    bool showDendrogram;
+    bool showGlobalLipidome;
+    int tileLayout;
+    PointSet* pointSet;
+    QGraphicsScene scene;
+    QPoint m_lastMousePos;
+    bool leftMousePressed;
+    
+};
+
+/*
 class Canvas : public QWidget
 {
     Q_OBJECT
@@ -112,7 +177,7 @@ private:
     QImage logo;
     QColor label_color;
     
-    static const vector<QColor> COLORS;
 };
+*/
 
 #endif /* CANVAS_H */

@@ -1,23 +1,142 @@
 #include "lipidspace/canvas.h"
 
 
-PointSet::PointSet(int _len, Table *_table, bool _is_dendrogram){
-    len = _len;
-    table = _table;
-    points = new QPointF[len];
+PointSet::PointSet(Table *_lipidome, bool _is_dendrogram){
+    lipidome = _lipidome;
     is_dendrogram = _is_dendrogram;
+    color_counter = 0;
     
     if (!is_dendrogram){
-        QFileInfo qFileInfo(table->file_name.c_str());
+        double x_min = 0;
+        double x_max = 0;
+        double y_min = 0;
+        double y_max = 0;
+        double x_mean = 0, y_mean = 0;
+        QFileInfo qFileInfo(lipidome->file_name.c_str());
         title = qFileInfo.baseName();
+        
+        for (int r = 0; r < lipidome->m.rows; ++r){
+            double xval = lipidome->m(r, 0);
+            double yval = lipidome->m(r, 1);
+            double intens = lipidome->intensities[r] > 1 ? log(lipidome->intensities[r]) : 0.5;
+            x_min = min(x_min, xval - intens);
+            x_max = max(x_max, xval + intens);
+            y_min = min(y_min, yval - intens);
+            y_max = max(y_max, yval + intens);
+            x_mean += xval;
+            y_mean += yval;
+            points.push_back(QPointF(xval, yval));
+        }
+        bound.setX(x_min);
+        bound.setY(y_min);
+        bound.setWidth(x_max - x_min);
+        bound.setHeight(y_max - y_min);
+        
+        x_mean /= (double)lipidome->m.rows;
+        y_mean /= (double)lipidome->m.rows;
+        
+        
+        for (auto &point : points){
+            point.setX(point.x() - x_mean);
+            point.setY(point.y() - y_mean);
+        }
     }
     else {
         title = "Dendrogram";
     }
+    set_labels();
 }
 
 PointSet::~PointSet(){
-    delete []points;
+}
+
+QRectF PointSet::boundingRect() const {
+    return bound;
+}
+
+// is a straight line from the center of a bounding box to a target intersecting
+// with the bounding box, if yes where??
+bool find_start(QRectF &bound, QPointF target, QPointF &inter){
+    QLineF path(bound.center().x(), bound.center().y(), target.x(), target.y());
+    
+    QLineF B1(bound.x(), bound.y(), bound.x() + bound.width(), bound.y());
+    if (path.intersect(B1, &inter) == QLineF::BoundedIntersection) return true;
+    
+    QLineF B2(bound.x(), bound.y(), bound.x(), bound.y() + bound.height());
+    if (path.intersect(B2, &inter) == QLineF::BoundedIntersection) return true;
+    
+    QLineF B3(bound.x(), bound.y() + bound.height(), bound.x() + bound.width(), bound.y() + bound.height());
+    if (path.intersect(B3, &inter) == QLineF::BoundedIntersection) return true;
+    
+    QLineF B4(bound.x() + bound.width(), bound.y(), bound.x() + bound.width(), bound.y() + bound.height());
+    if (path.intersect(B4, &inter) == QLineF::BoundedIntersection) return true;
+    
+    return false;
+}
+
+
+void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget){
+    prepareGeometryChange(); // ensure that objects won't vanish when dragging them beyond border and back in scene
+    for (int i = 0; i < (int)points.size(); ++i){
+        string lipid_class = lipidome->classes[i];
+        double intens = lipidome->intensities[i] > 1 ? log(lipidome->intensities[i]) : 0.5;
+        if (uncontains_val(colorMap, lipid_class)){
+            colorMap.insert({lipid_class, COLORS[color_counter++ % COLORS.size()]});
+        }
+        
+        // setting up pen for painter
+        QColor &qcolor = colorMap[lipid_class];
+        qcolor.setAlpha(128);
+        QPainterPath p;
+        p.addEllipse(QRectF(points[i].x() - intens * 0.5, points[i].y() - intens * 0.5, intens, intens));
+        painter->fillPath(p, qcolor);
+    }
+    
+    
+    // drawing the labels
+    QPen pen_arr;
+    pen_arr.setColor(QColor(LABEL_COLOR));
+    pen_arr.setStyle(Qt::DashLine);
+    pen_arr.setWidth(0.1);
+    
+    QFont f("Helvetica", 1);
+    painter->setFont(f);
+    for (int i = 0; i < (int)label_points.size(); ++i){
+        painter->setPen(pen_arr);
+        QRectF labelPosition(label_points[i].x() - 50, label_points[i].y() - 20, 100, 40);
+        QRectF boundingRect;
+        painter->drawText(labelPosition, Qt::AlignCenter, labels[i], &boundingRect);
+        
+        
+        // shrink a little bit the bounding box
+        boundingRect = boundingRect.marginsRemoved(QMarginsF(0, boundingRect.height() * 0.3, 0, boundingRect.height() * 0.2));
+        
+        
+        // Search for label arrow starting point
+        QPointF new_start;
+        bool found = find_start(boundingRect, class_means[i], new_start);
+        if (!found) continue;
+        
+        double hypothenuse = sqrt(sq(new_start.x() - class_means[i].x()) + sq(new_start.y() - class_means[i].y()));
+        double angle = asin((new_start.y() - class_means[i].y()) / hypothenuse) / M_PI * 180.;
+        
+        
+        // draw the arrow
+        painter->setPen(pen_arr);
+        
+        QPointF rotate_point = new_start.x() < class_means[i].x() ? new_start : class_means[i];
+        double sign = 1. - 2. * (new_start.x() < class_means[i].x());
+            
+        painter->save();
+        painter->translate(rotate_point);
+        painter->rotate(sign * angle);
+        QRectF rectangle(0, -hypothenuse * 0.1, hypothenuse, hypothenuse * 0.2);
+        double const startAngle = 16. * 20.;
+        double const endAngle   = 16. * 160.;
+        double const spanAngle = endAngle - startAngle;
+        painter->drawArc(rectangle, startAngle, spanAngle);
+        painter->restore();
+    }
 }
 
 
@@ -41,11 +160,11 @@ double pairwise_sum(Matrix &m){
 
 
 void PointSet::set_labels(){
-    if (table->m.rows == 0 || table->m.cols == 0) return;
+    if (lipidome->m.rows == 0 || lipidome->m.cols == 0) return;
     
     map<string, vector<int>> indexes;
-    for (int i = 0; i < (int)table->classes.size(); ++i){
-        string lipid_class = table->classes.at(i);
+    for (int i = 0; i < (int)lipidome->classes.size(); ++i){
+        string lipid_class = lipidome->classes.at(i);
         if (uncontains_val(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
         indexes.at(lipid_class).push_back(i);
     }
@@ -56,8 +175,8 @@ void PointSet::set_labels(){
     for (auto kv : indexes){
         double mx = 0, my = 0;
         for (auto i : kv.second){
-            mx += table->m(i, 0);
-            my += table->m(i, 1);
+            mx += lipidome->m(i, 0);
+            my += lipidome->m(i, 1);
         }
         mean_x.push_back(mx / (double)kv.second.size());
         mean_y.push_back(my / (double)kv.second.size());
@@ -68,9 +187,9 @@ void PointSet::set_labels(){
         labels.push_back(QString(label.str().c_str()));
     }
     
-    for (int i = 0; i < table->m.rows; ++i){
-        mean_x.push_back(table->m(i, 0));
-        mean_y.push_back(table->m(i, 1));
+    for (int i = 0; i < lipidome->m.rows; ++i){
+        mean_x.push_back(lipidome->m(i, 0));
+        mean_y.push_back(lipidome->m(i, 1));
     }
 
     
@@ -159,6 +278,146 @@ void PointSet::automated_annotation(Array &xx, Array &yy, Matrix &label_points){
 
 
 
+
+
+
+
+
+
+
+const vector<QColor> PointSet::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
+
+
+Canvas::Canvas(QWidget *) {
+    
+    setDragMode(QGraphicsView::ScrollHandDrag);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    
+    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    viewport()->setCursor(Qt::ArrowCursor);
+    
+    setScene(&scene);
+    scene.setSceneRect(-5000, -3000, 10000, 6000);
+    resetMatrix();
+    
+    
+    leftMousePressed = false;
+    tileLayout = 0;
+    showQuant = true;
+    showDendrogram = true;
+    showGlobalLipidome = true;
+    lipid_space = 0;
+    mainWindow = 0;
+    pointSet = 0;
+}
+
+
+
+void Canvas::mousePressEvent(QMouseEvent *event){
+    if (event->button() == Qt::LeftButton){
+        leftMousePressed = true;
+    }
+    QGraphicsView::mousePressEvent(event);
+    
+}
+
+
+void Canvas::mouseReleaseEvent(QMouseEvent *event){
+    viewport()->setCursor(Qt::ArrowCursor);
+    leftMousePressed = false;
+    QGraphicsView::mouseReleaseEvent(event);
+}
+
+
+void Canvas::mouseMoveEvent(QMouseEvent *event){
+    if (leftMousePressed) viewport()->setCursor(Qt::DragMoveCursor);
+    if (pointSet){
+        QPoint origin_mouse = mapFromGlobal(QCursor::pos());
+        QPointF relative_mouse = mapToScene(origin_mouse);
+        
+        QStringList lipid_names;
+        for (int i = 0; i < (int)pointSet->points.size(); ++i){
+            double intens = pointSet->lipidome->intensities[i] > 1 ? log(pointSet->lipidome->intensities[i]) : 0.5;
+            double margin = sq(0.5 * intens);
+            if (sq(relative_mouse.x() - pointSet->points[i].x()) + sq(relative_mouse.y() - pointSet->points[i].y()) <= margin){
+                lipid_names.push_back(QString(pointSet->lipidome->species[i].c_str()));
+            }
+        }
+        
+        if (!lipid_names.size()) showMessage("");
+        else showMessage(lipid_names.join(", "));
+    }
+    
+    QGraphicsView::mouseMoveEvent(event);
+}
+    
+void Canvas::resizeEvent(QResizeEvent *) {
+    QRectF bounds = scene.itemsBoundingRect();
+    bounds.setWidth(bounds.width()*0.9);         // to tighten-up margins
+    bounds.setHeight(bounds.height()*0.9);       // same as above
+    fitInView(bounds, Qt::KeepAspectRatio);
+    //centerOn(0, 0);
+}
+
+
+void Canvas::setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow){
+    lipid_space = _lipid_space;
+    mainWindow = _mainWindow;
+}
+
+
+void Canvas::resetCanvas(){
+    scene.clear();
+    resetMatrix();
+}
+
+
+void Canvas::setLayout(int _tileLayout){
+    tileLayout = _tileLayout;
+}
+
+
+void Canvas::showHideQuant(bool _showQuant){
+    showQuant = _showQuant;
+}
+
+
+void Canvas::showHideDendrogram(bool _showDendrogram){
+    showDendrogram = _showDendrogram;
+}
+
+
+void Canvas::showHideGlobalLipidome(bool _showGlobalLipidome){
+    showGlobalLipidome = _showGlobalLipidome;
+}
+
+
+void Canvas::enableView(bool){
+}
+
+
+void Canvas::refreshCanvas(){
+    if (!lipid_space) return;
+    
+    scene.clear();
+    if (lipid_space->lipidomes.size() > 0){
+        pointSet = new PointSet(lipid_space->lipidomes[0]);
+        scene.addItem(pointSet);
+    }
+    /*
+    QRectF myRect = scene.itemsBoundingRect();
+    myRect.adjust(-20, -20, 20, 20);
+    fitInView(myRect, Qt::KeepAspectRatio);
+    */
+    resizeEvent(0);
+}
+
+
+
+
+
+/*
 
 
 Canvas::Canvas(QWidget *parent) : QWidget(parent), logo("LipidSpace.png"), label_color(LABEL_COLOR) {
@@ -631,25 +890,7 @@ void Canvas::enableView(bool view){
 
 
 
-// is a straight line from the center of a bounding box to a target intersecting
-// with the bounding box, if yes where??
-bool find_start(QRectF &bound, QPointF target, QPointF &inter){
-    QLineF path(bound.center().x(), bound.center().y(), target.x(), target.y());
-    
-    QLineF B1(bound.x(), bound.y(), bound.x() + bound.width(), bound.y());
-    if (path.intersect(B1, &inter) == QLineF::BoundedIntersection) return true;
-    
-    QLineF B2(bound.x(), bound.y(), bound.x(), bound.y() + bound.height());
-    if (path.intersect(B2, &inter) == QLineF::BoundedIntersection) return true;
-    
-    QLineF B3(bound.x(), bound.y() + bound.height(), bound.x() + bound.width(), bound.y() + bound.height());
-    if (path.intersect(B3, &inter) == QLineF::BoundedIntersection) return true;
-    
-    QLineF B4(bound.x() + bound.width(), bound.y(), bound.x() + bound.width(), bound.y() + bound.height());
-    if (path.intersect(B4, &inter) == QLineF::BoundedIntersection) return true;
-    
-    return false;
-}
+
 
 
 
@@ -821,15 +1062,6 @@ void Canvas::paintEvent(QPaintEvent *event){
     QFont f("Helvetica", 8);
     painter.setFont(f);
     
-    /*
-    for (auto pointSet : pointSets){
-        QRectF textBound(pointSet->bound);
-        textBound.setX(textBound.x() + 5);
-        painter.drawText(textBound, Qt::AlignTop | Qt::AlignLeft, pointSet->title);
-        painter.drawRect(pointSet->bound);
-    }
-    painter.drawRect(QRect(0, 0, width() - 1, height() - 1));
-    */
     
     // show shaddow window when moving tile
     if (movePointSet.width() > 0){
@@ -840,3 +1072,4 @@ void Canvas::paintEvent(QPaintEvent *event){
         painter.fillRect(movePointSet, qc);
     }
 }
+*/
