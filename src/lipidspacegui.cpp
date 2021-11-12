@@ -29,6 +29,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     showDendrogram = true;
     showGlobalLipidome = true;
     updating = false;
+    color_counter = 0;
     
     progressbar = new Progressbar(this);
     progress = new Progress();
@@ -50,6 +51,13 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete progressbar;
 }
 
+bool LipidSpaceGUI::showQuant = true;
+
+int LipidSpaceGUI::color_counter = 0;
+
+map<string, QColor> LipidSpaceGUI::colorMap;
+
+const vector<QColor> LipidSpaceGUI::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
 
 
 
@@ -100,6 +108,7 @@ void LipidSpaceGUI::runAnalysis(){
     progressbar->exec();
     runAnalysisThread.join();
     
+    color_counter = 0;
     int numTiles = 2 * (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
     
     for (int n = 0; n < numTiles; ++n){
@@ -115,6 +124,7 @@ void LipidSpaceGUI::runAnalysis(){
             connect(canvas, SIGNAL(moving(QRectF, int)), this, SLOT(setMove(QRectF, int)));
             connect(this, SIGNAL(moving(QRectF, int)), canvas, SLOT(setMove(QRectF, int)));
             connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
+            connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
         }
         canvases.push_back(canvas);
     }
@@ -177,6 +187,7 @@ void LipidSpaceGUI::showHideGlobalLipidome(){
 
 void LipidSpaceGUI::showHideQuant(){
     showQuant = ui->actionShow_quantitative_information->isChecked();
+    updateCanvas();
     //ui->canvas->showHideQuant(showQuant);
     //ui->canvas->update();
 }

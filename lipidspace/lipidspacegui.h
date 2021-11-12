@@ -17,6 +17,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }
 QT_END_NAMESPACE
 
+class Canvas;
+
 class LipidSpaceGUI : public QMainWindow
 {
     Q_OBJECT
@@ -26,10 +28,16 @@ public:
     ~LipidSpaceGUI();
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
- 
+    static int color_counter;
+    static const vector<QColor> COLORS;
+    static bool showQuant;
+    static map<string, QColor> colorMap;
+    
 signals:
     void scaling(QWheelEvent *event, QRectF f, int _num);
     void moving(QRectF f, int _num);
+    void updateCanvas();
+    
     
 public slots:
     void quitProgram();
@@ -59,7 +67,6 @@ public slots:
 private:
     Ui::LipidSpaceGUI *ui;
     LipidSpace* lipid_space;
-    bool showQuant;
     bool showDendrogram;
     bool showGlobalLipidome;
     TileLayout tileLayout;

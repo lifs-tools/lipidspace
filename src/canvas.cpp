@@ -4,7 +4,8 @@
 PointSet::PointSet(Table *_lipidome, bool _is_dendrogram){
     lipidome = _lipidome;
     is_dendrogram = _is_dendrogram;
-    color_counter = 0;
+    
+    prepareGeometryChange(); // ensure that objects won't vanish when dragging them beyond border and back in scene
     
     if (!is_dendrogram){
         double x_min = 0;
@@ -78,17 +79,15 @@ bool find_start(QRectF &bound, QPointF target, QPointF &inter){
 void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget){
     if (is_dendrogram) return;
     
-    //prepareGeometryChange(); // ensure that objects won't vanish when dragging them beyond border and back in scene
-    
     for (int i = 0; i < (int)points.size(); ++i){
         string lipid_class = lipidome->classes[i];
-        double intens = lipidome->intensities[i] > 1 ? log(lipidome->intensities[i]) : 0.5;
-        if (uncontains_val(colorMap, lipid_class)){
-            colorMap.insert({lipid_class, COLORS[color_counter++ % COLORS.size()]});
+        double intens = LipidSpaceGUI::showQuant ? (lipidome->intensities[i] > 1 ? log(lipidome->intensities[i]) : 0.5) : 1.;
+        if (uncontains_val(LipidSpaceGUI::colorMap, lipid_class)){
+            LipidSpaceGUI::colorMap.insert({lipid_class, LipidSpaceGUI::COLORS[LipidSpaceGUI::color_counter++ % LipidSpaceGUI::COLORS.size()]});
         }
         
         // setting up pen for painter
-        QColor &qcolor = colorMap[lipid_class];
+        QColor &qcolor = LipidSpaceGUI::colorMap[lipid_class];
         qcolor.setAlpha(128);
         QPainterPath p;
         p.addEllipse(QRectF(points[i].x() - intens * 0.5, points[i].y() - intens * 0.5, intens, intens));
@@ -280,16 +279,6 @@ void PointSet::automated_annotation(Array &xx, Array &yy, Matrix &label_points){
 
 
 
-
-
-
-
-
-
-
-const vector<QColor> PointSet::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
-
-
 Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *) : num(_num) {
     lipid_space = _lipid_space;
     mainWindow = _mainWindow;
@@ -301,6 +290,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     viewport()->setCursor(Qt::ArrowCursor);
+    
     
     setScene(&scene);
     scene.setSceneRect(-5000, -3000, 10000, 6000);
@@ -320,7 +310,13 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     }
     scene.addItem(pointSet);
     
-    resizeEvent(0);
+    QRectF bounds = scene.itemsBoundingRect();
+    bounds.setWidth(bounds.width() * 0.9);         // to tighten-up margins
+    bounds.setHeight(bounds.height() * 0.9);       // same as above
+    fitInView(bounds, Qt::KeepAspectRatio);
+    
+    oldCenter.setX(0);
+    oldCenter.setY(0);
 }
 
 
@@ -347,6 +343,9 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
         QRectF v = mapToScene(viewportRect).boundingRect();
         moving(v, num);
+        
+        oldCenter.setX(v.x() + v.width() * 0.5);
+        oldCenter.setY(v.y() + v.height() * 0.5);
     }
     if (pointSet){
         QPoint origin_mouse = mapFromGlobal(QCursor::pos());
@@ -354,7 +353,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         
         QStringList lipid_names;
         for (int i = 0; i < (int)pointSet->points.size(); ++i){
-            double intens = pointSet->lipidome->intensities[i] > 1 ? log(pointSet->lipidome->intensities[i]) : 0.5;
+            double intens = LipidSpaceGUI::showQuant ? (pointSet->lipidome->intensities[i] > 1 ? log(pointSet->lipidome->intensities[i]) : 0.5) : 1.;
             double margin = sq(0.5 * intens);
             if (sq(relative_mouse.x() - pointSet->points[i].x()) + sq(relative_mouse.y() - pointSet->points[i].y()) <= margin){
                 lipid_names.push_back(QString(pointSet->lipidome->species[i].c_str()));
@@ -368,19 +367,13 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
 }
 
 
-
-void Canvas::drawBackground(QPainter *painter, const QRectF &rect){
-    painter->fillRect(rect, Qt::white);
+void Canvas::setUpdate(){
+    repaint();
 }
-
-
 
     
 void Canvas::resizeEvent(QResizeEvent *) {
-    QRectF bounds = scene.itemsBoundingRect();
-    bounds.setWidth(bounds.width()*0.9);         // to tighten-up margins
-    bounds.setHeight(bounds.height()*0.9);       // same as above
-    fitInView(bounds, Qt::KeepAspectRatio);
+    centerOn(oldCenter.x(), oldCenter.y());
 }
 
 
@@ -391,6 +384,8 @@ void Canvas::wheelEvent(QWheelEvent *event){
     QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
     QRectF v = mapToScene(viewportRect).boundingRect();
     scaling(event, v, num);
+    oldCenter.setX(v.x() + v.width() * 0.5);
+    oldCenter.setY(v.y() + v.height() * 0.5);
 }
 
 
@@ -401,6 +396,8 @@ void Canvas::setScale(QWheelEvent *event, QRectF f, int _num){
     else scale(1. / 1.1, 1. / 1.1);
     
     centerOn(f.x() + f.width() * 0.5, f.y() + f.height() * 0.5);
+    oldCenter.setX(f.x() + f.width() * 0.5);
+    oldCenter.setY(f.y() + f.height() * 0.5);
 }
 
 
@@ -408,6 +405,8 @@ void Canvas::setMove(QRectF f, int _num){
     if (num == _num) return;
     
     centerOn(f.x() + f.width() * 0.5, f.y() + f.height() * 0.5);
+    oldCenter.setX(f.x() + f.width() * 0.5);
+    oldCenter.setY(f.y() + f.height() * 0.5);
 }
 
 

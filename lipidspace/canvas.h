@@ -17,6 +17,7 @@
 #include <map>
 #include <math.h>
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/lipidspacegui.h"
 
 using namespace std;
 
@@ -38,10 +39,7 @@ public:
     vector<QString> labels;
     vector<QPointF> label_points;
     vector<QPointF> class_means;
-    map<string, QColor> colorMap;
-    int color_counter;
     
-    static const vector<QColor> COLORS;
     
     PointSet(Table* _lipidome, bool _is_dendrogram = false);
     ~PointSet();
@@ -65,7 +63,6 @@ public:
     void mouseReleaseEvent(QMouseEvent *event);
     void resizeEvent(QResizeEvent *);
     void wheelEvent(QWheelEvent *event);
-    void drawBackground(QPainter *p, const QRectF &rect);
     
     
 public slots:
@@ -73,6 +70,7 @@ public slots:
     void showHideQuant(bool _showQuant);
     void setScale(QWheelEvent *event, QRectF f, int _num);
     void setMove(QRectF f, int _num);
+    void setUpdate();
     
 signals:
     void showMessage(QString message);
@@ -90,6 +88,7 @@ private:
     QGraphicsScene scene;
     QPoint m_lastMousePos;
     bool leftMousePressed;
+    QPoint oldCenter;
     
 };
 
