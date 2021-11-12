@@ -40,11 +40,11 @@ PointSet::PointSet(Table *_lipidome, bool _is_dendrogram){
             point.setX(point.x() - x_mean);
             point.setY(point.y() - y_mean);
         }
+        set_labels();
     }
     else {
         title = "Dendrogram";
     }
-    set_labels();
 }
 
 PointSet::~PointSet(){
@@ -76,7 +76,10 @@ bool find_start(QRectF &bound, QPointF target, QPointF &inter){
 
 
 void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget){
-    prepareGeometryChange(); // ensure that objects won't vanish when dragging them beyond border and back in scene
+    if (is_dendrogram) return;
+    
+    //prepareGeometryChange(); // ensure that objects won't vanish when dragging them beyond border and back in scene
+    
     for (int i = 0; i < (int)points.size(); ++i){
         string lipid_class = lipidome->classes[i];
         double intens = lipidome->intensities[i] > 1 ? log(lipidome->intensities[i]) : 0.5;
@@ -267,7 +270,6 @@ void PointSet::automated_annotation(Array &xx, Array &yy, Matrix &label_points){
     }
     
     
-    
     label_points.reset(0, 0);
     label_points.add_column(label_xx);
     label_points.add_column(label_yy);
@@ -288,11 +290,14 @@ void PointSet::automated_annotation(Array &xx, Array &yy, Matrix &label_points){
 const vector<QColor> PointSet::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
 
 
-Canvas::Canvas(QWidget *) {
+Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *) : num(_num) {
+    lipid_space = _lipid_space;
+    mainWindow = _mainWindow;
     
     setDragMode(QGraphicsView::ScrollHandDrag);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setFrameStyle(QFrame::NoFrame);
     
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     viewport()->setCursor(Qt::ArrowCursor);
@@ -303,13 +308,19 @@ Canvas::Canvas(QWidget *) {
     
     
     leftMousePressed = false;
-    tileLayout = 0;
     showQuant = true;
-    showDendrogram = true;
-    showGlobalLipidome = true;
-    lipid_space = 0;
-    mainWindow = 0;
-    pointSet = 0;
+    if (num == -2){ // dendrogram
+        pointSet = new PointSet(0, true);
+    }
+    else if (num == -1){ // global lipidome
+        pointSet = new PointSet(lipid_space->global_lipidome, false);
+    }
+    else { // regular lipidome
+        pointSet = new PointSet(lipid_space->lipidomes[num], false);
+    }
+    scene.addItem(pointSet);
+    
+    resizeEvent(0);
 }
 
 
@@ -331,7 +342,12 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event){
 
 
 void Canvas::mouseMoveEvent(QMouseEvent *event){
-    if (leftMousePressed) viewport()->setCursor(Qt::DragMoveCursor);
+    if (leftMousePressed){
+        viewport()->setCursor(Qt::DragMoveCursor);
+        QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+        QRectF v = mapToScene(viewportRect).boundingRect();
+        moving(v, num);
+    }
     if (pointSet){
         QPoint origin_mouse = mapFromGlobal(QCursor::pos());
         QPointF relative_mouse = mapToScene(origin_mouse);
@@ -348,22 +364,50 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         if (!lipid_names.size()) showMessage("");
         else showMessage(lipid_names.join(", "));
     }
-    
     QGraphicsView::mouseMoveEvent(event);
 }
+
+
+
+void Canvas::drawBackground(QPainter *painter, const QRectF &rect){
+    painter->fillRect(rect, Qt::white);
+}
+
+
+
     
 void Canvas::resizeEvent(QResizeEvent *) {
     QRectF bounds = scene.itemsBoundingRect();
     bounds.setWidth(bounds.width()*0.9);         // to tighten-up margins
     bounds.setHeight(bounds.height()*0.9);       // same as above
     fitInView(bounds, Qt::KeepAspectRatio);
-    //centerOn(0, 0);
 }
 
 
-void Canvas::setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow){
-    lipid_space = _lipid_space;
-    mainWindow = _mainWindow;
+void Canvas::wheelEvent(QWheelEvent *event){
+    if(event->delta() > 0) scale(1.1, 1.1);
+    else scale(1. / 1.1, 1. / 1.1);
+    
+    QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+    QRectF v = mapToScene(viewportRect).boundingRect();
+    scaling(event, v, num);
+}
+
+
+void Canvas::setScale(QWheelEvent *event, QRectF f, int _num){
+    if (num == _num) return;
+    
+    if(event->delta() > 0) scale(1.1, 1.1);
+    else scale(1. / 1.1, 1. / 1.1);
+    
+    centerOn(f.x() + f.width() * 0.5, f.y() + f.height() * 0.5);
+}
+
+
+void Canvas::setMove(QRectF f, int _num){
+    if (num == _num) return;
+    
+    centerOn(f.x() + f.width() * 0.5, f.y() + f.height() * 0.5);
 }
 
 
@@ -373,44 +417,9 @@ void Canvas::resetCanvas(){
 }
 
 
-void Canvas::setLayout(int _tileLayout){
-    tileLayout = _tileLayout;
-}
-
 
 void Canvas::showHideQuant(bool _showQuant){
     showQuant = _showQuant;
-}
-
-
-void Canvas::showHideDendrogram(bool _showDendrogram){
-    showDendrogram = _showDendrogram;
-}
-
-
-void Canvas::showHideGlobalLipidome(bool _showGlobalLipidome){
-    showGlobalLipidome = _showGlobalLipidome;
-}
-
-
-void Canvas::enableView(bool){
-}
-
-
-void Canvas::refreshCanvas(){
-    if (!lipid_space) return;
-    
-    scene.clear();
-    if (lipid_space->lipidomes.size() > 0){
-        pointSet = new PointSet(lipid_space->lipidomes[0]);
-        scene.addItem(pointSet);
-    }
-    /*
-    QRectF myRect = scene.itemsBoundingRect();
-    myRect.adjust(-20, -20, 20, 20);
-    fitInView(myRect, Qt::KeepAspectRatio);
-    */
-    resizeEvent(0);
 }
 
 

@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/canvas.h"
 #include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
 #include "cppgoslin/cppgoslin.h"
@@ -24,8 +25,11 @@ public:
     LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent = nullptr);
     ~LipidSpaceGUI();
     
-    enum TileLayout {AUTOMATIC, ONE_COLULMN, TWO_COLUMNS, THREE_COLUMNS, FOUR_COLUMNS, FIVE_COLUMNS, SIX_COLUMNS};
-    
+    enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
+ 
+signals:
+    void scaling(QWheelEvent *event, QRectF f, int _num);
+    void moving(QRectF f, int _num);
     
 public slots:
     void quitProgram();
@@ -49,7 +53,9 @@ public slots:
     void setSnPositions();
     void openManageLipidomesWindow();
     void runAnalysis();
-
+    void setScale(QWheelEvent *event, QRectF f, int _num);
+    void setMove(QRectF f, int _num);
+    
 private:
     Ui::LipidSpaceGUI *ui;
     LipidSpace* lipid_space;
@@ -61,5 +67,6 @@ private:
     Progressbar *progressbar;
     Progress *progress;
     
+    vector<Canvas*> canvases;
 };
 #endif // LIPIDSPACEGUI_H

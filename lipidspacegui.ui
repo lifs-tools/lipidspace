@@ -36,11 +36,8 @@
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout">
       <property name="spacing">
-       <number>0</number>
+       <number>5</number>
       </property>
-      <item row="0" column="0">
-       <widget class="Canvas" name="canvas" native="true"/>
-      </item>
      </layout>
     </item>
    </layout>
@@ -267,13 +264,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>Canvas</class>
-   <extends>QWidget</extends>
-   <header>lipidspace/canvas.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

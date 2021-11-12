@@ -59,50 +59,33 @@ class Canvas : public QGraphicsView
     Q_OBJECT
 
 public:
-    Canvas(QWidget *parent = nullptr);
+    Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *parent = nullptr);
     void mouseMoveEvent(QMouseEvent* event);
     void mousePressEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent *event);
     void resizeEvent(QResizeEvent *);
+    void wheelEvent(QWheelEvent *event);
+    void drawBackground(QPainter *p, const QRectF &rect);
     
-protected Q_SLOTS:
-  void wheelEvent(QWheelEvent *event)
-  {
-    if(event->delta() > 0){
-        scale(1.1, 1.1);
-    }
-    else {
-        scale(1. / 1.1, 1. / 1.1);
-    }
-  }
     
 public slots:
-    
-    void setInputClasses(LipidSpace *_lipid_space, QMainWindow *_mainWindow);
-    void refreshCanvas();
     void resetCanvas();
-    
-    void setLayout(int tileLayout);
     void showHideQuant(bool _showQuant);
-    void showHideDendrogram(bool _showDendrogram);
-    void showHideGlobalLipidome(bool _showGlobalLipidome);
+    void setScale(QWheelEvent *event, QRectF f, int _num);
+    void setMove(QRectF f, int _num);
     
-    void enableView(bool);
-    
-
 signals:
     void showMessage(QString message);
-    
+    void scaling(QWheelEvent *event, QRectF f, int _num);
+    void moving(QRectF f, int _num);
     
     
 private:
     QMainWindow *mainWindow;
     LipidSpace *lipid_space;
+    int num;
     
     bool showQuant;
-    bool showDendrogram;
-    bool showGlobalLipidome;
-    int tileLayout;
     PointSet* pointSet;
     QGraphicsScene scene;
     QPoint m_lastMousePos;
