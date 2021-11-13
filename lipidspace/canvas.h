@@ -28,28 +28,47 @@ using namespace std;
 #define LABEL_COLOR 200, 200, 200, 255
 #define ALPHA 128
 
+
+
+
+
+class Dendrogram : public QGraphicsItem {
+public:
+    LipidSpace* lipid_space;
+    QRectF bound;
+    vector<QString> dendrogram_titles;
+    QVector<QLineF> lines;
+    QString title;
+    QGraphicsView *view;
+    double dendrogram_factor;
+    double pp;
+    
+    Dendrogram(LipidSpace* _lipid_space, QGraphicsView *_view);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
+    QRectF boundingRect() const override;
+};
+    
+
+
 class PointSet : public QGraphicsItem {
 public:
     vector<QPointF> points;
     Table* lipidome;
     QRectF bound;
     QString title;
-    bool is_dendrogram;
-    QVector<QLineF> lines;
-    QVector<QString> dendrogram_titles;
     vector<QString> labels;
     vector<QPointF> label_points;
     vector<QPointF> class_means;
+    QGraphicsView *view;
     
     
-    PointSet(Table* _lipidome, QGraphicsView *_view, bool _is_dendrogram = false);
+    PointSet(Table* _lipidome, QGraphicsView *_view);
     ~PointSet();
     void set_labels();
     void automated_annotation(Array &xx, Array &yy, Matrix &label_points);
     
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
-    QGraphicsView *view;
 };
 
 
