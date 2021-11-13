@@ -30,6 +30,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     showGlobalLipidome = true;
     updating = false;
     color_counter = 0;
+    single_window = -1;
     
     progressbar = new Progressbar(this);
     progress = new Progress();
@@ -100,6 +101,8 @@ void LipidSpaceGUI::openTable(){
 
 
 void LipidSpaceGUI::runAnalysis(){
+    
+    lipid_space->analysis_finished = false;
     for (auto canvas : canvases) delete canvas;
     canvases.clear();
     updateGUI();
@@ -118,6 +121,7 @@ void LipidSpaceGUI::runAnalysis(){
         else num = max(0, n - 2 * (lipid_space->lipidomes.size() > 1));
         
         Canvas* canvas = new Canvas(lipid_space, this, num, ui->centralwidget);
+        connect(canvas, SIGNAL(doubleClicked(int)), this, SLOT(setDoubleClick(int)));
         if (num != -2){
             connect(canvas, SIGNAL(scaling(QWheelEvent *, QRectF, int)), this, SLOT(setScale(QWheelEvent *, QRectF, int)));
             connect(this, SIGNAL(scaling(QWheelEvent *, QRectF, int)), canvas, SLOT(setScale(QWheelEvent *, QRectF, int)));
@@ -142,6 +146,17 @@ void LipidSpaceGUI::setMove(QRectF f, int _num){
     moving(f, _num);
 }
 
+
+void LipidSpaceGUI::setDoubleClick(int _num){
+    _num += 2 * (lipid_space->lipidomes.size() > 1);
+    if (single_window >= 0) {
+        single_window = -1;
+    }
+    else {
+        single_window = _num;
+    }
+    updateGUI();
+}
 
 
 void LipidSpaceGUI::resetAnalysis(){
@@ -188,8 +203,6 @@ void LipidSpaceGUI::showHideGlobalLipidome(){
 void LipidSpaceGUI::showHideQuant(){
     showQuant = ui->actionShow_quantitative_information->isChecked();
     updateCanvas();
-    //ui->canvas->showHideQuant(showQuant);
-    //ui->canvas->update();
 }
 
 
@@ -244,7 +257,7 @@ void LipidSpaceGUI::set6ColumnLayout(){
 
 void LipidSpaceGUI::setSnPositions(){
     lipid_space->keep_sn_position = !ui->actionIgnoring_lipid_sn_positions->isChecked();
-    lipid_space->run_analysis();
+    runAnalysis();
     updateGUI();
 }
 
@@ -284,48 +297,52 @@ void LipidSpaceGUI::updateGUI(){
     
     
     QLayoutItem *wItem;
-    while ((wItem = ui->gridLayout->layout()->takeAt(0)) != 0);
+    while ((wItem = ui->gridLayout->layout()->takeAt(0)) != 0) ;
     
     if (!lipid_space->analysis_finished) return;
     
-    int numTiles = 2 * (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
-    int tileColumns = tileLayout == AUTOMATIC ? ceil(sqrt((double)numTiles)) : (int)tileLayout;
+    for (auto canvas : canvases) canvas->setVisible(false);
     
-    int c = 0, r = 0;
-    // show dendrogram if enabled
-    if (showDendrogram && lipid_space->lipidomes.size() > 1){
-        ui->gridLayout->addWidget(canvases[0], r, c);
-        if (++c == tileColumns){
-            c = 0;
-            ++r;
+    if (single_window < 0){
+        int numTiles = 2 * (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
+        int tileColumns = tileLayout == AUTOMATIC ? ceil(sqrt((double)numTiles)) : (int)tileLayout;
+        
+        int c = 0, r = 0;
+        // show dendrogram if enabled
+        if (showDendrogram && lipid_space->lipidomes.size() > 1){
+            canvases[0]->setVisible(true);
+            ui->gridLayout->addWidget(canvases[0], r, c);
+            if (++c == tileColumns){
+                c = 0;
+                ++r;
+            }
+        }
+        
+        // show global lipidome if enabled
+        if (showGlobalLipidome && lipid_space->lipidomes.size() > 1){
+            canvases[1]->setVisible(true);
+            ui->gridLayout->addWidget(canvases[1], r, c);
+            if (++c == tileColumns){
+                c = 0;
+                ++r;
+            }
+        }
+        
+        // show all remaining lipidomes
+        for(int n = 2 * (lipid_space->lipidomes.size() > 1); n < numTiles; ++n){
+            canvases[n]->setVisible(true);
+            ui->gridLayout->addWidget(canvases[n], r, c);
+            if (++c == tileColumns){
+                c = 0;
+                ++r;
+            }
         }
     }
-    
-    // show global lipidome if enabled
-    if (showGlobalLipidome && lipid_space->lipidomes.size() > 1){
-        ui->gridLayout->addWidget(canvases[1], r, c);
-        if (++c == tileColumns){
-            c = 0;
-            ++r;
-        }
+    else {
+        canvases[single_window]->setVisible(true);
+        ui->gridLayout->addWidget(canvases[single_window], 0, 0);
     }
-    
-    // show all remaining lipidomes
-    for(int n = 2 * (lipid_space->lipidomes.size() > 1); n < numTiles; ++n){
-        ui->gridLayout->addWidget(canvases[n], r, c);
-        if (++c == tileColumns){
-            c = 0;
-            ++r;
-        }
-    }    
     updating = false;
-    /*
-    ui->canvas->setLayout((int)tileLayout);
-    ui->canvas->showHideQuant(showQuant);
-    ui->canvas->showHideDendrogram(showDendrogram);
-    ui->canvas->showHideGlobalLipidome(showGlobalLipidome);
-    ui->canvas->refreshCanvas();
-    */
 }
 
 

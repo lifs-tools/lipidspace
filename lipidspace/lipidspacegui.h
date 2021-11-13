@@ -63,6 +63,7 @@ public slots:
     void runAnalysis();
     void setScale(QWheelEvent *event, QRectF f, int _num);
     void setMove(QRectF f, int _num);
+    void setDoubleClick(int _num);
     
 private:
     Ui::LipidSpaceGUI *ui;
@@ -73,6 +74,7 @@ private:
     bool updating;
     Progressbar *progressbar;
     Progress *progress;
+    int single_window;
     
     vector<Canvas*> canvases;
 };

@@ -15,6 +15,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <QOpenGLWidget>
 #include <math.h>
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/lipidspacegui.h"
@@ -41,13 +42,14 @@ public:
     vector<QPointF> class_means;
     
     
-    PointSet(Table* _lipidome, bool _is_dendrogram = false);
+    PointSet(Table* _lipidome, QGraphicsView *_view, bool _is_dendrogram = false);
     ~PointSet();
     void set_labels();
     void automated_annotation(Array &xx, Array &yy, Matrix &label_points);
     
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
+    QGraphicsView *view;
 };
 
 
@@ -61,6 +63,7 @@ public:
     void mouseMoveEvent(QMouseEvent* event);
     void mousePressEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
     void resizeEvent(QResizeEvent *);
     void wheelEvent(QWheelEvent *event);
     
@@ -76,6 +79,7 @@ signals:
     void showMessage(QString message);
     void scaling(QWheelEvent *event, QRectF f, int _num);
     void moving(QRectF f, int _num);
+    void doubleClicked(int);
     
     
 private:

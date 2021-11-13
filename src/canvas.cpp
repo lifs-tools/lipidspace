@@ -1,7 +1,7 @@
 #include "lipidspace/canvas.h"
 
 
-PointSet::PointSet(Table *_lipidome, bool _is_dendrogram){
+PointSet::PointSet(Table *_lipidome, QGraphicsView *_view, bool _is_dendrogram) : view(_view) {
     lipidome = _lipidome;
     is_dendrogram = _is_dendrogram;
     
@@ -26,6 +26,11 @@ PointSet::PointSet(Table *_lipidome, bool _is_dendrogram){
             y_max = max(y_max, yval + intens);
             x_mean += xval;
             y_mean += yval;
+            
+            string lipid_class = lipidome->classes[r];
+            if (uncontains_val(LipidSpaceGUI::colorMap, lipid_class)){
+                LipidSpaceGUI::colorMap.insert({lipid_class, LipidSpaceGUI::COLORS[LipidSpaceGUI::color_counter++ % LipidSpaceGUI::COLORS.size()]});
+            }
             points.push_back(QPointF(xval, yval));
         }
         bound.setX(x_min);
@@ -41,6 +46,7 @@ PointSet::PointSet(Table *_lipidome, bool _is_dendrogram){
             point.setX(point.x() - x_mean);
             point.setY(point.y() - y_mean);
         }
+        
         set_labels();
     }
     else {
@@ -79,18 +85,21 @@ bool find_start(QRectF &bound, QPointF target, QPointF &inter){
 void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget){
     if (is_dendrogram) return;
     
+    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+    
     for (int i = 0; i < (int)points.size(); ++i){
-        string lipid_class = lipidome->classes[i];
+        
         double intens = LipidSpaceGUI::showQuant ? (lipidome->intensities[i] > 1 ? log(lipidome->intensities[i]) : 0.5) : 1.;
-        if (uncontains_val(LipidSpaceGUI::colorMap, lipid_class)){
-            LipidSpaceGUI::colorMap.insert({lipid_class, LipidSpaceGUI::COLORS[LipidSpaceGUI::color_counter++ % LipidSpaceGUI::COLORS.size()]});
-        }
+        QRectF bubble(points[i].x() - intens * 0.5, points[i].y() - intens * 0.5,  intens, intens);
+        if (!v.intersects(bubble)) continue;
+        
+        string lipid_class = lipidome->classes[i];
         
         // setting up pen for painter
         QColor &qcolor = LipidSpaceGUI::colorMap[lipid_class];
         qcolor.setAlpha(128);
         QPainterPath p;
-        p.addEllipse(QRectF(points[i].x() - intens * 0.5, points[i].y() - intens * 0.5, intens, intens));
+        p.addEllipse(bubble);
         painter->fillPath(p, qcolor);
     }
     
@@ -283,6 +292,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     lipid_space = _lipid_space;
     mainWindow = _mainWindow;
     
+    setViewport(new QOpenGLWidget()); 
     setDragMode(QGraphicsView::ScrollHandDrag);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -300,13 +310,13 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     leftMousePressed = false;
     showQuant = true;
     if (num == -2){ // dendrogram
-        pointSet = new PointSet(0, true);
+        pointSet = new PointSet(0, this, true);
     }
     else if (num == -1){ // global lipidome
-        pointSet = new PointSet(lipid_space->global_lipidome, false);
+        pointSet = new PointSet(lipid_space->global_lipidome, this, false);
     }
     else { // regular lipidome
-        pointSet = new PointSet(lipid_space->lipidomes[num], false);
+        pointSet = new PointSet(lipid_space->lipidomes[num], this, false);
     }
     scene.addItem(pointSet);
     
@@ -330,11 +340,20 @@ void Canvas::mousePressEvent(QMouseEvent *event){
 }
 
 
+void Canvas::mouseDoubleClickEvent(QMouseEvent *){
+    doubleClicked(num);
+    
+    QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+    QRectF v = mapToScene(viewportRect).boundingRect();
+    moving(v, num);
+}
+    
 void Canvas::mouseReleaseEvent(QMouseEvent *event){
-    viewport()->setCursor(Qt::ArrowCursor);
     leftMousePressed = false;
     QGraphicsView::mouseReleaseEvent(event);
+    viewport()->setCursor(Qt::ArrowCursor);
 }
+
 
 
 void Canvas::mouseMoveEvent(QMouseEvent *event){
