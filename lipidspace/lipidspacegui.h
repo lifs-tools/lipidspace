@@ -32,10 +32,10 @@ public:
     static const vector<QColor> COLORS;
     static bool showQuant;
     static map<string, QColor> colorMap;
+    void resizeEvent(QResizeEvent *);
     
 signals:
-    void scaling(QWheelEvent *event, QRectF f, int _num);
-    void moving(QRectF f, int _num);
+    void transforming(QRectF f, int _num);
     void updateCanvas();
     
     
@@ -61,8 +61,7 @@ public slots:
     void setSnPositions();
     void openManageLipidomesWindow();
     void runAnalysis();
-    void setScale(QWheelEvent *event, QRectF f, int _num);
-    void setMove(QRectF f, int _num);
+    void setTransforming(QRectF f, int _num);
     void setDoubleClick(int _num);
     
 private:

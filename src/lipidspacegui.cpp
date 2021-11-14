@@ -103,13 +103,22 @@ void LipidSpaceGUI::openTable(){
 void LipidSpaceGUI::runAnalysis(){
     
     lipid_space->analysis_finished = false;
-    for (auto canvas : canvases) delete canvas;
-    canvases.clear();
-    updateGUI();
+    disconnect(this, SIGNAL(transforming(QRectF, int)), 0, 0);
+    disconnect(this, SIGNAL(updateCanvas()), 0, 0);
+    
+    
     
     std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
     progressbar->exec();
     runAnalysisThread.join();
+    
+    for (auto canvas : canvases){
+        disconnect(canvas, SIGNAL(transforming(QRectF, int)), 0, 0);
+        disconnect(canvas, SIGNAL(showMessage(QString)), 0, 0);
+        delete canvas;
+    }
+    canvases.clear();
+    updateGUI();
     
     color_counter = 0;
     int numTiles = 2 * (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
@@ -123,27 +132,19 @@ void LipidSpaceGUI::runAnalysis(){
         Canvas* canvas = new Canvas(lipid_space, this, num, ui->centralwidget);
         connect(canvas, SIGNAL(doubleClicked(int)), this, SLOT(setDoubleClick(int)));
         if (num != -2){
-            connect(canvas, SIGNAL(scaling(QWheelEvent *, QRectF, int)), this, SLOT(setScale(QWheelEvent *, QRectF, int)));
-            connect(this, SIGNAL(scaling(QWheelEvent *, QRectF, int)), canvas, SLOT(setScale(QWheelEvent *, QRectF, int)));
-            connect(canvas, SIGNAL(moving(QRectF, int)), this, SLOT(setMove(QRectF, int)));
-            connect(this, SIGNAL(moving(QRectF, int)), canvas, SLOT(setMove(QRectF, int)));
+            connect(canvas, SIGNAL(transforming(QRectF, int)), this, SLOT(setTransforming(QRectF, int)));
+            connect(this, SIGNAL(transforming(QRectF, int)), canvas, SLOT(setTransforming(QRectF, int)));
             connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
         }
         canvases.push_back(canvas);
     }
-    
     updateGUI();
 }
 
 
-void LipidSpaceGUI::setScale(QWheelEvent *event, QRectF f, int _num){
-    scaling(event, f, _num);
-}
-
-
-void LipidSpaceGUI::setMove(QRectF f, int _num){
-    moving(f, _num);
+void LipidSpaceGUI::setTransforming(QRectF f, int _num){
+    transforming(f, _num);
 }
 
 
@@ -271,6 +272,11 @@ void LipidSpaceGUI::openManageLipidomesWindow(){
 }
 
 
+void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
+    event->ignore();
+}
+
+
 void LipidSpaceGUI::updateGUI(){
     updating = true;
     
@@ -295,22 +301,22 @@ void LipidSpaceGUI::updateGUI(){
         case SIX_COLUMNS: ui->action6_columns->setChecked(true); break;
     }
     
-    
     QLayoutItem *wItem;
-    while ((wItem = ui->gridLayout->layout()->takeAt(0)) != 0) ;
+    while ((wItem = ui->gridLayout->layout()->takeAt(0)) != 0) {};
     
-    if (!lipid_space->analysis_finished) return;
+    if (!lipid_space->analysis_finished || !canvases.size()) return;
     
-    for (auto canvas : canvases) canvas->setVisible(false);
+    
     
     if (single_window < 0){
+        for (auto canvas : canvases) canvas->setVisible(true);
         int numTiles = 2 * (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
         int tileColumns = tileLayout == AUTOMATIC ? ceil(sqrt((double)numTiles)) : (int)tileLayout;
+        
         
         int c = 0, r = 0;
         // show dendrogram if enabled
         if (showDendrogram && lipid_space->lipidomes.size() > 1){
-            canvases[0]->setVisible(true);
             ui->gridLayout->addWidget(canvases[0], r, c);
             if (++c == tileColumns){
                 c = 0;
@@ -320,7 +326,6 @@ void LipidSpaceGUI::updateGUI(){
         
         // show global lipidome if enabled
         if (showGlobalLipidome && lipid_space->lipidomes.size() > 1){
-            canvases[1]->setVisible(true);
             ui->gridLayout->addWidget(canvases[1], r, c);
             if (++c == tileColumns){
                 c = 0;
@@ -330,7 +335,6 @@ void LipidSpaceGUI::updateGUI(){
         
         // show all remaining lipidomes
         for(int n = 2 * (lipid_space->lipidomes.size() > 1); n < numTiles; ++n){
-            canvases[n]->setVisible(true);
             ui->gridLayout->addWidget(canvases[n], r, c);
             if (++c == tileColumns){
                 c = 0;
@@ -339,6 +343,7 @@ void LipidSpaceGUI::updateGUI(){
         }
     }
     else {
+        for (auto canvas : canvases) canvas->setVisible(false);
         canvases[single_window]->setVisible(true);
         ui->gridLayout->addWidget(canvases[single_window], 0, 0);
     }
