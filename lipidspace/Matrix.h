@@ -1,11 +1,11 @@
-#include "LipidSpace/lambda_lanczos.hpp"
+#include "lipidspace/lambda_lanczos.hpp"
 
 #include <vector>
 #include <math.h>
 #include <iostream>
-#include <chrono>
 #include <cassert>
 #include <cblas.h>
+#include <QtCore>
 
 using lambda_lanczos::LambdaLanczos;
 using namespace std;
@@ -18,6 +18,7 @@ typedef vector<int> Indexes;
 
 
 class Array : public vector<double> {
+    
 public:
     Array();
     Array(int len, double val);
@@ -35,7 +36,7 @@ public:
     }
     
     inline double& operator ()(int i){
-        if (i < 0 || size() <= i){
+        if (i < 0 || (int)size() <= i){
             throw "Constrain violation, 0 <= i <=" + std::to_string(size());
         }
         return at(i);
@@ -43,7 +44,9 @@ public:
 };
 
 
-class Matrix {
+class Matrix : public QObject {
+    Q_OBJECT
+    
 public:
     Array m;
     int rows;
@@ -87,5 +90,6 @@ public:
         return m[c * rows + r];
     }
     
-    
+signals:
+    void set_step();
 };

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>804</width>
-    <height>592</height>
+    <width>863</width>
+    <height>582</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,11 +21,23 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="Canvas" name="widget" native="true"/>
-      </item>
+      <property name="spacing">
+       <number>5</number>
+      </property>
      </layout>
     </item>
    </layout>
@@ -35,7 +47,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>804</width>
+     <width>863</width>
      <height>23</height>
     </rect>
    </property>
@@ -46,10 +58,57 @@
     <addaction name="actionLoad_list_s"/>
     <addaction name="actionLoad_table"/>
     <addaction name="separator"/>
+    <addaction name="actionExport_Results"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuAnalysis">
+    <property name="title">
+     <string>&amp;Analysis</string>
+    </property>
+    <addaction name="actionManage_lipidomes"/>
+    <addaction name="separator"/>
+    <addaction name="actionIgnoring_lipid_sn_positions"/>
+    <addaction name="actionIgnore_quantitative_information"/>
+    <addaction name="actionUnbound_lipid_distance_metric"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="menuTile_layout">
+     <property name="title">
+      <string>Tile layout</string>
+     </property>
+     <addaction name="actionAutomatically"/>
+     <addaction name="separator"/>
+     <addaction name="action1_column"/>
+     <addaction name="action2_columns"/>
+     <addaction name="action3_columns"/>
+     <addaction name="action4_columns"/>
+     <addaction name="action5_columns"/>
+     <addaction name="action6_columns"/>
+    </widget>
+    <addaction name="actionSet_transparency"/>
+    <addaction name="menuTile_layout"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_global_lipidome"/>
+    <addaction name="actionShow_dendrogram"/>
+    <addaction name="actionShow_quantitative_information"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+    <addaction name="actionLog_messages"/>
+   </widget>
    <addaction name="menuLipidSpace"/>
+   <addaction name="menuAnalysis"/>
+   <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad_list_s">
    <property name="text">
     <string>Import &amp;list(s)</string>
@@ -63,6 +122,152 @@
   <action name="actionQuit">
    <property name="text">
     <string>&amp;Quit</string>
+   </property>
+  </action>
+  <action name="actionRemove_all_lipidomes">
+   <property name="text">
+    <string>Remove all lipidomes</string>
+   </property>
+  </action>
+  <action name="actionSet_transparency">
+   <property name="text">
+    <string>Set transparency</string>
+   </property>
+  </action>
+  <action name="actionAutomatically">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Automatically</string>
+   </property>
+  </action>
+  <action name="action2_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>2 columns</string>
+   </property>
+  </action>
+  <action name="action3_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>3 columns</string>
+   </property>
+  </action>
+  <action name="action4_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>4 columns</string>
+   </property>
+  </action>
+  <action name="action5_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>5 columns</string>
+   </property>
+  </action>
+  <action name="actionShow_global_lipidome">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show global lipidome</string>
+   </property>
+  </action>
+  <action name="actionShow_dendrogram">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show dendrogram</string>
+   </property>
+  </action>
+  <action name="action1_column">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1 column</string>
+   </property>
+  </action>
+  <action name="action6_columns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>6 columns</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionLog_messages">
+   <property name="text">
+    <string>Log messages</string>
+   </property>
+  </action>
+  <action name="actionShow_quantitative_information">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show quantitative information</string>
+   </property>
+  </action>
+  <action name="actionIgnoring_lipid_sn_positions">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ignoring lipid sn-positions</string>
+   </property>
+  </action>
+  <action name="actionManage_lipidomes">
+   <property name="text">
+    <string>Manage lipidomes</string>
+   </property>
+  </action>
+  <action name="actionIgnore_quantitative_information">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ignore quantitative information</string>
+   </property>
+  </action>
+  <action name="actionUnbound_lipid_distance_metric">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Unbound lipid distance metric</string>
+   </property>
+  </action>
+  <action name="actionExport_Results">
+   <property name="text">
+    <string>Export Results</string>
    </property>
   </action>
  </widget>

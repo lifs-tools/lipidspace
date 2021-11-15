@@ -1,4 +1,4 @@
-#include "LipidSpace/Matrix.h"
+#include "lipidspace/Matrix.h"
 
 
 Array::Array() : vector<double>(){
@@ -9,7 +9,7 @@ Array::Array(int len, double val) : vector<double> (len, val){
     
 Array::Array(const Array &a, int l) : vector<double>() {
     if (l != -1){
-        assert(0 < l && l <= a.size());
+        assert(0 < l && l <= (int)a.size());
         reserve(l);
         for (int i = 0; i < l; ++i) push_back(a.at(i));
     }
@@ -21,15 +21,15 @@ Array::Array(const Array &a, int l) : vector<double>() {
 
 
 double Array::mean(){
-    double mn;
-    for (int i = 0; i < size(); ++i) mn += at(i);
+    double mn = 0;
+    for (int i = 0; i < (int)size(); ++i) mn += at(i);
     return mn / (double)size();
 }
 
 
 double Array::stdev(){
     double mn = mean(), st = 0;
-    for (int i = 0; i < size(); ++i) st += sq(at(i) - mn);
+    for (int i = 0; i < (int)size(); ++i) st += sq(at(i) - mn);
     return sqrt(st / (double)size());
 }
 
@@ -54,16 +54,16 @@ void Array::reset(Array &a){
 void Array::compute_distances(Array &x, double dx, Array &y, double dy){
     assert(x.size() == y.size());
     resize(x.size());
-    for (int i = 0 ; i < x.size(); ++i) at(i) = sq(x[i] - dx) + sq(y[i] - dy);
+    for (int i = 0 ; i < (int)x.size(); ++i) at(i) = sq(x[i] - dx) + sq(y[i] - dy);
 }
     
     
-Matrix::Matrix(){
+Matrix::Matrix() : QObject(){
     rows = 0;
     cols = 0;
 }
 
-Matrix::Matrix(const Array &a, int _rows, int _cols){
+Matrix::Matrix(const Array &a, int _rows, int _cols) : QObject() {
     cols = _cols;
     rows = _rows;
     m.clear();
@@ -71,12 +71,12 @@ Matrix::Matrix(const Array &a, int _rows, int _cols){
     for (double v : a) m.push_back(v);
 }
 
-Matrix::Matrix(vector<vector<double>> &mat){
+Matrix::Matrix(vector<vector<double>> &mat) : QObject(){
     rewrite(mat);
 }
 
 
-Matrix::Matrix(Matrix &mat, bool transpose){
+Matrix::Matrix(Matrix &mat, bool transpose) : QObject(){
     if (transpose) rewrite_transpose(mat);
     else rewrite(mat);
 }
@@ -143,7 +143,7 @@ void Matrix::rewrite(Matrix &mat, const Indexes &ri, const Indexes &ci){
 
 void Matrix::add_column(Array &col){
     if (cols > 0){
-        assert(rows == col.size());
+        assert(rows == (int)col.size());
         cols += 1;
         m.reserve(cols * rows);
         for (auto val : col) m.push_back(val);
@@ -230,7 +230,7 @@ double Matrix::pairwise_sum(Matrix &m){
 
 
 void Matrix::pad_cols_4(){
-    if (cols & 3 == 0) return;
+    if ((cols & 3) == 0) return;
     int add_cols = (4 - (cols & 3));
     cols += add_cols;
     m.reserve(cols * rows);
@@ -296,7 +296,7 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
     LambdaLanczos<double> engine(mv_mul, rows, true); // true means to calculate the largest eigenvalue.
     vector<double> evals(top_n);
     vector<vector<double>> eigvecs(top_n);
-    int itern = engine.run(evals, eigvecs);
+    engine.run(evals, eigvecs);
     
     eigenvalues.add(evals);
     eigenvectors.rewrite(eigvecs);
@@ -315,14 +315,25 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
 
 
 void Matrix::PCA(Matrix &pca, int dimensions){
+    // Scale data
     scale();
+    set_step();
+    
+    // compute covariance matrix
     Matrix cov_matrix;
     covariance_matrix(cov_matrix);
+    set_step();
+    
+    // compute eigenvectors
     Array eigenvalues;
     Matrix eigenvectors;
     cov_matrix.compute_eigen_data(eigenvalues, eigenvectors, dimensions);
+    set_step();
+    
+    // multiply the eigenvectors with the original matrix
     pca.mult(eigenvectors, *this, true, true);
     pca.transpose();
+    set_step();
 }
 
 
