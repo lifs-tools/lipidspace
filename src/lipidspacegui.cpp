@@ -21,6 +21,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionIgnoring_lipid_sn_positions, SIGNAL(triggered()), this, SLOT(setSnPositions()));
     connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
     connect(ui->actionSet_transparency, SIGNAL(triggered()), this, SLOT(openSetAlpha()));
+    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
     connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
@@ -299,6 +300,13 @@ void LipidSpaceGUI::openSetAlpha(){
     setAlpha.setModal(true);
     setAlpha.exec();
     updateGUI();
+}
+
+
+void LipidSpaceGUI::openAbout(){
+    About about(this);
+    about.setModal(true);
+    about.exec();
 }
 
 

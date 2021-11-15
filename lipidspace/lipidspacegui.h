@@ -10,6 +10,7 @@
 #include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
 #include "lipidspace/setalpha.h"
+#include "lipidspace/about.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 
@@ -71,6 +72,7 @@ public slots:
     void setExport();
     void setInitialized();
     void openSetAlpha();
+    void openAbout();
     
 private:
     Ui::LipidSpaceGUI *ui;
