@@ -12,10 +12,11 @@
 #include <QGraphicsView>
 #include <QMainWindow>
 #include <QGraphicsItem>
+#include <QOpenGLWidget>
+#include <QPrinter>
 #include <iostream>
 #include <vector>
 #include <map>
-#include <QOpenGLWidget>
 #include <math.h>
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/lipidspacegui.h"
@@ -28,6 +29,7 @@ using namespace std;
 #define LABEL_COLOR 200, 200, 200, 255
 #define ALPHA 128
 
+class Canvas;
 
 /*
 class CanvasItem : public QGraphicsItem {
@@ -52,7 +54,7 @@ class Dendrogram : public QGraphicsItem {
 public:
     QString title;
     QRectF bound;
-    QGraphicsView *view;
+    Canvas *view;
     
     LipidSpace* lipid_space;
     vector<QString> dendrogram_titles;
@@ -60,7 +62,7 @@ public:
     double dendrogram_factor;
     double pp;
     
-    Dendrogram(LipidSpace* _lipid_space, QGraphicsView *_view);
+    Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
     ~Dendrogram();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
@@ -72,8 +74,9 @@ class PointSet : public QGraphicsItem {
 public:
     QString title;
     QRectF bound;
-    QGraphicsView *view;
+    Canvas *view;
     
+    QRectF old_view;
     vector<QPointF> points;
     Table* lipidome;
     vector<QString> labels;
@@ -81,12 +84,14 @@ public:
     vector<QPointF> class_means;
     
     
-    PointSet(Table* _lipidome, QGraphicsView *_view);
+    PointSet(Table* _lipidome, Canvas *_view);
     ~PointSet();
     void set_labels();
     void automated_annotation(Array &xx, Array &yy, Matrix &label_points);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
+    void updateView(QRectF);
+    void resize();
 };
 
 
@@ -96,6 +101,8 @@ class Canvas : public QGraphicsView
     Q_OBJECT
 
 public:
+    QGraphicsScene graphics_scene;
+    
     Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *parent = nullptr);
     ~Canvas();
     void mouseMoveEvent(QMouseEvent* event);
@@ -111,6 +118,8 @@ public slots:
     void showHideQuant(bool _showQuant);
     void setTransforming(QRectF f, int _num);
     void setUpdate();
+    void exportPdf(QString outputFolder);
+    void setInitialized();
     
 signals:
     void showMessage(QString message);
@@ -124,7 +133,6 @@ private:
     int num;
     
     bool showQuant;
-    QGraphicsScene scene;
     QPoint m_lastMousePos;
     bool leftMousePressed;
     QPoint oldCenter;

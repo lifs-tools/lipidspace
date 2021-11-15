@@ -37,6 +37,8 @@ public:
 signals:
     void transforming(QRectF f, int _num);
     void updateCanvas();
+    void exporting(QString);
+    void initialized();
     
     
 public slots:
@@ -63,6 +65,8 @@ public slots:
     void runAnalysis();
     void setTransforming(QRectF f, int _num);
     void setDoubleClick(int _num);
+    void setExport();
+    void setInitialized();
     
 private:
     Ui::LipidSpaceGUI *ui;
@@ -74,6 +78,7 @@ private:
     Progressbar *progressbar;
     Progress *progress;
     int single_window;
+    QTimer timer;
     
     vector<Canvas*> canvases;
 };

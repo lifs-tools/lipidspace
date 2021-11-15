@@ -1,7 +1,7 @@
 #include "lipidspace/lipidspacegui.h"
 
 
-LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent) , ui(new Ui::LipidSpaceGUI), lipid_space(_lipid_space){
+LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent) , ui(new Ui::LipidSpaceGUI), lipid_space(_lipid_space), timer(this) {
     ui->setupUi(this);
     
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
@@ -22,6 +22,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
+    connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
             
     
     tileLayout = AUTOMATIC;
@@ -115,6 +116,7 @@ void LipidSpaceGUI::runAnalysis(){
     for (auto canvas : canvases){
         disconnect(canvas, SIGNAL(transforming(QRectF, int)), 0, 0);
         disconnect(canvas, SIGNAL(showMessage(QString)), 0, 0);
+        disconnect(canvas, SIGNAL(doubleClicked(int)), 0, 0);
         delete canvas;
     }
     canvases.clear();
@@ -136,10 +138,30 @@ void LipidSpaceGUI::runAnalysis(){
             connect(this, SIGNAL(transforming(QRectF, int)), canvas, SLOT(setTransforming(QRectF, int)));
             connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
+            connect(this, SIGNAL(exporting(QString)), canvas, SLOT(exportPdf(QString)));
+            connect(this, SIGNAL(initialized()), canvas, SLOT(setInitialized()));
         }
         canvases.push_back(canvas);
     }
     updateGUI();
+    
+    // dirty hack to overcome the annoying resizing calls of the canvases when
+    // putting them into the grid layout. Unfortunately, I cannot figure out, when
+    // it is over. So I a timer and hope that after 200ms all rearranging is over
+    QTimer::singleShot(200, this, SLOT(setInitialized()));
+}
+
+
+void LipidSpaceGUI::setInitialized(){
+    initialized();
+}
+
+
+void LipidSpaceGUI::setExport(){
+    QString outputFolder = QFileDialog::getExistingDirectory(0, ("Select Export Folder"), QDir::currentPath());
+    cout << outputFolder.toStdString() << endl;
+    
+    //if (outputFolder.length()) exporting(outputFolder);
 }
 
 
@@ -282,6 +304,7 @@ void LipidSpaceGUI::updateGUI(){
     
     ui->menuAnalysis->setEnabled(lipid_space->lipidomes.size());
     ui->menuView->setEnabled(lipid_space->lipidomes.size());
+    ui->actionExport_Results->setEnabled(lipid_space->lipidomes.size());
     
     ui->actionAutomatically->setChecked(false);
     ui->action1_column->setChecked(false);
@@ -316,20 +339,30 @@ void LipidSpaceGUI::updateGUI(){
         
         int c = 0, r = 0;
         // show dendrogram if enabled
-        if (showDendrogram && lipid_space->lipidomes.size() > 1){
-            ui->gridLayout->addWidget(canvases[0], r, c);
-            if (++c == tileColumns){
-                c = 0;
-                ++r;
+        if (lipid_space->lipidomes.size() > 1){
+            if (showDendrogram){
+                ui->gridLayout->addWidget(canvases[0], r, c);
+                if (++c == tileColumns){
+                    c = 0;
+                    ++r;
+                }
+            }
+            else {
+                canvases[0]->setVisible(false);
             }
         }
         
         // show global lipidome if enabled
-        if (showGlobalLipidome && lipid_space->lipidomes.size() > 1){
-            ui->gridLayout->addWidget(canvases[1], r, c);
-            if (++c == tileColumns){
-                c = 0;
-                ++r;
+        if (lipid_space->lipidomes.size() > 1){
+            if (showGlobalLipidome){
+                ui->gridLayout->addWidget(canvases[1], r, c);
+                if (++c == tileColumns){
+                    c = 0;
+                    ++r;
+                }
+            }
+            else {
+                canvases[1]->setVisible(false);
             }
         }
         

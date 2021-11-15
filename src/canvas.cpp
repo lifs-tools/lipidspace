@@ -45,7 +45,7 @@ void CanvasItem::resize(){
 
 
 
-Dendrogram::Dendrogram(LipidSpace *_lipid_space, QGraphicsView *_view) : view(_view) {
+Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     lipid_space = _lipid_space;
     
     for (int i : lipid_space->dendrogram_sorting){
@@ -132,7 +132,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 
 
 
-PointSet::PointSet(Table *_lipidome, QGraphicsView *_view) : view(_view) {
+PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
     lipidome = _lipidome;
     
     double x_min = 0;
@@ -233,6 +233,7 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     pen_arr.setColor(QColor(LABEL_COLOR));
     pen_arr.setStyle(Qt::DashLine);
     pen_arr.setWidth(0.1);
+    
     
     QFont f("Helvetica", 1);
     painter->setFont(f);
@@ -410,8 +411,25 @@ void PointSet::automated_annotation(Array &xx, Array &yy, Matrix &label_points){
 }
 
 
+void PointSet::updateView(QRectF current_view){
+    old_view = current_view;
+}
 
 
+void PointSet::resize(){
+    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+    double x_scaling = v.width() / old_view.width();
+    double y_scaling = v.height() / old_view.height();
+    
+    double scaling = min(x_scaling, y_scaling);
+    
+    view->scale(scaling, scaling);
+    view->centerOn(old_view.x() + old_view.width() * 0.5, old_view.y() + old_view.height() * 0.5);
+    
+    QRect viewportRect(0, 0, view->viewport()->width(), view->viewport()->height());
+    old_view = view->mapToScene(viewportRect).boundingRect();
+    view->graphics_scene.setSceneRect(-50000, -50000, 100000, 100000);
+}
 
 
 
@@ -437,8 +455,8 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     //setViewport(new QOpenGLWidget());
     
     
-    setScene(&scene);
-    scene.setSceneRect(-500, -300, 1000, 600);
+    setScene(&graphics_scene);
+    graphics_scene.setSceneRect(-500, -300, 1000, 600);
     resetMatrix();
     initialized = false;
     
@@ -447,15 +465,15 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     // set the graphics item within this graphics view
     if (num == -2){ // dendrogram
         dendrogram = new Dendrogram(lipid_space, this);
-        scene.addItem(dendrogram);
+        graphics_scene.addItem(dendrogram);
     }
     else if (num == -1){ // global lipidome
         pointSet = new PointSet(lipid_space->global_lipidome, this);
-        scene.addItem(pointSet);
+        graphics_scene.addItem(pointSet);
     }
     else { // regular lipidome
         pointSet = new PointSet(lipid_space->lipidomes[num], this);
-        scene.addItem(pointSet);
+        graphics_scene.addItem(pointSet);
     }
 }
 
@@ -477,6 +495,26 @@ void Canvas::mousePressEvent(QMouseEvent *event){
     QGraphicsView::mousePressEvent(event);
 }
 
+void Canvas::exportPdf(QString outputFolder){
+    QPrinter printer(QPrinter::HighResolution);
+    //printer.setPageSize(QPrinter::A4);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    QString file_name = QDir(outputFolder).filePath((dendrogram ? dendrogram->title : pointSet->title) + ".pdf");
+    
+    printer.setOutputFileName(file_name);
+
+    
+    QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+    QRectF v = mapToScene(viewportRect).boundingRect();
+    graphics_scene.setSceneRect(v);
+    QPainter p(&printer);
+    graphics_scene.render(&p);
+    p.end();
+    graphics_scene.setSceneRect(-50000, -50000, 100000, 100000);
+}
+
+
+
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent *){
     doubleClicked(num);
@@ -484,12 +522,21 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent *){
     QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
     QRectF v = mapToScene(viewportRect).boundingRect();
     transforming(v, num);
+    if (pointSet) pointSet->updateView(v);
 }
+    
+    
     
 void Canvas::mouseReleaseEvent(QMouseEvent *event){
     leftMousePressed = false;
     QGraphicsView::mouseReleaseEvent(event);
     viewport()->setCursor(Qt::ArrowCursor);
+}
+
+
+
+void Canvas::setInitialized(){
+    initialized = true;
 }
 
 
@@ -500,6 +547,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
         QRectF v = mapToScene(viewportRect).boundingRect();
         transforming(v, num);
+        if (pointSet) pointSet->updateView(v);
         
         oldCenter.setX(v.x() + v.width() * 0.5);
         oldCenter.setY(v.y() + v.height() * 0.5);
@@ -532,13 +580,19 @@ void Canvas::setUpdate(){
 
     
 void Canvas::resizeEvent(QResizeEvent *event) {
-    QRectF bounds = dendrogram ? dendrogram->boundingRect() : pointSet->boundingRect();
-    fitInView(bounds, Qt::KeepAspectRatio);
-    QGraphicsView::resizeEvent(event);
-    
-    QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
-    QRectF v = mapToScene(viewportRect).boundingRect();
-    transforming(v, num);
+    if (!initialized){
+        QRectF bounds = dendrogram ? dendrogram->boundingRect() : pointSet->boundingRect();
+        fitInView(bounds, Qt::KeepAspectRatio);
+        QGraphicsView::resizeEvent(event);
+        
+        QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+        QRectF v = mapToScene(viewportRect).boundingRect();
+        transforming(v, num);
+        
+    }
+    else {
+        if (pointSet) pointSet->resize();
+    }
 }
 
 
@@ -550,6 +604,7 @@ void Canvas::wheelEvent(QWheelEvent *event){
     QRectF v = mapToScene(viewportRect).boundingRect();
     
     transforming(v, num);
+    if (pointSet) pointSet->updateView(v);
     oldCenter.setX(v.x() + v.width() * 0.5);
     oldCenter.setY(v.y() + v.height() * 0.5);
 }
@@ -567,11 +622,13 @@ void Canvas::setTransforming(QRectF f, int _num){
     centerOn(f.x() + f.width() * 0.5, f.y() + f.height() * 0.5);
     oldCenter.setX(f.x() + f.width() * 0.5);
     oldCenter.setY(f.y() + f.height() * 0.5);
+    if (pointSet) pointSet->updateView(v);
+    graphics_scene.setSceneRect(-50000, -50000, 100000, 100000);
 }
 
 
 void Canvas::resetCanvas(){
-    scene.clear();
+    graphics_scene.clear();
     resetMatrix();
 }
 

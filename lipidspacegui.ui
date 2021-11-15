@@ -58,6 +58,8 @@
     <addaction name="actionLoad_list_s"/>
     <addaction name="actionLoad_table"/>
     <addaction name="separator"/>
+    <addaction name="actionExport_Results"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuAnalysis">
@@ -261,6 +263,11 @@
    </property>
    <property name="text">
     <string>Unbound lipid distance metric</string>
+   </property>
+  </action>
+  <action name="actionExport_Results">
+   <property name="text">
+    <string>Export Results</string>
    </property>
   </action>
  </widget>
