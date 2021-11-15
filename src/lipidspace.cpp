@@ -1078,7 +1078,12 @@ void LipidSpace::run_analysis(Progress *_progress){
     }
     analysis_finished = true;
     
+    
+    
+    
+    
     /*
+    // experimental part
     Matrix aa(global_lipidome->m.rows, lipidomes.size());
     map<string, int> species_to_index;
     for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
@@ -1093,7 +1098,7 @@ void LipidSpace::run_analysis(Progress *_progress){
     }
     {
         Matrix p;
-        aa.transpose();
+        //aa.transpose();
         aa.PCA(p, 2);
         aa.rewrite(p);
     }
@@ -1104,8 +1109,8 @@ void LipidSpace::run_analysis(Progress *_progress){
     }
     sort(lst.begin(), lst.end(), mysort);
     for (auto row : lst){
-        //cout << row[0] << " " << global_lipidome->species[(int)row[1]] << endl;
-        cout << row[0] << " " << lipidomes[(int)row[1]]->file_name << endl;
+        cout << row[0] << " " << global_lipidome->species[(int)row[1]] << endl;
+        //cout << row[0] << " " << lipidomes[(int)row[1]]->file_name << endl;
     }
     */
 }

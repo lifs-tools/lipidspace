@@ -20,6 +20,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->action6_columns, SIGNAL(triggered()), this, SLOT(set6ColumnLayout()));
     connect(ui->actionIgnoring_lipid_sn_positions, SIGNAL(triggered()), this, SLOT(setSnPositions()));
     connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
+    connect(ui->actionSet_transparency, SIGNAL(triggered()), this, SLOT(openSetAlpha()));
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
     connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
@@ -53,10 +54,9 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete progressbar;
 }
 
+int LipidSpaceGUI::alpha = DEFAULT_ALPHA;
 bool LipidSpaceGUI::showQuant = true;
-
 int LipidSpaceGUI::color_counter = 0;
-
 map<string, QColor> LipidSpaceGUI::colorMap;
 
 const vector<QColor> LipidSpaceGUI::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
@@ -291,6 +291,14 @@ void LipidSpaceGUI::openManageLipidomesWindow(){
     connect(&manageLipidomes, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     manageLipidomes.setModal(true);
     manageLipidomes.exec();
+}
+
+
+void LipidSpaceGUI::openSetAlpha(){
+    SetAlpha setAlpha(this);
+    setAlpha.setModal(true);
+    setAlpha.exec();
+    updateGUI();
 }
 
 

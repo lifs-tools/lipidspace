@@ -1,49 +1,5 @@
 #include "lipidspace/canvas.h"
 
-/*
-
-CanvasItem::CanvasItem(QGraphicsView *_view) : view(_view) {
-    old_view = view->mapToScene(view->viewport()->geometry()).boundingRect();
-    title = "";
-}
-
-
-CanvasItem::~CanvasItem() {
-}
-
-
-QRectF CanvasItem::boundingRect() const {
-    return bound;
-}
-
-
-
-void CanvasItem::updateView(){
-    old_view = view->mapToScene(view->viewport()->geometry()).boundingRect();
-}
-
-
-
-
-void CanvasItem::resize(){
-    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
-    
-    double x_scale = v.width() / old_view.width();
-    double y_scale = v.height() / old_view.height();
-    double scale_factor = min(x_scale, y_scale);
-    
-    double x_center = old_view.x() + 0.5 * old_view.width();
-    double y_center = old_view.y() + 0.5 * old_view.height();
-    cout << v.x() << " " << v.y() << " " << v.width() << " " << v.height() << " | " << x_center << " " << y_center << endl;
-    
-    view->scale(scale_factor, scale_factor);
-    view->centerOn(x_center, y_center);
-    old_view = v;
-}
-
-*/
-
-
 
 Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     lipid_space = _lipid_space;
@@ -73,18 +29,36 @@ Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     }
     
     
-    double x_mean = (x_max_d + x_min_d) * 0.5;
-    double y_mean = -(y_max_d + y_min_d) * 0.5;
+    double x_mean = 0;//(x_max_d + x_min_d) * 0.5;
+    double y_mean = 0; //-(y_max_d + y_min_d) * 0.5;
+    
+    
     
     QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
     dendrogram_factor = v.width() / (x_max_d - x_min_d) * 1.2;
     double factor_y_d = v.height() / (y_max_d - y_min_d) * 0.8;
     pp = factor_y_d;
     
+    x_min_d *= dendrogram_factor;
+    x_max_d *= dendrogram_factor;
+    y_min_d *= factor_y_d;
+    y_max_d *= factor_y_d;
+    
+    double x_margin = (x_max_d - x_min_d) * 0.2;
+    double y_margin = (y_max_d - y_min_d) * 0.2;
+    
+    bound.setX(x_min_d - x_margin);
+    bound.setY(-y_max_d - y_margin);
+    bound.setWidth(x_max_d - x_min_d + 2 * x_margin);
+    bound.setHeight(y_max_d - y_min_d + 2 * y_margin);
+    
+    /*
     bound.setX((x_min_d - x_mean) * dendrogram_factor * 0.5);
     bound.setY((y_min_d - y_mean) * factor_y_d * 0.5);
     bound.setWidth((x_max_d - x_min_d) * dendrogram_factor * 1.5);
     bound.setHeight((y_max_d - y_min_d) * factor_y_d * 1.5);
+    
+    */
     
     for (QLineF &line : lines){
         line.setLine((line.x1() - x_mean) * dendrogram_factor, (line.y1() - y_mean) * factor_y_d, (line.x2() - x_mean) * dendrogram_factor, (line.y2() - y_mean) * factor_y_d);
@@ -112,8 +86,8 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     
     QFont f("Helvetica", 10);
     painter->setFont(f);
-    double dx = bound.x() * 2.;
-    double dy = bound.y() * 2.;
+    double dx = 0;
+    double dy = 0;
     for (QString dtitle : dendrogram_titles){
         painter->save();
         painter->translate(QPointF(dx, dy));
@@ -222,7 +196,7 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         
         // setting up pen for painter
         QColor &qcolor = LipidSpaceGUI::colorMap[lipid_class];
-        qcolor.setAlpha(128);
+        qcolor.setAlpha(LipidSpaceGUI::alpha);
         QPainterPath p;
         p.addEllipse(bubble);
         painter->fillPath(p, qcolor);
@@ -428,7 +402,6 @@ void PointSet::resize(){
     
     QRect viewportRect(0, 0, view->viewport()->width(), view->viewport()->height());
     old_view = view->mapToScene(viewportRect).boundingRect();
-    view->graphics_scene.setSceneRect(-50000, -50000, 100000, 100000);
 }
 
 
@@ -450,15 +423,15 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     setFrameStyle(QFrame::NoFrame);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     viewport()->setCursor(Qt::ArrowCursor);
-    //setViewport(new QOpenGLWidget());
+    setMouseTracking(true);
     
     
+    graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
     setScene(&graphics_scene);
-    graphics_scene.setSceneRect(-500, -300, 1000, 600);
     resetMatrix();
     initialized = false;
+    
     
     leftMousePressed = false;
     showQuant = true;
@@ -495,6 +468,8 @@ void Canvas::mousePressEvent(QMouseEvent *event){
     QGraphicsView::mousePressEvent(event);
 }
 
+
+
 void Canvas::exportPdf(QString outputFolder){
     QPrinter printer(QPrinter::HighResolution);
     //printer.setPageSize(QPrinter::A4);
@@ -510,7 +485,6 @@ void Canvas::exportPdf(QString outputFolder){
     QPainter p(&printer);
     graphics_scene.render(&p);
     p.end();
-    graphics_scene.setSceneRect(-50000, -50000, 100000, 100000);
 }
 
 
@@ -558,6 +532,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         QPoint origin_mouse = mapFromGlobal(QCursor::pos());
         QPointF relative_mouse = mapToScene(origin_mouse);
         
+        
         QStringList lipid_names;
         for (int i = 0; i < (int)pointSet->points.size(); ++i){
             double intens = LipidSpaceGUI::showQuant ? (pointSet->lipidome->intensities[i] > 1 ? log(pointSet->lipidome->intensities[i]) : 0.5) : 1.;
@@ -580,7 +555,7 @@ void Canvas::setUpdate(){
 
     
 void Canvas::resizeEvent(QResizeEvent *event) {
-    if (!initialized){
+    if (!initialized || dendrogram){
         QRectF bounds = dendrogram ? dendrogram->boundingRect() : pointSet->boundingRect();
         fitInView(bounds, Qt::KeepAspectRatio);
         QGraphicsView::resizeEvent(event);
@@ -597,11 +572,22 @@ void Canvas::resizeEvent(QResizeEvent *event) {
 
 
 void Canvas::wheelEvent(QWheelEvent *event){
-    if(event->delta() > 0) scale(1.1, 1.1);
-    else scale(1. / 1.1, 1. / 1.1);
     
     QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
     QRectF v = mapToScene(viewportRect).boundingRect();
+    
+    
+    QPointF center(v.x() + v.width() * 0.5, v.y() + v.height() * 0.5);
+    QPointF mouse_pos = mapToScene(event->pos());
+    
+    
+    double scale_factor = (event->delta() > 0) ? 1.1 : 1. / 1.1;
+    scale(scale_factor, scale_factor);
+    
+    centerOn(mouse_pos.x() + (center.x() - mouse_pos.x()) / scale_factor, mouse_pos.y() + (center.y() - mouse_pos.y()) / scale_factor);
+    
+    QRect viewportRect2(0, 0, viewport()->width(), viewport()->height());
+    v = mapToScene(viewportRect2).boundingRect();
     
     transforming(v, num);
     if (pointSet) pointSet->updateView(v);
@@ -623,7 +609,6 @@ void Canvas::setTransforming(QRectF f, int _num){
     oldCenter.setX(f.x() + f.width() * 0.5);
     oldCenter.setY(f.y() + f.height() * 0.5);
     if (pointSet) pointSet->updateView(v);
-    graphics_scene.setSceneRect(-50000, -50000, 100000, 100000);
 }
 
 

@@ -9,9 +9,11 @@
 #include "lipidspace/canvas.h"
 #include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
+#include "lipidspace/setalpha.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 
+#define DEFAULT_ALPHA 128
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }
@@ -31,6 +33,7 @@ public:
     static int color_counter;
     static const vector<QColor> COLORS;
     static bool showQuant;
+    static int alpha;
     static map<string, QColor> colorMap;
     void resizeEvent(QResizeEvent *);
     
@@ -67,6 +70,7 @@ public slots:
     void setDoubleClick(int _num);
     void setExport();
     void setInitialized();
+    void openSetAlpha();
     
 private:
     Ui::LipidSpaceGUI *ui;

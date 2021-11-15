@@ -14,6 +14,7 @@
 #include <QGraphicsItem>
 #include <QOpenGLWidget>
 #include <QPrinter>
+#include <QCursor>
 #include <iostream>
 #include <vector>
 #include <map>
@@ -27,27 +28,8 @@ using namespace std;
 #define POINT_BASE_SIZE 1.8
 #define PRECESION_FACTOR 1.
 #define LABEL_COLOR 200, 200, 200, 255
-#define ALPHA 128
 
 class Canvas;
-
-/*
-class CanvasItem : public QGraphicsItem {
-public:
-    QString title;
-    QRectF old_view;
-    QRectF bound;
-    
-    CanvasItem(QGraphicsView *_view);
-    ~CanvasItem();
-    
-    QGraphicsView *view;
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override = 0;
-    QRectF boundingRect() const override;
-    void resize();
-    void updateView();
-};
-*/
 
 
 class Dendrogram : public QGraphicsItem {
@@ -102,6 +84,8 @@ class Canvas : public QGraphicsView
 
 public:
     QGraphicsScene graphics_scene;
+    LipidSpace *lipid_space;
+    QMainWindow *mainWindow;
     
     Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *parent = nullptr);
     ~Canvas();
@@ -128,8 +112,6 @@ signals:
     
     
 private:
-    QMainWindow *mainWindow;
-    LipidSpace *lipid_space;
     int num;
     
     bool showQuant;
