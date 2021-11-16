@@ -57,7 +57,6 @@ void LipidSpace::create_dendrogram(){
 
 
 LipidSpace::LipidSpace() {
-    cols_for_pca = 7;
     keep_sn_position = true;
     ignore_unknown_lipids = false;
     unboundend_distance = false;
@@ -89,6 +88,7 @@ LipidSpace::LipidSpace() {
     }
 }
 
+int LipidSpace::cols_for_pca = 7;
 
 
 const vector< vector< vector< vector<int> > > > LipidSpace::orders{
@@ -1017,6 +1017,9 @@ bool mysort(double* a, double* b){ return a[0] < b[0];}
 
 void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
+    
+    
+    cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
     analysis_finished = false;
     
     if (_progress){

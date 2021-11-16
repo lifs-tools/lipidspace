@@ -110,7 +110,12 @@ void LipidSpaceGUI::runAnalysis(){
     disconnect(this, SIGNAL(transforming(QRectF, int)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
     
-    
+    if (lipid_space->global_lipidome->lipids.size() < 2){
+        QMessageBox::warning(this, tr("Gimme more lipids"),
+                               tr("Dude, at the moment, you have imported no lipids.I hope, I don't need to tell you that the feng shui of every comparison is to have at least two entities. Please import more lipids to proceed?"));
+        
+        return;
+    }
     
     std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
     progressbar->exec();
