@@ -36,6 +36,8 @@ public:
     static bool showQuant;
     static int alpha;
     static map<string, QColor> colorMap;
+    static int PC1;
+    static int PC2;
     void resizeEvent(QResizeEvent *);
     
 signals:

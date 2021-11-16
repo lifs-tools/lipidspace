@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QPixmap>
 #include <QWidget>
+#include <QLabel>
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>
@@ -32,9 +33,9 @@ using namespace std;
 class Canvas;
 
 
+
 class Dendrogram : public QGraphicsItem {
 public:
-    QString title;
     QRectF bound;
     Canvas *view;
     
@@ -54,7 +55,6 @@ public:
 
 class PointSet : public QGraphicsItem {
 public:
-    QString title;
     QRectF bound;
     Canvas *view;
     
@@ -121,6 +121,8 @@ private:
     PointSet *pointSet;
     Dendrogram *dendrogram;
     bool initialized;
+    QLabel *title;
+    QLabel *variances;
 };
 
 #endif /* CANVAS_H */

@@ -59,6 +59,8 @@ int LipidSpaceGUI::alpha = DEFAULT_ALPHA;
 bool LipidSpaceGUI::showQuant = true;
 int LipidSpaceGUI::color_counter = 0;
 map<string, QColor> LipidSpaceGUI::colorMap;
+int LipidSpaceGUI::PC1 = 0;
+int LipidSpaceGUI::PC2 = 1;
 
 const vector<QColor> LipidSpaceGUI::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
 

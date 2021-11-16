@@ -40,7 +40,7 @@ public:
     LipidSpace();
     ~LipidSpace();
     Table* load_list(string lipid_list_file);
-    void compute_PCA_variances(Matrix &m, Array &a);
+    static void compute_PCA_variances(Matrix &m, Array &a);
     void cut_cycle(FattyAcid* fa);
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
