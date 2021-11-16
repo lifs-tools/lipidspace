@@ -45,7 +45,6 @@ public:
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
     double compute_hausdorff_distance(Table* l1, Table* l2);
-    //void plot_PCA(Table* table, string output_folder);
     void compute_hausdorff_matrix();
     void report_hausdorff_matrix(string output_folder);
     void compute_global_distance_matrix();

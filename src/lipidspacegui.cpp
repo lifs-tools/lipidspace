@@ -21,6 +21,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionIgnoring_lipid_sn_positions, SIGNAL(triggered()), this, SLOT(setSnPositions()));
     connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
     connect(ui->actionSet_transparency, SIGNAL(triggered()), this, SLOT(openSetAlpha()));
+    connect(ui->actionSet_number_of_principal_components, SIGNAL(triggered()), this, SLOT(openSetPCnum()));
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
@@ -109,13 +110,6 @@ void LipidSpaceGUI::runAnalysis(){
     lipid_space->analysis_finished = false;
     disconnect(this, SIGNAL(transforming(QRectF, int)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
-    
-    if (lipid_space->global_lipidome->lipids.size() < 2){
-        QMessageBox::warning(this, tr("Gimme more lipids"),
-                               tr("Dude, at the moment, you have imported no lipids.I hope, I don't need to tell you that the feng shui of every comparison is to have at least two entities. Please import more lipids to proceed?"));
-        
-        return;
-    }
     
     std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
     progressbar->exec();
@@ -307,6 +301,17 @@ void LipidSpaceGUI::openSetAlpha(){
     setAlpha.setModal(true);
     setAlpha.exec();
     updateGUI();
+}
+
+
+void LipidSpaceGUI::openSetPCnum(){
+    int pc_num = LipidSpace::cols_for_pca;
+    SetPCnum setPCnum(this);
+    setPCnum.setModal(true);
+    setPCnum.exec();
+    
+    if (pc_num != LipidSpace::cols_for_pca) runAnalysis();
+    
 }
 
 

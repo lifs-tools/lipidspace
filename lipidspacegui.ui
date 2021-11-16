@@ -67,6 +67,7 @@
      <string>&amp;Analysis</string>
     </property>
     <addaction name="actionManage_lipidomes"/>
+    <addaction name="actionSet_number_of_principal_components"/>
     <addaction name="separator"/>
     <addaction name="actionIgnoring_lipid_sn_positions"/>
     <addaction name="actionIgnore_quantitative_information"/>
@@ -268,6 +269,11 @@
   <action name="actionExport_Results">
    <property name="text">
     <string>Export Results</string>
+   </property>
+  </action>
+  <action name="actionSet_number_of_principal_components">
+   <property name="text">
+    <string>Set number of principal components</string>
    </property>
   </action>
  </widget>

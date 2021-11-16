@@ -434,12 +434,18 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
         pointSet = new PointSet(lipid_space->global_lipidome, this);
         graphics_scene.addItem(pointSet);
         title = new QLabel("Global lipidome", this);
+        
+        Array vars;
+        LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
+        QString var_label = QStringLiteral("Variances - PC1: %1%, PC2: %2%").arg(vars[LipidSpaceGUI::PC1] * 100., 0, 'G', 3).arg(vars[LipidSpaceGUI::PC2] * 100., 0, 'G', 3);
+        variances = new QLabel(var_label, this);
     }
     else { // regular lipidome
         pointSet = new PointSet(lipid_space->lipidomes[num], this);
         graphics_scene.addItem(pointSet);
         QFileInfo qFileInfo(lipid_space->lipidomes[num]->file_name.c_str());
         title = new QLabel(qFileInfo.baseName(), this);
+        
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->lipidomes[num]->m, vars);
         QString var_label = QStringLiteral("Variances - PC1: %1%, PC2: %2%").arg(vars[LipidSpaceGUI::PC1] * 100., 0, 'G', 3).arg(vars[LipidSpaceGUI::PC2] * 100., 0, 'G', 3);

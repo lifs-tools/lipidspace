@@ -10,6 +10,7 @@
 #include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
 #include "lipidspace/setalpha.h"
+#include "lipidspace/setPCnum.h"
 #include "lipidspace/about.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
@@ -29,6 +30,7 @@ class LipidSpaceGUI : public QMainWindow
 public:
     LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent = nullptr);
     ~LipidSpaceGUI();
+    LipidSpace* lipid_space;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     static int color_counter;
@@ -74,11 +76,11 @@ public slots:
     void setExport();
     void setInitialized();
     void openSetAlpha();
+    void openSetPCnum();
     void openAbout();
     
 private:
     Ui::LipidSpaceGUI *ui;
-    LipidSpace* lipid_space;
     bool showDendrogram;
     bool showGlobalLipidome;
     TileLayout tileLayout;

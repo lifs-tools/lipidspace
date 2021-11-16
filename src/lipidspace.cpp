@@ -527,7 +527,7 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
 
 
 Table* LipidSpace::load_list(string lipid_list_file){
-    cout << "reading list '" << lipid_list_file << "'" << endl;
+    //cout << "reading list '" << lipid_list_file << "'" << endl;
     
     // load and parse lipids
     ifstream infile(lipid_list_file);
@@ -899,7 +899,7 @@ void LipidSpace::normalize_intensities(){
 
 
 void LipidSpace::load_table(string table_file){
-    cout << "reading table '" << table_file << "'" << endl;
+    //cout << "reading table '" << table_file << "'" << endl;
     
     // load and parse lipids
     ifstream infile(table_file);
@@ -1019,7 +1019,6 @@ void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
     
     
-    cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
     analysis_finished = false;
     
     if (_progress){
@@ -1034,6 +1033,7 @@ void LipidSpace::run_analysis(Progress *_progress){
     }
     
     
+    cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
     
     // perform the principal component analysis
     if (!progress || !progress->stop_progress){
