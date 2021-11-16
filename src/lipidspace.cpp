@@ -15,7 +15,6 @@ double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
 }
 
 
-
 void LipidSpace::create_dendrogram(){
     dendrogram_sorting.clear();
     dendrogram_points.clear();

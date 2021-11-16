@@ -472,14 +472,29 @@ Canvas::~Canvas(){
 }
 
 
-
+void Canvas::hoverOver(){
+    QRect widgetRect = QRect(0, 0, width(), height());
+    QPoint mousePos = mapFromGlobal(QCursor::pos());
+    if (widgetRect.contains(mousePos)) {
+        setFrameStyle(QFrame::Panel);
+    }
+    else {
+        setFrameStyle(QFrame::NoFrame);
+    }
+}
 
 
 void Canvas::mousePressEvent(QMouseEvent *event){
     if (event->button() == Qt::LeftButton){
         leftMousePressed = true;
+        QGraphicsView::mousePressEvent(event);
     }
-    QGraphicsView::mousePressEvent(event);
+    else if (event->button() == Qt::RightButton){
+        mouse(event, this);
+    }
+    else {
+        QGraphicsView::mousePressEvent(event);
+    }
 }
 
 

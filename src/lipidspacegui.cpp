@@ -1,8 +1,54 @@
 #include "lipidspace/lipidspacegui.h"
 
 
-LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent) , ui(new Ui::LipidSpaceGUI), lipid_space(_lipid_space), timer(this) {
+
+DragLayer::DragLayer(QWidget *parent) : QWidget(parent) {
+    
+}
+
+void DragLayer::mousePressEvent(QMouseEvent* event, Canvas *canvas){
+    if (!isVisible()){
+        move(canvas->pos());
+        resize(canvas->size());
+        setVisible(true);
+        
+        delta = canvas->mapFromGlobal(QCursor::pos());
+        grabMouse();
+        setMouseTracking(true);
+    }
+}
+
+void DragLayer::mouseMoveEvent(QMouseEvent* event){
+    QPoint mouse = parentWidget()->mapFromGlobal(QCursor::pos());
+    move(mouse.x() - delta.x(), mouse.y() - delta.y());
+    hover();
+}
+
+
+void DragLayer::mouseReleaseEvent(QMouseEvent *event){
+    releaseMouse();
+    setVisible(false);
+}
+
+
+void DragLayer::paintEvent(QPaintEvent *event) {
+    QPainter painter(this);
+    QColor qc = QColor(0, 110, 255, 50);
+    painter.fillRect(QRect(0, 0, width(), height()), qc);
+}
+
+
+
+
+LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent), timer(this) {
+    lipid_space = _lipid_space;
+    ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
+    
+    dragLayer = new DragLayer(ui->centralwidget);
+    dragLayer->move(0, 0);
+    dragLayer->setVisible(false);
+    dragLayer->setWindowFlags(Qt::FramelessWindowHint);
     
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
@@ -54,6 +100,7 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete ui;
     delete progress;
     delete progressbar;
+    delete dragLayer;
 }
 
 int LipidSpaceGUI::alpha = DEFAULT_ALPHA;
@@ -119,6 +166,7 @@ void LipidSpaceGUI::runAnalysis(){
         disconnect(canvas, SIGNAL(transforming(QRectF, int)), 0, 0);
         disconnect(canvas, SIGNAL(showMessage(QString)), 0, 0);
         disconnect(canvas, SIGNAL(doubleClicked(int)), 0, 0);
+        disconnect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), 0, 0);
         delete canvas;
     }
     canvases.clear();
@@ -142,6 +190,8 @@ void LipidSpaceGUI::runAnalysis(){
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
             connect(this, SIGNAL(exporting(QString)), canvas, SLOT(exportPdf(QString)));
             connect(this, SIGNAL(initialized()), canvas, SLOT(setInitialized()));
+            connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
+            connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
         }
         canvases.push_back(canvas);
     }
@@ -322,6 +372,8 @@ void LipidSpaceGUI::openAbout(){
 }
 
 
+
+
 void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
     event->ignore();
 }
@@ -408,7 +460,9 @@ void LipidSpaceGUI::updateGUI(){
         canvases[single_window]->setVisible(true);
         ui->gridLayout->addWidget(canvases[single_window], 0, 0);
     }
+    
     updating = false;
+    dragLayer->raise();
 }
 
 

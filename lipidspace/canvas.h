@@ -104,11 +104,13 @@ public slots:
     void setUpdate();
     void exportPdf(QString outputFolder);
     void setInitialized();
+    void hoverOver();
     
 signals:
     void showMessage(QString message);
     void transforming(QRectF f, int _num);
     void doubleClicked(int);
+    void mouse(QMouseEvent* event, Canvas *_canvas);
     
     
 private:

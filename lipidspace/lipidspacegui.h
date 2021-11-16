@@ -23,6 +23,28 @@ QT_END_NAMESPACE
 
 class Canvas;
 
+
+class DragLayer : public QWidget {
+    Q_OBJECT
+    
+public:
+    QPoint delta;
+    
+    explicit DragLayer(QWidget *parent = 0);
+    
+protected:
+    virtual void paintEvent(QPaintEvent *event) override;
+    
+public slots:
+    void mousePressEvent(QMouseEvent* event, Canvas *canvas);
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    
+signals:
+    void hover();
+};
+
+
 class LipidSpaceGUI : public QMainWindow
 {
     Q_OBJECT
@@ -40,7 +62,8 @@ public:
     static map<string, QColor> colorMap;
     static int PC1;
     static int PC2;
-    void resizeEvent(QResizeEvent *);
+    void resizeEvent(QResizeEvent *) override;
+    
     
 signals:
     void transforming(QRectF f, int _num);
@@ -89,6 +112,7 @@ private:
     Progress *progress;
     int single_window;
     QTimer timer;
+    DragLayer *dragLayer;
     
     vector<Canvas*> canvases;
 };
