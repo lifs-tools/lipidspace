@@ -29,6 +29,7 @@ class DragLayer : public QWidget {
     
 public:
     QPoint delta;
+    int source_tile;
     
     explicit DragLayer(QWidget *parent = 0);
     
@@ -42,6 +43,8 @@ public slots:
     
 signals:
     void hover();
+    void swapping(int);
+    
 };
 
 
@@ -101,6 +104,7 @@ public slots:
     void openSetAlpha();
     void openSetPCnum();
     void openAbout();
+    void swapLipidomes(int source, int target);
     
 private:
     Ui::LipidSpaceGUI *ui;

@@ -6,8 +6,9 @@ DragLayer::DragLayer(QWidget *parent) : QWidget(parent) {
     
 }
 
-void DragLayer::mousePressEvent(QMouseEvent* event, Canvas *canvas){
-    if (!isVisible()){
+void DragLayer::mousePressEvent(QMouseEvent*, Canvas *canvas){
+    if (!isVisible() && canvas->num >= 0){
+        source_tile = canvas->num;
         move(canvas->pos());
         resize(canvas->size());
         setVisible(true);
@@ -18,20 +19,21 @@ void DragLayer::mousePressEvent(QMouseEvent* event, Canvas *canvas){
     }
 }
 
-void DragLayer::mouseMoveEvent(QMouseEvent* event){
+void DragLayer::mouseMoveEvent(QMouseEvent*){
     QPoint mouse = parentWidget()->mapFromGlobal(QCursor::pos());
     move(mouse.x() - delta.x(), mouse.y() - delta.y());
     hover();
 }
 
 
-void DragLayer::mouseReleaseEvent(QMouseEvent *event){
+void DragLayer::mouseReleaseEvent(QMouseEvent*){
     releaseMouse();
+    swapping(source_tile);
     setVisible(false);
 }
 
 
-void DragLayer::paintEvent(QPaintEvent *event) {
+void DragLayer::paintEvent(QPaintEvent *) {
     QPainter painter(this);
     QColor qc = QColor(0, 110, 255, 50);
     painter.fillRect(QRect(0, 0, width(), height()), qc);
@@ -167,6 +169,7 @@ void LipidSpaceGUI::runAnalysis(){
         disconnect(canvas, SIGNAL(showMessage(QString)), 0, 0);
         disconnect(canvas, SIGNAL(doubleClicked(int)), 0, 0);
         disconnect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), 0, 0);
+        disconnect(canvas, SIGNAL(swappingLipidomes(int, int)), 0, 0);
         delete canvas;
     }
     canvases.clear();
@@ -192,6 +195,8 @@ void LipidSpaceGUI::runAnalysis(){
             connect(this, SIGNAL(initialized()), canvas, SLOT(setInitialized()));
             connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
             connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
+            connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
+            connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
         }
         canvases.push_back(canvas);
     }
@@ -230,6 +235,15 @@ void LipidSpaceGUI::setDoubleClick(int _num){
     else {
         single_window = _num;
     }
+    updateGUI();
+}
+
+
+
+void LipidSpaceGUI::swapLipidomes(int source, int target){
+    if (source == target) return;
+    swap(lipid_space->lipidomes[source], lipid_space->lipidomes[target]);
+    swap(canvases[2 + source], canvases[2 + target]);
     updateGUI();
 }
 

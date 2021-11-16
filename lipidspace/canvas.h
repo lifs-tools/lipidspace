@@ -86,6 +86,8 @@ public:
     QGraphicsScene graphics_scene;
     LipidSpace *lipid_space;
     QMainWindow *mainWindow;
+    int num;
+    bool hovered_for_swap;
     
     Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *parent = nullptr);
     ~Canvas();
@@ -105,16 +107,17 @@ public slots:
     void exportPdf(QString outputFolder);
     void setInitialized();
     void hoverOver();
+    void setSwap(int source);
     
 signals:
     void showMessage(QString message);
     void transforming(QRectF f, int _num);
     void doubleClicked(int);
     void mouse(QMouseEvent* event, Canvas *_canvas);
+    void swappingLipidomes(int source, int target);
     
     
 private:
-    int num;
     
     bool showQuant;
     QPoint m_lastMousePos;

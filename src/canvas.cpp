@@ -407,6 +407,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     pointSet = 0;
     dendrogram = 0;
     variances = 0;
+    hovered_for_swap = false;
     
     setDragMode(QGraphicsView::ScrollHandDrag);
     setFrameStyle(QFrame::NoFrame);
@@ -473,14 +474,25 @@ Canvas::~Canvas(){
 
 
 void Canvas::hoverOver(){
+    if (dendrogram || num < 0) return;
     QRect widgetRect = QRect(0, 0, width(), height());
     QPoint mousePos = mapFromGlobal(QCursor::pos());
     if (widgetRect.contains(mousePos)) {
         setFrameStyle(QFrame::Panel);
+        hovered_for_swap = true;
     }
     else {
         setFrameStyle(QFrame::NoFrame);
+        hovered_for_swap = false;
     }
+}
+
+
+void Canvas::setSwap(int source){
+    if (dendrogram || num < 0 || !hovered_for_swap) return;
+    setFrameStyle(QFrame::NoFrame);
+    hovered_for_swap = false;
+    swappingLipidomes(source, num);
 }
 
 
@@ -489,7 +501,7 @@ void Canvas::mousePressEvent(QMouseEvent *event){
         leftMousePressed = true;
         QGraphicsView::mousePressEvent(event);
     }
-    else if (event->button() == Qt::RightButton){
+    else if (lipid_space->lipidomes.size() > 1 && event->button() == Qt::RightButton){
         mouse(event, this);
     }
     else {
