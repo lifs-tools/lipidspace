@@ -99,6 +99,15 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 
 PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
     lipidome = _lipidome;
+    loadPoints();
+}
+
+
+void PointSet::loadPoints(){
+    points.clear();
+    labels.clear();
+    label_points.clear();
+    class_means.clear();
     
     double x_min = 0;
     double x_max = 0;
@@ -137,8 +146,6 @@ PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
     bound.setY(y_min - y_margin);
     bound.setWidth(x_max - x_min + 2 * x_margin);
     bound.setHeight(y_max - y_min + 2 * y_margin);
-    
-    
 }
 
 PointSet::~PointSet(){
@@ -275,8 +282,8 @@ void PointSet::set_labels(){
     for (auto kv : indexes){
         double mx = 0, my = 0;
         for (auto i : kv.second){
-            mx += lipidome->m(i, 0);
-            my += lipidome->m(i, 1);
+            mx += lipidome->m(i, LipidSpaceGUI::PC1);
+            my += lipidome->m(i, LipidSpaceGUI::PC2);
         }
         mean_x.push_back(mx / (double)kv.second.size());
         mean_y.push_back(my / (double)kv.second.size());
@@ -438,7 +445,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
         
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
-        QString var_label = QStringLiteral("Variances - PC1: %1%, PC2: %2%").arg(vars[LipidSpaceGUI::PC1] * 100., 0, 'G', 3).arg(vars[LipidSpaceGUI::PC2] * 100., 0, 'G', 3);
+        QString var_label = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(LipidSpaceGUI::PC1 + 1).arg(vars[LipidSpaceGUI::PC1] * 100., 0, 'G', 3).arg(LipidSpaceGUI::PC2 + 1).arg(vars[LipidSpaceGUI::PC2] * 100., 0, 'G', 3);
         variances = new QLabel(var_label, this);
     }
     else { // regular lipidome
@@ -449,7 +456,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
         
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->lipidomes[num]->m, vars);
-        QString var_label = QStringLiteral("Variances - PC1: %1%, PC2: %2%").arg(vars[LipidSpaceGUI::PC1] * 100., 0, 'G', 3).arg(vars[LipidSpaceGUI::PC2] * 100., 0, 'G', 3);
+        QString var_label = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(LipidSpaceGUI::PC1 + 1).arg(vars[LipidSpaceGUI::PC1] * 100., 0, 'G', 3).arg(LipidSpaceGUI::PC2 + 1).arg(vars[LipidSpaceGUI::PC2] * 100., 0, 'G', 3);
         variances = new QLabel(var_label, this);
     }
     QFont f("Helvetica", 7);
@@ -653,6 +660,22 @@ void Canvas::setTransforming(QRectF f, int _num){
     oldCenter.setY(f.y() + f.height() * 0.5);
     if (pointSet) pointSet->updateView(v);
     if (variances) variances->move(2, height() - variances->height());
+}
+
+void Canvas::reloadPoints(){
+    if (pointSet){
+        pointSet->loadPoints();
+                
+        Array vars;
+        if (num == -1){
+            LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
+        }
+        else if (num >= 0){
+            LipidSpace::compute_PCA_variances(lipid_space->lipidomes[num]->m, vars);
+        }
+        QString var_label = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(LipidSpaceGUI::PC1 + 1).arg(vars[LipidSpaceGUI::PC1] * 100., 0, 'G', 3).arg(LipidSpaceGUI::PC2 + 1).arg(vars[LipidSpaceGUI::PC2] * 100., 0, 'G', 3);
+        variances->setText(var_label);
+    }
 }
 
 

@@ -70,6 +70,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
     connect(ui->actionSet_transparency, SIGNAL(triggered()), this, SLOT(openSetAlpha()));
     connect(ui->actionSet_number_of_principal_components, SIGNAL(triggered()), this, SLOT(openSetPCnum()));
+    connect(ui->actionSelect_principal_components, SIGNAL(triggered()), this, SLOT(openSelectPC()));
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
@@ -258,6 +259,9 @@ void LipidSpaceGUI::resetAnalysis(){
     canvases.clear();
     
     lipid_space->reset_analysis();
+    PC1 = 0;
+    PC2 = 0;
+    LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
     updateGUI();
 }
 
@@ -369,6 +373,18 @@ void LipidSpaceGUI::openSetAlpha(){
 }
 
 
+void LipidSpaceGUI::openSelectPC(){
+    SelectPC selectPC(this);
+    for (int i = (lipid_space->lipidomes.size() > 1); i < (int)canvases.size(); ++i){
+        connect(&selectPC, SIGNAL(reloadPoints()), canvases[i], SLOT(reloadPoints()));
+    }
+    selectPC.setModal(true);
+    selectPC.exec();
+    disconnect(&selectPC, SIGNAL(reloadPoints()), 0, 0);
+    updateGUI();
+}
+
+
 void LipidSpaceGUI::openSetPCnum(){
     int pc_num = LipidSpace::cols_for_pca;
     SetPCnum setPCnum(this);
@@ -376,7 +392,6 @@ void LipidSpaceGUI::openSetPCnum(){
     setPCnum.exec();
     
     if (pc_num != LipidSpace::cols_for_pca) runAnalysis();
-    
 }
 
 

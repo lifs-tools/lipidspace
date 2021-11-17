@@ -2,6 +2,8 @@
 #define SELECTPC_H
 
 #include <QDialog>
+#include "lipidspace/lipidspace.h"
+#include "lipidspace/lipidspacegui.h"
 
 namespace Ui {
 class SelectPC;
@@ -14,9 +16,17 @@ class SelectPC : public QDialog
 public:
     explicit SelectPC(QWidget *parent = nullptr);
     ~SelectPC();
+    
+signals:
+    void reloadPoints();
 
 private:
     Ui::SelectPC *ui;
+    
+public slots:
+    void ok();
+    void cancel();
+    
 };
 
 #endif // SELECTPC_H

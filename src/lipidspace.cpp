@@ -87,6 +87,7 @@ LipidSpace::LipidSpace() {
     }
 }
 
+const int LipidSpace::cols_for_pca_init = 7;
 int LipidSpace::cols_for_pca = 7;
 
 
@@ -716,15 +717,25 @@ void LipidSpace::compute_hausdorff_matrix(){
     
     int n = lipidomes.size();
     hausdorff_distances.reset(n, n);
-            
-    #pragma omp parallel for
-    for (int ii = 0; ii < sq(n); ++ii){ 
+    
+    // precompute indexes for of symmetric matrix for faster
+    // and equally distributed access 
+    vector<pair<int, int>> pairs;
+    for (int ii = 0; ii < sq(n); ++ii){
         int i = ii / n;
         int j = ii % n;
         if (i < j){
-            hausdorff_distances(i, j) = compute_hausdorff_distance(lipidomes.at(i), lipidomes.at(j));
-            hausdorff_distances(j, i) = hausdorff_distances(i, j);
+            pairs.push_back({i, j});
         }
+    }
+            
+    #pragma omp parallel for
+    for (int ii = 0; ii < (int)pairs.size(); ++ii){
+        int i = pairs.at(ii).first;
+        int j = pairs.at(ii).second;
+        
+        hausdorff_distances(i, j) = compute_hausdorff_distance(lipidomes.at(i), lipidomes.at(j));
+        hausdorff_distances(j, i) = hausdorff_distances(i, j);
     }
 }
 
@@ -1127,6 +1138,8 @@ void LipidSpace::reset_analysis(){
     
     for (auto lipidome : lipidomes) delete lipidome;
     lipidomes.clear();
+    cols_for_pca = cols_for_pca_init;
+    
     
     global_lipidome->species.clear();
     global_lipidome->classes.clear();

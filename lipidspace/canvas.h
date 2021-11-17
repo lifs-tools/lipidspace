@@ -73,6 +73,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
     void updateView(QRectF);
+    void loadPoints();
     void resize();
 };
 
@@ -108,6 +109,8 @@ public slots:
     void setInitialized();
     void hoverOver();
     void setSwap(int source);
+    void reloadPoints();
+    
     
 signals:
     void showMessage(QString message);

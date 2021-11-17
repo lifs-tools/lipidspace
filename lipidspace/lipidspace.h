@@ -22,6 +22,7 @@ public:
     LipidParser parser;
     map<string, int*> class_matrix;
     vector<LipidAdduct*> all_lipids;
+    static const int cols_for_pca_init;
     static int cols_for_pca;
     static const vector< vector< vector< vector<int> > > > orders;
     bool keep_sn_position;
