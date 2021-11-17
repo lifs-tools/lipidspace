@@ -13,7 +13,7 @@
 #include <list>
 #include <deque>
 #include <vector>
-#include "LipidSpace/global.h"
+#include "include/global.h"
 
 #pragma warning(push, 0)
 #include <ogdf/basic/Graph.h>

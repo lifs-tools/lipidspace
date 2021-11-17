@@ -1,7 +1,7 @@
 #ifndef AUXILIARY_H
 #define AUXILIARY_H
-#include "LipidSpace/global.h"
-#include "LipidSpace/bbpmcsi.h"
+#include "include/global.h"
+#include "include/bbpmcsi.h"
 #pragma warning(push, 0)
 #include <ogdf/fileformats/GraphIO.h>
 #pragma warning(pop)
@@ -12,8 +12,8 @@
 #pragma warning(push, 0)
 #include <ogdf/basic/Thread.h>
 #pragma warning(pop)
-#include "LipidSpace/smiley.h"
-#include "LipidSpace/molecule.h"
+#include "include/smiley.h"
+#include "include/molecule.h"
 using namespace Smiley;
 
 

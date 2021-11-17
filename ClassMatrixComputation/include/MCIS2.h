@@ -1,7 +1,7 @@
 #ifndef MCIS2_H
 #define MCIS2_H
 
-#include "LipidSpace/global.h"
+#include "include/global.h"
 
 #pragma warning(push, 0)
 #include <ogdf/decomposition/BCTree.h>

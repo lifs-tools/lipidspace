@@ -9,7 +9,7 @@
 #define MWM_H
 #define N_MATCHING_DEBUG
 
-#include "LipidSpace/global.h"
+#include "include/global.h"
 #pragma warning(push, 0)
 #include <ogdf/basic/Graph.h>
 #pragma warning(pop)

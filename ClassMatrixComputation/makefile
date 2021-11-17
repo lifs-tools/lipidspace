@@ -11,7 +11,7 @@ ${bin}: ${obj}
 	${CC} ${opt} ${obj} -o ${bin} -L ~/workspace/lib -lOGDF -lCOIN
 	
 %.o: %.cpp
-	${CC} -fopenmp ${opt} -I ~/workspace/include -o $@ -c $<
+	${CC} -fopenmp ${opt} -I ~/workspace/include -I. -o $@ -c $<
 
 clean:
 	rm -f ${obj}
