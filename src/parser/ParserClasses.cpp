@@ -66,6 +66,15 @@ string TreeNode::get_text(){
     }
     return string(1, (char)terminal);
 }
+
+int TreeNode::get_int(){
+    if (!terminal){
+        string left_str = left->get_text();
+        string right_str = right != NULL ? right->get_text() : "";
+        return atoi(((left_str != string(1, EOF_SIGN) ? left_str : "") + (right_str != string(1, EOF_SIGN) ? right_str : "")).c_str());
+    }
+    return atoi(string(1, (char)terminal).c_str());
+}
        
        
        

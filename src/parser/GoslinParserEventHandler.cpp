@@ -26,7 +26,10 @@ SOFTWARE.
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 
 #define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events->insert({x, bind(&GoslinParserEventHandler::y, this, placeholders::_1)})
-    
+   
+   
+const map<string, int> GoslinParserEventHandler::mediator_FA{{"H", 17}, {"O", 18}, {"E", 20}, {"Do", 22}};
+const map<string, int> GoslinParserEventHandler::mediator_DB{{"M", 1}, {"D", 2}, {"Tr", 3}, {"T", 4}, {"P", 5}, {"H", 6}};
 
 GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandler() {    
     reg("lipid_pre_event", reset_lipid);
@@ -41,7 +44,6 @@ GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandl
     reg("st_pre_event", set_head_group_name);
     reg("hg_ste_pre_event", set_head_group_name);
     reg("hg_stes_pre_event", set_head_group_name);
-    reg("mediator_pre_event", set_head_group_name);
     reg("hg_mgl_pre_event", set_head_group_name);
     reg("hg_dgl_pre_event", set_head_group_name);
     reg("hg_sgl_pre_event", set_head_group_name);
@@ -87,11 +89,107 @@ GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandl
     
     reg("lpl_pre_event", set_molecular_subspecies_level);
     reg("plasmalogen_pre_event", set_plasmalogen);
+        
+    reg("mediator_pre_event", set_mediator);
+    reg("mediator_post_event", add_mediator);
+    reg("unstructured_mediator_pre_event", set_unstructured_mediator);
+    reg("mediator_carbon_pre_event", set_mediator_carbon);
+    reg("mediator_db_pre_event", set_mediator_db);
+    reg("mediator_mono_functions_pre_event", set_mediator_function);
+    reg("mediator_di_functions_pre_event", set_mediator_function);
+    reg("mediator_position_pre_event", set_mediator_function_position);
+    reg("mediator_functional_group_post_event", add_mediator_function);
+    reg("mediator_suffix_pre_event", add_mediator_suffix);
     debug = "";
 }
 
 
 GoslinParserEventHandler::~GoslinParserEventHandler(){
+}
+
+
+void GoslinParserEventHandler::set_mediator(TreeNode *node){
+    head_group = "FA";
+    current_fa = new FattyAcid("FA");
+    fa_list->push_back(current_fa);
+    set_lipid_level(STRUCTURE_DEFINED);
+}
+    
+    
+void GoslinParserEventHandler::set_unstructured_mediator(TreeNode *node){
+    head_group = node->get_text();
+    use_head_group = true;
+    fa_list->clear();
+}
+    
+
+void GoslinParserEventHandler::set_mediator_carbon(TreeNode *node){
+    current_fa->num_carbon = GoslinParserEventHandler::mediator_FA.at(node->get_text());
+}
+    
+
+void GoslinParserEventHandler::set_mediator_db(TreeNode *node){
+    current_fa->double_bonds->num_double_bonds = GoslinParserEventHandler::mediator_DB.at(node->get_text());
+}
+    
+    
+void GoslinParserEventHandler::set_mediator_function(TreeNode *node){
+    mediator_function = node->get_text();
+}
+    
+    
+void GoslinParserEventHandler::set_mediator_function_position(TreeNode *node){
+    mediator_function_positions.push_back(node->get_int());
+}
+    
+    
+void GoslinParserEventHandler::add_mediator_function(TreeNode *node){
+    FunctionalGroup* functional_group = 0;
+    string fg = "";
+    if (mediator_function == "H"){
+        functional_group = KnownFunctionalGroups::get_functional_group("OH");
+        fg = "OH";
+        if (mediator_function_positions.size() > 0) functional_group->position = mediator_function_positions[0];
+    }
+        
+    else if (mediator_function == "Oxo"){
+        functional_group = KnownFunctionalGroups::get_functional_group("oxo");
+        fg = "oxo";
+        if (mediator_function_positions.size() > 0) functional_group->position = mediator_function_positions[0];
+    }
+        
+    else if (mediator_function == "E" || mediator_function == "Ep"){
+        functional_group = KnownFunctionalGroups::get_functional_group("Ep");
+        fg = "Ep";
+        if (mediator_function_positions.size() > 0) functional_group->position = mediator_function_positions[0];
+    }
+        
+    else if (mediator_function == "DH" || mediator_function == "DiH"){
+        functional_group = KnownFunctionalGroups::get_functional_group("OH");
+        fg = "OH";
+        if (mediator_function_positions.size() > 0){
+            functional_group->position = mediator_function_positions[0];
+            FunctionalGroup* functional_group2 = KnownFunctionalGroups::get_functional_group("OH");
+            functional_group2->position = mediator_function_positions[1];
+            current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+            current_fa->functional_groups->at("OH").push_back(functional_group2);
+        }
+    }
+        
+    if (uncontains_val_p(current_fa->functional_groups, fg)) current_fa->functional_groups->insert({fg, vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at(fg).push_back(functional_group);
+}
+    
+    
+void GoslinParserEventHandler::add_mediator_suffix(TreeNode *node){
+    mediator_suffix = true;
+}
+    
+    
+void GoslinParserEventHandler::add_mediator(TreeNode *node){
+    if (!mediator_suffix){
+        current_fa->double_bonds->num_double_bonds -= 1;
+    }
 }
 
 
@@ -106,6 +204,10 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
     db_cistrans = "";
     unspecified_ether = false;
     plasmalogen = 0;
+    mediator_function = "";
+    mediator_function_positions.clear();
+    mediator_suffix = false;
+    use_head_group = false;
 }
 
 

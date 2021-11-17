@@ -77,6 +77,7 @@ public:
     TreeNode(uint64_t _rule, bool _fire_event);
     ~TreeNode();
     string get_text();
+    int get_int();
 };
    
 

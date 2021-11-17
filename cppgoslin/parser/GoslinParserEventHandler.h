@@ -51,6 +51,12 @@ public:
     string db_cistrans;
     bool unspecified_ether;
     char plasmalogen;
+    string mediator_function;
+    vector<int> mediator_function_positions;
+    bool mediator_suffix;
+    
+    static const map<string, int> mediator_FA;
+    static const map<string, int> mediator_DB;
         
     GoslinParserEventHandler();
     ~GoslinParserEventHandler();
@@ -79,6 +85,17 @@ public:
     void add_db_position(TreeNode* node);
     void add_db_position_number(TreeNode* node);
     void add_cistrans(TreeNode* node);
+    
+    void set_mediator(TreeNode *node);
+    void set_unstructured_mediator(TreeNode *node);
+    void set_mediator_carbon(TreeNode *node);
+    void set_mediator_db(TreeNode *node);
+    void set_mediator_function(TreeNode *node);
+    void set_mediator_function_position(TreeNode *node);
+    void add_mediator_function(TreeNode *node);
+    void add_mediator_suffix(TreeNode *node);
+    void add_mediator(TreeNode *node);
+
 };
 
 
