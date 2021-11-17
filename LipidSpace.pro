@@ -49,13 +49,13 @@ HEADERS += \
     lipidspace/setPCNum.h
 
 FORMS += \
-    about.ui \
-    lipidspacegui.ui \
-    managelipidomes.ui \
-    progressbar.ui \
-    selectpc.ui \
-    setalpha.ui \
-    setPCnum.ui
+    ui/about.ui \
+    ui/lipidspacegui.ui \
+    ui/managelipidomes.ui \
+    ui/progressbar.ui \
+    ui/selectpc.ui \
+    ui/setalpha.ui \
+    ui/setPCnum.ui
 
 TRANSLATIONS += \
     LipidSpace_en_US.ts
