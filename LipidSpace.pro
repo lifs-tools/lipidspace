@@ -32,7 +32,8 @@ SOURCES += \
     src/Matrix.cpp \
     src/AssistanceFunctions.cpp \
     src/lipidspace.cpp \
-    src/canvas.cpp
+    src/canvas.cpp \
+    src/logging.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -46,7 +47,8 @@ HEADERS += \
     lipidspace/progressbar.h \
     lipidspace/selectpc.h \
     lipidspace/setalpha.h \
-    lipidspace/setPCNum.h
+    lipidspace/setPCNum.h \
+    lipidspace/logging.h
 
 FORMS += \
     ui/about.ui \

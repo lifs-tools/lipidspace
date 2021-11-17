@@ -591,6 +591,7 @@ Table* LipidSpace::load_list(string lipid_list_file){
                 throw LipidException(string(e.what()) + ": lipid '" + line + "' cannot be parsed.");
             }
             else {
+                Logging::write_log("Ignoring unidentifiable lipid '" + line + "'");
                 remove.push_back(i);
             }
             /*
@@ -956,7 +957,8 @@ void LipidSpace::load_table(string table_file){
                 throw LipidException(string(e.what()) + ": lipid '" + tokens->at(0) + "' cannot be parsed.");
             }
             else {
-               continue;
+                Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(0) + "'");
+                continue;
             }
         }
         
@@ -965,7 +967,8 @@ void LipidSpace::load_table(string table_file){
                 throw LipidException("Lipid '" + tokens->at(0) + "' cannot be parsed.");
             }
             else {
-               continue;
+                Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(0) + "'");
+                continue;
             }
         }
             

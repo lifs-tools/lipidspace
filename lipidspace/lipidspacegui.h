@@ -106,6 +106,7 @@ public slots:
     void openSetPCnum();
     void openSelectPC();
     void openAbout();
+    void openLog();
     void swapLipidomes(int source, int target);
     
 private:

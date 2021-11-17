@@ -72,6 +72,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionSet_number_of_principal_components, SIGNAL(triggered()), this, SLOT(openSetPCnum()));
     connect(ui->actionSelect_principal_components, SIGNAL(triggered()), this, SLOT(openSelectPC()));
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
+    connect(ui->actionLog_messages, SIGNAL(triggered()), this, SLOT(openLog()));
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
     connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
@@ -260,7 +261,7 @@ void LipidSpaceGUI::resetAnalysis(){
     
     lipid_space->reset_analysis();
     PC1 = 0;
-    PC2 = 0;
+    PC2 = 1;
     LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
     updateGUI();
 }
@@ -397,6 +398,13 @@ void LipidSpaceGUI::openSetPCnum(){
 
 void LipidSpaceGUI::openAbout(){
     About about(this);
+    about.setModal(true);
+    about.exec();
+}
+
+
+void LipidSpaceGUI::openLog(){
+    About about(this, true);
     about.setModal(true);
     about.exec();
 }

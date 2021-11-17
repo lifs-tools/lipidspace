@@ -1,7 +1,7 @@
 #include "lipidspace/lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/logging.h"
 #include <QApplication>
-
 
 
 
@@ -34,8 +34,11 @@ int main(int argc, char** argv) {
     bool without_quant = false;
     
     
+    
+    
     if (argc == 1){
         QApplication a(argc, argv);
+        Logging::write_log("LipidSpace v.1.0.1 was launched in window mode");
         LipidSpace lipid_space;
         LipidSpaceGUI w(&lipid_space);
         w.show();
@@ -91,6 +94,7 @@ int main(int argc, char** argv) {
         exit(-1);
     }
     
+    Logging::write_log("LipidSpace v.1.0.1 was launched in terminal mode");
     LipidSpace lipid_space;
     
     

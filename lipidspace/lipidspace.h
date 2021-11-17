@@ -10,6 +10,7 @@
 #include <immintrin.h>
 #include <QtCore>
 #include "cppgoslin/cppgoslin.h"
+#include "lipidspace/logging.h"
 #include "lipidspace/AssistanceFunctions.h"
 
  
