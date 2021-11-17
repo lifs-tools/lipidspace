@@ -242,7 +242,9 @@ void LipidSpaceGUI::setDoubleClick(int _num){
 
 void LipidSpaceGUI::swapLipidomes(int source, int target){
     if (source == target) return;
+    
     swap(lipid_space->lipidomes[source], lipid_space->lipidomes[target]);
+    swap(canvases[2 + source]->num, canvases[2 + target]->num);  // offset of 2 due to dendrogram and global lipidome
     swap(canvases[2 + source], canvases[2 + target]);
     updateGUI();
 }
