@@ -32,6 +32,7 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidCompleteStructure.h"
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/Headgroup.h"
+#include "cppgoslin/domain/Cycle.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
 #include "cppgoslin/parser/LipidBaseParserEventHandler.h"
 #include <string>
@@ -57,6 +58,7 @@ public:
     
     static const map<string, int> mediator_FA;
     static const map<string, int> mediator_DB;
+    static const map<string, int> mediator_trivial;
         
     GoslinParserEventHandler();
     ~GoslinParserEventHandler();
@@ -88,6 +90,7 @@ public:
     
     void set_mediator(TreeNode *node);
     void set_unstructured_mediator(TreeNode *node);
+    void set_trivial_mediator(TreeNode *node);
     void set_mediator_carbon(TreeNode *node);
     void set_mediator_db(TreeNode *node);
     void set_mediator_function(TreeNode *node);
@@ -95,7 +98,7 @@ public:
     void add_mediator_function(TreeNode *node);
     void add_mediator_suffix(TreeNode *node);
     void add_mediator(TreeNode *node);
-
+    void set_mediator_tetranor(TreeNode *node);
 };
 
 
