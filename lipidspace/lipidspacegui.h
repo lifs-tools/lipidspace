@@ -25,6 +25,22 @@ QT_END_NAMESPACE
 class Canvas;
 
 
+class GlobalLipidomeModel : public QAbstractTableModel {
+public:
+    QList< QList<QString> > rows;
+    QList<QString> headers;
+    int columns;
+    
+    GlobalLipidomeModel(LipidSpace *lipid_space, QObject * parent = {});
+    int rowCount(const QModelIndex &) const override;
+    int columnCount(const QModelIndex &) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+};
+
+
+
+
 class DragLayer : public QWidget {
     Q_OBJECT
     
@@ -67,6 +83,7 @@ public:
     static int PC1;
     static int PC2;
     void resizeEvent(QResizeEvent *) override;
+    GlobalLipidomeModel *global_lipidome_model;
     
     
 signals:

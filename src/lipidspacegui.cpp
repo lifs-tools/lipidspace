@@ -1,6 +1,64 @@
 #include "lipidspace/lipidspacegui.h"
 
 
+GlobalLipidomeModel::GlobalLipidomeModel(LipidSpace *lipid_space, QObject * parent) : QAbstractTableModel{parent} {
+    columns = 0;
+    int C = (int)lipid_space->lipidomes.size();
+    
+    Matrix global_data(lipid_space->global_lipidome->m.rows, lipid_space->lipidomes.size());
+    map<string, int> species_to_index;
+    for (int i = 0; i < (int)lipid_space->global_lipidome->species.size(); ++i){
+        species_to_index.insert({lipid_space->global_lipidome->species[i], i});
+    }
+    
+    for (int c = 0; c < (int)lipid_space->lipidomes.size(); c++){
+        auto lipidome = lipid_space->lipidomes[c];
+        for (int r = 0; r < (int)lipidome->species.size(); ++r){
+            global_data(species_to_index[lipidome->species[r]], c) = lipidome->intensities(r);
+        }
+    }
+    
+    headers.push_back("Species");
+    map<string, int> mapping;
+    for (int c = 0; c < C; c++){
+        QFileInfo qFileInfo(lipid_space->lipidomes[c]->file_name.c_str());
+        headers.push_back(qFileInfo.baseName());
+        
+    }
+    
+    for (int r = 0; r < (int)lipid_space->global_lipidome->species.size(); ++r){
+        rows.append(QList<QString>());
+        QList<QString> &current_row = rows.back();
+        current_row.reserve(C + 1);
+        current_row.push_back(lipid_space->global_lipidome->species[r].c_str());
+        for (int c = 0; c < C; c++){
+            current_row.push_back("");
+        }
+    }
+}
+
+
+int GlobalLipidomeModel::rowCount(const QModelIndex &) const {
+    return headers.size();
+}
+
+
+int GlobalLipidomeModel::columnCount(const QModelIndex &) const {
+    return columns;
+}
+
+
+QVariant GlobalLipidomeModel::data(const QModelIndex &index, int role) const {
+    if (role != Qt::DisplayRole && role != Qt::EditRole) return {};
+    return rows[index.row()][index.column()];
+}
+
+
+QVariant GlobalLipidomeModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole) return {};
+    return headers[section];
+}
+
 
 DragLayer::DragLayer(QWidget *parent) : QWidget(parent) {
     
@@ -86,6 +144,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     color_counter = 0;
     single_window = -1;
     ui->tabWidget->setVisible(false);
+    global_lipidome_model = 0;
     
     progressbar = new Progressbar(this);
     progress = new Progress();
@@ -203,13 +262,16 @@ void LipidSpaceGUI::runAnalysis(){
         }
         canvases.push_back(canvas);
     }
+    global_lipidome_model = new GlobalLipidomeModel(lipid_space, this);
+    ui->tableView->setModel(global_lipidome_model);
+    
     
     ui->tabWidget->setVisible(true);
     updateGUI();
     
     // dirty hack to overcome the annoying resizing calls of the canvases when
     // putting them into the grid layout. Unfortunately, I cannot figure out, when
-    // it is over. So I a timer and hope that after 200ms all rearranging is over
+    // it is over. So I use a timer and hope that after 200ms all rearranging is over
     QTimer::singleShot(200, this, SLOT(setInitialized()));
 }
 
