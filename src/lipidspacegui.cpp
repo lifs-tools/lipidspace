@@ -85,6 +85,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     updating = false;
     color_counter = 0;
     single_window = -1;
+    ui->tabWidget->setVisible(false);
     
     progressbar = new Progressbar(this);
     progress = new Progress();
@@ -202,6 +203,8 @@ void LipidSpaceGUI::runAnalysis(){
         }
         canvases.push_back(canvas);
     }
+    
+    ui->tabWidget->setVisible(true);
     updateGUI();
     
     // dirty hack to overcome the annoying resizing calls of the canvases when
@@ -263,6 +266,8 @@ void LipidSpaceGUI::resetAnalysis(){
     PC1 = 0;
     PC2 = 1;
     LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
+    
+    ui->tabWidget->setVisible(false);
     updateGUI();
 }
 

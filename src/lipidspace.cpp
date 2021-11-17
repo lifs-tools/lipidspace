@@ -67,8 +67,8 @@ LipidSpace::LipidSpace() {
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
     if (!infile.good()){
-        cerr << "Error: file 'data/classes-matrix.csv' not found." << endl;
-        exit(-1);
+        Logging::write_log("Error: file 'data/classes-matrix.csv' not found.");
+        throw LipidException("Error: file 'data/classes-matrix.csv' not found. Please check the log message.");
     }
     string line;
     
@@ -427,7 +427,8 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
 void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int& union_num, int& inter_num){
     string key = lipid1->get_extended_class() + "/" + lipid2->get_extended_class();
     if (!contains_val(class_matrix, key)){
-        cerr << "Error: key '" << key << "' not in precomputed class matrix" << endl;
+        Logging::write_log("Error: lipid pair '" + key + "' is not precomputed. Please get in contact with the developers to fix this issue.");
+        throw LipidException("Error: key '" + key + "' not in precomputed class matrix. Please check the log message.");
         exit(-1);
     }
     union_num = class_matrix.at(key)[0];
@@ -1026,7 +1027,7 @@ std::thread LipidSpace::run_analysis_thread(Progress *_progress) {
 }
 
 
-bool mysort(double* a, double* b){ return a[0] < b[0];}
+bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;}
 
 void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
@@ -1097,7 +1098,6 @@ void LipidSpace::run_analysis(Progress *_progress){
     
     
     
-    
     /*
     // experimental part
     Matrix aa(global_lipidome->m.rows, lipidomes.size());
@@ -1112,20 +1112,24 @@ void LipidSpace::run_analysis(Progress *_progress){
             aa(species_to_index[lipidome->species[r]], c) = lipidome->intensities(r);
         }
     }
-    {
-        Matrix p;
-        //aa.transpose();
-        aa.PCA(p, 2);
-        aa.rewrite(p);
-    }
+    aa.transpose();
     
-    vector<double*> lst;
-    for (int r = 0; r < aa.rows; ++r){
-        lst.push_back(new double[2]{sq(aa(r, 0)) + sq(aa(r, 1)), (double)r});
+    
+    vector<pair<double, int>> lst;
+    for (int c = 0; c < aa.cols; c++){
+        double mean = 0, stdev = 0;
+        double *column = aa.m.data() + (c * aa.rows);
+        for (int r = 0; r < aa.rows; ++r) mean += aa(r, c);
+        mean /= (double)aa.rows;
+        
+        
+        for (int r = 0; r < aa.rows; ++r) stdev += sq(aa(r, c) - mean);
+        stdev = sqrt(stdev / (double)aa.rows);
+        lst.push_back({stdev / mean, c});
     }
     sort(lst.begin(), lst.end(), mysort);
     for (auto row : lst){
-        cout << row[0] << " " << global_lipidome->species[(int)row[1]] << endl;
+        cout << row.second << " " << row.first << " " << global_lipidome->species[row.second] << endl;
         //cout << row[0] << " " << lipidomes[(int)row[1]]->file_name << endl;
     }
     */
