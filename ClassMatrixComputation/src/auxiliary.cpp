@@ -1,4 +1,4 @@
-#include "LipidSpace/auxiliary.h"
+#include "include/auxiliary.h"
 #include <random>
 #include <algorithm>
 #pragma warning(push, 0)

@@ -5,8 +5,8 @@
  *      Author: droschin
  */
 
-#include "LipidSpace/mwm.h"
-#include "LipidSpace/hungarian.h"
+#include "include/mwm.h"
+#include "include/hungarian.h"
 #include <stack>
 #include <algorithm>
 #pragma warning(push, 0)

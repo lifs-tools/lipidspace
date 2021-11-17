@@ -6,7 +6,7 @@
  */
 
 
-#include "LipidSpace/graphVisualization.h"
+#include "include/graphVisualization.h"
 #ifdef GRAPHICS
 #include <ogdf/decomposition/BCTree.h>
 //#include <string>

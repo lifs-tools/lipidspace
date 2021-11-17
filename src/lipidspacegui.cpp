@@ -216,7 +216,6 @@ void LipidSpaceGUI::setInitialized(){
 
 void LipidSpaceGUI::setExport(){
     QString outputFolder = QFileDialog::getExistingDirectory(0, ("Select Export Folder"), QDir::currentPath());
-    cout << outputFolder.toStdString() << endl;
     
     //if (outputFolder.length()) exporting(outputFolder);
 }

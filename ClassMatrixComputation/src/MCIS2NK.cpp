@@ -1,9 +1,9 @@
-#include "LipidSpace/global.h"
-#include "LipidSpace/MCIS2.h"
+#include "include/global.h"
+#include "include/MCIS2.h"
 #pragma warning(push, 0)
 #include <ogdf/fileformats/GraphIO.h>
 #pragma warning(pop)
-#include "LipidSpace/bbpmcsi.h"
+#include "include/bbpmcsi.h"
 
 #define CASE_NOT_COMPUTED 127
 

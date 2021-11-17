@@ -1,4 +1,4 @@
-#include "LipidSpace/auxiliary.h"
+#include "include/auxiliary.h"
 #include <iostream>
 #include <fstream>
 #include <math.h>
