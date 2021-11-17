@@ -22,6 +22,7 @@ LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 
 SOURCES += \
     src/about.cpp \
+    src/selectpc.cpp \
     src/setalpha.cpp \
     src/setPCnum.cpp \
     src/progressbar.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     lipidspace/matplotlibcpp.h \
     lipidspace/managelipidomes.h \
     lipidspace/progressbar.h \
+    lipidspace/selectpc.h \
     lipidspace/setalpha.h \
     lipidspace/setPCNum.h
 
@@ -51,6 +53,7 @@ FORMS += \
     lipidspacegui.ui \
     managelipidomes.ui \
     progressbar.ui \
+    selectpc.ui \
     setalpha.ui \
     setPCnum.ui
 

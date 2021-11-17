@@ -91,6 +91,7 @@
      <addaction name="action6_columns"/>
     </widget>
     <addaction name="actionSet_transparency"/>
+    <addaction name="actionSelect_principal_components"/>
     <addaction name="menuTile_layout"/>
     <addaction name="separator"/>
     <addaction name="actionShow_global_lipidome"/>
@@ -274,6 +275,11 @@
   <action name="actionSet_number_of_principal_components">
    <property name="text">
     <string>Set number of principal components</string>
+   </property>
+  </action>
+  <action name="actionSelect_principal_components">
+   <property name="text">
+    <string>Select principal components</string>
    </property>
   </action>
  </widget>
