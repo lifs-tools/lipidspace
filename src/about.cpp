@@ -10,7 +10,7 @@ About::About(QWidget *parent) : QDialog(parent), ui(new Ui::About) {
     
     ui->textBrowser->append("LipidSpace 0.0.1 (MIT License)\n");
     ui->textBrowser->append("Main Contributers:");
-    ui->textBrowser->append("Dominik Kopzcynski");
+    ui->textBrowser->append("Dominik Kopczynski");
     ui->textBrowser->append("Nils Hoffmann");
     ui->textBrowser->append("Robert Ahrends\n\n");
     
