@@ -1,5 +1,5 @@
-#ifndef IMPORTDATATABLE_H
-#define IMPORTDATATABLE_H
+#ifndef IMPORTPIVOTTABLE_H
+#define IMPORTPIVOTTABLE_H
 
 #include <QDialog>
 #include <QFileDialog>
@@ -14,18 +14,17 @@
 
 using namespace std;
 
-
 namespace Ui {
-class ImportDataTable;
+class ImportPivotTable;
 }
 
-class ImportDataTable : public QDialog
+class ImportPivotTable : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ImportDataTable(QWidget *parent = nullptr);
-    ~ImportDataTable();
+    explicit ImportPivotTable(QWidget *parent = nullptr);
+    ~ImportPivotTable();
     
 signals:
     void importTable(string file_name, vector<TableColumnType>* column_types);
@@ -34,11 +33,11 @@ public slots:
     void ok();
     void cancel();
     void oneItemViolated(string field_name);
-
+    
 private:
-    Ui::ImportDataTable *ui;
+    Ui::ImportPivotTable *ui;
     string data_table_file;
     map<QString, int> original_column_index;
 };
 
-#endif // IMPORTDATATABLE_H
+#endif // IMPORTPIVOTTABLE_H

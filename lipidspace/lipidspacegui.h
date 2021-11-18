@@ -13,6 +13,7 @@
 #include "lipidspace/setPCnum.h"
 #include "lipidspace/selectpc.h"
 #include "lipidspace/importdatatable.h"
+#include "lipidspace/importpivottable.h"
 #include "lipidspace/about.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
@@ -98,6 +99,7 @@ public slots:
     void openLists();
     void openTable();
     void openDataTable();
+    void openPivotTable();
     void loadDataTable(string file_name, vector<TableColumnType> *column_types);
     void resetAnalysis();
     void showMessage(QString message);

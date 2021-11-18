@@ -33,7 +33,7 @@ public slots:
 using namespace std;
 
 enum Linkage {SINGLE, COMPLETE};
-enum TableColumnType {SampleColumn, LipidColumn, FeatureColumn, IgnoreColumn};
+enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumn, IgnoreColumn};
 
 class Table {
 public:

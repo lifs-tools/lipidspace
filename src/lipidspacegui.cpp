@@ -113,6 +113,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionImport_data_table, SIGNAL(triggered()), this, SLOT(openDataTable()));
+    connect(ui->actionImport_pivot_table, SIGNAL(triggered()), this, SLOT(openPivotTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
     
     connect(ui->actionAutomatically, SIGNAL(triggered()), this, SLOT(setAutomaticLayout()));
@@ -226,6 +227,14 @@ void LipidSpaceGUI::openDataTable(){
     connect(&idt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadDataTable(string, vector<TableColumnType>*)));
     idt.setModal(true);
     idt.exec();
+}
+
+
+void LipidSpaceGUI::openPivotTable(){
+    ImportPivotTable ipt;
+    //connect(&idt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadDataTable(string, vector<TableColumnType>*)));
+    ipt.setModal(true);
+    ipt.exec();
 }
     
 void LipidSpaceGUI::loadDataTable(string file_name, vector<TableColumnType>* column_types){
