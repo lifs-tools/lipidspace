@@ -41,7 +41,6 @@ public:
 
     LipidSpace();
     ~LipidSpace();
-    Table* load_list(string lipid_list_file);
     static void compute_PCA_variances(Matrix &m, Array &a);
     void cut_cycle(FattyAcid* fa);
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
@@ -52,12 +51,15 @@ public:
     void compute_global_distance_matrix();
     void separate_matrixes();
     void normalize_intensities();
-    void load_table(string table_file);
     void create_dendrogram();
     void store_distance_table(Table* lipidome, string output_folder);
     void run_analysis(Progress *progress = 0);
     std::thread run_analysis_thread(Progress *_progress);
     void reset_analysis();
+    
+    Table* load_list(string lipid_list_file);
+    void load_table(string table_file);
+    void load_data_table(string table_file, vector<TableColumnType> *column_types);
 };
 
 

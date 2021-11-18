@@ -906,31 +906,143 @@ void LipidSpace::normalize_intensities(){
 
 
 
+void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType> *column_types){
+    Logging::write_log("Importing table '" + data_table_file + "'");
+            
+    // load and parse lipid table, lipids and features per column, measurements per row
+    ifstream infile(data_table_file);
+    if (!infile.good()){
+        Logging::write_log("Error: file '" + data_table_file + "' could not be found.");
+        throw LipidException("Error: file '" + data_table_file + "' could not be found.");
+        exit(-1);
+    }
+    string line;
+    
+    
+    set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
+    int line_cnt = 0;
+    vector<string> features_names;
+    vector<LipidAdduct*> lipids;
+    set<int> ignore_col;
+    int num_lipids = 0;
+    
+    while (getline(infile, line)){
+        if (line.length() == 0) continue;
+        
+        // handle first / header line different to the others
+        vector<string>* tokens = split_string(line, ',', '"', true);
+        if (column_types->size() != tokens->size()){
+            Logging::write_log("Inconsistant column size of header (" + std::to_string(column_types->size()) + ") and line " + std::to_string(line_cnt + 1) + " (" + std::to_string(tokens->size()) + ").");
+            throw LipidException("Inconsistant column size of header (" + std::to_string(column_types->size()) + ") and line " + std::to_string(line_cnt + 1) + " (" + std::to_string(tokens->size()) + ").");
+        }
+        
+        if (line_cnt++ == 0){
+            // go through the column and handle them according to their column type
+            for (int i = 0; i < (int)tokens->size(); ++i){
+                TableColumnType column_type = column_types->at(i);
+                
+                if (column_type == FeatureColumn){
+                    features_names.push_back(tokens->at(i));
+                }
+                else if (column_type == LipidColumn){
+                    LipidAdduct* l = 0;
+                    try {
+                        l = parser.parse(tokens->at(i));
+                        num_lipids += 1;
+                    }
+                    catch (exception &e) {
+                        if (!ignore_unknown_lipids){
+                            throw LipidException(string(e.what()) + ": lipid '" + tokens->at(i) + "' cannot be parsed.");
+                        }
+                        else {
+                            Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(i) + "'");
+                            ignore_col.insert(i);
+                            continue;
+                        }
+                    }
+                    lipids.push_back(l);
+                }
+            }
+            delete tokens;
+            continue;
+        }
+        
+        map<string, string> features;
+        vector<LipidAdduct*> measurement_lipids;
+        Array intensities;
+        string measurement = "";
+        int feature_counter = 0;
+        int lipid_counter = 0;
+        
+        // handle all other rows
+        for (int i = 0; i < (int)tokens->size(); ++i){
+            switch(column_types->at(i)){
+                case MeasurementColumn:
+                    measurement = tokens->at(i);
+                    break;
+                    
+                case LipidColumn:
+                    if (lipids[lipid_counter]){
+                        string val = tokens->at(i);
+                        if (!contains_val(NA_VALUES, val)){
+                            measurement_lipids.push_back(lipids[lipid_counter]);
+                            intensities.push_back(atof(val.c_str()));
+                        }
+                    }
+                    lipid_counter++;
+                    break;
+                    
+                case FeatureColumn:
+                    features.insert({features_names[feature_counter++], tokens->at(i)});
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+        
+        lipidomes.push_back(new Table(measurement));
+        Table *lipidome = lipidomes.back();
+        for (auto kv : features) lipidome->features.insert({kv.first, kv.second});
+                                 
+        for (auto l : measurement_lipids){
+            lipidome->lipids.push_back(l);
+            lipidome->species.push_back(l->get_lipid_string());
+            lipidome->classes.push_back(l->get_lipid_string(CLASS));
+        }
+        lipidome->intensities.reset(intensities);
+        
+        delete tokens;
+    }
+    delete column_types;
+}
+
 
 
 
 
 void LipidSpace::load_table(string table_file){
-    //cout << "reading table '" << table_file << "'" << endl;
-    
-    // load and parse lipids
+    // load and parse lipid table, lipids per row, measurements per column
     ifstream infile(table_file);
     if (!infile.good()){
-        cerr << "Error: file '" << table_file << "' not found." << endl;
+        Logging::write_log("Error: file '" + table_file + "' could not be found.");
+        throw LipidException("Error: file '" + table_file + "' not found.");
         exit(-1);
     }
     string line;
     
 
-    set<string> NA_VALUES = {"NA", "nan", "N/A", "O", "", "n/a", "NaN"};
+    set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     vector<Array> intensities;
     
     
     int line_cnt = 0;
     int num_cols = 0;
     while (getline(infile, line)){
+        vector<string>* tokens = split_string(line, ',', '"', true);
+        
+        // handle first / header line different to the others
         if (line_cnt++ == 0){
-            vector<string>* tokens = split_string(line, ',', '"', true);
             num_cols = tokens->size();
             for (int i = 1; i < (int)tokens->size(); ++i){
                 lipidomes.push_back(new Table(tokens->at(i)));
@@ -942,8 +1054,8 @@ void LipidSpace::load_table(string table_file){
         if (line.length() == 0) continue;
         
 
-                                                                          
-        vector<string>* tokens = split_string(line, ',', '"', true);
+                
+        // handle all other rows
         if ((int)tokens->size() != num_cols) {
             cerr << "Error in line '" << line_cnt << "' number of cells does not match with number of column labels" << endl;
             exit(-1);

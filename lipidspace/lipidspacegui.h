@@ -12,6 +12,7 @@
 #include "lipidspace/setalpha.h"
 #include "lipidspace/setPCnum.h"
 #include "lipidspace/selectpc.h"
+#include "lipidspace/importdatatable.h"
 #include "lipidspace/about.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
@@ -23,7 +24,6 @@ namespace Ui { class LipidSpaceGUI; }
 QT_END_NAMESPACE
 
 class Canvas;
-
 
 class GlobalLipidomeModel : public QAbstractTableModel {
 public:
@@ -97,6 +97,8 @@ public slots:
     void quitProgram();
     void openLists();
     void openTable();
+    void openDataTable();
+    void loadDataTable(string file_name, vector<TableColumnType> *column_types);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();

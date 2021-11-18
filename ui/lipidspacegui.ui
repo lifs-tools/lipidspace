@@ -248,6 +248,8 @@
     </property>
     <addaction name="actionLoad_list_s"/>
     <addaction name="actionLoad_table"/>
+    <addaction name="actionImport_data_table"/>
+    <addaction name="actionImport_pivot_table"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Results"/>
     <addaction name="separator"/>
@@ -270,7 +272,7 @@
     </property>
     <widget class="QMenu" name="menuTile_layout">
      <property name="title">
-      <string>Tile layout</string>
+      <string>Tile &amp;layout</string>
      </property>
      <addaction name="actionAutomatically"/>
      <addaction name="separator"/>
@@ -324,7 +326,7 @@
   </action>
   <action name="actionSet_transparency">
    <property name="text">
-    <string>Set transparency</string>
+    <string>Set transparenc&amp;y</string>
    </property>
   </action>
   <action name="actionAutomatically">
@@ -434,12 +436,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Ignoring lipid sn-positions</string>
+    <string>&amp;Ignoring lipid sn-positions</string>
    </property>
   </action>
   <action name="actionManage_lipidomes">
    <property name="text">
-    <string>Manage lipidomes</string>
+    <string>&amp;Manage lipidomes</string>
    </property>
   </action>
   <action name="actionIgnore_quantitative_information">
@@ -447,7 +449,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Ignore quantitative information</string>
+    <string>I&amp;gnore quantitative information</string>
    </property>
   </action>
   <action name="actionUnbound_lipid_distance_metric">
@@ -455,22 +457,32 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Unbound lipid distance metric</string>
+    <string>&amp;Unbound lipid distance metric</string>
    </property>
   </action>
   <action name="actionExport_Results">
    <property name="text">
-    <string>Export Results</string>
+    <string>&amp;Export Results</string>
    </property>
   </action>
   <action name="actionSet_number_of_principal_components">
    <property name="text">
-    <string>Set number of principal components</string>
+    <string>&amp;Set number of principal components</string>
    </property>
   </action>
   <action name="actionSelect_principal_components">
    <property name="text">
-    <string>Select principal components</string>
+    <string>Select principal &amp;components</string>
+   </property>
+  </action>
+  <action name="actionImport_data_table">
+   <property name="text">
+    <string>Import &amp;data table</string>
+   </property>
+  </action>
+  <action name="actionImport_pivot_table">
+   <property name="text">
+    <string>Import &amp;pivot table</string>
    </property>
   </action>
  </widget>

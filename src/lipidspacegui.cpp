@@ -112,6 +112,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
+    connect(ui->actionImport_data_table, SIGNAL(triggered()), this, SLOT(openDataTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
     
     connect(ui->actionAutomatically, SIGNAL(triggered()), this, SLOT(setAutomaticLayout()));
@@ -156,6 +157,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     progressbar->setModal(true);
     
     updateGUI();
+    
+    //QListWidgetItem *item = new QListWidgetItem("hihi", ui->listWidget);
+    //item->setFlags(Qt::ItemIsUserCheckable);
+    //item->setCheckState(Qt::Unchecked);
+    //ui->listWidget->addItem(item);
 }
 
 
@@ -215,6 +221,42 @@ void LipidSpaceGUI::openTable(){
 }
 
 
+void LipidSpaceGUI::openDataTable(){
+    ImportDataTable idt;
+    connect(&idt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadDataTable(string, vector<TableColumnType>*)));
+    idt.setModal(true);
+    idt.exec();
+}
+    
+void LipidSpaceGUI::loadDataTable(string file_name, vector<TableColumnType>* column_types){
+    try {
+        lipid_space->load_data_table(file_name, column_types);
+        runAnalysis();
+    }
+    catch (exception &e) {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Error during table import");
+        msgBox.setText(e.what());
+        msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
+        
+        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+        
+        msgBox.setDefaultButton(msgBox.addButton(tr("Abort"), QMessageBox::NoRole));
+        msgBox.exec();
+        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+            lipid_space->ignore_unknown_lipids = true;
+            resetAnalysis();
+            
+            lipid_space->load_data_table(file_name, column_types);
+            runAnalysis();
+        }
+        else {
+            resetAnalysis();
+        }
+    }
+}
+
+
 
 void LipidSpaceGUI::runAnalysis(){
     
@@ -262,8 +304,8 @@ void LipidSpaceGUI::runAnalysis(){
         }
         canvases.push_back(canvas);
     }
-    global_lipidome_model = new GlobalLipidomeModel(lipid_space, this);
-    ui->tableView->setModel(global_lipidome_model);
+    //global_lipidome_model = new GlobalLipidomeModel(lipid_space, this);
+    //ui->tableView->setModel(global_lipidome_model);
     
     
     ui->tabWidget->setVisible(true);

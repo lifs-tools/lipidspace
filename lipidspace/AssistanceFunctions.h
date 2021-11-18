@@ -11,6 +11,7 @@
 using namespace std;
 
 enum Linkage {SINGLE, COMPLETE};
+enum TableColumnType {MeasurementColumn, LipidColumn, FeatureColumn, IgnoreColumn};
 
 class Table {
 public:
@@ -19,6 +20,7 @@ public:
     vector<string> classes;
     vector<LipidAdduct*> lipids;
     Array intensities;
+    map<string, string> features;
     Matrix m;
     
     Table(string lipid_list_file) : file_name(lipid_list_file) {}
