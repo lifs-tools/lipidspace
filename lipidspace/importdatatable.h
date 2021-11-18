@@ -11,9 +11,9 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "lipidspace/AssistanceFunctions.h"
 
 using namespace std;
+
 
 namespace Ui {
 class ImportDataTable;
@@ -33,11 +33,11 @@ signals:
 public slots:
     void ok();
     void cancel();
-    void updateTables(int i);
+    void oneItemViolated(string field_name);
 
 private:
     Ui::ImportDataTable *ui;
-    QString measurements_column;
+    QString sample_column;
     string data_table_file;
     map<QString, int> original_column_index;
 };

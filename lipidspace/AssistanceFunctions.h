@@ -2,16 +2,38 @@
 #define ASSISTANCE_FUNCTIONS_H
 
 #include <QtCore>
+#include <QListWidget>
+#include <QDropEvent>
 #include <set>
 #include <vector>
 #include <string>
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/Matrix.h"
+#include <iostream>
+
+using namespace std;
+
+class SingleListWidget : public QListWidget {
+    Q_OBJECT
+    
+public:
+    SingleListWidget(QWidget *parent = nullptr);
+    string field_name;
+    
+    void addFieldName(string _field_name);
+    
+signals:
+    void oneItemViolation(string);
+    
+public slots:
+    void dropEvent(QDropEvent *event) override;
+};
+
 
 using namespace std;
 
 enum Linkage {SINGLE, COMPLETE};
-enum TableColumnType {MeasurementColumn, LipidColumn, FeatureColumn, IgnoreColumn};
+enum TableColumnType {SampleColumn, LipidColumn, FeatureColumn, IgnoreColumn};
 
 class Table {
 public:

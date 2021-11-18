@@ -1,9 +1,18 @@
 #include "lipidspace/importdatatable.h"
 
+
+
+
 ImportDataTable::ImportDataTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportDataTable) {
     ui->setupUi(this);
+    setWindowTitle("Data table import");
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     setFixedSize(this->width(), this->height());
+    
+    ui->sampleListWidget->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->sampleListWidget->setDefaultDropAction(Qt::MoveAction);
+    ui->sampleListWidget->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->sampleListWidget->addFieldName("sample");
     
     ui->ignoreListWidget->setDragDropMode(QAbstractItemView::DragDrop);
     ui->ignoreListWidget->setDefaultDropAction(Qt::MoveAction);
@@ -19,6 +28,7 @@ ImportDataTable::ImportDataTable(QWidget *parent) : QDialog(parent), ui(new Ui::
     
     connect(ui->okButton, SIGNAL(clicked()), this, SLOT(ok()));
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
+    connect(ui->sampleListWidget, SIGNAL(oneItemViolation(string)), this, SLOT(oneItemViolated(string)));
     
     QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", ".", "Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
     if (!file_name.length()) close();
@@ -48,22 +58,20 @@ ImportDataTable::ImportDataTable(QWidget *parent) : QDialog(parent), ui(new Ui::
     int i = 0;
     for (string header : *tokens){
         QString qheader = header.c_str();
-        original_column_index.insert({qheader, i});
-        if (i++ > 0){
-            QListWidgetItem* item = new QListWidgetItem();
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-            item->setText(qheader);
-            ui->ignoreListWidget->addItem(item);
-        }
-        else {
-            measurements_column = qheader;
-        }
-        ui->comboBox->addItem(qheader);
+        original_column_index.insert({qheader, i++});
+        QListWidgetItem* item = new QListWidgetItem();
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+        item->setText(qheader);
+        ui->ignoreListWidget->addItem(item);
     }
     
-    ui->comboBox->setCurrentIndex(0);
-    connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTables(int)));
     delete tokens;
+}
+
+
+
+void ImportDataTable::oneItemViolated(string field_name){
+    QMessageBox::warning(this, "Only one column", "Only one column can be assigned to the " + QString(field_name.c_str()) + " column");
 }
 
 
@@ -77,9 +85,10 @@ void ImportDataTable::cancel(){
 }
 
 void ImportDataTable::ok(){
-    if (ui->lipidListWidget->count() >= 2) {
+    if (ui->lipidListWidget->count() >= 2 && ui->sampleListWidget->count() == 1) {
         vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
-        column_types->at(original_column_index[ui->comboBox->currentText()]) = MeasurementColumn;
+        
+        column_types->at(original_column_index[ui->sampleListWidget->item(0)->text()]) = SampleColumn;
         
         for (int i = 0; i < (int)ui->lipidListWidget->count(); ++i){
             column_types->at(original_column_index[ui->lipidListWidget->item(i)->text()]) = LipidColumn;
@@ -92,36 +101,11 @@ void ImportDataTable::ok(){
         importTable(data_table_file, column_types);
         close();
     }
+    else if (!ui->sampleListWidget->count()) {
+        QMessageBox::warning(this, "No sample column selected", "Please select one column as sample columns.");
+    }
     else {
         QMessageBox::warning(this, "No lipid column selected", "Please select at least two columns as lipid columns.");
     }
 }
 
-
-void ImportDataTable::updateTables(int){
-    QListWidgetItem* item = new QListWidgetItem();
-    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-    item->setText(measurements_column);
-    ui->ignoreListWidget->insertItem(0, item);
-    
-    measurements_column = ui->comboBox->currentText();
-    
-    QList<QListWidgetItem *> ignore_items = ui->ignoreListWidget->findItems(measurements_column, Qt::MatchExactly);
-    if (ignore_items.size()){
-        ui->ignoreListWidget->takeItem(ui->ignoreListWidget->row(ignore_items[0]));
-        return;
-    }
-    
-    QList<QListWidgetItem *> lipid_items = ui->lipidListWidget->findItems(measurements_column, Qt::MatchExactly);
-    if (lipid_items.size()){
-        ui->lipidListWidget->takeItem(ui->lipidListWidget->row(lipid_items[0]));
-        return;
-    }
-    
-    QList<QListWidgetItem *> feature_items = ui->featureListWidget->findItems(measurements_column, Qt::MatchExactly);
-    if (feature_items.size()){
-        ui->featureListWidget->takeItem(ui->featureListWidget->row(feature_items[0]));
-        return;
-    }
-
-}

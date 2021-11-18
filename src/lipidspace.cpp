@@ -977,7 +977,7 @@ void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType>
         // handle all other rows
         for (int i = 0; i < (int)tokens->size(); ++i){
             switch(column_types->at(i)){
-                case MeasurementColumn:
+                case SampleColumn:
                     measurement = tokens->at(i);
                     break;
                     
