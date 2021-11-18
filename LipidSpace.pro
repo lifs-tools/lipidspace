@@ -1,4 +1,4 @@
-QT       += core gui printsupport
+QT       += core gui printsupport sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

@@ -906,6 +906,114 @@ void LipidSpace::normalize_intensities(){
 
 
 
+
+void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnType> *column_types){
+    ifstream infile(pivot_table_file);
+    if (!infile.good()){
+        Logging::write_log("Error: file '" + pivot_table_file + "' could not be found.");
+        throw LipidException("Error: file '" + pivot_table_file + "' could not be found.");
+    }
+    string line;
+    
+    cout << "huhu" << endl;
+    
+    int sample_column = -1;
+    int lipid_species_column = -1;
+    int quant_column = -1;
+    vector<int> feature_columns;
+    for (int i = 0; i < (int)column_types->size(); ++i) {
+        switch(column_types->at(i)){
+            case FeatureColumn: feature_columns.push_back(i); break;
+            case SampleColumn: sample_column = i; break;
+            case LipidColumn: lipid_species_column = i; break;
+            case QuantColumn: quant_column = i; break;
+            default: break;
+        }
+    }
+    
+    if (sample_column == -1 || lipid_species_column == -1 || quant_column == -1){
+        Logging::write_log("Error while loading pivot table '" + pivot_table_file + "': not all essetial columns defined.");
+        throw LipidException("Error while loading pivot table '" + pivot_table_file + "': not all essetial columns defined.");
+    }
+    
+    cout << "huhu2" << endl;
+    set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
+    int line_cnt = 0;
+    map<string, LipidAdduct*> lipid_map;
+    map<string, Table*> lipidome_map;
+    vector<string> feature_names;
+    
+    while (getline(infile, line)){
+        if (line.length() == 0) continue;
+        
+        vector<string>* tokens = split_string(line, ',', '"', true);
+        if (line_cnt++ == 0){
+            for (auto fi : feature_columns) feature_names.push_back(tokens->at(fi));
+            
+            delete tokens;
+            continue;
+        }
+        
+        
+        // check if quant information is valid
+        string quant_val = tokens->at(quant_column);
+        if (contains_val(NA_VALUES, quant_val)){
+            delete tokens;
+            continue;
+        }
+        
+        // take or create sample / lipidome table
+        Table* lipidome = 0;
+        if (uncontains_val(lipidome_map, tokens->at(sample_column))){
+            lipidome = new Table(tokens->at(sample_column));
+            lipidome_map.insert({tokens->at(sample_column), lipidome});
+            lipidomes.push_back(lipidome);
+        }
+        else {
+            lipidome = lipidome_map[tokens->at(sample_column)];
+        }
+        
+        // handle features
+        for (int i = 0; i < (int)feature_columns.size(); ++i){
+            lipidome->features.insert({feature_names[i], tokens->at(feature_columns[i])});
+        }
+        
+        // handle lipid
+        LipidAdduct *l = 0;
+        string lipid_name = tokens->at(lipid_species_column);
+        if (uncontains_val(lipid_map, lipid_name)){
+            try {
+                l = parser.parse(lipid_name);
+            }
+            catch (exception &e) {
+                if (!ignore_unknown_lipids){
+                    throw LipidException(string(e.what()) + ": lipid '" + lipid_name + "' cannot be parsed.");
+                }
+                else {
+                    Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
+                    delete tokens;
+                    continue;
+                }
+            }
+            lipid_map.insert({lipid_name, l});
+        }
+        else {
+            l = lipid_map[lipid_name];
+        }
+        
+        lipidome->lipids.push_back(l);
+        lipidome->species.push_back(l->get_lipid_string());
+        lipidome->classes.push_back(l->get_lipid_string(CLASS));
+        lipidome->intensities.push_back(atof(quant_val.c_str()));
+        
+        delete tokens;
+    }
+}
+
+
+
+
+
 void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType> *column_types){
     Logging::write_log("Importing table '" + data_table_file + "'");
             
@@ -914,7 +1022,6 @@ void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType>
     if (!infile.good()){
         Logging::write_log("Error: file '" + data_table_file + "' could not be found.");
         throw LipidException("Error: file '" + data_table_file + "' could not be found.");
-        exit(-1);
     }
     string line;
     

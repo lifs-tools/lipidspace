@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/canvas.h"
@@ -101,6 +103,7 @@ public slots:
     void openDataTable();
     void openPivotTable();
     void loadDataTable(string file_name, vector<TableColumnType> *column_types);
+    void loadPivotTable(string file_name, vector<TableColumnType> *column_types);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();

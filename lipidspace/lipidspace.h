@@ -60,6 +60,7 @@ public:
     Table* load_list(string lipid_list_file);
     void load_table(string table_file);
     void load_data_table(string table_file, vector<TableColumnType> *column_types);
+    void load_pivot_table(string table_file, vector<TableColumnType> *column_types);
 };
 
 

@@ -158,11 +158,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     progressbar->setModal(true);
     
     updateGUI();
-    
-    //QListWidgetItem *item = new QListWidgetItem("hihi", ui->listWidget);
-    //item->setFlags(Qt::ItemIsUserCheckable);
-    //item->setCheckState(Qt::Unchecked);
-    //ui->listWidget->addItem(item);
 }
 
 
@@ -232,7 +227,7 @@ void LipidSpaceGUI::openDataTable(){
 
 void LipidSpaceGUI::openPivotTable(){
     ImportPivotTable ipt;
-    //connect(&idt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadDataTable(string, vector<TableColumnType>*)));
+    connect(&ipt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadPivotTable(string, vector<TableColumnType>*)));
     ipt.setModal(true);
     ipt.exec();
 }
@@ -257,6 +252,34 @@ void LipidSpaceGUI::loadDataTable(string file_name, vector<TableColumnType>* col
             resetAnalysis();
             
             lipid_space->load_data_table(file_name, column_types);
+            runAnalysis();
+        }
+        else {
+            resetAnalysis();
+        }
+    }
+}
+    
+void LipidSpaceGUI::loadPivotTable(string file_name, vector<TableColumnType>* column_types){
+    try {
+        lipid_space->load_pivot_table(file_name, column_types);
+        runAnalysis();
+    }
+    catch (exception &e) {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Error during table import");
+        msgBox.setText(e.what());
+        msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
+        
+        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+        
+        msgBox.setDefaultButton(msgBox.addButton(tr("Abort"), QMessageBox::NoRole));
+        msgBox.exec();
+        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+            lipid_space->ignore_unknown_lipids = true;
+            resetAnalysis();
+            
+            lipid_space->load_pivot_table(file_name, column_types);
             runAnalysis();
         }
         else {

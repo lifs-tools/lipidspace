@@ -35,14 +35,19 @@ ImportPivotTable::ImportPivotTable(QWidget *parent) : QDialog(parent), ui(new Ui
     connect(ui->sampleListWidget, SIGNAL(oneItemViolation(string)), this, SLOT(oneItemViolated(string)));
     
     QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", ".", "Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
-    if (!file_name.length()) close();
+    if (!file_name.length()) {
+        QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+        return;
+    }
+        
     
     data_table_file = file_name.toStdString();
     ifstream infile(data_table_file);
     if (!infile.good()){
         Logging::write_log("Error: file '" + data_table_file + "' cannot be opened.");
         QMessageBox::critical(this, "Error", "Error: file '" + file_name + "' cannot be opened.");
-        close();
+        QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+        return;
     }
     
     
@@ -53,7 +58,8 @@ ImportPivotTable::ImportPivotTable(QWidget *parent) : QDialog(parent), ui(new Ui
     if (column_headers.length() == 0){
         Logging::write_log("Error: first line in file '" + file_name.toStdString() + "' contains no data.");
         QMessageBox::critical(this, "Error", "Error: first line in file '" + file_name + "' contains no data.");
-        close();
+        QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+        return;
     }
     
     vector<string>* tokens = split_string(column_headers, ',', '"', true);
