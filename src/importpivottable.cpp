@@ -11,6 +11,7 @@ ImportPivotTable::ImportPivotTable(QWidget *parent) : QDialog(parent), ui(new Ui
     ui->sampleListWidget->setDefaultDropAction(Qt::MoveAction);
     ui->sampleListWidget->setSelectionMode(QListWidget::ExtendedSelection);
     ui->sampleListWidget->addFieldName("sample");
+    ui->sampleListWidget->setNum(3);
     
     ui->ignoreListWidget->setDragDropMode(QAbstractItemView::DragDrop);
     ui->ignoreListWidget->setDefaultDropAction(Qt::MoveAction);
@@ -32,7 +33,7 @@ ImportPivotTable::ImportPivotTable(QWidget *parent) : QDialog(parent), ui(new Ui
     
     connect(ui->okButton, SIGNAL(clicked()), this, SLOT(ok()));
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
-    connect(ui->sampleListWidget, SIGNAL(oneItemViolation(string)), this, SLOT(oneItemViolated(string)));
+    connect(ui->sampleListWidget, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
     
     QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", ".", "Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
     if (!file_name.length()) {
@@ -85,8 +86,8 @@ ImportPivotTable::~ImportPivotTable() {
 
 
 
-void ImportPivotTable::oneItemViolated(string field_name){
-    QMessageBox::warning(this, "Only one column", "Only one column can be assigned to the " + QString(field_name.c_str()) + " column");
+void ImportPivotTable::oneItemViolated(string field_name, int num){
+    QMessageBox::warning(this, "Only one column", "Only " + QString::number(num) + " column(s) can be assigned to the " + QString(field_name.c_str()) + " column");
 }
 
 
@@ -96,10 +97,12 @@ void ImportPivotTable::cancel(){
 }
 
 void ImportPivotTable::ok(){
-    if (ui->lipidListWidget->count() == 1 && ui->sampleListWidget->count() == 1 && ui->quantListWidget->count() == 1) {
+    if (ui->lipidListWidget->count() == 1 && ui->sampleListWidget->count() >= 1 && ui->quantListWidget->count() == 1) {
         vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
         
-        column_types->at(original_column_index[ui->sampleListWidget->item(0)->text()]) = SampleColumn;
+        for (int i = 0; i < (int)ui->sampleListWidget->count(); ++i){
+            column_types->at(original_column_index[ui->sampleListWidget->item(i)->text()]) = SampleColumn;
+        }
         
         column_types->at(original_column_index[ui->lipidListWidget->item(0)->text()]) = LipidColumn;
         

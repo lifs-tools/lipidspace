@@ -913,30 +913,29 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         Logging::write_log("Error: file '" + pivot_table_file + "' could not be found.");
         throw LipidException("Error: file '" + pivot_table_file + "' could not be found.");
     }
+    
+    
     string line;
-    
-    cout << "huhu" << endl;
-    
-    int sample_column = -1;
+    vector<int> sample_columns;
     int lipid_species_column = -1;
     int quant_column = -1;
+    set<string> index_key_pairs;
     vector<int> feature_columns;
     for (int i = 0; i < (int)column_types->size(); ++i) {
         switch(column_types->at(i)){
             case FeatureColumn: feature_columns.push_back(i); break;
-            case SampleColumn: sample_column = i; break;
+            case SampleColumn: sample_columns.push_back(i); break;
             case LipidColumn: lipid_species_column = i; break;
             case QuantColumn: quant_column = i; break;
             default: break;
         }
     }
     
-    if (sample_column == -1 || lipid_species_column == -1 || quant_column == -1){
+    if (sample_columns.size() == 0 || lipid_species_column == -1 || quant_column == -1){
         Logging::write_log("Error while loading pivot table '" + pivot_table_file + "': not all essetial columns defined.");
         throw LipidException("Error while loading pivot table '" + pivot_table_file + "': not all essetial columns defined.");
     }
     
-    cout << "huhu2" << endl;
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     int line_cnt = 0;
     map<string, LipidAdduct*> lipid_map;
@@ -964,13 +963,34 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         
         // take or create sample / lipidome table
         Table* lipidome = 0;
-        if (uncontains_val(lipidome_map, tokens->at(sample_column))){
-            lipidome = new Table(tokens->at(sample_column));
-            lipidome_map.insert({tokens->at(sample_column), lipidome});
+        string sample_name = "";
+        for (int i = 0; i < (int)sample_columns.size(); ++i){
+            if (sample_name.length()) sample_name += "_";
+            sample_name += tokens->at(sample_columns[i]);
+        }
+        string lipid_name = tokens->at(lipid_species_column);
+        
+        string index_key_pair = sample_name + " / " + lipid_name;
+        if (uncontains_val(index_key_pairs, index_key_pair)){
+            index_key_pairs.insert(index_key_pair);
+        }
+        else {
+            Logging::write_log("Error while loading pivot table '" + pivot_table_file + "': sample and lipid pair '" + index_key_pair + "' occurs twice in table.");
+            throw LipidException("Error while loading pivot table '" + pivot_table_file + "': sample and lipid pair '" + index_key_pair + "' occurs twice in table.");
+        }
+        
+        
+        
+        
+        
+        
+        if (uncontains_val(lipidome_map, sample_name)){
+            lipidome = new Table(sample_name);
+            lipidome_map.insert({sample_name, lipidome});
             lipidomes.push_back(lipidome);
         }
         else {
-            lipidome = lipidome_map[tokens->at(sample_column)];
+            lipidome = lipidome_map[sample_name];
         }
         
         // handle features
@@ -980,7 +1000,6 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         
         // handle lipid
         LipidAdduct *l = 0;
-        string lipid_name = tokens->at(lipid_species_column);
         if (uncontains_val(lipid_map, lipid_name)){
             try {
                 l = parser.parse(lipid_name);

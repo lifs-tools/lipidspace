@@ -28,7 +28,7 @@ ImportDataTable::ImportDataTable(QWidget *parent) : QDialog(parent), ui(new Ui::
     
     connect(ui->okButton, SIGNAL(clicked()), this, SLOT(ok()));
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
-    connect(ui->sampleListWidget, SIGNAL(oneItemViolation(string)), this, SLOT(oneItemViolated(string)));
+    connect(ui->sampleListWidget, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
     
     QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", ".", "Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
     if (file_name.length() == 0){
@@ -77,8 +77,8 @@ ImportDataTable::ImportDataTable(QWidget *parent) : QDialog(parent), ui(new Ui::
 
 
 
-void ImportDataTable::oneItemViolated(string field_name){
-    QMessageBox::warning(this, "Only one column", "Only one column can be assigned to the " + QString(field_name.c_str()) + " column");
+void ImportDataTable::oneItemViolated(string field_name, int num){
+    QMessageBox::warning(this, "Only one column", "Only " + QString::number(num) + " column(s) can be assigned to the " + QString(field_name.c_str()) + " column");
 }
 
 

@@ -33,7 +33,7 @@ signals:
 public slots:
     void ok();
     void cancel();
-    void oneItemViolated(string field_name);
+    void oneItemViolated(string field_name, int num);
 
 private:
     Ui::ImportDataTable *ui;

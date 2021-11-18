@@ -3,15 +3,20 @@
 
 SingleListWidget::SingleListWidget(QWidget *parent) : QListWidget(parent) {
     field_name = "";
+    num = 1;
 }
 
 void SingleListWidget::addFieldName(string _field_name){
     field_name = _field_name;
 }
 
+void SingleListWidget::setNum(int _num){
+    num = _num;
+}
+
 void SingleListWidget::dropEvent(QDropEvent *event){
-    if (count() || ((QListWidget*)event->source())->selectedItems().size() > 1){
-        oneItemViolation(field_name);
+    if (count() + ((QListWidget*)event->source())->selectedItems().size() > num){
+        oneItemViolation(field_name, num);
     }
     else {
         QListWidget::dropEvent(event);

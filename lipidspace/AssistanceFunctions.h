@@ -21,12 +21,16 @@ public:
     string field_name;
     
     void addFieldName(string _field_name);
+    void setNum(int _num);
     
 signals:
-    void oneItemViolation(string);
+    void oneItemViolation(string, int);
     
 public slots:
     void dropEvent(QDropEvent *event) override;
+    
+private:
+    int num;
 };
 
 
