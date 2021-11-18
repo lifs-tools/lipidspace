@@ -22,7 +22,11 @@ LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 
 SOURCES += \
     src/about.cpp \
+    src/importdatatable.cpp \
+    src/importpivottable.cpp \
+    src/selectpc.cpp \
     src/setalpha.cpp \
+    src/setPCnum.cpp \
     src/progressbar.cpp \
     src/managelipidomes.cpp \
     src/MainWindow.cpp \
@@ -30,10 +34,13 @@ SOURCES += \
     src/Matrix.cpp \
     src/AssistanceFunctions.cpp \
     src/lipidspace.cpp \
-    src/canvas.cpp
+    src/canvas.cpp \
+    src/logging.cpp
 
 HEADERS += \
     lipidspace/about.h \
+    lipidspace/importdatatable.h \
+    lipidspace/importpivottable.h \
     lipidspace/lipidspacegui.h \
     lipidspace/canvas.h \
     lipidspace/Matrix.h \
@@ -42,14 +49,21 @@ HEADERS += \
     lipidspace/matplotlibcpp.h \
     lipidspace/managelipidomes.h \
     lipidspace/progressbar.h \
-    lipidspace/setalpha.h
+    lipidspace/selectpc.h \
+    lipidspace/setalpha.h \
+    lipidspace/setPCNum.h \
+    lipidspace/logging.h
 
 FORMS += \
-    about.ui \
-    lipidspacegui.ui \
-    managelipidomes.ui \
-    progressbar.ui \
-    setalpha.ui
+    ui/about.ui \
+    ui/importdatatable.ui \
+    ui/importpivottable.ui \
+    ui/lipidspacegui.ui \
+    ui/managelipidomes.ui \
+    ui/progressbar.ui \
+    ui/selectpc.ui \
+    ui/setalpha.ui \
+    ui/setPCnum.ui
 
 TRANSLATIONS += \
     LipidSpace_en_US.ts

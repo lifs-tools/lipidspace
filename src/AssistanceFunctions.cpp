@@ -1,5 +1,24 @@
 #include "lipidspace/AssistanceFunctions.h"
 
+
+SingleListWidget::SingleListWidget(QWidget *parent) : QListWidget(parent) {
+    field_name = "";
+}
+
+void SingleListWidget::addFieldName(string _field_name){
+    field_name = _field_name;
+}
+
+void SingleListWidget::dropEvent(QDropEvent *event){
+    if (count() || ((QListWidget*)event->source())->selectedItems().size() > 1){
+        oneItemViolation(field_name);
+    }
+    else {
+        QListWidget::dropEvent(event);
+    }
+}
+
+
 Node::Node(int index){
     indexes.insert(index);
     left_child = 0;

@@ -10,6 +10,10 @@
 #include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
 #include "lipidspace/setalpha.h"
+#include "lipidspace/setPCnum.h"
+#include "lipidspace/selectpc.h"
+#include "lipidspace/importdatatable.h"
+#include "lipidspace/importpivottable.h"
 #include "lipidspace/about.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
@@ -22,6 +26,46 @@ QT_END_NAMESPACE
 
 class Canvas;
 
+class GlobalLipidomeModel : public QAbstractTableModel {
+public:
+    QList< QList<QString> > rows;
+    QList<QString> headers;
+    int columns;
+    
+    GlobalLipidomeModel(LipidSpace *lipid_space, QObject * parent = {});
+    int rowCount(const QModelIndex &) const override;
+    int columnCount(const QModelIndex &) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+};
+
+
+
+
+class DragLayer : public QWidget {
+    Q_OBJECT
+    
+public:
+    QPoint delta;
+    int source_tile;
+    
+    explicit DragLayer(QWidget *parent = 0);
+    
+protected:
+    virtual void paintEvent(QPaintEvent *event) override;
+    
+public slots:
+    void mousePressEvent(QMouseEvent* event, Canvas *canvas);
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    
+signals:
+    void hover();
+    void swapping(int);
+    
+};
+
+
 class LipidSpaceGUI : public QMainWindow
 {
     Q_OBJECT
@@ -29,6 +73,7 @@ class LipidSpaceGUI : public QMainWindow
 public:
     LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent = nullptr);
     ~LipidSpaceGUI();
+    LipidSpace* lipid_space;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     static int color_counter;
@@ -36,7 +81,11 @@ public:
     static bool showQuant;
     static int alpha;
     static map<string, QColor> colorMap;
-    void resizeEvent(QResizeEvent *);
+    static int PC1;
+    static int PC2;
+    void resizeEvent(QResizeEvent *) override;
+    GlobalLipidomeModel *global_lipidome_model;
+    
     
 signals:
     void transforming(QRectF f, int _num);
@@ -49,6 +98,9 @@ public slots:
     void quitProgram();
     void openLists();
     void openTable();
+    void openDataTable();
+    void openPivotTable();
+    void loadDataTable(string file_name, vector<TableColumnType> *column_types);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();
@@ -72,11 +124,14 @@ public slots:
     void setExport();
     void setInitialized();
     void openSetAlpha();
+    void openSetPCnum();
+    void openSelectPC();
     void openAbout();
+    void openLog();
+    void swapLipidomes(int source, int target);
     
 private:
     Ui::LipidSpaceGUI *ui;
-    LipidSpace* lipid_space;
     bool showDendrogram;
     bool showGlobalLipidome;
     TileLayout tileLayout;
@@ -85,6 +140,7 @@ private:
     Progress *progress;
     int single_window;
     QTimer timer;
+    DragLayer *dragLayer;
     
     vector<Canvas*> canvases;
 };

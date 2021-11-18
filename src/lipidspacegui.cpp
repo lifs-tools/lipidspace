@@ -1,11 +1,119 @@
 #include "lipidspace/lipidspacegui.h"
 
 
-LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent) , ui(new Ui::LipidSpaceGUI), lipid_space(_lipid_space), timer(this) {
+GlobalLipidomeModel::GlobalLipidomeModel(LipidSpace *lipid_space, QObject * parent) : QAbstractTableModel{parent} {
+    columns = 0;
+    int C = (int)lipid_space->lipidomes.size();
+    
+    Matrix global_data(lipid_space->global_lipidome->m.rows, lipid_space->lipidomes.size());
+    map<string, int> species_to_index;
+    for (int i = 0; i < (int)lipid_space->global_lipidome->species.size(); ++i){
+        species_to_index.insert({lipid_space->global_lipidome->species[i], i});
+    }
+    
+    for (int c = 0; c < (int)lipid_space->lipidomes.size(); c++){
+        auto lipidome = lipid_space->lipidomes[c];
+        for (int r = 0; r < (int)lipidome->species.size(); ++r){
+            global_data(species_to_index[lipidome->species[r]], c) = lipidome->intensities(r);
+        }
+    }
+    
+    headers.push_back("Species");
+    map<string, int> mapping;
+    for (int c = 0; c < C; c++){
+        QFileInfo qFileInfo(lipid_space->lipidomes[c]->file_name.c_str());
+        headers.push_back(qFileInfo.baseName());
+        
+    }
+    
+    for (int r = 0; r < (int)lipid_space->global_lipidome->species.size(); ++r){
+        rows.append(QList<QString>());
+        QList<QString> &current_row = rows.back();
+        current_row.reserve(C + 1);
+        current_row.push_back(lipid_space->global_lipidome->species[r].c_str());
+        for (int c = 0; c < C; c++){
+            current_row.push_back("");
+        }
+    }
+}
+
+
+int GlobalLipidomeModel::rowCount(const QModelIndex &) const {
+    return headers.size();
+}
+
+
+int GlobalLipidomeModel::columnCount(const QModelIndex &) const {
+    return columns;
+}
+
+
+QVariant GlobalLipidomeModel::data(const QModelIndex &index, int role) const {
+    if (role != Qt::DisplayRole && role != Qt::EditRole) return {};
+    return rows[index.row()][index.column()];
+}
+
+
+QVariant GlobalLipidomeModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole) return {};
+    return headers[section];
+}
+
+
+DragLayer::DragLayer(QWidget *parent) : QWidget(parent) {
+    
+}
+
+void DragLayer::mousePressEvent(QMouseEvent*, Canvas *canvas){
+    if (!isVisible() && canvas->num >= 0){
+        source_tile = canvas->num;
+        move(canvas->pos());
+        resize(canvas->size());
+        setVisible(true);
+        
+        delta = canvas->mapFromGlobal(QCursor::pos());
+        grabMouse();
+        setMouseTracking(true);
+    }
+}
+
+void DragLayer::mouseMoveEvent(QMouseEvent*){
+    QPoint mouse = parentWidget()->mapFromGlobal(QCursor::pos());
+    move(mouse.x() - delta.x(), mouse.y() - delta.y());
+    hover();
+}
+
+
+void DragLayer::mouseReleaseEvent(QMouseEvent*){
+    releaseMouse();
+    swapping(source_tile);
+    setVisible(false);
+}
+
+
+void DragLayer::paintEvent(QPaintEvent *) {
+    QPainter painter(this);
+    QColor qc = QColor(0, 110, 255, 50);
+    painter.fillRect(QRect(0, 0, width(), height()), qc);
+}
+
+
+
+
+LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent), timer(this) {
+    lipid_space = _lipid_space;
+    ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
+    
+    dragLayer = new DragLayer(ui->centralwidget);
+    dragLayer->move(0, 0);
+    dragLayer->setVisible(false);
+    dragLayer->setWindowFlags(Qt::FramelessWindowHint);
     
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
+    connect(ui->actionImport_data_table, SIGNAL(triggered()), this, SLOT(openDataTable()));
+    connect(ui->actionImport_pivot_table, SIGNAL(triggered()), this, SLOT(openPivotTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
     
     connect(ui->actionAutomatically, SIGNAL(triggered()), this, SLOT(setAutomaticLayout()));
@@ -21,7 +129,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionIgnoring_lipid_sn_positions, SIGNAL(triggered()), this, SLOT(setSnPositions()));
     connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
     connect(ui->actionSet_transparency, SIGNAL(triggered()), this, SLOT(openSetAlpha()));
+    connect(ui->actionSet_number_of_principal_components, SIGNAL(triggered()), this, SLOT(openSetPCnum()));
+    connect(ui->actionSelect_principal_components, SIGNAL(triggered()), this, SLOT(openSelectPC()));
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
+    connect(ui->actionLog_messages, SIGNAL(triggered()), this, SLOT(openLog()));
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
     connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
@@ -34,6 +145,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     updating = false;
     color_counter = 0;
     single_window = -1;
+    ui->tabWidget->setVisible(false);
+    global_lipidome_model = 0;
     
     progressbar = new Progressbar(this);
     progress = new Progress();
@@ -45,6 +158,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     progressbar->setModal(true);
     
     updateGUI();
+    
+    //QListWidgetItem *item = new QListWidgetItem("hihi", ui->listWidget);
+    //item->setFlags(Qt::ItemIsUserCheckable);
+    //item->setCheckState(Qt::Unchecked);
+    //ui->listWidget->addItem(item);
 }
 
 
@@ -53,12 +171,15 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete ui;
     delete progress;
     delete progressbar;
+    delete dragLayer;
 }
 
 int LipidSpaceGUI::alpha = DEFAULT_ALPHA;
 bool LipidSpaceGUI::showQuant = true;
 int LipidSpaceGUI::color_counter = 0;
 map<string, QColor> LipidSpaceGUI::colorMap;
+int LipidSpaceGUI::PC1 = 0;
+int LipidSpaceGUI::PC2 = 1;
 
 const vector<QColor> LipidSpaceGUI::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
 
@@ -101,14 +222,56 @@ void LipidSpaceGUI::openTable(){
 }
 
 
+void LipidSpaceGUI::openDataTable(){
+    ImportDataTable idt;
+    connect(&idt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadDataTable(string, vector<TableColumnType>*)));
+    idt.setModal(true);
+    idt.exec();
+}
+
+
+void LipidSpaceGUI::openPivotTable(){
+    ImportPivotTable ipt;
+    //connect(&idt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadDataTable(string, vector<TableColumnType>*)));
+    ipt.setModal(true);
+    ipt.exec();
+}
+    
+void LipidSpaceGUI::loadDataTable(string file_name, vector<TableColumnType>* column_types){
+    try {
+        lipid_space->load_data_table(file_name, column_types);
+        runAnalysis();
+    }
+    catch (exception &e) {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Error during table import");
+        msgBox.setText(e.what());
+        msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
+        
+        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+        
+        msgBox.setDefaultButton(msgBox.addButton(tr("Abort"), QMessageBox::NoRole));
+        msgBox.exec();
+        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+            lipid_space->ignore_unknown_lipids = true;
+            resetAnalysis();
+            
+            lipid_space->load_data_table(file_name, column_types);
+            runAnalysis();
+        }
+        else {
+            resetAnalysis();
+        }
+    }
+}
+
+
 
 void LipidSpaceGUI::runAnalysis(){
     
     lipid_space->analysis_finished = false;
     disconnect(this, SIGNAL(transforming(QRectF, int)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
-    
-    
     
     std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
     progressbar->exec();
@@ -118,6 +281,8 @@ void LipidSpaceGUI::runAnalysis(){
         disconnect(canvas, SIGNAL(transforming(QRectF, int)), 0, 0);
         disconnect(canvas, SIGNAL(showMessage(QString)), 0, 0);
         disconnect(canvas, SIGNAL(doubleClicked(int)), 0, 0);
+        disconnect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), 0, 0);
+        disconnect(canvas, SIGNAL(swappingLipidomes(int, int)), 0, 0);
         delete canvas;
     }
     canvases.clear();
@@ -141,14 +306,23 @@ void LipidSpaceGUI::runAnalysis(){
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
             connect(this, SIGNAL(exporting(QString)), canvas, SLOT(exportPdf(QString)));
             connect(this, SIGNAL(initialized()), canvas, SLOT(setInitialized()));
+            connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
+            connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
+            connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
+            connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
         }
         canvases.push_back(canvas);
     }
+    //global_lipidome_model = new GlobalLipidomeModel(lipid_space, this);
+    //ui->tableView->setModel(global_lipidome_model);
+    
+    
+    ui->tabWidget->setVisible(true);
     updateGUI();
     
     // dirty hack to overcome the annoying resizing calls of the canvases when
     // putting them into the grid layout. Unfortunately, I cannot figure out, when
-    // it is over. So I a timer and hope that after 200ms all rearranging is over
+    // it is over. So I use a timer and hope that after 200ms all rearranging is over
     QTimer::singleShot(200, this, SLOT(setInitialized()));
 }
 
@@ -160,7 +334,6 @@ void LipidSpaceGUI::setInitialized(){
 
 void LipidSpaceGUI::setExport(){
     QString outputFolder = QFileDialog::getExistingDirectory(0, ("Select Export Folder"), QDir::currentPath());
-    cout << outputFolder.toStdString() << endl;
     
     //if (outputFolder.length()) exporting(outputFolder);
 }
@@ -183,6 +356,17 @@ void LipidSpaceGUI::setDoubleClick(int _num){
 }
 
 
+
+void LipidSpaceGUI::swapLipidomes(int source, int target){
+    if (source == target) return;
+    
+    swap(lipid_space->lipidomes[source], lipid_space->lipidomes[target]);
+    swap(canvases[2 + source]->num, canvases[2 + target]->num);  // offset of 2 due to dendrogram and global lipidome
+    swap(canvases[2 + source], canvases[2 + target]);
+    updateGUI();
+}
+
+
 void LipidSpaceGUI::resetAnalysis(){
     QLayoutItem *wItem;
     while ((wItem = ui->gridLayout->layout()->takeAt(0)) != 0){
@@ -192,6 +376,11 @@ void LipidSpaceGUI::resetAnalysis(){
     canvases.clear();
     
     lipid_space->reset_analysis();
+    PC1 = 0;
+    PC2 = 1;
+    LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
+    
+    ui->tabWidget->setVisible(false);
     updateGUI();
 }
 
@@ -303,11 +492,42 @@ void LipidSpaceGUI::openSetAlpha(){
 }
 
 
+void LipidSpaceGUI::openSelectPC(){
+    SelectPC selectPC(this);
+    for (int i = (lipid_space->lipidomes.size() > 1); i < (int)canvases.size(); ++i){
+        connect(&selectPC, SIGNAL(reloadPoints()), canvases[i], SLOT(reloadPoints()));
+    }
+    selectPC.setModal(true);
+    selectPC.exec();
+    disconnect(&selectPC, SIGNAL(reloadPoints()), 0, 0);
+    updateGUI();
+}
+
+
+void LipidSpaceGUI::openSetPCnum(){
+    int pc_num = LipidSpace::cols_for_pca;
+    SetPCnum setPCnum(this);
+    setPCnum.setModal(true);
+    setPCnum.exec();
+    
+    if (pc_num != LipidSpace::cols_for_pca) runAnalysis();
+}
+
+
 void LipidSpaceGUI::openAbout(){
     About about(this);
     about.setModal(true);
     about.exec();
 }
+
+
+void LipidSpaceGUI::openLog(){
+    About about(this, true);
+    about.setModal(true);
+    about.exec();
+}
+
+
 
 
 void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
@@ -396,7 +616,9 @@ void LipidSpaceGUI::updateGUI(){
         canvases[single_window]->setVisible(true);
         ui->gridLayout->addWidget(canvases[single_window], 0, 0);
     }
+    
     updating = false;
+    dragLayer->raise();
 }
 
 

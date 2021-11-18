@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QPixmap>
 #include <QWidget>
+#include <QLabel>
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>
@@ -32,9 +33,9 @@ using namespace std;
 class Canvas;
 
 
+
 class Dendrogram : public QGraphicsItem {
 public:
-    QString title;
     QRectF bound;
     Canvas *view;
     
@@ -54,7 +55,6 @@ public:
 
 class PointSet : public QGraphicsItem {
 public:
-    QString title;
     QRectF bound;
     Canvas *view;
     
@@ -73,6 +73,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
     void updateView(QRectF);
+    void loadPoints();
     void resize();
 };
 
@@ -86,6 +87,8 @@ public:
     QGraphicsScene graphics_scene;
     LipidSpace *lipid_space;
     QMainWindow *mainWindow;
+    int num;
+    bool hovered_for_swap;
     
     Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *parent = nullptr);
     ~Canvas();
@@ -104,15 +107,20 @@ public slots:
     void setUpdate();
     void exportPdf(QString outputFolder);
     void setInitialized();
+    void hoverOver();
+    void setSwap(int source);
+    void reloadPoints();
+    
     
 signals:
     void showMessage(QString message);
     void transforming(QRectF f, int _num);
     void doubleClicked(int);
+    void mouse(QMouseEvent* event, Canvas *_canvas);
+    void swappingLipidomes(int source, int target);
     
     
 private:
-    int num;
     
     bool showQuant;
     QPoint m_lastMousePos;
@@ -121,6 +129,8 @@ private:
     PointSet *pointSet;
     Dendrogram *dendrogram;
     bool initialized;
+    QLabel *title;
+    QLabel *variances;
 };
 
 #endif /* CANVAS_H */
