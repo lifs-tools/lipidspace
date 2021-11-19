@@ -119,6 +119,7 @@ public:
     void add_charge_sign(TreeNode *node);
     void set_acer(TreeNode *node);
     void set_acer_species(TreeNode *node);
+    void set_sterol_definition(TreeNode *node);
     
 };
 

@@ -135,6 +135,7 @@ ShorthandParserEventHandler::ShorthandParserEventHandler() : LipidBaseParserEven
     reg("acer_hg_post_event", set_acer);
     reg("acer_species_post_event", set_acer_species);
     
+    reg("sterol_definition_post_event", set_sterol_definition);
     
     debug = "";
 }
@@ -159,7 +160,10 @@ void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
     acer_species = false;
 }
 
-
+void ShorthandParserEventHandler::set_sterol_definition(TreeNode *node){
+    head_group += " " + node->get_text();
+    fa_list->erase(fa_list->begin());
+}
 
 void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     if (acer_species) fa_list->at(0)->num_carbon -= 2;
