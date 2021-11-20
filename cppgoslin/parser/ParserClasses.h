@@ -100,9 +100,10 @@ public:
     uint64_t size() const;
     
     
-    Bitfield(uint64_t length);
+    Bitfield(uint64_t length, bool filled_with_ones = false);
     ~Bitfield();
     void insert(uint64_t pos);
+    void remove(uint64_t pos);
     bool find(uint64_t pos);
     void init();
     int next(int pos = -1);

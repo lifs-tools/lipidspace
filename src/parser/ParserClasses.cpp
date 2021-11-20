@@ -80,14 +80,13 @@ int TreeNode::get_int(){
        
        
 
-Bitfield::Bitfield(uint64_t _length){
+Bitfield::Bitfield(uint64_t _length, bool filled_with_ones){
     length = _length;
     field_len = 1 + ((length + 1) >> 6);
     field = new uint64_t[field_len];
     num_size = 0;
     
-    
-    for (uint64_t i = 0; i < field_len; ++i) field[i] = 0ull;
+    for (uint64_t i = 0; i < field_len; ++i) field[i] = filled_with_ones ? ~(0ull) : 0ull;
 }
 
 
@@ -102,6 +101,14 @@ Bitfield::~Bitfield(){
 void Bitfield::insert(uint64_t pos){
     if (!find(pos)){
         field[pos >> 6] |= (uint64_t)(1ull << (pos & 63));
+        ++num_size;
+    }
+}
+
+
+void Bitfield::remove(uint64_t pos){
+    if (!find(pos)){
+        field[pos >> 6] &= ~((uint64_t)(1ull << (pos & 63)));
         ++num_size;
     }
 }
