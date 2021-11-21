@@ -1,4 +1,4 @@
-QT       += core gui printsupport sql
+QT       += core gui printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,7 +17,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-INCLUDEPATH += /usr/include/python3.8
 LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 
 SOURCES += \
@@ -25,6 +24,7 @@ SOURCES += \
     src/importtable.cpp \
     src/selectpc.cpp \
     src/setalpha.cpp \
+    src/CBTableWidget.cpp \
     src/setPCnum.cpp \
     src/progressbar.cpp \
     src/managelipidomes.cpp \
@@ -40,6 +40,7 @@ HEADERS += \
     lipidspace/about.h \
     lipidspace/importtable.h \
     lipidspace/lipidspacegui.h \
+    lipidspace/CBTableWidget.h \
     lipidspace/canvas.h \
     lipidspace/Matrix.h \
     lipidspace/lipidspace.h \

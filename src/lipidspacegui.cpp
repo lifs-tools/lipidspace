@@ -1,65 +1,6 @@
 #include "lipidspace/lipidspacegui.h"
 
 
-GlobalLipidomeModel::GlobalLipidomeModel(LipidSpace *lipid_space, QObject * parent) : QAbstractTableModel{parent} {
-    columns = 0;
-    int C = (int)lipid_space->lipidomes.size();
-    
-    Matrix global_data(lipid_space->global_lipidome->m.rows, lipid_space->lipidomes.size());
-    map<string, int> species_to_index;
-    for (int i = 0; i < (int)lipid_space->global_lipidome->species.size(); ++i){
-        species_to_index.insert({lipid_space->global_lipidome->species[i], i});
-    }
-    
-    for (int c = 0; c < (int)lipid_space->lipidomes.size(); c++){
-        auto lipidome = lipid_space->lipidomes[c];
-        for (int r = 0; r < (int)lipidome->species.size(); ++r){
-            global_data(species_to_index[lipidome->species[r]], c) = lipidome->intensities(r);
-        }
-    }
-    
-    headers.push_back("Species");
-    map<string, int> mapping;
-    for (int c = 0; c < C; c++){
-        QFileInfo qFileInfo(lipid_space->lipidomes[c]->file_name.c_str());
-        headers.push_back(qFileInfo.baseName());
-        
-    }
-    
-    for (int r = 0; r < (int)lipid_space->global_lipidome->species.size(); ++r){
-        rows.append(QList<QString>());
-        QList<QString> &current_row = rows.back();
-        current_row.reserve(C + 1);
-        current_row.push_back(lipid_space->global_lipidome->species[r].c_str());
-        for (int c = 0; c < C; c++){
-            current_row.push_back("");
-        }
-    }
-}
-
-
-int GlobalLipidomeModel::rowCount(const QModelIndex &) const {
-    return headers.size();
-}
-
-
-int GlobalLipidomeModel::columnCount(const QModelIndex &) const {
-    return columns;
-}
-
-
-QVariant GlobalLipidomeModel::data(const QModelIndex &index, int role) const {
-    if (role != Qt::DisplayRole && role != Qt::EditRole) return {};
-    return rows[index.row()][index.column()];
-}
-
-
-QVariant GlobalLipidomeModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole) return {};
-    return headers[section];
-}
-
-
 DragLayer::DragLayer(QWidget *parent) : QWidget(parent) {
     
 }
@@ -135,7 +76,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
     connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
-    connect(ui->tableWidget, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(ShowContextMenu(const QPoint)));
+    //connect(ui->tableWidget, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(ShowContextMenu(const QPoint)));
+    connect(ui->tableWidget, SIGNAL(cornerButtonClick()), this, SLOT(transposeTable()));
             
     
     tileLayout = AUTOMATIC;
@@ -146,7 +88,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     color_counter = 0;
     single_window = -1;
     ui->tabWidget->setVisible(false);
-    global_lipidome_model = 0;
     table_transposed = false;
     
     progressbar = new Progressbar(this);
@@ -157,7 +98,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(progressbar, SIGNAL(interrupt()), progress, SLOT(interrupt()));
     connect(progressbar, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     progressbar->setModal(true);
-    
     
     updateGUI();
 }
@@ -685,7 +625,12 @@ void LipidSpaceGUI::fill_Table(){
         
         int f = 0;
         for (auto kv : lipid_space->lipidomes[0]->features){
-            item = new QTableWidgetItem(kv.first.c_str());
+            QString header_name = kv.first.c_str();
+            // dirty way to make the transpose button completely visible
+            if (f == 0 && header_name.length() < 10) {
+                while (header_name.length() < 14) header_name += " ";
+            }
+            item = new QTableWidgetItem();
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             feature_index.insert({kv.first, f});
             t->setVerticalHeaderItem(f++, item);
@@ -741,8 +686,14 @@ void LipidSpaceGUI::fill_Table(){
         t->setColumnCount(lipid_space->global_lipidome->lipids.size() + num_features);
         
         for (int r = 0; r < (int)lipid_space->lipidomes.size(); ++r){
+            int h = 0;
             QFileInfo qFileInfo(lipid_space->lipidomes[r]->file_name.c_str());
-            item = new QTableWidgetItem(qFileInfo.baseName());
+            QString header_name = qFileInfo.baseName();
+            // dirty way to make the transpose button completely visible
+            if (h++ == 0 && header_name.length() < 10) {
+                while (header_name.length() < 14) header_name += " ";
+            }
+            item = new QTableWidgetItem(header_name);
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             t->setVerticalHeaderItem(r, item);
         }

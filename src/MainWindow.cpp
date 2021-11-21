@@ -111,7 +111,6 @@ int main(int argc, char** argv) {
     }
     // loading lipid matrix
     else {
-        vector<TableColumnType> *column_types = new vector<TableColumnType>();
         lipid_space.load_row_table(argv[3 + num_opt]);
     }
     

@@ -103,7 +103,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QTableWidget" name="tableWidget"/>
+         <widget class="CBTableWidget" name="tableWidget"/>
         </item>
        </layout>
       </widget>
@@ -484,6 +484,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CBTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>lipidspace/CBTableWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
