@@ -46,6 +46,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
     
+    
     dragLayer = new DragLayer(ui->centralwidget);
     dragLayer->move(0, 0);
     dragLayer->setVisible(false);
@@ -81,11 +82,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
             
     
     tileLayout = AUTOMATIC;
-    showQuant = true;
+    GlobalData::showQuant = true;
     showDendrogram = true;
     showGlobalLipidome = true;
     updating = false;
-    color_counter = 0;
+    GlobalData::color_counter = 0;
     single_window = -1;
     ui->tabWidget->setVisible(false);
     table_transposed = false;
@@ -111,14 +112,6 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete dragLayer;
 }
 
-int LipidSpaceGUI::alpha = DEFAULT_ALPHA;
-bool LipidSpaceGUI::showQuant = true;
-int LipidSpaceGUI::color_counter = 0;
-map<string, QColor> LipidSpaceGUI::colorMap;
-int LipidSpaceGUI::PC1 = 0;
-int LipidSpaceGUI::PC2 = 1;
-
-const vector<QColor> LipidSpaceGUI::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#7f7f7f"), QColor("#bcbd22"), QColor("#17becf")};
 
 
 
@@ -203,7 +196,7 @@ void LipidSpaceGUI::runAnalysis(){
     canvases.clear();
     updateGUI();
     
-    color_counter = 0;
+    GlobalData::color_counter = 0;
     int numTiles = 2 * (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
     
     for (int n = 0; n < numTiles; ++n){
@@ -289,8 +282,8 @@ void LipidSpaceGUI::resetAnalysis(){
     canvases.clear();
     
     lipid_space->reset_analysis();
-    PC1 = 0;
-    PC2 = 1;
+    GlobalData::PC1 = 0;
+    GlobalData::PC2 = 1;
     LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
     
     ui->tabWidget->setVisible(false);
@@ -328,7 +321,7 @@ void LipidSpaceGUI::showHideGlobalLipidome(){
 }
 
 void LipidSpaceGUI::showHideQuant(){
-    showQuant = ui->actionShow_quantitative_information->isChecked();
+    GlobalData::showQuant = ui->actionShow_quantitative_information->isChecked();
     updateCanvas();
 }
 
@@ -452,6 +445,8 @@ void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
 void LipidSpaceGUI::updateGUI(){
     updating = true;
     
+    while (ui->featureComboBox->count()) ui->featureComboBox->removeItem(0);
+    
     ui->menuAnalysis->setEnabled(lipid_space->lipidomes.size());
     ui->menuView->setEnabled(lipid_space->lipidomes.size());
     ui->actionExport_Results->setEnabled(lipid_space->lipidomes.size());
@@ -530,6 +525,12 @@ void LipidSpaceGUI::updateGUI(){
         canvases[single_window]->setVisible(true);
         ui->gridLayout->addWidget(canvases[single_window], 0, 0);
     }
+    
+    
+    for (auto kv : lipid_space->feature_values){
+        ui->featureComboBox->addItem(kv.first.c_str());
+    }
+    
     
     updating = false;
     dragLayer->raise();

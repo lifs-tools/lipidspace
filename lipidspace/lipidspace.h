@@ -39,6 +39,9 @@ public:
     vector<int> dendrogram_sorting;
     Matrix hausdorff_distances;
     bool analysis_finished;
+    map<string, set<string>> feature_values;
+    
+    
     
 
     LipidSpace();

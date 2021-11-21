@@ -23,6 +23,7 @@ SOURCES += \
     src/about.cpp \
     src/importtable.cpp \
     src/selectpc.cpp \
+    src/globaldata.cpp \
     src/setalpha.cpp \
     src/CBTableWidget.cpp \
     src/setPCnum.cpp \
@@ -38,6 +39,7 @@ SOURCES += \
 
 HEADERS += \
     lipidspace/about.h \
+    lipidspace/globaldata.h \
     lipidspace/importtable.h \
     lipidspace/lipidspacegui.h \
     lipidspace/CBTableWidget.h \

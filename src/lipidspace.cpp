@@ -53,8 +53,6 @@ void LipidSpace::create_dendrogram(){
 
 
 
-
-
 LipidSpace::LipidSpace() {
     keep_sn_position = true;
     ignore_unknown_lipids = false;
@@ -795,6 +793,11 @@ void LipidSpace::compute_global_distance_matrix(){
             global_lipidome->lipids.push_back(lipidome->lipids.at(i));
             for (auto fa : lipidome->lipids.at(i)->lipid->fa_list) cut_cycle(fa);
         }
+        
+        for (auto kv : lipidome->features){
+            if (uncontains_val(feature_values, kv.first)) feature_values.insert({kv.first, set<string>()});
+            feature_values[kv.first].insert(kv.second);
+        }
     }
     
     
@@ -1420,9 +1423,9 @@ bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;
 
 void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
-    
-    
+
     analysis_finished = false;
+    feature_values.clear();
     
     if (_progress){
         progress = _progress;
@@ -1528,6 +1531,7 @@ void LipidSpace::run_analysis(Progress *_progress){
 
 void LipidSpace::reset_analysis(){
     analysis_finished = false;
+    feature_values.clear();
     
     for (auto lipid : all_lipids) delete lipid;
     all_lipids.clear();

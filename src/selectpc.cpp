@@ -1,5 +1,4 @@
 #include "lipidspace/selectpc.h"
-#include "ui_selectpc.h"
 
 SelectPC::SelectPC(QWidget *parent) : QDialog(parent), ui(new Ui::SelectPC) {
     ui->setupUi(this);
@@ -12,8 +11,8 @@ SelectPC::SelectPC(QWidget *parent) : QDialog(parent), ui(new Ui::SelectPC) {
         ui->comboBox->addItem(QStringLiteral("Principal component %1").arg(i));
         ui->comboBox_2->addItem(QStringLiteral("Principal component %1").arg(i));
     }
-    ui->comboBox->setCurrentIndex(LipidSpaceGUI::PC1);
-    ui->comboBox_2->setCurrentIndex(LipidSpaceGUI::PC2);
+    ui->comboBox->setCurrentIndex(GlobalData::PC1);
+    ui->comboBox_2->setCurrentIndex(GlobalData::PC2);
     
     
     connect(ui->okButton, SIGNAL(clicked()), this, SLOT(ok()));
@@ -30,8 +29,8 @@ void SelectPC::cancel(){
 }
 
 void SelectPC::ok(){
-    LipidSpaceGUI::PC1 = (int)ui->comboBox->currentIndex();
-    LipidSpaceGUI::PC2 = (int)ui->comboBox_2->currentIndex();
+    GlobalData::PC1 = (int)ui->comboBox->currentIndex();
+    GlobalData::PC2 = (int)ui->comboBox_2->currentIndex();
     reloadPoints();
     close();
 }

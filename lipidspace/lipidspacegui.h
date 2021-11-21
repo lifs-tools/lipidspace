@@ -15,11 +15,11 @@
 #include "lipidspace/selectpc.h"
 #include "lipidspace/importtable.h"
 #include "lipidspace/about.h"
+#include "lipidspace/globaldata.h"
 #include "lipidspace/CBTableWidget.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 
-#define DEFAULT_ALPHA 128
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }
@@ -63,13 +63,6 @@ public:
     LipidSpace* lipid_space;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
-    static int color_counter;
-    static const vector<QColor> COLORS;
-    static bool showQuant;
-    static int alpha;
-    static map<string, QColor> colorMap;
-    static int PC1;
-    static int PC2;
     void resizeEvent(QResizeEvent *) override;
     
     

@@ -21,7 +21,7 @@
 #include <map>
 #include <math.h>
 #include "lipidspace/lipidspace.h"
-#include "lipidspace/lipidspacegui.h"
+#include "lipidspace/globaldata.h"
 
 using namespace std;
 
@@ -90,6 +90,7 @@ public:
     int num;
     bool hovered_for_swap;
     
+    Canvas(QWidget *parent = nullptr);
     Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *parent = nullptr);
     ~Canvas();
     void mouseMoveEvent(QMouseEvent* event);
