@@ -74,12 +74,12 @@
     <rect>
      <x>20</x>
      <y>70</y>
-     <width>121</width>
+     <width>141</width>
      <height>18</height>
     </rect>
    </property>
    <property name="text">
-    <string>Columns to ignore</string>
+    <string>Recognized columns</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_2">

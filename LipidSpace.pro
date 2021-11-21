@@ -22,8 +22,7 @@ LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 
 SOURCES += \
     src/about.cpp \
-    src/importdatatable.cpp \
-    src/importpivottable.cpp \
+    src/importtable.cpp \
     src/selectpc.cpp \
     src/setalpha.cpp \
     src/setPCnum.cpp \
@@ -39,8 +38,7 @@ SOURCES += \
 
 HEADERS += \
     lipidspace/about.h \
-    lipidspace/importdatatable.h \
-    lipidspace/importpivottable.h \
+    lipidspace/importtable.h \
     lipidspace/lipidspacegui.h \
     lipidspace/canvas.h \
     lipidspace/Matrix.h \
@@ -56,8 +54,7 @@ HEADERS += \
 
 FORMS += \
     ui/about.ui \
-    ui/importdatatable.ui \
-    ui/importpivottable.ui \
+    ui/importtable.ui \
     ui/lipidspacegui.ui \
     ui/managelipidomes.ui \
     ui/progressbar.ui \

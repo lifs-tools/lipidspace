@@ -46,6 +46,7 @@ public:
     vector<string> classes;
     vector<LipidAdduct*> lipids;
     Array intensities;
+    Array original_intensities;
     map<string, string> features;
     Matrix m;
     

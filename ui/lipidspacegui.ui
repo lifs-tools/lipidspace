@@ -103,7 +103,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QTableView" name="tableView"/>
+         <widget class="QTableWidget" name="tableWidget"/>
         </item>
        </layout>
       </widget>
@@ -248,8 +248,6 @@
     </property>
     <addaction name="actionLoad_list_s"/>
     <addaction name="actionLoad_table"/>
-    <addaction name="actionImport_data_table"/>
-    <addaction name="actionImport_pivot_table"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Results"/>
     <addaction name="separator"/>

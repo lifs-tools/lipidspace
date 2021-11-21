@@ -16,6 +16,8 @@
  
 using namespace std;
 
+enum TableType {ROW_TABLE, COLUMN_TABLE, PIVOT_TABLE};
+
 
 class LipidSpace {
     
@@ -58,8 +60,8 @@ public:
     void reset_analysis();
     
     Table* load_list(string lipid_list_file);
-    void load_table(string table_file);
-    void load_data_table(string table_file, vector<TableColumnType> *column_types);
+    void load_row_table(string table_file, vector<TableColumnType> *column_types = 0);
+    void load_column_table(string table_file, vector<TableColumnType> *column_types);
     void load_pivot_table(string table_file, vector<TableColumnType> *column_types);
 };
 

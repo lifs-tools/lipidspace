@@ -111,7 +111,8 @@ int main(int argc, char** argv) {
     }
     // loading lipid matrix
     else {
-        lipid_space.load_table(argv[3 + num_opt]);
+        vector<TableColumnType> *column_types = new vector<TableColumnType>();
+        lipid_space.load_row_table(argv[3 + num_opt]);
     }
     
     // compute PCA matrixes for the complete lipidome

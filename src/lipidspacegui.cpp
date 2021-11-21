@@ -109,11 +109,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     dragLayer->move(0, 0);
     dragLayer->setVisible(false);
     dragLayer->setWindowFlags(Qt::FramelessWindowHint);
+    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
-    connect(ui->actionImport_data_table, SIGNAL(triggered()), this, SLOT(openDataTable()));
-    connect(ui->actionImport_pivot_table, SIGNAL(triggered()), this, SLOT(openPivotTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
     
     connect(ui->actionAutomatically, SIGNAL(triggered()), this, SLOT(setAutomaticLayout()));
@@ -136,6 +135,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
     connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
     connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
+    connect(ui->tableWidget, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(ShowContextMenu(const QPoint)));
             
     
     tileLayout = AUTOMATIC;
@@ -147,6 +147,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     single_window = -1;
     ui->tabWidget->setVisible(false);
     global_lipidome_model = 0;
+    table_transposed = false;
     
     progressbar = new Progressbar(this);
     progress = new Progress();
@@ -156,6 +157,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(progressbar, SIGNAL(interrupt()), progress, SLOT(interrupt()));
     connect(progressbar, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     progressbar->setModal(true);
+    
     
     updateGUI();
 }
@@ -185,84 +187,27 @@ void LipidSpaceGUI::quitProgram(){
 }
 
 
+
 void LipidSpaceGUI::openTable(){
-    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid table", ".", "Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
-    if (file_name.length()){
-        try {
-            lipid_space->load_table(file_name.toUtf8().constData());
-            runAnalysis();
-        }
-        catch (exception &e) {
-            QMessageBox msgBox(this);
-            msgBox.setWindowTitle("Error during table import");
-            msgBox.setText(e.what());
-            msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
-            
-            QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
-            
-            msgBox.setDefaultButton(msgBox.addButton(tr("Abort"), QMessageBox::NoRole));
-            msgBox.exec();
-            if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
-                lipid_space->ignore_unknown_lipids = true;
-                resetAnalysis();
-                
-                lipid_space->load_table(file_name.toUtf8().constData());
-                runAnalysis();
-            }
-            else {
-                resetAnalysis();
-            }
-        }
-    }
+    ImportTable it;
+    connect(&it, SIGNAL(importTable(string, vector<TableColumnType>*, TableType)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType)));
+    it.setModal(true);
+    it.exec();
 }
 
 
-void LipidSpaceGUI::openDataTable(){
-    ImportDataTable idt;
-    connect(&idt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadDataTable(string, vector<TableColumnType>*)));
-    idt.setModal(true);
-    idt.exec();
-}
-
-
-void LipidSpaceGUI::openPivotTable(){
-    ImportPivotTable ipt;
-    connect(&ipt, SIGNAL(importTable(string, vector<TableColumnType>*)), this, SLOT(loadPivotTable(string, vector<TableColumnType>*)));
-    ipt.setModal(true);
-    ipt.exec();
-}
     
-void LipidSpaceGUI::loadDataTable(string file_name, vector<TableColumnType>* column_types){
+void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_types, TableType table_type){
     try {
-        lipid_space->load_data_table(file_name, column_types);
-        runAnalysis();
-    }
-    catch (exception &e) {
-        QMessageBox msgBox(this);
-        msgBox.setWindowTitle("Error during table import");
-        msgBox.setText(e.what());
-        msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
-        
-        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
-        
-        msgBox.setDefaultButton(msgBox.addButton(tr("Abort"), QMessageBox::NoRole));
-        msgBox.exec();
-        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
-            lipid_space->ignore_unknown_lipids = true;
-            resetAnalysis();
-            
-            lipid_space->load_data_table(file_name, column_types);
-            runAnalysis();
+        if (table_type == ROW_TABLE){
+            lipid_space->load_row_table(file_name, column_types);
+        }
+        else if (table_type == COLUMN_TABLE){
+            lipid_space->load_column_table(file_name, column_types);
         }
         else {
-            resetAnalysis();
+            lipid_space->load_pivot_table(file_name, column_types);
         }
-    }
-}
-    
-void LipidSpaceGUI::loadPivotTable(string file_name, vector<TableColumnType>* column_types){
-    try {
-        lipid_space->load_pivot_table(file_name, column_types);
         runAnalysis();
     }
     catch (exception &e) {
@@ -278,8 +223,15 @@ void LipidSpaceGUI::loadPivotTable(string file_name, vector<TableColumnType>* co
         if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
             lipid_space->ignore_unknown_lipids = true;
             resetAnalysis();
-            
-            lipid_space->load_pivot_table(file_name, column_types);
+            if (table_type == ROW_TABLE){
+                lipid_space->load_row_table(file_name, column_types);
+            }
+            else if (table_type == COLUMN_TABLE){
+                lipid_space->load_column_table(file_name, column_types);
+            }
+            else {
+                lipid_space->load_pivot_table(file_name, column_types);
+            }
             runAnalysis();
         }
         else {
@@ -336,10 +288,8 @@ void LipidSpaceGUI::runAnalysis(){
         }
         canvases.push_back(canvas);
     }
-    //global_lipidome_model = new GlobalLipidomeModel(lipid_space, this);
-    //ui->tableView->setModel(global_lipidome_model);
     
-    
+    fill_Table();
     ui->tabWidget->setVisible(true);
     updateGUI();
     
@@ -404,6 +354,7 @@ void LipidSpaceGUI::resetAnalysis(){
     LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
     
     ui->tabWidget->setVisible(false);
+    fill_Table();
     updateGUI();
 }
 
@@ -675,6 +626,175 @@ void LipidSpaceGUI::openLists(){
             else {
                 resetAnalysis();
             }
+        }
+    }
+}
+
+
+void LipidSpaceGUI::ShowContextMenu(const QPoint pos) {
+    //QModelIndex index = ui->tableWidget->indexAt(pos);
+
+    QMenu *menu = new QMenu(this);
+    QAction *action = new QAction("Transpose table", this);
+    menu->addAction(action);
+    menu->popup(ui->tableWidget->viewport()->mapToGlobal(pos));
+    connect(action, SIGNAL(triggered()), this, SLOT(transposeTable()));
+}
+
+
+void LipidSpaceGUI::transposeTable(){
+    table_transposed = !table_transposed;
+    fill_Table();
+}
+
+
+void LipidSpaceGUI::fill_Table(){
+    QTableWidget *t = ui->tableWidget;
+    QTableWidgetItem *item = 0;
+    // delete items before refilling
+    for (int c = 0; c < (int)t->columnCount(); c++){
+        item = t->takeHorizontalHeaderItem(c);
+        if (item) delete item;
+    }
+    
+    for (int r = 0; r < (int)t->rowCount(); ++r){
+        item = t->takeVerticalHeaderItem(r);
+        if (item) delete item;
+        
+        for (int c = 0; c < (int)t->columnCount(); c++){
+            item = t->takeItem(r, c);
+            if (item) delete item;
+        }
+    }
+    
+    
+    int num_features = lipid_space->lipidomes[0]->features.size();
+    map<LipidAdduct*, int> lipid_index;
+    map<string, int> feature_index;
+    
+    if (table_transposed){
+        t->setColumnCount(lipid_space->lipidomes.size());
+        t->setRowCount(lipid_space->global_lipidome->lipids.size() + num_features);
+        
+        for (int c = 0; c < (int)lipid_space->lipidomes.size(); c++){
+            QFileInfo qFileInfo(lipid_space->lipidomes[c]->file_name.c_str());
+            item = new QTableWidgetItem(qFileInfo.baseName());
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            t->setHorizontalHeaderItem(c, item);
+        }
+        
+        int f = 0;
+        for (auto kv : lipid_space->lipidomes[0]->features){
+            item = new QTableWidgetItem(kv.first.c_str());
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            feature_index.insert({kv.first, f});
+            t->setVerticalHeaderItem(f++, item);
+        }
+        
+        for (int r = 0; r < (int)lipid_space->global_lipidome->species.size(); ++r){
+            item = new QTableWidgetItem(lipid_space->global_lipidome->species[r].c_str());
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            t->setVerticalHeaderItem(num_features + r, item);
+            lipid_index.insert({lipid_space->global_lipidome->lipids[r], num_features + r});
+        }
+        
+        // fill features and content
+        int R = t->rowCount();
+        int C = t->columnCount();
+        int n = R * C;
+        Bitfield free_cells(n, true);
+
+        for (int c = 0; c < C; c++){
+            
+            // add features
+            for(auto kv : lipid_space->lipidomes[c]->features){
+                item = new QTableWidgetItem(kv.second.c_str());
+                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+                int r = feature_index[kv.first];
+                t->setItem(r, c, item);
+                free_cells.remove(r * C + c);
+            }
+            // add lipid quant data
+            for (int r = 0; r < (int)lipid_space->lipidomes[c]->species.size(); r++){
+                item = new QTableWidgetItem(QString::number(lipid_space->lipidomes[c]->original_intensities[r]));
+                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+                int rr = lipid_index[lipid_space->lipidomes[c]->lipids[r]];
+                t->setItem(rr, c, item);
+                free_cells.remove(rr * C + c);
+            }
+        }
+        // fill the empty fields with disabled cells
+        for (auto pos : free_cells){
+            item = new QTableWidgetItem("");
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            int r = pos / C;
+            int c = pos % C;
+            t->setItem(r, c, item);
+        }
+    }
+    
+    
+    
+    else {
+        // fill headers
+        t->setRowCount(lipid_space->lipidomes.size());
+        t->setColumnCount(lipid_space->global_lipidome->lipids.size() + num_features);
+        
+        for (int r = 0; r < (int)lipid_space->lipidomes.size(); ++r){
+            QFileInfo qFileInfo(lipid_space->lipidomes[r]->file_name.c_str());
+            item = new QTableWidgetItem(qFileInfo.baseName());
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            t->setVerticalHeaderItem(r, item);
+        }
+        
+        int f = 0;
+        for (auto kv : lipid_space->lipidomes[0]->features){
+            item = new QTableWidgetItem(kv.first.c_str());
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            feature_index.insert({kv.first, f});
+            t->setHorizontalHeaderItem(f++, item);
+        }
+        
+        for (int c = 0; c < (int)lipid_space->global_lipidome->species.size(); c++){
+            item = new QTableWidgetItem(lipid_space->global_lipidome->species[c].c_str());
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            t->setHorizontalHeaderItem(num_features + c, item);
+            lipid_index.insert({lipid_space->global_lipidome->lipids[c], num_features + c});
+        }
+    
+    
+        // fill features and content
+        int R = t->rowCount();
+        int C = t->columnCount();
+        int n = R * C;
+        Bitfield free_cells(n, true);
+
+        for (int r = 0; r < R; ++r){
+            // add features
+            for(auto kv : lipid_space->lipidomes[r]->features){
+                item = new QTableWidgetItem(kv.second.c_str());
+                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+                int c = feature_index[kv.first];
+                t->setItem(r, c, item);
+                free_cells.remove(r * C + c);
+            }
+            
+            // add lipid quant data
+            for (int c = 0; c < (int)lipid_space->lipidomes[r]->species.size(); c++){
+                item = new QTableWidgetItem(QString::number(lipid_space->lipidomes[r]->original_intensities[c]));
+                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+                int cc = lipid_index[lipid_space->lipidomes[r]->lipids[c]];
+                t->setItem(r, cc, item);
+                free_cells.remove(r * C + cc);
+            }
+        }
+        // fill the empty fields with disabled cells
+        for (auto pos : free_cells){
+            item = new QTableWidgetItem("");
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            int r = pos / C;
+            int c = pos % C;
+            t->setItem(r, c, item);
         }
     }
 }

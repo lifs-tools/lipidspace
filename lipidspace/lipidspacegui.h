@@ -14,8 +14,7 @@
 #include "lipidspace/setalpha.h"
 #include "lipidspace/setPCnum.h"
 #include "lipidspace/selectpc.h"
-#include "lipidspace/importdatatable.h"
-#include "lipidspace/importpivottable.h"
+#include "lipidspace/importtable.h"
 #include "lipidspace/about.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
@@ -100,10 +99,7 @@ public slots:
     void quitProgram();
     void openLists();
     void openTable();
-    void openDataTable();
-    void openPivotTable();
-    void loadDataTable(string file_name, vector<TableColumnType> *column_types);
-    void loadPivotTable(string file_name, vector<TableColumnType> *column_types);
+    void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();
@@ -132,6 +128,8 @@ public slots:
     void openAbout();
     void openLog();
     void swapLipidomes(int source, int target);
+    void ShowContextMenu(const QPoint);
+    void transposeTable();
     
 private:
     Ui::LipidSpaceGUI *ui;
@@ -144,7 +142,9 @@ private:
     int single_window;
     QTimer timer;
     DragLayer *dragLayer;
-    
     vector<Canvas*> canvases;
+    bool table_transposed;
+    
+    void fill_Table();
 };
 #endif // LIPIDSPACEGUI_H
