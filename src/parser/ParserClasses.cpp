@@ -86,8 +86,9 @@ Bitfield::Bitfield(uint64_t _length, bool filled_with_ones){
     field = new uint64_t[field_len];
     num_size = 0;
     if (filled_with_ones){
-        num_size = field_len << 6;
+        num_size = (field_len << 6) - 1;
         for (uint64_t i = 0; i < field_len; ++i) field[i] = ~(0ull);
+        
         while (num_size > length){
             field[num_size >> 6] &= ~((uint64_t)(1ull << (num_size & 63)));
             --num_size;
@@ -127,6 +128,7 @@ void Bitfield::remove(uint64_t pos){
 
 
 bool Bitfield::find(uint64_t pos){
+    if (pos > length) return false;
     return ((field[pos >> 6] >> (pos & 63)) & 1ull) == 1ull;
 }
 
