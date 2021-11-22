@@ -42,13 +42,15 @@ public:
     LipidSpace* lipid_space;
     vector<QString> dendrogram_titles;
     QVector<QLineF> lines;
-    double dendrogram_factor;
-    double pp;
+    double dendrogram_x_factor;
+    double dendrogram_y_factor;
+    string feature;
     
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
     ~Dendrogram();
     void load();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
+    void recursive_paint(QPainter *painter, DendrogramNode *_node, int max_recursions, int recursion = 0);
     QRectF boundingRect() const override;
 };
     
@@ -114,6 +116,7 @@ public slots:
     void hoverOver();
     void setSwap(int source);
     void reloadPoints();
+    void setFeature(string);
     
     
 signals:

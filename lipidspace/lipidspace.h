@@ -40,6 +40,7 @@ public:
     Matrix hausdorff_distances;
     bool analysis_finished;
     map<string, set<string>> feature_values;
+    DendrogramNode *dendrogram_root;
     
     
     

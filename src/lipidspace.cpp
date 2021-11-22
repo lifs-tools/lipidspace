@@ -2,7 +2,7 @@
  
  
 
-double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
+double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkage = COMPLETE){
     double v = 1e9 * (linkage == SINGLE);
     for (auto index1 : n1->indexes){
         for (auto index2 : n2->indexes){
@@ -21,8 +21,8 @@ void LipidSpace::create_dendrogram(){
     
     int n = hausdorff_distances.rows;
     
-    vector<Node*> nodes;
-    for (int i = 0; i < n; ++i) nodes.push_back(new Node(i));
+    vector<DendrogramNode*> nodes;
+    for (int i = 0; i < n; ++i) nodes.push_back(new DendrogramNode(i, &feature_values, lipidomes[i]));
     
     while (nodes.size() > 1){
         double min_val = 1e9;
@@ -38,16 +38,16 @@ void LipidSpace::create_dendrogram(){
             }
         }
         
-        Node* node1 = nodes.at(ii);
-        Node* node2 = nodes.at(jj);
+        DendrogramNode* node1 = nodes.at(ii);
+        DendrogramNode* node2 = nodes.at(jj);
         nodes.erase(nodes.begin() + jj);
         nodes.erase(nodes.begin() + ii);
-        nodes.push_back(new Node(node1, node2, min_val));
+        nodes.push_back(new DendrogramNode(node1, node2, min_val));
     }
     
     double* ret = nodes.front()->execute(0, &dendrogram_points, &dendrogram_sorting);
     delete []ret;
-    delete nodes.front();
+    dendrogram_root = nodes.front();
 }
 
 
@@ -61,6 +61,7 @@ LipidSpace::LipidSpace() {
     global_lipidome = new Table("global_lipidome");
     progress = 0;
     analysis_finished = false;
+    dendrogram_root = 0;
     
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -141,6 +142,7 @@ LipidSpace::~LipidSpace(){
     for (auto lipid : all_lipids) delete lipid;
     delete global_lipidome;
     for (auto table : lipidomes) delete table;
+    if (dendrogram_root) delete dendrogram_root;
 }
 
 
@@ -300,8 +302,16 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
         db1 = fa1->double_bonds->get_num();
         db2 = fa2->double_bonds->get_num();
             
-        inter_num += mmin(db1, db2);
-        union_num += mmax(db1, db2);
+        // old strategy of taking the minimum as intersect
+        // does not go figure with database observations
+        //inter_num += mmin(db1, db2);
+        //union_num += mmax(db1, db2);
+        
+        // When considering two random fatty acyl chains with
+        // at least one double bond, the probability to have
+        // no DB match at all is about 85%. Therefore, no
+        // intersection, just union with only mismatches
+        union_num += db1 + db2;
     }
     
     // add all single bonds
@@ -526,7 +536,6 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
 
 
 Table* LipidSpace::load_list(string lipid_list_file){
-    //cout << "reading list '" << lipid_list_file << "'" << endl;
     
     // load and parse lipids
     ifstream infile(lipid_list_file);
@@ -1007,6 +1016,14 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         if (uncontains_val(lipid_map, lipid_name)){
             try {
                 l = parser.parse(lipid_name);
+                    
+                // deleting adduct since not necessary
+                if (l->adduct != 0){
+                    delete l->adduct;
+                    l->adduct = 0;
+                }
+                
+                all_lipids.push_back(l);
             }
             catch (exception &e) {
                 if (!ignore_unknown_lipids){
@@ -1023,14 +1040,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         else {
             l = lipid_map[lipid_name];
         }
-                    
-        // deleting adduct since not necessary
-        if (l->adduct != 0){
-            delete l->adduct;
-            l->adduct = 0;
-        }
         
-        all_lipids.push_back(l);
         lipidome->lipids.push_back(l);
         lipidome->species.push_back(l->get_lipid_string());
         lipidome->classes.push_back(l->get_lipid_string(CLASS));
@@ -1426,6 +1436,7 @@ void LipidSpace::run_analysis(Progress *_progress){
 
     analysis_finished = false;
     feature_values.clear();
+    if (dendrogram_root) delete dendrogram_root;
     
     if (_progress){
         progress = _progress;
@@ -1532,6 +1543,7 @@ void LipidSpace::run_analysis(Progress *_progress){
 void LipidSpace::reset_analysis(){
     analysis_finished = false;
     feature_values.clear();
+    if (dendrogram_root) delete dendrogram_root;
     
     for (auto lipid : all_lipids) delete lipid;
     all_lipids.clear();

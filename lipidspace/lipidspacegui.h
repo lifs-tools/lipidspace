@@ -73,6 +73,7 @@ signals:
     void updateCanvas();
     void exporting(QString);
     void initialized();
+    void featureChanged(string);
     
     
 public slots:
@@ -110,6 +111,7 @@ public slots:
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
     void transposeTable();
+    void setFeature(int pos);
     
 private:
     Ui::LipidSpaceGUI *ui;

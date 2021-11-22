@@ -18,7 +18,9 @@ public:
     static int alpha;
     static map<string, QColor> colorMap;
     static int PC1;
-    static int PC2;    
+    static int PC2;
+    static int feature_counter;
+    static map<string, QColor> colorMapFeatures;
 };
 
 

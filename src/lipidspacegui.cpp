@@ -95,6 +95,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
     //connect(ui->tableWidget, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(ShowContextMenu(const QPoint)));
     connect(ui->tableWidget, SIGNAL(cornerButtonClick()), this, SLOT(transposeTable()));
+    connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
+    connect(this, SIGNAL(featureChanged(string)), ui->dendrogramView, SLOT(setFeature(string)));
             
     
     tileLayout = AUTOMATIC;
@@ -129,6 +131,10 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete dragLayer;
 }
 
+
+void LipidSpaceGUI::setFeature(int){
+    featureChanged(ui->featureComboBox->currentText().toStdString());
+}
 
 
 
@@ -239,6 +245,16 @@ void LipidSpaceGUI::runAnalysis(){
         }
         canvases.push_back(canvas);
     }
+    
+    // define colors of features
+    for (auto kv : lipid_space->feature_values){
+        string feature_prefix = kv.first + "_";
+        for (string feature : kv.second){
+            feature = feature_prefix + feature;
+            GlobalData::colorMapFeatures.insert({feature, GlobalData::COLORS[GlobalData::feature_counter++]});
+        }
+    }
+    
     
     fill_Table();
     ui->tabWidget->setVisible(true);

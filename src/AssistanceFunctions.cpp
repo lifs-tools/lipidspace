@@ -24,19 +24,35 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 }
 
 
-Node::Node(int index){
+DendrogramNode::DendrogramNode(int index, map<string, set<string>> *feature_values, Table *lipidome){
     indexes.insert(index);
     left_child = 0;
     right_child = 0;
     distance = 0;
+    x_left = 0;
+    x_right = 0;
+    y = 0;
+    
+    
+    // initialize empty feature count table
+    for (auto kv : *feature_values){
+        feature_count.insert({kv.first, map<string, int>()});
+        for (auto feature_value : kv.second){
+            feature_count[kv.first].insert({feature_value, 0});
+        }
+    }
+    
+    for (auto kv : lipidome->features){
+        feature_count[kv.first][kv.second] = 1;
+    }
 }
 
-Node::~Node(){
+DendrogramNode::~DendrogramNode(){
     if (left_child) delete left_child;
     if (right_child) delete right_child;
 }
     
-Node::Node(Node* n1, Node* n2, double d){
+DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d){
     left_child = n1;
     right_child = n2;
     for (auto i : n1->indexes) indexes.insert(i);
@@ -45,42 +61,51 @@ Node::Node(Node* n1, Node* n2, double d){
 }
 
 
-double* Node::execute(int cnt, Array* points, vector<int>* sorted_ticks){
+double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_ticks){
     if (left_child == 0){
         sorted_ticks->push_back(*indexes.begin());
         return new double[3]{(double)cnt, 0, (double)cnt + 1};
     }
 
     double* left_result = left_child->execute(cnt, points, sorted_ticks);
-    double xl = left_result[0];
+    x_left = left_result[0];
     double yl = left_result[1];
     cnt = left_result[2];
     delete []left_result;
     
     double* right_result = right_child->execute(cnt, points, sorted_ticks);
-    double xr = right_result[0];
+    x_right = right_result[0];
     double yr = right_result[1];
     cnt = right_result[2];
     delete []right_result;
     
-    double yn = distance;
+    y = distance;
     
-    points->push_back(xl);
+    points->push_back(x_left);
     points->push_back(yl);
-    points->push_back(xl);
-    points->push_back(yn);
+    points->push_back(x_left);
+    points->push_back(y);
     
-    points->push_back(xr);
+    points->push_back(x_right);
     points->push_back(yr);
-    points->push_back(xr);
-    points->push_back(yn);
+    points->push_back(x_right);
+    points->push_back(y);
     
-    points->push_back(xl);
-    points->push_back(yn);
-    points->push_back(xr);
-    points->push_back(yn);
+    points->push_back(x_left);
+    points->push_back(y);
+    points->push_back(x_right);
+    points->push_back(y);
     
-    return new double[3]{(xl + xr) / 2, yn, (double)cnt};
+    // count features
+    for (auto kv : left_child->feature_count){
+        feature_count.insert({kv.first, map<string, int>()});
+        for (auto kv2 : kv.second){
+            feature_count[kv.first].insert({kv2.first, kv2.second + right_child->feature_count[kv.first][kv2.first]});
+        }
+    }
+    
+    
+    return new double[3]{(x_left + x_right) / 2, y, (double)cnt};
 }
 
 

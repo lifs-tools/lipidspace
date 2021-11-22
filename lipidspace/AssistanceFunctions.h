@@ -80,16 +80,20 @@ signals:
 };
 
 
-class Node {
+class DendrogramNode {
 public:
     set<int> indexes;
-    Node* left_child;
-    Node* right_child;
+    DendrogramNode* left_child;
+    DendrogramNode* right_child;
     double distance;
+    double x_left;
+    double x_right;
+    double y;
+    map<string, map<string, int>> feature_count;
     
-    Node(int index);
-    Node(Node* n1, Node* n2, double d);
-    ~Node();
+    DendrogramNode(int index, map<string, set<string>> *feature_values, Table *lipidome);
+    DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
+    ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);
 };
 
