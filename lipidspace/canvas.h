@@ -47,6 +47,7 @@ public:
     
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
     ~Dendrogram();
+    void load();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
 };
@@ -91,7 +92,7 @@ public:
     bool hovered_for_swap;
     
     Canvas(QWidget *parent = nullptr);
-    Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *parent = nullptr);
+    Canvas(LipidSpace *_lipid_space, int _num, QWidget *parent = nullptr);
     ~Canvas();
     void mouseMoveEvent(QMouseEvent* event);
     void mousePressEvent(QMouseEvent* event);
@@ -99,6 +100,8 @@ public:
     void mouseDoubleClickEvent(QMouseEvent *event);
     void resizeEvent(QResizeEvent *);
     void wheelEvent(QWheelEvent *event);
+    void setDendrogramData(LipidSpace *_lipid_space);
+    void resetDendrogram();
     
     
 public slots:
@@ -130,7 +133,7 @@ private:
     PointSet *pointSet;
     Dendrogram *dendrogram;
     bool initialized;
-    QLabel *title;
+    QLabel title;
     QLabel *variances;
 };
 

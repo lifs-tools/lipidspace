@@ -40,11 +40,27 @@ void DragLayer::paintEvent(QPaintEvent *) {
 
 
 
+void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
+    if (event->key() == Qt::Key_X && !loadedDataSet){
+        loadedDataSet = true;
+        vector<TableColumnType> *ct = new vector<TableColumnType>();
+        for (int i = 0; i < 12; ++i) ct->push_back(IgnoreColumn);
+        ct->at(1) = LipidColumn;
+        ct->at(6) = SampleColumn;
+        ct->at(7) = FeatureColumn;
+        ct->at(8) = FeatureColumn;
+        ct->at(11) = QuantColumn;
+        loadTable("Anxa7_pivot.csv", ct, PIVOT_TABLE);
+    }
+}
+
+
 
 LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent), timer(this) {
     lipid_space = _lipid_space;
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
+    loadedDataSet = false;
     
     
     dragLayer = new DragLayer(ui->centralwidget);
@@ -99,6 +115,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(progressbar, SIGNAL(interrupt()), progress, SLOT(interrupt()));
     connect(progressbar, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     progressbar->setModal(true);
+    ui->dendrogramView->setDendrogramData(lipid_space);
     
     updateGUI();
 }
@@ -198,6 +215,7 @@ void LipidSpaceGUI::runAnalysis(){
     
     GlobalData::color_counter = 0;
     int numTiles = 2 * (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
+    ui->dendrogramView->resetDendrogram();
     
     for (int n = 0; n < numTiles; ++n){
         int num = 0;
@@ -205,7 +223,7 @@ void LipidSpaceGUI::runAnalysis(){
         else if ((lipid_space->lipidomes.size() > 1) && (n == 1)) num = -1;
         else num = max(0, n - 2 * (lipid_space->lipidomes.size() > 1));
         
-        Canvas* canvas = new Canvas(lipid_space, this, num, ui->centralwidget);
+        Canvas* canvas = new Canvas(lipid_space, num, ui->centralwidget);
         connect(canvas, SIGNAL(doubleClicked(int)), this, SLOT(setDoubleClick(int)));
         if (num != -2){
             connect(canvas, SIGNAL(transforming(QRectF, int)), this, SLOT(setTransforming(QRectF, int)));

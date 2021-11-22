@@ -1,13 +1,16 @@
 #include "lipidspace/canvas.h"
 
 
-
-
-
-
-
 Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     lipid_space = _lipid_space;
+    load();
+}
+ 
+ 
+ 
+void Dendrogram::load(){
+    dendrogram_titles.clear();
+    lines.clear();
     
     for (int i : lipid_space->dendrogram_sorting){
         QFileInfo qFileInfo(lipid_space->lipidomes[i]->file_name.c_str());
@@ -403,7 +406,18 @@ void PointSet::resize(){
 
 
 
-Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
+
+
+
+
+
+
+
+
+
+
+
+Canvas::Canvas(QWidget *parent) : QGraphicsView(parent), title(this) {
     pointSet = 0;
     dendrogram = 0;
     variances = 0;
@@ -421,19 +435,32 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     resetMatrix();
     initialized = false;
     num = -2;
-    title = new QLabel("Dendrogram", this);
     QFont f("Helvetica", 7);
-    title->move(2, 0);
-    title->setFont(f);
-    title->show();
+    title.move(2, 0);
+    title.setText("Dendrogram");
+    title.setFont(f);
+    title.show();
 }
 
 
 
-
-Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWidget *) : num(_num) {
+void Canvas::setDendrogramData(LipidSpace *_lipid_space){
     lipid_space = _lipid_space;
-    mainWindow = _mainWindow;
+    dendrogram = new Dendrogram(lipid_space, this);
+    graphics_scene.addItem(dendrogram);
+}
+
+
+void Canvas::resetDendrogram(){
+    resetMatrix();
+    dendrogram->load();
+    QResizeEvent resize(QSize(width(), height()), QSize(width(), height()));
+    emit resizeEvent(&resize);
+}
+
+
+Canvas::Canvas(LipidSpace *_lipid_space, int _num, QWidget *) : num(_num), title(this) {
+    lipid_space = _lipid_space;
     
     pointSet = 0;
     dendrogram = 0;
@@ -460,12 +487,12 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
     if (num == -2){ // dendrogram
         dendrogram = new Dendrogram(lipid_space, this);
         graphics_scene.addItem(dendrogram);
-        title = new QLabel("Dendrogram", this);
+        title.setText("Dendrogram");
     }
     else if (num == -1){ // global lipidome
         pointSet = new PointSet(lipid_space->global_lipidome, this);
         graphics_scene.addItem(pointSet);
-        title = new QLabel("Global lipidome", this);
+        title.setText("Global lipidome");
         
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
@@ -476,7 +503,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
         pointSet = new PointSet(lipid_space->lipidomes[num], this);
         graphics_scene.addItem(pointSet);
         QFileInfo qFileInfo(lipid_space->lipidomes[num]->file_name.c_str());
-        title = new QLabel(qFileInfo.baseName(), this);
+        title.setText(qFileInfo.baseName());
         
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->lipidomes[num]->m, vars);
@@ -484,9 +511,9 @@ Canvas::Canvas(LipidSpace *_lipid_space, QMainWindow *_mainWindow, int _num, QWi
         variances = new QLabel(var_label, this);
     }
     QFont f("Helvetica", 7);
-    title->move(2, 0);
-    title->setFont(f);
-    title->show();
+    title.move(2, 0);
+    title.setFont(f);
+    title.show();
     
     if (variances){
         variances->setFont(f);
@@ -500,7 +527,6 @@ Canvas::~Canvas(){
     if (pointSet) delete pointSet;
     if (dendrogram) delete dendrogram;
     if (variances) delete variances;
-    delete title;
 }
 
 
@@ -548,7 +574,7 @@ void Canvas::exportPdf(QString outputFolder){
     QPrinter printer(QPrinter::HighResolution);
     //printer.setPageSize(QPrinter::A4);
     printer.setOutputFormat(QPrinter::PdfFormat);
-    QString file_name = QDir(outputFolder).filePath((title->text()) + ".pdf");
+    QString file_name = QDir(outputFolder).filePath((title.text()) + ".pdf");
     
     printer.setOutputFileName(file_name);
 
@@ -654,6 +680,7 @@ void Canvas::resizeEvent(QResizeEvent *event) {
     }
     if (variances) variances->move(2, height() - variances->height());
 }
+
 
 
 void Canvas::wheelEvent(QWheelEvent *event){
