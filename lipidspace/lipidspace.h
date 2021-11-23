@@ -64,6 +64,7 @@ public:
     void run_analysis(Progress *progress = 0);
     std::thread run_analysis_thread(Progress *_progress);
     void reset_analysis();
+    LipidAdduct* load_lipid(string lipid_name, set<string> &lipid_set, bool &ignore_lipid);
     
     Table* load_list(string lipid_list_file);
     void load_row_table(string table_file, vector<TableColumnType> *column_types = 0);

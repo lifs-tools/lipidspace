@@ -919,10 +919,11 @@ void LipidSpace::normalize_intensities(){
 
 
 void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnType> *column_types){
+    Logging::write_log("Importing table '" + pivot_table_file + "' as pivot table.");
+    
     ifstream infile(pivot_table_file);
     if (!infile.good()){
-        Logging::write_log("Error: file '" + pivot_table_file + "' could not be found.");
-        throw LipidException("Error: file '" + pivot_table_file + "' could not be found.");
+        throw LipidSpaceException("Error: file '" + pivot_table_file + "' could not be found.", FileUnreadable);
     }
     
     
@@ -943,7 +944,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
     }
     
     if (sample_columns.size() == 0 || lipid_species_column == -1 || quant_column == -1){
-        throw LipidException("Error while loading pivot table '" + pivot_table_file + "': not all essential columns defined.");
+        throw LipidSpaceException("Error while loading pivot table '" + pivot_table_file + "': not all essential columns defined.", NoColumnFound);
     }
     
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
@@ -985,11 +986,8 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             index_key_pairs.insert(index_key_pair);
         }
         else {
-            throw LipidException("Error while loading pivot table '" + pivot_table_file + "': sample and lipid pair '" + index_key_pair + "' occurs twice in table.");
+            throw LipidSpaceException("Error while loading pivot table '" + pivot_table_file + "': sample and lipid pair '" + index_key_pair + "' occurs twice in table.", LipidDoublette);
         }
-        
-        
-        
         
         
         
@@ -1023,7 +1021,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             }
             catch (exception &e) {
                 if (!ignore_unknown_lipids){
-                    throw LipidException(string(e.what()) + ": lipid '" + lipid_name + "' cannot be parsed.");
+                    throw LipidSpaceException(string(e.what()) + ": lipid '" + lipid_name + "' cannot be parsed.", LipidUnparsable);
                 }
                 else {
                     Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
@@ -1060,12 +1058,12 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
 
 
 void LipidSpace::load_column_table(string data_table_file, vector<TableColumnType> *column_types){
-    Logging::write_log("Importing table '" + data_table_file + "'");
+    Logging::write_log("Importing table '" + data_table_file + "' as lipid column table.");
             
     // load and parse lipid table, lipids and features per column, measurements per row
     ifstream infile(data_table_file);
     if (!infile.good()){
-        throw LipidException("Error: file '" + data_table_file + "' could not be found.");
+        throw LipidSpaceException("Error: file '" + data_table_file + "' could not be found.", FileUnreadable);
     }
     string line;
     
@@ -1105,42 +1103,10 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                     features_names.push_back(tokens->at(i));
                 }
                 else if (column_type == LipidColumn){
-                    LipidAdduct* l = 0;
-                    try {
-                        l = parser.parse(tokens->at(i));
-                        num_lipids += 1;
-                    }
-                    catch (exception &e) {
-                        if (!ignore_unknown_lipids){
-                            throw LipidException(string(e.what()) + ": lipid '" + tokens->at(i) + "' cannot be parsed.");
-                        }
-                        else {
-                            Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(i) + "'");
-                            ignore_col.insert(i);
-                            continue;
-                        }
-                    }
+                    bool ignore_lipid = false;
+                    LipidAdduct* l = load_lipid(tokens->at(i), lipid_set, ignore_lipid);
+                    num_lipids += 1;
                     
-                    // deleting adduct since not necessary
-                    if (l->adduct != 0){
-                        delete l->adduct;
-                        l->adduct = 0;
-                    }
-                    
-                    string lipid_unique_name = l->get_lipid_string();
-                    if (uncontains_val(lipid_set, lipid_unique_name)){
-                        lipid_set.insert(lipid_unique_name);
-                    }
-                    else {
-                        if (ignore_doublette_lipids){
-                            Logging::write_log("Ignoring doublette lipid '" + tokens->at(i) + "'");
-                        }
-                        else {
-                            throw LipidSpaceException("Error: lipid '" + tokens->at(i) + "' appears twice in the table.", LipidUnparsable);
-                        }
-                    }
-                    
-                    all_lipids.push_back(l);
                     lipids.push_back(l);
                 }
             }
@@ -1211,9 +1177,10 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
 
 void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *column_types){
     // load and parse lipid table, lipids per row, measurements per column
+    Logging::write_log("Reading table '" + table_file + "' lipid row table.");
     ifstream infile(table_file);
     if (!infile.good()){
-        throw LipidException("Error: file '" + table_file + "' not found.");
+        throw LipidSpaceException("Error: file '" + table_file + "' not found.");
         exit(-1);
     }
     string line;
@@ -1252,46 +1219,23 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                 throw LipidSpaceException("Error in line '" + std::to_string(line_cnt) + "' number of cells does not match with number of column labels", ColumnNumMismatch);
             }
             
-            LipidAdduct* l = 0;
-            try {
-                l = parser.parse(tokens->at(0));
-            }
-            catch (exception &e) {
-                if (!ignore_unknown_lipids){
-                    throw LipidSpaceException(string(e.what()) + ": lipid '" + tokens->at(0) + "' cannot be parsed.", LipidUnparsable);
-                }
-                else {
-                    Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(0) + "'");
-                    continue;
+            bool ignore_lipid = false;
+            LipidAdduct* l = load_lipid(tokens->at(0), lipid_set, ignore_lipid);
+            
+            if (!ignore_lipid){
+            
+                for (int i = 1; i < (int)tokens->size(); ++i){
+                    string val = tokens->at(i);
+                    if (!contains_val(NA_VALUES, val)){
+                        Table* lipidome = lipidomes.at(i - 1);
+                        lipidome->lipids.push_back(l);
+                        lipidome->species.push_back(l->get_lipid_string());
+                        lipidome->classes.push_back(l->get_lipid_string(CLASS));
+                        intensities.at(i - 1).push_back(atof(val.c_str()));
+                    }
                 }
             }
             
-            if (l == 0) {
-                if (!ignore_unknown_lipids){
-                    throw LipidException("Lipid '" + tokens->at(0) + "' cannot be parsed.");
-                }
-                else {
-                    Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(0) + "'");
-                    continue;
-                }
-            }
-                
-            // deleting adduct since not necessary
-            if (l->adduct != 0){
-                delete l->adduct;
-                l->adduct = 0;
-            }
-            all_lipids.push_back(l);
-            for (int i = 1; i < (int)tokens->size(); ++i){
-                string val = tokens->at(i);
-                if (!contains_val(NA_VALUES, val)){
-                    Table* lipidome = lipidomes.at(i - 1);
-                    lipidome->lipids.push_back(l);
-                    lipidome->species.push_back(l->get_lipid_string());
-                    lipidome->classes.push_back(l->get_lipid_string(CLASS));
-                    intensities.at(i - 1).push_back(atof(val.c_str()));
-                }
-            }
             delete tokens;
         }
     }
@@ -1342,73 +1286,26 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                         break;
                         
                     case LipidColumn:
-                        {
-                            try {
-                                l = parser.parse(tokens->at(i));
-                            }
-                            catch (exception &e) {
-                                if (!ignore_unknown_lipids){
-                                    throw LipidSpaceException(string(e.what()) + ": lipid '" + tokens->at(0) + "' cannot be parsed.", LipidUnparsable);
-                                }
-                                else {
-                                    Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(0) + "'");
-                                    ignore_lipid = true;
-                                    break;
-                                }
-                            }
-                            
-                            if (l == 0 || l->get_extended_class() == UNDEFINED_LIPID) {
-                                if (!ignore_unknown_lipids){
-                                    throw LipidSpaceException("Lipid '" + tokens->at(0) + "' cannot be parsed.", LipidUnparsable);
-                                }
-                                else {
-                                    Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(0) + "'");
-                                    ignore_lipid = true;
-                                    break;
-                                }
-                            }
-                                
-                            // deleting adduct since not necessary
-                            if (l->adduct != 0){
-                                delete l->adduct;
-                                l->adduct = 0;
-                            }
-                            
-                            string lipid_unique_name = l->get_lipid_string();
-                            if (uncontains_val(lipid_set, lipid_unique_name)){
-                                lipid_set.insert(lipid_unique_name);
-                            }
-                            else {
-                                delete l;
-                                if (ignore_doublette_lipids){
-                                    ignore_lipid = true;
-                                    Logging::write_log("Ignoring doublette lipid '" + tokens->at(0) + "'");
-                                    break;
-                                }
-                                else {
-                                    throw LipidSpaceException("Error: lipid '" + tokens->at(i) + "' appears twice in the table.", LipidDoublette);
-                                }
-                            }
-                            if (!ignore_lipid) all_lipids.push_back(l);
-                        }
+                        l = load_lipid(tokens->at(i), lipid_set, ignore_lipid);
                         break;
                         
                     default:
                         break;
                 }
             }
-            if (ignore_lipid) continue;
-            
-            for (int i = 0; i < (int)quant_data.size(); ++i){
-                string val = quant_data[i];
-                if (!contains_val(NA_VALUES, val)){
-                    Table* lipidome = lipidomes.at(i);
-                    lipidome->lipids.push_back(l);
-                    lipidome->species.push_back(l->get_lipid_string());
-                    lipidome->classes.push_back(l->get_lipid_string(CLASS));
-                    intensities.at(i).push_back(atof(val.c_str()));
-                }
+            if (!ignore_lipid){
                 
+                for (int i = 0; i < (int)quant_data.size(); ++i){
+                    string val = quant_data[i];
+                    if (!contains_val(NA_VALUES, val)){
+                        Table* lipidome = lipidomes.at(i);
+                        lipidome->lipids.push_back(l);
+                        lipidome->species.push_back(l->get_lipid_string());
+                        lipidome->classes.push_back(l->get_lipid_string(CLASS));
+                        intensities.at(i).push_back(atof(val.c_str()));
+                    }
+                    
+                }
             }
             
             delete tokens;
@@ -1428,6 +1325,58 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
         }
     }
 }
+
+
+LipidAdduct* LipidSpace::load_lipid(string lipid_name, set<string> &lipid_set, bool &ignore_lipid){
+    LipidAdduct* l = nullptr;
+    try {
+        l = parser.parse(lipid_name);
+    }
+    catch (exception &e) {
+        if (!ignore_unknown_lipids){
+            throw LipidSpaceException(string(e.what()) + ": lipid '" + lipid_name + "' cannot be parsed.", LipidUnparsable);
+        }
+        else {
+            Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
+            ignore_lipid = true;
+        }
+    }
+    
+    if (l == nullptr || l->get_extended_class() == UNDEFINED_LIPID) {
+        if (!ignore_unknown_lipids){
+            throw LipidSpaceException("Lipid '" + lipid_name + "' cannot be parsed.", LipidUnparsable);
+        }
+        else {
+            Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
+            ignore_lipid = true;
+        }
+    }
+        
+    // deleting adduct since not necessary
+    if (l->adduct != nullptr){
+        delete l->adduct;
+        l->adduct = nullptr;
+    }
+    
+    string lipid_unique_name = l->get_lipid_string();
+    if (uncontains_val(lipid_set, lipid_unique_name)){
+        lipid_set.insert(lipid_unique_name);
+    }
+    else {
+        delete l;
+        l = nullptr;
+        if (ignore_doublette_lipids){
+            ignore_lipid = true;
+            Logging::write_log("Ignoring doublette lipid '" + lipid_name + "'");
+        }
+        else {
+            throw LipidSpaceException("Error: lipid '" + lipid_name + "' appears twice in the table.", LipidDoublette);
+        }
+    }
+    if (!ignore_lipid) all_lipids.push_back(l);
+    return l;
+}
+
 
 
 
