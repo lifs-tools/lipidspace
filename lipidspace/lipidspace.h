@@ -13,6 +13,7 @@
 #include "lipidspace/logging.h"
 #include "lipidspace/AssistanceFunctions.h"
 
+#define UNDEFINED_LIPID "UNDEFINED"
  
 using namespace std;
 
@@ -30,6 +31,7 @@ public:
     static const vector< vector< vector< vector<int> > > > orders;
     bool keep_sn_position;
     bool ignore_unknown_lipids;
+    bool ignore_doublette_lipids;
     bool unboundend_distance;
     bool without_quant;
     vector<Table*> lipidomes;

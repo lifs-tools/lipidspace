@@ -9,9 +9,30 @@
 #include <string>
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/Matrix.h"
+#include "lipidspace/logging.h"
 #include <iostream>
 
 using namespace std;
+
+enum Linkage {SingleLinkage, CompleteLinkage};
+enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumn, IgnoreColumn};
+enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered};
+
+class LipidSpaceException : public std::exception {
+public:
+    string message;
+    LipidSpaceException(string _message, LipidSpaceExceptionType _type = UnspecificException){
+        Logging::write_log(message);
+        message = _message;
+        type = _type;
+    }
+    
+    const char * what() const throw(){
+        return message.c_str();
+    }
+    
+    LipidSpaceExceptionType type;
+};
 
 class SingleListWidget : public QListWidget {
     Q_OBJECT
@@ -34,10 +55,7 @@ private:
 };
 
 
-using namespace std;
 
-enum Linkage {SINGLE, COMPLETE};
-enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumn, IgnoreColumn};
 
 class Table {
 public:

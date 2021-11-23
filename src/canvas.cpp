@@ -91,7 +91,8 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
         painter->restore();
     }
     
-    if (!lipid_space || !lipid_space->dendrogram_root || feature == "") return;
+    if (!lipid_space || !lipid_space->dendrogram_root || feature == "")
+        return;
     
     pen.setWidth(0);
     double pie_radius = 30;

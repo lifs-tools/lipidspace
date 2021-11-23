@@ -44,13 +44,19 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_X && !loadedDataSet){
         loadedDataSet = true;
         vector<TableColumnType> *ct = new vector<TableColumnType>();
+        /*
         for (int i = 0; i < 12; ++i) ct->push_back(IgnoreColumn);
         ct->at(1) = LipidColumn;
         ct->at(6) = SampleColumn;
-        ct->at(7) = FeatureColumn;
-        ct->at(8) = FeatureColumn;
+        //ct->at(7) = FeatureColumn;
+        //ct->at(8) = FeatureColumn;
         ct->at(11) = QuantColumn;
         loadTable("Anxa7_pivot.csv", ct, PIVOT_TABLE);
+        */
+        for (int i = 0; i < 32; ++i) ct->push_back(SampleColumn);
+        ct->at(0) = LipidColumn;
+        loadTable("examples/Tablesets/Plasma-Liebisch.csv", ct, ROW_TABLE);
+        
     }
 }
 
@@ -154,44 +160,107 @@ void LipidSpaceGUI::openTable(){
 
     
 void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_types, TableType table_type){
-    try {
-        if (table_type == ROW_TABLE){
-            lipid_space->load_row_table(file_name, column_types);
-        }
-        else if (table_type == COLUMN_TABLE){
-            lipid_space->load_column_table(file_name, column_types);
-        }
-        else {
-            lipid_space->load_pivot_table(file_name, column_types);
-        }
-        runAnalysis();
-    }
-    catch (exception &e) {
-        QMessageBox msgBox(this);
-        msgBox.setWindowTitle("Error during table import");
-        msgBox.setText(e.what());
-        msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
-        
-        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
-        
-        msgBox.setDefaultButton(msgBox.addButton(tr("Abort"), QMessageBox::NoRole));
-        msgBox.exec();
-        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
-            lipid_space->ignore_unknown_lipids = true;
-            resetAnalysis();
-            if (table_type == ROW_TABLE){
-                lipid_space->load_row_table(file_name, column_types);
-            }
-            else if (table_type == COLUMN_TABLE){
-                lipid_space->load_column_table(file_name, column_types);
-            }
-            else {
-                lipid_space->load_pivot_table(file_name, column_types);
+    bool repeat_loading = true;
+    while (repeat_loading){
+        try {
+            switch(table_type){
+                case ROW_TABLE:
+                    lipid_space->load_row_table(file_name, column_types);
+                    break;
+                    
+                case COLUMN_TABLE:
+                    lipid_space->load_column_table(file_name, column_types);
+                    break;
+                    
+                case PIVOT_TABLE:
+                    lipid_space->load_pivot_table(file_name, column_types);
+                    break;
             }
             runAnalysis();
+            repeat_loading = false;
         }
-        else {
-            resetAnalysis();
+        catch (LipidSpaceException &e) {
+            QMessageBox msgBox(this);
+            msgBox.setWindowTitle("Error during table import");
+            msgBox.setText(e.what());
+            
+            switch(e.type){
+                case LipidUnparsable:
+                    {
+                        msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
+                        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+                        msgBox.addButton(tr("Abort"), QMessageBox::NoRole);
+                        msgBox.exec();
+                        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+                            lipid_space->ignore_unknown_lipids = true;
+                            resetAnalysis();
+                        }
+                        else {
+                            resetAnalysis();
+                            repeat_loading = false;
+                        }
+                    }
+                    break;
+                
+                case FileUnreadable:
+                    {
+                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.exec();
+                        resetAnalysis();
+                        repeat_loading = false;
+                    }
+                    break;
+                    
+                case LipidDoublette:
+                    {
+                        msgBox.setInformativeText("Do you want to continue by ignoring doublette lipid species?");
+                        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+                        msgBox.addButton(tr("Abort"), QMessageBox::NoRole);
+                        msgBox.exec();
+                        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+                            lipid_space->ignore_doublette_lipids = true;
+                            resetAnalysis();
+                        }
+                        else {
+                            resetAnalysis();
+                            repeat_loading = false;
+                        }
+                    }
+                    break;
+                    
+                case NoColumnFound:
+                    {
+                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.exec();
+                        resetAnalysis();
+                        repeat_loading = false;
+                    }
+                    break;
+                    
+                case ColumnNumMismatch:
+                    {
+                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.exec();
+                        resetAnalysis();
+                        repeat_loading = false;
+                    }
+                    break;
+                    
+                default:
+                    {
+                        msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
+                        msgBox.exec();
+                        resetAnalysis();
+                        repeat_loading = false;
+                    }
+                    break;
+            }
+        }
+        catch (exception &e){
+            Logging::write_log(e.what());
+            QMessageBox::critical(this, "Unexpected Error", "An unexpected error happened. Please check the log file and get in contact with the developers.");
+            repeat_loading = false;
+            break;
         }
     }
 }
