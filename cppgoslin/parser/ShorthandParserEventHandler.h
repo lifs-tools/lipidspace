@@ -53,6 +53,7 @@ public:
     GenericDictionary tmp;
     static const set<string> special_types;
     bool acer_species;
+    bool contains_stereo_information;
         
     ShorthandParserEventHandler();
     ~ShorthandParserEventHandler();
@@ -71,6 +72,7 @@ public:
     void post_sphingolipid(TreeNode *node);
     void set_hydroxyl(TreeNode *node);
     void set_lcb(TreeNode *node);
+    void set_fatty_acyl_stereo(TreeNode *node);
     void add_pl_species_data(TreeNode *node);
     void new_fatty_acyl_chain(TreeNode *node);
     void add_fatty_acyl_chain(TreeNode *node);
