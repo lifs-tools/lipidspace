@@ -142,3 +142,90 @@ void Progress::set_step(){
     current_progress += step_size;
     set_current(current_progress);
 }
+
+/*
+Algorithm adapted from: arXiv:2102.08037
+Thomas Viehmann
+Numerically more stable computation of the p-values for the two-sample Kolmogorov-Smirnov test
+*/
+double KS_pvalue(vector<double> &sample1, vector<double> &sample2){
+    double d = 0, cdf1 = 0, cdf2 = 0;
+    int ptr1 = 0, ptr2 = 0, m = sample1.size(), n = sample2.size();
+    sort (sample1.begin(), sample1.end());
+    sort (sample2.begin(), sample2.end());
+    double inv_m = 1. / (double)m;
+    double inv_n = 1. / (double)n;
+    
+    while (ptr1 < m && ptr2 < n){
+        if (sample1[ptr1] <= sample2[ptr2]){
+            cdf1 += inv_m;
+            ptr1 += 1;
+        }
+        else {
+            cdf2 += inv_n;
+            ptr2 += 1;
+        }
+        d = max(d, fabs(cdf1 - cdf2));
+    }
+    
+    int size = 2 * m * d + 2;
+    double *lastrow = new double[size];
+    double *row = new double[size];
+    for (int i = 0; i < size; ++i){
+        lastrow[i] = 0;
+        row[i] = 0;
+    }
+    int last_start_j = 0;
+    int start_j = 0;
+    for (int i = 0; i < n + 1; ++i){
+        start_j = max((int)(m * ((double)i / n + d )) + 1 - size, 0);
+        swap(lastrow, row);
+        double val = 0;
+        for (int jj = 0; jj < size; ++jj){
+            int j = jj + start_j;
+            double dist = (double)i / (double)n - (double)j / (double)m;
+            if (dist > d || dist < -d) val = 1;
+            else if (i == 0 || j == 0) val = 0;
+            else if (jj + start_j - last_start_j >= size) val = (double)(i + val * j) / (double)(i + j);
+            else  val = (lastrow[jj + start_j - last_start_j] * i + val * j) / (double)(i + j);
+            row[jj] = val;
+        }
+        last_start_j = start_j;
+    }
+    double p_val = row[m - start_j];
+    
+    
+    delete []lastrow;
+    delete []row;
+    return p_val;
+}
+
+
+bool sort_order_one (pair<double, int> i, pair<double, int> j) { return (i.first < j.first); }
+
+void BH_fdr(vector<double> &data){
+    if (data.size() < 2) return;
+        
+    // sort p_values and store order for back ordering
+    vector<pair<double, int>> sorted;
+    for (int i = 0; i < (int)data.size(); ++i){
+        sorted.push_back({data[i], i});
+    }
+    sort (sorted.begin(), sorted.end(), sort_order_one);
+    
+    // perform Benjamini-Hochberg correction
+    double n = data.size();
+    for (int i = n - 2; i >= 0; --i){
+        sorted[i].first = min(sorted[i].first * n / (double)(i + 1), sorted[i + 1].first);
+    }
+    
+    // sort corrected values back into original data vector
+    for (auto p : sorted) data[p.second] = p.first;
+}
+
+
+SpeciesItem::SpeciesItem(QString name, LipidAdduct *l, QListWidget* parent) : QListWidgetItem(name, parent) {
+    species = l;
+    setCheckState(Qt::Checked);
+    is_checked = true;
+}

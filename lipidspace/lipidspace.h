@@ -20,7 +20,8 @@ using namespace std;
 enum TableType {ROW_TABLE, COLUMN_TABLE, PIVOT_TABLE};
 
 
-class LipidSpace {
+class LipidSpace : public QObject {
+    Q_OBJECT
     
 public:
     LipidParser parser;
@@ -43,7 +44,7 @@ public:
     bool analysis_finished;
     map<string, set<string>> feature_values;
     DendrogramNode *dendrogram_root;
-    
+    set<string>* selection;
     
     
 
@@ -62,14 +63,18 @@ public:
     void create_dendrogram();
     void store_distance_table(Table* lipidome, string output_folder);
     void run_analysis(Progress *progress = 0);
+    void reassembleSelection();
     std::thread run_analysis_thread(Progress *_progress);
     void reset_analysis();
     LipidAdduct* load_lipid(string lipid_name, set<string> &lipid_set, bool &ignore_lipid);
     
-    Table* load_list(string lipid_list_file);
+    void load_list(string lipid_list_file);
     void load_row_table(string table_file, vector<TableColumnType> *column_types = 0);
     void load_column_table(string table_file, vector<TableColumnType> *column_types);
     void load_pivot_table(string table_file, vector<TableColumnType> *column_types);
+    
+signals:
+    void fileLoaded();
 };
 
 

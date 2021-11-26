@@ -20,6 +20,33 @@ Array::Array(const Array &a, int l) : vector<double>() {
 }
 
 
+double Array::sum(){
+    double val = 0;
+    for (int i = 0; i < (int)size(); ++i) val += at(i);
+    return val;
+}
+
+Array& operator+=(Array &me, const double val){
+    for (int i = 0; i < (int)me.size(); ++i) me.at(i) += val;
+    return me;
+}
+
+Array& operator-=(Array &me, const double val){
+    for (int i = 0; i < (int)me.size(); ++i) me.at(i) -= val;
+    return me;
+}
+
+Array& operator*=(Array &me, const double val){
+    for (int i = 0; i < (int)me.size(); ++i) me.at(i) *= val;
+    return me;
+}
+
+Array& operator/=(Array &me, const double val){
+    for (int i = 0; i < (int)me.size(); ++i) me.at(i) /= val;
+    return me;
+}
+
+
 double Array::mean(){
     double mn = 0;
     for (int i = 0; i < (int)size(); ++i) mn += at(i);

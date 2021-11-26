@@ -111,7 +111,10 @@ public slots:
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
     void transposeTable();
+    void reassembleSelection();
     void setFeature(int pos);
+    void SpeciesItemChanged(QListWidgetItem *item);
+    void updateSelectionView();
     
 private:
     Ui::LipidSpaceGUI *ui;

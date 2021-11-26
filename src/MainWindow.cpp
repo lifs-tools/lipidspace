@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
         w.show();
         return a.exec();
     }
-    
+    /*
     
     if (argc < 4) {
         print_help();
@@ -135,7 +135,6 @@ int main(int argc, char** argv) {
     // cutting the global PCA matrix back to a matrix for each lipidome
     lipid_space.separate_matrixes();
 
-    /*
     // plotting all lipidome PCAs
     if (plot_pca && lipidomes.size() > 1){
         lipid_space.plot_PCA(global_lipidome, output_folder);
@@ -144,7 +143,7 @@ int main(int argc, char** argv) {
         for (auto table : lipidomes){
             lipid_space.plot_PCA(table, output_folder);
         }
-    }*/
+    }
     
     
     // normalize and incorporate intensities
@@ -165,12 +164,6 @@ int main(int argc, char** argv) {
         //lipid_space.plot_dendrogram(&lipidomes, distance_matrix, output_folder);
     }
     
-    
-    
-    /*
-    if (plot_pca || plot_pca_lipidomes || lipidomes.size() > 1){
-        Py_Finalize();
-    }*/
-    
+    */
     return 0;
 }

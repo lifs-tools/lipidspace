@@ -6,17 +6,24 @@
 #include <QDropEvent>
 #include <set>
 #include <vector>
+#include <map>
 #include <string>
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/Matrix.h"
 #include "lipidspace/logging.h"
 #include <iostream>
+#include <algorithm>
+#include <math.h>
 
 using namespace std;
 
 enum Linkage {SingleLinkage, CompleteLinkage};
 enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumn, IgnoreColumn};
 enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered};
+
+
+double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
+void BH_fdr(vector<double> &data);
 
 class LipidSpaceException : public std::exception {
 public:
@@ -62,6 +69,7 @@ public:
     string file_name;
     vector<string> species;
     vector<string> classes;
+    vector<string> categories;
     vector<LipidAdduct*> lipids;
     Array intensities;
     Array original_intensities;
@@ -70,6 +78,19 @@ public:
     
     Table(string lipid_list_file) : file_name(lipid_list_file) {}
 };
+
+
+class SpeciesItem : public QListWidgetItem {
+public:
+    LipidAdduct *species;
+    bool is_checked = true;
+    
+    SpeciesItem(QString name, LipidAdduct* l, QListWidget* w);
+};
+
+
+
+
 
 class Progress : public QObject {
     Q_OBJECT

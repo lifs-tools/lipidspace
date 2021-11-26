@@ -26,9 +26,14 @@ public:
     void reset(Array &a);
     double mean();
     double stdev();
+    double sum();
     void add(Array &a);
     void add(vector<double> &a);
     void compute_distances(Array &x, double dx, Array &y, double dy);
+    friend Array& operator+=(Array &me, const double val);
+    friend Array& operator-=(Array &me, const double val);
+    friend Array& operator*=(Array &me, const double val);
+    friend Array& operator/=(Array &me, const double val);
     friend ostream& operator << (ostream& os, const Array& a){
         for (auto val : a) os << val << " ";
         os << endl;

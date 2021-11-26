@@ -176,7 +176,14 @@
          <widget class="QComboBox" name="comboBox"/>
         </item>
         <item>
-         <widget class="QListWidget" name="listWidget"/>
+         <widget class="QListWidget" name="speciesList"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="applyChangesButton">
+          <property name="text">
+           <string>Apply changes</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -201,7 +208,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QListView" name="listView"/>
+         <widget class="QListWidget" name="classList"/>
         </item>
        </layout>
       </widget>
@@ -226,13 +233,13 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QListView" name="listView_2"/>
+         <widget class="QListWidget" name="categoryList"/>
         </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_4">
        <attribute name="title">
-        <string>Files</string>
+        <string>Samples</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <property name="spacing">
@@ -251,7 +258,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QListView" name="listView_3"/>
+         <widget class="QListWidget" name="sampleList"/>
         </item>
        </layout>
       </widget>
