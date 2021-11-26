@@ -68,6 +68,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     loadedDataSet = false;
     
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
+    connect(lipid_space, SIGNAL(reassembled()), this, SLOT(updateSelectionView()));
     
     dragLayer = new DragLayer(ui->centralwidget);
     dragLayer->move(0, 0);
@@ -161,36 +162,52 @@ void LipidSpaceGUI::openTable(){
 
 
 void LipidSpaceGUI::updateSelectionView(){
+    disconnect(ui->speciesList, SIGNAL(itemChanged(QListWidgetItem *)), 0, 0);
+    disconnect(ui->classList, SIGNAL(itemChanged(QListWidgetItem *)), 0, 0);
+    disconnect(ui->categoryList, SIGNAL(itemChanged(QListWidgetItem *)), 0, 0);
+    disconnect(ui->sampleList, SIGNAL(itemChanged(QListWidgetItem *)), 0, 0);
     
-    for (string species : lipid_space->selection[0]){
-        QListWidgetItem *item = new QListWidgetItem(QString(species.c_str()), ui->speciesList);
-        item->setCheckState(Qt::Checked);
+    
+    // remove all items from the lists
+    ui->speciesList->clear();
+    ui->classList->clear();
+    ui->categoryList->clear();
+    ui->sampleList->clear();
+    
+    
+    // load new data
+    for (auto species : lipid_space->selection[0]){
+        QListWidgetItem *item = new QListWidgetItem(QString(species.first.c_str()), ui->speciesList);
+        item->setCheckState(species.second ? Qt::Checked : Qt::Unchecked);
         ui->speciesList->addItem(item);
     }
     
     
-    for (string lipid_class : lipid_space->selection[1]){
-        QListWidgetItem *item = new QListWidgetItem(QString(lipid_class.c_str()), ui->classList);
-        item->setCheckState(Qt::Checked);
+    for (auto lipid_class : lipid_space->selection[1]){
+        QListWidgetItem *item = new QListWidgetItem(QString(lipid_class.first.c_str()), ui->classList);
+        item->setCheckState(lipid_class.second ? Qt::Checked : Qt::Unchecked);
         ui->classList->addItem(item);
     }
     //connect(ui->classList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(SpeciesItemChanged(QListWidgetItem *)));
     
     
-    for (string category : lipid_space->selection[2]){
-        QListWidgetItem *item = new QListWidgetItem(QString(category.c_str()), ui->categoryList);
-        item->setCheckState(Qt::Checked);
+    for (auto category : lipid_space->selection[2]){
+        QListWidgetItem *item = new QListWidgetItem(QString(category.first.c_str()), ui->categoryList);
+        item->setCheckState(category.second ? Qt::Checked : Qt::Unchecked);
         ui->categoryList->addItem(item);
     }
     //connect(ui->categoryList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(SpeciesItemChanged(QListWidgetItem *)));
     
     
-    for (string sample : lipid_space->selection[3]){
-        QListWidgetItem *item = new QListWidgetItem(QString(sample.c_str()), ui->sampleList);
-        item->setCheckState(Qt::Checked);
+    for (auto sample : lipid_space->selection[3]){
+        QListWidgetItem *item = new QListWidgetItem(QString(sample.first.c_str()), ui->sampleList);
+        item->setCheckState(sample.second ? Qt::Checked : Qt::Unchecked);
         ui->sampleList->addItem(item);
     }
     //connect(ui->sampleList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(SpeciesItemChanged(QListWidgetItem *)));
+    
+    
+    connect(ui->speciesList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(SpeciesItemChanged(QListWidgetItem *)));
 }
 
 
@@ -325,6 +342,10 @@ void LipidSpaceGUI::runAnalysis(){
     updateGUI();
     
     GlobalData::color_counter = 0;
+    GlobalData::feature_counter = 0;
+    GlobalData::colorMap.clear();
+    GlobalData::colorMapFeatures.clear();
+    
     int numTiles = 2 * (lipid_space->lipidomes.size() > 1) + lipid_space->lipidomes.size();
     ui->dendrogramView->resetDendrogram();
     
@@ -369,8 +390,6 @@ void LipidSpaceGUI::runAnalysis(){
     // putting them into the grid layout. Unfortunately, I cannot figure out, when
     // it is over. So I use a timer and hope that after 200ms all rearranging is over
     QTimer::singleShot(200, this, SLOT(setInitialized()));
-    
-    
 }
 
 
@@ -380,7 +399,6 @@ void LipidSpaceGUI::reassembleSelection(){
 
 
 void LipidSpaceGUI::SpeciesItemChanged(QListWidgetItem *item){
-    cout << item->text().toStdString() << endl;
     /*
      if ((checkState() == Qt::Checked) ^ is_checked){
         checkChanged(text());
@@ -439,12 +457,12 @@ void LipidSpaceGUI::resetAnalysis(){
     }
     for (auto canvas : canvases) delete canvas;
     canvases.clear();
-    
     lipid_space->reset_analysis();
     GlobalData::PC1 = 0;
     GlobalData::PC2 = 1;
     LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
     
+    ui->dendrogramView->resetDendrogram();
     ui->tabWidget->setVisible(false);
     fill_Table();
     updateGUI();

@@ -44,7 +44,7 @@ public:
     bool analysis_finished;
     map<string, set<string>> feature_values;
     DendrogramNode *dendrogram_root;
-    set<string>* selection;
+    map<string, bool>* selection;
     
     
 
@@ -75,6 +75,7 @@ public:
     
 signals:
     void fileLoaded();
+    void reassembled();
 };
 
 

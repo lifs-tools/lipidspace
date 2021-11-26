@@ -115,7 +115,7 @@ LipidSpace::LipidSpace() {
     analysis_finished = false;
     dendrogram_root = 0;
     
-    selection = new set<string>[4];
+    selection = new map<string, bool>[4];
     
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -584,7 +584,10 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
 
 
 void LipidSpace::reassembleSelection(){
+    set<string> new_selection[4];
     
+    
+    reassembled();
 }
 
 
@@ -601,7 +604,7 @@ void LipidSpace::load_list(string lipid_list_file){
     
     
     QFileInfo qFileInfo(lipid_list_file.c_str());
-    selection[3].insert(qFileInfo.baseName().toStdString());
+    selection[3].insert({qFileInfo.baseName().toStdString(), true});
     Table* lipidome = new Table(lipid_list_file);
     vector<string> lipids;
     
@@ -690,9 +693,9 @@ void LipidSpace::load_list(string lipid_list_file){
     lipidome->original_intensities.reset(lipidome->intensities);
     
     for (int i = 0; i < (int)lipidome->species.size(); ++i){
-        selection[0].insert(lipidome->species.at(i));
-        selection[1].insert(lipidome->classes.at(i));
-        selection[2].insert(lipidome->categories.at(i));
+        selection[0].insert({lipidome->species.at(i), true});
+        selection[1].insert({lipidome->classes.at(i), true});
+        selection[2].insert({lipidome->categories.at(i), true});
     }
     for (auto l : lipidome->lipids){
         for (auto fa : l->lipid->fa_list){
@@ -1069,7 +1072,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         
         if (uncontains_val(lipidome_map, sample_name)){
             lipidome = new Table(sample_name);
-            selection[3].insert(sample_name);
+            selection[3].insert({sample_name, true});
             lipidome_map.insert({sample_name, lipidome});
             lipidomes.push_back(lipidome);
         }
@@ -1116,9 +1119,9 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         lipidome->species.push_back(l->get_lipid_string());
         lipidome->classes.push_back(l->get_lipid_string(CLASS));
         lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
-        selection[0].insert(lipidome->species.back());
-        selection[1].insert(lipidome->classes.back());
-        selection[2].insert(lipidome->categories.back());
+        selection[0].insert({lipidome->species.back(), true});
+        selection[1].insert({lipidome->classes.back(), true});
+        selection[2].insert({lipidome->categories.back(), true});
         double val = atof(quant_val.c_str());
         lipidome->intensities.push_back(val);
         lipidome->original_intensities.push_back(val);
@@ -1132,6 +1135,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             cut_cycle(fa);
         }
     }
+    fileLoaded();
 }
 
 
@@ -1229,7 +1233,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             }
         }
         
-        selection[3].insert(measurement);
+        selection[3].insert({measurement, true});
         lipidomes.push_back(new Table(measurement));
         Table *lipidome = lipidomes.back();
         for (auto kv : features) lipidome->features.insert({kv.first, kv.second});
@@ -1239,9 +1243,9 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             lipidome->species.push_back(l->get_lipid_string());
             lipidome->classes.push_back(l->get_lipid_string(CLASS));
             lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
-            selection[0].insert(lipidome->species.back());
-            selection[1].insert(lipidome->classes.back());
-            selection[2].insert(lipidome->categories.back());
+            selection[0].insert({lipidome->species.back(), true});
+            selection[1].insert({lipidome->classes.back(), true});
+            selection[2].insert({lipidome->categories.back(), true});
         }
         lipidome->intensities.reset(intensities);
         lipidome->original_intensities.reset(intensities);
@@ -1255,6 +1259,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             cut_cycle(fa);
         }
     }
+    fileLoaded();
 }
 
 
@@ -1290,7 +1295,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             if (line_cnt++ == 0){
                 num_cols = tokens->size();
                 for (int i = 1; i < (int)tokens->size(); ++i){
-                    selection[3].insert(tokens->at(i));
+                    selection[3].insert({tokens->at(i), true});
                     lipidomes.push_back(new Table(tokens->at(i)));
                     intensities.push_back(Array());
                 }
@@ -1319,9 +1324,9 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                         lipidome->species.push_back(l->get_lipid_string());
                         lipidome->classes.push_back(l->get_lipid_string(CLASS));
                         lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
-                        selection[0].insert(lipidome->species.back());
-                        selection[1].insert(lipidome->classes.back());
-                        selection[2].insert(lipidome->categories.back());
+                        selection[0].insert({lipidome->species.back(), true});
+                        selection[1].insert({lipidome->classes.back(), true});
+                        selection[2].insert({lipidome->categories.back(), true});
                         intensities.at(i - 1).push_back(atof(val.c_str()));
                     }
                 }
@@ -1355,7 +1360,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                 
                 for (int i = 0; i < (int)column_types->size(); ++i){
                     if (column_types->at(i) == SampleColumn){
-                        selection[3].insert(tokens->at(i));
+                        selection[3].insert({tokens->at(i), true});
                         lipidomes.push_back(new Table(tokens->at(i)));
                         intensities.push_back(Array());
                     } 
@@ -1395,9 +1400,9 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                         lipidome->species.push_back(l->get_lipid_string());
                         lipidome->classes.push_back(l->get_lipid_string(CLASS));
                         lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
-                        selection[0].insert(lipidome->species.back());
-                        selection[1].insert(lipidome->classes.back());
-                        selection[2].insert(lipidome->categories.back());
+                        selection[0].insert({lipidome->species.back(), true});
+                        selection[1].insert({lipidome->classes.back(), true});
+                        selection[2].insert({lipidome->categories.back(), true});
                         intensities.at(i).push_back(atof(val.c_str()));
                     }
                     
@@ -1420,6 +1425,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             cut_cycle(fa);
         }
     }
+    fileLoaded();
 }
 
 
@@ -1477,6 +1483,9 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, set<string> &lipid_set, b
 
 
 
+
+
+
 void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
     string output_file = output_folder + "/distance_matrix.csv";
     
@@ -1507,10 +1516,15 @@ bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;
 
 void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
-
+    
     analysis_finished = false;
     feature_values.clear();
-    if (dendrogram_root) delete dendrogram_root;
+    if (dendrogram_root){
+        delete dendrogram_root;
+        dendrogram_root = 0;
+    }
+    dendrogram_sorting.clear();
+    dendrogram_points.clear();
     
     if (_progress){
         progress = _progress;
@@ -1541,8 +1555,6 @@ void LipidSpace::run_analysis(Progress *_progress){
             progress->disconnect(&global_lipidome->m, SIGNAL(set_step()), 0, 0);
         }
     }
-        
-    
     
     // cutting the global PCA matrix back to a matrix for each lipidome
     if (!progress || !progress->stop_progress){
@@ -1554,16 +1566,20 @@ void LipidSpace::run_analysis(Progress *_progress){
     }
     
     if (!progress || !progress->stop_progress){
-        compute_hausdorff_matrix();
-        if (progress){
-            progress->set_step();
+        if (lipidomes.size() > 1){
+            compute_hausdorff_matrix();
+            if (progress){
+                progress->set_step();
+            }
         }
     }
     
     if (!progress || !progress->stop_progress){
-        create_dendrogram();
-        if (progress){
-            progress->set_step();
+        if (lipidomes.size() > 1){
+            create_dendrogram();
+            if (progress){
+                progress->set_step();
+            }
         }
     }
     
@@ -1571,8 +1587,6 @@ void LipidSpace::run_analysis(Progress *_progress){
         progress->finish();
     }
     analysis_finished = true;
-    
-
 }
 
 
@@ -1580,7 +1594,12 @@ void LipidSpace::run_analysis(Progress *_progress){
 void LipidSpace::reset_analysis(){
     analysis_finished = false;
     feature_values.clear();
-    if (dendrogram_root) delete dendrogram_root;
+    if (dendrogram_root){
+        delete dendrogram_root;
+        dendrogram_root = 0;
+    }
+    dendrogram_sorting.clear();
+    dendrogram_points.clear();
     
     for (int i = 0; i < 4; ++i) selection[i].clear();
     
