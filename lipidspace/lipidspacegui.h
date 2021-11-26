@@ -69,7 +69,7 @@ public:
     
     
 signals:
-    void transforming(QRectF f, int _num);
+    void transforming(QRectF f);
     void updateCanvas();
     void exporting(QString);
     void initialized();
@@ -99,7 +99,7 @@ public slots:
     void setSnPositions();
     void openManageLipidomesWindow();
     void runAnalysis();
-    void setTransforming(QRectF f, int _num);
+    void setTransforming(QRectF f);
     void setDoubleClick(int _num);
     void setExport();
     void setInitialized();

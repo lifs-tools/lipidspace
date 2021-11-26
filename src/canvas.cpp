@@ -685,7 +685,7 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent *){
     
     QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
     QRectF v = mapToScene(viewportRect).boundingRect();
-    transforming(v, num);
+    transforming(v);
     if (pointSet) pointSet->updateView(v);
 }
     
@@ -715,7 +715,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         viewport()->setCursor(Qt::DragMoveCursor);
         QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
         QRectF v = mapToScene(viewportRect).boundingRect();
-        transforming(v, num);
+        transforming(v);
         if (pointSet) pointSet->updateView(v);
         
         oldCenter.setX(v.x() + v.width() * 0.5);
@@ -762,17 +762,17 @@ void Canvas::resizeEvent(QResizeEvent *event) {
     if (!initialized || dendrogram){
         QRectF bounds = dendrogram ? dendrogram->bound : pointSet->bound;
         fitInView(bounds, Qt::KeepAspectRatio);
-        QGraphicsView::resizeEvent(event);
         
         QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
         QRectF v = mapToScene(viewportRect).boundingRect();
-        transforming(v, num);
+        transforming(v);
     }
     else {
         if (pointSet) pointSet->resize();
         
     }
     if (variances) variances->move(2, height() - variances->height());
+    QGraphicsView::resizeEvent(event);
 }
 
 
@@ -796,15 +796,16 @@ void Canvas::wheelEvent(QWheelEvent *event){
     QRect viewportRect2(0, 0, viewport()->width(), viewport()->height());
     v = mapToScene(viewportRect2).boundingRect();
     
-    transforming(v, num);
+    transforming(v);
     if (pointSet) pointSet->updateView(v);
     oldCenter.setX(v.x() + v.width() * 0.5);
     oldCenter.setY(v.y() + v.height() * 0.5);
 }
 
 
-void Canvas::setTransforming(QRectF f, int _num){
-    if (num == _num) return;
+void Canvas::setTransforming(QRectF f){
+    //if (num == _num)
+    //    return;
     QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
     QRectF v = mapToScene(viewportRect).boundingRect();
     

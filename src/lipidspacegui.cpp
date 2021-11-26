@@ -323,7 +323,7 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
 void LipidSpaceGUI::runAnalysis(){
     
     lipid_space->analysis_finished = false;
-    disconnect(this, SIGNAL(transforming(QRectF, int)), 0, 0);
+    disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
     
     std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
@@ -331,7 +331,7 @@ void LipidSpaceGUI::runAnalysis(){
     runAnalysisThread.join();
     
     for (auto canvas : canvases){
-        disconnect(canvas, SIGNAL(transforming(QRectF, int)), 0, 0);
+        disconnect(canvas, SIGNAL(transforming(QRectF)), 0, 0);
         disconnect(canvas, SIGNAL(showMessage(QString)), 0, 0);
         disconnect(canvas, SIGNAL(doubleClicked(int)), 0, 0);
         disconnect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), 0, 0);
@@ -358,8 +358,8 @@ void LipidSpaceGUI::runAnalysis(){
         Canvas* canvas = new Canvas(lipid_space, num, ui->centralwidget);
         connect(canvas, SIGNAL(doubleClicked(int)), this, SLOT(setDoubleClick(int)));
         if (num != -2){
-            connect(canvas, SIGNAL(transforming(QRectF, int)), this, SLOT(setTransforming(QRectF, int)));
-            connect(this, SIGNAL(transforming(QRectF, int)), canvas, SLOT(setTransforming(QRectF, int)));
+            connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
+            connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
             connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
             connect(this, SIGNAL(exporting(QString)), canvas, SLOT(exportPdf(QString)));
@@ -422,8 +422,8 @@ void LipidSpaceGUI::setExport(){
 }
 
 
-void LipidSpaceGUI::setTransforming(QRectF f, int _num){
-    transforming(f, _num);
+void LipidSpaceGUI::setTransforming(QRectF f){
+    transforming(f);
 }
 
 

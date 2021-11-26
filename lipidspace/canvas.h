@@ -109,7 +109,7 @@ public:
 public slots:
     void resetCanvas();
     void showHideQuant(bool _showQuant);
-    void setTransforming(QRectF f, int _num);
+    void setTransforming(QRectF f);
     void setUpdate();
     void exportPdf(QString outputFolder);
     void setInitialized();
@@ -121,7 +121,7 @@ public slots:
     
 signals:
     void showMessage(QString message);
-    void transforming(QRectF f, int _num);
+    void transforming(QRectF f);
     void doubleClicked(int);
     void mouse(QMouseEvent* event, Canvas *_canvas);
     void swappingLipidomes(int source, int target);

@@ -25,6 +25,7 @@ void print_help(){
 
 int main(int argc, char** argv) {
     // parameters to change
+    /*
     bool keep_sn_position = true;
     bool ignore_unknown_lipids = false;
     bool plot_pca = true; 
@@ -32,7 +33,7 @@ int main(int argc, char** argv) {
     bool storing_distance_table = false;
     bool unboundend_distance = false;
     bool without_quant = false;
-    
+    */
     
     
     
