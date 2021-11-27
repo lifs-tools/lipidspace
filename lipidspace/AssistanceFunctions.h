@@ -73,6 +73,7 @@ public:
     vector<string> classes;
     vector<string> categories;
     vector<LipidAdduct*> lipids;
+    vector<bool> selection;
     Array intensities;
     Array original_intensities;
     map<string, string> features;

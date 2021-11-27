@@ -51,11 +51,14 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(8) = FeatureColumn;
         ct->at(11) = QuantColumn;
         loadTable("Anxa7_pivot.csv", ct, PIVOT_TABLE);
+        
         /*
         for (int i = 0; i < 32; ++i) ct->push_back(SampleColumn);
         ct->at(0) = LipidColumn;
         loadTable("examples/Tablesets/Plasma-Liebisch.csv", ct, ROW_TABLE);
         */
+        
+        
     }
 }
 

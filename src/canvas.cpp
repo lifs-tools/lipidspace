@@ -194,6 +194,7 @@ PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
 
 
 void PointSet::loadPoints(){
+    
     points.clear();
     labels.clear();
     label_points.clear();
@@ -204,10 +205,12 @@ void PointSet::loadPoints(){
     double y_min = 0;
     double y_max = 0;
     
-    for (int r = 0; r < lipidome->m.rows; ++r){
-        double xval = lipidome->m(r, GlobalData::PC1);
-        double yval = lipidome->m(r, GlobalData::PC2);
-        double intens = lipidome->intensities[r] > 1 ? log(lipidome->intensities[r]) : 0.5;
+    for (int r = 0, rr = 0; r < (int)lipidome->species.size(); ++r){
+        if (!lipidome->selection[r]) continue;
+            
+        double xval = lipidome->m(rr, GlobalData::PC1);
+        double yval = lipidome->m(rr, GlobalData::PC2);
+        double intens = lipidome->intensities[rr] > 1 ? log(lipidome->intensities[rr]) : 0.5;
         x_min = min(x_min, xval - intens);
         x_max = max(x_max, xval + intens);
         y_min = min(y_min, yval - intens);
@@ -218,9 +221,10 @@ void PointSet::loadPoints(){
             GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[GlobalData::color_counter++ % GlobalData::COLORS.size()]});
         }
         points.push_back(QPointF(xval, yval));
+        rr++;
     }
     
-    set_labels();
+    //set_labels();
     
     for (auto label_point : label_points){
         x_min = min(x_min, label_point.x());

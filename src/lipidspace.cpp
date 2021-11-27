@@ -642,11 +642,11 @@ void LipidSpace::load_list(string lipid_list_file){
         if (line.find('\t') != string::npos){
             tokens = goslin::split_string(line, '\t', '"');
             line = strip(tokens->at(0), '"');
-            lipidome->intensities.push_back(atof(tokens->at(1).c_str()));
+            lipidome->original_intensities.push_back(atof(tokens->at(1).c_str()));
             delete tokens;
         }
         else {
-            lipidome->intensities.push_back(1);
+            lipidome->original_intensities.push_back(1);
         }
         lipids.push_back(line);
         lipidome->lipids.push_back(0);
@@ -708,10 +708,9 @@ void LipidSpace::load_list(string lipid_list_file){
             lipidome->species.erase(lipidome->species.begin() + index);
             lipidome->classes.erase(lipidome->classes.begin() + index);
             lipidome->categories.erase(lipidome->categories.begin() + index);
-            lipidome->intensities.erase(lipidome->intensities.begin() + index);
+            lipidome->original_intensities.erase(lipidome->intensities.begin() + index);
         }
     }
-    lipidome->original_intensities.reset(lipidome->intensities);
     
     for (int i = 0; i < (int)lipidome->species.size(); ++i){
         selection[0].insert({lipidome->species.at(i), true});
@@ -756,31 +755,20 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
 
 
 
-double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
-    // add intensities to hausdorff matrix
-    Matrix tm1(l1->m);
-    Matrix tm2(l2->m);
-    if (!without_quant){
-        tm1.add_column(l1->intensities);
-        tm2.add_column(l2->intensities);
-    }
-    tm1.pad_cols_4(); // pad matrix columns with zeros to perform faster intrinsics
-    tm2.pad_cols_4();
-    tm1.transpose();
-    tm2.transpose();
-    assert(tm1.rows == tm2.rows);
+double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
+    assert(m1.rows == m2.rows);
     
     double max_h = 0;
     
-    for (int tm2c = 0; tm2c < tm2.cols; tm2c++){
+    for (int m2c = 0; m2c < m2.cols; m2c++){
         double min_h = 1e9;
-        double* tm2col = tm2.data() + (tm2c * tm2.rows);
-        for (int tm1c = 0; tm1c < tm1.cols; ++tm1c){
+        double* m2col = m2.data() + (m2c * m2.rows);
+        for (int m1c = 0; m1c < m1.cols; ++m1c){
             __m256d dist = {0, 0, 0, 0};
-            double* tm1col = tm1.data() + (tm1c * tm1.rows);
-            for (int r = 0; r < tm1.rows; r += 4){
-                __m256d val1 = _mm256_loadu_pd(&tm1col[r]);
-                __m256d val2 = _mm256_loadu_pd(&tm2col[r]);
+            double* m1col = m1.data() + (m1c * m1.rows);
+            for (int r = 0; r < m1.rows; r += 4){
+                __m256d val1 = _mm256_loadu_pd(&m1col[r]);
+                __m256d val2 = _mm256_loadu_pd(&m2col[r]);
                 __m256d sub = _mm256_sub_pd(val1, val2);
                 dist = _mm256_fmadd_pd(sub, sub, dist);
             }
@@ -790,15 +778,15 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
         max_h = mmax(max_h, min_h);
     }
     
-    for (int tm1c = 0; tm1c < tm1.cols; ++tm1c){
+    for (int m1c = 0; m1c < m1.cols; ++m1c){
         double min_h = 1e9;
-        double* tm1col = tm1.data() + (tm1c * tm1.rows);
-        for (int tm2c = 0; tm2c < tm2.cols; tm2c++){
+        double* m1col = m1.data() + (m1c * m1.rows);
+        for (int m2c = 0; m2c < m2.cols; m2c++){
             __m256d dist = {0, 0, 0, 0};
-            double* tm2col = tm2.data() + (tm2c * tm2.rows);
-            for (int r = 0; r < tm1.rows; r += 4){
-                __m256d val1 = _mm256_loadu_pd(&tm1col[r]);
-                __m256d val2 = _mm256_loadu_pd(&tm2col[r]);
+            double* m2col = m2.data() + (m2c * m2.rows);
+            for (int r = 0; r < m1.rows; r += 4){
+                __m256d val1 = _mm256_loadu_pd(&m1col[r]);
+                __m256d val2 = _mm256_loadu_pd(&m2col[r]);
                 __m256d sub = _mm256_sub_pd(val1, val2);
                 dist = _mm256_fmadd_pd(sub, sub, dist);
             }
@@ -822,6 +810,18 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
 void LipidSpace::compute_hausdorff_matrix(){
     
     int n = selected_lipidomes.size();
+    vector<Matrix*> matrixes;
+    
+    for (auto lipidome : selected_lipidomes){
+        matrixes.push_back(new Matrix(lipidome->m));
+        // add intensities to hausdorff matrix
+        if (!without_quant){
+            matrixes.back()->add_column(lipidome->intensities);
+        }
+        matrixes.back()->pad_cols_4(); // pad matrix columns with zeros to perform faster intrinsics
+        matrixes.back()->transpose();
+    }
+    
     hausdorff_distances.reset(n, n);
     
     // precompute indexes for of symmetric matrix for faster
@@ -840,9 +840,11 @@ void LipidSpace::compute_hausdorff_matrix(){
         int i = pairs.at(ii).first;
         int j = pairs.at(ii).second;
         
-        hausdorff_distances(i, j) = compute_hausdorff_distance(selected_lipidomes.at(i), selected_lipidomes.at(j));
+        hausdorff_distances(i, j) = compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j));
         hausdorff_distances(j, i) = hausdorff_distances(i, j);
     }
+    
+    for (auto matrix : matrixes) delete matrix;
 }
 
 
@@ -981,17 +983,29 @@ void LipidSpace::compute_global_distance_matrix(){
 
 
 void LipidSpace::separate_matrixes(){
+    for (auto lipidome : lipidomes){
+        lipidome->intensities.clear();
+        lipidome->selection.clear();
+    }
+    global_lipidome->selection.clear();
+    
     map<string, int> lipid_indexes;
     for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
-        lipid_indexes.insert({global_lipidome->species.at(i), i});
+        string lipid_species = global_lipidome->species.at(i);
+        lipid_indexes.insert({lipid_species, i});
+        global_lipidome->selection.push_back(true);
     }
     
     
     for (auto lipidome : selected_lipidomes){
         Indexes indexes;
-        for (auto lipid_species : lipidome->species){
-            if (selection[SPECIES_ITEM][lipid_species]){
+        for (int i = 0; i < (int)lipidome->species.size(); ++i){
+            string lipid_species = lipidome->species[i];
+            bool lipid_selection = selection[SPECIES_ITEM][lipid_species];
+            lipidome->selection.push_back(lipid_selection);
+            if (lipid_selection){
                 indexes.push_back(lipid_indexes.at(lipid_species));
+                lipidome->intensities.push_back(lipidome->original_intensities[i]);
             }
         }
         lipidome->m.rewrite(global_lipidome->m, indexes);
@@ -1008,21 +1022,19 @@ void LipidSpace::separate_matrixes(){
 void LipidSpace::normalize_intensities(){
     Matrix &m = global_lipidome->m;
     
+    // compute the standard deviation of the first principal component,
+    // mean of all PCs should be always 0 per definition
+    int n = m.rows;
     double global_stdev = 0;
-    for (int i = 0; i < m.rows; ++i) global_stdev += sq(m.m[i]);
-    global_stdev = sqrt(global_stdev / (double)m.rows);
-    
+    for (int i = 0; i < n; ++i) global_stdev += sq(m.m[i]);
+    global_stdev = sqrt(global_stdev / (double)n);
     
     for (auto lipidome : selected_lipidomes){
-        
         Array &intensities = lipidome->intensities;
-        double mean = 0, stdev = 0;
-        for (auto val : intensities) mean += val;
-        mean /= (double)intensities.size();
+        double stdev = intensities.stdev();
         
-        for (auto val : intensities) stdev += sq(val - mean);
-        stdev = sqrt(stdev / (double)intensities.size());
         
+        cout << global_stdev << " " << stdev << endl;
         if (stdev > 1e-16){
             stdev = global_stdev / stdev;
             for (int i = 0; i < (int)intensities.size(); ++i) {
@@ -1161,7 +1173,6 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         selection[1].insert({lipidome->classes.back(), true});
         selection[2].insert({lipidome->categories.back(), true});
         double val = atof(quant_val.c_str());
-        lipidome->intensities.push_back(val);
         lipidome->original_intensities.push_back(val);
         
         delete tokens;
@@ -1285,7 +1296,6 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             selection[1].insert({lipidome->classes.back(), true});
             selection[2].insert({lipidome->categories.back(), true});
         }
-        lipidome->intensities.reset(intensities);
         lipidome->original_intensities.reset(intensities);
         
         delete tokens;
@@ -1454,7 +1464,6 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
     }
     
     for (int i = 0; i < (int)lipidomes.size(); ++i){
-        lipidomes.at(i)->intensities.reset(intensities.at(i));
         lipidomes.at(i)->original_intensities.reset(intensities.at(i));
     }
     
