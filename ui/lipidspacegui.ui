@@ -152,7 +152,7 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="speciesTab">
        <attribute name="title">
         <string>Species</string>
        </attribute>
@@ -173,13 +173,13 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QComboBox" name="comboBox"/>
+         <widget class="QComboBox" name="speciesComboBox"/>
         </item>
         <item>
          <widget class="QListWidget" name="speciesList"/>
         </item>
         <item>
-         <widget class="QPushButton" name="applyChangesButton">
+         <widget class="QPushButton" name="speciesPushButton">
           <property name="text">
            <string>Apply changes</string>
           </property>
@@ -187,7 +187,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="classTab">
        <attribute name="title">
         <string>Classes</string>
        </attribute>
@@ -208,11 +208,21 @@
          <number>0</number>
         </property>
         <item>
+         <widget class="QComboBox" name="classComboBox"/>
+        </item>
+        <item>
          <widget class="QListWidget" name="classList"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="classPushButton">
+          <property name="text">
+           <string>Apply changes</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_3">
+      <widget class="QWidget" name="categoryTab">
        <attribute name="title">
         <string>Categories</string>
        </attribute>
@@ -233,11 +243,21 @@
          <number>0</number>
         </property>
         <item>
+         <widget class="QComboBox" name="categoryComboBox"/>
+        </item>
+        <item>
          <widget class="QListWidget" name="categoryList"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="categoryPushButton">
+          <property name="text">
+           <string>Apply changes</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_4">
+      <widget class="QWidget" name="sampleTab">
        <attribute name="title">
         <string>Samples</string>
        </attribute>
@@ -258,7 +278,17 @@
          <number>0</number>
         </property>
         <item>
+         <widget class="QComboBox" name="sampleComboBox"/>
+        </item>
+        <item>
          <widget class="QListWidget" name="sampleList"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="samplePushButton">
+          <property name="text">
+           <string>Apply changes</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

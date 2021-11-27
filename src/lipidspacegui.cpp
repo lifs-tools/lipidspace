@@ -108,7 +108,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->classList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
     connect(ui->categoryList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
     connect(ui->sampleList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
-            
+    connect(ui->speciesPushButton, SIGNAL(clicked()), this, SLOT(runAnalysis()));
+    connect(ui->classPushButton, SIGNAL(clicked()), this, SLOT(runAnalysis()));
+    connect(ui->categoryPushButton, SIGNAL(clicked()), this, SLOT(runAnalysis()));
+    connect(ui->samplePushButton, SIGNAL(clicked()), this, SLOT(runAnalysis()));
     
     tileLayout = AUTOMATIC;
     GlobalData::showQuant = true;
@@ -870,7 +873,7 @@ void LipidSpaceGUI::fill_Table(){
     if ((int)lipid_space->selected_lipidomes.size() == 0 || (int)lipid_space->global_lipidome->lipids.size() == 0) return;
     
     
-    int num_features = lipid_space->lipidomes[0]->features.size();
+    int num_features = lipid_space->feature_values.size();
     map<LipidAdduct*, int> lipid_index;
     map<string, int> feature_index;
     
@@ -885,20 +888,20 @@ void LipidSpaceGUI::fill_Table(){
         }
         
         int f = 0;
-        for (auto kv : lipid_space->lipidomes[0]->features){
-            QString header_name = kv.first.c_str();
-            // dirty way to make the transpose button completely visible
-            if (f == 0 && header_name.length() < 10) {
-                while (header_name.length() < 14) header_name += " ";
-            }
-            item = new QTableWidgetItem();
+        for (auto kv : lipid_space->feature_values){
+            item = new QTableWidgetItem(kv.first.c_str());
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             feature_index.insert({kv.first, f});
             t->setVerticalHeaderItem(f++, item);
         }
         
         for (int r = 0; r < (int)lipid_space->global_lipidome->species.size(); ++r){
-            item = new QTableWidgetItem(lipid_space->global_lipidome->species[r].c_str());
+            QString header_name = lipid_space->global_lipidome->species[r].c_str();
+            // dirty way to make the transpose button completely visible
+            if (f == 0 && header_name.length() < 10) {
+                while (header_name.length() < 14) header_name += " ";
+            }
+            item = new QTableWidgetItem(header_name);
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             t->setVerticalHeaderItem(num_features + r, item);
             lipid_index.insert({lipid_space->global_lipidome->lipids[r], num_features + r});
@@ -959,7 +962,7 @@ void LipidSpaceGUI::fill_Table(){
         }
         
         int f = 0;
-        for (auto kv : lipid_space->lipidomes[0]->features){
+        for (auto kv : lipid_space->feature_values){
             item = new QTableWidgetItem(kv.first.c_str());
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             feature_index.insert({kv.first, f});
