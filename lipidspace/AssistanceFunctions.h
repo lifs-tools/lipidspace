@@ -18,6 +18,7 @@
 using namespace std;
 
 enum Linkage {SingleLinkage, CompleteLinkage};
+enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
 enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumn, IgnoreColumn};
 enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered};
 
@@ -67,6 +68,7 @@ private:
 class Table {
 public:
     string file_name;
+    string cleaned_name;
     vector<string> species;
     vector<string> classes;
     vector<string> categories;
@@ -76,16 +78,19 @@ public:
     map<string, string> features;
     Matrix m;
     
-    Table(string lipid_list_file) : file_name(lipid_list_file) {}
+    Table(string lipid_list_file) : file_name(lipid_list_file) {
+        QFileInfo qFileInfo(file_name.c_str());
+        cleaned_name = qFileInfo.baseName().toStdString();
+    }
 };
 
 
-class SpeciesItem : public QListWidgetItem {
+class ListItem : public QListWidgetItem {
 public:
     LipidAdduct *species;
-    bool is_checked = true;
+    ListItemType type;
     
-    SpeciesItem(QString name, LipidAdduct* l, QListWidget* w);
+    ListItem(QString name, ListItemType t, QListWidget* w);
 };
 
 

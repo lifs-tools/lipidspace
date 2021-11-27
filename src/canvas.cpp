@@ -14,8 +14,7 @@ void Dendrogram::load(){
     lines.clear();
     
     for (int i : lipid_space->dendrogram_sorting){
-        QFileInfo qFileInfo(lipid_space->lipidomes[i]->file_name.c_str());
-        dendrogram_titles.push_back(qFileInfo.baseName());
+        dendrogram_titles.push_back(QString(lipid_space->lipidomes[i]->cleaned_name.c_str()));
     }
     
     double x_min_d = 1e9;
@@ -590,8 +589,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QWidget *) : num(_num), title
     else { // regular lipidome
         pointSet = new PointSet(lipid_space->lipidomes[num], this);
         graphics_scene.addItem(pointSet);
-        QFileInfo qFileInfo(lipid_space->lipidomes[num]->file_name.c_str());
-        title.setText(qFileInfo.baseName());
+        title.setText(QString(lipid_space->lipidomes[num]->cleaned_name.c_str()));
         
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->lipidomes[num]->m, vars);
@@ -648,7 +646,7 @@ void Canvas::mousePressEvent(QMouseEvent *event){
         leftMousePressed = true;
         QGraphicsView::mousePressEvent(event);
     }
-    else if (lipid_space->lipidomes.size() > 1 && event->button() == Qt::RightButton){
+    else if (lipid_space->selected_lipidomes.size() > 1 && event->button() == Qt::RightButton){
         mouse(event, this);
     }
     else {

@@ -44,7 +44,8 @@ public:
     bool analysis_finished;
     map<string, set<string>> feature_values;
     DendrogramNode *dendrogram_root;
-    map<string, bool>* selection;
+    map<string, bool> selection[4];
+    vector<Table*> selected_lipidomes;
     
     
 

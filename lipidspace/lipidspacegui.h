@@ -113,7 +113,7 @@ public slots:
     void transposeTable();
     void reassembleSelection();
     void setFeature(int pos);
-    void SpeciesItemChanged(QListWidgetItem *item);
+    void itemChanged(QListWidgetItem *item);
     void updateSelectionView();
     
 private:

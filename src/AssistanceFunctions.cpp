@@ -224,8 +224,6 @@ void BH_fdr(vector<double> &data){
 }
 
 
-SpeciesItem::SpeciesItem(QString name, LipidAdduct *l, QListWidget* parent) : QListWidgetItem(name, parent) {
-    species = l;
-    setCheckState(Qt::Checked);
-    is_checked = true;
+ListItem::ListItem(QString name, ListItemType t, QListWidget* parent) : QListWidgetItem(name, parent) {
+    type = t;
 }
