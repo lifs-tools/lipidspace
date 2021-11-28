@@ -194,11 +194,11 @@ PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
 
 
 void PointSet::loadPoints(){
-    
     points.clear();
     labels.clear();
     label_points.clear();
     class_means.clear();
+    lipid_label.clear();
     
     double x_min = 0;
     double x_max = 0;
@@ -207,6 +207,7 @@ void PointSet::loadPoints(){
     
     for (int r = 0, rr = 0; r < (int)lipidome->species.size(); ++r){
         if (!lipidome->selection[r]) continue;
+        
             
         double xval = lipidome->m(rr, GlobalData::PC1);
         double yval = lipidome->m(rr, GlobalData::PC2);
@@ -221,10 +222,11 @@ void PointSet::loadPoints(){
             GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[GlobalData::color_counter++ % GlobalData::COLORS.size()]});
         }
         points.push_back(QPointF(xval, yval));
+        lipid_label.push_back(lipidome->species[r].c_str());
         rr++;
     }
     
-    //set_labels();
+    set_labels();
     
     for (auto label_point : label_points){
         x_min = min(x_min, label_point.x());
@@ -273,7 +275,6 @@ bool find_start(QRectF &bound, QPointF target, QPointF &inter){
 
 
 void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
-    
     QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
     
     for (int i = 0; i < (int)points.size(); ++i){
@@ -364,10 +365,11 @@ void PointSet::set_labels(){
     if (lipidome->m.rows == 0 || lipidome->m.cols == 0) return;
     
     map<string, vector<int>> indexes;
-    for (int i = 0; i < (int)lipidome->classes.size(); ++i){
+    for (int i = 0, j = 0; i < (int)lipidome->classes.size(); ++i){
+        if (!lipidome->selection[i]) continue;
         string lipid_class = lipidome->classes.at(i);
         if (uncontains_val(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
-        indexes.at(lipid_class).push_back(i);
+        indexes.at(lipid_class).push_back(j++);
     }
     Array mean_x;
     Array mean_y;
@@ -736,7 +738,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
             double intens = GlobalData::showQuant ? (pointSet->lipidome->intensities[i] > 1 ? log(pointSet->lipidome->intensities[i]) : 0.5) : 1.;
             double margin = sq(0.5 * intens);
             if (sq(relative_mouse.x() - pointSet->points[i].x()) + sq(relative_mouse.y() - pointSet->points[i].y()) <= margin){
-                lipid_names.push_back(QString(pointSet->lipidome->species[i].c_str()));
+                lipid_names.push_back(QString(pointSet->lipid_label[i]));
             }
         }
         

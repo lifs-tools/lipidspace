@@ -67,6 +67,7 @@ public:
     vector<QString> labels;
     vector<QPointF> label_points;
     vector<QPointF> class_means;
+    vector<QString> lipid_label;
     
     
     PointSet(Table* _lipidome, Canvas *_view);

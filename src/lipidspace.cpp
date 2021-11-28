@@ -1001,7 +1001,7 @@ void LipidSpace::separate_matrixes(){
         Indexes indexes;
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
             string lipid_species = lipidome->species[i];
-            bool lipid_selection = selection[SPECIES_ITEM][lipid_species];
+            bool lipid_selection = selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species);
             lipidome->selection.push_back(lipid_selection);
             if (lipid_selection){
                 indexes.push_back(lipid_indexes.at(lipid_species));
@@ -1033,8 +1033,6 @@ void LipidSpace::normalize_intensities(){
         Array &intensities = lipidome->intensities;
         double stdev = intensities.stdev();
         
-        
-        cout << global_stdev << " " << stdev << endl;
         if (stdev > 1e-16){
             stdev = global_stdev / stdev;
             for (int i = 0; i < (int)intensities.size(); ++i) {
@@ -1612,7 +1610,6 @@ void LipidSpace::run_analysis(Progress *_progress){
             progress->set_step();
         }
     }
-    
     if (!progress || !progress->stop_progress){
         if (selected_lipidomes.size() > 1){
             compute_hausdorff_matrix();

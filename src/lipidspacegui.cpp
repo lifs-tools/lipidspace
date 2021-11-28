@@ -383,7 +383,7 @@ void LipidSpaceGUI::runAnalysis(){
         string feature_prefix = kv.first + "_";
         for (string feature : kv.second){
             feature = feature_prefix + feature;
-            GlobalData::colorMapFeatures.insert({feature, GlobalData::COLORS[GlobalData::feature_counter++]});
+            GlobalData::colorMapFeatures.insert({feature, GlobalData::COLORS[GlobalData::feature_counter++ % GlobalData::COLORS.size()]});
         }
     }
     
