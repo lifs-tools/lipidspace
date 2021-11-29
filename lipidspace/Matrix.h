@@ -75,6 +75,7 @@ public:
     double col_min(int c);
     double col_max(int c);
     void transpose();
+    void mult_vector(const vector<double> &in, vector<double> &out);
     static double vector_vector_mult(int n, const double *x, const double *y);
     double pairwise_sum(Matrix &m);
     void pad_cols_4();

@@ -333,12 +333,19 @@ void Matrix::transpose(){
 
 void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int top_n){
     assert(rows == cols);
+    
+    Matrix trans(*this, true);
         
     // Prepare matrix-vector multiplication routine used in Lanczos algorithm
     auto mv_mul = [&](const vector<double>& in, vector<double>& out) {
+#ifndef _WIN32
         cblas_dgemv(CblasColMajor, CblasNoTrans, rows, cols, 1.0, data(), rows, in.data(), 1, 0, out.data(), 1);
+        
+#else
+        
+        trans.mult_vector(in, out);
+#endif
     };
-    
     // Execute Lanczos algorithm
     LambdaLanczos<double> engine(mv_mul, rows, true); // true means to calculate the largest eigenvalue.
     vector<double> evals(top_n);
@@ -372,6 +379,14 @@ double Matrix::vector_vector_mult(int n, const double *x, const double *y){
 }
 
 
+
+void Matrix::mult_vector(const vector<double> &in, vector<double> &out){
+    assert(rows == (int)in.size() && cols == (int)out.size());
+    for (int i = 0; i < (int)cols; ++i) out[i] = vector_vector_mult(rows, m.data() + i * rows, in.data());
+}
+
+
+
 void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
 
 #ifndef _WIN32
@@ -382,9 +397,9 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
     int nn = transB ? B.rows : B.cols;
     reset(mm, nn);
     cblas_dgemm(CblasColMajor, transA ? CblasTrans : CblasNoTrans, transB ? CblasTrans : CblasNoTrans, mm, nn, kk, alpha, A.data(), A.rows, B.data(), B.rows, 0.0, data(), rows);
-#endif
     
-#ifdef _WIN32
+#else
+    
     int tile_size = 16;
     Matrix mA(A, !transA);
     Matrix mB(B, transB);
