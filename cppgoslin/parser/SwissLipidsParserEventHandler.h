@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +30,11 @@ SOFTWARE.
 #include "cppgoslin/domain/Adduct.h"
 #include "cppgoslin/domain/StringFunctions.h"
 #include "cppgoslin/domain/LipidAdduct.h"
-#include "cppgoslin/domain/LipidStructuralSubspecies.h"
-#include "cppgoslin/domain/LipidIsomericSubspecies.h"
+#include "cppgoslin/domain/LipidCompleteStructure.h"
 #include "cppgoslin/domain/FattyAcid.h"
-#include "cppgoslin/parser/BaseParserEventHandler.h"
+#include "cppgoslin/domain/Headgroup.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
+#include "cppgoslin/parser/LipidBaseParserEventHandler.h"
 #include <string>
 #include <set>
 #include <map>
@@ -45,17 +45,11 @@ SOFTWARE.
 using namespace std;
 using namespace goslin;
 
-class SwissLipidsParserEventHandler : public BaseParserEventHandler<LipidAdduct*> {
+class SwissLipidsParserEventHandler : public LipidBaseParserEventHandler {
 public:
-    LipidLevel level;
-    LipidAdduct *lipid;
-    string head_group;
-    FattyAcid *lcb;
-    vector<FattyAcid*> *fa_list;
-    FattyAcid *current_fa;
-    bool use_head_group;
     int db_position;
     string db_cistrans;
+    int suffix_number;
         
     SwissLipidsParserEventHandler();
     ~SwissLipidsParserEventHandler();
@@ -65,6 +59,7 @@ public:
     void set_head_group_name(TreeNode *node);
     void set_species_level(TreeNode *node);
     void set_molecular_level(TreeNode *node);
+    void set_level(LipidLevel _level);
     void new_lcb(TreeNode *node);
     void clean_lcb(TreeNode *node);
     void new_fa(TreeNode *node);
@@ -74,14 +69,20 @@ public:
     void add_double_bonds(TreeNode *node);
     void add_carbon(TreeNode *node);
     void mediator_event(TreeNode* node);
-    
+    void set_nape(TreeNode *node);
     void set_isomeric_level(TreeNode* node);
     void add_db_position(TreeNode* node);
     void add_db_position_number(TreeNode* node);
     void add_cistrans(TreeNode* node);
-    void se_species_fa(TreeNode *node);
+    void set_species_fa(TreeNode *node);
     void set_head_group_name_se(TreeNode *node);
     void add_one_hydroxyl(TreeNode *node);
+    void add_suffix_number(TreeNode *node);
+    void add_fa_lcb_suffix_type(TreeNode *node);
+    void new_adduct(TreeNode *node);
+    void add_adduct(TreeNode *node);
+    void add_charge(TreeNode *node);
+    void add_charge_sign(TreeNode *node);
     
 };
 

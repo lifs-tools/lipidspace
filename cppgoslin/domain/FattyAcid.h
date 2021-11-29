@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,29 +30,54 @@ SOFTWARE.
 #include <string>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidEnums.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
+#include "cppgoslin/domain/DoubleBonds.h"
+#include "cppgoslin/domain/StringFunctions.h"
 #include <sstream>
 
 using namespace std;
 using namespace goslin;
 
-class FattyAcid {
+class FattyAcid : public FunctionalGroup {
 public:
-    string name;
-    int position;
     int num_carbon;
-    int num_hydroxyl;
-    int num_double_bonds;
     LipidFaBondType lipid_FA_bond_type;
-    map<int, string> double_bond_positions;
-    bool lcb;
+    
+    FattyAcid(string name, int num_carbon = 0, DoubleBonds* double_bonds = 0, map<string, vector<FunctionalGroup*> >* functional_groups = 0, LipidFaBondType lipid_FA_bond_type = ESTER, int position = 0);
+    string to_string(LipidLevel level);
+    void compute_elements();
+    FattyAcid* copy();
+    int get_double_bonds();
+    void set_type(LipidFaBondType _lipid_FA_bond_type);
+    ElementTable* get_functional_group_elements();
+    static string get_prefix(LipidFaBondType _lipid_FA_bond_type);
+    static bool lipid_FA_bond_type_prefix(LipidFaBondType lipid_FA_bond_type);
+    const set<string> fg_exceptions {"acyl", "alkyl", "cy", "cc", "acetoxy"};
+};
+
+
     
 
-    FattyAcid(string name, int num_carbon, int num_double_bonds, int num_hydroxyl, LipidFaBondType lipid_FA_bond_type, bool lcb, int position, map<int, string> *_double_bond_positions);
-    FattyAcid();
-    FattyAcid(FattyAcid* fa);
-    string to_string(bool special_case = false);
-    ElementTable* get_elements();
-    static string suffix(LipidFaBondType _lipid_FA_bond_type);
-    static bool lipid_FA_bond_type_prefix(LipidFaBondType lipid_FA_bond_type);
+
+class AcylAlkylGroup : public FunctionalGroup {
+public:
+    bool alkyl;
+    bool N_bond;
+    
+    
+    AcylAlkylGroup(FattyAcid* _fa, int _position = -1, int count = 1, bool _alkyl = false, bool N_bond = false);
+    AcylAlkylGroup* copy();
+    void set_N_bond_type(bool N_bond);
+    string to_string(LipidLevel level);
 };
+    
+
+    
+class CarbonChain : public FunctionalGroup {
+public:
+    CarbonChain(FattyAcid* _fa, int _position = -1, int _count = 1);
+    CarbonChain* copy();
+    string to_string(LipidLevel level);
+};
+
 #endif /* FATTY_ACID_H */

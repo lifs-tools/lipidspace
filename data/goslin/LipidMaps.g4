@@ -1,9 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // MIT License
 // 
-// Copyright (c) 2017 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-//                    Bing Peng   -   bing.peng {at} isas.de
-//                    Nils Hoffmann  -  nils.hoffmann {at} isas.de
+// Copyright (c) the authors (listed in global LICENSE file)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the 'Software'), to deal
@@ -30,14 +28,23 @@
 grammar LipidMaps;
 
 /* first rule is always start rule */
-lipid: lipid_rule EOF;
+lipid : lipid_rule EOF | lipid_rule adduct_info EOF;
 lipid_rule: lipid_mono | lipid_mono isotope;
 lipid_mono: lipid_pure | lipid_pure isoform;
 lipid_pure: pure_fa | gl | pl | sl | pk | sterol | mediator;
 isoform: square_open_bracket isoform_inner square_close_bracket;
 isoform_inner : 'rac' | 'iso' | 'iso' number | 'R';
-isotope: SPACE round_open_bracket element number round_close_bracket | DASH round_open_bracket element number round_close_bracket | DASH element number;
-element: 'd';
+isotope: SPACE round_open_bracket isotope_element number round_close_bracket | DASH round_open_bracket isotope_element number round_close_bracket | DASH isotope_element number;
+isotope_element: 'd';
+
+
+/* adduct information */
+adduct_info : adduct_sep | adduct_separator adduct_sep;
+adduct_sep : '[M' adduct ']' charge_sign | '[M' adduct ']' charge charge_sign;
+adduct : adduct_set;
+adduct_set : adduct_element | adduct_element adduct_set;
+adduct_element : element | element number | number element | plus_minus element | plus_minus element number | plus_minus number element;
+
 
 
 /* pure fatty acid */
@@ -69,7 +76,8 @@ tgl_species: round_open_bracket fa round_close_bracket | fa;
 tgl_subspecies: round_open_bracket fa3 round_close_bracket | fa3;
 
 hg_sglc: hg_sgl | hg_sgl headgroup_separator;
-hg_sgl: 'MGDG' | 'DGDG' | 'SQDG' | 'SQMG' | 'DG' | 'DGCC' | 'PE-GlcDG';
+hg_sgl: 'MGDG' | 'DGDG' | 'SQDG' | 'SQMG' | hg_dg | 'DGCC' | 'PE-GlcDG';
+hg_dg : 'DG';
 hg_glc: hg_gl | hg_gl headgroup_separator;
 hg_gl: 'MG' | 'DG' | 'TG';
 
@@ -77,9 +85,11 @@ hg_gl: 'MG' | 'DG' | 'TG';
 
 
 /* phospholipid rules */
-pl: lpl | dpl | cl | fourpl | threepl;
+pl: lpl | dpl | cl | fourpl | threepl | cpa;
 lpl: hg_lplc round_open_bracket fa_lpl round_close_bracket | hg_lplc fa_lpl;
-fa_lpl: fa | fa2;
+cpa : hg_cpa round_open_bracket fa round_close_bracket;
+fa_lpl: fa_lpl_molecular | fa2;
+fa_lpl_molecular: fa;
 dpl: hg_ddpl dpl_species | hg_ddpl dpl_subspecies;
 dpl_species: round_open_bracket fa round_close_bracket | fa;
 dpl_subspecies: round_open_bracket fa2 round_close_bracket | fa2;
@@ -94,9 +104,11 @@ hg_ddpl: hg_dplc pip_position | hg_dplc;
 hg_clc: hg_cl | hg_cl headgroup_separator;
 hg_cl: 'CL';
 hg_dplc: hg_dpl | hg_dpl headgroup_separator;
-hg_dpl: 'LBPA' | 'CDP-DG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | 'PIP' | 'PIP2' | 'PIP3' | 'PS' | 'PIM1' | 'PIM2' | 'PIM3' | 'PIM4' | 'PIM5' | 'PIM6' | 'Glc-DG' | 'PGP' | 'PE-NMe2' | 'AC2SGL' | 'DAT' | 'PE-NMe' | 'PT' | 'Glc-GP' | 'PPA' | 'PnC' | 'PnE' | '6-Ac-Glc-GP';
+hg_cpa: 'CPA';
+hg_dpl: hg_lbpa | 'CDP-DG' | 'DMPE' | 'MMPE' | 'PA' | 'PC' | 'PE' | 'PEt' | 'PG' | 'PI' | 'PIP' | 'PIP2' | 'PIP3' | 'PS' | 'PIM1' | 'PIM2' | 'PIM3' | 'PIM4' | 'PIM5' | 'PIM6' | 'Glc-DG' | 'PGP' | 'PE-NMe2' | 'AC2SGL' | 'DAT' | 'PE-NMe' | 'PT' | 'Glc-GP' | 'PPA' | 'PnC' | 'PnE' | '6-Ac-Glc-GP';
+hg_lbpa : 'LBPA';
 hg_lplc: hg_lpl | hg_lpl headgroup_separator;
-hg_lpl: 'LysoPC' | 'LPC' | 'LysoPE' | 'LPE' | 'LPI' | 'LPG' | 'LPS' | 'LPIM1' | 'LPIM2' | 'LPIM3' | 'LPIM4' | 'LPIM5' | 'LPIM6' | 'CPA' | 'LPA';
+hg_lpl: 'LysoPC' | 'LPC' | 'LysoPE' | 'LPE' | 'LPI' | 'LPG' | 'LPS' | 'LPIM1' | 'LPIM2' | 'LPIM3' | 'LPIM4' | 'LPIM5' | 'LPIM6' | 'LPA';
 hg_fourplc: hg_fourpl | hg_fourpl headgroup_separator;
 hg_fourpl: 'PAT16' | 'PAT18';
 pip_position: square_open_bracket pip_pos square_close_bracket;
@@ -107,24 +119,28 @@ hg_threepl: 'SLBPA' | 'PS-NAc' | 'NAPE';
 
 
 /* sphingolipid rules */
-sl: lsl | dsl | sphingoxine;
+sl: lsl | dsl;
 lsl: hg_lslc round_open_bracket lcb round_close_bracket | hg_lslc lcb;
 dsl: hg_dslc dsl_species | hg_dslc dsl_subspecies;
 dsl_species: round_open_bracket lcb round_close_bracket | lcb;
 dsl_subspecies: round_open_bracket lcb_fa_sorted round_close_bracket | lcb_fa_sorted;
 
-sphingoxine: sphingoxine_pure | sphingoxine_var;
-sphingoxine_pure: sphingosine_name | sphinganine_name;
-sphingoxine_var: ctype headgroup_separator sphingosine_name | ctype headgroup_separator sphinganine_name;
-sphingosine_name: 'Sphingosine' | 'So' | 'Sphingosine-1-phosphate';
-sphinganine_name: 'Sphinganine' | 'Sa' | 'Sphinganine-1-phosphate';
-ctype: 'C' number;
 
-hg_dslc: hg_dsl | hg_dsl headgroup_separator;
-hg_dsl: 'Cer' | 'CerP' | 'EPC' | 'GB3' | 'GB4' | 'GD3' | 'GM3' | 'GM4' | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SulfoHexCer' | 'SM' | 'PE-Cer' | 'PI-Cer' | 'GlcCer' | 'FMC-5' | 'FMC-6' | 'LacCer' | 'GalCer' | 'C1P' | special_cer;
+hg_dslc: hg_dsl_global | hg_dsl_global headgroup_separator;
+hg_dsl_global : hg_dsl | special_cer | special_glyco;
+hg_dsl: 'Cer' | 'CerP' | 'EPC' | 'GB3' | 'GB4' | 'GD3' | 'GM3' | 'GM4' | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SulfoHexCer' | 'SM' | 'PE-Cer' | 'PI-Cer' | 'GlcCer' | 'FMC-5' | 'FMC-6' | 'LacCer' | 'GalCer' | 'C1P' | '(3\'-sulfo)Galbeta-Cer' | omega_linoleoyloxy_Cer;
+omega_linoleoyloxy_Cer : 'omega-linoleoyloxy-' special_cer_hg;
 special_cer : special_cer_prefix '-Cer';
-special_cer_prefix : '1-O-' special_cer_prefix_1_O | '(3\'-sulfo)Galbeta';
-special_cer_prefix_1_O : 'myristoyl' | 'palmitoyl' | 'stearoyl' | 'eicosanoyl' | 'behenoyl' | 'lignoceroyl' | 'cerotoyl' | 'carboceroyl' | 'tricosanoyl';
+special_cer_hg : 'Cer';
+special_cer_prefix : '1-O-' special_cer_prefix_1_O;
+special_glyco : glyco_cer '-' special_cer_hg;
+special_cer_prefix_1_O : 'myristoyl' | 'palmitoyl' | 'stearoyl' | 'eicosanoyl' | 'behenoyl' | 'lignoceroyl' | 'cerotoyl' | 'pentacosanoyl' | 'tricosanoyl' | 'carboceroyl' | 'lignoceroyl-omega-linoleoyloxy' | 'stearoyl-omega-linoleoyloxy';
+glyco_cer : glyco_entity | glyco_entity '-' glyco_cer | number glyco_branch glyco_cer;
+glyco_branch : '(' glyco_cer '-' number ')' | '(' glyco_cer '-' number ')' glyco_branch;
+glyco_entity : glyco_struct | glyco_number glyco_struct | glyco_number glyco_struct greek | glyco_number glyco_struct greek number | glyco_number glyco_struct number | glyco_struct greek | glyco_struct greek number;
+glyco_number : number | number '-';
+glyco_struct : 'Hex' | 'Gal' | 'Glc' | 'Man' | 'Neu' | 'HexNAc' | 'GalNAc' | 'GlcNAc' | 'NeuAc' | 'NeuGc' | 'Kdn' | 'GlcA' | 'Xyl' | 'Fuc' | 'KDN' | 'OAc-NeuAc';
+greek : 'alpha' | 'beta' | 'α' | 'β';
 
 
 hg_lslc: hg_lsl | hg_lsl headgroup_separator;
@@ -167,9 +183,15 @@ mediator_oxo: 'Oxo' | 'oxo';
 fa: fa_unmod | fa_unmod fa_mod | fa_unmod fa_mod_separator fa_mod;
 fa_unmod: round_open_bracket ether fa_pure round_close_bracket | round_open_bracket fa_pure round_close_bracket | ether fa_pure | fa_pure;
 fa_mod: round_open_bracket modification round_close_bracket;
-modification: modification ',' modification | number mod_text | mod_text;
-mod_text: mod_text mod_text | square_open_bracket mod_text square_close_bracket | 'OH' | 'Ke' | 'S' | 'OOH' | 'My' | 'Me' | 'R' | 'Br' | 'CHO' | 'COOH' | 'Cp' | '(R)' | 'Ep' | 'OH2' | 'OH3' | 'OH4' | 'OH6' | 'cyclo' | 'cyclo2' | 'KE2' | 'Ke2' | 'NH2' | 'Me6' | 'Me2' | 'Me3'  | 'Y';
-ether: 'P-' | 'O-';
+modification: modification ',' modification | single_mod;
+single_mod : isomeric_mod | isomeric_mod square_open_bracket stereo square_close_bracket | structural_mod | structural_mod square_open_bracket stereo square_close_bracket;
+isomeric_mod : mod_pos mod_text;
+structural_mod : mod_text | mod_text mod_num;
+mod_pos : number;
+mod_num : number;
+mod_text: 'OH' | 'Ke' | 'OOH' | 'My' | 'Me' | 'Br' | 'CHO' | 'COOH' | 'Cp' | 'Ep' | 'KE' | 'NH';
+ether : 'P-' | 'O-';
+stereo : 'R' | 'S';
 fa_pure: carbon carbon_db_separator db | carbon carbon_db_separator db db_hydroxyl_separator hydroxyl;
 lcb_fa: lcb_fa_unmod | lcb_fa_unmod lcb_fa_mod;
 lcb_fa_unmod: carbon carbon_db_separator db;
@@ -185,7 +207,8 @@ db_position_number : number;
 cistrans : 'E' | 'Z';
 hydroxyl: number;
 hydroxyl_lcb: 'm' | 'd' | 't';
-number:  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | number number;
+number: digit | digit number;
+digit: '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 
 /* separators */
 SPACE : ' ';
@@ -202,6 +225,7 @@ SOB: '[';
 SCB: ']';
 
 fa_separator: UNDERSCORE | SLASH | BACKSLASH | DASH;
+adduct_separator : SPACE;
 headgroup_separator: SPACE;
 fa_mod_separator: SPACE;
 carbon_db_separator: COLON;
@@ -214,3 +238,7 @@ round_close_bracket: RCB;
 square_open_bracket: SOB;
 square_close_bracket: SCB;
 
+element: 'C' | 'H' | 'N' | 'O' | 'P' | 'S' | 'Br' | 'I' | 'F' | 'Cl' | 'As';
+charge : '1' | '2' | '3' | '4';
+charge_sign : plus_minus;
+plus_minus : '-' | '+';

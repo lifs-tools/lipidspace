@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,25 +27,36 @@ SOFTWARE.
 #define KNOWN_PARSERS_H
 
 
-#include "cppgoslin/parser/GoslinFragmentParserEventHandler.h"
+#include "cppgoslin/parser/FattyAcidParserEventHandler.h"
+#include "cppgoslin/parser/ShorthandParserEventHandler.h"
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 #include "cppgoslin/parser/LipidMapsParserEventHandler.h"
 #include "cppgoslin/parser/SwissLipidsParserEventHandler.h"
 #include "cppgoslin/parser/HmdbParserEventHandler.h"
-//#include "cppgoslin/parser/BaseParserEventHandler.h"
 #include "cppgoslin/parser/KnownGrammars.h"
+
+class FattyAcidParser : public Parser<LipidAdduct*> {
+public:
+    FattyAcidParser();
+    ~FattyAcidParser();
+    LipidAdduct* parse(string lipid_name, bool throw_error = true);
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
+};
+
+
+class ShorthandParser : public Parser<LipidAdduct*> {
+public:
+    ShorthandParser();
+    ~ShorthandParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
+};
+
 
 class GoslinParser : public Parser<LipidAdduct*> {
 public:
     GoslinParser();
     ~GoslinParser();
-};
-
-
-class GoslinFragmentParser : public Parser<LipidAdduct*> {
-public:
-    GoslinFragmentParser();
-    ~GoslinFragmentParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
@@ -54,6 +64,7 @@ class LipidMapsParser : public Parser<LipidAdduct*> {
 public:
     LipidMapsParser();
     ~LipidMapsParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
@@ -61,6 +72,7 @@ class SwissLipidsParser : public Parser<LipidAdduct*> {
 public:
     SwissLipidsParser();
     ~SwissLipidsParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
@@ -68,16 +80,19 @@ class HmdbParser : public Parser<LipidAdduct*> {
 public:
     HmdbParser();
     ~HmdbParser();
+    LipidAdduct* parse_parallel(string, bool throw_error = true, BaseParserEventHandler<LipidAdduct*>* bpeh = 0);
 };
 
 
 class LipidParser {
 public:
     vector<Parser<LipidAdduct*>*> parser_list;
+    Parser<LipidAdduct*>* lastSuccessfulParser;
     
     LipidParser();
     ~LipidParser();
     LipidAdduct* parse(string lipid_name);
+    LipidAdduct* parse_parallel(string lipid_name);
 };      
 
 #endif /* KNOWN_PARSERS_H */

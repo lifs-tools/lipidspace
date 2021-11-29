@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,18 +30,29 @@ SOFTWARE.
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/Element.h"
+#include <algorithm>
+#include <cctype>
 
+
+#define contains_val(X, Y) ((X).find(Y) != (X).end())
+#define contains_val_p(X, Y) ((X)->find(Y) != (X)->end())
+#define uncontains_val(X, Y) ((X).find(Y) == (X).end())
+#define uncontains_val_p(X, Y) ((X)->find(Y) == (X)->end())
 
 static const char DEFAULT_QUOTE = '\'';
 
 using namespace std;
 
 namespace goslin {
-string replace_all(std::string str, const std::string& from, const std::string& to);
-string strip(string s, char c);
-vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE, bool with_empty = false);
+    string replace_all(std::string str, const std::string& from, const std::string& to);
+    string strip(string s, char c);
+    vector<string>* split_string(string text, char separator, char _quote = DEFAULT_QUOTE, bool with_empty = false);
+    string to_lower(string s);
+    string to_upper(string s);
+    bool endswith(const string &main_str, const string &to_match);
 }
 
 #endif /* STRINGFUNCTIONS_H */

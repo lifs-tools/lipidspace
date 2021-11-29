@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,12 +45,20 @@ void writeLipidEnum(string ofFileName){
         exit(-1);
     }
     
+    ifstream functional_file("data/goslin/functional-groups.csv");
+    if (!functional_file.good()){
+        cout << "Error: file 'data/goslin/lipid-list.csv' not found." << endl;
+        exit(-1);
+    }
+    
     string line;
     unsigned int i = 0;
-    int SYNONYM_START_INDEX = 6;
+    int SYNONYM_START_INDEX = 7;
     map<string, int> enum_names = {{"GL", 1}, {"GP", 1}, {"SP", 1}, {"ST", 1}, {"FA", 1}, {"PK", 1}, {"SL", 1}, {"UNDEFINED", 1}};
     
     map<string, vector<string>*> data;
+    vector< vector<string>*> functional_data;
+    set<string> functional_data_set;
     set<string> keys;
     while (getline(infile, line)){
         if (i++ == 0) continue;
@@ -124,8 +131,25 @@ void writeLipidEnum(string ofFileName){
     SumFormulaParserEventHandler sum_formula_handler;
     Parser<ElementTable*> parser(&sum_formula_handler, "data/goslin/SumFormula.g4", DEFAULT_QUOTE);
     
+    while (getline(functional_file, line)){
+        if (i++ == 0) continue;
+        functional_data.push_back(split_string(line, ',', '"', true));
+        string fd_name = functional_data.back()->at(1);
+        if (functional_data_set.find(fd_name) != functional_data_set.end()){
+            cout << "Error: functional group '" + fd_name + "' occurs multiple times!" << endl;
+            exit(-1);
+        }
+        functional_data_set.insert(fd_name);
+    }
+        
     
-    map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}};
+    
+    ofstream enums("cppgoslin/domain/ClassesEnum.h");
+    enums << "enum LipidClass {NO_CLASS, UNDEFINED_CLASS";
+    
+    
+     map<Element, string> table_symbol{{ELEMENT_C, "ELEMENT_C"}, {ELEMENT_H, "ELEMENT_H"}, {ELEMENT_N, "ELEMENT_N"}, {ELEMENT_O, "ELEMENT_O"}, {ELEMENT_P, "ELEMENT_P"}, {ELEMENT_S, "ELEMENT_S"}, {ELEMENT_H2, "ELEMENT_H2"}, {ELEMENT_C13, "ELEMENT_C13"}, {ELEMENT_N15, "ELEMENT_N15"}, {ELEMENT_O17, "ELEMENT_O17"}, {ELEMENT_O18, "ELEMENT_O18"}, {ELEMENT_P32, "ELEMENT_P32"}, {ELEMENT_S33, "ELEMENT_S33"}, {ELEMENT_S34, "ELEMENT_S34"}, {ELEMENT_F, "ELEMENT_F"}, {ELEMENT_Cl, "ELEMENT_Cl"}, {ELEMENT_Br, "ELEMENT_Br"}, {ELEMENT_I, "ELEMENT_I"}, {ELEMENT_As, "ELEMENT_As"}};
+     
     
     
     offile << "/* DO NOT CHANGE THE FILE, IT IS AUTOMATICALLY GENERATED */" << endl << endl;
@@ -134,8 +158,7 @@ void writeLipidEnum(string ofFileName){
     offile << "/*" << endl;
     offile << "MIT License" << endl;
     offile << endl;
-    offile << "Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de" << endl;
-    offile << "                   Nils Hoffmann  -  nils.hoffmann {at} isas.de" << endl;
+    offile << "Copyright (c) the authors (listed in global LICENSE file)" << endl;
     offile << endl;
     offile << "Permission is hereby granted, free of charge, to any person obtaining a copy" << endl;
     offile << "of this software and associated documentation files (the \"Software\"), to deal" << endl;
@@ -157,7 +180,9 @@ void writeLipidEnum(string ofFileName){
     offile << "*/" << endl;
     offile << endl;
     offile << "#include \"cppgoslin/domain/LipidEnums.h\"" << endl;
+    offile << "#include \"cppgoslin/domain/FunctionalGroup.h\"" << endl;
     offile << endl;
+    offile << "using namespace std;" << endl;
     offile << "using namespace goslin;" << endl;
     offile << endl;
     offile << endl;
@@ -165,28 +190,32 @@ void writeLipidEnum(string ofFileName){
     offile << "    lipid_classes = {" << endl;
     unsigned int cnt = 0;
     for (auto& kv : data){
-        offile << "    {" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(2) << "\", ";
-        offile << kv.second->at(3) << ", {";
+        // add lipid category, description, max num fa, possible num fa
+        offile << "    {" << kv.first << ", {" << kv.second->at(1) << ", \"" << kv.second->at(0) << "\", \"" << kv.second->at(2) << "\", ";
+        offile << kv.second->at(3) << ", " << kv.second->at(4) << ", {";
+        enums << ", " << kv.first;
         
-        vector<string>* tokens = split_string(kv.second->at(4), '|', '"');
+        vector<string>* tokens = split_string(kv.second->at(5), ';', '"');
         for (unsigned int i = 0; i < tokens->size(); ++i){
             string tok = strip(tokens->at(i), ' ');
             if (i > 0) offile << ", ";
-            offile << tok;
+            offile << "\"" << tok << "\"";
         }
         delete tokens;
         offile << "}, {";
         
-        ElementTable* table = kv.second->at(5).length() > 0 ? parser.parse(kv.second->at(5)) : create_empty_table();
         
+        
+        // add element table
+        ElementTable* table = kv.second->at(6).length() > 0 ? parser.parse(kv.second->at(6)) : create_empty_table();
         int ii = 0;
         for (auto& table_kv : *table){
             if (ii++ > 0) offile << ", ";
             offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
         }
-        
         delete table;
-            
+         
+        // add synonyms
         offile << "}, {\"" << kv.second->at(0) << "\"";
         for (unsigned int i = SYNONYM_START_INDEX; i < kv.second->size(); ++i){
             string synonym = kv.second->at(i);
@@ -195,11 +224,66 @@ void writeLipidEnum(string ofFileName){
         }
         offile << "} } }" << (++cnt < data.size() ? ",\n" : "\n") << endl;
     }
+    
+    enums << "};" << endl;
 
     
     offile << "    };" << endl; 
     offile << "}" << endl; 
     offile << endl;
+    offile << endl;
+    offile << endl;
+    offile << endl;
+    
+    
+    offile << "KnownFunctionalGroups::KnownFunctionalGroups(){" << endl;
+    
+    cnt = 0;
+    for (auto &row : functional_data){
+        if (cnt++ == 0) continue;
+        
+        row->push_back(row->at(1));
+        for (int i = 6; i < (int)row->size(); ++i){
+            if (row->at(i) == "") continue;
+            
+            offile << "    // " << row->at(5) << endl;
+            if (row->at(0) == "FG"){
+                offile << "    known_functional_groups.insert({\"" << row->at(i) << "\", new FunctionalGroup(\"" << row->at(1) << "\", -1, 1, new DoubleBonds(" << row->at(3) << "), " << row->at(4) << ", \"\", new ElementTable{";
+                
+                // add element table
+                ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
+                int ii = 0;
+                for (auto& table_kv : *table){
+                    if (ii++ > 0) offile << ", ";
+                    offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+                }
+                delete table;
+                offile << "})}";
+            }
+            else {
+                offile << "    known_functional_groups.insert({\"" << row->at(i) << "\", new HeadgroupDecorator(\"" << row->at(1) << "\", -1, 1, new ElementTable{";
+                
+                // add element table
+                ElementTable* table = row->at(2).length() > 0 ? parser.parse(row->at(2)) : create_empty_table();
+                int ii = 0;
+                for (auto& table_kv : *table){
+                    if (ii++ > 0) offile << ", ";
+                    offile << "{" << table_symbol.at(table_kv.first) << ", " << table_kv.second << "}";
+                }
+                delete table;
+                offile << "})}";
+            }
+            offile << ");" << endl;
+            offile << "\n\n";
+        }
+        
+    }
+    
+    offile << "}" << endl;
+    offile << endl;
+    
+    
+    for (auto &f : functional_data) delete f;
 }
 
 

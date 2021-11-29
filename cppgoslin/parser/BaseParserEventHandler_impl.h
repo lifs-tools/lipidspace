@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +27,7 @@ SOFTWARE.
 template <class T> 
 BaseParserEventHandler<T>::BaseParserEventHandler(){
     registered_events = new map<string, function<void(TreeNode *)>>();
+    debug = "";
 }
 
 template <class T> 
@@ -58,16 +58,15 @@ void BaseParserEventHandler<T>::sanity_check(){
 
 template <class T> 
 void BaseParserEventHandler<T>::handle_event(string event_name, TreeNode *node){
-    if (registered_events->find(event_name) != registered_events->end()){
+    if (debug == "full"){
+        string reg_event = contains_val_p(registered_events, event_name) ? "*" : "";
+        cout << event_name << reg_event << ": \"" << node->get_text() << "\"" << endl;
+    }
+        
+    if (contains_val_p(registered_events, event_name)){
+        if (debug != "" && debug != "full"){
+            cout << event_name << ": \"" << node->get_text() << "\"" << endl;
+        }
         registered_events->at(event_name)(node);
     }
-}
- 
- template <class T> 
-bool BaseParserEventHandler<T>::endswith(const string &main_str, const string &to_match){
-    if(main_str.size() >= to_match.size() &&
-            main_str.compare(main_str.size() - to_match.size(), to_match.size(), to_match) == 0)
-            return true;
-        else
-            return false;
 }

@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +27,7 @@ SOFTWARE.
 #define LIPID_SPECIES_INFO_H
 
 #include <string>
+#include <sstream>
 #include "cppgoslin/domain/FattyAcid.h"
 #include "cppgoslin/domain/LipidEnums.h"
 #include <typeinfo>
@@ -39,10 +39,18 @@ class LipidSpeciesInfo : public FattyAcid {
     
 public:
     LipidLevel level;
-    LipidSpeciesInfo ();
-    LipidSpeciesInfo (FattyAcid *fa);
-    void clone (FattyAcid *fa);
-    ElementTable* get_elements(int num_fa);
+    int num_ethers;
+    int num_specified_fa;
+    int total_fa;
+    LipidFaBondType extended_class;
+    LipidClass lipid_class;
+    
+    LipidSpeciesInfo (LipidClass _lipid_class);
+    LipidSpeciesInfo* copy();
+    void add(FattyAcid* _fa);
+    ElementTable* get_elements();
+    string to_string();
+    const string ether_prefix[5] = {"", "O-", "dO-", "tO-", "eO-"};
 };
         
 #endif /* LIPID_SPECIES_INFO_H */

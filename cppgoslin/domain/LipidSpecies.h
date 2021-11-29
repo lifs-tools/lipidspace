@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +34,8 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidEnums.h"
 #include "cppgoslin/domain/LipidExceptions.h"
 #include "cppgoslin/domain/LipidSpeciesInfo.h"
+#include "cppgoslin/domain/Headgroup.h"
+#include "cppgoslin/domain/FunctionalGroup.h"
 
 
 using namespace std;
@@ -47,29 +48,19 @@ class LipidSpeciesInfo;
 
 class LipidSpecies {
 public:
-    string head_group;
-    LipidCategory lipid_category;
-    LipidClass lipid_class;
-    LipidSpeciesInfo info;
-    bool use_head_group;
+    Headgroup* headgroup;
+    LipidSpeciesInfo* info;
     
     map<string, FattyAcid*> fa;
     vector<FattyAcid*> fa_list;
     
     virtual ~LipidSpecies();
-    //LipidSpecies(string _head_group);
-    LipidSpecies(string _head_group, LipidCategory _lipid_category = NO_CATEGORY, LipidClass lipid_class = NO_CLASS, LipidSpeciesInfo* lipid_species_info = NULL);
+    LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa = 0);
     virtual string get_lipid_string(LipidLevel level = NO_LEVEL);
-    string get_class_name();
-    ElementTable* get_elements();
-    
-    static LipidCategory get_category(string _head_group);
-    static LipidClass get_class(string _head_group);
-    static string get_class_string(LipidClass lipid_class);
-    static string get_category_string(LipidCategory lipid_category);
+    string get_extended_class();
+    virtual ElementTable* get_elements();
     virtual LipidLevel get_lipid_level();
     virtual vector<FattyAcid*> get_fa_list();
-    virtual bool validate();
 };
             
 #endif /* LIPID_SPECIES_H */

@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -78,6 +77,7 @@ public:
     TreeNode(uint64_t _rule, bool _fire_event);
     ~TreeNode();
     string get_text();
+    int get_int();
 };
    
 
@@ -90,9 +90,7 @@ class Bitfield {
     
 public:
     uint64_t *field;
-    uint64_t *superfield;
     uint64_t field_len;
-    uint64_t superfield_len;
     uint64_t num_size;
     uint64_t length;
     
@@ -102,9 +100,10 @@ public:
     uint64_t size() const;
     
     
-    Bitfield(uint64_t length);
+    Bitfield(uint64_t length, bool filled_with_ones = false);
     ~Bitfield();
     void insert(uint64_t pos);
+    void remove(uint64_t pos);
     bool find(uint64_t pos);
     void init();
     int next(int pos = -1);

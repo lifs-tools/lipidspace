@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +34,6 @@ SOFTWARE.
 #include "cppgoslin/domain/Element.h"
 #include "cppgoslin/domain/LipidSpecies.h"
 #include "cppgoslin/domain/Adduct.h"
-#include "cppgoslin/domain/Fragment.h"
 #include <sstream>
 
 using namespace std;
@@ -45,7 +43,6 @@ class LipidAdduct {
 public:
     LipidSpecies *lipid;
     Adduct *adduct;
-    Fragment *fragment;
     string sum_formula;
     
     LipidAdduct();
@@ -53,8 +50,10 @@ public:
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     string get_lipid_fragment_string(LipidLevel level = NO_LEVEL);
     string get_class_name();
+    string get_extended_class();
     double get_mass();
     string get_sum_formula();
+    LipidLevel get_lipid_level();
     ElementTable* get_elements();
 };
 

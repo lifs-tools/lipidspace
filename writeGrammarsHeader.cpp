@@ -1,8 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
-                   Nils Hoffmann  -  nils.hoffmann {at} isas.de
+Copyright (c) the authors (listed in global LICENSE file)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -70,8 +69,7 @@ void writeGrammarHeader(string ofFileName){
     offile << "/*" << endl;
     offile << "MIT License" << endl;
     offile << endl;
-    offile << "Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de" << endl;
-    offile << "                   Nils Hoffmann  -  nils.hoffmann {at} isas.de" << endl;
+    offile << "Copyright (c) the authors (listed in global LICENSE file)" << endl;
     offile << endl;
     offile << "Permission is hereby granted, free of charge, to any person obtaining a copy" << endl;
     offile << "of this software and associated documentation files (the \"Software\"), to deal" << endl;
@@ -99,15 +97,13 @@ void writeGrammarHeader(string ofFileName){
     offile << "#define KNOWN_GRAMMARS_H" << endl << endl;
 
     offile << "#include <string>" << endl;
-    //offile << "#include \"cppgoslin/parser/Parser.h\"" << endl;
 
     offile << "using namespace std;" << endl;
-
     
-    addingGrammar(offile, "goslin_grammar", "data/goslin/Goslin.g4");
+    addingGrammar(offile, "shorthand_grammar", "data/goslin/Shorthand2020.g4");
     offile << endl << endl << endl;
     
-    addingGrammar(offile, "goslin_fragment_grammar", "data/goslin/GoslinFragments.g4");
+    addingGrammar(offile, "goslin_grammar", "data/goslin/Goslin.g4");
     offile << endl << endl << endl;
     
     addingGrammar(offile, "lipid_maps_grammar", "data/goslin/LipidMaps.g4");
@@ -120,6 +116,12 @@ void writeGrammarHeader(string ofFileName){
     offile << endl << endl << endl;
     
     addingGrammar(offile, "sum_formula_grammar", "data/goslin/SumFormula.g4");
+    offile << endl << endl << endl;
+    
+    addingGrammar(offile, "fatty_acid_grammar", "data/goslin/FattyAcids.g4");
+    offile << endl << endl << endl;
+    
+    addingGrammar(offile, "systematic_grammar", "data/goslin/Systematic.g4");
     offile << endl << endl << endl;
     
     offile << "#endif /* KNOWN_GRAMMARS_H */" << endl;

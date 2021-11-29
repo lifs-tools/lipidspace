@@ -1,9 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2020 Dominik Kopczynski   -   dominik.kopczynski {at} isas.de
- *                    Bing Peng   -   bing.peng {at} isas.de
- *                    Nils Hoffmann  -  nils.hoffmann {at} isas.de
+ * Copyright (c) the authors (listed in global LICENSE file)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the 'Software'), to deal
@@ -30,21 +28,31 @@ grammar HMDB;
 
 
 /* first rule is always start rule */
-lipid : lipid_pure EOF;
+lipid : lipid_pure EOF | lipid_pure adduct_info EOF;
 lipid_pure : lipid_class | lipid_class lipid_suffix;
 lipid_class : fatty_acid | gl | pl | sl | st;
 
 lipid_suffix : '[rac]';
 
+/* adduct information */
+adduct_info : adduct_sep | adduct_separator adduct_sep;
+adduct_sep : '[M' adduct ']' charge_sign | '[M' adduct ']' charge charge_sign;
+adduct : adduct_set;
+adduct_set : adduct_element | adduct_element adduct_set;
+adduct_element : element | element number | number element | plus_minus element | plus_minus element number | plus_minus number element;
+
+
 
 
 /* fatty acyl rules */
 fa : fa_core | furan_fa | fa_lcb_prefix fa_core | fa_core fa_lcb_suffix | fa_lcb_prefix fa_core fa_lcb_suffix;
-fa_core : carbon carbon_db_separator db | ether carbon carbon_db_separator db;
+fa_core : carbon carbon_db_separator db | ether carbon carbon_db_separator db | methyl carbon carbon_db_separator db;
 
 furan_fa : furan_fa_mono | furan_fa_di;
-furan_fa_mono : number 'M' number | 'MonoMe(' number ',' number ')';
-furan_fa_di : number 'D' number | 'DiMe(' number ',' number ')';
+furan_fa_mono : furan_first_number 'M' furan_second_number | 'MonoMe(' furan_first_number ',' furan_second_number ')';
+furan_fa_di : furan_first_number 'D' furan_second_number | 'DiMe(' furan_first_number ',' furan_second_number ')';
+furan_first_number : number;
+furan_second_number : number;
 
 lcb : lcb_core | fa_lcb_prefix lcb_core | lcb_core fa_lcb_suffix | fa_lcb_prefix lcb_core fa_lcb_suffix;
 lcb_core : hydroxyl carbon carbon_db_separator db;
@@ -61,7 +69,8 @@ db_position_number : number;
 cistrans : 'E' | 'Z';
 ether : ether_type | ether_link_pos ether_type;
 ether_link_pos : number '-';
-ether_type : 'o-' | 'O-' | 'P-' | 'i-' | 'a-';
+ether_type : 'o-' | 'O-' | 'P-';
+methyl : 'i-' | 'a-';
 hydroxyl : 'm' | 'd' | 't';
 fa_lcb_suffix : fa_lcb_suffix_core | fa_lcb_suffix_separator fa_lcb_suffix_core | ROB fa_lcb_suffix_core RCB;
 fa_lcb_suffix_core : fa_lcb_suffix_type | fa_lcb_suffix_number fa_lcb_suffix_type | fa_lcb_suffix_number fa_lcb_suffix_separator fa_lcb_suffix_type;
@@ -157,8 +166,9 @@ pl_four_hg : 'BMP' | 'LBPA' | 'Lysobisphosphatidate' | 'CL' | 'MLCL' | 'DLCL';
 
 /* sphingolipid rules */
 sl : sl_hg sl_lcb | sl_hg headgroup_separator sl_lcb;
-sl_hg : sl_hg_names | sl_hg_prefix sl_hg_names | sl_hg_names sl_hg_suffix | sl_hg_prefix sl_hg_names sl_hg_suffix;
-sl_hg_names : 'HexCer' | 'Hex2Cer' | 'SM' | 'PE-Cer' | 'Cer' | 'CerP' | 'IPC' | 'MIPC' | 'M(IP)2C' | 'Gb3Cer' | 'Gb4Cer' | 'Forssman'  | 'MSGG' | 'DSGG' | 'NOR1' | 'NORint' | 'NOR2' | 'Globo-H' | 'Globo-A' | 'SB1a' | 'SM1b' | 'SM1a' | 'Branched-Forssman' | 'Globo-B' | 'Para-Forssman' | 'Globo-Lex-9' | 'LysoSM' | 'Glucosylceramide' | 'Ceramide' | 'Tetrahexosylceramide' | ganglioside;
+sl_hg : all_sl_hg_names | sl_hg_prefix all_sl_hg_names | all_sl_hg_names sl_hg_suffix | sl_hg_prefix all_sl_hg_names sl_hg_suffix;
+all_sl_hg_names : sl_hg_names | ganglioside;
+sl_hg_names : 'HexCer' | 'Hex2Cer' | 'SM' | 'PE-Cer' | 'Cer' | 'CerP' | 'IPC' | 'MIPC' | 'M(IP)2C' | 'Gb3Cer' | 'Gb4Cer' | 'Forssman'  | 'MSGG' | 'DSGG' | 'NOR1' | 'NORint' | 'NOR2' | 'Globo-H' | 'Globo-A' | 'SB1a' | 'SM1b' | 'SM1a' | 'Branched-Forssman' | 'Globo-B' | 'Para-Forssman' | 'Globo-Lex-9' | 'LysoSM' | 'Glucosylceramide' | 'Ceramide' | 'Tetrahexosylceramide';
 ganglioside : 'Ganglioside' headgroup_separator ganglioside_names | ganglioside_names;
 ganglioside_names : 'Gb3' | 'GA2' | 'GA1' | 'GM3' | 'GM2' | 'GM1' | 'GD3' | 'GT3' | 'GD1' | 'GT1' | 'GQ1' | 'GM4' | 'GD2' | 'GT2' | 'GP1' | 'GD1a' | 'GM1b' | 'GT1b' | 'GQ1b' | 'GT1a' | 'GQ1c' | 'GP1c' | 'GD1c' | 'GD1b' | 'GT1c';
 
@@ -188,10 +198,6 @@ st_sub2_hg : 'SE';
 st_sub2_fa : ROB fa2 RCB;
 
 
-
-
-
-
 /* separators */
 SPACE : ' ';
 COLON : ':';
@@ -206,6 +212,7 @@ RCB: ')';
 
 unsorted_fa_separator : UNDERSCORE;
 sorted_fa_separator : SLASH;
+adduct_separator : SPACE;
 headgroup_separator : SPACE;
 carbon_db_separator : COLON;
 db_position_separator : COMMA;
@@ -213,5 +220,10 @@ med_position_separator : COMMA;
 fa_lcb_suffix_separator : DASH;
 fa_lcb_prefix_separator : DASH;
 
-number :  digit;
-digit : '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | digit digit;
+number :  digit | digit number;
+digit : '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+
+element: 'C' | 'H' | 'N' | 'O' | 'P' | 'S' | 'Br' | 'I' | 'F' | 'Cl' | 'As';
+charge : '1' | '2' | '3' | '4';
+charge_sign : plus_minus;
+plus_minus : '-' | '+';
