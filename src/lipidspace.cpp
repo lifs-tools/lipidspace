@@ -871,13 +871,7 @@ void LipidSpace::report_hausdorff_matrix(string output_folder){
 
 
 
-
-
-
-
-
-
-void LipidSpace::compute_global_distance_matrix(){
+bool LipidSpace::compute_global_distance_matrix(){
     global_lipidome->species.clear();
     global_lipidome->classes.clear();
     global_lipidome->categories.clear();
@@ -923,9 +917,10 @@ void LipidSpace::compute_global_distance_matrix(){
         }
     }
     
-    
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
+    if (n == 0) return false;
+    
     global_lipidome->intensities.resize(n);
     for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = 1;
     
@@ -972,6 +967,7 @@ void LipidSpace::compute_global_distance_matrix(){
             }
         }
     }
+    return true;
 }
 
 
@@ -1113,7 +1109,13 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             index_key_pairs.insert(index_key_pair);
         }
         else {
-            throw LipidSpaceException("Error while loading pivot table '" + pivot_table_file + "': sample and lipid pair '" + index_key_pair + "' occurs twice in table.", LipidDoublette);
+            if (ignore_doublette_lipids){
+                Logging::write_log("Ignoring lipid doublette '" + index_key_pair + "'");
+                continue;
+            }
+            else {
+                throw LipidSpaceException("Error while loading pivot table '" + pivot_table_file + "': sample and lipid pair '" + index_key_pair + "' occurs twice in table.", LipidDoublette);
+            }
         }
         
         
@@ -1580,7 +1582,12 @@ void LipidSpace::run_analysis(Progress *_progress){
     
     // compute PCA matrixes for the complete lipidome
     if (!progress || !progress->stop_progress){
-        compute_global_distance_matrix();
+        if (!compute_global_distance_matrix()){
+            if (progress){
+                progress->interrupt();
+            }
+            return;
+        }
     }
     
     

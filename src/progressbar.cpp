@@ -17,6 +17,10 @@ void Progressbar::abort(){
     closeWindow(false);
 }
 
+void Progressbar::interruptClose(){
+    accept();
+}
+
 
 void Progressbar::reject(){
     closeWindow(false);
@@ -42,7 +46,6 @@ void Progressbar::closeWindow(bool successful){
     }
     else {
         interrupt();
-        resetAnalysis();
     }
     accept();
 }

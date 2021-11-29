@@ -131,6 +131,12 @@ void Progress::set(int cp){
 
 void Progress::interrupt(){
     stop_progress = true;
+    interrupting();
+}
+
+
+void Progress::reset(){
+    stop_progress = false;
 }
 
 

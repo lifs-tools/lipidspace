@@ -58,7 +58,7 @@ public:
     double compute_hausdorff_distance(Matrix &m1, Matrix &m2);
     void compute_hausdorff_matrix();
     void report_hausdorff_matrix(string output_folder);
-    void compute_global_distance_matrix();
+    bool compute_global_distance_matrix();
     void separate_matrixes();
     void normalize_intensities();
     void create_dendrogram();

@@ -25,6 +25,7 @@ public slots:
     void set_current(int c);
     void abort();
     void reject();
+    void interruptClose();
     
 signals:
     void resetAnalysis();

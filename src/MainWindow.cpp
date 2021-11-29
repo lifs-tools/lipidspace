@@ -5,7 +5,6 @@
 
 
 
-
 void print_help(){
     cerr << "usage: " << endl;
     cerr << "  > ./lipidspace [options] output_folder table lipid_table[csv]" << endl;
@@ -38,12 +37,13 @@ int main(int argc, char** argv) {
     
     
     if (argc == 1){
-        QApplication a(argc, argv);
+    
+        QApplication application(argc, argv);
         Logging::write_log("LipidSpace v.1.0.1 was launched in window mode");
         LipidSpace lipid_space;
-        LipidSpaceGUI w(&lipid_space);
-        w.show();
-        return a.exec();
+        LipidSpaceGUI lipid_space_gui(&lipid_space);
+        lipid_space_gui.show();
+        return application.exec();
     }
     /*
     

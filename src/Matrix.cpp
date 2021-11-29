@@ -98,6 +98,26 @@ Matrix::Matrix(const Array &a, int _rows, int _cols) : QObject() {
     for (double v : a) m.push_back(v);
 }
 
+Matrix& operator+=(Matrix &me, const double val){
+    for (int i = 0; i < (int)me.m.size(); ++i) me.m.at(i) += val;
+    return me;
+}
+
+Matrix& operator-=(Matrix &me, const double val){
+    for (int i = 0; i < (int)me.m.size(); ++i) me.m.at(i) -= val;
+    return me;
+}
+
+Matrix& operator*=(Matrix &me, const double val){
+    for (int i = 0; i < (int)me.m.size(); ++i) me.m.at(i) *= val;
+    return me;
+}
+
+Matrix& operator/=(Matrix &me, const double val){
+    for (int i = 0; i < (int)me.m.size(); ++i) me.m.at(i) /= val;
+    return me;
+}
+
 Matrix::Matrix(vector<vector<double>> &mat) : QObject(){
     rewrite(mat);
 }
@@ -330,7 +350,31 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
 }
 
 
+double Matrix::vector_vector_mult(int n, const double *x, const double *y){
+    int i, n8 = n & ~7;
+    double sum;
+    __m256d vector_sum = {0., 0., 0., 0.};
+    
+    for (i = 0; i < n8; i += 8) {
+        __m256d vector_x1 = _mm256_loadu_pd(&x[i]);
+        __m256d vector_y1 = _mm256_loadu_pd(&y[i]);
+        __m256d vector_x2 = _mm256_loadu_pd(&x[i + 4]);
+        __m256d vector_y2 = _mm256_loadu_pd(&y[i + 4]);
+        vector_sum += vector_x1 * vector_y1;
+        vector_sum += vector_x2 * vector_y2;
+    }
+    vector_sum[0] += vector_sum[1];
+    vector_sum[2] += vector_sum[3];
+    vector_sum[0] += vector_sum[2];
+    for (sum = 0.0; i < n; ++i) sum += x[i] * y[i];
+    sum += vector_sum[0];
+	return sum;
+}
+
+
 void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
+
+#ifndef _WIN32
     assert((transA ? A.rows : A.cols) == (transB ? B.cols : B.rows));
     
     int mm = transA ? A.cols : A.rows;
@@ -338,6 +382,35 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
     int nn = transB ? B.rows : B.cols;
     reset(mm, nn);
     cblas_dgemm(CblasColMajor, transA ? CblasTrans : CblasNoTrans, transB ? CblasTrans : CblasNoTrans, mm, nn, kk, alpha, A.data(), A.rows, B.data(), B.rows, 0.0, data(), rows);
+#endif
+    
+#ifdef _WIN32
+    int tile_size = 16;
+    Matrix mA(A, !transA);
+    Matrix mB(B, transB);
+    
+    assert(mA.rows == mB.rows);
+    
+    int num_cols_A = mA.cols;
+    int num_cols_B = mB.cols;
+    reset(num_cols_A, num_cols_B);
+    
+    
+    #pragma omp parallel for collapse(2)
+    for (int i = 0; i < num_cols_A; i += tile_size) {
+        for (int j = 0; j < num_cols_B; j += tile_size) {
+            int it = min(num_cols_A, i + tile_size);
+            int jt = min(num_cols_B, j + tile_size);
+            for (int jj = j; jj < jt; ++jj){
+                double *mm = m.data() + jj * rows;
+                for (int ii = i; ii < it; ++ii){
+                    mm[ii] += vector_vector_mult(mA.rows, mA.data() + ii * mA.rows, mB.data() + jj * mA.rows);
+                }
+            }
+        }
+    }
+    if (alpha != 1.) *this *= alpha;
+#endif
 }
 
 

@@ -116,12 +116,15 @@ public slots:
     void interrupt();
     void set_step();
     void prepare_steps(int);
+    void reset();
+    
     
     
 signals:
     void set_current(int);
     void set_max(int);
     void finish();
+    void interrupting();
 };
 
 

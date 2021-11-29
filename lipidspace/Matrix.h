@@ -62,6 +62,10 @@ public:
     Matrix(vector<vector<double>> &copy);
     Matrix(int _rows, int _cols);
     Matrix(Matrix &mat, bool transpose = false);
+    friend Matrix& operator+=(Matrix &me, const double val);
+    friend Matrix& operator-=(Matrix &me, const double val);
+    friend Matrix& operator*=(Matrix &me, const double val);
+    friend Matrix& operator/=(Matrix &me, const double val);
     void reset(int _rows, int _cols);
     void rewrite_transpose(Matrix &copy);
     void rewrite(vector<vector<double>> &copy);
@@ -71,6 +75,7 @@ public:
     double col_min(int c);
     double col_max(int c);
     void transpose();
+    static double vector_vector_mult(int n, const double *x, const double *y);
     double pairwise_sum(Matrix &m);
     void pad_cols_4();
     void mult(Matrix& A, Matrix& B, bool transA = false, bool transB = false, double alpha = 1.0);

@@ -129,6 +129,7 @@ private:
     DragLayer *dragLayer;
     vector<Canvas*> canvases;
     bool table_transposed;
+    map<string, vector<string>> sortings[4];
     
     void fill_Table();
 };

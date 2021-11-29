@@ -8,6 +8,12 @@ Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
 }
  
  
+void Dendrogram::clear(){
+    dendrogram_titles.clear();
+    lines.clear();
+    update();
+}
+ 
  
 void Dendrogram::load(){
     dendrogram_titles.clear();
@@ -152,8 +158,8 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
     
         recursive_paint(painter, node->left_child, max_recursions, recursion + 1);
     }
-    // processing right child
     
+    // processing right child
     if (node->right_child->indexes.size() > 1){
         double pie_x = node->x_right * dendrogram_x_factor;
         double pie_y = -node->y * dendrogram_y_factor;
@@ -619,6 +625,11 @@ Canvas::~Canvas(){
     if (pointSet) delete pointSet;
     if (dendrogram) delete dendrogram;
     if (variances) delete variances;
+}
+
+
+void Canvas::clear(){
+    if (dendrogram) dendrogram->clear();
 }
 
 

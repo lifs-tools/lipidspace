@@ -131,6 +131,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(progress, SIGNAL(finish()), progressbar, SLOT(finish()));
     connect(progress, SIGNAL(set_current(int)), progressbar, SLOT(set_current(int)));
     connect(progress, SIGNAL(set_max(int)), progressbar, SLOT(set_max(int)));
+    connect(progress, SIGNAL(interrupting()), progressbar, SLOT(interruptClose()));
     connect(progressbar, SIGNAL(interrupt()), progress, SLOT(interrupt()));
     connect(progressbar, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     progressbar->setModal(true);
@@ -332,6 +333,7 @@ void LipidSpaceGUI::runAnalysis(){
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
     
+    progress->reset();
     std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
     progressbar->exec();
     runAnalysisThread.join();
@@ -346,6 +348,11 @@ void LipidSpaceGUI::runAnalysis(){
     }
     canvases.clear();
     updateGUI();
+    
+    if (!lipid_space->analysis_finished){
+        ui->dendrogramView->clear();
+        return;
+    }
     
     GlobalData::color_counter = 0;
     GlobalData::feature_counter = 0;
@@ -386,7 +393,6 @@ void LipidSpaceGUI::runAnalysis(){
             GlobalData::colorMapFeatures.insert({feature, GlobalData::COLORS[GlobalData::feature_counter++ % GlobalData::COLORS.size()]});
         }
     }
-    
     
     fill_Table();
     ui->tabWidget->setVisible(true);

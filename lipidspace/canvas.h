@@ -49,6 +49,7 @@ public:
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
     ~Dendrogram();
     void load();
+    void clear();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     void recursive_paint(QPainter *painter, DendrogramNode *_node, int max_recursions, int recursion = 0);
     QRectF boundingRect() const override;
@@ -118,6 +119,7 @@ public slots:
     void setSwap(int source);
     void reloadPoints();
     void setFeature(string);
+    void clear();
     
     
 signals:
