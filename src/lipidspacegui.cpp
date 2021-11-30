@@ -359,6 +359,12 @@ void LipidSpaceGUI::runAnalysis(){
     GlobalData::colorMap.clear();
     GlobalData::colorMapFeatures.clear();
     
+    for (auto lipid_class : lipid_space->global_lipidome->classes){
+        if (uncontains_val(GlobalData::colorMap, lipid_class)){
+            GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[GlobalData::color_counter++ % GlobalData::COLORS.size()]});
+        }
+    }
+    
     int numTiles = 2 * (lipid_space->selected_lipidomes.size() > 1) + lipid_space->selected_lipidomes.size();
     ui->dendrogramView->resetDendrogram();
     

@@ -202,9 +202,6 @@ PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
 void PointSet::loadPoints(){
     points.clear();
     labels.clear();
-    label_points.clear();
-    class_means.clear();
-    lipid_label.clear();
     
     double x_min = 0;
     double x_max = 0;
@@ -224,22 +221,21 @@ void PointSet::loadPoints(){
         y_min = min(y_min, yval - intens);
         y_max = max(y_max, yval + intens);
         
-        string lipid_class = lipidome->classes[r];
-        if (uncontains_val(GlobalData::colorMap, lipid_class)){
-            GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[GlobalData::color_counter++ % GlobalData::COLORS.size()]});
-        }
-        points.push_back(QPointF(xval, yval));
-        lipid_label.push_back(lipidome->species[r].c_str());
+        points.push_back(PCPoint());
+        points.back().point = QPointF(xval, yval);
+        points.back().intensity = lipidome->intensities[rr];
+        points.back().color = GlobalData::colorMap[lipidome->classes[r]];
+        points.back().label = lipidome->species[r].c_str();
         rr++;
     }
     
     set_labels();
     
-    for (auto label_point : label_points){
-        x_min = min(x_min, label_point.x());
-        x_max = max(x_max, label_point.x());
-        y_min = min(y_min, label_point.y());
-        y_max = max(y_max, label_point.y());
+    for (auto pc_label : labels){
+        x_min = min(x_min, pc_label.label_point.x());
+        x_max = max(x_max, pc_label.label_point.x());
+        y_min = min(y_min, pc_label.label_point.y());
+        y_max = max(y_max, pc_label.label_point.y());
     }
     
     double x_margin = (x_max - x_min) * 0.05;
@@ -286,14 +282,14 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     
     for (int i = 0; i < (int)points.size(); ++i){
         
-        double intens = GlobalData::showQuant ? (lipidome->intensities[i] > 1 ? log(lipidome->intensities[i]) : 0.5) : 1.;
-        QRectF bubble(points[i].x() - intens * 0.5, points[i].y() - intens * 0.5,  intens, intens);
+        double intens = GlobalData::showQuant ? (points[i].intensity > 1 ? log(points[i].intensity) : 0.5) : 1.;
+        QRectF bubble(points[i].point.x() - intens * 0.5, points[i].point.y() - intens * 0.5,  intens, intens);
         if (!v.intersects(bubble)) continue;
         
         string lipid_class = lipidome->classes[i];
         
         // setting up pen for painter
-        QColor &qcolor = GlobalData::colorMap[lipid_class];
+        QColor qcolor = points[i].color;
         qcolor.setAlpha(GlobalData::alpha);
         QPainterPath p;
         p.addEllipse(bubble);
@@ -309,11 +305,11 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     
     QFont f("Helvetica", 1);
     painter->setFont(f);
-    for (int i = 0; i < (int)label_points.size(); ++i){
+    for (auto pc_label : labels){
         painter->setPen(pen_arr);
-        QRectF labelPosition(label_points[i].x() - 50, label_points[i].y() - 20, 100, 40);
+        QRectF labelPosition(pc_label.label_point.x() - 50, pc_label.label_point.y() - 20, 100, 40);
         QRectF boundingRect;
-        painter->drawText(labelPosition, Qt::AlignCenter, labels[i], &boundingRect);
+        painter->drawText(labelPosition, Qt::AlignCenter, pc_label.label, &boundingRect);
         
         
         // shrink a little bit the bounding box
@@ -322,18 +318,18 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         
         // Search for label arrow starting point
         QPointF new_start;
-        bool found = find_start(boundingRect, class_means[i], new_start);
+        bool found = find_start(boundingRect, pc_label.class_mean, new_start);
         if (!found) continue;
         
-        double hypothenuse = sqrt(sq(new_start.x() - class_means[i].x()) + sq(new_start.y() - class_means[i].y()));
-        double angle = asin((new_start.y() - class_means[i].y()) / hypothenuse) / M_PI * 180.;
+        double hypothenuse = sqrt(sq(new_start.x() - pc_label.class_mean.x()) + sq(new_start.y() - pc_label.class_mean.y()));
+        double angle = asin((new_start.y() - pc_label.class_mean.y()) / hypothenuse) / M_PI * 180.;
         
         
         // draw the arrow
         painter->setPen(pen_arr);
         
-        QPointF rotate_point = new_start.x() < class_means[i].x() ? new_start : class_means[i];
-        double sign = 1. - 2. * (new_start.x() < class_means[i].x());
+        QPointF rotate_point = new_start.x() < pc_label.class_mean.x() ? new_start : pc_label.class_mean;
+        double sign = 1. - 2. * (new_start.x() < pc_label.class_mean.x());
         
         painter->save();
         painter->translate(rotate_point);
@@ -390,11 +386,12 @@ void PointSet::set_labels(){
         }
         mean_x.push_back(mx / (double)kv.second.size());
         mean_y.push_back(my / (double)kv.second.size());
-        class_means.push_back(QPointF(mx / (double)kv.second.size() * PRECESION_FACTOR, my / (double)kv.second.size() * PRECESION_FACTOR));
+        labels.push_back(PCLabel());
+        labels.back().class_mean = QPointF(mx / (double)kv.second.size(), my / (double)kv.second.size());
         
         stringstream label;
         label << kv.first << " (" << kv.second.size() << ")";
-        labels.push_back(QString(label.str().c_str()));
+        labels.back().label = QString(label.str().c_str());
     }
     
     for (int i = 0; i < lipidome->m.rows; ++i){
@@ -404,16 +401,13 @@ void PointSet::set_labels(){
 
     
     // plot the annotations
-    Matrix label_m;
-    automated_annotation(mean_x, mean_y, label_m);
-    for (int r = 0; r < label_m.rows; ++r){
-        label_points.push_back(QPointF(label_m(r, 0) * PRECESION_FACTOR, label_m(r, 1) * PRECESION_FACTOR));
-    }
+    automated_annotation(mean_x, mean_y);
+    
 }
 
 
 
-void PointSet::automated_annotation(Array &xx, Array &yy, Matrix &label_points){
+void PointSet::automated_annotation(Array &xx, Array &yy){
     int l = labels.size();
     Array label_xx(xx, l);
     Array label_yy(yy, l);
@@ -476,10 +470,9 @@ void PointSet::automated_annotation(Array &xx, Array &yy, Matrix &label_points){
         }
     }
     
-    
-    label_points.reset(0, 0);
-    label_points.add_column(label_xx);
-    label_points.add_column(label_yy);
+    for (int r = 0; r < (int)labels.size(); ++r){
+        labels[r].label_point = QPointF(label_xx[r], label_yy[r]);
+    }
 }
 
 
@@ -747,10 +740,10 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         
         QStringList lipid_names;
         for (int i = 0; i < (int)pointSet->points.size(); ++i){
-            double intens = GlobalData::showQuant ? (pointSet->lipidome->intensities[i] > 1 ? log(pointSet->lipidome->intensities[i]) : 0.5) : 1.;
+            double intens = GlobalData::showQuant ? (pointSet->points[i].intensity > 1 ? log(pointSet->points[i].intensity) : 0.5) : 1.;
             double margin = sq(0.5 * intens);
-            if (sq(relative_mouse.x() - pointSet->points[i].x()) + sq(relative_mouse.y() - pointSet->points[i].y()) <= margin){
-                lipid_names.push_back(QString(pointSet->lipid_label[i]));
+            if (sq(relative_mouse.x() - pointSet->points[i].point.x()) + sq(relative_mouse.y() - pointSet->points[i].point.y()) <= margin){
+                lipid_names.push_back(QString(pointSet->points[i].label));
             }
         }
         

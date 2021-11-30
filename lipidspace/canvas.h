@@ -27,7 +27,6 @@ using namespace std;
 
 #define MARGIN 0.01
 #define POINT_BASE_SIZE 1.8
-#define PRECESION_FACTOR 1.
 #define LABEL_COLOR 200, 200, 200, 255
 
 class Canvas;
@@ -56,25 +55,36 @@ public:
 };
     
 
+struct PCPoint {
+    QPointF point;
+    double intensity;
+    QColor color;
+    QString label;
+};
+
+
+struct PCLabel {
+    QString label;
+    QPointF label_point;
+    QPointF class_mean;
+};
+
 
 class PointSet : public QGraphicsItem {
 public:
     QRectF bound;
-    Canvas *view;
-    
-    QRectF old_view;
-    vector<QPointF> points;
     Table* lipidome;
-    vector<QString> labels;
-    vector<QPointF> label_points;
-    vector<QPointF> class_means;
-    vector<QString> lipid_label;
+    Canvas *view;
+    QRectF old_view;
+    
+    vector<PCPoint> points;
+    vector<PCLabel> labels;
     
     
     PointSet(Table* _lipidome, Canvas *_view);
     ~PointSet();
     void set_labels();
-    void automated_annotation(Array &xx, Array &yy, Matrix &label_points);
+    void automated_annotation(Array &xx, Array &yy);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
     void updateView(QRectF);
