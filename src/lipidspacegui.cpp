@@ -480,6 +480,9 @@ void LipidSpaceGUI::runAnalysis(){
             connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
             connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
         }
+        if (num == -1){
+            connect(ui->speciesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), canvas, SLOT(moveToPoint(QListWidgetItem*)));
+        }
         canvases.push_back(canvas);
     }
     

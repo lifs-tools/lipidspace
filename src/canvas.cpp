@@ -850,6 +850,25 @@ void Canvas::wheelEvent(QWheelEvent *event){
 }
 
 
+
+
+void Canvas::moveToPoint(QListWidgetItem* item){
+    if (pointSet){
+        QString species = item->text();
+        for (auto point : pointSet->points){
+            if (species == point.label){
+                centerOn(point.point);
+                
+                QRect viewportRect2(0, 0, viewport()->width(), viewport()->height());
+                QRectF v = mapToScene(viewportRect2).boundingRect();
+                transforming(v);
+                break;
+            }
+        }
+    }
+}
+
+
 void Canvas::setTransforming(QRectF f){
     //if (num == _num)
     //    return;
@@ -865,6 +884,9 @@ void Canvas::setTransforming(QRectF f){
     if (pointSet) pointSet->updateView(v);
     if (variances) variances->move(2, height() - variances->height());
 }
+
+
+
 
 void Canvas::reloadPoints(){
     if (pointSet){

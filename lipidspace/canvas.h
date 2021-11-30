@@ -132,6 +132,7 @@ public slots:
     void setFeature(string);
     void clear();
     void highlightPoints();
+    void moveToPoint(QListWidgetItem*);
     
     
 signals:
