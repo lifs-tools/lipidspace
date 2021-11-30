@@ -20,13 +20,15 @@
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 
+#define ALPHABETICALLY_ASC "Alphabetically (Asc)"
+#define ALPHABETICALLY_DESC "Alphabetically (Desc)"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }
 QT_END_NAMESPACE
 
 class Canvas;
-
 
 
 class DragLayer : public QWidget {
@@ -115,6 +117,7 @@ public slots:
     void setFeature(int pos);
     void itemChanged(QListWidgetItem *item);
     void updateSelectionView();
+    void updateView(int);
     
 private:
     Ui::LipidSpaceGUI *ui;
@@ -130,6 +133,7 @@ private:
     vector<Canvas*> canvases;
     bool table_transposed;
     map<string, vector<string>> sortings[4];
+    vector<QComboBox*> sorting_boxes;
     
     void fill_Table();
 };

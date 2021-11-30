@@ -116,6 +116,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->categoryPushButton, SIGNAL(clicked()), this, SLOT(runAnalysis()));
     connect(ui->samplePushButton, SIGNAL(clicked()), this, SLOT(runAnalysis()));
     
+    sorting_boxes.push_back(ui->speciesComboBox);
+    sorting_boxes.push_back(ui->classComboBox);
+    sorting_boxes.push_back(ui->categoryComboBox);
+    sorting_boxes.push_back(ui->sampleComboBox);
+    
     tileLayout = AUTOMATIC;
     GlobalData::showQuant = true;
     showDendrogram = true;
@@ -170,13 +175,59 @@ void LipidSpaceGUI::openTable(){
 }
 
 
+bool compare_string_asc(string a, string b){
+    return a.compare(b) < 0;
+}
+
+bool compare_string_desc(string a, string b){
+    return a.compare(b) > 0;
+}
 
 void LipidSpaceGUI::updateSelectionView(){
+    
+    // compute sort order for the groups
+    disconnect(ui->speciesComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
+    disconnect(ui->classComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
+    disconnect(ui->categoryComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
+    disconnect(ui->sampleComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
+    
+    
+    for (int i = 0; i < 4; ++i){
+        sorting_boxes[i]->clear();
+        sorting_boxes[i]->addItem(ALPHABETICALLY_ASC);
+        sorting_boxes[i]->addItem(ALPHABETICALLY_DESC);
+        
+        sortings[i].clear();
+        sortings[i].insert({ALPHABETICALLY_ASC, vector<string>()});
+        sortings[i].insert({ALPHABETICALLY_DESC, vector<string>()});
+    
+        vector<string> &sorting = sortings[i][ALPHABETICALLY_ASC];
+        sorting.reserve(lipid_space->selection[i].size());
+        for (auto &kv : lipid_space->selection[i]) sorting.push_back(kv.first);
+        sort(sorting.begin(), sorting.end(), compare_string_asc);
+        
+        
+        vector<string> &sorting_desc = sortings[i][ALPHABETICALLY_DESC];
+        sorting_desc.reserve(lipid_space->selection[i].size());
+        for (auto &kv : lipid_space->selection[i]) sorting_desc.push_back(kv.first);
+        sort(sorting_desc.begin(), sorting_desc.end(), compare_string_desc);
+    }
+    
+    connect(ui->speciesComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
+    connect(ui->classComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
+    connect(ui->categoryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
+    connect(ui->sampleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
+    updateView(0);
+}
+    
+    
+    
+    
+void LipidSpaceGUI::updateView(int){
     disconnect(ui->speciesList, SIGNAL(itemChanged(QListWidgetItem *)), 0, 0);
     disconnect(ui->classList, SIGNAL(itemChanged(QListWidgetItem *)), 0, 0);
     disconnect(ui->categoryList, SIGNAL(itemChanged(QListWidgetItem *)), 0, 0);
     disconnect(ui->sampleList, SIGNAL(itemChanged(QListWidgetItem *)), 0, 0);
-    
     
     // remove all items from the lists
     ui->speciesList->clear();
@@ -186,32 +237,62 @@ void LipidSpaceGUI::updateSelectionView(){
     
     
     // load new data
-    for (auto species : lipid_space->selection[0]){
-        ListItem *item = new ListItem(QString(species.first.c_str()), SPECIES_ITEM, ui->speciesList);
-        item->setCheckState(species.second ? Qt::Checked : Qt::Unchecked);
+    map<string, int> sort_species;
+    vector<string> &sort_species_labels = sortings[0][sorting_boxes[0]->currentText().toStdString()];
+    for (int i = 0; i < (int)sort_species_labels.size(); ++i){
+        sort_species.insert({sort_species_labels[i], i});
+        ListItem *item = new ListItem("", SPECIES_ITEM, ui->speciesList);
         ui->speciesList->addItem(item);
     }
+    for (auto species : lipid_space->selection[0]){
+        QListWidgetItem *item = ui->speciesList->item(sort_species[species.first]);
+        item->setText(species.first.c_str());
+        item->setCheckState(species.second ? Qt::Checked : Qt::Unchecked);
+    }
     
     
-    for (auto lipid_class : lipid_space->selection[1]){
-        ListItem *item = new ListItem(QString(lipid_class.first.c_str()), CLASS_ITEM, ui->classList);
-        item->setCheckState(lipid_class.second ? Qt::Checked : Qt::Unchecked);
+    map<string, int> sort_class;
+    vector<string> &sort_class_labels = sortings[1][sorting_boxes[1]->currentText().toStdString()];
+    for (int i = 0; i < (int)sort_class_labels.size(); ++i){
+        sort_class.insert({sort_class_labels[i], i});
+        ListItem *item = new ListItem("", CLASS_ITEM, ui->classList);
         ui->classList->addItem(item);
     }
+    for (auto lipid_class : lipid_space->selection[1]){
+        QListWidgetItem *item = ui->classList->item(sort_class[lipid_class.first]);
+        item->setText(lipid_class.first.c_str());
+        item->setCheckState(lipid_class.second ? Qt::Checked : Qt::Unchecked);
+    }
     
     
-    for (auto category : lipid_space->selection[2]){
-        ListItem *item = new ListItem(QString(category.first.c_str()), CATEGORY_ITEM, ui->categoryList);
-        item->setCheckState(category.second ? Qt::Checked : Qt::Unchecked);
+    
+    map<string, int> sort_category;
+    vector<string> &sort_category_labels = sortings[2][sorting_boxes[2]->currentText().toStdString()];
+    for (int i = 0; i < (int)sort_category_labels.size(); ++i){
+        sort_category.insert({sort_category_labels[i], i});
+        ListItem *item = new ListItem("", CATEGORY_ITEM, ui->categoryList);
         ui->categoryList->addItem(item);
     }
+    for (auto category : lipid_space->selection[2]){
+        QListWidgetItem *item = ui->categoryList->item(sort_category[category.first]);
+        item->setText(category.first.c_str());
+        item->setCheckState(category.second ? Qt::Checked : Qt::Unchecked);
+    }
+
     
-    
-    for (auto sample : lipid_space->selection[3]){
-        ListItem *item = new ListItem(QString(sample.first.c_str()), SAMPLE_ITEM, ui->sampleList);
-        item->setCheckState(sample.second ? Qt::Checked : Qt::Unchecked);
+    map<string, int> sort_sample;
+    vector<string> &sort_sample_labels = sortings[3][sorting_boxes[3]->currentText().toStdString()];
+    for (int i = 0; i < (int)sort_sample_labels.size(); ++i){
+        sort_sample.insert({sort_sample_labels[i], i});
+        ListItem *item = new ListItem("", SAMPLE_ITEM, ui->sampleList);
         ui->sampleList->addItem(item);
     }
+    for (auto sample : lipid_space->selection[3]){
+        QListWidgetItem *item = ui->sampleList->item(sort_sample[sample.first]);
+        item->setText(sample.first.c_str());
+        item->setCheckState(sample.second ? Qt::Checked : Qt::Unchecked);
+    }
+    
     connect(ui->speciesList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
     connect(ui->classList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
     connect(ui->categoryList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
