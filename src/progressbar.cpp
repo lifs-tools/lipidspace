@@ -17,7 +17,8 @@ void Progressbar::abort(){
     closeWindow(false);
 }
 
-void Progressbar::interruptClose(){
+void Progressbar::errorClose(QString error_message){
+    if (error_message.length() > 0) QMessageBox::warning(this, "Analysis aborted", error_message);
     accept();
 }
 

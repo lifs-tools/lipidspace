@@ -131,7 +131,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(progress, SIGNAL(finish()), progressbar, SLOT(finish()));
     connect(progress, SIGNAL(set_current(int)), progressbar, SLOT(set_current(int)));
     connect(progress, SIGNAL(set_max(int)), progressbar, SLOT(set_max(int)));
-    connect(progress, SIGNAL(interrupting()), progressbar, SLOT(interruptClose()));
+    connect(progress, SIGNAL(error(QString)), progressbar, SLOT(errorClose(QString)));
     connect(progressbar, SIGNAL(interrupt()), progress, SLOT(interrupt()));
     connect(progressbar, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     progressbar->setModal(true);

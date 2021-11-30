@@ -2,6 +2,7 @@
 #define PROGRESSBAR_H
 
 #include <QDialog>
+#include <QMessageBox>
 #include "ui_progressbar.h"
 #include <iostream>
 
@@ -25,7 +26,7 @@ public slots:
     void set_current(int c);
     void abort();
     void reject();
-    void interruptClose();
+    void errorClose(QString);
     
 signals:
     void resetAnalysis();

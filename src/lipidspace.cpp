@@ -919,7 +919,7 @@ bool LipidSpace::compute_global_distance_matrix(){
     
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
-    if (n == 0) return false;
+    if (n < 2) return false;
     
     global_lipidome->intensities.resize(n);
     for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = 1;
@@ -992,7 +992,8 @@ void LipidSpace::separate_matrixes(){
         global_lipidome->selection.push_back(true);
     }
     
-    
+    vector<int> remove_lipidomes;
+    int l = 0;
     for (auto lipidome : selected_lipidomes){
         Indexes indexes;
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
@@ -1004,8 +1005,15 @@ void LipidSpace::separate_matrixes(){
                 lipidome->intensities.push_back(lipidome->original_intensities[i]);
             }
         }
-        lipidome->m.rewrite(global_lipidome->m, indexes);
+        if (indexes.size() > 0){
+            lipidome->m.rewrite(global_lipidome->m, indexes);
+        }
+        else {
+            remove_lipidomes.push_back(l);
+        }
+        l++;
     }
+    for (int i = (int)remove_lipidomes.size() - 1; i >= 0; --i) selected_lipidomes.erase(selected_lipidomes.begin() + remove_lipidomes[i]);
 }
 
 
@@ -1030,10 +1038,7 @@ void LipidSpace::normalize_intensities(){
         double stdev = intensities.stdev();
         
         if (stdev > 1e-16){
-            stdev = global_stdev / stdev;
-            for (int i = 0; i < (int)intensities.size(); ++i) {
-                intensities[i] *= stdev;
-            }
+            intensities *= global_stdev / stdev;
         }
     }
 }
@@ -1584,12 +1589,11 @@ void LipidSpace::run_analysis(Progress *_progress){
     if (!progress || !progress->stop_progress){
         if (!compute_global_distance_matrix()){
             if (progress){
-                progress->interrupt();
+                progress->setError(QString("Less than two lipids were taken for analysis. Analysis aborted. Select more lipids for analysis."));
             }
             return;
         }
     }
-    
     
     
     cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
@@ -1635,10 +1639,13 @@ void LipidSpace::run_analysis(Progress *_progress){
         }
     }
     
-    if (progress){
+    if (progress && !progress->stop_progress){
         progress->finish();
     }
-    analysis_finished = true;
+    
+    if (!progress || !progress->stop_progress){
+        analysis_finished = true;
+    }
 }
 
 

@@ -129,9 +129,13 @@ void Progress::set(int cp){
     set_current(current_progress);
 }
 
+void Progress::setError(QString interrupt_message){
+    stop_progress = true;
+    error(interrupt_message);
+}
+
 void Progress::interrupt(){
     stop_progress = true;
-    interrupting();
 }
 
 
