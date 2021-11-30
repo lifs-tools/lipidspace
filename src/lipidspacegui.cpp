@@ -79,6 +79,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     dragLayer->setWindowFlags(Qt::FramelessWindowHint);
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     
+    ui->speciesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
@@ -193,9 +195,6 @@ void LipidSpaceGUI::updateSelectionView(){
     
     
     for (int i = 0; i < 4; ++i){
-        sorting_boxes[i]->clear();
-        sorting_boxes[i]->addItem(ALPHABETICALLY_ASC);
-        sorting_boxes[i]->addItem(ALPHABETICALLY_DESC);
         
         sortings[i].clear();
         sortings[i].insert({ALPHABETICALLY_ASC, vector<string>()});
@@ -212,6 +211,16 @@ void LipidSpaceGUI::updateSelectionView(){
         for (auto &kv : lipid_space->selection[i]) sorting_desc.push_back(kv.first);
         sort(sorting_desc.begin(), sorting_desc.end(), compare_string_desc);
     }
+    
+    sortings[0].insert(lipid_space->lipid_sortings.begin(), lipid_space->lipid_sortings.end());
+    
+    for (int i = 0; i < 4; ++i){
+        sorting_boxes[i]->clear();
+        for (auto& kv : sortings[i]){
+            sorting_boxes[i]->addItem(kv.first.c_str());
+        }
+    }
+    
     
     connect(ui->speciesComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
     connect(ui->classComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
@@ -455,12 +464,13 @@ void LipidSpaceGUI::runAnalysis(){
         else if ((lipid_space->selected_lipidomes.size() > 1) && (n == 1)) num = -1;
         else num = max(0, n - 2 * (lipid_space->selected_lipidomes.size() > 1));
         
-        Canvas* canvas = new Canvas(lipid_space, num, ui->centralwidget);
+        Canvas* canvas = new Canvas(lipid_space, num, ui->speciesList, ui->centralwidget);
         connect(canvas, SIGNAL(doubleClicked(int)), this, SLOT(setDoubleClick(int)));
         if (num != -2){
             connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
             connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
             connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
+            connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
             connect(this, SIGNAL(exporting(QString)), canvas, SLOT(exportPdf(QString)));
             connect(this, SIGNAL(initialized()), canvas, SLOT(setInitialized()));
@@ -468,6 +478,7 @@ void LipidSpaceGUI::runAnalysis(){
             connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
             connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
             connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
+            connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
         }
         canvases.push_back(canvas);
     }
@@ -483,6 +494,7 @@ void LipidSpaceGUI::runAnalysis(){
     
     fill_Table();
     ui->tabWidget->setVisible(true);
+    updateSelectionView();
     updateGUI();
     
     // dirty hack to overcome the annoying resizing calls of the canvases when

@@ -16,11 +16,12 @@ double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkag
 
 
 
-bool sort_double_string (pair<double, string> i, pair<double, string> j) { return (i.first < j.first); }
+bool sort_double_string_desc (pair<double, string> i, pair<double, string> j) { return (i.first > j.first); }
 
 void LipidSpace::create_dendrogram(){
     dendrogram_sorting.clear();
     dendrogram_points.clear();
+    lipid_sortings.clear();
     
     int n = hausdorff_distances.rows;
     
@@ -53,22 +54,52 @@ void LipidSpace::create_dendrogram(){
     dendrogram_root = nodes.front();
     
     
-    /*
-    Matrix matrix(global_lipidome->m.rows, lipidomes.size());
+    
+    // compute importance of lipids using coefficient of variation and
+    // Kolmogorv Smirnoff test on dendrogram branches
     map<string, int> species_to_index;
+    Matrix matrix(global_lipidome->m.rows, selected_lipidomes.size());
     for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
         species_to_index.insert({global_lipidome->species[i], i});
     }
     
-    for (int c = 0; c < (int)lipidomes.size(); c++){
-        auto lipidome = lipidomes[c];
+    vector<pair<double, string>> CVs(global_lipidome->m.rows, pair<double, string>());
+    vector<string> missing;
+    for (int c = 0; c < (int)selected_lipidomes.size(); c++){
+        auto lipidome = selected_lipidomes[c];
         for (int r = 0; r < (int)lipidome->species.size(); ++r){
-            matrix(species_to_index[lipidome->species[r]], c) = lipidome->original_intensities(r);
+            string species = lipidome->species[r];
+            if (contains_val(species_to_index, species)){
+                matrix(species_to_index[species], c) = lipidome->original_intensities(r);
+                CVs[species_to_index[species]].second = species;
+            }
+            else {
+                missing.push_back(species);
+            }
         }
     }
     
+    for (int r = 0; r < matrix.rows; ++r){
+        double mean = 0, stdev = 0;
+        for (int c = 0; c < matrix.cols; c++) mean += matrix(r, c);
+        mean /= (double)matrix.cols;
+        
+        for (int c = 0; c < matrix.cols; c++) stdev += sq(mean - matrix(r, c));
+        stdev = sqrt(stdev / (double)matrix.cols);
+        CVs[r].first = stdev / mean;
+    }
+    
+    sort(CVs.begin(), CVs.end(), sort_double_string_desc);
+    lipid_sortings.insert({"Coefficient of Variation (highest)", vector<string>()});
+    lipid_sortings.insert({"Coefficient of Variation (lowest)", vector<string>()});
+    vector<string> &CVh = lipid_sortings["Coefficient of Variation (highest)"];
+    vector<string> &CVl = lipid_sortings["Coefficient of Variation (lowest)"];
+    for (auto cv : CVs) CVh.push_back(cv.second);
+    for (auto miss : missing) CVh.push_back(miss);
+    for (int i = (int)CVs.size() - 1; i >= 0; --i) CVl.push_back(CVh[i]);
     
     
+    /*
     vector<pair<double, string>> lipid_names;
     vector<double> p_values;
     vector<double> fold_change;

@@ -78,6 +78,7 @@ public:
     QRectF old_view;
     
     vector<PCPoint> points;
+    set<QString> highlighted_points;
     vector<PCLabel> labels;
     
     
@@ -106,7 +107,7 @@ public:
     bool hovered_for_swap;
     
     Canvas(QWidget *parent = nullptr);
-    Canvas(LipidSpace *_lipid_space, int _num, QWidget *parent = nullptr);
+    Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species, QWidget *parent = nullptr);
     ~Canvas();
     void mouseMoveEvent(QMouseEvent* event);
     void mousePressEvent(QMouseEvent* event);
@@ -130,6 +131,7 @@ public slots:
     void reloadPoints();
     void setFeature(string);
     void clear();
+    void highlightPoints();
     
     
 signals:
@@ -151,6 +153,7 @@ private:
     bool initialized;
     QLabel title;
     QLabel *variances;
+    QListWidget *listed_species;
 };
 
 #endif /* CANVAS_H */

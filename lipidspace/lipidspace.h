@@ -46,7 +46,7 @@ public:
     DendrogramNode *dendrogram_root;
     map<string, bool> selection[4];
     vector<Table*> selected_lipidomes;
-    
+    map<string, vector<string>> lipid_sortings;
     
 
     LipidSpace();

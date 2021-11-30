@@ -76,6 +76,7 @@ signals:
     void exporting(QString);
     void initialized();
     void featureChanged(string);
+    void updateHighlightedPoints(vector<QString> *);
     
     
 public slots:

@@ -280,13 +280,13 @@ bool find_start(QRectF &bound, QPointF target, QPointF &inter){
 void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
     QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
     
+    // print regular points
     for (int i = 0; i < (int)points.size(); ++i){
+        if (contains_val(highlighted_points, points[i].label)) continue;
         
         double intens = GlobalData::showQuant ? (points[i].intensity > 1 ? log(points[i].intensity) : 0.5) : 1.;
         QRectF bubble(points[i].point.x() - intens * 0.5, points[i].point.y() - intens * 0.5,  intens, intens);
         if (!v.intersects(bubble)) continue;
-        
-        string lipid_class = lipidome->classes[i];
         
         // setting up pen for painter
         QColor qcolor = points[i].color;
@@ -295,6 +295,28 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         p.addEllipse(bubble);
         painter->fillPath(p, qcolor);
     }
+    
+    // print highlighted points on top
+    for (int i = 0; i < (int)points.size(); ++i){
+        if (uncontains_val(highlighted_points, points[i].label)) continue;
+        
+        double intens = GlobalData::showQuant ? (points[i].intensity > 1 ? log(points[i].intensity) : 0.5) : 1.;
+        QRectF bubble(points[i].point.x() - intens * 0.5, points[i].point.y() - intens * 0.5,  intens, intens);
+        if (!v.intersects(bubble)) continue;
+        
+        // setting up pen for painter
+        QColor qcolor = points[i].color;
+        qcolor.setAlpha(255);
+        QPainterPath p;
+        p.addEllipse(bubble);
+        painter->fillPath(p, qcolor);
+        QPen pen_black(Qt::black);
+        pen_black.setWidth(0.5);
+        painter->setPen(pen_black);
+        painter->drawEllipse(bubble);
+    }
+    
+    
     
     // drawing the labels
     QPen pen_arr;
@@ -552,8 +574,9 @@ void Canvas::resetDendrogram(){
 }
 
 
-Canvas::Canvas(LipidSpace *_lipid_space, int _num, QWidget *) : num(_num), title(this) {
+Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species, QWidget *) : num(_num), title(this) {
     lipid_space = _lipid_space;
+    listed_species = _listed_species;
     
     pointSet = 0;
     dendrogram = 0;
@@ -625,6 +648,21 @@ Canvas::~Canvas(){
 void Canvas::clear(){
     if (dendrogram) dendrogram->clear();
 }
+
+
+
+void Canvas::highlightPoints(){
+    if (pointSet){
+        pointSet->highlighted_points.clear();
+        
+        for (auto item : listed_species->selectedItems()){
+            pointSet->highlighted_points.insert(item->text());
+        }
+        
+        pointSet->update();
+    }
+}
+
 
 
 void Canvas::hoverOver(){
