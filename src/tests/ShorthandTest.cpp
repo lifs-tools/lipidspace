@@ -213,6 +213,15 @@ int main(int argc, char** argv){
     infile.close();
     
     
+    try {
+        l = parser.parse("SM 21:1(3Z);2O/12:0");
+        assert(false);
+    }
+    catch (LipidException &){
+        // great, we wanted the previous name to fail
+    }
+    
+    
     for (auto &row : data){
         vector<string>* results = split_string(row, ',', '"', true);
         for (int i = 0; i < (int)results->size(); ++i) results->at(i) = strip(results->at(i), '"');
