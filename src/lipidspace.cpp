@@ -919,7 +919,7 @@ bool LipidSpace::compute_global_distance_matrix(){
     
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
-    if (n < 2) return false;
+    if (n < 3) return false;
     
     global_lipidome->intensities.resize(n);
     for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = 1;
@@ -1589,7 +1589,7 @@ void LipidSpace::run_analysis(Progress *_progress){
     if (!progress || !progress->stop_progress){
         if (!compute_global_distance_matrix()){
             if (progress){
-                progress->setError(QString("Less than two lipids were taken for analysis. Analysis aborted. Select more lipids for analysis."));
+                progress->setError(QString("Less than three lipids were taken for analysis. Analysis aborted. Select more lipids for analysis."));
             }
             return;
         }

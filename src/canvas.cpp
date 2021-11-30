@@ -212,8 +212,9 @@ void PointSet::loadPoints(){
     double y_max = 0;
     
     for (int r = 0, rr = 0; r < (int)lipidome->species.size(); ++r){
-        if (!lipidome->selection[r]) continue;
-        
+        if (!lipidome->selection[r]){
+            continue;
+        }
             
         double xval = lipidome->m(rr, GlobalData::PC1);
         double yval = lipidome->m(rr, GlobalData::PC2);
