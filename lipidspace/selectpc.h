@@ -3,7 +3,8 @@
 
 #include <QDialog>
 #include "lipidspace/lipidspace.h"
-#include "lipidspace/lipidspacegui.h"
+#include "lipidspace/globaldata.h"
+#include "ui_selectpc.h"
 
 namespace Ui {
 class SelectPC;

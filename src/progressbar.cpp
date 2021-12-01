@@ -4,7 +4,7 @@ Progressbar::Progressbar(QWidget *parent) : QDialog(parent), ui(new Ui::Progress
     ui->setupUi(this);
     ui->progressBar->setValue(0);
     ui->progressBar->setMaximum(0);
-    ui->progressBar->setWindowTitle("LipidSpace Analysis");
+    setWindowTitle("LipidSpace Analysis");
     connect(ui->abortButton, SIGNAL(clicked()), this, SLOT(abort()));
 }
 
@@ -15,6 +15,11 @@ Progressbar::~Progressbar(){
 
 void Progressbar::abort(){
     closeWindow(false);
+}
+
+void Progressbar::errorClose(QString error_message){
+    if (error_message.length() > 0) QMessageBox::warning(this, "Analysis aborted", error_message);
+    accept();
 }
 
 
@@ -42,7 +47,6 @@ void Progressbar::closeWindow(bool successful){
     }
     else {
         interrupt();
-        resetAnalysis();
     }
     accept();
 }

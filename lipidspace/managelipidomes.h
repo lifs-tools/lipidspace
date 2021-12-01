@@ -24,6 +24,7 @@ public:
 signals:
     void runAnalysis();
     void resetAnalysis();
+    void reassembleSelection();
     
     
 public slots:

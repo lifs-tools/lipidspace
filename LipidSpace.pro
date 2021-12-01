@@ -16,16 +16,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-
-INCLUDEPATH += /usr/include/python3.8
-LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
+!win32 {
+    LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
+}
+win32 {
+    LIBS += -fopenmp -lcppGoslin
+}
 
 SOURCES += \
     src/about.cpp \
-    src/importdatatable.cpp \
-    src/importpivottable.cpp \
+    src/importtable.cpp \
     src/selectpc.cpp \
+    src/globaldata.cpp \
     src/setalpha.cpp \
+    src/CBTableWidget.cpp \
     src/setPCnum.cpp \
     src/progressbar.cpp \
     src/managelipidomes.cpp \
@@ -39,9 +43,10 @@ SOURCES += \
 
 HEADERS += \
     lipidspace/about.h \
-    lipidspace/importdatatable.h \
-    lipidspace/importpivottable.h \
+    lipidspace/globaldata.h \
+    lipidspace/importtable.h \
     lipidspace/lipidspacegui.h \
+    lipidspace/CBTableWidget.h \
     lipidspace/canvas.h \
     lipidspace/Matrix.h \
     lipidspace/lipidspace.h \
@@ -56,17 +61,13 @@ HEADERS += \
 
 FORMS += \
     ui/about.ui \
-    ui/importdatatable.ui \
-    ui/importpivottable.ui \
+    ui/importtable.ui \
     ui/lipidspacegui.ui \
     ui/managelipidomes.ui \
     ui/progressbar.ui \
     ui/selectpc.ui \
     ui/setalpha.ui \
     ui/setPCnum.ui
-
-TRANSLATIONS += \
-    LipidSpace_en_US.ts
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

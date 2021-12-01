@@ -2,11 +2,11 @@
  
  
 
-double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
-    double v = 1e9 * (linkage == SINGLE);
+double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkage = CompleteLinkage){
+    double v = 1e9 * (linkage == SingleLinkage);
     for (auto index1 : n1->indexes){
         for (auto index2 : n2->indexes){
-            if ((linkage == COMPLETE && v < m(index1, index2)) || (linkage == SINGLE && v > m(index1, index2))){
+            if ((linkage == CompleteLinkage && v < m(index1, index2)) || (linkage == SingleLinkage && v > m(index1, index2))){
                 v = m(index1, index2);
             }
         }
@@ -15,21 +15,25 @@ double linkage(Node* n1, Node* n2, Matrix &m, Linkage linkage = COMPLETE){
 }
 
 
+
+bool sort_double_string_desc (pair<double, string> i, pair<double, string> j) { return (i.first > j.first); }
+
 void LipidSpace::create_dendrogram(){
     dendrogram_sorting.clear();
     dendrogram_points.clear();
+    lipid_sortings.clear();
     
     int n = hausdorff_distances.rows;
     
-    vector<Node*> nodes;
-    for (int i = 0; i < n; ++i) nodes.push_back(new Node(i));
+    vector<DendrogramNode*> nodes;
+    for (int i = 0; i < n; ++i) nodes.push_back(new DendrogramNode(i, &feature_values, selected_lipidomes[i]));
     
     while (nodes.size() > 1){
         double min_val = 1e9;
         int ii = 0, jj = 0;
         for (int i = 0; i < (int)nodes.size() - 1; ++i){
             for (int j = i + 1; j < (int)nodes.size(); ++j){
-                double val = linkage(nodes.at(i), nodes.at(j), hausdorff_distances, COMPLETE);
+                double val = linkage(nodes.at(i), nodes.at(j), hausdorff_distances, CompleteLinkage);
                 if (min_val > val){
                     min_val = val;
                     ii = i;
@@ -38,19 +42,96 @@ void LipidSpace::create_dendrogram(){
             }
         }
         
-        Node* node1 = nodes.at(ii);
-        Node* node2 = nodes.at(jj);
+        DendrogramNode* node1 = nodes.at(ii);
+        DendrogramNode* node2 = nodes.at(jj);
         nodes.erase(nodes.begin() + jj);
         nodes.erase(nodes.begin() + ii);
-        nodes.push_back(new Node(node1, node2, min_val));
+        nodes.push_back(new DendrogramNode(node1, node2, min_val));
     }
     
     double* ret = nodes.front()->execute(0, &dendrogram_points, &dendrogram_sorting);
     delete []ret;
-    delete nodes.front();
+    dendrogram_root = nodes.front();
+    
+    
+    
+    // compute importance of lipids using coefficient of variation and
+    // Kolmogorv Smirnoff test on dendrogram branches
+    map<string, int> species_to_index;
+    Matrix matrix(global_lipidome->m.rows, selected_lipidomes.size());
+    for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
+        species_to_index.insert({global_lipidome->species[i], i});
+    }
+    
+    vector<pair<double, string>> CVs(global_lipidome->m.rows, pair<double, string>());
+    vector<string> missing;
+    for (int c = 0; c < (int)selected_lipidomes.size(); c++){
+        auto lipidome = selected_lipidomes[c];
+        for (int r = 0; r < (int)lipidome->species.size(); ++r){
+            string species = lipidome->species[r];
+            if (contains_val(species_to_index, species)){
+                matrix(species_to_index[species], c) = lipidome->original_intensities(r);
+                CVs[species_to_index[species]].second = species;
+            }
+            else {
+                missing.push_back(species);
+            }
+        }
+    }
+    
+    for (int r = 0; r < matrix.rows; ++r){
+        double mean = 0, stdev = 0;
+        for (int c = 0; c < matrix.cols; c++) mean += matrix(r, c);
+        mean /= (double)matrix.cols;
+        
+        for (int c = 0; c < matrix.cols; c++) stdev += sq(mean - matrix(r, c));
+        stdev = sqrt(stdev / (double)matrix.cols);
+        CVs[r].first = stdev / mean;
+    }
+    
+    sort(CVs.begin(), CVs.end(), sort_double_string_desc);
+    lipid_sortings.insert({"Coefficient of Variation (highest)", vector<string>()});
+    lipid_sortings.insert({"Coefficient of Variation (lowest)", vector<string>()});
+    vector<string> &CVh = lipid_sortings["Coefficient of Variation (highest)"];
+    vector<string> &CVl = lipid_sortings["Coefficient of Variation (lowest)"];
+    for (auto cv : CVs) CVh.push_back(cv.second);
+    for (auto miss : missing) CVh.push_back(miss);
+    for (int i = (int)CVs.size() - 1; i >= 0; --i) CVl.push_back(CVh[i]);
+    
+    
+    /*
+    vector<pair<double, string>> lipid_names;
+    vector<double> p_values;
+    vector<double> fold_change;
+    double max_log_fc = 0;
+    for (int r = 0; r < matrix.rows; ++r){
+        Array sample1;
+        Array sample2;
+        for (int c1 : dendrogram_root->left_child->indexes){
+            if (matrix(r, c1) > 0) sample1.push_back(matrix(r, c1));
+        }
+        for (int c2 : dendrogram_root->right_child->indexes){
+            if (aa(r, c2) > 0) sample2.push_back(aa(r, c2));
+        }
+        
+        if (sample1.size() < 2 || sample2.size() < 2) continue;
+        
+        lipid_names.push_back({0, global_lipidome->species[r]});
+        p_values.push_back(KS_pvalue(sample1, sample2));
+        fold_change.push_back(max(sample2.mean() / sample1.mean(), sample1.mean() / sample2.mean()));
+        max_log_fc = max(max_log_fc, fold_change.back());
+    }
+    
+    BH_fdr(p_values);
+    //for (int i = 0; i < (int)p_values.size(); ++i) lipid_names[i].first = sqrt((1 - p_values[i]) * fold_change[i] / max_log_fc);
+    for (int i = 0; i < (int)p_values.size(); ++i) lipid_names[i].first = (1 - p_values[i]) * fold_change[i];
+    
+    sort(lipid_names.begin(), lipid_names.end(), sort_double_string);
+    for (auto p : lipid_names){
+        //cout << p.first << ": " << p.second << endl;
+    }
+    */
 }
-
-
 
 
 
@@ -58,12 +139,14 @@ void LipidSpace::create_dendrogram(){
 LipidSpace::LipidSpace() {
     keep_sn_position = true;
     ignore_unknown_lipids = false;
+    ignore_doublette_lipids = false;
     unboundend_distance = false;
     without_quant = false;
     global_lipidome = new Table("global_lipidome");
     progress = 0;
     analysis_finished = false;
-    
+    dendrogram_root = 0;
+        
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
     if (!infile.good()){
@@ -143,6 +226,7 @@ LipidSpace::~LipidSpace(){
     for (auto lipid : all_lipids) delete lipid;
     delete global_lipidome;
     for (auto table : lipidomes) delete table;
+    if (dendrogram_root) delete dendrogram_root;
 }
 
 
@@ -302,8 +386,16 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
         db1 = fa1->double_bonds->get_num();
         db2 = fa2->double_bonds->get_num();
             
-        inter_num += mmin(db1, db2);
-        union_num += mmax(db1, db2);
+        // old strategy of taking the minimum as intersect
+        // does not go figure with database observations
+        //inter_num += mmin(db1, db2);
+        //union_num += mmax(db1, db2);
+        
+        // When considering two random fatty acyl chains with
+        // at least one double bond, the probability to have
+        // no DB match at all is about 85%. Therefore, no
+        // intersection, just union with only mismatches
+        union_num += db1 + db2;
     }
     
     // add all single bonds
@@ -425,15 +517,14 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     
 
 void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int& union_num, int& inter_num){
+    
     string key = lipid1->get_extended_class() + "/" + lipid2->get_extended_class();
-    if (!contains_val(class_matrix, key)){
-        Logging::write_log("Error: lipid pair '" + key + "' is not precomputed. Please get in contact with the developers to fix this issue.");
-        throw LipidException("Error: key '" + key + "' not in precomputed class matrix. Please check the log message.");
-        exit(-1);
+    
+    if (uncontains_val(class_matrix, key)){
+        throw LipidSpaceException("Error: key '" + key + "' not in precomputed class matrix. Please check the log message.", LipidNotRegistered);
     }
     union_num = class_matrix.at(key)[0];
     inter_num = class_matrix.at(key)[1];
-    
     
     vector<FattyAcid*>* orig_fa_list_1 = &lipid1->lipid->fa_list;
     vector<FattyAcid*>* orig_fa_list_2 = &lipid2->lipid->fa_list;
@@ -447,7 +538,6 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     int len_fa2 = orig_fa_list_2->size();
     
     if (len_fa1 == 0 && len_fa2 == 0) return;
-    
     
     if (keep_sn_position || (len_fa1 <= 1 && len_fa2 <= 1)){
         int l = mmin(orig_fa_list_1->size(), orig_fa_list_2->size());
@@ -522,27 +612,56 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
 
 
 
+void LipidSpace::reassembleSelection(){
+    set<string> new_selection[4];
+    
+    // setup new set of entities
+    for (auto lipidome : lipidomes){
+        new_selection[3].insert(lipidome->cleaned_name);
+        for (int i = 0; i < (int)lipidome->lipids.size(); ++i){
+            new_selection[0].insert(lipidome->species.at(i));
+            new_selection[1].insert(lipidome->classes.at(i));
+            new_selection[2].insert(lipidome->categories.at(i));
+        }
+    }
+    
+    // copy all selections into a tmp map,
+    // clear original selection,
+    // copy back only remaining entities
+    for (int i = 0; i < 4; ++i){
+        map<string, bool> tmp_selection;
+        for (auto kv : selection[i]) tmp_selection.insert({kv.first, kv.second});
+        selection[i].clear();
+        
+        for (auto kv : tmp_selection){
+            if (contains_val(new_selection[i], kv.first)){
+                selection[i].insert({kv.first, kv.second});
+            }
+        }
+    }
+    
+    reassembled();
+}
 
 
 
 
-
-Table* LipidSpace::load_list(string lipid_list_file){
-    //cout << "reading list '" << lipid_list_file << "'" << endl;
+void LipidSpace::load_list(string lipid_list_file){
     
     // load and parse lipids
     ifstream infile(lipid_list_file);
     if (!infile.good()){
-        cerr << "Error: file '" << lipid_list_file << "' not found." << endl;
-        exit(-1);
+        LipidSpaceException("Error: file '" + lipid_list_file + "' not found.", FileUnreadable);
     }
     string line;
     
     
     Table* lipidome = new Table(lipid_list_file);
+    selection[3].insert({lipidome->cleaned_name, true});
     vector<string> lipids;
     
     int pos_all = all_lipids.size();
+    set<string> registered_lipids;
     while (getline(infile, line)){
         if (line.length() == 0) continue;
         
@@ -554,17 +673,18 @@ Table* LipidSpace::load_list(string lipid_list_file){
         if (line.find('\t') != string::npos){
             tokens = goslin::split_string(line, '\t', '"');
             line = strip(tokens->at(0), '"');
-            lipidome->intensities.push_back(atof(tokens->at(1).c_str()));
+            lipidome->original_intensities.push_back(atof(tokens->at(1).c_str()));
             delete tokens;
         }
         else {
-            lipidome->intensities.push_back(1);
+            lipidome->original_intensities.push_back(1);
         }
         lipids.push_back(line);
         lipidome->lipids.push_back(0);
         all_lipids.push_back(0);
         lipidome->species.push_back("");
         lipidome->classes.push_back("");
+        lipidome->categories.push_back("");
     }
     
     vector<int> remove;
@@ -580,31 +700,33 @@ Table* LipidSpace::load_list(string lipid_list_file){
                 l->adduct = 0;
             }
             
-            
             all_lipids.at(pos_all + i) = l;
             lipidome->lipids.at(i) = l;
             lipidome->species.at(i) = l->get_lipid_string();
             lipidome->classes.at(i) = l->get_lipid_string(CLASS);
-            for (auto fa : l->lipid->fa_list) cut_cycle(fa);
+            lipidome->categories.at(i) = l->get_lipid_string(CATEGORY);
+            
+            if (uncontains_val(registered_lipids, lipidome->species.at(i))){
+                registered_lipids.insert(lipidome->species.at(i));
+            }
+            else {
+                if (!ignore_doublette_lipids){
+                    throw LipidSpaceException("Lipid '" + line + "' appears twice in the list.", LipidDoublette);
+                }
+                else {
+                    Logging::write_log("Ignoring doublette lipid '" + line + "'");
+                    remove.push_back(i);
+                }
+            }
         }
-        catch (exception &e) {
+        catch (LipidException &e) {
             if (!ignore_unknown_lipids){
-                throw LipidException(string(e.what()) + ": lipid '" + line + "' cannot be parsed.");
+                throw LipidSpaceException(string(e.what()) + ": lipid '" + line + "' cannot be parsed.", LipidUnparsable);
             }
             else {
                 Logging::write_log("Ignoring unidentifiable lipid '" + line + "'");
                 remove.push_back(i);
             }
-            /*
-            if (ignore_unknown_lipids){
-                cerr << "Warning: ignoring lipid '" << line << "' in file '" << lipid_list_file << "'" << endl;
-                remove.push_back(i);
-            }
-            else {
-                cerr << "Error: lipid '" << line << "' cannot be parsed in file '" << lipid_list_file << "'" << endl;
-                exit(-1);
-            }
-            */
         }
     }
     
@@ -616,12 +738,24 @@ Table* LipidSpace::load_list(string lipid_list_file){
             lipidome->lipids.erase(lipidome->lipids.begin() + index);
             lipidome->species.erase(lipidome->species.begin() + index);
             lipidome->classes.erase(lipidome->classes.begin() + index);
-            lipidome->intensities.erase(lipidome->intensities.begin() + index);
+            lipidome->categories.erase(lipidome->categories.begin() + index);
+            lipidome->original_intensities.erase(lipidome->intensities.begin() + index);
         }
     }
     
+    for (int i = 0; i < (int)lipidome->species.size(); ++i){
+        selection[0].insert({lipidome->species.at(i), true});
+        selection[1].insert({lipidome->classes.at(i), true});
+        selection[2].insert({lipidome->categories.at(i), true});
+    }
+    for (auto l : lipidome->lipids){
+        for (auto fa : l->lipid->fa_list){
+            cut_cycle(fa);
+        }
+    }
     
-    return lipidome;
+    lipidomes.push_back(lipidome);
+    fileLoaded();
 }
 
 
@@ -652,31 +786,20 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
 
 
 
-double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
-    // add intensities to hausdorff matrix
-    Matrix tm1(l1->m);
-    Matrix tm2(l2->m);
-    if (!without_quant){
-        tm1.add_column(l1->intensities);
-        tm2.add_column(l2->intensities);
-    }
-    tm1.pad_cols_4(); // pad matrix columns with zeros to perform faster intrinsics
-    tm2.pad_cols_4();
-    tm1.transpose();
-    tm2.transpose();
-    assert(tm1.rows == tm2.rows);
+double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
+    assert(m1.rows == m2.rows);
     
     double max_h = 0;
     
-    for (int tm2c = 0; tm2c < tm2.cols; tm2c++){
+    for (int m2c = 0; m2c < m2.cols; m2c++){
         double min_h = 1e9;
-        double* tm2col = tm2.data() + (tm2c * tm2.rows);
-        for (int tm1c = 0; tm1c < tm1.cols; ++tm1c){
+        double* m2col = m2.data() + (m2c * m2.rows);
+        for (int m1c = 0; m1c < m1.cols; ++m1c){
             __m256d dist = {0, 0, 0, 0};
-            double* tm1col = tm1.data() + (tm1c * tm1.rows);
-            for (int r = 0; r < tm1.rows; r += 4){
-                __m256d val1 = _mm256_loadu_pd(&tm1col[r]);
-                __m256d val2 = _mm256_loadu_pd(&tm2col[r]);
+            double* m1col = m1.data() + (m1c * m1.rows);
+            for (int r = 0; r < m1.rows; r += 4){
+                __m256d val1 = _mm256_loadu_pd(&m1col[r]);
+                __m256d val2 = _mm256_loadu_pd(&m2col[r]);
                 __m256d sub = _mm256_sub_pd(val1, val2);
                 dist = _mm256_fmadd_pd(sub, sub, dist);
             }
@@ -686,15 +809,15 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
         max_h = mmax(max_h, min_h);
     }
     
-    for (int tm1c = 0; tm1c < tm1.cols; ++tm1c){
+    for (int m1c = 0; m1c < m1.cols; ++m1c){
         double min_h = 1e9;
-        double* tm1col = tm1.data() + (tm1c * tm1.rows);
-        for (int tm2c = 0; tm2c < tm2.cols; tm2c++){
+        double* m1col = m1.data() + (m1c * m1.rows);
+        for (int m2c = 0; m2c < m2.cols; m2c++){
             __m256d dist = {0, 0, 0, 0};
-            double* tm2col = tm2.data() + (tm2c * tm2.rows);
-            for (int r = 0; r < tm1.rows; r += 4){
-                __m256d val1 = _mm256_loadu_pd(&tm1col[r]);
-                __m256d val2 = _mm256_loadu_pd(&tm2col[r]);
+            double* m2col = m2.data() + (m2c * m2.rows);
+            for (int r = 0; r < m1.rows; r += 4){
+                __m256d val1 = _mm256_loadu_pd(&m1col[r]);
+                __m256d val2 = _mm256_loadu_pd(&m2col[r]);
                 __m256d sub = _mm256_sub_pd(val1, val2);
                 dist = _mm256_fmadd_pd(sub, sub, dist);
             }
@@ -717,7 +840,19 @@ double LipidSpace::compute_hausdorff_distance(Table* l1, Table* l2){
 
 void LipidSpace::compute_hausdorff_matrix(){
     
-    int n = lipidomes.size();
+    int n = selected_lipidomes.size();
+    vector<Matrix*> matrixes;
+    
+    for (auto lipidome : selected_lipidomes){
+        matrixes.push_back(new Matrix(lipidome->m));
+        // add intensities to hausdorff matrix
+        if (!without_quant){
+            matrixes.back()->add_column(lipidome->intensities);
+        }
+        matrixes.back()->pad_cols_4(); // pad matrix columns with zeros to perform faster intrinsics
+        matrixes.back()->transpose();
+    }
+    
     hausdorff_distances.reset(n, n);
     
     // precompute indexes for of symmetric matrix for faster
@@ -730,15 +865,17 @@ void LipidSpace::compute_hausdorff_matrix(){
             pairs.push_back({i, j});
         }
     }
-            
+    
     #pragma omp parallel for
     for (int ii = 0; ii < (int)pairs.size(); ++ii){
         int i = pairs.at(ii).first;
         int j = pairs.at(ii).second;
         
-        hausdorff_distances(i, j) = compute_hausdorff_distance(lipidomes.at(i), lipidomes.at(j));
+        hausdorff_distances(i, j) = compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j));
         hausdorff_distances(j, i) = hausdorff_distances(i, j);
     }
+    
+    for (auto matrix : matrixes) delete matrix;
 }
 
 
@@ -748,18 +885,14 @@ void LipidSpace::compute_hausdorff_matrix(){
 
 void LipidSpace::report_hausdorff_matrix(string output_folder){
     ofstream off(output_folder + "/hausdorff_distances.csv");
-    vector<string> striped_names;
     int n = hausdorff_distances.rows;
     off << "ID";
     for (int i = 0; i < n; ++i){
-        vector<string>* tokens = split_string(lipidomes.at(i)->file_name, '/', '"');
-        off << "\t" << tokens->back();
-        striped_names.push_back(tokens->back());
-        delete tokens;
+        off << "\t" << selected_lipidomes[i]->cleaned_name;
     } off << endl;
     
     for (int i = 0; i < n; ++i){
-        off << striped_names.at(i);
+        off << selected_lipidomes[i]->cleaned_name;
         for (int j = 0; j < n; ++j){
             off << "\t" << hausdorff_distances(i, j);
         } off << endl;
@@ -769,36 +902,56 @@ void LipidSpace::report_hausdorff_matrix(string output_folder){
 
 
 
-
-
-
-
-
-
-void LipidSpace::compute_global_distance_matrix(){
+bool LipidSpace::compute_global_distance_matrix(){
     global_lipidome->species.clear();
     global_lipidome->classes.clear();
+    global_lipidome->categories.clear();
     global_lipidome->lipids.clear();
     global_lipidome->intensities.clear();
     global_lipidome->m.reset(1, 1);
     
+
     
-    set<string> registered_lipids;
+    set<string> registered_types[4];
     
     for (auto lipidome : lipidomes){
+        if (contains_val(registered_types[SAMPLE_ITEM], lipidome->cleaned_name)) continue;
+        if (!selection[SAMPLE_ITEM][lipidome->cleaned_name]) continue;
+        registered_types[SAMPLE_ITEM].insert(lipidome->cleaned_name);
+        selected_lipidomes.push_back(lipidome);
+            
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
             string lipid_species = lipidome->species.at(i);
-            if (contains_val(registered_lipids, lipid_species)) continue;
-            registered_lipids.insert(lipid_species);
+            string lipid_class = lipidome->classes.at(i);
+            string lipid_category = lipidome->categories.at(i);
+            
+            // check if entities already exist in their corresponding sets,
+            // check if entity is selected and add them if it is
+            if (contains_val(registered_types[SPECIES_ITEM], lipid_species)) continue;
+            if (!selection[SPECIES_ITEM][lipid_species]) continue;
+            if (!selection[CLASS_ITEM][lipid_class]) continue;
+            if (!selection[CATEGORY_ITEM][lipid_category]) continue;
+            registered_types[SPECIES_ITEM].insert(lipid_species);
+            registered_types[CLASS_ITEM].insert(lipid_class);
+            registered_types[CATEGORY_ITEM].insert(lipid_class);
+            
+            // add lipid data to global lipidome
             global_lipidome->species.push_back(lipid_species);
             global_lipidome->classes.push_back(lipidome->classes.at(i));
+            global_lipidome->categories.push_back(lipidome->categories.at(i));
             global_lipidome->lipids.push_back(lipidome->lipids.at(i));
+        }
+        
+        for (auto kv : lipidome->features){
+            if (uncontains_val(feature_values, kv.first)) feature_values.insert({kv.first, set<string>()});
+            feature_values[kv.first].insert(kv.second);
         }
     }
     
-    
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
+    if (n < 3) return false;
+    
     global_lipidome->intensities.resize(n);
     for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = 1;
     
@@ -811,11 +964,9 @@ void LipidSpace::compute_global_distance_matrix(){
     double next_tp = 1;
     
     if (progress){
-        int n = global_lipidome->lipids.size();
         progress->max_progress = (n * (n - 1));
         progress->set_max(progress->max_progress);
     }    
-    
     
     #pragma omp parallel for
     for (int ii = 0; ii < n * n; ++ii){
@@ -847,6 +998,7 @@ void LipidSpace::compute_global_distance_matrix(){
             }
         }
     }
+    return true;
 }
 
 
@@ -858,16 +1010,41 @@ void LipidSpace::compute_global_distance_matrix(){
 
 
 void LipidSpace::separate_matrixes(){
+    for (auto lipidome : lipidomes){
+        lipidome->intensities.clear();
+        lipidome->selection.clear();
+    }
+    global_lipidome->selection.clear();
+    
     map<string, int> lipid_indexes;
     for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
-        lipid_indexes.insert({global_lipidome->species.at(i), i});
+        string lipid_species = global_lipidome->species.at(i);
+        lipid_indexes.insert({lipid_species, i});
+        global_lipidome->selection.push_back(true);
     }
     
-    for (auto lipidome : lipidomes){
+    vector<int> remove_lipidomes;
+    int l = 0;
+    for (auto lipidome : selected_lipidomes){
         Indexes indexes;
-        for (auto lipid_species : lipidome->species) indexes.push_back(lipid_indexes.at(lipid_species));
-        lipidome->m.rewrite(global_lipidome->m, indexes);
+        for (int i = 0; i < (int)lipidome->species.size(); ++i){
+            string lipid_species = lipidome->species[i];
+            bool lipid_selection = selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species);
+            lipidome->selection.push_back(lipid_selection);
+            if (lipid_selection){
+                indexes.push_back(lipid_indexes.at(lipid_species));
+                lipidome->intensities.push_back(lipidome->original_intensities[i]);
+            }
+        }
+        if (indexes.size() > 0){
+            lipidome->m.rewrite(global_lipidome->m, indexes);
+        }
+        else {
+            remove_lipidomes.push_back(l);
+        }
+        l++;
     }
+    for (int i = (int)remove_lipidomes.size() - 1; i >= 0; --i) selected_lipidomes.erase(selected_lipidomes.begin() + remove_lipidomes[i]);
 }
 
 
@@ -880,43 +1057,194 @@ void LipidSpace::separate_matrixes(){
 void LipidSpace::normalize_intensities(){
     Matrix &m = global_lipidome->m;
     
+    // compute the standard deviation of the first principal component,
+    // mean of all PCs should be always 0 per definition
+    int n = m.rows;
     double global_stdev = 0;
-    for (int i = 0; i < m.rows; ++i) global_stdev += sq(m.m[i]);
-    global_stdev = sqrt(global_stdev / (double)m.rows);
+    for (int i = 0; i < n; ++i) global_stdev += sq(m.m[i]);
+    global_stdev = sqrt(global_stdev / (double)n);
     
-    
-    for (auto lipidome : lipidomes){
-        
+    for (auto lipidome : selected_lipidomes){
         Array &intensities = lipidome->intensities;
-        double mean = 0, stdev = 0;
-        for (auto val : intensities) mean += val;
-        mean /= (double)intensities.size();
-        
-        for (auto val : intensities) stdev += sq(val - mean);
-        stdev = sqrt(stdev / (double)intensities.size());
+        double stdev = intensities.stdev();
         
         if (stdev > 1e-16){
-            stdev = global_stdev / stdev;
-            for (int i = 0; i < (int)intensities.size(); ++i) {
-                intensities[i] *= stdev;
-            }
+            intensities *= global_stdev / stdev;
         }
     }
 }
 
 
 
-void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType> *column_types){
-    Logging::write_log("Importing table '" + data_table_file + "'");
+
+void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnType> *column_types){
+    Logging::write_log("Importing table '" + pivot_table_file + "' as pivot table.");
+    
+    ifstream infile(pivot_table_file);
+    if (!infile.good()){
+        throw LipidSpaceException("Error: file '" + pivot_table_file + "' could not be found.", FileUnreadable);
+    }
+    
+    
+    string line;
+    vector<int> sample_columns;
+    int lipid_species_column = -1;
+    int quant_column = -1;
+    set<string> index_key_pairs;
+    vector<int> feature_columns;
+    for (int i = 0; i < (int)column_types->size(); ++i) {
+        switch(column_types->at(i)){
+            case FeatureColumn: feature_columns.push_back(i); break;
+            case SampleColumn: sample_columns.push_back(i); break;
+            case LipidColumn: lipid_species_column = i; break;
+            case QuantColumn: quant_column = i; break;
+            default: break;
+        }
+    }
+    
+    if (sample_columns.size() == 0 || lipid_species_column == -1 || quant_column == -1){
+        throw LipidSpaceException("Error while loading pivot table '" + pivot_table_file + "': not all essential columns defined.", NoColumnFound);
+    }
+    
+    set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
+    int line_cnt = 0;
+    map<string, LipidAdduct*> lipid_map;
+    map<string, Table*> lipidome_map;
+    vector<string> feature_names;
+    
+    while (getline(infile, line)){
+        if (line.length() == 0) continue;
+        
+        vector<string>* tokens = split_string(line, ',', '"', true);
+        if (line_cnt++ == 0){
+            for (auto fi : feature_columns) feature_names.push_back(tokens->at(fi));
+            
+            delete tokens;
+            continue;
+        }
+        
+        
+        // check if quant information is valid
+        string quant_val = tokens->at(quant_column);
+        if (contains_val(NA_VALUES, quant_val)){
+            delete tokens;
+            continue;
+        }
+        
+        // take or create sample / lipidome table
+        Table* lipidome = 0;
+        string sample_name = "";
+        for (int i = 0; i < (int)sample_columns.size(); ++i){
+            if (sample_name.length()) sample_name += "_";
+            sample_name += tokens->at(sample_columns[i]);
+        }
+        string lipid_name = tokens->at(lipid_species_column);
+        
+        string index_key_pair = sample_name + " / " + lipid_name;
+        if (uncontains_val(index_key_pairs, index_key_pair)){
+            index_key_pairs.insert(index_key_pair);
+        }
+        else {
+            if (ignore_doublette_lipids){
+                Logging::write_log("Ignoring lipid doublette '" + index_key_pair + "'");
+                continue;
+            }
+            else {
+                throw LipidSpaceException("Error while loading pivot table '" + pivot_table_file + "': sample and lipid pair '" + index_key_pair + "' occurs twice in table.", LipidDoublette);
+            }
+        }
+        
+        
+        
+        if (uncontains_val(lipidome_map, sample_name)){
+            lipidome = new Table(sample_name);
+            selection[3].insert({sample_name, true});
+            lipidome_map.insert({sample_name, lipidome});
+            lipidomes.push_back(lipidome);
+        }
+        else {
+            lipidome = lipidome_map[sample_name];
+        }
+        
+        // handle features
+        for (int i = 0; i < (int)feature_columns.size(); ++i){
+            lipidome->features.insert({feature_names[i], tokens->at(feature_columns[i])});
+        }
+        
+        // handle lipid
+        LipidAdduct *l = 0;
+        if (uncontains_val(lipid_map, lipid_name)){
+            try {
+                l = parser.parse(lipid_name);
+                    
+                // deleting adduct since not necessary
+                if (l->adduct != 0){
+                    delete l->adduct;
+                    l->adduct = 0;
+                }
+                
+                all_lipids.push_back(l);
+            }
+            catch (exception &e) {
+                if (!ignore_unknown_lipids){
+                    throw LipidSpaceException(string(e.what()) + ": lipid '" + lipid_name + "' cannot be parsed.", LipidUnparsable);
+                }
+                else {
+                    Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
+                    delete tokens;
+                    continue;
+                }
+            }
+            lipid_map.insert({lipid_name, l});
+        }
+        else {
+            l = lipid_map[lipid_name];
+        }
+        
+        lipidome->lipids.push_back(l);
+        lipidome->species.push_back(l->get_lipid_string());
+        lipidome->classes.push_back(l->get_lipid_string(CLASS));
+        lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
+        selection[0].insert({lipidome->species.back(), true});
+        selection[1].insert({lipidome->classes.back(), true});
+        selection[2].insert({lipidome->categories.back(), true});
+        double val = atof(quant_val.c_str());
+        lipidome->original_intensities.push_back(val);
+        
+        delete tokens;
+    }
+    delete  column_types;
+    
+    for (auto l : all_lipids){
+        for (auto fa : l->lipid->fa_list){
+            cut_cycle(fa);
+        }
+    }
+    fileLoaded();
+}
+
+
+
+
+
+void LipidSpace::load_column_table(string data_table_file, vector<TableColumnType> *column_types){
+    Logging::write_log("Importing table '" + data_table_file + "' as lipid column table.");
             
     // load and parse lipid table, lipids and features per column, measurements per row
     ifstream infile(data_table_file);
     if (!infile.good()){
-        Logging::write_log("Error: file '" + data_table_file + "' could not be found.");
-        throw LipidException("Error: file '" + data_table_file + "' could not be found.");
-        exit(-1);
+        throw LipidSpaceException("Error: file '" + data_table_file + "' could not be found.", FileUnreadable);
     }
     string line;
+    
+    bool has_sample_col = false;
+    for (auto column_type : *column_types){
+        has_sample_col |= (column_type == SampleColumn);
+    }
+    
+    if (!has_sample_col){
+        throw LipidSpaceException("No sample column was defined", NoColumnFound);
+    }
     
     
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
@@ -925,6 +1253,7 @@ void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType>
     vector<LipidAdduct*> lipids;
     set<int> ignore_col;
     int num_lipids = 0;
+    set<string> lipid_set;
     
     while (getline(infile, line)){
         if (line.length() == 0) continue;
@@ -932,8 +1261,7 @@ void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType>
         // handle first / header line different to the others
         vector<string>* tokens = split_string(line, ',', '"', true);
         if (column_types->size() != tokens->size()){
-            Logging::write_log("Inconsistant column size of header (" + std::to_string(column_types->size()) + ") and line " + std::to_string(line_cnt + 1) + " (" + std::to_string(tokens->size()) + ").");
-            throw LipidException("Inconsistant column size of header (" + std::to_string(column_types->size()) + ") and line " + std::to_string(line_cnt + 1) + " (" + std::to_string(tokens->size()) + ").");
+            throw LipidSpaceException("Inconsistant column size of header (" + std::to_string(column_types->size()) + ") and line " + std::to_string(line_cnt + 1) + " (" + std::to_string(tokens->size()) + ").", ColumnNumMismatch);
         }
         
         if (line_cnt++ == 0){
@@ -945,21 +1273,10 @@ void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType>
                     features_names.push_back(tokens->at(i));
                 }
                 else if (column_type == LipidColumn){
-                    LipidAdduct* l = 0;
-                    try {
-                        l = parser.parse(tokens->at(i));
-                        num_lipids += 1;
-                    }
-                    catch (exception &e) {
-                        if (!ignore_unknown_lipids){
-                            throw LipidException(string(e.what()) + ": lipid '" + tokens->at(i) + "' cannot be parsed.");
-                        }
-                        else {
-                            Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(i) + "'");
-                            ignore_col.insert(i);
-                            continue;
-                        }
-                    }
+                    bool ignore_lipid = false;
+                    LipidAdduct* l = load_lipid(tokens->at(i), lipid_set, ignore_lipid);
+                    num_lipids += 1;
+                    
                     lipids.push_back(l);
                 }
             }
@@ -1001,6 +1318,7 @@ void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType>
             }
         }
         
+        selection[3].insert({measurement, true});
         lipidomes.push_back(new Table(measurement));
         Table *lipidome = lipidomes.back();
         for (auto kv : features) lipidome->features.insert({kv.first, kv.second});
@@ -1009,24 +1327,35 @@ void LipidSpace::load_data_table(string data_table_file, vector<TableColumnType>
             lipidome->lipids.push_back(l);
             lipidome->species.push_back(l->get_lipid_string());
             lipidome->classes.push_back(l->get_lipid_string(CLASS));
+            lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
+            selection[0].insert({lipidome->species.back(), true});
+            selection[1].insert({lipidome->classes.back(), true});
+            selection[2].insert({lipidome->categories.back(), true});
         }
-        lipidome->intensities.reset(intensities);
+        lipidome->original_intensities.reset(intensities);
         
         delete tokens;
     }
     delete column_types;
+    
+    for (auto l : all_lipids){
+        for (auto fa : l->lipid->fa_list){
+            cut_cycle(fa);
+        }
+    }
+    fileLoaded();
 }
 
 
 
 
 
-void LipidSpace::load_table(string table_file){
+void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *column_types){
     // load and parse lipid table, lipids per row, measurements per column
+    Logging::write_log("Reading table '" + table_file + "' lipid row table.");
     ifstream infile(table_file);
     if (!infile.good()){
-        Logging::write_log("Error: file '" + table_file + "' could not be found.");
-        throw LipidException("Error: file '" + table_file + "' not found.");
+        throw LipidSpaceException("Error: file '" + table_file + "' not found.");
         exit(-1);
     }
     string line;
@@ -1034,81 +1363,208 @@ void LipidSpace::load_table(string table_file){
 
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     vector<Array> intensities;
+    set<string> lipid_set;
     
     
-    int line_cnt = 0;
-    int num_cols = 0;
-    while (getline(infile, line)){
-        vector<string>* tokens = split_string(line, ',', '"', true);
-        
-        // handle first / header line different to the others
-        if (line_cnt++ == 0){
-            num_cols = tokens->size();
-            for (int i = 1; i < (int)tokens->size(); ++i){
-                lipidomes.push_back(new Table(tokens->at(i)));
-                intensities.push_back(Array());
+    // no specific column order is provided, we assume that first column contains
+    // lipid species names and all remaining columns correspond to a sample containing
+    // intensity / quant values
+    if (column_types == 0){
+        int line_cnt = 0;
+        int num_cols = 0;
+        while (getline(infile, line)){
+            vector<string>* tokens = split_string(line, ',', '"', true);
+            
+            // handle first / header line different to the others
+            if (line_cnt++ == 0){
+                num_cols = tokens->size();
+                for (int i = 1; i < (int)tokens->size(); ++i){
+                    selection[3].insert({tokens->at(i), true});
+                    lipidomes.push_back(new Table(tokens->at(i)));
+                    intensities.push_back(Array());
+                }
+                delete tokens;
+                continue;
             }
-            delete tokens;
-            continue;
-        }
-        if (line.length() == 0) continue;
-        
+            if (line.length() == 0) continue;
+            
 
-                
-        // handle all other rows
-        if ((int)tokens->size() != num_cols) {
-            cerr << "Error in line '" << line_cnt << "' number of cells does not match with number of column labels" << endl;
-            exit(-1);
+                    
+            // handle all other rows
+            if ((int)tokens->size() != num_cols) {
+                throw LipidSpaceException("Error in line '" + std::to_string(line_cnt) + "' number of cells does not match with number of column labels", ColumnNumMismatch);
+            }
+            
+            bool ignore_lipid = false;
+            LipidAdduct* l = load_lipid(tokens->at(0), lipid_set, ignore_lipid);
+            
+            if (!ignore_lipid){
+            
+                for (int i = 1; i < (int)tokens->size(); ++i){
+                    string val = tokens->at(i);
+                    if (!contains_val(NA_VALUES, val)){
+                        Table* lipidome = lipidomes.at(i - 1);
+                        lipidome->lipids.push_back(l);
+                        lipidome->species.push_back(l->get_lipid_string());
+                        lipidome->classes.push_back(l->get_lipid_string(CLASS));
+                        lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
+                        selection[0].insert({lipidome->species.back(), true});
+                        selection[1].insert({lipidome->classes.back(), true});
+                        selection[2].insert({lipidome->categories.back(), true});
+                        intensities.at(i - 1).push_back(atof(val.c_str()));
+                    }
+                }
+            }
+            
+            delete tokens;
+        }
+    }
+    
+    else {
+        int line_cnt = 0;
+        bool has_lipid_col = false;
+        for (auto column_type : *column_types){
+            has_lipid_col |= (column_type == LipidColumn);
         }
         
-        LipidAdduct* l = 0;
-        try {
-            l = parser.parse(tokens->at(0));
-        }
-        catch (exception &e) {
-            if (!ignore_unknown_lipids){
-                throw LipidException(string(e.what()) + ": lipid '" + tokens->at(0) + "' cannot be parsed.");
-            }
-            else {
-                Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(0) + "'");
-                continue;
-            }
-        }
-        
-        if (l == 0) {
-            if (!ignore_unknown_lipids){
-                throw LipidException("Lipid '" + tokens->at(0) + "' cannot be parsed.");
-            }
-            else {
-                Logging::write_log("Ignoring unidentifiable lipid '" + tokens->at(0) + "'");
-                continue;
-            }
+        if (!has_lipid_col){
+            throw LipidSpaceException("No lipid column was defined", NoColumnFound);
         }
             
-        // deleting adduct since not necessary
-        if (l->adduct != 0){
-            delete l->adduct;
-            l->adduct = 0;
-        }
-        all_lipids.push_back(l);
-        for (int i = 1; i < (int)tokens->size(); ++i){
-            string val = tokens->at(i);
-            if (!contains_val(NA_VALUES, val)){
-                Table* lipidome = lipidomes.at(i - 1);
-                lipidome->lipids.push_back(l);
-                lipidome->species.push_back(l->get_lipid_string());
-                lipidome->classes.push_back(l->get_lipid_string(CLASS));
-                intensities.at(i - 1).push_back(atof(val.c_str()));
+        
+        while (getline(infile, line)){
+            vector<string>* tokens = split_string(line, ',', '"', true);
+            if (tokens->size() != column_types->size()) {
+                throw LipidSpaceException("Error in line '" + std::to_string(line_cnt  + 1) + "': number of cells does not match with specified number of columns", ColumnNumMismatch);
+                exit(-1);
             }
+            
+            // handle first / header line different to the others
+            if (line_cnt++ == 0){
+                
+                for (int i = 0; i < (int)column_types->size(); ++i){
+                    if (column_types->at(i) == SampleColumn){
+                        selection[3].insert({tokens->at(i), true});
+                        lipidomes.push_back(new Table(tokens->at(i)));
+                        intensities.push_back(Array());
+                    } 
+                }
+                delete tokens;
+                continue;
+            }
+            if (line.length() == 0) continue;
+            
+            
+            LipidAdduct* l = 0;
+            vector<string> quant_data;
+            // handle all remaining rows
+            bool ignore_lipid = false;
+            for (int i = 0; i < (int)column_types->size(); ++i){
+                if (ignore_lipid) break;
+                switch(column_types->at(i)){
+                    case SampleColumn:
+                        quant_data.push_back(tokens->at(i));
+                        break;
+                        
+                    case LipidColumn:
+                        l = load_lipid(tokens->at(i), lipid_set, ignore_lipid);
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
+            if (!ignore_lipid){
+                
+                for (int i = 0; i < (int)quant_data.size(); ++i){
+                    string val = quant_data[i];
+                    if (!contains_val(NA_VALUES, val)){
+                        Table* lipidome = lipidomes.at(i);
+                        lipidome->lipids.push_back(l);
+                        lipidome->species.push_back(l->get_lipid_string());
+                        lipidome->classes.push_back(l->get_lipid_string(CLASS));
+                        lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
+                        selection[0].insert({lipidome->species.back(), true});
+                        selection[1].insert({lipidome->classes.back(), true});
+                        selection[2].insert({lipidome->categories.back(), true});
+                        intensities.at(i).push_back(atof(val.c_str()));
+                    }
+                    
+                }
+            }
+            
+            delete tokens;
         }
-        for (auto fa : l->lipid->fa_list) cut_cycle(fa);
-        delete tokens;
+        
+        delete column_types;
+    }
+    
+    for (int i = 0; i < (int)lipidomes.size(); ++i){
+        lipidomes.at(i)->original_intensities.reset(intensities.at(i));
+    }
+    
+    for (auto l : all_lipids){
+        for (auto fa : l->lipid->fa_list){
+            cut_cycle(fa);
+        }
+    }
+    fileLoaded();
+}
+
+
+LipidAdduct* LipidSpace::load_lipid(string lipid_name, set<string> &lipid_set, bool &ignore_lipid){
+    LipidAdduct* l = nullptr;
+    try {
+        l = parser.parse(lipid_name);
+    }
+    catch (exception &e) {
+        if (!ignore_unknown_lipids){
+            throw LipidSpaceException(string(e.what()) + ": lipid '" + lipid_name + "' cannot be parsed.", LipidUnparsable);
+        }
+        else {
+            Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
+            ignore_lipid = true;
+        }
+    }
+    
+    if (l == nullptr || l->get_extended_class() == UNDEFINED_LIPID) {
+        if (!ignore_unknown_lipids){
+            throw LipidSpaceException("Lipid '" + lipid_name + "' cannot be parsed.", LipidUnparsable);
+        }
+        else {
+            Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
+            ignore_lipid = true;
+        }
     }
         
-    for (int i = 0; i < (int)lipidomes.size(); ++i){
-        lipidomes.at(i)->intensities.reset(intensities.at(i));
+    // deleting adduct since not necessary
+    if (l->adduct != nullptr){
+        delete l->adduct;
+        l->adduct = nullptr;
     }
+    
+    string lipid_unique_name = l->get_lipid_string();
+    if (uncontains_val(lipid_set, lipid_unique_name)){
+        lipid_set.insert(lipid_unique_name);
+    }
+    else {
+        delete l;
+        l = nullptr;
+        if (ignore_doublette_lipids){
+            ignore_lipid = true;
+            Logging::write_log("Ignoring doublette lipid '" + lipid_name + "'");
+        }
+        else {
+            throw LipidSpaceException("Error: lipid '" + lipid_name + "' appears twice in the table.", LipidDoublette);
+        }
+    }
+    if (!ignore_lipid) all_lipids.push_back(l);
+    return l;
 }
+
+
+
+
 
 
 
@@ -1144,8 +1600,15 @@ bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;
 void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
     
-    
     analysis_finished = false;
+    feature_values.clear();
+    if (dendrogram_root){
+        delete dendrogram_root;
+        dendrogram_root = 0;
+    }
+    selected_lipidomes.clear();
+    dendrogram_sorting.clear();
+    dendrogram_points.clear();
     
     if (_progress){
         progress = _progress;
@@ -1155,7 +1618,12 @@ void LipidSpace::run_analysis(Progress *_progress){
     
     // compute PCA matrixes for the complete lipidome
     if (!progress || !progress->stop_progress){
-        compute_global_distance_matrix();
+        if (!compute_global_distance_matrix()){
+            if (progress){
+                progress->setError(QString("Less than three lipids were taken for analysis. Analysis aborted. Select more lipids for analysis."));
+            }
+            return;
+        }
     }
     
     
@@ -1175,9 +1643,6 @@ void LipidSpace::run_analysis(Progress *_progress){
             progress->disconnect(&global_lipidome->m, SIGNAL(set_step()), 0, 0);
         }
     }
-        
-    
-    
     
     // cutting the global PCA matrix back to a matrix for each lipidome
     if (!progress || !progress->stop_progress){
@@ -1187,70 +1652,47 @@ void LipidSpace::run_analysis(Progress *_progress){
             progress->set_step();
         }
     }
-    
     if (!progress || !progress->stop_progress){
-        compute_hausdorff_matrix();
-        if (progress){
-            progress->set_step();
+        if (selected_lipidomes.size() > 1){
+            compute_hausdorff_matrix();
+            if (progress){
+                progress->set_step();
+            }
         }
     }
     
     if (!progress || !progress->stop_progress){
-        create_dendrogram();
-        if (progress){
-            progress->set_step();
+        if (selected_lipidomes.size() > 1){
+            create_dendrogram();
+            if (progress){
+                progress->set_step();
+            }
         }
     }
     
-    if (progress){
+    if (progress && !progress->stop_progress){
         progress->finish();
     }
-    analysis_finished = true;
     
-    
-    
-    
-    /*
-    // experimental part
-    Matrix aa(global_lipidome->m.rows, lipidomes.size());
-    map<string, int> species_to_index;
-    for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
-        species_to_index.insert({global_lipidome->species[i], i});
+    if (!progress || !progress->stop_progress){
+        analysis_finished = true;
     }
-    
-    for (int c = 0; c < (int)lipidomes.size(); c++){
-        auto lipidome = lipidomes[c];
-        for (int r = 0; r < (int)lipidome->species.size(); ++r){
-            aa(species_to_index[lipidome->species[r]], c) = lipidome->intensities(r);
-        }
-    }
-    aa.transpose();
-    
-    
-    vector<pair<double, int>> lst;
-    for (int c = 0; c < aa.cols; c++){
-        double mean = 0, stdev = 0;
-        double *column = aa.m.data() + (c * aa.rows);
-        for (int r = 0; r < aa.rows; ++r) mean += aa(r, c);
-        mean /= (double)aa.rows;
-        
-        
-        for (int r = 0; r < aa.rows; ++r) stdev += sq(aa(r, c) - mean);
-        stdev = sqrt(stdev / (double)aa.rows);
-        lst.push_back({stdev / mean, c});
-    }
-    sort(lst.begin(), lst.end(), mysort);
-    for (auto row : lst){
-        cout << row.second << " " << row.first << " " << global_lipidome->species[row.second] << endl;
-        //cout << row[0] << " " << lipidomes[(int)row[1]]->file_name << endl;
-    }
-    */
 }
 
 
 
 void LipidSpace::reset_analysis(){
     analysis_finished = false;
+    feature_values.clear();
+    if (dendrogram_root){
+        delete dendrogram_root;
+        dendrogram_root = 0;
+    }
+    selected_lipidomes.clear();
+    dendrogram_sorting.clear();
+    dendrogram_points.clear();
+    
+    for (int i = 0; i < 4; ++i) selection[i].clear();
     
     for (auto lipid : all_lipids) delete lipid;
     all_lipids.clear();
@@ -1260,8 +1702,10 @@ void LipidSpace::reset_analysis(){
     cols_for_pca = cols_for_pca_init;
     
     
+    
     global_lipidome->species.clear();
     global_lipidome->classes.clear();
+    global_lipidome->categories.clear();
     global_lipidome->lipids.clear();
     global_lipidome->intensities.clear();
     global_lipidome->m.reset(1, 1);

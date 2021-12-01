@@ -9,7 +9,7 @@ SetAlpha::SetAlpha(QWidget *parent) : QDialog(parent), ui(new Ui::SetAlpha) {
     ui->horizontalSlider->setMinimum(0);
     ui->horizontalSlider->setMaximum(255);
     ui->horizontalSlider->setTickInterval(256);
-    ui->horizontalSlider->setValue(LipidSpaceGUI::alpha);
+    ui->horizontalSlider->setValue(GlobalData::alpha);
     
     connect(ui->okButton, SIGNAL(clicked()), this, SLOT(ok()));
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
@@ -25,6 +25,6 @@ void SetAlpha::cancel(){
 }
 
 void SetAlpha::ok(){
-    LipidSpaceGUI::alpha = ui->horizontalSlider->value();
+    GlobalData::alpha = ui->horizontalSlider->value();
     close();
 }

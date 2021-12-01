@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QPushButton>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/canvas.h"
@@ -12,34 +13,22 @@
 #include "lipidspace/setalpha.h"
 #include "lipidspace/setPCnum.h"
 #include "lipidspace/selectpc.h"
-#include "lipidspace/importdatatable.h"
-#include "lipidspace/importpivottable.h"
+#include "lipidspace/importtable.h"
 #include "lipidspace/about.h"
+#include "lipidspace/globaldata.h"
+#include "lipidspace/CBTableWidget.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 
-#define DEFAULT_ALPHA 128
+#define ALPHABETICALLY_ASC "Alphabetically (Asc)"
+#define ALPHABETICALLY_DESC "Alphabetically (Desc)"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }
 QT_END_NAMESPACE
 
 class Canvas;
-
-class GlobalLipidomeModel : public QAbstractTableModel {
-public:
-    QList< QList<QString> > rows;
-    QList<QString> headers;
-    int columns;
-    
-    GlobalLipidomeModel(LipidSpace *lipid_space, QObject * parent = {});
-    int rowCount(const QModelIndex &) const override;
-    int columnCount(const QModelIndex &) const override;
-    QVariant data(const QModelIndex &index, int role) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-};
-
-
 
 
 class DragLayer : public QWidget {
@@ -76,31 +65,25 @@ public:
     LipidSpace* lipid_space;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
-    static int color_counter;
-    static const vector<QColor> COLORS;
-    static bool showQuant;
-    static int alpha;
-    static map<string, QColor> colorMap;
-    static int PC1;
-    static int PC2;
     void resizeEvent(QResizeEvent *) override;
-    GlobalLipidomeModel *global_lipidome_model;
+    void keyPressEvent(QKeyEvent *event) override;
+    bool loadedDataSet;
     
     
 signals:
-    void transforming(QRectF f, int _num);
+    void transforming(QRectF f);
     void updateCanvas();
     void exporting(QString);
     void initialized();
+    void featureChanged(string);
+    void updateHighlightedPoints(vector<QString> *);
     
     
 public slots:
     void quitProgram();
     void openLists();
     void openTable();
-    void openDataTable();
-    void openPivotTable();
-    void loadDataTable(string file_name, vector<TableColumnType> *column_types);
+    void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();
@@ -119,7 +102,7 @@ public slots:
     void setSnPositions();
     void openManageLipidomesWindow();
     void runAnalysis();
-    void setTransforming(QRectF f, int _num);
+    void setTransforming(QRectF f);
     void setDoubleClick(int _num);
     void setExport();
     void setInitialized();
@@ -129,6 +112,13 @@ public slots:
     void openAbout();
     void openLog();
     void swapLipidomes(int source, int target);
+    void ShowContextMenu(const QPoint);
+    void transposeTable();
+    void reassembleSelection();
+    void setFeature(int pos);
+    void itemChanged(QListWidgetItem *item);
+    void updateSelectionView();
+    void updateView(int);
     
 private:
     Ui::LipidSpaceGUI *ui;
@@ -141,7 +131,11 @@ private:
     int single_window;
     QTimer timer;
     DragLayer *dragLayer;
-    
     vector<Canvas*> canvases;
+    bool table_transposed;
+    map<string, vector<string>> sortings[4];
+    vector<QComboBox*> sorting_boxes;
+    
+    void fill_Table();
 };
 #endif // LIPIDSPACEGUI_H

@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include "ui_setalpha.h"
-#include "lipidspace/lipidspacegui.h"
+#include "lipidspace/globaldata.h"
 
 namespace Ui {
 class SetAlpha;

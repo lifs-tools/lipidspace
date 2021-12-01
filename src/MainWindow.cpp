@@ -5,7 +5,6 @@
 
 
 
-
 void print_help(){
     cerr << "usage: " << endl;
     cerr << "  > ./lipidspace [options] output_folder table lipid_table[csv]" << endl;
@@ -25,6 +24,7 @@ void print_help(){
 
 int main(int argc, char** argv) {
     // parameters to change
+    /*
     bool keep_sn_position = true;
     bool ignore_unknown_lipids = false;
     bool plot_pca = true; 
@@ -32,19 +32,20 @@ int main(int argc, char** argv) {
     bool storing_distance_table = false;
     bool unboundend_distance = false;
     bool without_quant = false;
-    
+    */
     
     
     
     if (argc == 1){
-        QApplication a(argc, argv);
+    
+        QApplication application(argc, argv);
         Logging::write_log("LipidSpace v.1.0.1 was launched in window mode");
         LipidSpace lipid_space;
-        LipidSpaceGUI w(&lipid_space);
-        w.show();
-        return a.exec();
+        LipidSpaceGUI lipid_space_gui(&lipid_space);
+        lipid_space_gui.show();
+        return application.exec();
     }
-    
+    /*
     
     if (argc < 4) {
         print_help();
@@ -111,7 +112,7 @@ int main(int argc, char** argv) {
     }
     // loading lipid matrix
     else {
-        lipid_space.load_table(argv[3 + num_opt]);
+        lipid_space.load_row_table(argv[3 + num_opt]);
     }
     
     // compute PCA matrixes for the complete lipidome
@@ -135,7 +136,6 @@ int main(int argc, char** argv) {
     // cutting the global PCA matrix back to a matrix for each lipidome
     lipid_space.separate_matrixes();
 
-    /*
     // plotting all lipidome PCAs
     if (plot_pca && lipidomes.size() > 1){
         lipid_space.plot_PCA(global_lipidome, output_folder);
@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
         for (auto table : lipidomes){
             lipid_space.plot_PCA(table, output_folder);
         }
-    }*/
+    }
     
     
     // normalize and incorporate intensities
@@ -165,12 +165,6 @@ int main(int argc, char** argv) {
         //lipid_space.plot_dendrogram(&lipidomes, distance_matrix, output_folder);
     }
     
-    
-    
-    /*
-    if (plot_pca || plot_pca_lipidomes || lipidomes.size() > 1){
-        Py_Finalize();
-    }*/
-    
+    */
     return 0;
 }
