@@ -146,6 +146,11 @@ string FattyAcid::to_string(LipidLevel level){
         }
         fa_string << ")";
     }
+    
+    
+    if(level == COMPLETE_STRUCTURE && stereochemistry != ""){
+        fa_string << "[" << stereochemistry << "]";
+    }
         
         
     if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE)){

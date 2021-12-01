@@ -38,6 +38,7 @@ public:
     map<int, string> double_bond_positions;
     
     DoubleBonds(int num = 0);
+    DoubleBonds(map<int, string> pos);
     int get_num();
     DoubleBonds* copy();
 };

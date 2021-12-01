@@ -38,7 +38,21 @@ using namespace goslin;
 
 void assert_true(string a, string b, string t = ""){
     if (a != b){
-        cout << "Assertion: '" << a << "' == '" << b << endl;
+        cout << "Assertion: '" << a << "' == '" << b << "'" << endl;
+        assert(a == b);
+    }
+}
+
+void assert_true(int a, int b, string t = "") {
+    if (a != b){
+        cout << "Assertion: '" << a << "' == '" << b << "'" << endl;
+        assert(a == b);
+    }
+}
+
+void assert_true(std::size_t a, std::size_t b, string t = "") {
+    if (a != b){
+        cout << "Assertion: '" << a << "' == '" << b << "'" << endl;
         assert(a == b);
     }
 }
@@ -97,7 +111,41 @@ int main(int argc, char** argv){
     assert_true(l->get_lipid_string(MOLECULAR_SPECIES), "EPC 16:2;O2/22:1;O");
     assert_true(l->get_lipid_string(SPECIES), "EPC 38:3;O3");
     assert_true(l->get_sum_formula(), "C40H77N2O7P");
-    
+
+    l = parser.parse("BMP 18:1-18:1");
+    assert_true(l->get_lipid_string(), "BMP 18:1_18:1");
+    assert_true(l->get_sum_formula(), "C42H79O10P");
+    assert_true(l->lipid->fa_list.at(0)->name, "FA1");
+    assert_true(l->lipid->fa_list.at(0)->position, 0);
+    assert_true(l->lipid->fa_list.at(0)->double_bonds->num_double_bonds, 1);
+    assert_true(l->lipid->fa_list.at(1)->name, "FA2");
+    assert_true(l->lipid->fa_list.at(1)->position, 0);
+    assert_true(l->lipid->fa_list.at(1)->double_bonds->num_double_bonds, 1);
+    assert_true(l->lipid->fa_list.at(2)->name,  "FA3");
+    assert_true(l->lipid->fa_list.at(2)->position, 0);
+    assert_true(l->lipid->fa_list.at(2)->num_carbon, 0);
+    assert_true(l->lipid->fa_list.at(2)->double_bonds->num_double_bonds, 0);
+    assert_true(l->lipid->fa_list.at(3)->name,  "FA4");
+    assert_true(l->lipid->fa_list.at(3)->position, 0);
+    assert_true(l->lipid->fa_list.at(3)->num_carbon, 0);
+    assert_true(l->lipid->fa_list.at(3)->double_bonds->num_double_bonds, 0);
+
+    l = parser.parse("TAG 18:1/0:0/16:0");
+    assert_true(l->get_lipid_string(), "TG 18:1/0:0/16:0");
+    assert_true(l->get_sum_formula(), "C37H70O5");
+    assert_true(l->lipid->fa_list.size(), (std::size_t)3);
+    assert_true(l->lipid->fa_list.at(0)->name, "FA1");
+    assert_true(l->lipid->fa_list.at(0)->position, 1);
+    assert_true(l->lipid->fa_list.at(0)->num_carbon, 18);
+    assert_true(l->lipid->fa_list.at(0)->double_bonds->num_double_bonds, 1);
+    assert_true(l->lipid->fa_list.at(1)->name, "FA2");
+    assert_true(l->lipid->fa_list.at(1)->position, 2);
+    assert_true(l->lipid->fa_list.at(1)->num_carbon, 0);
+    assert_true(l->lipid->fa_list.at(1)->double_bonds->num_double_bonds, 0);
+    assert_true(l->lipid->fa_list.at(2)->name, "FA3");
+    assert_true(l->lipid->fa_list.at(2)->position, 3);
+    assert_true(l->lipid->fa_list.at(2)->num_carbon, 16);
+    assert_true(l->lipid->fa_list.at(2)->double_bonds->num_double_bonds, 0);
     
     // test several more lipid names
     vector<string> lipid_names;

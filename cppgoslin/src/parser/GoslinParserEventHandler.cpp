@@ -26,7 +26,11 @@ SOFTWARE.
 #include "cppgoslin/parser/GoslinParserEventHandler.h"
 
 #define reg(x, y) BaseParserEventHandler<LipidAdduct*>::registered_events->insert({x, bind(&GoslinParserEventHandler::y, this, placeholders::_1)})
-    
+   
+   
+const map<string, int> GoslinParserEventHandler::mediator_FA{{"H", 17}, {"O", 18}, {"E", 20}, {"Do", 22}};
+const map<string, int> GoslinParserEventHandler::mediator_DB{{"M", 1}, {"D", 2}, {"Tr", 3}, {"T", 4}, {"P", 5}, {"H", 6}};
+const map<string, int> GoslinParserEventHandler::mediator_trivial{{"Palmitic acid", 0}, {"Linoleic acid", 1}, {"AA", 2}, {"ALA", 3}, {"EPA", 4}, {"DHA", 5}, {"LTB4", 6}, {"Resolvin D3", 7}, {"Maresin 1", 8},  {"Resolvin D2", 9}, {"Resolvin D5", 10}, {"Resolvin D1", 11}, {"TXB1", 12}, {"TXB2", 13}, {"TXB3", 14}, {"PGF2alpha", 15}, {"PGD2", 16}, {"PGE2", 17}, {"PGB2", 18}, {"15d-PGJ2", 19}};
 
 GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandler() {    
     reg("lipid_pre_event", reset_lipid);
@@ -41,7 +45,6 @@ GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandl
     reg("st_pre_event", set_head_group_name);
     reg("hg_ste_pre_event", set_head_group_name);
     reg("hg_stes_pre_event", set_head_group_name);
-    reg("mediator_pre_event", set_head_group_name);
     reg("hg_mgl_pre_event", set_head_group_name);
     reg("hg_dgl_pre_event", set_head_group_name);
     reg("hg_sgl_pre_event", set_head_group_name);
@@ -87,11 +90,322 @@ GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandl
     
     reg("lpl_pre_event", set_molecular_subspecies_level);
     reg("plasmalogen_pre_event", set_plasmalogen);
+        
+    reg("mediator_pre_event", set_mediator);
+    reg("mediator_post_event", add_mediator);
+    reg("unstructured_mediator_pre_event", set_unstructured_mediator);
+    reg("trivial_mediator_pre_event", set_trivial_mediator);
+    reg("mediator_carbon_pre_event", set_mediator_carbon);
+    reg("mediator_db_pre_event", set_mediator_db);
+    reg("mediator_mono_functions_pre_event", set_mediator_function);
+    reg("mediator_di_functions_pre_event", set_mediator_function);
+    reg("mediator_position_pre_event", set_mediator_function_position);
+    reg("mediator_functional_group_post_event", add_mediator_function);
+    reg("mediator_suffix_pre_event", add_mediator_suffix);
+    reg("mediator_tetranor_pre_event", set_mediator_tetranor);
+        
     debug = "";
 }
 
 
 GoslinParserEventHandler::~GoslinParserEventHandler(){
+}
+
+
+void GoslinParserEventHandler::set_mediator(TreeNode *node){
+    head_group = "FA";
+    current_fa = new FattyAcid("FA");
+    fa_list->push_back(current_fa);
+    set_lipid_level(STRUCTURE_DEFINED);
+}
+    
+    
+void GoslinParserEventHandler::set_unstructured_mediator(TreeNode *node){
+    head_group = node->get_text();
+    use_head_group = true;
+    fa_list->clear();
+}
+        
+        
+void GoslinParserEventHandler::set_mediator_tetranor(TreeNode *node){
+    current_fa->num_carbon -= 4;
+}
+    
+
+void GoslinParserEventHandler::set_mediator_carbon(TreeNode *node){
+    current_fa->num_carbon += GoslinParserEventHandler::mediator_FA.at(node->get_text());
+}
+    
+
+void GoslinParserEventHandler::set_mediator_db(TreeNode *node){
+    current_fa->double_bonds->num_double_bonds = GoslinParserEventHandler::mediator_DB.at(node->get_text());
+}
+    
+    
+void GoslinParserEventHandler::set_mediator_function(TreeNode *node){
+    mediator_function = node->get_text();
+}
+    
+    
+void GoslinParserEventHandler::set_mediator_function_position(TreeNode *node){
+    mediator_function_positions.push_back(node->get_int());
+}
+    
+    
+void GoslinParserEventHandler::add_mediator_function(TreeNode *node){
+    FunctionalGroup* functional_group = 0;
+    string fg = "";
+    if (mediator_function == "H"){
+        functional_group = KnownFunctionalGroups::get_functional_group("OH");
+        fg = "OH";
+        if (mediator_function_positions.size() > 0) functional_group->position = mediator_function_positions[0];
+    }
+        
+    else if (mediator_function == "Oxo"){
+        functional_group = KnownFunctionalGroups::get_functional_group("oxo");
+        fg = "oxo";
+        if (mediator_function_positions.size() > 0) functional_group->position = mediator_function_positions[0];
+    }
+        
+    else if (mediator_function == "E" || mediator_function == "Ep"){
+        functional_group = KnownFunctionalGroups::get_functional_group("Ep");
+        fg = "Ep";
+        if (mediator_function_positions.size() > 0) functional_group->position = mediator_function_positions[0];
+    }
+        
+    else if (mediator_function == "DH" || mediator_function == "DiH"){
+        functional_group = KnownFunctionalGroups::get_functional_group("OH");
+        fg = "OH";
+        if (mediator_function_positions.size() > 0){
+            functional_group->position = mediator_function_positions[0];
+            FunctionalGroup* functional_group2 = KnownFunctionalGroups::get_functional_group("OH");
+            functional_group2->position = mediator_function_positions[1];
+            current_fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+            current_fa->functional_groups->at("OH").push_back(functional_group2);
+        }
+    }
+        
+    if (uncontains_val_p(current_fa->functional_groups, fg)) current_fa->functional_groups->insert({fg, vector<FunctionalGroup*>()});
+    current_fa->functional_groups->at(fg).push_back(functional_group);
+}
+
+void GoslinParserEventHandler::set_trivial_mediator(TreeNode *node){
+    head_group = "FA";
+    string mediator_name = node->get_text();
+     
+    switch(GoslinParserEventHandler::mediator_trivial.at(mediator_name)){
+        case 0: // Palmitic acid
+            current_fa = new FattyAcid("FA", 16);
+            break;
+            
+        case 1: // Linoleic acid":
+            current_fa = new FattyAcid("FA", 18, new DoubleBonds(2));
+            break;
+            
+        case 2: // AA":
+            current_fa = new FattyAcid("FA", 20, new DoubleBonds(4));
+            break;
+            
+        case 3: // ALA":
+            current_fa = new FattyAcid("FA", 18, new DoubleBonds(3));
+            break;
+            
+        case 4: // EPA":
+            current_fa = new FattyAcid("FA", 20, new DoubleBonds(5));
+            break;
+            
+        case 5: // DHA":
+            current_fa = new FattyAcid("FA", 22, new DoubleBonds(6));
+            break;
+            
+        case 6: // LTB4
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 5;
+                f2->position = 12;
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds({{6, "Z"}, {8, "E"}, {10, "E"}, {14, "Z"}}), new map<string, vector<FunctionalGroup*>>{{"OH", {f1, f2}}});
+            }
+            break;
+            
+        case 7: // Resolvin D3
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 4;
+                f2->position = 11;
+                f3->position = 17;
+                current_fa = new FattyAcid("FA", 22, new DoubleBonds(6), new map<string, vector<FunctionalGroup*>>{{"OH", {f1, f2, f3}}});
+            }
+            break;
+            
+        case 8: // Maresin 1
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 4;
+                f2->position = 14;
+                current_fa = new FattyAcid("FA", 22, new DoubleBonds(6), new map<string, vector<FunctionalGroup*>>{{"OH", {f1, f2}}});
+            }
+            break;
+            
+        case 9: // Resolvin D2
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 4;
+                f2->position = 16;
+                f3->position = 17;
+                current_fa = new FattyAcid("FA", 22, new DoubleBonds(6), new map<string, vector<FunctionalGroup*>>{{"OH", {f1, f2, f3}}});
+            }
+            break;
+            
+        case 10: // Resolvin D5
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 7;
+                f2->position = 17;
+                current_fa = new FattyAcid("FA", 22, new DoubleBonds(6), new map<string, vector<FunctionalGroup*>>{{"OH", {f1, f2}}});
+            }
+            break;
+            
+        case 11: // Resolvin D1
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 7;
+                f2->position = 8;
+                f3->position = 17;
+                current_fa = new FattyAcid("FA", 22, new DoubleBonds(6), new map<string, vector<FunctionalGroup*>>{{"OH", {f1, f2, f3}}});
+            }
+            break;
+            
+        case 12: // TXB1
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f4 = KnownFunctionalGroups::get_functional_group("oxy");
+                f1->position = 15;
+                f2->position = 9;
+                f3->position = 11;
+                f4->position = 11;
+                Cycle* cy = new Cycle(5, 8, 12, 0, new map<string, vector<FunctionalGroup*>>{{"OH", {f2, f3}}, {"oxy", {f4}}});
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds(1), new map<string, vector<FunctionalGroup*>>{{"OH", {f1}}, {"cy", {cy}}});
+            }
+            break;
+            
+        case 13: // TXB2
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f4 = KnownFunctionalGroups::get_functional_group("oxy");
+                f1->position = 15;
+                f2->position = 9;
+                f3->position = 11;
+                f4->position = 11;
+                Cycle* cy = new Cycle(5, 8, 12, 0, new map<string, vector<FunctionalGroup*>>{{"OH", {f2, f3}}, {"oxy", {f4}}});
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds(2), new map<string, vector<FunctionalGroup*>>{{"OH", {f1}}, {"cy", {cy}}});
+            }
+            break;
+            
+        case 14: // TXB3
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f4 = KnownFunctionalGroups::get_functional_group("oxy");
+                f1->position = 15;
+                f2->position = 9;
+                f3->position = 11;
+                f4->position = 11;
+                Cycle* cy = new Cycle(5, 8, 12, 0, new map<string, vector<FunctionalGroup*>>{{"OH", {f2, f3}}, {"oxy", {f4}}});
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds(3), new map<string, vector<FunctionalGroup*>>{{"OH", {f1}}, {"cy", {cy}}});
+            }
+            break;
+            
+        case 15: // PGF2alpha
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 15;
+                f2->position = 9;
+                f3->position = 11;
+                Cycle* cy = new Cycle(5, 8, 12, 0, new map<string, vector<FunctionalGroup*>>{{"OH", {f2, f3}}});
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds(2), new map<string, vector<FunctionalGroup*>>{{"OH", {f1}}, {"cy", {cy}}});
+            }
+            break;
+            
+        case 16: // PGD2
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("oxo");
+                f1->position = 15;
+                f2->position = 9;
+                f3->position = 11;
+                Cycle* cy = new Cycle(5, 8, 12, 0, new map<string, vector<FunctionalGroup*>>{{"OH", {f2}}, {"oxo", {f3}}});
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds(2), new map<string, vector<FunctionalGroup*>>{{"OH", {f1}}, {"cy", {cy}}});
+            }
+            break;
+            
+        case 17: // PGE2
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("oxo");
+                FunctionalGroup *f3 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 15;
+                f2->position = 9;
+                f3->position = 11;
+                Cycle* cy = new Cycle(5, 8, 12, 0, new map<string, vector<FunctionalGroup*>>{{"OH", {f3}}, {"oxy", {f2}}});
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds(2), new map<string, vector<FunctionalGroup*>>{{"OH", {f1}}, {"cy", {cy}}});
+            }
+            break;
+            
+        case 18: // PGB2
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("OH");
+                f1->position = 15;
+                f2->position = 9;
+                Cycle* cy = new Cycle(5, 8, 12, new DoubleBonds(1), new map<string, vector<FunctionalGroup*>>{{"OH", {f2}}});
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds(2), new map<string, vector<FunctionalGroup*>>{{"OH", {f1}}, {"cy", {cy}}});
+            }
+            break;
+            
+        case 19: // 15d-PGJ2
+            {
+                FunctionalGroup *f1 = KnownFunctionalGroups::get_functional_group("OH");
+                FunctionalGroup *f2 = KnownFunctionalGroups::get_functional_group("oxo");
+                f1->position = 15;
+                f2->position = 11;
+                Cycle* cy = new Cycle(5, 8, 12, new DoubleBonds(1), new map<string, vector<FunctionalGroup*>>{{"oxo", {f2}}});
+                current_fa = new FattyAcid("FA", 20, new DoubleBonds(3), new map<string, vector<FunctionalGroup*>>{{"OH", {f1}}, {"cy", {cy}}});
+            }
+            break;
+    }
+    
+    fa_list->clear();
+    fa_list->push_back(current_fa);
+    mediator_suffix = true;
+}
+    
+    
+void GoslinParserEventHandler::add_mediator_suffix(TreeNode *node){
+    mediator_suffix = true;
+}
+    
+    
+void GoslinParserEventHandler::add_mediator(TreeNode *node){
+    if (!mediator_suffix){
+        current_fa->double_bonds->num_double_bonds -= 1;
+    }
 }
 
 
@@ -106,6 +420,10 @@ void GoslinParserEventHandler::reset_lipid(TreeNode *node) {
     db_cistrans = "";
     unspecified_ether = false;
     plasmalogen = 0;
+    mediator_function = "";
+    mediator_function_positions.clear();
+    mediator_suffix = false;
+    use_head_group = false;
 }
 
 

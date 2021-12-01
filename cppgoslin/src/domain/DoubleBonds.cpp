@@ -29,6 +29,13 @@ DoubleBonds::DoubleBonds(int num){
     num_double_bonds = num;
 }
 
+DoubleBonds::DoubleBonds(map<int, string> pos){
+    num_double_bonds = pos.size();
+    for (auto &kv : pos){
+        double_bond_positions.insert({kv.first, kv.second});
+    }
+}
+
 
 DoubleBonds* DoubleBonds::copy(){
     DoubleBonds* db = new DoubleBonds(num_double_bonds);

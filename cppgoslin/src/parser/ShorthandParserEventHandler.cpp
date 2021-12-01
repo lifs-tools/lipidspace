@@ -87,6 +87,7 @@ ShorthandParserEventHandler::ShorthandParserEventHandler() : LipidBaseParserEven
     reg("db_single_position_post_event", add_double_bond_information);
     reg("cistrans_pre_event", set_cistrans);
     reg("ether_type_pre_event", set_ether_type);
+    reg("stereo_type_fa_pre_event", set_fatty_acyl_stereo);
     
     // set functional group events
     reg("func_group_data_pre_event", set_functional_group);
@@ -94,7 +95,7 @@ ShorthandParserEventHandler::ShorthandParserEventHandler() : LipidBaseParserEven
     reg("func_group_pos_number_pre_event", set_functional_group_position);
     reg("func_group_name_pre_event", set_functional_group_name);
     reg("func_group_count_pre_event", set_functional_group_count);
-    reg("stereo_type_pre_event", set_functional_group_stereo);
+    reg("stereo_type_fg_pre_event", set_functional_group_stereo);
     reg("molecular_func_group_name_pre_event", set_sn_position_func_group);
     
     // set cycle events
@@ -135,6 +136,7 @@ ShorthandParserEventHandler::ShorthandParserEventHandler() : LipidBaseParserEven
     reg("acer_hg_post_event", set_acer);
     reg("acer_species_post_event", set_acer_species);
     
+    reg("sterol_definition_post_event", set_sterol_definition);
     
     debug = "";
 }
@@ -157,13 +159,21 @@ void ShorthandParserEventHandler::reset_lipid(TreeNode *node) {
     headgroup_decorators->clear();
     tmp.remove_all();
     acer_species = false;
+    contains_stereo_information = false;
 }
 
-
+void ShorthandParserEventHandler::set_sterol_definition(TreeNode *node){
+    head_group += " " + node->get_text();
+    fa_list->erase(fa_list->begin());
+}
 
 void ShorthandParserEventHandler::build_lipid(TreeNode *node) {
     if (acer_species) fa_list->at(0)->num_carbon -= 2;
     Headgroup *headgroup = prepare_headgroup_and_checks();
+    
+    if (level == FULL_STRUCTURE && contains_stereo_information){
+        level = COMPLETE_STRUCTURE;
+    }
     
     // add count numbers for fatty acyl chains
     int fa_it = !fa_list->empty() && (fa_list->front()->lipid_FA_bond_type == LCB_REGULAR || fa_list->front()->lipid_FA_bond_type == LCB_EXCEPTION);
@@ -287,6 +297,13 @@ void ShorthandParserEventHandler::set_ring_stereo(TreeNode *node){
 void ShorthandParserEventHandler::set_lcb(TreeNode *node){
         fa_list->back()->set_type(LCB_REGULAR);
         fa_list->back()->name = "LCB";
+}
+
+
+
+void ShorthandParserEventHandler::set_fatty_acyl_stereo(TreeNode *node){
+    current_fas.back()->stereochemistry = node->get_text();
+    contains_stereo_information = true;
 }
 
 
@@ -617,6 +634,7 @@ void ShorthandParserEventHandler::set_functional_group_count(TreeNode *node){
 
 void ShorthandParserEventHandler::set_functional_group_stereo(TreeNode *node){
     tmp.get_dictionary(FA_I)->set_string("fg_stereo", node->get_text());
+    contains_stereo_information = true;
 }
 
 

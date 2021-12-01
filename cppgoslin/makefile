@@ -1,5 +1,8 @@
 install_dir = /usr
-CC = g++ -std=c++11
+ifeq ($(origin CC),default)
+CC  = g++
+endif
+#CC = g++ -std=c++11
 #CC = clang++-10
 AR = ar
 MARCH = -march=native
@@ -11,9 +14,15 @@ parser = src/parser/ParserClasses.o src/parser/KnownParsers.o src/parser/GoslinP
 
 obj = ${domain} ${parser}
 
+ifeq '' '${findstring clang++,${CC}}'
+  # not clang
+  flags = -fstack-protector-strong -fopenmp
+else
+  # clang
+  flags = -fstack-protector-strong	
+endif
 
-opt = -O3 ${MARCH} -Wvla -Wall -fstack-protector-strong -D_FORTIFY_SOURCE=2
-
+opt = -std=c++11 -O3 ${MARCH} -Wvla -Wall ${flags} -D_FORTIFY_SOURCE=2
 
 main: ${bin}
 
@@ -46,7 +55,7 @@ src/parser/%.o: src/parser/%.cpp cppgoslin/parser/KnownGrammars.h src/domain/Lip
 	
 	
 src/tests/%.o: src/tests/%.cpp libcppGoslin.so
-	${CC} -fopenmp ${opt} -I. -fPIC -o $@ -c $<
+	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
@@ -87,7 +96,7 @@ MassesTest: src/tests/MassesTest.o
 	${CC} -I. ${opt} -Bstatic -o MassesTest src/tests/MassesTest.o libcppGoslin.so
 	
 LipidMapsTest: src/tests/LipidMapsTest.o
-	${CC} -I. ${opt} -fopenmp -Bstatic -o LipidMapsTest src/tests/LipidMapsTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o LipidMapsTest src/tests/LipidMapsTest.o libcppGoslin.so
 	
 GoslinTest: src/tests/GoslinTest.o
 	${CC} -I. ${opt} -Bstatic -o GoslinTest src/tests/GoslinTest.o libcppGoslin.so
@@ -96,7 +105,7 @@ SwissLipidsTest: src/tests/SwissLipidsTest.o
 	${CC} -I. ${opt} -Bstatic -o SwissLipidsTest src/tests/SwissLipidsTest.o libcppGoslin.so
 	
 HmdbTest: src/tests/HmdbTest.o
-	${CC} -fopenmp -I. ${opt} -Bstatic -o HmdbTest src/tests/HmdbTest.o libcppGoslin.so
+	${CC} -I. ${opt} -Bstatic -o HmdbTest src/tests/HmdbTest.o libcppGoslin.so
 	
 FattyAcidsTest: src/tests/FattyAcidsTest.o
 	${CC} -I. ${opt} -Bstatic -o FattyAcidsTest src/tests/FattyAcidsTest.o libcppGoslin.so

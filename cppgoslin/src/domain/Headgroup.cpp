@@ -114,6 +114,7 @@ string Headgroup::get_class_string(LipidClass _lipid_class){
 
 
 string Headgroup::get_class_name(){
+    if (uncontains_val(LipidClasses::get_instance().lipid_classes, lipid_class)) return "UNDEFINED";
     return LipidClasses::get_instance().lipid_classes.at(lipid_class).class_name;
 }
 

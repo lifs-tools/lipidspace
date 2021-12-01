@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, v2.0 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, v2.0 ]
 
 jobs:
   build:
@@ -16,14 +16,14 @@ jobs:
         config:
         - { name: "Ubuntu Latest GCC", artifact: "Linux.tar.xz", os: ubuntu-latest, build_type: "Release", cc: "gcc", cxx: "g++" }
           #        - { name: "macOS Latest Clang", artifact: "macOS.tar.xz", os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++" }
-        - { name: "Ubuntu Latest Clang", artifact: "Linux-clang.tar.xz", os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++" }
+        - { name: "MacOS Latest Clang", artifact: "MacOS-clang.tar.xz", os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++" }
     steps:
     - uses: actions/checkout@v2
     - name: make
-      run: make clean
+      run: make CC=${{ matrix.config.cxx }} clean
     - name: make 
-      run: make
+      run: make CC=${{ matrix.config.cxx }}
     - name: make test
-      run: make test
+      run: make CC=${{ matrix.config.cxx }} test
     - name: make runtest
       run: make runtests
