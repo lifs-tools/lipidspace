@@ -616,9 +616,9 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
         variances = new QLabel(var_label, this);
     }
     else { // regular lipidome
-        pointSet = new PointSet(lipid_space->lipidomes[num], this);
+        pointSet = new PointSet(lipid_space->selected_lipidomes[num], this);
         graphics_scene.addItem(pointSet);
-        title.setText(QString(lipid_space->lipidomes[num]->cleaned_name.c_str()));
+        title.setText(QString(lipid_space->selected_lipidomes[num]->cleaned_name.c_str()));
         
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->lipidomes[num]->m, vars);
