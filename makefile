@@ -1,5 +1,8 @@
 install_dir = /usr
-CC = g++ -std=c++11
+ifeq ($(origin CC),default)
+CC  = g++
+endif
+#CC = g++ -std=c++11
 #CC = clang++-10
 AR = ar
 MARCH = -march=native
@@ -19,7 +22,7 @@ else
   flags = -fstack-protector-strong	
 endif
 
-opt = -O3 ${MARCH} -Wvla -Wall ${flags} -D_FORTIFY_SOURCE=2
+opt = -std=c++11 -O3 ${MARCH} -Wvla -Wall ${flags} -D_FORTIFY_SOURCE=2
 
 main: ${bin}
 
