@@ -124,9 +124,11 @@ int main(int argc, char** argv){
     assert_true(l->lipid->fa_list.at(2)->name,  "FA3");
     assert_true(l->lipid->fa_list.at(2)->position, 0);
     assert_true(l->lipid->fa_list.at(2)->num_carbon, 0);
+    assert_true(l->lipid->fa_list.at(2)->double_bonds->num_double_bonds, 0);
     assert_true(l->lipid->fa_list.at(3)->name,  "FA4");
     assert_true(l->lipid->fa_list.at(3)->position, 0);
     assert_true(l->lipid->fa_list.at(3)->num_carbon, 0);
+    assert_true(l->lipid->fa_list.at(3)->double_bonds->num_double_bonds, 0);
 
     l = parser.parse("TAG 18:1/0:0/16:0");
     assert_true(l->get_lipid_string(), "TG 18:1/0:0/16:0");
