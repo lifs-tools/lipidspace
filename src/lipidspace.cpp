@@ -99,8 +99,8 @@ void LipidSpace::create_dendrogram(){
     for (int i = (int)CVs.size() - 1; i >= 0; --i) CVl.push_back(CVh[i]);
     
     
-    /*
-    vector<pair<double, string>> lipid_names;
+    
+    vector<pair<double, string>> top_two_groups;
     vector<double> p_values;
     vector<double> fold_change;
     double max_log_fc = 0;
@@ -111,26 +111,34 @@ void LipidSpace::create_dendrogram(){
             if (matrix(r, c1) > 0) sample1.push_back(matrix(r, c1));
         }
         for (int c2 : dendrogram_root->right_child->indexes){
-            if (aa(r, c2) > 0) sample2.push_back(aa(r, c2));
+            if (matrix(r, c2) > 0) sample2.push_back(matrix(r, c2));
         }
         
-        if (sample1.size() < 2 || sample2.size() < 2) continue;
+        if (sample1.size() < 2 || sample2.size() < 2){
+            missing.push_back(global_lipidome->species[r]);
+            continue;
+        }
         
-        lipid_names.push_back({0, global_lipidome->species[r]});
+        top_two_groups.push_back({0, global_lipidome->species[r]});
         p_values.push_back(KS_pvalue(sample1, sample2));
-        fold_change.push_back(max(sample2.mean() / sample1.mean(), sample1.mean() / sample2.mean()));
+        fold_change.push_back(fabs(log(sample2.mean() / sample1.mean())));
         max_log_fc = max(max_log_fc, fold_change.back());
     }
     
     BH_fdr(p_values);
-    //for (int i = 0; i < (int)p_values.size(); ++i) lipid_names[i].first = sqrt((1 - p_values[i]) * fold_change[i] / max_log_fc);
-    for (int i = 0; i < (int)p_values.size(); ++i) lipid_names[i].first = (1 - p_values[i]) * fold_change[i];
+    //for (int i = 0; i < (int)p_values.size(); ++i) top_two_groups[i].first = sqrt((1 - p_values[i]) * fold_change[i] / max_log_fc);
+    for (int i = 0; i < (int)p_values.size(); ++i) top_two_groups[i].first = (1 - p_values[i]) * fold_change[i];
     
-    sort(lipid_names.begin(), lipid_names.end(), sort_double_string);
-    for (auto p : lipid_names){
-        //cout << p.first << ": " << p.second << endl;
-    }
-    */
+    sort(top_two_groups.begin(), top_two_groups.end(), sort_double_string_desc);
+    
+    lipid_sortings.insert({"Top 2 groups (highest)", vector<string>()});
+    lipid_sortings.insert({"Top 2 groups (lowest)", vector<string>()});
+    vector<string> &top_highest = lipid_sortings["Top 2 groups (highest)"];
+    vector<string> &top_lowest = lipid_sortings["Top 2 groups (lowest)"];
+    for (auto kv : top_two_groups) top_highest.push_back(kv.second);
+    for (auto miss : missing) top_highest.push_back(miss);
+    for (int i = (int)top_highest.size() - 1; i >= 0; --i) top_lowest.push_back(top_highest[i]);
+    
 }
 
 
@@ -730,7 +738,7 @@ void LipidSpace::load_list(string lipid_list_file){
         }
     }
     
-    if (ignore_unknown_lipids && remove.size() > 0){
+    if (remove.size() > 0){
         sort(remove.begin(), remove.end());
         for (int i = remove.size() - 1; i >= 0; --i){
             int index = remove.at(i);
@@ -739,7 +747,7 @@ void LipidSpace::load_list(string lipid_list_file){
             lipidome->species.erase(lipidome->species.begin() + index);
             lipidome->classes.erase(lipidome->classes.begin() + index);
             lipidome->categories.erase(lipidome->categories.begin() + index);
-            lipidome->original_intensities.erase(lipidome->intensities.begin() + index);
+            lipidome->original_intensities.erase(lipidome->original_intensities.begin() + index);
         }
     }
     
@@ -932,8 +940,6 @@ bool LipidSpace::compute_global_distance_matrix(){
             if (!selection[CLASS_ITEM][lipid_class]) continue;
             if (!selection[CATEGORY_ITEM][lipid_category]) continue;
             registered_types[SPECIES_ITEM].insert(lipid_species);
-            registered_types[CLASS_ITEM].insert(lipid_class);
-            registered_types[CATEGORY_ITEM].insert(lipid_class);
             
             // add lipid data to global lipidome
             global_lipidome->species.push_back(lipid_species);
@@ -951,6 +957,7 @@ bool LipidSpace::compute_global_distance_matrix(){
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
     if (n < 3) return false;
+
     
     global_lipidome->intensities.resize(n);
     for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = 1;
@@ -993,6 +1000,7 @@ bool LipidSpace::compute_global_distance_matrix(){
                     ((double)union_num / (double)inter_num - 1.) // unboundend distance [0; inf[
                                 :
                     (1. - (double)inter_num / (double)union_num); // bounded distance [0; 1]
+                    
                 distance_matrix(i, j) = distance;
                 distance_matrix(j, i) = distance;
             }
@@ -1442,10 +1450,19 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             // handle first / header line different to the others
             if (line_cnt++ == 0){
                 
+                map<string, int> doublettes;
                 for (int i = 0; i < (int)column_types->size(); ++i){
                     if (column_types->at(i) == SampleColumn){
-                        selection[3].insert({tokens->at(i), true});
-                        lipidomes.push_back(new Table(tokens->at(i)));
+                        string header = tokens->at(i);
+                        if (uncontains_val(doublettes, header)){
+                            doublettes.insert({header, 1});
+                        }
+                        else {
+                            header += "." + std::to_string(++doublettes[header]);
+                        }
+                        
+                        selection[3].insert({header, true});
+                        lipidomes.push_back(new Table(header));
                         intensities.push_back(Array());
                     } 
                 }
@@ -1576,7 +1593,6 @@ void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
     table_stream << "ID";
     for (auto lipid : lipidome->species) table_stream << "\t" << lipid;
     table_stream << endl;
-    
     for (int i = 0; i < (int)lipidome->species.size(); ++i){
         table_stream << lipidome->species.at(i);
         for (int j = 0; j < (int)lipidome->species.size(); ++j){
@@ -1599,6 +1615,7 @@ bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;
 
 void LipidSpace::run_analysis(Progress *_progress){
     if (lipidomes.size() == 0) return;
+    Logging::write_log("Started analysis");
     
     analysis_finished = false;
     feature_values.clear();
@@ -1625,7 +1642,6 @@ void LipidSpace::run_analysis(Progress *_progress){
             return;
         }
     }
-    
     
     cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
     
@@ -1676,6 +1692,7 @@ void LipidSpace::run_analysis(Progress *_progress){
     
     if (!progress || !progress->stop_progress){
         analysis_finished = true;
+        Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(lipidomes.size()) + " lipidome" + (lipidomes.size() > 1 ? "s" : "") + " in total.");
     }
 }
 

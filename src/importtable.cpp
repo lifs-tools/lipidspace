@@ -124,9 +124,17 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
             num_columns = tokens->size();
             t->setColumnCount(num_columns);
             int c = 0;
-            int empty = 1;
+            map<QString, int> doublettes;
             for (string header : *tokens){
-                QString qheader = header.length() ? header.c_str() : QStringLiteral("empty_field.%1").arg(empty++);
+                QString qheader = header.length() ? header.c_str() : "empty_field";
+                
+                if (uncontains_val(doublettes, qheader)){
+                    doublettes.insert({qheader, 1});
+                }
+                else {
+                    qheader += "." + QString::number(++doublettes[qheader]);
+                }
+                
                 original_column_index.insert({qheader, c});
                 
                 QTableWidgetItem *item = new QTableWidgetItem(qheader);
