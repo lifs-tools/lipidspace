@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <thread>
 #include <algorithm>
 #include <sys/stat.h>
 #include <immintrin.h>
