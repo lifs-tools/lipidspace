@@ -3,7 +3,9 @@
 #include <vector>
 #include <math.h>
 #include <iostream>
+#ifndef _WIN32
 #include <cassert>
+#endif
 #include <cblas.h>
 #include <QtCore>
 
