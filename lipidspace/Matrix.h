@@ -3,10 +3,10 @@
 #include <vector>
 #include <math.h>
 #include <iostream>
-#ifndef _WIN32
 #include <cassert>
-#endif
+#ifndef _WIN32
 #include <cblas.h>
+#endif
 #include <QtCore>
 
 using lambda_lanczos::LambdaLanczos;
