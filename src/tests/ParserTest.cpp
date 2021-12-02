@@ -444,6 +444,24 @@ int main(int argc, char** argv){
     assert (lipid);
     assert(lipid->get_lipid_string() == "LPIN 20:4");
     delete lipid;
+
+    // lipid = lipid_parser.parse("Cer 36:1;2");
+    //     integer ohCount = lipid->lipid->info->get_total_functional_group_count("OH");
+    //     assert(2==ohCount);
+    //     Integer asdCount = l.getLipid().getInfo().getTotalFunctionalGroupCount("ASD");
+    //     assertEquals(0, asdCount);
+    //     l = parser.parse("Cer d36:1");
+    //     ohCount = l.getLipid().getInfo().getTotalFunctionalGroupCount("OH");
+    //     assertEquals(2, ohCount);
+    //     l = parser.parse("Cer 18:1;2/18:0");
+    //     ohCount = l.getLipid().getInfo().getTotalFunctionalGroupCount("OH");
+    //     assertEquals(2, ohCount);
+    //     l = parser.parse("Cer d18:1/18:0");
+    //     ohCount = l.getLipid().getInfo().getTotalFunctionalGroupCount("OH");
+    //     assertEquals(2, ohCount);
+    //     l = parser.parse("Cer 18:1;(OH)2/18:0");
+    //     ohCount = l.getLipid().getInfo().getTotalFunctionalGroupCount("OH");
+    //     assertEquals(2, ohCount);
     
     
     
