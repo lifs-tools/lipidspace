@@ -327,7 +327,7 @@ void Matrix::transpose(){
     }
     swap(rows, cols);
         
-    delete tmp;
+    delete []tmp;
 }
 
 

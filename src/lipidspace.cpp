@@ -154,6 +154,7 @@ LipidSpace::LipidSpace() {
     progress = 0;
     analysis_finished = false;
     dendrogram_root = 0;
+    progress = 0;
         
     // load precomputed class distance matrix
     ifstream infile("data/classes-matrix.csv");
@@ -1605,16 +1606,22 @@ void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
     
 }
 
-
-std::thread LipidSpace::run_analysis_thread(Progress *_progress) {
-    return std::thread([=] { run_analysis(_progress); });
+/*
+std::thread LipidSpace::run_analysis_thread() {
+    return std::thread([=] { run_analysis(); });
 }
+*/
 
 
 bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;}
 
-void LipidSpace::run_analysis(Progress *_progress){
-    if (lipidomes.size() == 0) return;
+void LipidSpace::run(){
+    if (lipidomes.size() == 0){
+        if (progress && !progress->stop_progress){
+            progress->finish();
+            return;
+        }
+    }
     Logging::write_log("Started analysis");
     
     analysis_finished = false;
@@ -1627,8 +1634,7 @@ void LipidSpace::run_analysis(Progress *_progress){
     dendrogram_sorting.clear();
     dendrogram_points.clear();
     
-    if (_progress){
-        progress = _progress;
+    if (progress){
         progress->set(0);
     }
     
@@ -1688,9 +1694,6 @@ void LipidSpace::run_analysis(Progress *_progress){
     
     if (progress && !progress->stop_progress){
         progress->finish();
-    }
-    
-    if (!progress || !progress->stop_progress){
         analysis_finished = true;
         Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(lipidomes.size()) + " lipidome" + (lipidomes.size() > 1 ? "s" : "") + " in total.");
     }

@@ -35,6 +35,7 @@ signals:
 
 private:
     Ui::Progressbar *ui;
+    
     void closeWindow(bool);
 };
 
