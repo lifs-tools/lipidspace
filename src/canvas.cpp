@@ -261,6 +261,21 @@ QRectF PointSet::boundingRect() const {
 bool find_start(QRectF &bound, QPointF target, QPointF &inter){
     QLineF path(bound.center().x(), bound.center().y(), target.x(), target.y());
     
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QLineF B1(bound.x(), bound.y(), bound.x() + bound.width(), bound.y());
+    if (path.intersects(B1, &inter) == QLineF::BoundedIntersection) return true;
+    
+    QLineF B2(bound.x(), bound.y(), bound.x(), bound.y() + bound.height());
+    if (path.intersects(B2, &inter) == QLineF::BoundedIntersection) return true;
+    
+    QLineF B3(bound.x(), bound.y() + bound.height(), bound.x() + bound.width(), bound.y() + bound.height());
+    if (path.intersects(B3, &inter) == QLineF::BoundedIntersection) return true;
+    
+    QLineF B4(bound.x() + bound.width(), bound.y(), bound.x() + bound.width(), bound.y() + bound.height());
+    if (path.intersects(B4, &inter) == QLineF::BoundedIntersection) return true;
+    
+#else
+    
     QLineF B1(bound.x(), bound.y(), bound.x() + bound.width(), bound.y());
     if (path.intersect(B1, &inter) == QLineF::BoundedIntersection) return true;
     
@@ -272,7 +287,7 @@ bool find_start(QRectF &bound, QPointF target, QPointF &inter){
     
     QLineF B4(bound.x() + bound.width(), bound.y(), bound.x() + bound.width(), bound.y() + bound.height());
     if (path.intersect(B4, &inter) == QLineF::BoundedIntersection) return true;
-    
+#endif
     return false;
 }
 
@@ -834,8 +849,11 @@ void Canvas::wheelEvent(QWheelEvent *event){
     QPointF center(v.x() + v.width() * 0.5, v.y() + v.height() * 0.5);
     QPointF mouse_pos = mapToScene(event->pos());
     
-    
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    double scale_factor = (event->angleDelta().y() > 0) ? 1.1 : 1. / 1.1;
+#else
     double scale_factor = (event->delta() > 0) ? 1.1 : 1. / 1.1;
+#endif
     scale(scale_factor, scale_factor);
     
     centerOn(mouse_pos.x() + (center.x() - mouse_pos.x()) / scale_factor, mouse_pos.y() + (center.y() - mouse_pos.y()) / scale_factor);

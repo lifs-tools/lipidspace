@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <sys/stat.h>
 #include <immintrin.h>
-#include <QtCore>
+#include <QThread>
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/logging.h"
 #include "lipidspace/AssistanceFunctions.h"
@@ -20,11 +20,12 @@ using namespace std;
 enum TableType {ROW_TABLE, COLUMN_TABLE, PIVOT_TABLE};
 
 
-class LipidSpace : public QObject {
+class LipidSpace : public QThread {
     Q_OBJECT
     
 public:
     LipidParser parser;
+    Progress *progress;
     map<string, int*> class_matrix;
     vector<LipidAdduct*> all_lipids;
     static const int cols_for_pca_init;
@@ -37,7 +38,6 @@ public:
     bool without_quant;
     vector<Table*> lipidomes;
     Table* global_lipidome;
-    Progress *progress;
     Array dendrogram_points;
     vector<int> dendrogram_sorting;
     Matrix hausdorff_distances;
@@ -63,9 +63,9 @@ public:
     void normalize_intensities();
     void create_dendrogram();
     void store_distance_table(Table* lipidome, string output_folder);
-    void run_analysis(Progress *progress = 0);
+    void run() override;
     void reassembleSelection();
-    std::thread run_analysis_thread(Progress *_progress);
+    //std::thread run_analysis_thread(Progress *_progress);
     void reset_analysis();
     LipidAdduct* load_lipid(string lipid_name, set<string> &lipid_set, bool &ignore_lipid);
     

@@ -135,6 +135,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     
     progressbar = new Progressbar(this);
     progress = new Progress();
+    lipid_space->progress = progress;
     connect(progress, SIGNAL(finish()), progressbar, SLOT(finish()));
     connect(progress, SIGNAL(set_current(int)), progressbar, SLOT(set_current(int)));
     connect(progress, SIGNAL(set_max(int)), progressbar, SLOT(set_max(int)));
@@ -419,9 +420,8 @@ void LipidSpaceGUI::runAnalysis(){
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
     
     progress->reset();
-    std::thread runAnalysisThread = lipid_space->run_analysis_thread(progress);
+    lipid_space->start();
     progressbar->exec();
-    runAnalysisThread.join();
     
     for (auto canvas : canvases){
         disconnect(canvas, SIGNAL(transforming(QRectF)), 0, 0);

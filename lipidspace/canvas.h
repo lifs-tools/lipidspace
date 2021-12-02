@@ -1,6 +1,7 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
+#include <QtGlobal>
 #include <QBrush>
 #include <QPen>
 #include <QFileInfo>
@@ -13,7 +14,6 @@
 #include <QGraphicsView>
 #include <QMainWindow>
 #include <QGraphicsItem>
-#include <QOpenGLWidget>
 #include <QPrinter>
 #include <QCursor>
 #include <iostream>

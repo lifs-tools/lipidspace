@@ -6,6 +6,7 @@ Progressbar::Progressbar(QWidget *parent) : QDialog(parent), ui(new Ui::Progress
     ui->progressBar->setMaximum(0);
     setWindowTitle("LipidSpace Analysis");
     connect(ui->abortButton, SIGNAL(clicked()), this, SLOT(abort()));
+    cout << "initialized" << endl;
 }
 
 Progressbar::~Progressbar(){
@@ -49,4 +50,5 @@ void Progressbar::closeWindow(bool successful){
         interrupt();
     }
     accept();
+    
 }
