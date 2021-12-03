@@ -53,7 +53,7 @@ void LipidSpace::create_dendrogram(){
     delete []ret;
     dendrogram_root = nodes.front();
     
-    
+    /*
     
     // compute importance of lipids using coefficient of variation and
     // Kolmogorv Smirnoff test on dendrogram branches
@@ -138,7 +138,7 @@ void LipidSpace::create_dendrogram(){
     for (auto kv : top_two_groups) top_highest.push_back(kv.second);
     for (auto miss : missing) top_highest.push_back(miss);
     for (int i = (int)top_highest.size() - 1; i >= 0; --i) top_lowest.push_back(top_highest[i]);
-    
+    */
 }
 
 
@@ -950,8 +950,13 @@ bool LipidSpace::compute_global_distance_matrix(){
         }
         
         for (auto kv : lipidome->features){
-            if (uncontains_val(feature_values, kv.first)) feature_values.insert({kv.first, set<string>()});
-            feature_values[kv.first].insert(kv.second);
+            if (uncontains_val(feature_values, kv.first)) feature_values.insert({kv.first, FeatureSet()});
+            if (kv.second.feature_type == NumericalFeature) {
+                feature_values[kv.first].numerical_values.push_back(kv.second.numerical_value);
+            }
+            else {
+                feature_values[kv.first].nominal_values.push_back(kv.second.nominal_value);
+            }
         }
     }
     
@@ -1100,10 +1105,12 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
     int lipid_species_column = -1;
     int quant_column = -1;
     set<string> index_key_pairs;
-    vector<int> feature_columns;
+    vector<int> feature_columns_numerical;
+    vector<int> feature_columns_nominal;
     for (int i = 0; i < (int)column_types->size(); ++i) {
         switch(column_types->at(i)){
-            case FeatureColumn: feature_columns.push_back(i); break;
+            case FeatureColumnNominal: feature_columns_nominal.push_back(i); break;
+            case FeatureColumnNumerical: feature_columns_numerical.push_back(i); break;
             case SampleColumn: sample_columns.push_back(i); break;
             case LipidColumn: lipid_species_column = i; break;
             case QuantColumn: quant_column = i; break;
@@ -1119,14 +1126,16 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
     int line_cnt = 0;
     map<string, LipidAdduct*> lipid_map;
     map<string, Table*> lipidome_map;
-    vector<string> feature_names;
+    vector<string> feature_names_nominal;
+    vector<string> feature_names_numerical;
     
     while (getline(infile, line)){
         if (line.length() == 0) continue;
         
         vector<string>* tokens = split_string(line, ',', '"', true);
         if (line_cnt++ == 0){
-            for (auto fi : feature_columns) feature_names.push_back(tokens->at(fi));
+            for (auto fi : feature_columns_nominal) feature_names_nominal.push_back(tokens->at(fi));
+            for (auto fi : feature_columns_numerical) feature_names_numerical.push_back(tokens->at(fi));
             
             delete tokens;
             continue;
@@ -1176,8 +1185,11 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         }
         
         // handle features
-        for (int i = 0; i < (int)feature_columns.size(); ++i){
-            lipidome->features.insert({feature_names[i], tokens->at(feature_columns[i])});
+        for (int i = 0; i < (int)feature_columns_nominal.size(); ++i){
+            lipidome->features.insert({feature_names_nominal[i], Feature(feature_names_nominal[i], tokens->at(feature_columns_nominal[i]))});
+        }
+        for (int i = 0; i < (int)feature_columns_numerical.size(); ++i){
+            lipidome->features.insert({feature_names_numerical[i], Feature(feature_names_numerical[i], atof(tokens->at(feature_columns_numerical[i]).c_str()))});
         }
         
         // handle lipid
@@ -1258,7 +1270,8 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
     
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     int line_cnt = 0;
-    vector<string> features_names;
+    vector<string> features_names_numerical;
+    vector<string> features_names_nominal;
     vector<LipidAdduct*> lipids;
     set<int> ignore_col;
     int num_lipids = 0;
@@ -1278,26 +1291,38 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             for (int i = 0; i < (int)tokens->size(); ++i){
                 TableColumnType column_type = column_types->at(i);
                 
-                if (column_type == FeatureColumn){
-                    features_names.push_back(tokens->at(i));
-                }
-                else if (column_type == LipidColumn){
-                    bool ignore_lipid = false;
-                    LipidAdduct* l = load_lipid(tokens->at(i), lipid_set, ignore_lipid);
-                    num_lipids += 1;
-                    
-                    lipids.push_back(l);
+                switch(column_type){
+                    case FeatureColumnNominal:
+                        features_names_nominal.push_back(tokens->at(i));
+                        break;
+                        
+                    case FeatureColumnNumerical:
+                        features_names_numerical.push_back(tokens->at(i));
+                        break;
+                        
+                    case LipidColumn:
+                        {
+                            bool ignore_lipid = false;
+                            LipidAdduct* l = load_lipid(tokens->at(i), lipid_set, ignore_lipid);
+                            num_lipids += 1;
+                            lipids.push_back(l);
+                            break;
+                        }
+                        
+                    default:
+                        break;
                 }
             }
             delete tokens;
             continue;
         }
         
-        map<string, string> features;
+        map<string, Feature> features;
         vector<LipidAdduct*> measurement_lipids;
         Array intensities;
         string measurement = "";
-        int feature_counter = 0;
+        int feature_counter_nominal = 0;
+        int feature_counter_numerical = 0;
         int lipid_counter = 0;
         
         // handle all other rows
@@ -1318,8 +1343,14 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                     lipid_counter++;
                     break;
                     
-                case FeatureColumn:
-                    features.insert({features_names[feature_counter++], tokens->at(i)});
+                case FeatureColumnNominal:
+                    features.insert({features_names_nominal[feature_counter_nominal], Feature(features_names_nominal[feature_counter_nominal], tokens->at(i))});
+                    feature_counter_nominal++;
+                    break;
+                    
+                case FeatureColumnNumerical:
+                    features.insert({features_names_numerical[feature_counter_numerical], Feature(features_names_numerical[feature_counter_numerical], atof(tokens->at(i).c_str()))});
+                    feature_counter_numerical++;
                     break;
                     
                 default:
@@ -1330,7 +1361,14 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         selection[3].insert({measurement, true});
         lipidomes.push_back(new Table(measurement));
         Table *lipidome = lipidomes.back();
-        for (auto kv : features) lipidome->features.insert({kv.first, kv.second});
+        for (auto kv : features){
+            if (kv.second.feature_type == NominalFeature){
+                lipidome->features.insert({kv.first, Feature(kv.second.name, kv.second.nominal_value)});
+            }
+            else {
+                lipidome->features.insert({kv.first, Feature(kv.second.name, kv.second.numerical_value)});
+            }
+        }
                                  
         for (auto l : measurement_lipids){
             lipidome->lipids.push_back(l);

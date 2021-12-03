@@ -18,9 +18,38 @@
 using namespace std;
 
 enum Linkage {SingleLinkage, CompleteLinkage};
+enum FeatureType {NumericalFeature, NominalFeature};
 enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
-enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumn, IgnoreColumn};
+enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumerical, FeatureColumnNominal, IgnoreColumn};
 enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered};
+
+
+struct FeatureSet {
+    string name;
+    FeatureType feature_type;
+    vector<string> nominal_values;
+    vector<double> numerical_values;
+};
+
+
+struct Feature {
+    string name;
+    FeatureType feature_type;
+    double numerical_value;
+    string nominal_value;
+    
+    Feature (string _name, string nom_val){
+        name = _name;
+        feature_type = NominalFeature;
+        nominal_value = nom_val;
+    }
+    
+    Feature (string _name, double num_val){
+        name = _name;
+        feature_type = NumericalFeature;
+        numerical_value = num_val;
+    }
+};
 
 
 double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
@@ -76,7 +105,7 @@ public:
     vector<bool> selection;
     Array intensities;
     Array original_intensities;
-    map<string, string> features;
+    map<string, Feature> features;
     Matrix m;
     
     Table(string lipid_list_file) : file_name(lipid_list_file) {
@@ -138,9 +167,9 @@ public:
     double x_left;
     double x_right;
     double y;
-    map<string, map<string, int>> feature_count;
+    map<string, map<string, int>> feature_count_nominal;
     
-    DendrogramNode(int index, map<string, set<string>> *feature_values, Table *lipidome);
+    DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);

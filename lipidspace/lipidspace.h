@@ -20,6 +20,7 @@ using namespace std;
 enum TableType {ROW_TABLE, COLUMN_TABLE, PIVOT_TABLE};
 
 
+
 class LipidSpace : public QThread {
     Q_OBJECT
     
@@ -42,7 +43,7 @@ public:
     vector<int> dendrogram_sorting;
     Matrix hausdorff_distances;
     bool analysis_finished;
-    map<string, set<string>> feature_values;
+    map<string, FeatureSet> feature_values;
     DendrogramNode *dendrogram_root;
     map<string, bool> selection[4];
     vector<Table*> selected_lipidomes;

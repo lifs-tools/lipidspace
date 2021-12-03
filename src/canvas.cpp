@@ -105,12 +105,12 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     double pie_y = -lipid_space->dendrogram_root->y * dendrogram_y_factor - pie_radius * 1.5;
     
     double sum = 0;
-    for (auto kv : lipid_space->dendrogram_root->feature_count[feature]){
+    for (auto kv : lipid_space->dendrogram_root->feature_count_nominal[feature]){
         sum += kv.second;
     }
     
     int angle_start = 16 * 90;
-    for (auto kv : lipid_space->dendrogram_root->feature_count[feature]){
+    for (auto kv : lipid_space->dendrogram_root->feature_count_nominal[feature]){
         if (kv.second == 0) continue;
         int span = 16. * 360. * (double)kv.second / sum;
         QBrush brush(GlobalData::colorMapFeatures[feature + "_" + kv.first]);
@@ -139,10 +139,10 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
         double pie_y = -node->y * dendrogram_y_factor;
         
         double sum = 0;
-        for (auto kv : node->left_child->feature_count[feature]) sum += kv.second;
+        for (auto kv : node->left_child->feature_count_nominal[feature]) sum += kv.second;
         
         int angle_start = 16 * 90;
-        for (auto kv : node->left_child->feature_count[feature]){
+        for (auto kv : node->left_child->feature_count_nominal[feature]){
             if (kv.second == 0) continue;
             int span = 16. * 360. * (double)kv.second / sum;
             QBrush brush(GlobalData::colorMapFeatures[feature + "_" + kv.first]);
@@ -165,10 +165,10 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
         double pie_y = -node->y * dendrogram_y_factor;
     
         double sum = 0;
-        for (auto kv : node->right_child->feature_count[feature]) sum += kv.second;
+        for (auto kv : node->right_child->feature_count_nominal[feature]) sum += kv.second;
         
         int angle_start = 16 * 90;
-        for (auto kv : node->right_child->feature_count[feature]){
+        for (auto kv : node->right_child->feature_count_nominal[feature]){
             if (kv.second == 0) continue;
             int span = 16. * 360. * (double)kv.second / sum;
             QBrush brush(GlobalData::colorMapFeatures[feature + "_" + kv.first]);

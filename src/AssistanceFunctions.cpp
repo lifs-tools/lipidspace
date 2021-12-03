@@ -24,7 +24,7 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 }
 
 
-DendrogramNode::DendrogramNode(int index, map<string, set<string>> *feature_values, Table *lipidome){
+DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome){
     indexes.insert(index);
     left_child = 0;
     right_child = 0;
@@ -36,14 +36,16 @@ DendrogramNode::DendrogramNode(int index, map<string, set<string>> *feature_valu
     
     // initialize empty feature count table
     for (auto kv : *feature_values){
-        feature_count.insert({kv.first, map<string, int>()});
-        for (auto feature_value : kv.second){
-            feature_count[kv.first].insert({feature_value, 0});
+        feature_count_nominal.insert({kv.first, map<string, int>()});
+        for (auto feature_value : kv.second.nominal_values){
+            feature_count_nominal[kv.first].insert({feature_value, 0});
         }
     }
     
     for (auto kv : lipidome->features){
-        feature_count[kv.first][kv.second] = 1;
+        if (kv.second.feature_type == NominalFeature){
+            feature_count_nominal[kv.first][kv.second.nominal_value] = 1;
+        }
     }
 }
 
@@ -97,10 +99,10 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     points->push_back(y);
     
     // count features
-    for (auto kv : left_child->feature_count){
-        feature_count.insert({kv.first, map<string, int>()});
+    for (auto kv : left_child->feature_count_nominal){
+        feature_count_nominal.insert({kv.first, map<string, int>()});
         for (auto kv2 : kv.second){
-            feature_count[kv.first].insert({kv2.first, kv2.second + right_child->feature_count[kv.first][kv2.first]});
+            feature_count_nominal[kv.first].insert({kv2.first, kv2.second + right_child->feature_count_nominal[kv.first][kv2.first]});
         }
     }
     

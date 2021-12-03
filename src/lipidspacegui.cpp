@@ -47,8 +47,9 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         for (int i = 0; i < 12; ++i) ct->push_back(IgnoreColumn);
         ct->at(1) = LipidColumn;
         ct->at(6) = SampleColumn;
-        ct->at(7) = FeatureColumn;
-        ct->at(8) = FeatureColumn;
+        ct->at(7) = FeatureColumnNominal;
+        ct->at(8) = FeatureColumnNominal;
+        ct->at(10) = FeatureColumnNumerical;
         ct->at(11) = QuantColumn;
         loadTable("Anxa7_pivot.csv", ct, PIVOT_TABLE);
         
@@ -483,7 +484,7 @@ void LipidSpaceGUI::runAnalysis(){
     // define colors of features
     for (auto kv : lipid_space->feature_values){
         string feature_prefix = kv.first + "_";
-        for (string feature : kv.second){
+        for (string feature : kv.second.nominal_values){
             feature = feature_prefix + feature;
             GlobalData::colorMapFeatures.insert({feature, GlobalData::COLORS[GlobalData::feature_counter++ % GlobalData::COLORS.size()]});
         }
@@ -1021,7 +1022,12 @@ void LipidSpaceGUI::fill_Table(){
         for (int c = 0; c < C; c++){
             // add features
             for(auto kv : lipid_space->lipidomes[c]->features){
-                item = new QTableWidgetItem(kv.second.c_str());
+                if (kv.second.feature_type == NominalFeature){
+                    item = new QTableWidgetItem(kv.second.nominal_value.c_str());
+                }
+                else {
+                    item = new QTableWidgetItem(QString::number(kv.second.numerical_value));
+                }
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
                 int r = feature_index[kv.first];
                 t->setItem(r, c, item);
@@ -1090,7 +1096,12 @@ void LipidSpaceGUI::fill_Table(){
         for (int r = 0; r < R; ++r){
             // add features
             for(auto kv : lipid_space->lipidomes[r]->features){
-                item = new QTableWidgetItem(kv.second.c_str());
+                if (kv.second.feature_type == NominalFeature){
+                    item = new QTableWidgetItem(kv.second.nominal_value.c_str());
+                }
+                else {
+                    item = new QTableWidgetItem(QString::number(kv.second.numerical_value));
+                }
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
                 int c = feature_index[kv.first];
                 t->setItem(r, c, item);
