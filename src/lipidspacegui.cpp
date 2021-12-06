@@ -483,10 +483,24 @@ void LipidSpaceGUI::runAnalysis(){
     
     // define colors of features
     for (auto kv : lipid_space->feature_values){
-        string feature_prefix = kv.first + "_";
-        for (string feature : kv.second.nominal_values){
-            feature = feature_prefix + feature;
-            GlobalData::colorMapFeatures.insert({feature, GlobalData::COLORS[GlobalData::feature_counter++ % GlobalData::COLORS.size()]});
+        if (kv.second.feature_type == NominalFeature){
+            string feature_prefix = kv.first + "_";
+            for (string feature : kv.second.nominal_values){
+                feature = feature_prefix + feature;
+                if (uncontains_val(GlobalData::colorMapFeatures, feature)){
+                    GlobalData::colorMapFeatures.insert({feature, GlobalData::COLORS[GlobalData::feature_counter++ % GlobalData::COLORS.size()]});
+                }
+            }
+        }
+        else {
+            string feature_le = kv.first + "_le";
+            if (uncontains_val(GlobalData::colorMapFeatures, feature_le)){
+                GlobalData::colorMapFeatures.insert({feature_le, GlobalData::COLORS[GlobalData::feature_counter++ % GlobalData::COLORS.size()]});
+            }
+            string feature_gr = kv.first + "_gr";
+            if (uncontains_val(GlobalData::colorMapFeatures, feature_gr)){
+                GlobalData::colorMapFeatures.insert({feature_gr, GlobalData::COLORS[GlobalData::feature_counter++ % GlobalData::COLORS.size()]});
+            }            
         }
     }
     

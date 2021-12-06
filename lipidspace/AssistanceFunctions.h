@@ -24,11 +24,22 @@ enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumer
 enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered};
 
 
-struct FeatureSet {
+class FeatureSet {
+public:
     string name;
     FeatureType feature_type;
     vector<string> nominal_values;
     vector<double> numerical_values;
+    
+    FeatureSet(string _name, FeatureType f_type){
+        name = _name;
+        feature_type = f_type;
+    }
+    
+    FeatureSet(){
+        name = "";
+        feature_type = NominalFeature;
+    }
 };
 
 
@@ -168,6 +179,8 @@ public:
     double x_right;
     double y;
     map<string, map<string, int>> feature_count_nominal;
+    map<string, vector<double>> feature_numerical;
+    map<string, double> feature_numerical_thresholds;
     
     DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
