@@ -52,6 +52,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     void recursive_paint(QPainter *painter, DendrogramNode *_node, int max_recursions, int recursion = 0);
     QRectF boundingRect() const override;
+    void draw_pie(QPainter *painter, DendrogramNode *node, double pie_x, double pie_y);
 };
     
 
