@@ -28,8 +28,8 @@ class FeatureSet {
 public:
     string name;
     FeatureType feature_type;
-    vector<string> nominal_values;
-    vector<double> numerical_values;
+    set<string> nominal_values;
+    set<double> numerical_values;
     
     FeatureSet(string _name, FeatureType f_type){
         name = _name;

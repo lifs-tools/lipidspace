@@ -52,8 +52,8 @@ void Dendrogram::load(){
     y_min_d *= dendrogram_y_factor;
     y_max_d *= dendrogram_y_factor;
     
-    double x_margin = (x_max_d - x_min_d) * 0.5;
-    double y_margin = (y_max_d - y_min_d) * 0.5;
+    double x_margin = (x_max_d - x_min_d) * 0.3;
+    double y_margin = (y_max_d - y_min_d) * 0.3;
     
     bound.setX(x_min_d - x_margin);
     bound.setY(-y_max_d - y_margin);

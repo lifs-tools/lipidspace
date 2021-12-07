@@ -952,10 +952,10 @@ bool LipidSpace::compute_global_distance_matrix(){
         for (auto kv : lipidome->features){
             if (uncontains_val(feature_values, kv.first)) feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
             if (kv.second.feature_type == NumericalFeature) {
-                feature_values[kv.first].numerical_values.push_back(kv.second.numerical_value);
+                feature_values[kv.first].numerical_values.insert(kv.second.numerical_value);
             }
             else {
-                feature_values[kv.first].nominal_values.push_back(kv.second.nominal_value);
+                feature_values[kv.first].nominal_values.insert(kv.second.nominal_value);
             }
         }
     }

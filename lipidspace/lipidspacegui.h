@@ -70,6 +70,7 @@ public:
     bool loadedDataSet;
     
     
+    
 signals:
     void transforming(QRectF f);
     void updateCanvas();
@@ -119,6 +120,8 @@ public slots:
     void itemChanged(QListWidgetItem *item);
     void updateSelectionView();
     void updateView(int);
+    void select_all_entities();
+    void deselect_all_entities();
     
 private:
     Ui::LipidSpaceGUI *ui;
