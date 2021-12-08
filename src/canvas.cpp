@@ -44,15 +44,15 @@ void Dendrogram::load(){
   
 
     QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
-    dendrogram_x_factor = v.width() / (x_max_d - x_min_d) * 1.2;
-    dendrogram_y_factor = v.height() / (y_max_d - y_min_d) * 0.8;
+    dendrogram_x_factor = v.width() / (x_max_d - x_min_d);
+    dendrogram_y_factor = v.height() / (y_max_d - y_min_d) * 1.5;
     
     x_min_d *= dendrogram_x_factor;
     x_max_d *= dendrogram_x_factor;
     y_min_d *= dendrogram_y_factor;
     y_max_d *= dendrogram_y_factor;
     
-    double x_margin = (x_max_d - x_min_d) * 0.3;
+    double x_margin = (x_max_d - x_min_d) * 0.1;
     double y_margin = (y_max_d - y_min_d) * 0.3;
     
     bound.setX(x_min_d - x_margin);
@@ -77,7 +77,7 @@ QRectF Dendrogram::boundingRect() const {
 
 
 
-void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double pie_x, double pie_y){
+void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double threshold, double pie_x, double pie_y, LabelDirection direction){
     double pie_radius = 30;
     int angle_start = 16 * 90;
     if (lipid_space->feature_values[feature].feature_type == NominalFeature){
@@ -102,7 +102,6 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double pie_x,
         string feature_gr = feature + "_gr";
         
         int num = 0;
-        double threshold = node->feature_numerical_thresholds[feature];
         for (double val : node->feature_numerical[feature]){
             num += val <= threshold;
         }
@@ -121,6 +120,36 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double pie_x,
         painter->setPen(piePen);
         painter->setBrush(brush);
         painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
+        
+        if (direction == LabelLeft){
+            double x = pie_x - pie_radius * 1.2;
+            double y = pie_y;
+            
+            QBrush brush(GlobalData::colorMapFeatures[feature_le]);
+            QPen piePen(brush.color());
+            painter->setPen(piePen);
+            painter->setBrush(brush);
+            painter->drawRect(x - 15, y - 20, 15, 15);
+            
+            QPen textPen(Qt::black);
+            painter->setPen(textPen);
+            painter->drawText(QRect(x - 200, y, 200, 30), Qt::AlignTop | Qt::AlignRight, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
+        }
+        else if (direction == LabelRight){
+            double x = pie_x + pie_radius * 1.2;
+            double y = pie_y;
+            
+            QBrush brush(GlobalData::colorMapFeatures[feature_le]);
+            QPen piePen(brush.color());
+            painter->setPen(piePen);
+            painter->setBrush(brush);
+            painter->drawRect(x , y - 20, 15, 15);
+            
+            QPen textPen(Qt::black);
+            painter->setPen(textPen);
+            painter->drawText(QRect(x, y, 100, 30), Qt::AlignTop | Qt::AlignLeft, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
+            
+        }
     }
     painter->setPen(QPen());
     painter->setBrush(QBrush());
@@ -154,13 +183,15 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     
     
     
-    
+    /*
     pen.setWidth(0);
     double pie_radius = 30;
     double pie_x = (lipid_space->dendrogram_root->x_left + lipid_space->dendrogram_root->x_right) * 0.5 * dendrogram_x_factor;
     double pie_y = -lipid_space->dendrogram_root->y * dendrogram_y_factor - pie_radius * 2.5;
     
     draw_pie(painter, lipid_space->dendrogram_root, pie_x, pie_y);
+    */
+    
     recursive_paint(painter, lipid_space->dendrogram_root, 3);
 }
 
@@ -173,7 +204,7 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
         double pie_x = node->x_left * dendrogram_x_factor;
         double pie_y = -node->y * dendrogram_y_factor;
         
-        draw_pie(painter, node->left_child, pie_x, pie_y);
+        draw_pie(painter, node->left_child, node->feature_numerical_thresholds[feature], pie_x, pie_y, LabelLeft);
         recursive_paint(painter, node->left_child, max_recursions, recursion + 1);
     }
     
@@ -182,7 +213,7 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
         double pie_x = node->x_right * dendrogram_x_factor;
         double pie_y = -node->y * dendrogram_y_factor;
         
-        draw_pie(painter, node->right_child, pie_x, pie_y);
+        draw_pie(painter, node->right_child, node->feature_numerical_thresholds[feature], pie_x, pie_y, LabelRight);
         recursive_paint(painter, node->right_child, max_recursions, recursion + 1);
     }
 }

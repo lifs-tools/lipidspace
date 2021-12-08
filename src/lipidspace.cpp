@@ -955,7 +955,7 @@ bool LipidSpace::compute_global_distance_matrix(){
                 feature_values[kv.first].numerical_values.insert(kv.second.numerical_value);
             }
             else {
-                feature_values[kv.first].nominal_values.insert(kv.second.nominal_value);
+                feature_values[kv.first].nominal_values.insert({kv.second.nominal_value, true});
             }
         }
     }

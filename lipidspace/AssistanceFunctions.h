@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <QListWidget>
+#include <QTreeWidget>
 #include <QDropEvent>
 #include <set>
 #include <vector>
@@ -22,14 +23,19 @@ enum FeatureType {NumericalFeature, NominalFeature};
 enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
 enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumerical, FeatureColumnNominal, IgnoreColumn};
 enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered};
+enum FeatureFilter {NoFilter, LessFilter, GreaterFilter, Equals, WithinRange, OutsideRange};
+
+
+
 
 
 class FeatureSet {
 public:
     string name;
     FeatureType feature_type;
-    set<string> nominal_values;
+    map<string, bool> nominal_values;
     set<double> numerical_values;
+    pair<FeatureFilter, vector<double>> numerical_filter;
     
     FeatureSet(string _name, FeatureType f_type){
         name = _name;
@@ -41,6 +47,9 @@ public:
         feature_type = NominalFeature;
     }
 };
+
+
+
 
 
 struct Feature {
@@ -66,6 +75,9 @@ struct Feature {
 double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
 
+
+
+
 class LipidSpaceException : public std::exception {
 public:
     string message;
@@ -81,6 +93,9 @@ public:
     
     LipidSpaceExceptionType type;
 };
+
+
+
 
 class SingleListWidget : public QListWidget {
     Q_OBJECT
@@ -128,10 +143,17 @@ public:
 
 class ListItem : public QListWidgetItem {
 public:
-    LipidAdduct *species;
     ListItemType type;
-    
-    ListItem(QString name, ListItemType t, QListWidget* w);
+    ListItem(QString name, ListItemType t, QListWidget* parent);
+};
+
+
+
+
+class TreeItem : public QTreeWidgetItem {
+public:
+    string feature;
+    TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent);
 };
 
 

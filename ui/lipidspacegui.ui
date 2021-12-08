@@ -177,7 +177,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="featurePushButton">
            <property name="text">
             <string>Apply changes</string>
            </property>

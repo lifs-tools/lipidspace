@@ -38,8 +38,8 @@ DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_value
     for (auto kv : *feature_values){
         if (kv.second.feature_type == NominalFeature){
             feature_count_nominal.insert({kv.first, map<string, int>()});
-            for (auto feature_value : kv.second.nominal_values){
-                feature_count_nominal[kv.first].insert({feature_value, 0});
+            for (auto kv_nom : kv.second.nominal_values){
+                feature_count_nominal[kv.first].insert({kv_nom.first, 0});
             }
         }
         else {
@@ -291,4 +291,11 @@ void BH_fdr(vector<double> &data){
 
 ListItem::ListItem(QString name, ListItemType t, QListWidget* parent) : QListWidgetItem(name, parent) {
     type = t;
+}
+
+
+
+TreeItem::TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent) : QTreeWidgetItem(parent){
+    setText(pos, name);
+    feature = f;
 }
