@@ -649,6 +649,43 @@ void LipidSpace::reassembleSelection(){
         }
     }
     
+    
+    
+    
+    
+    // setup a complete list of all nominal features and their values
+    map<string, set<string>> delete_nominal_features;
+    for (auto kv : feature_values){
+        if (kv.second.feature_type == NominalFeature){
+            if (uncontains_val(delete_nominal_features, kv.first)) delete_nominal_features.insert({kv.first, set<string>()});
+            for (auto kv_nom : kv.second.nominal_values){
+                delete_nominal_features[kv.first].insert(kv_nom.first);
+            }
+        }
+    }
+    
+    // remove all features and values that remain in the analysis
+    for (auto lipidome : lipidomes){
+        for (auto kv : lipidome->features){
+            if (contains_val(delete_nominal_features, kv.first) && kv.second.feature_type == NominalFeature){
+                delete_nominal_features[kv.first].erase(kv.second.nominal_value);
+            }
+        }
+    }
+    
+    // delete remaining feature values or even whole features
+    for (auto kv : delete_nominal_features){
+        if (kv.second.size() == feature_values[kv.first].nominal_values.size()){ // delete whole feature
+            feature_values.erase(kv.first);
+        }
+        else { // delete just the values
+            for (auto feature_value : delete_nominal_features[kv.first]){
+                feature_values[kv.first].nominal_values.erase(feature_value);
+            }
+        }
+    }
+    
+    
     reassembled();
 }
 
@@ -921,12 +958,26 @@ bool LipidSpace::compute_global_distance_matrix(){
     
 
     
-    set<string> registered_types[4];
+    set<string> registered_lipids;
     
     for (auto lipidome : lipidomes){
-        if (contains_val(registered_types[SAMPLE_ITEM], lipidome->cleaned_name)) continue;
+        // check if lipidome was (de)selected for analysis
         if (!selection[SAMPLE_ITEM][lipidome->cleaned_name]) continue;
-        registered_types[SAMPLE_ITEM].insert(lipidome->cleaned_name);
+        // check if lipidome is being excluded by deselected feature(s)
+        bool filtered_out = false;
+        for (auto kv : lipidome->features){
+            if (kv.second.feature_type == NominalFeature){
+                if (uncontains_val(feature_values, kv.first) || uncontains_val(feature_values[kv.first].nominal_values, kv.second.nominal_value) || !feature_values[kv.first].nominal_values[kv.second.nominal_value]) {
+                    filtered_out = true;
+                    break;
+                }
+            }
+            else {
+                // implement numerical filtering
+            }
+        }
+        if (filtered_out) continue;
+            
         selected_lipidomes.push_back(lipidome);
             
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
@@ -936,27 +987,17 @@ bool LipidSpace::compute_global_distance_matrix(){
             
             // check if entities already exist in their corresponding sets,
             // check if entity is selected and add them if it is
-            if (contains_val(registered_types[SPECIES_ITEM], lipid_species)) continue;
+            if (contains_val(registered_lipids, lipid_species)) continue;
             if (!selection[SPECIES_ITEM][lipid_species]) continue;
             if (!selection[CLASS_ITEM][lipid_class]) continue;
             if (!selection[CATEGORY_ITEM][lipid_category]) continue;
-            registered_types[SPECIES_ITEM].insert(lipid_species);
+            registered_lipids.insert(lipid_species);
             
             // add lipid data to global lipidome
             global_lipidome->species.push_back(lipid_species);
             global_lipidome->classes.push_back(lipidome->classes.at(i));
             global_lipidome->categories.push_back(lipidome->categories.at(i));
             global_lipidome->lipids.push_back(lipidome->lipids.at(i));
-        }
-        
-        for (auto kv : lipidome->features){
-            if (uncontains_val(feature_values, kv.first)) feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
-            if (kv.second.feature_type == NumericalFeature) {
-                feature_values[kv.first].numerical_values.insert(kv.second.numerical_value);
-            }
-            else {
-                feature_values[kv.first].nominal_values.insert({kv.second.nominal_value, true});
-            }
         }
     }
     
@@ -1187,10 +1228,22 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         // handle features
         for (int i = 0; i < (int)feature_columns_nominal.size(); ++i){
             lipidome->features.insert({feature_names_nominal[i], Feature(feature_names_nominal[i], tokens->at(feature_columns_nominal[i]))});
+            if (uncontains_val(feature_values, feature_names_nominal[i])) {
+                feature_values.insert({feature_names_nominal[i], FeatureSet(feature_names_nominal[i], NominalFeature)});
+            }
+            feature_values[feature_names_nominal[i]].nominal_values.insert({tokens->at(feature_columns_nominal[i]), true});
+
         }
         for (int i = 0; i < (int)feature_columns_numerical.size(); ++i){
-            lipidome->features.insert({feature_names_numerical[i], Feature(feature_names_numerical[i], atof(tokens->at(feature_columns_numerical[i]).c_str()))});
+            double val = atof(tokens->at(feature_columns_numerical[i]).c_str());
+            lipidome->features.insert({feature_names_numerical[i], Feature(feature_names_numerical[i], val)});
+            if (uncontains_val(feature_values, feature_names_numerical[i])) {
+                feature_values.insert({feature_names_numerical[i], FeatureSet(feature_names_numerical[i], NumericalFeature)});
+            }
+            feature_values[feature_names_numerical[i]].numerical_values.insert(val);
         }
+        
+        
         
         // handle lipid
         LipidAdduct *l = 0;
@@ -1344,12 +1397,32 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                     break;
                     
                 case FeatureColumnNominal:
-                    features.insert({features_names_nominal[feature_counter_nominal], Feature(features_names_nominal[feature_counter_nominal], tokens->at(i))});
+                    {
+                        string feature = features_names_nominal[feature_counter_nominal];
+                        string feature_val = tokens->at(i);
+                        features.insert({feature, Feature(feature, feature_val)});
+                        
+                        
+                        if (uncontains_val(feature_values, feature)) {
+                            feature_values.insert({feature, FeatureSet(feature, NominalFeature)});
+                        }
+                        feature_values[feature].nominal_values.insert({feature_val, true});
+                    }
                     feature_counter_nominal++;
                     break;
                     
+
+                    
                 case FeatureColumnNumerical:
-                    features.insert({features_names_numerical[feature_counter_numerical], Feature(features_names_numerical[feature_counter_numerical], atof(tokens->at(i).c_str()))});
+                    {
+                        string feature = features_names_numerical[feature_counter_numerical];
+                        double feature_val = atof(tokens->at(i).c_str());
+                        features.insert({feature, Feature(feature, feature_val)});
+                        if (uncontains_val(feature_values, feature)) {
+                            feature_values.insert({feature, FeatureSet(feature, NumericalFeature)});
+                        }
+                        feature_values[feature].numerical_values.insert(feature_val);
+                    }
                     feature_counter_numerical++;
                     break;
                     
@@ -1663,7 +1736,6 @@ void LipidSpace::run(){
     Logging::write_log("Started analysis");
     
     analysis_finished = false;
-    feature_values.clear();
     if (dendrogram_root){
         delete dendrogram_root;
         dendrogram_root = 0;

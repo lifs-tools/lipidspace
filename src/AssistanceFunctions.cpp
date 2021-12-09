@@ -299,3 +299,10 @@ TreeItem::TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent) : Q
     setText(pos, name);
     feature = f;
 }
+
+
+
+TreeItem::TreeItem(int pos, QString name, QTreeWidget* parent) : QTreeWidgetItem(parent){
+    setText(pos, name);
+    feature = "";
+}

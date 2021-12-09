@@ -128,10 +128,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->tableWidget, SIGNAL(cornerButtonClick()), this, SLOT(transposeTable()));
     connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
     connect(this, SIGNAL(featureChanged(string)), ui->dendrogramView, SLOT(setFeature(string)));
-    connect(ui->speciesList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
-    connect(ui->classList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
-    connect(ui->categoryList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
-    connect(ui->sampleList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(itemChanged(QListWidgetItem *)));
+    connect(ui->speciesList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
+    connect(ui->classList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
+    connect(ui->categoryList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
+    connect(ui->treeWidget, &QTreeWidget::itemChanged, this, &LipidSpaceGUI::featureItemChanged);
+    connect(ui->sampleList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->speciesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->classPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->categoryPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
@@ -267,6 +268,7 @@ void LipidSpaceGUI::updateView(int){
     disconnect(ui->speciesList, &QListWidget::itemChanged, 0, 0);
     disconnect(ui->classList, &QListWidget::itemChanged, 0, 0);
     disconnect(ui->categoryList, &QListWidget::itemChanged, 0, 0);
+    disconnect(ui->treeWidget, &QTreeWidget::itemChanged, 0, 0);
     disconnect(ui->sampleList, &QListWidget::itemChanged, 0, 0);
     
     // remove all items from the lists
@@ -332,8 +334,7 @@ void LipidSpaceGUI::updateView(int){
     }
     
     for (auto kv : lipid_space->feature_values){
-        QTreeWidgetItem *item = new QTreeWidgetItem(ui->treeWidget);
-        item->setText(0, kv.first.c_str());
+        TreeItem *item = new TreeItem(0, QString(kv.first.c_str()), ui->treeWidget);
         ui->treeWidget->addTopLevelItem(item);
         if (kv.second.feature_type == NominalFeature){
             for (auto kv_nom : kv.second.nominal_values){
@@ -343,10 +344,10 @@ void LipidSpaceGUI::updateView(int){
         }
     }
     
-    
     connect(ui->speciesList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->classList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->categoryList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
+    connect(ui->treeWidget, &QTreeWidget::itemChanged, this, &LipidSpaceGUI::featureItemChanged);
     connect(ui->sampleList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
 }
 
@@ -578,6 +579,40 @@ void LipidSpaceGUI::itemChanged(QListWidgetItem *item){
         Logging::write_log("Error: selection element '" + entity + "' was not found in the seletion map.");
         QMessageBox::critical(this, "Damn it, error", "Oh no, when you read this, an error happened that should never be expected to happen. Please check the log messages and send them to the developers. Thank you and sorry.");
     }
+}
+
+
+void LipidSpaceGUI::featureItemChanged(QTreeWidgetItem *item, int col){
+    if (item == 0) return;
+    TreeItem *tree_item = (TreeItem*)item;
+    string feature = tree_item->feature;
+    if (feature.length() == 0) return;
+    if (contains_val(lipid_space->feature_values, feature)){
+        string feature_value = item->text(col).toStdString();
+        if (contains_val(lipid_space->feature_values[feature].nominal_values, feature_value)){
+            lipid_space->feature_values[feature].nominal_values[feature_value] = (item->checkState(col) == Qt::Checked);
+        }
+        else {
+            Logging::write_log("Error: feature value element '" + feature_value + "' was not found in the feature values map.");
+            QMessageBox::critical(this, "Damn it, error", "Oh no, when you read this, an error happened that should never be expected to happen. Please check the log messages and send them to the developers. Thank you and sorry.");
+        }
+    }
+    else {
+        Logging::write_log("Error: feature selection element '" + feature + "' was not found in the feature seletion map.");
+        QMessageBox::critical(this, "Damn it, error", "Oh no, when you read this, an error happened that should never be expected to happen. Please check the log messages and send them to the developers. Thank you and sorry.");
+    }
+    
+    
+    /*
+    ListItemType lit = list_item->type;
+    string entity = list_item->text().toStdString();
+    if (contains_val(lipid_space->selection[(int)lit], entity)){
+        lipid_space->selection[(int)lit][entity] = (item->checkState() == Qt::Checked);
+    }
+    else {
+        
+    }
+    */
 }
 
 

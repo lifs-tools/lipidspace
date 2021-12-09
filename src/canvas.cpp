@@ -20,7 +20,7 @@ void Dendrogram::load(){
     lines.clear();
     
     for (int i : lipid_space->dendrogram_sorting){
-        dendrogram_titles.push_back(QString(lipid_space->lipidomes[i]->cleaned_name.c_str()));
+        dendrogram_titles.push_back(QString(lipid_space->selected_lipidomes[i]->cleaned_name.c_str()));
     }
     
     double x_min_d = 1e9;

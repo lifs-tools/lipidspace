@@ -154,6 +154,7 @@ class TreeItem : public QTreeWidgetItem {
 public:
     string feature;
     TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent);
+    TreeItem(int pos, QString name, QTreeWidget* parent);
 };
 
 
