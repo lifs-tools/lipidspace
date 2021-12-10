@@ -25,6 +25,7 @@ win32 {
 
 SOURCES += \
     src/about.cpp \
+    src/filterdialog.cpp \
     src/importtable.cpp \
     src/selectpc.cpp \
     src/globaldata.cpp \
@@ -43,6 +44,7 @@ SOURCES += \
 
 HEADERS += \
     lipidspace/about.h \
+    lipidspace/filterdialog.h \
     lipidspace/globaldata.h \
     lipidspace/importtable.h \
     lipidspace/lipidspacegui.h \
@@ -61,6 +63,7 @@ HEADERS += \
 
 FORMS += \
     ui/about.ui \
+    ui/filterdialog.ui \
     ui/importtable.ui \
     ui/lipidspacegui.ui \
     ui/managelipidomes.ui \

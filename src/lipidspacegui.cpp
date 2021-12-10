@@ -623,7 +623,6 @@ void LipidSpaceGUI::featureItemDoubleClicked(QTreeWidgetItem *item, int){
     TreeItem *tree_item = (TreeItem*)item;
     if (tree_item->feature.length() != 0) return;
     string feature = tree_item->text(0).toStdString();
-    cout << feature << endl;
     if (contains_val(lipid_space->feature_values, feature)){
         if (lipid_space->feature_values[feature].feature_type == NumericalFeature){
             
