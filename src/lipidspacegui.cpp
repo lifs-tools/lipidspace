@@ -132,6 +132,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->classList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->categoryList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->treeWidget, &QTreeWidget::itemChanged, this, &LipidSpaceGUI::featureItemChanged);
+    connect(ui->treeWidget, &QTreeWidget::itemDoubleClicked, this, &LipidSpaceGUI::featureItemDoubleClicked);
     connect(ui->sampleList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->speciesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->classPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
@@ -341,6 +342,19 @@ void LipidSpaceGUI::updateView(int){
                 TreeItem *child = new TreeItem(0, QString(kv_nom.first.c_str()), kv.first, item);
                 child->setCheckState(0, kv_nom.second ? Qt::Checked : Qt::Unchecked);
             }
+        }
+        else {
+            QString filter_label = "no filter set";
+            switch(kv.second.numerical_filter.first){
+                case LessFilter: filter_label = "less filter"; break;
+                case GreaterFilter: filter_label = "greater filter"; break;
+                case Equals: filter_label = "equals filter"; break;
+                case WithinRange: filter_label = "within range filter"; break;
+                case OutsideRange: filter_label = "outside range filter"; break;
+                default: break;
+            }
+            
+            item->setText(1, filter_label);
         }
     }
     
@@ -601,19 +615,37 @@ void LipidSpaceGUI::featureItemChanged(QTreeWidgetItem *item, int col){
         Logging::write_log("Error: feature selection element '" + feature + "' was not found in the feature seletion map.");
         QMessageBox::critical(this, "Damn it, error", "Oh no, when you read this, an error happened that should never be expected to happen. Please check the log messages and send them to the developers. Thank you and sorry.");
     }
-    
-    
-    /*
-    ListItemType lit = list_item->type;
-    string entity = list_item->text().toStdString();
-    if (contains_val(lipid_space->selection[(int)lit], entity)){
-        lipid_space->selection[(int)lit][entity] = (item->checkState() == Qt::Checked);
+}
+
+
+void LipidSpaceGUI::featureItemDoubleClicked(QTreeWidgetItem *item, int){
+    if (item == 0) return;
+    TreeItem *tree_item = (TreeItem*)item;
+    if (tree_item->feature.length() != 0) return;
+    string feature = tree_item->text(0).toStdString();
+    cout << feature << endl;
+    if (contains_val(lipid_space->feature_values, feature)){
+        if (lipid_space->feature_values[feature].feature_type == NumericalFeature){
+            
+        }
+        /*
+        string feature_value = item->text(col).toStdString();
+        if (contains_val(lipid_space->feature_values[feature].nominal_values, feature_value)){
+            lipid_space->feature_values[feature].nominal_values[feature_value] = (item->checkState(col) == Qt::Checked);
+        }
+        else {
+            Logging::write_log("Error: feature value element '" + feature_value + "' was not found in the feature values map.");
+            QMessageBox::critical(this, "Damn it, error", "Oh no, when you read this, an error happened that should never be expected to happen. Please check the log messages and send them to the developers. Thank you and sorry.");
+        }
+        */
     }
     else {
-        
+        Logging::write_log("Error: feature selection element '" + feature + "' was not found in the feature seletion map.");
+        QMessageBox::critical(this, "Damn it, error", "Oh no, when you read this, an error happened that should never be expected to happen. Please check the log messages and send them to the developers. Thank you and sorry.");
     }
-    */
 }
+
+
 
 
 

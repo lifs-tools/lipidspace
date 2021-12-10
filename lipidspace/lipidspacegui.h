@@ -119,6 +119,7 @@ public slots:
     void setFeature(int pos);
     void itemChanged(QListWidgetItem *item);
     void featureItemChanged(QTreeWidgetItem *item, int col);
+    void featureItemDoubleClicked(QTreeWidgetItem *item, int col);
     void updateSelectionView();
     void updateView(int);
     void select_all_entities();

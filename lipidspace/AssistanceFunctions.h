@@ -27,8 +27,6 @@ enum FeatureFilter {NoFilter, LessFilter, GreaterFilter, Equals, WithinRange, Ou
 
 
 
-
-
 class FeatureSet {
 public:
     string name;
@@ -45,6 +43,7 @@ public:
     FeatureSet(){
         name = "";
         feature_type = NominalFeature;
+        numerical_filter = {NoFilter, vector<double>()};
     }
 };
 

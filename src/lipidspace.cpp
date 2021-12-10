@@ -973,7 +973,40 @@ bool LipidSpace::compute_global_distance_matrix(){
                 }
             }
             else {
-                // implement numerical filtering
+                if (uncontains_val(feature_values, kv.first)) continue;
+                vector<double> &filter_values = feature_values[kv.first].numerical_filter.second;
+                double numerical_value = kv.second.numerical_value;
+                switch (feature_values[kv.first].numerical_filter.first){
+                    
+                    case LessFilter: // inverse logic, Less tells us, what to keep, greater we filter out
+                        if (filter_values.size() < 1) continue;
+                        if (filter_values[0] < numerical_value) filtered_out = true;
+                        break;
+                        
+                    case GreaterFilter:
+                        if (filter_values.size() < 1) continue;
+                        if (filter_values[0] > numerical_value) filtered_out = true;
+                        break;
+                        
+                    case Equals:
+                        if (filter_values.size() < 1) continue;
+                        filtered_out = true; // < 1e-16 due to floating point rounding errors
+                        for (double filter_value : filter_values) filtered_out &= !(fabs(numerical_value - filter_value) < 1e-16);
+                        break;
+                    
+                    case WithinRange:
+                        if (filter_values.size() < 2) continue;
+                        if (numerical_value < filter_values[0] || filter_values[1] < numerical_value) filtered_out = true;
+                        break;
+                    
+                    case OutsideRange:
+                        if (filter_values.size() < 2) continue;
+                        if (filter_values[0] <= numerical_value && numerical_value <= filter_values[1]) filtered_out = true;
+                        break;
+                        
+                    default:
+                        break;
+                }
             }
         }
         if (filtered_out) continue;
