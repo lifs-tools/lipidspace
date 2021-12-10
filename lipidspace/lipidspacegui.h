@@ -17,6 +17,7 @@
 #include "lipidspace/about.h"
 #include "lipidspace/globaldata.h"
 #include "lipidspace/CBTableWidget.h"
+#include "lipidspace/filterdialog.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 

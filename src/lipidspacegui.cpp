@@ -625,18 +625,11 @@ void LipidSpaceGUI::featureItemDoubleClicked(QTreeWidgetItem *item, int){
     string feature = tree_item->text(0).toStdString();
     if (contains_val(lipid_space->feature_values, feature)){
         if (lipid_space->feature_values[feature].feature_type == NumericalFeature){
-            
+            FilterDialog fd(lipid_space->feature_values[feature].numerical_filter);
+            fd.setModal(true);
+            fd.exec();
+            updateSelectionView();
         }
-        /*
-        string feature_value = item->text(col).toStdString();
-        if (contains_val(lipid_space->feature_values[feature].nominal_values, feature_value)){
-            lipid_space->feature_values[feature].nominal_values[feature_value] = (item->checkState(col) == Qt::Checked);
-        }
-        else {
-            Logging::write_log("Error: feature value element '" + feature_value + "' was not found in the feature values map.");
-            QMessageBox::critical(this, "Damn it, error", "Oh no, when you read this, an error happened that should never be expected to happen. Please check the log messages and send them to the developers. Thank you and sorry.");
-        }
-        */
     }
     else {
         Logging::write_log("Error: feature selection element '" + feature + "' was not found in the feature seletion map.");

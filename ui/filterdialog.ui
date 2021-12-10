@@ -62,11 +62,11 @@
     <string>Select filter type</string>
    </property>
   </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBox">
+  <widget class="QDoubleSpinBox" name="lessSpinBox">
    <property name="geometry">
     <rect>
-     <x>170</x>
-     <y>90</y>
+     <x>160</x>
+     <y>40</y>
      <width>111</width>
      <height>27</height>
     </rect>
@@ -74,18 +74,235 @@
    <property name="locale">
     <locale language="English" country="UnitedStates"/>
    </property>
+   <property name="decimals">
+    <number>5</number>
+   </property>
+   <property name="minimum">
+    <double>-100000000000000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>100000000000000000.000000000000000</double>
+   </property>
   </widget>
-  <widget class="QLabel" name="label_2">
+  <widget class="QLabel" name="lessLabel">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>95</y>
+     <x>130</x>
+     <y>42</y>
      <width>31</width>
      <height>18</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
    <property name="text">
     <string>x ≤</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="greaterSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>8</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="locale">
+    <locale language="English" country="UnitedStates"/>
+   </property>
+   <property name="decimals">
+    <number>5</number>
+   </property>
+   <property name="minimum">
+    <double>-100000000000000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>100000000000000000.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="greaterLabel">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>10</y>
+     <width>31</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>≤ x</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="withinLabel">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>82</y>
+     <width>31</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>≤ x ≤ </string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="withinSpinBox1">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>80</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="locale">
+    <locale language="English" country="UnitedStates"/>
+   </property>
+   <property name="decimals">
+    <number>5</number>
+   </property>
+   <property name="minimum">
+    <double>-100000000000000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>100000000000000000.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="withinSpinBox2">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>80</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="locale">
+    <locale language="English" country="UnitedStates"/>
+   </property>
+   <property name="decimals">
+    <number>5</number>
+   </property>
+   <property name="minimum">
+    <double>-100000000000000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>100000000000000000.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="outsideLabel2">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>112</y>
+     <width>31</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>or</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="outsideSpinBox1">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>110</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="locale">
+    <locale language="English" country="UnitedStates"/>
+   </property>
+   <property name="decimals">
+    <number>5</number>
+   </property>
+   <property name="minimum">
+    <double>-100000000000000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>100000000000000000.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="outsideSpinBox2">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>110</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="locale">
+    <locale language="English" country="UnitedStates"/>
+   </property>
+   <property name="decimals">
+    <number>5</number>
+   </property>
+   <property name="minimum">
+    <double>-100000000000000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>100000000000000000.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="outsideLabel1">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>110</y>
+     <width>31</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>x &lt;</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="outsideLabel3">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>110</y>
+     <width>31</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>&lt; x</string>
    </property>
   </widget>
  </widget>
