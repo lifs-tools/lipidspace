@@ -16,7 +16,8 @@ FilterDialog::FilterDialog(pair<FeatureFilter, vector<double>> &_filter, QWidget
 
     ui->lessLabel->move(ui->lessLabel->x(), 92);
     ui->greaterLabel->move(ui->greaterLabel->x(), 92);
-    ui->withinLabel->move(ui->withinLabel->x(), 92);
+    ui->withinLabel1->move(ui->withinLabel1->x(), 92);
+    ui->withinLabel2->move(ui->withinLabel2->x(), 92);
     ui->outsideLabel1->move(ui->outsideLabel1->x(), 92);
     ui->outsideLabel2->move(ui->outsideLabel2->x(), 92);
     ui->outsideLabel3->move(ui->outsideLabel3->x(), 92);
@@ -37,6 +38,16 @@ FilterDialog::FilterDialog(pair<FeatureFilter, vector<double>> &_filter, QWidget
             if (filter.second.size() >= 1) ui->greaterSpinBox->setValue(filter.second[0]);
             break;
             
+        case EqualFilter:
+            if (!filter.second.empty()){
+                QString line = QString::number(filter.second[0]);
+                for (int i = 1; i < (int)filter.second.size(); ++i){
+                    line += ", " + QString::number(filter.second[i]);
+                }
+                ui->equalEdit->setText(line);
+            }
+            break;
+            
         case WithinRange:
             if (filter.second.size() >= 2){
                 ui->withinSpinBox1->setValue(filter.second[0]);
@@ -55,8 +66,6 @@ FilterDialog::FilterDialog(pair<FeatureFilter, vector<double>> &_filter, QWidget
             break;
     }
     
-    
-    
     ui->comboBox->setCurrentIndex((int)filter.first);
     changeUI((int)filter.first);
     
@@ -73,14 +82,16 @@ FilterDialog::~FilterDialog() {
 void FilterDialog::changeUI(int i){
     ui->lessLabel->setVisible(false);
     ui->greaterLabel->setVisible(false);
-    ui->withinLabel->setVisible(false);
+    ui->equalLabel->setVisible(false);
+    ui->withinLabel1->setVisible(false);
+    ui->withinLabel2->setVisible(false);
     ui->outsideLabel1->setVisible(false);
     ui->outsideLabel2->setVisible(false);
     ui->outsideLabel3->setVisible(false);
     
-    
     ui->lessSpinBox->setVisible(false);
     ui->greaterSpinBox->setVisible(false);
+    ui->equalEdit->setVisible(false);
     ui->withinSpinBox1->setVisible(false);
     ui->withinSpinBox2->setVisible(false);
     ui->outsideSpinBox1->setVisible(false);
@@ -97,8 +108,14 @@ void FilterDialog::changeUI(int i){
             ui->greaterSpinBox->setVisible(true);
             break;
             
+        case EqualFilter:
+            ui->equalLabel->setVisible(true);
+            ui->equalEdit->setVisible(true);
+            break;
+            
         case WithinRange:
-            ui->withinLabel->setVisible(true);
+            ui->withinLabel1->setVisible(true);
+            ui->withinLabel2->setVisible(true);
             ui->withinSpinBox1->setVisible(true);
             ui->withinSpinBox2->setVisible(true);
             break;
@@ -118,8 +135,39 @@ void FilterDialog::changeUI(int i){
 
 
 void FilterDialog::ok(){
+    vector<double> equal_values;
+    if ((FeatureFilter)ui->comboBox->currentIndex() == EqualFilter){
+        if (ui->equalEdit->text().size() == 0) {
+            QMessageBox::warning(this, "Empty field", "An empty field is not permitted.");
+            return;
+        }
+        
+        for (int i = 0; i < (int)ui->equalEdit->text().size(); ++i){
+            QChar c = ui->equalEdit->text().at(i);
+            if (!(('0' <= c && c <= '9') || (c == ',') || (c == ' ') || (c == '.') || (c == '-'))){
+                QString warning_message = QString("The character '") + c + QString("' is invalid. Only comma separated notation is valid, example:\n2, 1909.12, -4711.0815, 12345.432");
+                QMessageBox::warning(this, "Invalid character", warning_message);
+                return;
+            }
+        }
+        vector<string> *tokens = split_string(ui->equalEdit->text().toStdString(), ',', '\'');
+        for (string token : *tokens){
+            string stripped_token = strip(token, ' ');
+            bool valid_number;
+            equal_values.push_back(QString(stripped_token.c_str()).toDouble(&valid_number));
+            if (!valid_number){
+                QMessageBox::warning(this, "Invalid number", "The string '" + QString(stripped_token.c_str()) + "' could not be converted into a number.");
+                delete tokens;
+                return;
+            }
+        }
+        delete tokens;
+    }
+    
+    
     filter.first = (FeatureFilter)ui->comboBox->currentIndex();
     filter.second.clear();
+    
     switch(filter.first){
         case LessFilter:
             filter.second.push_back(ui->lessSpinBox->value());
@@ -127,6 +175,10 @@ void FilterDialog::ok(){
             
         case GreaterFilter:
             filter.second.push_back(ui->greaterSpinBox->value());
+            break;
+            
+        case EqualFilter:
+            for (double val : equal_values) filter.second.push_back(val);
             break;
             
         case WithinRange:

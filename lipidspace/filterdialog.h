@@ -2,6 +2,7 @@
 #define FILTERDIALOG_H
 
 #include <QDialog>
+#include <QMessageBox>
 #include <map>
 #include <vector>
 #include "lipidspace/AssistanceFunctions.h"

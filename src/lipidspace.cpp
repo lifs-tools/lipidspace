@@ -988,7 +988,7 @@ bool LipidSpace::compute_global_distance_matrix(){
                         if (filter_values[0] > numerical_value) filtered_out = true;
                         break;
                         
-                    case Equals:
+                    case EqualFilter:
                         if (filter_values.size() < 1) continue;
                         filtered_out = true; // < 1e-16 due to floating point rounding errors
                         for (double filter_value : filter_values) filtered_out &= !(fabs(numerical_value - filter_value) < 1e-16);

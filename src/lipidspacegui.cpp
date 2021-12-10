@@ -348,7 +348,7 @@ void LipidSpaceGUI::updateView(int){
             switch(kv.second.numerical_filter.first){
                 case LessFilter: filter_label = "less filter"; break;
                 case GreaterFilter: filter_label = "greater filter"; break;
-                case Equals: filter_label = "equals filter"; break;
+                case EqualFilter: filter_label = "equals filter"; break;
                 case WithinRange: filter_label = "within range filter"; break;
                 case OutsideRange: filter_label = "outside range filter"; break;
                 default: break;
