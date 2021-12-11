@@ -34,9 +34,14 @@ LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
     
     // add fatty acids
     if (_fa != 0){
+        int i = 0;
+        bool fa_it = (_fa->size() > 0) && (_fa->at(0)->lipid_FA_bond_type == LCB_EXCEPTION || _fa->at(0)->lipid_FA_bond_type == LCB_REGULAR);
         for (auto fatty_acid : *_fa){
+            fatty_acid->name = (fa_it && i == 0) ? "LCB" : "FA" + std::to_string(i + 1 - fa_it);
+            fatty_acid->position = -1;
             info->add(fatty_acid);
             fa_list.push_back(fatty_acid);
+            ++i;
         }
     }
 }

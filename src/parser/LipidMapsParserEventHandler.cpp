@@ -282,7 +282,7 @@ void LipidMapsParserEventHandler::add_glyco(TreeNode* node){
         
 void LipidMapsParserEventHandler::new_fa(TreeNode *node) {
     db_numbers = -1;
-    current_fa = new FattyAcid("FA" + std::to_string(fa_list->size() + 1));
+    current_fa = new FattyAcid("FA");
 }
     
     
@@ -315,10 +315,6 @@ void LipidMapsParserEventHandler::append_fa(TreeNode *node) {
     }
     if (current_fa->double_bonds->double_bond_positions.size() == 0 && current_fa->double_bonds->get_num() > 0){
         set_lipid_level(SN_POSITION);
-    }
-    
-    if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
-            current_fa->position = fa_list->size() + 1;
     }
     
     if (current_fa->num_carbon == 0){
@@ -384,7 +380,6 @@ void LipidMapsParserEventHandler::build_lipid(TreeNode* node){
     
     if (lcb != NULL){
         set_lipid_level(STRUCTURE_DEFINED);
-        for (auto fa : *fa_list) fa->position += 1;
         fa_list->insert(fa_list->begin(), lcb);
     }
     

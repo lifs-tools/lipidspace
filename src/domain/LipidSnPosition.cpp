@@ -30,6 +30,9 @@ using namespace std;
 
 LipidSnPosition::LipidSnPosition(Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidMolecularSpecies (_headgroup, _fa) {
     info->level = SN_POSITION;
+    for (int i = 0; i < (int)fa_list.size(); ++i){
+        fa_list[i]->position = i + 1;
+    }
 }
 
 

@@ -39,6 +39,7 @@ LipidMolecularSpecies::LipidMolecularSpecies (Headgroup* _headgroup, vector<Fatt
     // add 0:0 dummys
     for (int i = (int)_fa->size(); i < info->total_fa; ++i){
         FattyAcid *fatty_acid = new FattyAcid("FA" + std::to_string(i + 1));
+        fatty_acid->position = -1;
         info->add(fatty_acid);
         fa.insert({fatty_acid->name, fatty_acid});
         fa_list.push_back(fatty_acid);
