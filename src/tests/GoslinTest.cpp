@@ -116,17 +116,17 @@ int main(int argc, char** argv){
     assert_true(l->get_lipid_string(), "BMP 18:1_18:1");
     assert_true(l->get_sum_formula(), "C42H79O10P");
     assert_true(l->lipid->fa_list.at(0)->name, "FA1");
-    assert_true(l->lipid->fa_list.at(0)->position, 0);
+    assert_true(l->lipid->fa_list.at(0)->position, -1);
     assert_true(l->lipid->fa_list.at(0)->double_bonds->num_double_bonds, 1);
     assert_true(l->lipid->fa_list.at(1)->name, "FA2");
-    assert_true(l->lipid->fa_list.at(1)->position, 0);
+    assert_true(l->lipid->fa_list.at(1)->position, -1);
     assert_true(l->lipid->fa_list.at(1)->double_bonds->num_double_bonds, 1);
     assert_true(l->lipid->fa_list.at(2)->name,  "FA3");
-    assert_true(l->lipid->fa_list.at(2)->position, 0);
+    assert_true(l->lipid->fa_list.at(2)->position, -1);
     assert_true(l->lipid->fa_list.at(2)->num_carbon, 0);
     assert_true(l->lipid->fa_list.at(2)->double_bonds->num_double_bonds, 0);
     assert_true(l->lipid->fa_list.at(3)->name,  "FA4");
-    assert_true(l->lipid->fa_list.at(3)->position, 0);
+    assert_true(l->lipid->fa_list.at(3)->position, -1);
     assert_true(l->lipid->fa_list.at(3)->num_carbon, 0);
     assert_true(l->lipid->fa_list.at(3)->double_bonds->num_double_bonds, 0);
 
