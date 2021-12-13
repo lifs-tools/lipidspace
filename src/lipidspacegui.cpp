@@ -98,6 +98,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     dragLayer->setVisible(false);
     dragLayer->setWindowFlags(Qt::FramelessWindowHint);
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     
     ui->speciesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     
@@ -105,26 +106,26 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
     
-    connect(ui->actionAutomatically, SIGNAL(triggered()), this, SLOT(setAutomaticLayout()));
-    connect(ui->actionShow_quantitative_information, SIGNAL(triggered()), this, SLOT(showHideQuant()));
-    connect(ui->actionShow_global_lipidome, SIGNAL(triggered()), this, SLOT(showHideGlobalLipidome()));
-    connect(ui->actionShow_dendrogram, SIGNAL(triggered()), this, SLOT(showHideDendrogram()));
+    connect(ui->actionAutomatically, &QAction::triggered, this, &LipidSpaceGUI::setAutomaticLayout);
+    connect(ui->actionShow_quantitative_information, &QAction::triggered, this, &LipidSpaceGUI::showHideQuant);
+    connect(ui->actionShow_global_lipidome, &QAction::triggered, this, &LipidSpaceGUI::showHideGlobalLipidome);
+    connect(ui->actionShow_dendrogram, &QAction::triggered, this, &LipidSpaceGUI::showHideDendrogram);
     connect(ui->action1_column, &QAction::triggered, this, &LipidSpaceGUI::set1ColumnLayout);
     connect(ui->action2_columns, &QAction::triggered, this, &LipidSpaceGUI::set2ColumnLayout);
     connect(ui->action3_columns, &QAction::triggered, this, &LipidSpaceGUI::set3ColumnLayout);
     connect(ui->action4_columns, &QAction::triggered, this, &LipidSpaceGUI::set4ColumnLayout);
     connect(ui->action5_columns, &QAction::triggered, this, &LipidSpaceGUI::set5ColumnLayout);
     connect(ui->action6_columns, &QAction::triggered, this, &LipidSpaceGUI::set6ColumnLayout);
-    connect(ui->actionIgnoring_lipid_sn_positions, SIGNAL(triggered()), this, SLOT(setSnPositions()));
-    connect(ui->actionManage_lipidomes, SIGNAL(triggered()), this, SLOT(openManageLipidomesWindow()));
-    connect(ui->actionSet_transparency, SIGNAL(triggered()), this, SLOT(openSetAlpha()));
-    connect(ui->actionSet_number_of_principal_components, SIGNAL(triggered()), this, SLOT(openSetPCnum()));
-    connect(ui->actionSelect_principal_components, SIGNAL(triggered()), this, SLOT(openSelectPC()));
-    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
-    connect(ui->actionLog_messages, SIGNAL(triggered()), this, SLOT(openLog()));
-    connect(ui->actionIgnore_quantitative_information, SIGNAL(triggered()), this, SLOT(toggleQuant()));
-    connect(ui->actionUnbound_lipid_distance_metric, SIGNAL(triggered()), this, SLOT(toggleBoundMetric()));
-    connect(ui->actionExport_Results, SIGNAL(triggered()), this, SLOT(setExport()));
+    connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
+    connect(ui->actionManage_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::openManageLipidomesWindow);
+    connect(ui->actionSet_transparency, &QAction::triggered, this, &LipidSpaceGUI::openSetAlpha);
+    connect(ui->actionSet_number_of_principal_components, &QAction::triggered, this, &LipidSpaceGUI::openSetPCnum);
+    connect(ui->actionSelect_principal_components, &QAction::triggered, this, &LipidSpaceGUI::openSelectPC);
+    connect(ui->actionAbout, &QAction::triggered, this, &LipidSpaceGUI::openAbout);
+    connect(ui->actionLog_messages, &QAction::triggered, this, &LipidSpaceGUI::openLog);
+    connect(ui->actionIgnore_quantitative_information, &QAction::triggered, this, &LipidSpaceGUI::toggleQuant);
+    connect(ui->actionUnbound_lipid_distance_metric, &QAction::triggered, this, &LipidSpaceGUI::toggleBoundMetric);
+    connect(ui->actionExport_Results, &QAction::triggered, this, &LipidSpaceGUI::setExport);
     connect(ui->tableWidget, SIGNAL(cornerButtonClick()), this, SLOT(transposeTable()));
     connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
     connect(this, SIGNAL(featureChanged(string)), ui->dendrogramView, SLOT(setFeature(string)));
@@ -144,10 +145,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->classList->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->categoryList->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->sampleList->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->speciesList, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(ShowContextMenu(const QPoint)));
-    connect(ui->classList, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(ShowContextMenu(const QPoint)));
-    connect(ui->categoryList, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(ShowContextMenu(const QPoint)));
-    connect(ui->sampleList, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(ShowContextMenu(const QPoint)));
+    connect(ui->speciesList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
+    connect(ui->classList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
+    connect(ui->categoryList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
+    connect(ui->treeWidget, &QTreeWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
+    connect(ui->sampleList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
     
     sorting_boxes.push_back(ui->speciesComboBox);
     sorting_boxes.push_back(ui->classComboBox);
@@ -946,6 +948,12 @@ void LipidSpaceGUI::updateGUI(){
 
 
 void LipidSpaceGUI::openLists(){
+    if (lipid_space->feature_values.size() > 0){
+        QMessageBox::warning(this, "List conflict", "Features have been loaded. Lists do not supported any feature import routine. Please reset LipidSpace or load a table with exactly the same features.");
+        return;
+    }
+    
+    
     QStringList files = QFileDialog::getOpenFileNames(this, "Select one or more lipid lists", ".", "Lists *.csv *.tsv *.txt (*.csv *.tsv *.txt)");
     
     if (files.size()){
@@ -1058,22 +1066,37 @@ void LipidSpaceGUI::openLists(){
 
 void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
     QMenu *menu = new QMenu(this);
-    QAction *actionSelectAll = new QAction("Select all", this);
-    QAction *actionDeselectAll = new QAction("Deselect all", this);
-    menu->addAction(actionSelectAll);
-    menu->addAction(actionDeselectAll);
-    
-    QListWidget *widget = nullptr;
-    switch(ui->tabWidget->currentIndex()){
-        case 0: widget = ui->speciesList; break;
-        case 1: widget = ui->classList; break;
-        case 2: widget = ui->categoryList; break;
-        case 3: return;
-        case 4: widget = ui->sampleList; break;
+    if (ui->tabWidget->currentIndex() != 3){
+        QAction *actionSelectAll = new QAction("Select all", this);
+        QAction *actionDeselectAll = new QAction("Deselect all", this);
+        menu->addAction(actionSelectAll);
+        menu->addAction(actionDeselectAll);
+        
+        QListWidget *widget = nullptr;
+        switch(ui->tabWidget->currentIndex()){
+            case 0: widget = ui->speciesList; break;
+            case 1: widget = ui->classList; break;
+            case 2: widget = ui->categoryList; break;
+            case 3: return;
+            case 4: widget = ui->sampleList; break;
+            default: break;
+        }
+        menu->popup(widget->viewport()->mapToGlobal(pos));
+        connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::select_all_entities);
+        connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::deselect_all_entities);
     }
-    menu->popup(widget->viewport()->mapToGlobal(pos));
-    connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::select_all_entities);
-    connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::deselect_all_entities);
+    else {
+        QAction *actionSelectAll = new QAction("Select all nominal features", this);
+        QAction *actionDeselectAll = new QAction("Deselect all nominal features", this);
+        QAction *actionResetAll = new QAction("Reset all numerical features", this);
+        menu->addAction(actionSelectAll);
+        menu->addAction(actionDeselectAll);
+        menu->addAction(actionResetAll);
+        menu->popup(ui->treeWidget->viewport()->mapToGlobal(pos));
+        connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::select_all_features);
+        connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::deselect_all_features);
+        connect(actionResetAll, &QAction::triggered, this, &LipidSpaceGUI::reset_all_features);
+    }
 }
 
 
@@ -1106,6 +1129,41 @@ void LipidSpaceGUI::deselect_all_entities(){
     for (int i = 0; i < widget->count(); ++i){
         widget->item(i)->setCheckState(Qt::Unchecked);
     }
+}
+
+
+
+void LipidSpaceGUI::select_all_features(){
+    vector<QTreeWidgetItem*> stack;
+    stack.push_back(ui->treeWidget->invisibleRootItem());
+    while(stack.size() > 0){
+        TreeItem *item = (TreeItem*)stack.back();
+        stack.pop_back();
+        if (item->feature != "") item->setCheckState(0, Qt::Checked);
+        for (int i = 0; i < (int)item->childCount(); ++i) stack.push_back(item->child(i));
+    }
+}
+
+
+
+void LipidSpaceGUI::deselect_all_features(){
+    vector<QTreeWidgetItem*> stack;
+    stack.push_back(ui->treeWidget->invisibleRootItem());
+    while(stack.size() > 0){
+        TreeItem *item = (TreeItem*)stack.back();
+        stack.pop_back();
+        if (item->feature != "") item->setCheckState(0, Qt::Unchecked);
+        for (int i = 0; i < (int)item->childCount(); ++i) stack.push_back(item->child(i));
+    }
+}
+
+
+void LipidSpaceGUI::reset_all_features(){
+    for (auto &kv : lipid_space->feature_values){
+        kv.second.numerical_filter.first = NoFilter;
+        kv.second.numerical_filter.second.clear();
+    }
+    updateView(0);
 }
 
 

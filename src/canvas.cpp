@@ -182,16 +182,6 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
         return;
     
     
-    
-    /*
-    pen.setWidth(0);
-    double pie_radius = 30;
-    double pie_x = (lipid_space->dendrogram_root->x_left + lipid_space->dendrogram_root->x_right) * 0.5 * dendrogram_x_factor;
-    double pie_y = -lipid_space->dendrogram_root->y * dendrogram_y_factor - pie_radius * 2.5;
-    
-    draw_pie(painter, lipid_space->dendrogram_root, pie_x, pie_y);
-    */
-    
     recursive_paint(painter, lipid_space->dendrogram_root, 3);
 }
 
