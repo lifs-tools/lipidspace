@@ -40,7 +40,6 @@ LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
             fatty_acid->name = (fa_it && i == 0) ? "LCB" : "FA" + std::to_string(i + 1 - fa_it);
             fatty_acid->position = -1;
             info->add(fatty_acid);
-            fa_list.push_back(fatty_acid);
             ++i;
         }
     }
