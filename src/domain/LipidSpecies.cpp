@@ -163,5 +163,10 @@ ElementTable* LipidSpecies::get_elements(){
     elements->at(ELEMENT_O) -= -additional_fa + info->num_ethers + headgroup->sp_exception + hydrochain;
     elements->at(ELEMENT_H) += -additional_fa + remaining_H + 2 * info->num_ethers + 2 * hydrochain;
     
+    if (contains_val(meta.special_cases, "Amide")){
+        elements->at(ELEMENT_O) -= meta.max_num_fa;
+        elements->at(ELEMENT_H) += meta.max_num_fa;
+    }
+    
     return elements;
 }

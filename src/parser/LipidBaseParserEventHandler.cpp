@@ -110,7 +110,11 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     if (contains_val(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class)){
         
         if (contains_val(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "HC")){
-            fa_list->front()->lipid_FA_bond_type = AMINE;
+            fa_list->front()->lipid_FA_bond_type = ETHER;
+        }
+        
+        if (contains_val(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "Amide")){
+            for (auto fatty : *fa_list) fatty->lipid_FA_bond_type = AMIDE;
         }
         
         int max_num_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa;

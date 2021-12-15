@@ -263,12 +263,12 @@ void FattyAcid::compute_elements(){
             elements->at(ELEMENT_H) = (2 * num_carbon - 1 - 2 * num_double_bonds + 2); // hydrogen
         }
         
-        else if (lipid_FA_bond_type == ETHER_PLASMANYL){
+        else if (lipid_FA_bond_type == ETHER_PLASMANYL || lipid_FA_bond_type == ETHER){
             elements->at(ELEMENT_H) = ((num_carbon + 1) * 2 - 1 - 2 * num_double_bonds); // hydrogen
         }
         
-        else if (lipid_FA_bond_type == AMINE)
-            elements->at(ELEMENT_H) = (2 * num_carbon + 1 - 2 * num_double_bonds); // hydrogen
+        else if (lipid_FA_bond_type == AMIDE)
+            elements->at(ELEMENT_H) = (2 * num_carbon + 1 - 2 * num_double_bonds) - 1; // hydrogen
             
         else {
             throw LipidException("Mass cannot be computed for fatty acyl chain with this bond type");
