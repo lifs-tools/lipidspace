@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <QListWidget>
+#include <QTreeWidget>
 #include <QDropEvent>
 #include <set>
 #include <vector>
@@ -18,13 +19,63 @@
 using namespace std;
 
 enum Linkage {SingleLinkage, CompleteLinkage};
+enum FeatureType {NumericalFeature, NominalFeature};
 enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
-enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumn, IgnoreColumn};
+enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumerical, FeatureColumnNominal, IgnoreColumn};
 enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered};
+enum FeatureFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, EqualFilter = 3, WithinRange = 4, OutsideRange = 5};
+
+
+
+class FeatureSet {
+public:
+    string name;
+    FeatureType feature_type;
+    map<string, bool> nominal_values;
+    set<double> numerical_values;
+    pair<FeatureFilter, vector<double>> numerical_filter;
+    
+    FeatureSet(string _name, FeatureType f_type){
+        name = _name;
+        feature_type = f_type;
+    }
+    
+    FeatureSet(){
+        name = "";
+        feature_type = NominalFeature;
+        numerical_filter = {NoFilter, vector<double>()};
+    }
+};
+
+
+
+
+
+struct Feature {
+    string name;
+    FeatureType feature_type;
+    double numerical_value;
+    string nominal_value;
+    
+    Feature (string _name, string nom_val){
+        name = _name;
+        feature_type = NominalFeature;
+        nominal_value = nom_val;
+    }
+    
+    Feature (string _name, double num_val){
+        name = _name;
+        feature_type = NumericalFeature;
+        numerical_value = num_val;
+    }
+};
 
 
 double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
+
+
+
 
 class LipidSpaceException : public std::exception {
 public:
@@ -41,6 +92,9 @@ public:
     
     LipidSpaceExceptionType type;
 };
+
+
+
 
 class SingleListWidget : public QListWidget {
     Q_OBJECT
@@ -76,7 +130,7 @@ public:
     vector<bool> selection;
     Array intensities;
     Array original_intensities;
-    map<string, string> features;
+    map<string, Feature> features;
     Matrix m;
     
     Table(string lipid_list_file) : file_name(lipid_list_file) {
@@ -88,10 +142,18 @@ public:
 
 class ListItem : public QListWidgetItem {
 public:
-    LipidAdduct *species;
     ListItemType type;
-    
-    ListItem(QString name, ListItemType t, QListWidget* w);
+    ListItem(QString name, ListItemType t, QListWidget* parent);
+};
+
+
+
+
+class TreeItem : public QTreeWidgetItem {
+public:
+    string feature;
+    TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent);
+    TreeItem(int pos, QString name, QTreeWidget* parent);
 };
 
 
@@ -138,9 +200,11 @@ public:
     double x_left;
     double x_right;
     double y;
-    map<string, map<string, int>> feature_count;
+    map<string, map<string, int>> feature_count_nominal;
+    map<string, vector<double>> feature_numerical;
+    map<string, double> feature_numerical_thresholds;
     
-    DendrogramNode(int index, map<string, set<string>> *feature_values, Table *lipidome);
+    DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);

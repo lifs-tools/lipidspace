@@ -17,6 +17,7 @@
 #include "lipidspace/about.h"
 #include "lipidspace/globaldata.h"
 #include "lipidspace/CBTableWidget.h"
+#include "lipidspace/filterdialog.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 
@@ -70,6 +71,7 @@ public:
     bool loadedDataSet;
     
     
+    
 signals:
     void transforming(QRectF f);
     void updateCanvas();
@@ -117,8 +119,15 @@ public slots:
     void reassembleSelection();
     void setFeature(int pos);
     void itemChanged(QListWidgetItem *item);
+    void featureItemChanged(QTreeWidgetItem *item, int col);
+    void featureItemDoubleClicked(QTreeWidgetItem *item, int col);
     void updateSelectionView();
     void updateView(int);
+    void select_all_entities();
+    void deselect_all_entities();
+    void select_all_features();
+    void deselect_all_features();
+    void reset_all_features();
     
 private:
     Ui::LipidSpaceGUI *ui;

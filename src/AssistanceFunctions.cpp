@@ -24,7 +24,7 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 }
 
 
-DendrogramNode::DendrogramNode(int index, map<string, set<string>> *feature_values, Table *lipidome){
+DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome){
     indexes.insert(index);
     left_child = 0;
     right_child = 0;
@@ -36,14 +36,24 @@ DendrogramNode::DendrogramNode(int index, map<string, set<string>> *feature_valu
     
     // initialize empty feature count table
     for (auto kv : *feature_values){
-        feature_count.insert({kv.first, map<string, int>()});
-        for (auto feature_value : kv.second){
-            feature_count[kv.first].insert({feature_value, 0});
+        if (kv.second.feature_type == NominalFeature){
+            feature_count_nominal.insert({kv.first, map<string, int>()});
+            for (auto kv_nom : kv.second.nominal_values){
+                feature_count_nominal[kv.first].insert({kv_nom.first, 0});
+            }
+        }
+        else {
+            feature_numerical.insert({kv.first, vector<double>()});
         }
     }
     
     for (auto kv : lipidome->features){
-        feature_count[kv.first][kv.second] = 1;
+        if (kv.second.feature_type == NominalFeature){
+            feature_count_nominal[kv.first][kv.second.nominal_value] = 1;
+        }
+        else {
+            feature_numerical[kv.first].push_back(kv.second.numerical_value);
+        }
     }
 }
 
@@ -97,12 +107,57 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     points->push_back(y);
     
     // count features
-    for (auto kv : left_child->feature_count){
-        feature_count.insert({kv.first, map<string, int>()});
+    for (auto kv : left_child->feature_count_nominal){
+        feature_count_nominal.insert({kv.first, map<string, int>()});
         for (auto kv2 : kv.second){
-            feature_count[kv.first].insert({kv2.first, kv2.second + right_child->feature_count[kv.first][kv2.first]});
+            feature_count_nominal[kv.first].insert({kv2.first, kv2.second + right_child->feature_count_nominal[kv.first][kv2.first]});
         }
     }
+    
+    for (auto kv : left_child->feature_numerical){
+        // find intersection points for numerical features
+        vector<double> &set1 = kv.second;
+        vector<double> &set2 = right_child->feature_numerical[kv.first];
+        
+        int num1 = set1.size();
+        int num2 = set2.size();
+        sort(set1.begin(), set1.end());
+        sort(set2.begin(), set2.end());
+        double inv_m = 1. / num1, inv_n = 1. / num2;
+        double ptr1 = 0, ptr2 = 0;
+        double cdf1 = 0, cdf2 =0;
+        double pos_max = 0, d = 0;
+        while ((ptr1 < num1) && (ptr2 < num2)){
+            if (set1[ptr1] <= set2[ptr2]){
+                cdf1 += inv_m;
+                if (d < fabs(cdf1 - cdf2)){
+                    d = fabs(cdf1 - cdf2);
+                    pos_max = set1[ptr1];
+                }
+                ptr1 += 1;
+            }
+            else {
+                cdf2 += inv_n;
+                if (d < fabs(cdf1 - cdf2)){
+                    d = fabs(cdf1 - cdf2);
+                    pos_max = set2[ptr2];
+                }
+                ptr2 += 1;
+            }
+        }
+        feature_numerical_thresholds.insert({kv.first, pos_max});
+        
+        feature_numerical.insert({kv.first, vector<double>()});
+        for(double val : kv.second){
+            feature_numerical[kv.first].push_back(val);
+        }
+        for(double val : right_child->feature_numerical[kv.first]){
+            feature_numerical[kv.first].push_back(val);
+        }
+    }
+    
+    
+    
     
     
     return new double[3]{(x_left + x_right) / 2, y, (double)cnt};
@@ -236,4 +291,18 @@ void BH_fdr(vector<double> &data){
 
 ListItem::ListItem(QString name, ListItemType t, QListWidget* parent) : QListWidgetItem(name, parent) {
     type = t;
+}
+
+
+
+TreeItem::TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent) : QTreeWidgetItem(parent){
+    setText(pos, name);
+    feature = f;
+}
+
+
+
+TreeItem::TreeItem(int pos, QString name, QTreeWidget* parent) : QTreeWidgetItem(parent){
+    setText(pos, name);
+    feature = "";
 }

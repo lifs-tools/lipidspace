@@ -54,13 +54,21 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     
     
     // set feature lists
-    ui->featureListWidgetCol->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->featureListWidgetCol->setDefaultDropAction(Qt::MoveAction);
-    ui->featureListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->numericalFeatureListWidgetCol->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->numericalFeatureListWidgetCol->setDefaultDropAction(Qt::MoveAction);
+    ui->numericalFeatureListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
     
-    ui->featureListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->featureListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
-    ui->featureListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->nominalFeatureListWidgetCol->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->nominalFeatureListWidgetCol->setDefaultDropAction(Qt::MoveAction);
+    ui->nominalFeatureListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
+    
+    ui->numericalFeatureListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->numericalFeatureListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
+    ui->numericalFeatureListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
+    
+    ui->nominalFeatureListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->nominalFeatureListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
+    ui->nominalFeatureListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
     
     
     // set quant list
@@ -246,8 +254,12 @@ void ImportTable::okCol(){
             column_types->at(original_column_index[ui->lipidListWidgetCol->item(i)->text()]) = LipidColumn;
         }
         
-        for (int i = 0; i < (int)ui->featureListWidgetCol->count(); ++i){
-            column_types->at(original_column_index[ui->featureListWidgetCol->item(i)->text()]) = FeatureColumn;
+        for (int i = 0; i < (int)ui->numericalFeatureListWidgetCol->count(); ++i){
+            column_types->at(original_column_index[ui->numericalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNumerical;
+        }
+        
+        for (int i = 0; i < (int)ui->nominalFeatureListWidgetCol->count(); ++i){
+            column_types->at(original_column_index[ui->nominalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNominal;
         }
         
         importTable(data_table_file, column_types, COLUMN_TABLE);
@@ -276,8 +288,12 @@ void ImportTable::okPivot(){
         
         column_types->at(original_column_index[ui->quantListWidgetPivot->item(0)->text()]) = QuantColumn;
         
-        for (int i = 0; i < (int)ui->featureListWidgetPivot->count(); ++i){
-            column_types->at(original_column_index[ui->featureListWidgetPivot->item(i)->text()]) = FeatureColumn;
+        for (int i = 0; i < (int)ui->numericalFeatureListWidgetPivot->count(); ++i){
+            column_types->at(original_column_index[ui->numericalFeatureListWidgetPivot->item(i)->text()]) = FeatureColumnNumerical;
+        }
+        
+        for (int i = 0; i < (int)ui->nominalFeatureListWidgetPivot->count(); ++i){
+            column_types->at(original_column_index[ui->nominalFeatureListWidgetPivot->item(i)->text()]) = FeatureColumnNominal;
         }
         
         importTable(data_table_file, column_types, PIVOT_TABLE);
