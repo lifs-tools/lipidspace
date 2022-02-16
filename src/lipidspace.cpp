@@ -1208,8 +1208,24 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         
         vector<string>* tokens = split_string(line, ',', '"', true);
         if (line_cnt++ == 0){
-            for (auto fi : feature_columns_nominal) feature_names_nominal.push_back(tokens->at(fi));
-            for (auto fi : feature_columns_numerical) feature_names_numerical.push_back(tokens->at(fi));
+            for (auto fi : feature_columns_nominal){
+                string feature = tokens->at(fi);
+                if (feature_values.empty() || contains_val(feature_values, feature)){
+                    feature_names_nominal.push_back(feature);
+                }
+                else {
+                    throw LipidSpaceException("Tables with features have already been imported, however feature '" + feature + "' is not registered. Please remove this feature or reset LipidSpace.", FeatureNotRegistered);
+                }
+            }
+            for (auto fi : feature_columns_numerical){
+                string feature = tokens->at(fi);
+                if (feature_values.empty() || contains_val(feature_values, feature)) {
+                    feature_names_numerical.push_back(feature);
+                }
+                else {
+                    throw LipidSpaceException("Tables with features have already been imported, however feature '" + feature + "' is not registered. Please remove this feature or reset LipidSpace.", FeatureNotRegistered);
+                }
+            }
             
             delete tokens;
             continue;
