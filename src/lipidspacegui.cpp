@@ -1205,8 +1205,13 @@ void LipidSpaceGUI::fill_Table(){
             t->setVerticalHeaderItem(f++, item);
         }
         
-        for (int r = 0; r < (int)lipid_space->global_lipidome->species.size(); ++r){
-            QString header_name = lipid_space->global_lipidome->species[r].c_str();
+        // achieve sorted table
+        vector< string > sorted_lipid_species;
+        for (int r = 0; r < (int)lipid_space->global_lipidome->species.size(); ++r) sorted_lipid_species.push_back(lipid_space->global_lipidome->species[r]);
+        sort(sorted_lipid_species.begin(), sorted_lipid_species.end());
+        
+        for (int r = 0; r < (int)sorted_lipid_species.size(); ++r){
+            QString header_name = sorted_lipid_species[r].c_str();
             // dirty way to make the transpose button completely visible
             if (f == 0 && header_name.length() < 10) {
                 while (header_name.length() < 14) header_name += " ";
@@ -1214,7 +1219,7 @@ void LipidSpaceGUI::fill_Table(){
             item = new QTableWidgetItem(header_name);
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             t->setVerticalHeaderItem(num_features + r, item);
-            lipid_index.insert({lipid_space->global_lipidome->species[r], num_features + r});
+            lipid_index.insert({sorted_lipid_species[r], num_features + r});
         }
         
         // fill features and content
@@ -1240,6 +1245,7 @@ void LipidSpaceGUI::fill_Table(){
             // add lipid quant data
             for (int r = 0; r < (int)lipid_space->lipidomes[c]->species.size(); r++){
                 item = new QTableWidgetItem(QString::number(lipid_space->lipidomes[c]->original_intensities[r]));
+                //item = new QTableWidgetItem(QString::number(lipid_space->lipidomes[c]->intensities[r]));
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
                 int rr = lipid_index[lipid_space->lipidomes[c]->species[r]];
                 t->setItem(rr, c, item);
@@ -1254,6 +1260,15 @@ void LipidSpaceGUI::fill_Table(){
             int c = pos % C;
             t->setItem(r, c, item);
         }
+        
+        /*
+        ofstream blood("blood-matrix.csv");
+        for (int r = 0; r < R; ++r){
+            for (int c = 0; c < C; c++){
+                blood << t->item(r, c)->text().toStdString() << "\t";
+            } blood << endl;
+        }
+        */
     }
     
     

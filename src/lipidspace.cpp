@@ -745,6 +745,7 @@ void LipidSpace::load_list(string lipid_list_file){
                 delete l->adduct;
                 l->adduct = 0;
             }
+            l->sort_fatty_acyl_chains();
             
             all_lipids.at(pos_all + i) = l;
             lipidome->lipids.at(i) = l;
@@ -1138,7 +1139,9 @@ void LipidSpace::separate_matrixes(){
 
 
 
-
+inline double gauss(double x, double mue, double sigma){
+    return exp(-0.5 * sq((x - mue) / sigma)) / sqrt(2 * M_PI);
+}
 
 
 
@@ -1154,11 +1157,66 @@ void LipidSpace::normalize_intensities(){
     
     for (auto lipidome : selected_lipidomes){
         Array &intensities = lipidome->intensities;
-        double stdev = intensities.stdev();
         
+        // Use expectation maximization algorithm to identify outliers
+        // for a more stable estimation of the standard deviation
+        
+        Array data;
+        for (auto val : intensities) {
+            if (val > 0) data.push_back(val);
+        }
+        
+        int l = data.size();
+        double *X = new double[l];
+        double *w = new double[l];
+        double min_v = 1e90;
+        double max_v = 0;
+        for (int i = 0; i < l; ++i){
+            X[i] = log(data.at(i));
+            min_v = min(min_v, X[i]);
+            max_v = max(max_v, X[i]);
+        }
+        double mue = log(data.median());
+        double sigma = 1;
+        double weight = 0.99;
+        double bgm = 1. / (max_v - min_v); // background model
+        
+        for (int rep = 0; rep < 20; ++rep){
+            // expectation step
+            double W = 0, W2 = 0;
+            double gbg = bgm * (1. - weight);
+            for (int i = 0; i < l; ++i){
+                double g = weight * gauss(X[i], mue, sigma);
+                w[i] = g / (g + bgm * (1. - weight));
+                W += w[i];
+                W2 += gbg / (g + gbg);
+            }
+            
+            // maximization step
+            // maximizing weight
+            weight = W / (W + W2);
+            
+            // maximizing mean value mue
+            mue = 0;
+            for (int i = 0; i < l; ++i) mue += w[i] * X[i];
+            mue /= W;
+            
+            // maximizing standard deviation sigma
+            sigma = 0;
+            for (int i = 0; i < l; ++i) sigma += w[i] * sq(X[i] - mue);
+            sigma = sqrt(sigma / W);
+        }
+        
+        Array mod_intens;
+        for (int i = 0; i < l; ++i) mod_intens.push_back(data[i] * w[i]);
+        
+        double stdev = mod_intens.stdev();
         if (stdev > 1e-16){
             intensities *= global_stdev / stdev;
         }
+        
+        delete []X;
+        delete []w;
     }
 }
 
@@ -1305,6 +1363,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
                     delete l->adduct;
                     l->adduct = 0;
                 }
+                l->sort_fatty_acyl_chains();
                 
                 all_lipids.push_back(l);
             }
@@ -1720,6 +1779,7 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, set<string> &lipid_set, b
         delete l->adduct;
         l->adduct = nullptr;
     }
+    l->sort_fatty_acyl_chains();
     
     string lipid_unique_name = l->get_lipid_string();
     if (uncontains_val(lipid_set, lipid_unique_name)){

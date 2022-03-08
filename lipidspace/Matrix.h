@@ -27,6 +27,7 @@ public:
     Array(const Array &a, int l = -1);
     void reset(Array &a);
     double mean();
+    double median();
     double stdev();
     double sum();
     void add(Array &a);

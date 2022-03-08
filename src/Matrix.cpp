@@ -47,6 +47,16 @@ Array& operator/=(Array &me, const double val){
 }
 
 
+double Array::median(){
+    assert (this->size() > 2);
+    Array median_vector;
+    median_vector.reserve(this->size());
+    for (auto val : *this) median_vector.push_back(val);
+    sort(median_vector.begin(), median_vector.end());
+    return median_vector[median_vector.size() >> 1];
+}
+
+
 double Array::mean(){
     double mn = 0;
     for (int i = 0; i < (int)size(); ++i) mn += at(i);
