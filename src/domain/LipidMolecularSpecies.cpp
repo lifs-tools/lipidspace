@@ -124,6 +124,25 @@ ElementTable* LipidMolecularSpecies::get_elements(){
 }
 
 
+void LipidMolecularSpecies::sort_fatty_acyl_chains(){
+    if (info->level != MOLECULAR_SPECIES) return;
+    sort(fa_list.begin(), fa_list.end(), [] (FattyAcid *fa1, FattyAcid *fa2) {
+        if (fa1->lipid_FA_bond_type != fa2->lipid_FA_bond_type) return fa1->lipid_FA_bond_type < fa2->lipid_FA_bond_type;
+        if (fa1->num_carbon != fa2->num_carbon) return fa1->num_carbon < fa2->num_carbon;
+        int db1 = fa1->get_double_bonds();
+        int db2 = fa2->get_double_bonds();
+        if (db1 != db2) return db1 < db2;
+        ElementTable *e1 = fa1->get_elements();
+        ElementTable *e2 = fa2->get_elements();
+        double mass1 = goslin::get_mass(e1);
+        double mass2 = goslin::get_mass(e2);
+        delete e1;
+        delete e2;
+        return mass1 < mass2;
+    });
+}
+
+
 string LipidMolecularSpecies::get_lipid_string(LipidLevel level) {
     switch (level){
         case NO_LEVEL:

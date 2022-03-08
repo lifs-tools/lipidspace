@@ -101,6 +101,12 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
 
 
 
+void LipidSpecies::sort_fatty_acyl_chains(){
+    
+}
+
+
+
 string LipidSpecies::get_extended_class(){
     bool special_case = (info->num_carbon > 0) ? (headgroup->lipid_category == GP) : false;
     string class_name = headgroup->get_class_name();

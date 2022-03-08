@@ -61,6 +61,7 @@ public:
     virtual ElementTable* get_elements();
     virtual LipidLevel get_lipid_level();
     virtual vector<FattyAcid*> get_fa_list();
+    virtual void sort_fatty_acyl_chains();
 };
             
 #endif /* LIPID_SPECIES_H */

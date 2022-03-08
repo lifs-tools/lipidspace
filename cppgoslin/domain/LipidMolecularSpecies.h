@@ -44,6 +44,7 @@ public:
     string get_lipid_string(LipidLevel level = NO_LEVEL);
     LipidLevel get_lipid_level();
     ElementTable* get_elements();
+    void sort_fatty_acyl_chains();
 };
 
 #endif /* LIPID_MOLECULAR_SPECIES_H */
