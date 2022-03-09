@@ -922,6 +922,16 @@ void LipidSpace::compute_hausdorff_matrix(){
         hausdorff_distances(j, i) = hausdorff_distances(i, j);
     }
     
+    ofstream off("hausdorf.csv");
+    off << "\t";
+    for (int i = 0; i < n; ++i) off << selected_lipidomes.at(i)->cleaned_name << "\t";
+    off << endl;
+    for (int i = 0; i < n; ++i) {
+        off << selected_lipidomes.at(i)->cleaned_name << "\t";
+        for (int j = 0; j < n; ++j) off << hausdorff_distances(i, j) << "\t";
+        off << endl;
+    }
+    
     for (auto matrix : matrixes) delete matrix;
 }
 
@@ -1146,26 +1156,24 @@ inline double gauss(double x, double mue, double sigma){
 
 
 void LipidSpace::normalize_intensities(){
-    Matrix &m = global_lipidome->m;
-    
-    // compute the standard deviation of the first principal component,
-    // mean of all PCs should be always 0 per definition
-    int n = m.rows;
-    double global_stdev = 0;
-    for (int i = 0; i < n; ++i) global_stdev += sq(m.m[i]);
-    global_stdev = sqrt(global_stdev / (double)n);
     
     for (auto lipidome : selected_lipidomes){
-        Array &intensities = lipidome->intensities;
+        // compute the standard deviation of the first principal component,
+        // mean of all PCs should be always 0 per definition
+        int n = lipidome->m.rows;
+        double global_stdev = 0, global_mean = 0;
+        for (int i = 0; i < n; ++i) global_mean += lipidome->m.m[i];
+        global_mean /= (double)n;
+        for (int i = 0; i < n; ++i) global_stdev += sq(lipidome->m.m[i] - global_mean);
+        global_stdev = sqrt(global_stdev / (double)n);
+        
         
         // Use expectation maximization algorithm to identify outliers
         // for a more stable estimation of the standard deviation
-        
         Array data;
-        for (auto val : intensities) {
+        for (auto val : lipidome->intensities) {
             if (val > 0) data.push_back(val);
         }
-        
         int l = data.size();
         double *X = new double[l];
         double *w = new double[l];
@@ -1181,7 +1189,11 @@ void LipidSpace::normalize_intensities(){
         double weight = 0.99;
         double bgm = 1. / (max_v - min_v); // background model
         
-        for (int rep = 0; rep < 20; ++rep){
+        double old_mue = 0, old_sigma = 0;
+        for (int rep = 0; rep < 1000; ++rep){
+            old_mue = mue;
+            old_sigma = sigma;
+            
             // expectation step
             double W = 0, W2 = 0;
             double gbg = bgm * (1. - weight);
@@ -1205,14 +1217,21 @@ void LipidSpace::normalize_intensities(){
             sigma = 0;
             for (int i = 0; i < l; ++i) sigma += w[i] * sq(X[i] - mue);
             sigma = sqrt(sigma / W);
+            
+            // check if values converge
+            bool halt = false;
+            halt |= fabs(mue) / fabs(max(mue, old_mue)) < 0.001;
+            halt |= fabs(sigma) / fabs(max(sigma, old_sigma)) < 0.001;
+            if (halt) break;
         }
         
         Array mod_intens;
         for (int i = 0; i < l; ++i) mod_intens.push_back(data[i] * w[i]);
         
+        double mn = mod_intens.mean();
         double stdev = mod_intens.stdev();
-        if (stdev > 1e-16){
-            intensities *= global_stdev / stdev;
+        if (stdev > 0){
+            for (int i = 0; i < l; ++i) lipidome->intensities[i] = global_stdev * (lipidome->intensities[i] - mn) / stdev;
         }
         
         delete []X;
