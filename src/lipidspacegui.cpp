@@ -414,10 +414,10 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                         msgBox.exec();
                         if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
                             lipid_space->ignore_unknown_lipids = true;
-                            resetAnalysis();
+                            //resetAnalysis();
                         }
                         else {
-                            resetAnalysis();
+                            //resetAnalysis();
                             repeat_loading = false;
                         }
                     }
@@ -427,7 +427,7 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                     {
                         msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
                         msgBox.exec();
-                        resetAnalysis();
+                        //resetAnalysis();
                         repeat_loading = false;
                     }
                     break;
@@ -440,10 +440,10 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                         msgBox.exec();
                         if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
                             lipid_space->ignore_doublette_lipids = true;
-                            resetAnalysis();
+                            //resetAnalysis();
                         }
                         else {
-                            resetAnalysis();
+                            //resetAnalysis();
                             repeat_loading = false;
                         }
                     }
@@ -453,7 +453,7 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                     {
                         msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
                         msgBox.exec();
-                        resetAnalysis();
+                        //resetAnalysis();
                         repeat_loading = false;
                     }
                     break;
@@ -462,7 +462,7 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                     {
                         msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
                         msgBox.exec();
-                        resetAnalysis();
+                        //resetAnalysis();
                         repeat_loading = false;
                     }
                     break;
@@ -471,7 +471,7 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                     {
                         msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
                         msgBox.exec();
-                        resetAnalysis();
+                        //resetAnalysis();
                         repeat_loading = false;
                     }
                     break;

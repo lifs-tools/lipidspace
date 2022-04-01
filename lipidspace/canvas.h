@@ -26,8 +26,10 @@
 using namespace std;
 
 #define MARGIN 0.01
-#define POINT_BASE_SIZE 1.8
+#define POINT_BASE_FACTOR 10
 #define LABEL_COLOR 200, 200, 200, 255
+#define sign_log(x) (x >= 0 ? log(x + 1) - 1 : -(log(-x + 1) - 1))
+
 
 class Canvas;
 
@@ -43,6 +45,7 @@ public:
     QVector<QLineF> lines;
     double dendrogram_x_factor;
     double dendrogram_y_factor;
+    double dendrogram_height;
     string feature;
     
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
