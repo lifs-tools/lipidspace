@@ -48,6 +48,7 @@ public:
     map<string, bool> selection[4];
     vector<Table*> selected_lipidomes;
     map<string, vector<string>> lipid_sortings;
+    Matrix global_distances;
     
 
     LipidSpace();
@@ -63,7 +64,7 @@ public:
     void separate_matrixes();
     void normalize_intensities();
     void create_dendrogram();
-    void store_distance_table(Table* lipidome, string output_folder);
+    void store_distance_table(string output_folder, Table* lipidome = 0);
     void run() override;
     void reassembleSelection();
     //std::thread run_analysis_thread(Progress *_progress);
@@ -78,6 +79,9 @@ public:
 signals:
     void fileLoaded();
     void reassembled();
+    
+public slots:
+    void store_results(string);
 };
 
 

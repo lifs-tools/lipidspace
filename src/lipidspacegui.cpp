@@ -540,7 +540,8 @@ void LipidSpaceGUI::runAnalysis(){
             connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
             connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
-            connect(this, SIGNAL(exporting(QString)), canvas, SLOT(exportPdf(QString)));
+            //connect(this, SIGNAL(exporting(QString)), canvas, SLOT(exportPdf(QString)));
+            connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
             connect(this, SIGNAL(initialized()), canvas, SLOT(setInitialized()));
             connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
             connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
@@ -662,7 +663,7 @@ void LipidSpaceGUI::setInitialized(){
 void LipidSpaceGUI::setExport(){
     QString outputFolder = QFileDialog::getExistingDirectory(0, ("Select Export Folder"), QDir::currentPath());
     
-    //if (outputFolder.length()) exporting(outputFolder);
+    if (outputFolder.length()) exporting(outputFolder.toStdString());
 }
 
 

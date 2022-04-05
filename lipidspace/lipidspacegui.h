@@ -75,7 +75,7 @@ public:
 signals:
     void transforming(QRectF f);
     void updateCanvas();
-    void exporting(QString);
+    void exporting(string);
     void initialized();
     void featureChanged(string);
     void updateHighlightedPoints(vector<QString> *);

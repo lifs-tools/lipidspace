@@ -240,10 +240,12 @@ void PointSet::loadPoints(){
             continue;
         }
             
+        
         double xval = sign_log(lipidome->m(rr, GlobalData::PC1)) * POINT_BASE_FACTOR;
         double yval = sign_log(lipidome->m(rr, GlobalData::PC2)) * POINT_BASE_FACTOR;
         double intens = lipidome->intensities[rr] > 1 ? log(lipidome->intensities[rr]) : 0.5;
         double intens_boundery = intens * 0.5;
+        
         /*
         double xval = lipidome->m(rr, GlobalData::PC1);
         double yval = lipidome->m(rr, GlobalData::PC2);

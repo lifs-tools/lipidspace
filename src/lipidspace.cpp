@@ -535,8 +535,22 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     union_num = class_matrix.at(key)[0];
     inter_num = class_matrix.at(key)[1];
     
-    vector<FattyAcid*>* orig_fa_list_1 = &lipid1->lipid->fa_list;
-    vector<FattyAcid*>* orig_fa_list_2 = &lipid2->lipid->fa_list;
+    if (lipid1->lipid->info->level <= CLASS || lipid1->lipid->info->level <= CLASS) return;
+    
+    vector<FattyAcid*>* orig_fa_list_1 = new vector<FattyAcid*>();
+    if (lipid1->lipid->info->level >= MOLECULAR_SPECIES){
+        for (auto fa : lipid1->lipid->fa_list) orig_fa_list_1->push_back(fa);
+    }
+    else {
+        orig_fa_list_1->push_back(lipid1->lipid->info);
+    }
+    vector<FattyAcid*>* orig_fa_list_2 = new vector<FattyAcid*>();
+    if (lipid2->lipid->info->level >= MOLECULAR_SPECIES){
+        for (auto fa : lipid2->lipid->fa_list) orig_fa_list_2->push_back(fa);
+    }
+    else {
+        orig_fa_list_2->push_back(lipid2->lipid->info);
+    }
     
     if (orig_fa_list_1->size() < orig_fa_list_2->size()){
         vector<FattyAcid*>* tmp = orig_fa_list_1;
@@ -546,7 +560,11 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     int len_fa1 = orig_fa_list_1->size();
     int len_fa2 = orig_fa_list_2->size();
     
-    if (len_fa1 == 0 && len_fa2 == 0) return;
+    if (len_fa1 == 0 && len_fa2 == 0){
+        delete orig_fa_list_1;
+        delete orig_fa_list_2;
+        return;
+    }
     
     if (keep_sn_position || (len_fa1 <= 1 && len_fa2 <= 1)){
         int l = mmin(orig_fa_list_1->size(), orig_fa_list_2->size());
@@ -617,6 +635,9 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         union_num += max_u;
         inter_num += max_i;
     }
+    
+    delete orig_fa_list_1;
+    delete orig_fa_list_2;
 }
 
 
@@ -922,21 +943,17 @@ void LipidSpace::compute_hausdorff_matrix(){
         hausdorff_distances(j, i) = hausdorff_distances(i, j);
     }
     
-    ofstream off("hausdorf.csv");
-    off << "\t";
-    for (int i = 0; i < n; ++i) off << selected_lipidomes.at(i)->cleaned_name << "\t";
-    off << endl;
-    for (int i = 0; i < n; ++i) {
-        off << selected_lipidomes.at(i)->cleaned_name << "\t";
-        for (int j = 0; j < n; ++j) off << hausdorff_distances(i, j) << "\t";
-        off << endl;
-    }
     
+
     for (auto matrix : matrixes) delete matrix;
 }
 
 
 
+void LipidSpace::store_results(string output_folder){
+    report_hausdorff_matrix(output_folder);
+    store_distance_table(output_folder);
+}
 
 
 
@@ -1899,23 +1916,24 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, set<string> &lipid_set, b
 
 
 
-void LipidSpace::store_distance_table(Table* lipidome, string output_folder){
+void LipidSpace::store_distance_table(string output_folder, Table* lipidome){
+    vector<string> &species = (lipidome != 0) ? lipidome->species : global_lipidome->species;
+    Matrix &output_matrix = (lipidome != 0) ? lipidome->m : global_distances;
     string output_file = output_folder + "/distance_matrix.csv";
     
     stringstream table_stream;
     table_stream << "ID";
-    for (auto lipid : lipidome->species) table_stream << "\t" << lipid;
+    for (auto lipid : species) table_stream << "\t" << lipid;
     table_stream << endl;
-    for (int i = 0; i < (int)lipidome->species.size(); ++i){
-        table_stream << lipidome->species.at(i);
-        for (int j = 0; j < (int)lipidome->species.size(); ++j){
-            table_stream << "\t" << lipidome->m(i, j);
+    for (int i = 0; i < (int)species.size(); ++i){
+        table_stream << species.at(i);
+        for (int j = 0; j < (int)species.size(); ++j){
+            table_stream << "\t" << output_matrix(i, j);
         }
         table_stream << endl;
     }
     ofstream output_stream(output_file);
     output_stream << table_stream.str();
-    
 }
 
 /*
@@ -1970,6 +1988,7 @@ void LipidSpace::run(){
             progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
         }
         Matrix pca;
+        global_distances.rewrite(global_lipidome->m);
         global_lipidome->m.PCA(pca, cols_for_pca);
         global_lipidome->m.rewrite(pca);
         if (progress){
