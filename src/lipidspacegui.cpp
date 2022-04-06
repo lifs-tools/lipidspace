@@ -151,6 +151,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->categoryPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->featurePushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->samplePushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
+    connect(ui->pieTreeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieTree(int)));
+    connect(ui->dendrogramHeightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setDendrogramHeight(int)));
+    connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
     
     ui->speciesList->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->classList->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -382,6 +385,10 @@ void LipidSpaceGUI::updateView(int){
     
 void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_types, TableType table_type){
     bool repeat_loading = true;
+    ui->normalizationComboBox->clear();
+    ui->normalizationComboBox->addItem("Absolute normalization", "absolute");
+    GlobalData::normalization = "absolute";
+    ui->normalizationComboBox->addItem("Relative normalization", "relative");
     while (repeat_loading){
         try {
             switch(table_type){
@@ -398,6 +405,10 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                     break;
             }
             runAnalysis();
+            for (auto feature : lipid_space->feature_values){
+                if (feature.second.feature_type == NumericalFeature) continue;
+                ui->normalizationComboBox->addItem(("Feature-grouped normalization: " + feature.first).c_str(), QVariant(feature.first.c_str()));
+            }
             repeat_loading = false;
         }
         catch (LipidSpaceException &e) {
@@ -513,6 +524,7 @@ void LipidSpaceGUI::runAnalysis(){
         return;
     }
     
+    ui->dendrogramHeightSpinBox->setValue(100);
     GlobalData::color_counter = 0;
     GlobalData::feature_counter = 0;
     GlobalData::colorMap.clear();
@@ -843,6 +855,22 @@ void LipidSpaceGUI::openSetPCnum(){
     if (pc_num != LipidSpace::cols_for_pca) runAnalysis();
 }
 
+
+void LipidSpaceGUI::setPieTree(int depth){
+    GlobalData::pie_tree_depth = depth;
+    ui->dendrogramView->setFeature(ui->featureComboBox->currentText().toStdString());
+}
+
+
+void LipidSpaceGUI::setNormalization(int){
+    GlobalData::normalization = ui->normalizationComboBox->currentData().toString().toStdString();
+}
+
+
+void LipidSpaceGUI::setDendrogramHeight(int height){
+    GlobalData::dendrogram_height = height;
+    ui->dendrogramView->setFeature(ui->featureComboBox->currentText().toStdString());
+}
 
 void LipidSpaceGUI::openAbout(){
     About about(this);

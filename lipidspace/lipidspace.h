@@ -12,6 +12,7 @@
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/logging.h"
 #include "lipidspace/AssistanceFunctions.h"
+#include "lipidspace/globaldata.h"
 
 #define UNDEFINED_LIPID "UNDEFINED"
  

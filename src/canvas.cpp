@@ -45,17 +45,18 @@ void Dendrogram::load(){
 
     //QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
     dendrogram_x_factor = 100; //v.width() / (x_max_d - x_min_d);
-    dendrogram_y_factor = 100;
+    dendrogram_y_factor = GlobalData::dendrogram_height;
     
     double width = (lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor;
     double height = width / 16 * 9;
     dendrogram_height = height / (y_max_d - y_min_d);
+    dendrogram_y_offset = y_max_d;
     
     
-    bound.setX(-dendrogram_x_factor);
-    bound.setY(-dendrogram_y_factor);
-    bound.setWidth(width + 2 * dendrogram_x_factor);
-    bound.setHeight(height + 2 * dendrogram_y_factor);
+    bound.setX(-2 * dendrogram_x_factor);
+    bound.setY(-2 * dendrogram_y_factor);
+    bound.setWidth(width + 4 * dendrogram_x_factor);
+    bound.setHeight(height + 4 * dendrogram_y_factor);
     
     
     for (QLineF &line : lines){
@@ -169,10 +170,10 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     
     
     
-    QFont f("Helvetica", 10);
+    QFont f("Helvetica", 18);
     painter->setFont(f);
     double dx = 0;
-    double dy = 10 + ((lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor) / 16. * 9.;
+    double dy = 10 + (((lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor) / 16. * 9.) * dendrogram_y_factor / 100;
     for (QString dtitle : dendrogram_titles){
         painter->save();
         painter->translate(QPointF(dx, dy));
@@ -187,26 +188,26 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
         return;
     
     
-    recursive_paint(painter, lipid_space->dendrogram_root, 3);
+    recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::pie_tree_depth);
 }
 
 
 void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int max_recursions, int recursion){
-    if (recursion == max_recursions) return;
+    if (recursion == max_recursions || node == 0) return;
         
     // processing left child
-    if (node->left_child->indexes.size() > 1){
+    if (node->left_child != 0 && node->left_child->indexes.size() > 0){
         double pie_x = node->x_left * dendrogram_x_factor;
-        double pie_y = -node->y * dendrogram_y_factor;
+        double pie_y = (-node->y + dendrogram_y_offset) * dendrogram_height * dendrogram_y_factor / 100.;
         
         draw_pie(painter, node->left_child, node->feature_numerical_thresholds[feature], pie_x, pie_y, LabelLeft);
         recursive_paint(painter, node->left_child, max_recursions, recursion + 1);
     }
     
     // processing right child
-    if (node->right_child->indexes.size() > 1){
+    if (node->right_child != 0 && node->right_child->indexes.size() > 0){
         double pie_x = node->x_right * dendrogram_x_factor;
-        double pie_y = -node->y * dendrogram_y_factor;
+        double pie_y = (-node->y + dendrogram_y_offset) * dendrogram_height * dendrogram_y_factor / 100.;
         
         draw_pie(painter, node->right_child, node->feature_numerical_thresholds[feature], pie_x, pie_y, LabelRight);
         recursive_paint(painter, node->right_child, max_recursions, recursion + 1);
@@ -244,6 +245,7 @@ void PointSet::loadPoints(){
         double xval = sign_log(lipidome->m(rr, GlobalData::PC1)) * POINT_BASE_FACTOR;
         double yval = sign_log(lipidome->m(rr, GlobalData::PC2)) * POINT_BASE_FACTOR;
         double intens = lipidome->intensities[rr] > 1 ? log(lipidome->intensities[rr]) : 0.5;
+        //double intens = lipidome->intensities[rr] > 1 ? log(lipidome->original_intensities[rr]) : 0.5;
         double intens_boundery = intens * 0.5;
         
         /*
@@ -335,7 +337,6 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     for (int i = 0; i < (int)points.size(); ++i){
         if (contains_val(highlighted_points, points[i].label)) continue;
         
-        //double intens = GlobalData::showQuant ? (points[i].intensity > 1 ? log(points[i].intensity) : 0.5) : 1.;
         double intens = GlobalData::showQuant ? points[i].intensity : 1.;
         QRectF bubble(points[i].point.x() - intens * 0.5, points[i].point.y() - intens * 0.5,  intens, intens);
         if (!v.intersects(bubble)) continue;
@@ -852,8 +853,26 @@ void Canvas::setUpdate(){
 
 
 void Canvas::setFeature(string _feature){
-    if (dendrogram) dendrogram->feature =  _feature;
-    dendrogram->update();
+    if (dendrogram){
+        dendrogram->feature = _feature;
+        double tmp_factor = dendrogram->dendrogram_y_factor;
+        dendrogram->dendrogram_y_factor = GlobalData::dendrogram_height;
+        double ymin = 1e9, ymax = 1e-9;
+        for (QLineF &line : dendrogram->lines){
+            line.setLine(line.x1(),
+            line.y1() / tmp_factor * dendrogram->dendrogram_y_factor,
+            line.x2(),
+            line.y2() / tmp_factor * dendrogram->dendrogram_y_factor);
+            ymin = min(ymin, line.y1());
+            ymax = max(ymax, line.y1());
+            ymin = min(ymin, line.y2());
+            ymax = max(ymax, line.y2());
+        }
+        dendrogram->bound.setY(ymin - 2 * dendrogram->dendrogram_y_factor);
+        dendrogram->bound.setHeight((ymax - ymin) + 4 * dendrogram->dendrogram_y_factor);
+        
+        dendrogram->update();
+    }
 }
 
     

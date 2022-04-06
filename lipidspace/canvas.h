@@ -46,6 +46,7 @@ public:
     double dendrogram_x_factor;
     double dendrogram_y_factor;
     double dendrogram_height;
+    double dendrogram_y_offset;
     string feature;
     
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);

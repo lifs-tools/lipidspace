@@ -21,6 +21,9 @@ public:
     static int PC2;
     static int feature_counter;
     static map<string, QColor> colorMapFeatures;
+    static int pie_tree_depth;
+    static int dendrogram_height;
+    static string normalization;
 };
 
 

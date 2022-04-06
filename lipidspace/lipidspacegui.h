@@ -128,6 +128,9 @@ public slots:
     void select_all_features();
     void deselect_all_features();
     void reset_all_features();
+    void setPieTree(int);
+    void setDendrogramHeight(int);
+    void setNormalization(int);
     
 private:
     Ui::LipidSpaceGUI *ui;

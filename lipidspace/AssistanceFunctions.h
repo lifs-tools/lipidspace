@@ -129,6 +129,7 @@ public:
     vector<LipidAdduct*> lipids;
     vector<bool> selection;
     Array intensities;
+    Array PCA_intensities;
     Array original_intensities;
     map<string, Feature> features;
     Matrix m;
