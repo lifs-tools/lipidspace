@@ -146,11 +146,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->treeWidget, &QTreeWidget::itemChanged, this, &LipidSpaceGUI::featureItemChanged);
     connect(ui->treeWidget, &QTreeWidget::itemDoubleClicked, this, &LipidSpaceGUI::featureItemDoubleClicked);
     connect(ui->sampleList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
-    connect(ui->speciesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
-    connect(ui->classPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
-    connect(ui->categoryPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
-    connect(ui->featurePushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
-    connect(ui->samplePushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
+    connect(ui->applyChangesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->pieTreeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieTree(int)));
     connect(ui->dendrogramHeightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setDendrogramHeight(int)));
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
@@ -179,7 +175,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     updating = false;
     GlobalData::color_counter = 0;
     single_window = -1;
-    ui->tabWidget->setVisible(false);
+    ui->frame->setVisible(false);
     table_transposed = false;
     
     progressbar = new Progressbar(this);
@@ -591,7 +587,7 @@ void LipidSpaceGUI::runAnalysis(){
     }
     
     fill_Table();
-    ui->tabWidget->setVisible(true);
+    ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
     
@@ -720,7 +716,7 @@ void LipidSpaceGUI::resetAnalysis(){
     LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
     
     ui->dendrogramView->resetDendrogram();
-    ui->tabWidget->setVisible(false);
+    ui->frame->setVisible(false);
     fill_Table();
     updateGUI();
 }
