@@ -52,11 +52,13 @@ void Dendrogram::load(){
     dendrogram_height = height / (y_max_d - y_min_d);
     dendrogram_y_offset = y_max_d;
     
+    double w = max(dendrogram_x_factor, 100.);
+    double h = max(dendrogram_y_factor, 100.);
     
-    bound.setX(-2 * dendrogram_x_factor);
-    bound.setY(-2 * dendrogram_y_factor);
-    bound.setWidth(width + 4 * dendrogram_x_factor);
-    bound.setHeight(height + 4 * dendrogram_y_factor);
+    bound.setX(- dendrogram_x_factor);
+    bound.setY(- dendrogram_y_factor);
+    bound.setWidth(width + 2 * w);
+    bound.setHeight(height + 3 * h);
     
     
     for (QLineF &line : lines){
@@ -66,6 +68,10 @@ void Dendrogram::load(){
                      (line.y2() + y_max_d) * height / (y_max_d - y_min_d));
     }
     
+        
+    w = max(bound.width(), (double)view->viewport()->width());
+    h = max(bound.height(), (double)view->viewport()->height());
+    view->graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
 }
 
 
@@ -162,6 +168,8 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
 
 
 void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+    view->setBackgroundBrush(QBrush());
+    
     QPen pen;
     pen.setColor(QColor(0, 0, 0, 255));
     pen.setWidth(0.3);
@@ -574,17 +582,6 @@ void PointSet::resize(){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 Canvas::Canvas(QWidget *parent) : QGraphicsView(parent), title(this) {
     pointSet = 0;
     dendrogram = 0;
@@ -616,7 +613,7 @@ void Canvas::setDendrogramData(LipidSpace *_lipid_space){
     lipid_space = _lipid_space;
     dendrogram = new Dendrogram(lipid_space, this);
     graphics_scene.addItem(dendrogram);
-    graphics_scene.setSceneRect(-500000, -300000, 1000000, 600000);
+    graphics_scene.setSceneRect(-50, -30, 10, 60);
 }
 
 
@@ -868,9 +865,13 @@ void Canvas::setFeature(string _feature){
             ymin = min(ymin, line.y2());
             ymax = max(ymax, line.y2());
         }
-        dendrogram->bound.setY(ymin - 2 * dendrogram->dendrogram_y_factor);
-        dendrogram->bound.setHeight((ymax - ymin) + 4 * dendrogram->dendrogram_y_factor);
+        double ybound = max(dendrogram->dendrogram_y_factor, 100.);
+        dendrogram->bound.setY(ymin - ybound);
+        dendrogram->bound.setHeight((ymax - ymin) + 3 * ybound);
         
+        double w = max(dendrogram->bound.width(), (double)viewport()->width());
+        double h = max(dendrogram->bound.height(), (double)viewport()->height());
+        graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
         dendrogram->update();
     }
 }
