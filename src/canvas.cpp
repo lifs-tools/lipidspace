@@ -3,7 +3,7 @@
 
 Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     lipid_space = _lipid_space;
-    feature == "";
+    feature = "";
     load();
 }
  
@@ -42,9 +42,7 @@ void Dendrogram::load(){
         
     }
   
-
-    //QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
-    dendrogram_x_factor = 100; //v.width() / (x_max_d - x_min_d);
+    dendrogram_x_factor = 100;
     dendrogram_y_factor = GlobalData::dendrogram_height;
     
     double width = (lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor;
@@ -195,8 +193,41 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     if (!lipid_space || !lipid_space->dendrogram_root || feature == "")
         return;
     
-    
     recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::pie_tree_depth);
+    
+    // print the feature legend
+    QFont legend_font("Helvetica", 8);
+    if (contains_val(lipid_space->feature_values, feature)){
+        int num_feature = 1; 
+        for (auto feature_value_kv : lipid_space->feature_values.at(feature).nominal_values){
+            QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+            QTransform qtrans = view->transform();
+            painter->save();
+            painter->translate(QPointF(v.x(), v.y()));
+            painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+            if (contains_val(GlobalData::colorMapFeatures, feature + "_" + feature_value_kv.first)){
+                painter->fillRect(QRectF(10, 10 + 20 * num_feature, 15, 15), GlobalData::colorMapFeatures[feature + "_" + feature_value_kv.first]);
+            }
+            painter->setFont(legend_font);
+            painter->drawText(QRect(30, 10 + 20 * num_feature, 200, 30), Qt::AlignTop | Qt::AlignLeft, feature_value_kv.first.c_str());
+            
+            painter->restore();
+            ++num_feature;
+        }
+    }
+    
+    
+    
+    // Draw the title
+    QFont title_font("Helvetica", 8);
+    painter->setFont(title_font);
+    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+    QTransform qtrans = view->transform();
+    painter->save();
+    painter->translate(QPointF(v.x(), v.y()));
+    painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+    painter->drawText(QRect(0, 0, 200, 60), Qt::AlignTop | Qt::AlignLeft, "Dendrogram");
+    painter->restore();
 }
 
 
@@ -602,7 +633,7 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent), title(this) {
     num = -2;
     QFont f("Helvetica", 7);
     title.move(2, 0);
-    title.setText("Dendrogram");
+    title.setText("");
     title.setFont(f);
     title.show();
 }
