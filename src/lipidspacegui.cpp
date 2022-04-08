@@ -519,7 +519,7 @@ void LipidSpaceGUI::runAnalysis(){
         disconnect(canvas, SIGNAL(doubleClicked(int)), 0, 0);
         disconnect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), 0, 0);
         disconnect(canvas, SIGNAL(swappingLipidomes(int, int)), 0, 0);
-        //disconnect(canvas, &QGraphicsView::customContextMenuRequested, 0, 0);
+        disconnect(canvas, &QGraphicsView::customContextMenuRequested, 0, 0);
         delete canvas;
     }
     canvases.clear();
@@ -565,8 +565,9 @@ void LipidSpaceGUI::runAnalysis(){
             connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
             connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
             connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
-            //canvas->setContextMenuPolicy(Qt::CustomContextMenu);
-            //connect(canvas, &QGraphicsView::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuLipidome);
+            canvas->setContextMenuPolicy(Qt::CustomContextMenu);
+            connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
+            connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
         }
         if (num == -1){
             connect(ui->speciesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), canvas, SLOT(moveToPoint(QListWidgetItem*)));
@@ -1122,15 +1123,13 @@ void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos){
 
 
 
-void LipidSpaceGUI::ShowContextMenuLipidome(const QPoint pos){
+void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
     QMenu *menu = new QMenu(this);
     QAction *exportAsPdf = new QAction("Export as pdf", this);
     menu->addAction(exportAsPdf);
     
-    menu->popup(mapToGlobal(pos));
-    /*
-    connect(exportAsPdf, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsPdf);
-    */
+    menu->popup(canvas->viewport()->mapToGlobal(pos));
+    connect(exportAsPdf, &QAction::triggered, canvas, &Canvas::exportAsPdf);
 }
 
 

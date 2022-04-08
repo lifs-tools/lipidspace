@@ -166,15 +166,12 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
 
 
 void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
-    view->setBackgroundBrush(QBrush());
     
     QPen pen;
     pen.setColor(QColor(0, 0, 0, 255));
     pen.setWidth(2);
     painter->setPen(pen);
     painter->drawLines(lines);
-    
-    
     
     QFont f("Helvetica", 18);
     painter->setFont(f);
@@ -372,7 +369,6 @@ bool find_start(QRectF &bound, QPointF target, QPointF &inter){
 
 
 void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
-    view->setBackgroundBrush(QBrush());
     QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
     
     // print regular points
@@ -417,7 +413,7 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     QPen pen_arr;
     pen_arr.setColor(QColor(LABEL_COLOR));
     pen_arr.setStyle(Qt::DashLine);
-    pen_arr.setWidth(0.1);
+    pen_arr.setWidth(5);
     
     
     QFont f("Helvetica", 1);
@@ -443,7 +439,6 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         
         
         // draw the arrow
-        painter->setPen(pen_arr);
         
         QPointF rotate_point = new_start.x() < pc_label.class_mean.x() ? new_start : pc_label.class_mean;
         double sign = 1. - 2. * (new_start.x() < pc_label.class_mean.x());
@@ -451,7 +446,9 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         painter->save();
         painter->translate(rotate_point);
         painter->rotate(sign * angle);
-        QRectF rectangle(0, -hypothenuse * 0.1, hypothenuse, hypothenuse * 0.2);
+        painter->setPen(pen_arr);
+        painter->scale(0.01, 0.01);
+        QRectF rectangle(0, -hypothenuse * 0.1 * 100, hypothenuse * 100, hypothenuse * 0.2 * 100);
         double const startAngle = 16. * 20.;
         double const endAngle   = 16. * 160.;
         double const spanAngle = endAngle - startAngle;
@@ -766,6 +763,12 @@ void Canvas::setSwap(int source){
 }
 
 
+
+void Canvas::contextMenu(QPoint pos){
+    context(this, pos);
+}
+
+
 void Canvas::mousePressEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
     
@@ -773,7 +776,7 @@ void Canvas::mousePressEvent(QMouseEvent *event){
         leftMousePressed = true;
         QGraphicsView::mousePressEvent(event);
     }
-    else if (lipid_space->selected_lipidomes.size() > 1 && event->button() == Qt::RightButton){
+    else if (lipid_space->selected_lipidomes.size() > 1 && event->button() == Qt::MiddleButton){
         mouse(event, this);
     }
     else {
@@ -846,6 +849,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
     
     if (leftMousePressed){
+        setBackgroundBrush(QBrush());
         viewport()->setCursor(Qt::DragMoveCursor);
         QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
         QRectF v = mapToScene(viewportRect).boundingRect();
@@ -885,6 +889,7 @@ void Canvas::setUpdate(){
 
 
 void Canvas::setFeature(string _feature){
+    
     if (dendrogram){
         dendrogram->feature = _feature;
         double tmp_factor = dendrogram->dendrogram_y_factor;
@@ -907,6 +912,7 @@ void Canvas::setFeature(string _feature){
         double w = max(dendrogram->bound.width(), (double)viewport()->width());
         double h = max(dendrogram->bound.height(), (double)viewport()->height());
         graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
+        setBackgroundBrush(QBrush());
         dendrogram->update();
     }
 }
@@ -981,8 +987,8 @@ void Canvas::moveToPoint(QListWidgetItem* item){
 
 
 void Canvas::setTransforming(QRectF f){
-    //if (num == _num)
-    //    return;
+    
+    setBackgroundBrush(QBrush());
     QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
     QRectF v = mapToScene(viewportRect).boundingRect();
     

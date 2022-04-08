@@ -117,7 +117,7 @@ public slots:
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint);
-    void ShowContextMenuLipidome(const QPoint);
+    void ShowContextMenuLipidome(Canvas *canvas, const QPoint);
     void transposeTable();
     void reassembleSelection();
     void setFeature(int pos);
@@ -134,6 +134,7 @@ public slots:
     void setPieTree(int);
     void setDendrogramHeight(int);
     void setNormalization(int);
+    
     
 private:
     Ui::LipidSpaceGUI *ui;

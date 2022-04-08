@@ -139,6 +139,7 @@ public slots:
     void clear();
     void highlightPoints();
     void moveToPoint(QListWidgetItem*);
+    void contextMenu(QPoint pos);
     
     
 signals:
@@ -147,6 +148,7 @@ signals:
     void doubleClicked(int);
     void mouse(QMouseEvent* event, Canvas *_canvas);
     void swappingLipidomes(int source, int target);
+    void context(Canvas *canvas, QPoint pos);
     
     
 private:
