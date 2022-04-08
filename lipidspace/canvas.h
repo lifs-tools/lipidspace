@@ -8,6 +8,7 @@
 #include <QPixmap>
 #include <QWidget>
 #include <QLabel>
+#include <QFileDialog>
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>

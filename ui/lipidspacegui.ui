@@ -76,7 +76,7 @@
            <attribute name="title">
             <string>Species</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout">
+           <layout class="QVBoxLayout" name="verticalLayout1">
             <property name="spacing">
              <number>0</number>
             </property>

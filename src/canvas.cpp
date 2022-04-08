@@ -788,6 +788,10 @@ void Canvas::mousePressEvent(QMouseEvent *event){
 
 void Canvas::exportAsPdf(){
     if (!pointSet && !dendrogram) return;
+    QString file_name = QFileDialog::getSaveFileName(this, "Export as pdf", ".", "*.pdf");
+    if (!file_name.length()) {
+        return;
+    }
     
     QPrinter printer(QPrinter::ScreenResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
@@ -795,7 +799,6 @@ void Canvas::exportAsPdf(){
     QPageSize pageSize(QSizeF(viewport()->width(), viewport()->height()) , QPageSize::Point);
     printer.setPageSize(pageSize);
     
-    QString file_name = QDir(".").filePath("export.pdf");
     printer.setOutputFileName(file_name);
     
     // set margins to 0
