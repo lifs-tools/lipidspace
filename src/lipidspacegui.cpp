@@ -189,6 +189,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(progressbar, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     progressbar->setModal(true);
     ui->dendrogramView->setDendrogramData(lipid_space);
+    ui->dendrogramView->setContextMenuPolicy(Qt::CustomContextMenu);
     
     updateGUI();
 }

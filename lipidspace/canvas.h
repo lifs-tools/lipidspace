@@ -81,7 +81,8 @@ public:
     Table* lipidome;
     Canvas *view;
     QRectF old_view;
-    
+    QString title;
+    QString variances;
     vector<PCPoint> points;
     set<QString> highlighted_points;
     vector<PCLabel> labels;
@@ -157,8 +158,6 @@ private:
     PointSet *pointSet;
     Dendrogram *dendrogram;
     bool initialized;
-    QLabel title;
-    QLabel *variances;
     QListWidget *listed_species;
 };
 
