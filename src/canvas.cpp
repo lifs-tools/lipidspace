@@ -170,7 +170,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     
     QPen pen;
     pen.setColor(QColor(0, 0, 0, 255));
-    pen.setWidth(0.3);
+    pen.setWidth(2);
     painter->setPen(pen);
     painter->drawLines(lines);
     
@@ -225,7 +225,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
         painter->save();
         painter->translate(QPointF(v.x(), v.y()));
         painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
-        painter->drawText(QRect(0, 0, 200, 60), Qt::AlignTop | Qt::AlignLeft, "Dendrogram");
+        painter->drawText(QRect(2, 0, 200, 60), Qt::AlignTop | Qt::AlignLeft, "Dendrogram");
         painter->restore();
     }
 }
@@ -783,21 +783,29 @@ void Canvas::mousePressEvent(QMouseEvent *event){
 
 
 
-void Canvas::exportPdf(QString outputFolder){
-    if (!pointSet) return;
-    QPrinter printer(QPrinter::HighResolution);
-    //printer.setPageSize(QPrinter::A4);
-    printer.setOutputFormat(QPrinter::PdfFormat);
-    QString file_name = QDir(outputFolder).filePath(pointSet->title + ".pdf");
+void Canvas::exportAsPdf(){
+    if (!pointSet && !dendrogram) return;
     
+    QPrinter printer(QPrinter::ScreenResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setFontEmbeddingEnabled(true);
+    QPageSize pageSize(QSizeF(viewport()->width(), viewport()->height()) , QPageSize::Point);
+    printer.setPageSize(pageSize);
+    
+    QString file_name = QDir(".").filePath("export.pdf");
     printer.setOutputFileName(file_name);
+    
+    // set margins to 0
+    QPagedPaintDevice::Margins margins;
+    margins.top = 0;
+    margins.left = 0;
+    margins.right = 0;
+    margins.bottom = 0;
+    printer.setMargins (margins);
 
     
-    QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
-    QRectF v = mapToScene(viewportRect).boundingRect();
-    graphics_scene.setSceneRect(v);
     QPainter p(&printer);
-    graphics_scene.render(&p);
+    render(&p);
     p.end();
 }
 

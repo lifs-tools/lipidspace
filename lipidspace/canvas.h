@@ -130,7 +130,7 @@ public slots:
     void showHideQuant(bool _showQuant);
     void setTransforming(QRectF f);
     void setUpdate();
-    void exportPdf(QString outputFolder);
+    void exportAsPdf();
     void setInitialized();
     void hoverOver();
     void setSwap(int source);

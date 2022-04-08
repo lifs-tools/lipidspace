@@ -190,6 +190,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     progressbar->setModal(true);
     ui->dendrogramView->setDendrogramData(lipid_space);
     ui->dendrogramView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->dendrogramView, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
     
     updateGUI();
 }
@@ -1098,6 +1099,16 @@ void LipidSpaceGUI::openLists(){
             resetAnalysis();
         }
     }
+}
+
+
+
+void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos){
+    QMenu *menu = new QMenu(this);
+    QAction *exportAsPdf = new QAction("Export as pdf", this);
+    menu->addAction(exportAsPdf);
+    menu->popup(ui->dendrogramView->viewport()->mapToGlobal(pos));
+    connect(exportAsPdf, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsPdf);
 }
 
 

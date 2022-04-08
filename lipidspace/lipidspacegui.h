@@ -115,6 +115,7 @@ public slots:
     void openLog();
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
+    void ShowContextMenuDendrogram(const QPoint);
     void transposeTable();
     void reassembleSelection();
     void setFeature(int pos);
