@@ -8,19 +8,25 @@ DragLayer::DragLayer(QWidget *parent) : QWidget(parent) {
 void DragLayer::mousePressEvent(QMouseEvent*, Canvas *canvas){
     if (!isVisible() && canvas->num >= 0){
         source_tile = canvas->num;
-        move(canvas->pos());
+        QWidget *current_widget = canvas;
+        start_position = QPoint(0, 0);
+        while (current_widget != parentWidget()){
+            start_position += current_widget->pos();
+            current_widget = current_widget->parentWidget();
+        }
         resize(canvas->size());
+        move(start_position);
         setVisible(true);
         
-        delta = canvas->mapFromGlobal(QCursor::pos());
+        delta = QCursor::pos();
         grabMouse();
         setMouseTracking(true);
     }
 }
 
 void DragLayer::mouseMoveEvent(QMouseEvent*){
-    QPoint mouse = parentWidget()->mapFromGlobal(QCursor::pos());
-    move(mouse.x() - delta.x(), mouse.y() - delta.y());
+    QPoint mouse = QCursor::pos();
+    move(start_position + (mouse - delta));
     hover();
 }
 
@@ -29,6 +35,7 @@ void DragLayer::mouseReleaseEvent(QMouseEvent*){
     releaseMouse();
     swapping(source_tile);
     setVisible(false);
+    move(0, 0);
 }
 
 
@@ -190,7 +197,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     progressbar->setModal(true);
     ui->dendrogramView->setDendrogramData(lipid_space);
     ui->dendrogramView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->dendrogramView, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
+    connect(ui->dendrogramView, &QGraphicsView::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
     
     updateGUI();
 }
@@ -512,6 +519,7 @@ void LipidSpaceGUI::runAnalysis(){
         disconnect(canvas, SIGNAL(doubleClicked(int)), 0, 0);
         disconnect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), 0, 0);
         disconnect(canvas, SIGNAL(swappingLipidomes(int, int)), 0, 0);
+        //disconnect(canvas, &QGraphicsView::customContextMenuRequested, 0, 0);
         delete canvas;
     }
     canvases.clear();
@@ -550,7 +558,6 @@ void LipidSpaceGUI::runAnalysis(){
             connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
             connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
-            //connect(this, SIGNAL(exporting(QString)), canvas, SLOT(exportPdf(QString)));
             connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
             connect(this, SIGNAL(initialized()), canvas, SLOT(setInitialized()));
             connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
@@ -558,6 +565,8 @@ void LipidSpaceGUI::runAnalysis(){
             connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
             connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
             connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+            //canvas->setContextMenuPolicy(Qt::CustomContextMenu);
+            //connect(canvas, &QGraphicsView::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuLipidome);
         }
         if (num == -1){
             connect(ui->speciesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), canvas, SLOT(moveToPoint(QListWidgetItem*)));
@@ -1109,6 +1118,19 @@ void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos){
     menu->addAction(exportAsPdf);
     menu->popup(ui->dendrogramView->viewport()->mapToGlobal(pos));
     connect(exportAsPdf, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsPdf);
+}
+
+
+
+void LipidSpaceGUI::ShowContextMenuLipidome(const QPoint pos){
+    QMenu *menu = new QMenu(this);
+    QAction *exportAsPdf = new QAction("Export as pdf", this);
+    menu->addAction(exportAsPdf);
+    
+    menu->popup(mapToGlobal(pos));
+    /*
+    connect(exportAsPdf, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsPdf);
+    */
 }
 
 

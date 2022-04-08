@@ -36,6 +36,7 @@ class DragLayer : public QWidget {
     Q_OBJECT
     
 public:
+    QPoint start_position;
     QPoint delta;
     int source_tile;
     
@@ -116,6 +117,7 @@ public slots:
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint);
+    void ShowContextMenuLipidome(const QPoint);
     void transposeTable();
     void reassembleSelection();
     void setFeature(int pos);
