@@ -22,15 +22,18 @@ void DendrogramLine::update_width(double w){
 
 void DendrogramLine::hoverEnterEvent(QGraphicsSceneHoverEvent *){
     highlight(true);
+    dendrogram->update();
 }
 
 void DendrogramLine::hoverLeaveEvent(QGraphicsSceneHoverEvent *){
     highlight(false);
+    dendrogram->update();
 }
 
 void DendrogramLine::mousePressEvent(QGraphicsSceneMouseEvent *){
     if (dendrogram->top_line) dendrogram->top_line->make_permanent(false);
     make_permanent(true);
+    dendrogram->update();
 }
 
 void DendrogramLine::make_permanent(bool p){
@@ -167,9 +170,9 @@ void Dendrogram::load(){
     double w = max(dendrogram_x_factor, 100.);
     double h = max(dendrogram_y_factor, 100.);
     
-    bound.setX(- dendrogram_x_factor);
+    bound.setX(- 2 * dendrogram_x_factor);
     bound.setY(- dendrogram_y_factor);
-    bound.setWidth(dwidth + 2 * w);
+    bound.setWidth(dwidth + 3 * w);
     bound.setHeight(dheight + 3 * h);
     
     
@@ -956,7 +959,10 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent *){
     QRectF v = mapToScene(viewportRect).boundingRect();
     transforming(v);
     if (pointSet) pointSet->updateView(v);
-    if (dendrogram && num == -3 && dendrogram->top_line) dendrogram->top_line->make_permanent(false);
+    if (dendrogram && num == -3 && dendrogram->top_line){
+        dendrogram->top_line->make_permanent(false);
+        setBackgroundBrush(QBrush());
+    }
 }
     
     
@@ -1057,6 +1063,8 @@ void Canvas::resizeEvent(QResizeEvent *event) {
         QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
         QRectF v = mapToScene(viewportRect).boundingRect();
         transforming(v);
+        double w = DENDROGRAM_LINE_SIZE / (double)transform().m11();
+        if (dendrogram && dendrogram->top_line) dendrogram->top_line->update_width(w);
     }
     else {
         if (pointSet) pointSet->resize();
