@@ -838,6 +838,9 @@ void LipidSpaceGUI::openSetAlpha(){
     SetAlpha setAlpha(this);
     setAlpha.setModal(true);
     setAlpha.exec();
+    for (auto canvas : canvases){
+        canvas->update_alpha();
+    }
     updateGUI();
 }
 

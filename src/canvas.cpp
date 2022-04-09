@@ -373,13 +373,17 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
 
 PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
     lipidome = _lipidome;
-    loadPoints();
     title = "";
     variances = "";
+    setZValue(100);
 }
 
 
 void PointSet::loadPoints(){
+    view->graphics_scene.removeItem(this);
+    view->graphics_scene.clear();
+    view->graphics_scene.addItem(this);
+    
     points.clear();
     labels.clear();
     
@@ -397,15 +401,8 @@ void PointSet::loadPoints(){
         double xval = sign_log(lipidome->m(rr, GlobalData::PC1)) * POINT_BASE_FACTOR;
         double yval = sign_log(lipidome->m(rr, GlobalData::PC2)) * POINT_BASE_FACTOR;
         double intens = lipidome->intensities[rr] > 1 ? log(lipidome->intensities[rr]) : 0.5;
-        //double intens = lipidome->intensities[rr] > 1 ? log(lipidome->original_intensities[rr]) : 0.5;
         double intens_boundery = intens * 0.5;
         
-        /*
-        double xval = lipidome->m(rr, GlobalData::PC1);
-        double yval = lipidome->m(rr, GlobalData::PC2);
-        double intens = lipidome->intensities[rr] > 1 ? log(lipidome->intensities[rr]) : 0.5;
-        double intens_boundery = intens;
-        */
         x_min = min(x_min, xval - intens_boundery);
         x_max = max(x_max, xval + intens_boundery);
         y_min = min(y_min, yval - intens_boundery);
@@ -416,6 +413,21 @@ void PointSet::loadPoints(){
         points.back().intensity = intens;
         points.back().color = GlobalData::colorMap[lipidome->classes[r]];
         points.back().label = lipidome->species[r].c_str();
+        
+        QRectF bubble(xval - intens * 0.5, yval - intens * 0.5,  intens, intens);
+        
+        // setting up pen for painter
+        QColor qcolor = GlobalData::colorMap[lipidome->classes[r]];
+        qcolor.setAlpha(GlobalData::alpha);
+        
+        QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem(bubble);
+        ellipse->setZValue(0);
+        ellipse->setBrush(QBrush(qcolor));
+        QPen pen(qcolor);
+        pen.setWidth(0);
+        ellipse->setPen(pen);
+        view->graphics_scene.addItem(ellipse);
+        points.back().item = ellipse;
         rr++;
     }
     
@@ -435,6 +447,7 @@ void PointSet::loadPoints(){
     bound.setY(y_min - y_margin);
     bound.setWidth(x_max - x_min + 2 * x_margin);
     bound.setHeight(y_max - y_min + 2 * y_margin);
+    
 }
 
 PointSet::~PointSet(){
@@ -484,22 +497,6 @@ bool find_start(QRectF &bound, QPointF target, QPointF &inter){
 
 void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
     QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
-    
-    // print regular points
-    for (int i = 0; i < (int)points.size(); ++i){
-        if (contains_val(highlighted_points, points[i].label)) continue;
-        
-        double intens = GlobalData::showQuant ? points[i].intensity : 1.;
-        QRectF bubble(points[i].point.x() - intens * 0.5, points[i].point.y() - intens * 0.5,  intens, intens);
-        if (!v.intersects(bubble)) continue;
-        
-        // setting up pen for painter
-        QColor qcolor = points[i].color;
-        qcolor.setAlpha(GlobalData::alpha);
-        QPainterPath p;
-        p.addEllipse(bubble);
-        painter->fillPath(p, qcolor);
-    }
     
     // print highlighted points on top
     for (int i = 0; i < (int)points.size(); ++i){
@@ -762,6 +759,21 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
 
 
 
+
+
+void Canvas::update_alpha(){
+    if (pointSet){
+        for (auto point : pointSet->points){
+            QBrush b = point.item->brush();
+            QColor c = b.color();
+            c.setAlpha(GlobalData::alpha);
+            b.setColor(c);
+            point.item->setBrush(b);
+        }
+    }
+}
+
+
 void Canvas::setDendrogramData(LipidSpace *_lipid_space){
     lipid_space = _lipid_space;
     graphics_scene.clear();
@@ -812,6 +824,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
     else if (num == -1){ // global lipidome
         pointSet = new PointSet(lipid_space->global_lipidome, this);
         graphics_scene.addItem(pointSet);
+        pointSet->loadPoints();
         pointSet->title = "Global lipidome";
         
         Array vars;
@@ -821,6 +834,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
     else { // regular lipidome
         pointSet = new PointSet(lipid_space->selected_lipidomes[num], this);
         graphics_scene.addItem(pointSet);
+        pointSet->loadPoints();
         pointSet->title = QString(lipid_space->selected_lipidomes[num]->cleaned_name.c_str());
         
         Array vars;

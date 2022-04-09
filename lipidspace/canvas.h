@@ -104,6 +104,7 @@ struct PCPoint {
     double intensity;
     QColor color;
     QString label;
+    QGraphicsEllipseItem *item;
 };
 
 
@@ -162,6 +163,7 @@ public:
     void wheelEvent(QWheelEvent *event);
     void setDendrogramData(LipidSpace *_lipid_space);
     void resetDendrogram();
+    void update_alpha();
     
     
 public slots:

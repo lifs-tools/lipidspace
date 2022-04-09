@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define DEFAULT_ALPHA 128
+#define DEFAULT_ALPHA 80
 
 class GlobalData {
 public:
