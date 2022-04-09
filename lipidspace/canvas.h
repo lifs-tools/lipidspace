@@ -30,30 +30,68 @@ using namespace std;
 #define POINT_BASE_FACTOR 10
 #define LABEL_COLOR 200, 200, 200, 255
 #define sign_log(x) (x >= 0 ? log(x + 1) - 1 : -(log(-x + 1) - 1))
-
+#define DENDROGRAM_LINE_SIZE 2.
 
 class Canvas;
+class Dendrogram;
 
 enum LabelDirection {NoLabel, LabelLeft, LabelRight};
+
+
+class DendrogramLine : public QGraphicsLineItem {
+public:
+    bool permanent;
+    DendrogramLine* next_line;
+    DendrogramLine* second_line;
+    Dendrogram *dendrogram;
+    int node;
+    
+    DendrogramLine(QLineF l, QPen p, Dendrogram* d);
+    void update_width(double);
+    void update_height_factor(double, QPointF *);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void highlight(bool);
+    void make_permanent(bool);
+};
+
+
 
 class Dendrogram : public QGraphicsItem {
 public:
     QRectF bound;
     Canvas *view;
     
+    struct DendrogramTitle {
+        QString title;
+        bool highlighted;
+        bool permanent;
+        
+        DendrogramTitle(QString t) : title(t), highlighted(false), permanent(false) {}
+    };
+    
     LipidSpace* lipid_space;
-    vector<QString> dendrogram_titles;
+    vector<DendrogramTitle> dendrogram_titles;
     QVector<QLineF> lines;
     double dendrogram_x_factor;
     double dendrogram_y_factor;
     double dendrogram_height;
     double dendrogram_y_offset;
     string feature;
+    double x_min_d;
+    double x_max_d;
+    double y_min_d;
+    double y_max_d;
+    double dwidth;
+    double dheight;
+    DendrogramLine *top_line;
     
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
     ~Dendrogram();
     void load();
     void clear();
+    void prepare_dendrogram_lines(DendrogramNode *node, DendrogramLine* line = 0);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     void recursive_paint(QPainter *painter, DendrogramNode *_node, int max_recursions, int recursion = 0);
     QRectF boundingRect() const override;

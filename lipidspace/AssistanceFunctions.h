@@ -195,6 +195,7 @@ signals:
 class DendrogramNode {
 public:
     set<int> indexes;
+    int order;
     DendrogramNode* left_child;
     DendrogramNode* right_child;
     double distance;

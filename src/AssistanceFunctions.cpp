@@ -26,6 +26,7 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 
 DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome){
     indexes.insert(index);
+    order = -1;
     left_child = 0;
     right_child = 0;
     distance = 0;
@@ -73,6 +74,7 @@ DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d)
 
 double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_ticks){
     if (left_child == 0){
+        order = cnt;
         sorted_ticks->push_back(*indexes.begin());
         return new double[3]{(double)cnt, 0, (double)cnt + 1};
     }
@@ -155,11 +157,6 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
             feature_numerical[kv.first].push_back(val);
         }
     }
-    
-    
-    
-    
-    
     return new double[3]{(x_left + x_right) / 2, y, (double)cnt};
 }
 
