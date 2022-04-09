@@ -1117,6 +1117,7 @@ void LipidSpaceGUI::openLists(){
 
 
 void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos){
+    if (!lipid_space->analysis_finished) return;
     QMenu *menu = new QMenu(this);
     QAction *exportAsPdf = new QAction("Export as pdf", this);
     menu->addAction(exportAsPdf);

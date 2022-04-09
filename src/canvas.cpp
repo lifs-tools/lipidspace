@@ -75,6 +75,7 @@ Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     lipid_space = _lipid_space;
     feature = "";
     setZValue(100);
+    top_line = 0;
 }
  
  
@@ -85,7 +86,7 @@ void Dendrogram::clear(){
 }
 
 
-void Dendrogram::prepare_dendrogram_lines(DendrogramNode* node, DendrogramLine* parent_line){
+void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* parent_line){
     if (!node) return;
     double x1 = (node->x_left - x_min_d) * dwidth / (x_max_d - x_min_d);
     double y1 = (-node->y + y_max_d) * dheight / (y_max_d - y_min_d) / 100. * dendrogram_y_factor;
@@ -99,8 +100,6 @@ void Dendrogram::prepare_dendrogram_lines(DendrogramNode* node, DendrogramLine* 
     DendrogramLine* v_line = new DendrogramLine(QLineF(x1, y1, x2, y2), pen, this);
     view->graphics_scene.addItem(v_line);
     v_line->setAcceptHoverEvents(true);
-    if (parent_line) parent_line->next_line = v_line;
-    else top_line = v_line;
     
     bool is_node = true;
     if (node->left_child){
@@ -109,7 +108,7 @@ void Dendrogram::prepare_dendrogram_lines(DendrogramNode* node, DendrogramLine* 
         view->graphics_scene.addItem(l_line);
         l_line->setAcceptHoverEvents(true);
         v_line->next_line = l_line;
-        prepare_dendrogram_lines(node->left_child, l_line);
+        add_dendrogram_lines(node->left_child, l_line);
         is_node = false;
     }
     
@@ -119,12 +118,15 @@ void Dendrogram::prepare_dendrogram_lines(DendrogramNode* node, DendrogramLine* 
         view->graphics_scene.addItem(r_line);
         r_line->setAcceptHoverEvents(true);
         v_line->second_line = r_line;
-        prepare_dendrogram_lines(node->right_child, r_line);
+        add_dendrogram_lines(node->right_child, r_line);
         is_node = false;
     }
     if (is_node){
         v_line->node = node->order;
     }
+    
+    if (parent_line) parent_line->next_line = v_line;
+    else top_line = v_line;
 }
  
  
@@ -135,6 +137,8 @@ void Dendrogram::load(){
     view->graphics_scene.addItem(this);
     dendrogram_titles.clear();
     lines.clear();
+    
+    if (!lipid_space->dendrogram_root) return;
     
     for (int i : lipid_space->dendrogram_sorting){
         dendrogram_titles.push_back(DendrogramTitle(QString(lipid_space->selected_lipidomes[i]->cleaned_name.c_str())));
@@ -176,7 +180,7 @@ void Dendrogram::load(){
     bound.setHeight(dheight + 3 * h);
     
     
-    prepare_dendrogram_lines(lipid_space->dendrogram_root);
+    add_dendrogram_lines(lipid_space->dendrogram_root);
     for (QLineF &line : lines){
         line.setLine((line.x1() - x_min_d) * dwidth / (x_max_d - x_min_d),
                      (line.y1() + y_max_d) * dheight / (y_max_d - y_min_d),
@@ -286,7 +290,6 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
 
 void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     if (!lipid_space->dendrogram_root) return;
-    
     
     QFont f("Helvetica", 18);
     painter->setFont(f);
@@ -1039,7 +1042,7 @@ void Canvas::setFeature(string _feature){
         double tmp_factor = dendrogram->dendrogram_y_factor;
         dendrogram->dendrogram_y_factor = GlobalData::dendrogram_height;
         QPointF max_vals(1e9, -1e9);
-        dendrogram->top_line->update_height_factor(dendrogram->dendrogram_y_factor / tmp_factor, &max_vals);
+        if (dendrogram->top_line) dendrogram->top_line->update_height_factor(dendrogram->dendrogram_y_factor / tmp_factor, &max_vals);
         double ybound = max(dendrogram->dendrogram_y_factor, 100.);
         dendrogram->bound.setY(max_vals.x() - ybound);
         dendrogram->bound.setHeight((max_vals.y() - max_vals.x()) + 3 * ybound);
@@ -1063,8 +1066,7 @@ void Canvas::resizeEvent(QResizeEvent *event) {
         QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
         QRectF v = mapToScene(viewportRect).boundingRect();
         transforming(v);
-        double w = DENDROGRAM_LINE_SIZE / (double)transform().m11();
-        if (dendrogram && dendrogram->top_line) dendrogram->top_line->update_width(w);
+        if (dendrogram && dendrogram->top_line) dendrogram->top_line->update_width(DENDROGRAM_LINE_SIZE / (double)transform().m11());
     }
     else {
         if (pointSet) pointSet->resize();

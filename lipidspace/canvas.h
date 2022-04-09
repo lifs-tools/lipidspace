@@ -91,7 +91,7 @@ public:
     ~Dendrogram();
     void load();
     void clear();
-    void prepare_dendrogram_lines(DendrogramNode *node, DendrogramLine* line = 0);
+    void add_dendrogram_lines(DendrogramNode *node, DendrogramLine* line = 0);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     void recursive_paint(QPainter *painter, DendrogramNode *_node, int max_recursions, int recursion = 0);
     QRectF boundingRect() const override;
