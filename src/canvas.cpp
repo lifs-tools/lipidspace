@@ -104,10 +104,13 @@ void Dendrogram::clear(){
 
 void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* parent_line){
     if (!node) return;
-    double x1 = (node->x_left - x_min_d) * dwidth / (x_max_d - x_min_d);
-    double y1 = (-node->y + y_max_d) * dheight / (y_max_d - y_min_d) / 100. * dendrogram_y_factor;
-    double x2 = (node->x_right - x_min_d) * dwidth / (x_max_d - x_min_d);
-    double y2 = (-node->y + y_max_d) * dheight / (y_max_d - y_min_d) / 100. * dendrogram_y_factor;
+    double minx = max(1e-3, x_max_d - x_min_d);
+    double miny = max(1e-3, y_max_d - y_min_d);
+    double x1 = (node->x_left - x_min_d) * dwidth / minx;
+    double y1 = (-node->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
+    double x2 = (node->x_right - x_min_d) * dwidth / minx;
+    double y2 = (-node->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
+    
     
     QPen pen;
     pen.setColor(Qt::black);
@@ -119,7 +122,7 @@ void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* pare
     
     bool is_node = true;
     if (node->left_child){
-        double yl = (-node->left_child->y + y_max_d) * dheight / (y_max_d - y_min_d) / 100. * dendrogram_y_factor;
+        double yl = (-node->left_child->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
         DendrogramLine* l_line = new DendrogramLine(QLineF(x1, y1, x1, yl), pen, this);
         view->graphics_scene.addItem(l_line);
         l_line->setAcceptHoverEvents(true);
@@ -129,7 +132,7 @@ void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* pare
     }
     
     if (node->right_child){
-        double yr = (-node->right_child->y + y_max_d) * dheight / (y_max_d - y_min_d) / 100. * dendrogram_y_factor;
+        double yr = (-node->right_child->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
         DendrogramLine* r_line = new DendrogramLine(QLineF(x2, y2, x2, yr), pen, this);
         view->graphics_scene.addItem(r_line);
         r_line->setAcceptHoverEvents(true);
