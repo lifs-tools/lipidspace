@@ -126,6 +126,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->setupUi(this);
     keystrokes = "";
     
+    
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
     connect(lipid_space, SIGNAL(reassembled()), this, SLOT(updateSelectionView()));
     

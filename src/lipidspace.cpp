@@ -167,7 +167,9 @@ LipidSpace::LipidSpace() {
     progress = 0;
         
     // load precomputed class distance matrix
-    ifstream infile("data/classes-matrix.csv");
+    
+    
+    ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/classes-matrix.csv");
     if (!infile.good()){
         Logging::write_log("Error: file 'data/classes-matrix.csv' not found.");
         throw LipidException("Error: file 'data/classes-matrix.csv' not found. Please check the log message.");
