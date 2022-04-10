@@ -277,7 +277,7 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
             
             QPen textPen(Qt::black);
             painter->setPen(textPen);
-            painter->drawText(QRect(x - 200, y, 200, 30), Qt::AlignTop | Qt::AlignRight, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
+            painter->drawText(QRect(x - 300, y, 300, 60), Qt::AlignTop | Qt::AlignRight, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
         }
         else if (direction == LabelRight){
             double x = pie_x + pie_radius * 1.2;
@@ -291,7 +291,7 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
             
             QPen textPen(Qt::black);
             painter->setPen(textPen);
-            painter->drawText(QRect(x, y, 100, 30), Qt::AlignTop | Qt::AlignLeft, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
+            painter->drawText(QRect(x, y, 300, 60), Qt::AlignTop | Qt::AlignLeft, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
             
         }
     }

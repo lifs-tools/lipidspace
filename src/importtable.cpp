@@ -134,6 +134,7 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
             int c = 0;
             map<QString, int> doublettes;
             for (string header : *tokens){
+                if (header[0] == '"' && header[header.length() - 1] == '"') header = strip(header, '"');
                 QString qheader = header.length() ? header.c_str() : "empty_field";
                 
                 if (uncontains_val(doublettes, qheader)){
@@ -182,6 +183,7 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
             }
             int c = 0;
             for (string header : *tokens){
+                if (header[0] == '"' && header[header.length() - 1] == '"') header = strip(header, '"');
                 QString qcell = header.length() ? header.c_str() : "";
                 
                 QTableWidgetItem *item = new QTableWidgetItem(qcell);

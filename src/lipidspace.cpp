@@ -1395,6 +1395,8 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             if (line.length() == 0) continue;
             
             vector<string>* tokens = split_string(line, ',', '"', true);
+            for (int i = 0; i < (int)tokens->size(); ++i) tokens->at(i) = goslin::strip(tokens->at(i), '"');
+            
             if (line_cnt++ == 0){
                 for (auto fi : feature_columns_nominal){
                     string feature = tokens->at(fi);
@@ -1598,6 +1600,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             
             // handle first / header line different to the others
             vector<string>* tokens = split_string(line, ',', '"', true);
+            for (int i = 0; i < (int)tokens->size(); ++i) tokens->at(i) = goslin::strip(tokens->at(i), '"');
             if (column_types->size() != tokens->size()){
                 throw LipidSpaceException("Inconsistant column size of header (" + std::to_string(column_types->size()) + ") and line " + std::to_string(line_cnt + 1) + " (" + std::to_string(tokens->size()) + ").", ColumnNumMismatch);
             }
@@ -1780,6 +1783,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             int num_cols = 0;
             while (getline(infile, line)){
                 vector<string>* tokens = split_string(line, ',', '"', true);
+                for (int i = 0; i < (int)tokens->size(); ++i) tokens->at(i) = goslin::strip(tokens->at(i), '"');
                 
                 // handle first / header line different to the others
                 if (line_cnt++ == 0){
@@ -1840,6 +1844,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             
             while (getline(infile, line)){
                 vector<string>* tokens = split_string(line, ',', '"', true);
+                for (int i = 0; i < (int)tokens->size(); ++i) tokens->at(i) = goslin::strip(tokens->at(i), '"');
                 if (tokens->size() != column_types->size()) {
                     throw LipidSpaceException("Error in line '" + std::to_string(line_cnt  + 1) + "': number of cells does not match with specified number of columns", ColumnNumMismatch);
                     exit(-1);

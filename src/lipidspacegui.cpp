@@ -48,8 +48,8 @@ void DragLayer::paintEvent(QPaintEvent *) {
 
 
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
-    if (event->key() == Qt::Key_1 && !loadedDataSet){
-        loadedDataSet = true;
+    if (event->key() == Qt::Key_1){
+        resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 12; ++i) ct->push_back(IgnoreColumn);
         ct->at(1) = LipidColumn;
@@ -60,16 +60,9 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(11) = QuantColumn;
         loadTable("Anxa7_pivot.csv", ct, PIVOT_TABLE);
         
-        /*
-        for (int i = 0; i < 32; ++i) ct->push_back(SampleColumn);
-        ct->at(0) = LipidColumn;
-        loadTable("examples/Tablesets/Plasma-Liebisch.csv", ct, ROW_TABLE);
-        */
-        
-        
     }
-    else if (event->key() == Qt::Key_2 && !loadedDataSet){
-        loadedDataSet = true;
+    else if (event->key() == Qt::Key_2){
+        resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 295; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
@@ -87,8 +80,8 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(11) = FeatureColumnNumerical;
         loadTable("examples/Tablesets/Plasma-Singapore.csv", ct, COLUMN_TABLE);
     }
-    else if (event->key() == Qt::Key_3 && !loadedDataSet){
-        loadedDataSet = true;
+    else if (event->key() == Qt::Key_3){
+        resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 14; ++i) ct->push_back(IgnoreColumn);
         ct->at(11) = LipidColumn;
@@ -99,8 +92,8 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         
         loadTable("blood.csv", ct, PIVOT_TABLE);
     }
-    else if (event->key() == Qt::Key_4 && !loadedDataSet){
-        loadedDataSet = true;
+    else if (event->key() == Qt::Key_4){
+        resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 20; ++i) ct->push_back(IgnoreColumn);
         ct->at(0) = LipidColumn;
@@ -131,7 +124,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     lipid_space = _lipid_space;
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
-    loadedDataSet = false;
     keystrokes = "";
     
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
