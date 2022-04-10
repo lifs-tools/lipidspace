@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <QColor>
+#include <lipidspace/AssistanceFunctions.h>
 
 using namespace std;
 
@@ -24,6 +25,7 @@ public:
     static int pie_tree_depth;
     static int dendrogram_height;
     static string normalization;
+    static Linkage linkage;
 };
 
 

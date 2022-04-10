@@ -8,8 +8,10 @@ map<string, QColor> GlobalData::colorMap;
 int GlobalData::PC1 = 0;
 int GlobalData::PC2 = 1;
 int GlobalData::pie_tree_depth = 3;
+Linkage GlobalData::linkage = AverageLinkage;
 int GlobalData::feature_counter = 0;
 int GlobalData::dendrogram_height = 100;
+
 string GlobalData::normalization = "absolute";
 map<string, QColor> GlobalData::colorMapFeatures;
 

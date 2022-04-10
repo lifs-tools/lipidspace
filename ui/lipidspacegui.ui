@@ -431,12 +431,21 @@
     <property name="title">
      <string>&amp;Analysis</string>
     </property>
+    <widget class="QMenu" name="menuClustering_strategy">
+     <property name="title">
+      <string>Clustering strategy</string>
+     </property>
+     <addaction name="actionSingle_linkage_clustering"/>
+     <addaction name="actionAverage_linkage_clustering"/>
+     <addaction name="actionComplete_linkage_clustering"/>
+    </widget>
     <addaction name="actionManage_lipidomes"/>
     <addaction name="actionSet_number_of_principal_components"/>
     <addaction name="separator"/>
     <addaction name="actionIgnoring_lipid_sn_positions"/>
     <addaction name="actionIgnore_quantitative_information"/>
     <addaction name="actionUnbound_lipid_distance_metric"/>
+    <addaction name="menuClustering_strategy"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -655,6 +664,30 @@
   <action name="actionImport_pivot_table">
    <property name="text">
     <string>Import &amp;pivot table</string>
+   </property>
+  </action>
+  <action name="actionSingle_linkage_clustering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Single linkage clustering</string>
+   </property>
+  </action>
+  <action name="actionComplete_linkage_clustering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Complete linkage clustering</string>
+   </property>
+  </action>
+  <action name="actionAverage_linkage_clustering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Unweighted average linkage clustering</string>
    </property>
   </action>
  </widget>

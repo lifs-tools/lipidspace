@@ -3,13 +3,23 @@
  
 
 double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkage = CompleteLinkage){
-    double v = 1e9 * (linkage == SingleLinkage);
-    for (auto index1 : n1->indexes){
-        for (auto index2 : n2->indexes){
-            if ((linkage == CompleteLinkage && v < m(index1, index2)) || (linkage == SingleLinkage && v > m(index1, index2))){
-                v = m(index1, index2);
+    double v = 1e100 * (linkage == SingleLinkage);
+    if (linkage == SingleLinkage || linkage == CompleteLinkage){
+        for (auto index1 : n1->indexes){
+            for (auto index2 : n2->indexes){
+                if ((linkage == CompleteLinkage && v < m(index1, index2)) || (linkage == SingleLinkage && v > m(index1, index2))){
+                    v = m(index1, index2);
+                }
             }
         }
+    }
+    else {
+        for (auto index1 : n1->indexes){
+            for (auto index2 : n2->indexes){
+                v += m(index1, index2);
+            }
+        }
+        v /= (double)(n1->indexes.size() * n2->indexes.size());
     }
     return v;
 }
@@ -33,7 +43,7 @@ void LipidSpace::create_dendrogram(){
         int ii = 0, jj = 0;
         for (int i = 0; i < (int)nodes.size() - 1; ++i){
             for (int j = i + 1; j < (int)nodes.size(); ++j){
-                double val = linkage(nodes.at(i), nodes.at(j), hausdorff_distances, CompleteLinkage);
+                double val = linkage(nodes.at(i), nodes.at(j), hausdorff_distances, GlobalData::linkage);
                 if (min_val > val){
                     min_val = val;
                     ii = i;

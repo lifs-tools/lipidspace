@@ -18,7 +18,7 @@
 
 using namespace std;
 
-enum Linkage {SingleLinkage, CompleteLinkage};
+enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
 enum FeatureType {NumericalFeature, NominalFeature};
 enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
 enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumerical, FeatureColumnNominal, IgnoreColumn};

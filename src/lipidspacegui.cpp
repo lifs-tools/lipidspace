@@ -150,6 +150,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
     
+    connect(ui->actionComplete_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setCompleteLinkage);
+    connect(ui->actionAverage_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setAverageLinkage);
+    connect(ui->actionSingle_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setSingleLinkage);
     connect(ui->actionAutomatically, &QAction::triggered, this, &LipidSpaceGUI::setAutomaticLayout);
     connect(ui->actionShow_quantitative_information, &QAction::triggered, this, &LipidSpaceGUI::showHideQuant);
     connect(ui->actionShow_global_lipidome, &QAction::triggered, this, &LipidSpaceGUI::showHideGlobalLipidome);
@@ -224,6 +227,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->dendrogramView->setDendrogramData(lipid_space);
     ui->dendrogramView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->dendrogramView, &QGraphicsView::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
+    
+    if (GlobalData::linkage == SingleLinkage) ui->actionSingle_linkage_clustering->setChecked(true);
+    else if (GlobalData::linkage == AverageLinkage) ui->actionAverage_linkage_clustering->setChecked(true);
+    else if (GlobalData::linkage == CompleteLinkage) ui->actionComplete_linkage_clustering->setChecked(true);
     
     updateGUI();
 }
@@ -785,6 +792,41 @@ void LipidSpaceGUI::showHideGlobalLipidome(){
 void LipidSpaceGUI::showHideQuant(){
     GlobalData::showQuant = ui->actionShow_quantitative_information->isChecked();
     updateCanvas();
+}
+
+
+
+void LipidSpaceGUI::setCompleteLinkage(){
+    if (GlobalData::linkage != CompleteLinkage){
+        ui->actionAverage_linkage_clustering->setChecked(false);
+        ui->actionSingle_linkage_clustering->setChecked(false);
+        GlobalData::linkage = CompleteLinkage;
+        runAnalysis();
+    }
+    ui->actionComplete_linkage_clustering->setChecked(true);
+}
+
+
+void LipidSpaceGUI::setAverageLinkage(){
+    if (GlobalData::linkage != AverageLinkage){
+        ui->actionComplete_linkage_clustering->setChecked(false);
+        ui->actionSingle_linkage_clustering->setChecked(false);
+        GlobalData::linkage = AverageLinkage;
+        runAnalysis();
+    }
+    ui->actionAverage_linkage_clustering->setChecked(true);
+}
+
+
+void LipidSpaceGUI::setSingleLinkage(){
+    if (GlobalData::linkage != SingleLinkage){
+        ui->actionComplete_linkage_clustering->setChecked(false);
+        ui->actionAverage_linkage_clustering->setChecked(false);
+        GlobalData::linkage = SingleLinkage;
+        runAnalysis();
+    }
+    ui->actionSingle_linkage_clustering->setChecked(true);
+    
 }
 
 

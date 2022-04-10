@@ -95,6 +95,9 @@ public slots:
     void toggleQuant();
     void toggleBoundMetric();
     void setAutomaticLayout();
+    void setCompleteLinkage();
+    void setAverageLinkage();
+    void setSingleLinkage();
     void set1ColumnLayout();
     void set2ColumnLayout();
     void set3ColumnLayout();
