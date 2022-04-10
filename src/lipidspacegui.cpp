@@ -505,13 +505,11 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
 
 
 void LipidSpaceGUI::runAnalysis(){
+    // clear all windows with canvases
+    ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
-    
-    progress->reset();
-    lipid_space->start();
-    progressbar->exec();
     
     for (auto canvas : canvases){
         disconnect(canvas, SIGNAL(transforming(QRectF)), 0, 0);
@@ -525,17 +523,24 @@ void LipidSpaceGUI::runAnalysis(){
     canvases.clear();
     updateGUI();
     
+    
+    // (re)start analysis
+    progress->reset();
+    lipid_space->start();
+    progressbar->exec();
+    
     if (!lipid_space->analysis_finished){
-        ui->dendrogramView->clear();
         return;
     }
     
+    // reset parameters
     ui->dendrogramHeightSpinBox->setValue(100);
     GlobalData::color_counter = 0;
     GlobalData::feature_counter = 0;
     GlobalData::colorMap.clear();
     GlobalData::colorMapFeatures.clear();
     
+    // setup all space canvases
     for (auto lipid_class : lipid_space->global_lipidome->classes){
         if (uncontains_val(GlobalData::colorMap, lipid_class)){
             GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[GlobalData::color_counter++ % GlobalData::COLORS.size()]});
@@ -602,11 +607,6 @@ void LipidSpaceGUI::runAnalysis(){
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
-    
-    // dirty hack to overcome the annoying resizing calls of the canvases when
-    // putting them into the grid layout. Unfortunately, I cannot figure out, when
-    // it is over. So I use a timer and hope that after 200ms all rearranging is over
-    QTimer::singleShot(200, this, SLOT(setInitialized()));
 }
 
 

@@ -172,7 +172,6 @@ public slots:
     void setTransforming(QRectF f);
     void setUpdate();
     void exportAsPdf();
-    void setInitialized();
     void hoverOver();
     void setSwap(int source);
     void reloadPoints();
@@ -200,7 +199,6 @@ private:
     QPoint oldCenter;
     PointSet *pointSet;
     Dendrogram *dendrogram;
-    bool initialized;
     QListWidget *listed_species;
 };
 

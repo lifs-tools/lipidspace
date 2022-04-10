@@ -80,6 +80,10 @@ Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
  
  
 void Dendrogram::clear(){
+    top_line = 0;
+    view->graphics_scene.removeItem(this);
+    view->graphics_scene.clear();
+    view->graphics_scene.addItem(this);
     dendrogram_titles.clear();
     lines.clear();
     update();
@@ -759,7 +763,6 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
     setScene(&graphics_scene);
     resetMatrix();
-    initialized = false;
     num = -3;
 }
 
@@ -816,7 +819,6 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
     graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
     setScene(&graphics_scene);
     resetMatrix();
-    initialized = false;
     
     
     
@@ -980,10 +982,6 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event){
 
 
 
-void Canvas::setInitialized(){
-    initialized = true;
-}
-
 
 
 
@@ -1058,20 +1056,14 @@ void Canvas::setFeature(string _feature){
     
 void Canvas::resizeEvent(QResizeEvent *event) {
     if (!dendrogram && !pointSet) return;
-        
-    if (!initialized || dendrogram){
-        QRectF bounds = dendrogram ? dendrogram->bound : pointSet->bound;
-        fitInView(bounds, Qt::KeepAspectRatio);
-        
-        QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
-        QRectF v = mapToScene(viewportRect).boundingRect();
-        transforming(v);
-        if (dendrogram && dendrogram->top_line) dendrogram->top_line->update_width(DENDROGRAM_LINE_SIZE / (double)transform().m11());
-    }
-    else {
-        if (pointSet) pointSet->resize();
-        
-    }
+      
+    QRectF bounds = dendrogram ? dendrogram->bound : pointSet->bound;
+    fitInView(bounds, Qt::KeepAspectRatio);
+    QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+    QRectF v = mapToScene(viewportRect).boundingRect();
+    transforming(v);
+    if (dendrogram && dendrogram->top_line) dendrogram->top_line->update_width(DENDROGRAM_LINE_SIZE / (double)transform().m11());
+    
     QGraphicsView::resizeEvent(event);
 }
 
