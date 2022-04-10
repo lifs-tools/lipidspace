@@ -71,6 +71,18 @@ void DendrogramLine::update_height_factor(double update_factor, QPointF *max_val
 
 
 
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+// Canvas methods
+///////////////////////////////////////////////////////////////////////////////////////
+
+
 Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     lipid_space = _lipid_space;
     feature = "";
@@ -243,15 +255,15 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
         QPen piePen(brush.color());
         painter->setPen(piePen);
         painter->setBrush(brush);
+        if (span > 0) painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
         
-        painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
         angle_start = (angle_start + span) % 5760;
         span = 5760 - span;
         brush.setColor(GlobalData::colorMapFeatures[feature_gr]);
         piePen.setColor(brush.color());
         painter->setPen(piePen);
         painter->setBrush(brush);
-        painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
+        if (span > 0) painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
         
         if (direction == LabelLeft){
             double x = pie_x - pie_radius * 1.2;
@@ -378,6 +390,15 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
 
 
 
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+// Canvas methods
+///////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -747,6 +768,16 @@ void PointSet::resize(){
 
 
 
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+// Canvas methods
+///////////////////////////////////////////////////////////////////////////////////////
+
+
 Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     pointSet = 0;
     dendrogram = 0;
@@ -828,6 +859,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
     if (num == -2){ // dendrogram
         dendrogram = new Dendrogram(lipid_space, this);
         graphics_scene.addItem(dendrogram);
+        dendrogram->load();
     }
     else if (num == -1){ // global lipidome
         pointSet = new PointSet(lipid_space->global_lipidome, this);
@@ -1008,7 +1040,6 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         
         QStringList lipid_names;
         for (int i = 0; i < (int)pointSet->points.size(); ++i){
-            //double intens = GlobalData::showQuant ? (pointSet->points[i].intensity > 1 ? log(pointSet->points[i].intensity) : 0.5) : 1.;
             double intens = GlobalData::showQuant ? pointSet->points[i].intensity : 1.;
             double margin = sq(0.5 * intens);
             if (sq(relative_mouse.x() - pointSet->points[i].point.x()) + sq(relative_mouse.y() - pointSet->points[i].point.y()) <= margin){

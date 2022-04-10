@@ -77,7 +77,6 @@ signals:
     void transforming(QRectF f);
     void updateCanvas();
     void exporting(string);
-    void initialized();
     void featureChanged(string);
     void updateHighlightedPoints(vector<QString> *);
     
@@ -108,7 +107,6 @@ public slots:
     void setTransforming(QRectF f);
     void setDoubleClick(int _num);
     void setExport();
-    void setInitialized();
     void openSetAlpha();
     void openSetPCnum();
     void openSelectPC();
@@ -143,6 +141,7 @@ private:
     TileLayout tileLayout;
     bool updating;
     Progressbar *progressbar;
+    string keystrokes;
     Progress *progress;
     int single_window;
     QTimer timer;

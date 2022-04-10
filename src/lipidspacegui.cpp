@@ -90,13 +90,38 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     else if (event->key() == Qt::Key_3 && !loadedDataSet){
         loadedDataSet = true;
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 12; ++i) ct->push_back(IgnoreColumn);
+        for (int i = 0; i < 14; ++i) ct->push_back(IgnoreColumn);
         ct->at(11) = LipidColumn;
         ct->at(7) = QuantColumn;
-        ct->at(4) = SampleColumn;
-        ct->at(9) = SampleColumn;
+        ct->at(4) = FeatureColumnNominal;
+        ct->at(12) = FeatureColumnNumerical;
+        ct->at(13) = SampleColumn;
         
         loadTable("blood.csv", ct, PIVOT_TABLE);
+    }
+    else if (event->key() == Qt::Key_4 && !loadedDataSet){
+        loadedDataSet = true;
+        vector<TableColumnType> *ct = new vector<TableColumnType>();
+        for (int i = 0; i < 20; ++i) ct->push_back(IgnoreColumn);
+        ct->at(0) = LipidColumn;
+        ct->at(18) = QuantColumn;
+        ct->at(19) = SampleColumn;
+        ct->at(13) = FeatureColumnNominal;
+        ct->at(15) = FeatureColumnNominal;
+        
+        loadTable("Data_Thrombocytes_UKR_04042022.csv", ct, PIVOT_TABLE);
+    }
+    else {
+        if (Qt::Key_A <= event->key() && event->key() <= Qt::Key_Z){
+            keystrokes += string(1, (char)event->key());
+            if (keystrokes.length() > 6) keystrokes = keystrokes.substr(1);
+            if (keystrokes == "BUTTER"){
+                QMessageBox::information(this, "Important announcement.", "The butter, the better!");
+            }
+            else if (keystrokes.length() >= 3 && keystrokes.substr(keystrokes.length() - 3) == "FAT"){
+                QMessageBox::information(this, "Insight of the week.", "All that glitters is not fat!!");
+            }
+        }
     }
 }
 
@@ -107,6 +132,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
     loadedDataSet = false;
+    keystrokes = "";
     
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
     connect(lipid_space, SIGNAL(reassembled()), this, SLOT(updateSelectionView()));
@@ -564,7 +590,6 @@ void LipidSpaceGUI::runAnalysis(){
             connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
             connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
-            connect(this, SIGNAL(initialized()), canvas, SLOT(setInitialized()));
             connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
             connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
             connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
@@ -673,11 +698,6 @@ void LipidSpaceGUI::featureItemDoubleClicked(QTreeWidgetItem *item, int){
 
 
 
-
-
-void LipidSpaceGUI::setInitialized(){
-    initialized();
-}
 
 
 void LipidSpaceGUI::setExport(){
