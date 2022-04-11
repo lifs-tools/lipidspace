@@ -342,28 +342,33 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     set<LipidFaBondType> bond_types = {fa1->lipid_FA_bond_type, fa2->lipid_FA_bond_type};
     
     
+    int db1 = 0, db2 = 0;
     if (bond_types.size() == 1){ // both equal
         if (contains_val(bond_types, ESTER)){
-            union_num += 2; // one oxygen plus one double bond
-            inter_num += 2;
+            inter_num += 3; // two oxygens, one double bond
+            union_num += 3; // two oxygens, one double bond
         }
-        if (contains_val(bond_types, ETHER_PLASMENYL)){
-            union_num += 1; // one double bond
-            inter_num += 1;
+        if (contains_val(bond_types, ETHER_PLASMANYL) || contains_val(bond_types, ETHER_PLASMENYL)){
+            inter_num += 1; // one oxygen
+            union_num += 1; // one oxygen
         }
     }
     
     else if (contains_val(bond_types, ESTER)){
-        if (contains_val(bond_types, ETHER_PLASMENYL)){
-            union_num += 3;
+        if (contains_val(bond_types, ETHER_PLASMANYL)){
+            inter_num += 1; // one oxygen
+            union_num += 3; // two oxygens, one double bond
+            if (fa1->lipid_FA_bond_type == ETHER_PLASMANYL) db1 += 1;
+            else db2 += 1;
         }
         
-        else if (contains_val(bond_types, ETHER_PLASMANYL)){
-            union_num += 2;
+        else if (contains_val(bond_types, ETHER_PLASMENYL)){
+            inter_num += 1; // one oxygen
+            union_num += 3; // two oxygens, one double bond
         }
         
         else if (contains_val(bond_types, LCB_REGULAR) || contains_val(bond_types, LCB_EXCEPTION)){
-            union_num += 2;
+            union_num += 2; // one oxygen, one double bond
         }
     }
     
@@ -374,13 +379,15 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     }
         
     else if (contains_val(bond_types, ETHER_PLASMENYL) && contains_val(bond_types, ETHER_PLASMANYL)){
-        union_num += 1;
+        inter_num += 1; // one oxygen
+        union_num += 1; // one oxygen
+        if (fa1->lipid_FA_bond_type == ETHER_PLASMANYL) db1 += 1;
+        else db2 += 1;
     }
         
     else { 
         throw LipidException("Cannot compute similarity between chains");
     }
-
     
     // compare lengths
     int m1 = contains_val(lcbs, fa1->lipid_FA_bond_type) * 2;
@@ -390,22 +397,21 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     union_num += mmax(fa1->num_carbon - m2, fa2->num_carbon - m2);
     
     
+    
     // compare double bonds
-    int db1 = 0, db2 = 0;
+    int common = 0;
     if (fa1->double_bonds->double_bond_positions.size() > 0 && fa2->double_bonds->double_bond_positions.size() > 0){
-        int common = 0;
         for (auto kv : fa1->double_bonds->double_bond_positions){
             common += contains_val(fa2->double_bonds->double_bond_positions, kv.first) && fa2->double_bonds->double_bond_positions.at(kv.first) == kv.second;
         }
-        
         inter_num += common;
         union_num += fa1->double_bonds->get_num() + fa2->double_bonds->get_num() - common;
-        db1 = fa1->double_bonds->get_num();
-        db2 = fa2->double_bonds->get_num();
+        db1 += fa1->double_bonds->get_num();
+        db2 += fa2->double_bonds->get_num();
     }
     else {
-        db1 = fa1->double_bonds->get_num();
-        db2 = fa2->double_bonds->get_num();
+        db1 += fa1->double_bonds->get_num();
+        db2 += fa2->double_bonds->get_num();
             
         // old strategy of taking the minimum as intersect
         // does not go figure with database observations
@@ -420,12 +426,11 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     }
     
     // add all single bonds
-    inter_num += mmin(fa1->num_carbon - m1 - db1, fa2->num_carbon - m1 - db2);
-    union_num += mmax(fa1->num_carbon - m2 - db1, fa2->num_carbon - m2 - db2);
+    inter_num += mmin(fa1->num_carbon - m1, fa2->num_carbon - m1) - (db1 + db2 - common);
+    union_num += mmax(fa1->num_carbon - m2, fa2->num_carbon - m2) - (db1 + db2 - common);
+    
     
     if (fa1->functional_groups->size() == 0 && fa2->functional_groups->size() == 0) return;
-    
-    
     
     // compare functional groups
     for (auto kv : *(fa1->functional_groups)){
@@ -551,14 +556,21 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     
     vector<FattyAcid*>* orig_fa_list_1 = new vector<FattyAcid*>();
     if (lipid1->lipid->info->level >= MOLECULAR_SPECIES){
-        for (auto fa : lipid1->lipid->fa_list) orig_fa_list_1->push_back(fa);
+        for (auto fa : lipid1->lipid->fa_list){
+            if (fa->num_carbon > 0)
+                orig_fa_list_1->push_back(fa);
+        }
     }
     else {
         orig_fa_list_1->push_back(lipid1->lipid->info);
     }
     vector<FattyAcid*>* orig_fa_list_2 = new vector<FattyAcid*>();
     if (lipid2->lipid->info->level >= MOLECULAR_SPECIES){
-        for (auto fa : lipid2->lipid->fa_list) orig_fa_list_2->push_back(fa);
+        for (auto fa : lipid2->lipid->fa_list){
+            if (fa->num_carbon > 0)
+                orig_fa_list_2->push_back(fa);
+            
+        }
     }
     else {
         orig_fa_list_2->push_back(lipid2->lipid->info);
@@ -577,6 +589,7 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         delete orig_fa_list_2;
         return;
     }
+    
     
     if (keep_sn_position || (len_fa1 <= 1 && len_fa2 <= 1)){
         int l = mmin(orig_fa_list_1->size(), orig_fa_list_2->size());
@@ -768,7 +781,6 @@ void LipidSpace::load_list(string lipid_list_file){
     
     vector<int> remove;
     
-    //#pragma omp parallel for
     for (int i = 0; i < (int)lipids.size(); ++i) { 
         string line = lipids.at(i);
         try {
@@ -868,26 +880,7 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
 
 double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
     assert(m1.rows == m2.rows);
-    
     double max_h = 0;
-    
-    for (int m2c = 0; m2c < m2.cols; m2c++){
-        double min_h = 1e9;
-        double* m2col = m2.data() + (m2c * m2.rows);
-        for (int m1c = 0; m1c < m1.cols; ++m1c){
-            __m256d dist = {0, 0, 0, 0};
-            double* m1col = m1.data() + (m1c * m1.rows);
-            for (int r = 0; r < m1.rows; r += 4){
-                __m256d val1 = _mm256_loadu_pd(&m1col[r]);
-                __m256d val2 = _mm256_loadu_pd(&m2col[r]);
-                __m256d sub = _mm256_sub_pd(val1, val2);
-                dist = _mm256_fmadd_pd(sub, sub, dist);
-            }
-            double distance = dist[0] + dist[1] + dist[2] + dist[3];
-            min_h = mmin(min_h, distance);
-        }
-        max_h = mmax(max_h, min_h);
-    }
     
     for (int m1c = 0; m1c < m1.cols; ++m1c){
         double min_h = 1e9;
@@ -902,17 +895,34 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
                 dist = _mm256_fmadd_pd(sub, sub, dist);
             }
             double distance = dist[0] + dist[1] + dist[2] + dist[3];
-            min_h = mmin(min_h, distance);
+            min_h = min(min_h, distance);
+            if (min_h < max_h) break;
         }
-        max_h = mmax(max_h, min_h);
+        max_h = max(max_h, min_h);
+    }
+    
+    
+    for (int m2c = 0; m2c < m2.cols; m2c++){
+        double min_h = 1e100;
+        double* m2col = m2.data() + (m2c * m2.rows);
+        for (int m1c = 0; m1c < m1.cols; ++m1c){
+            __m256d dist = {0, 0, 0, 0};
+            double* m1col = m1.data() + (m1c * m1.rows);
+            for (int r = 0; r < m1.rows; r += 4){
+                __m256d val1 = _mm256_loadu_pd(&m1col[r]);
+                __m256d val2 = _mm256_loadu_pd(&m2col[r]);
+                __m256d sub = _mm256_sub_pd(val1, val2);
+                dist = _mm256_fmadd_pd(sub, sub, dist);
+            }
+            double distance = dist[0] + dist[1] + dist[2] + dist[3];
+            min_h = min(min_h, distance);
+            if (min_h < max_h) break;
+        }
+        max_h = max(max_h, min_h);
     }
     
     return sqrt(max_h);
 }
-
-
-
-
 
 
 
@@ -951,10 +961,10 @@ void LipidSpace::compute_hausdorff_matrix(){
         int i = pairs.at(ii).first;
         int j = pairs.at(ii).second;
         
-        hausdorff_distances(i, j) = compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j));
-        hausdorff_distances(j, i) = hausdorff_distances(i, j);
+        double hd = compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j));
+        hausdorff_distances(i, j) = hd;
+        hausdorff_distances(j, i) = hd;
     }
-    
     
 
     for (auto matrix : matrixes) delete matrix;
@@ -1117,13 +1127,17 @@ bool LipidSpace::compute_global_distance_matrix(){
                 }
             }
             if (go_on){
-                int union_num, inter_num;
+                int union_num = 0, inter_num = 0;
                 lipid_similarity(global_lipidome->lipids.at(i), global_lipidome->lipids.at(j), union_num, inter_num);
+                
+                if (union_num < 0 || inter_num < 0){
+                    throw LipidSpaceException("Error on maximum common subgraph for lipid '" + global_lipidome->lipids.at(i)->get_lipid_string() + "' and '" + global_lipidome->lipids.at(j)->get_lipid_string() + "', union: " + std::to_string(union_num) + ", inter: " + std::to_string(inter_num) + ". Please contact the developers!", UnspecificException);
+                }
                 double distance = unboundend_distance ?
                     ((double)union_num / (double)inter_num - 1.) // unboundend distance [0; inf[
                                 :
                     (1. - (double)inter_num / (double)union_num); // bounded distance [0; 1]
-                    
+                
                 distance_matrix(i, j) = distance;
                 distance_matrix(j, i) = distance;
             }
@@ -2001,7 +2015,7 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, set<string> &lipid_set, b
             Logging::write_log("Ignoring doublette lipid '" + lipid_name + "'");
         }
         else {
-            throw LipidSpaceException("Error: lipid '" + lipid_name + "' appears twice in the table.", LipidDoublette);
+            throw LipidSpaceException("Error: lipid '" + lipid_name + "' appears twice in the table. " + lipid_unique_name, LipidDoublette);
         }
     }
     if (!ignore_lipid) all_lipids.push_back(l);
@@ -2053,6 +2067,7 @@ void LipidSpace::run(){
     }
     Logging::write_log("Started analysis");
     
+    auto start = high_resolution_clock::now();
     analysis_finished = false;
     if (dendrogram_root){
         delete dendrogram_root;
@@ -2103,6 +2118,7 @@ void LipidSpace::run(){
             progress->set_step();
         }
     }
+    
     if (!progress || !progress->stop_progress){
         if (selected_lipidomes.size() > 1){
             compute_hausdorff_matrix();
@@ -2120,6 +2136,9 @@ void LipidSpace::run(){
             }
         }
     }
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "Process: " << duration.count() << endl;
     
     if (progress && !progress->stop_progress){
         progress->finish();

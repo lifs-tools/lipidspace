@@ -45,6 +45,11 @@ int main(int argc, char** argv) {
         lipid_space_gui.show();
         return application.exec();
     }
+    
+    
+    
+    
+    
     /*
     
     if (argc < 4) {

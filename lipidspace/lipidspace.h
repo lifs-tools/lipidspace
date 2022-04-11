@@ -13,10 +13,12 @@
 #include "lipidspace/logging.h"
 #include "lipidspace/AssistanceFunctions.h"
 #include "lipidspace/globaldata.h"
+#include <chrono>
 
 #define UNDEFINED_LIPID "UNDEFINED"
  
 using namespace std;
+using namespace std::chrono;
 
 enum TableType {ROW_TABLE, COLUMN_TABLE, PIVOT_TABLE};
 
