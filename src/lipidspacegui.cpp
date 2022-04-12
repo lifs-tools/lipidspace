@@ -224,7 +224,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     progressbar->setModal(true);
     ui->dendrogramView->setDendrogramData(lipid_space);
     ui->dendrogramView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->dendrogramView, &QGraphicsView::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
+    //connect(ui->dendrogramView, &QGraphicsView::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
+    connect(ui->dendrogramView, &Canvas::rightClick, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
     
     if (GlobalData::linkage == SingleLinkage) ui->actionSingle_linkage_clustering->setChecked(true);
     else if (GlobalData::linkage == AverageLinkage) ui->actionAverage_linkage_clustering->setChecked(true);
@@ -1188,13 +1189,31 @@ void LipidSpaceGUI::openLists(){
 
 
 
-void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos){
+void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos, set<int> *selected_d_lipidomes){
     if (!lipid_space->analysis_finished) return;
     QMenu *menu = new QMenu(this);
     QAction *exportAsPdf = new QAction("Export as pdf", this);
     menu->addAction(exportAsPdf);
     menu->popup(ui->dendrogramView->viewport()->mapToGlobal(pos));
     connect(exportAsPdf, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsPdf);
+    
+    
+    if (selected_d_lipidomes){
+        QListWidget *widget = ui->sampleList;
+        for (int i = 0; i < widget->count(); ++i){
+            widget->item(i)->setCheckState(Qt::Unchecked);
+        }
+        set<string> lipidome_names;
+        for (int c : *selected_d_lipidomes){
+            lipidome_names.insert(lipid_space->selected_lipidomes.at(c)->cleaned_name);
+        }
+        for (int i = 0; i < widget->count(); ++i){
+            if (contains_val(lipidome_names, widget->item(i)->text().toStdString())){
+                widget->item(i)->setCheckState(Qt::Checked);
+            }
+        }
+    }
+    
 }
 
 

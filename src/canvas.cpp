@@ -9,6 +9,7 @@ DendrogramLine::DendrogramLine(QLineF line, QPen p, Dendrogram *d) : QGraphicsLi
     dendrogram = d;
     setZValue(0);
     node = -1;
+    d_node = 0;
 }
 
 void DendrogramLine::update_width(double w){
@@ -30,11 +31,18 @@ void DendrogramLine::hoverLeaveEvent(QGraphicsSceneHoverEvent *){
     dendrogram->update();
 }
 
-void DendrogramLine::mousePressEvent(QGraphicsSceneMouseEvent *){
-    if (dendrogram->top_line) dendrogram->top_line->make_permanent(false);
-    make_permanent(true);
-    dendrogram->update();
+void DendrogramLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
+    if (event->buttons() == Qt::LeftButton){
+        if (dendrogram->top_line) dendrogram->top_line->make_permanent(false);
+        make_permanent(true);
+        dendrogram->update();
+    }
+    else if (event->buttons() == Qt::RightButton){
+        if (d_node) dendrogram->highlighted_for_selection = &(d_node->indexes);
+        event->setAccepted(true);
+    }
 }
+
 
 void DendrogramLine::make_permanent(bool p){
     permanent = p;
@@ -88,6 +96,7 @@ Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     feature = "";
     setZValue(100);
     top_line = 0;
+    highlighted_for_selection = 0;
 }
  
  
@@ -124,6 +133,7 @@ void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* pare
     if (node->left_child){
         double yl = (-node->left_child->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
         DendrogramLine* l_line = new DendrogramLine(QLineF(x1, y1, x1, yl), pen, this);
+        l_line->d_node = node->left_child;
         view->graphics_scene.addItem(l_line);
         l_line->setAcceptHoverEvents(true);
         v_line->next_line = l_line;
@@ -134,6 +144,7 @@ void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* pare
     if (node->right_child){
         double yr = (-node->right_child->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
         DendrogramLine* r_line = new DendrogramLine(QLineF(x2, y2, x2, yr), pen, this);
+        r_line->d_node = node->right_child;
         view->graphics_scene.addItem(r_line);
         r_line->setAcceptHoverEvents(true);
         v_line->second_line = r_line;
@@ -252,6 +263,7 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
         string feature_gr = feature + "_gr";
         
         int num = 0;
+        if (uncontains_val(node->feature_numerical, feature) || node->feature_numerical[feature].size() == 0) return;
         for (double val : node->feature_numerical[feature]){
             num += val <= threshold;
         }
@@ -976,6 +988,13 @@ void Canvas::mousePressEvent(QMouseEvent *event){
     }
     else if (lipid_space->selected_lipidomes.size() > 1 && event->button() == Qt::MiddleButton){
         mouse(event, this);
+    }
+    else if (event->button() == Qt::RightButton){
+        QGraphicsView::mousePressEvent(event);
+        if (dendrogram){
+            emit rightClick(event->pos(), dendrogram->highlighted_for_selection);
+            dendrogram->highlighted_for_selection = 0;
+        }
     }
     else {
         QGraphicsView::mousePressEvent(event);

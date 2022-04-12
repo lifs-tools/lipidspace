@@ -1698,11 +1698,13 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                         {
                             string feature = features_names_numerical[feature_counter_numerical];
                             double feature_val = atof(tokens->at(i).c_str());
-                            features.insert({feature, Feature(feature, feature_val)});
+                            //if (feature_val != 0) 
+                                features.insert({feature, Feature(feature, feature_val)});
                             if (uncontains_val(feature_values, feature)) {
                                 feature_values.insert({feature, FeatureSet(feature, NumericalFeature)});
                             }
-                            feature_values[feature].numerical_values.insert(feature_val);
+                            //if (feature_val != 0)
+                                feature_values[feature].numerical_values.insert(feature_val);
                         }
                         feature_counter_numerical++;
                         break;

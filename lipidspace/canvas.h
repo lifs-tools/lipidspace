@@ -18,6 +18,7 @@
 #include <QPrinter>
 #include <QCursor>
 #include <iostream>
+#include <QGraphicsSceneMouseEvent>
 #include <vector>
 #include <map>
 #include <math.h>
@@ -44,6 +45,7 @@ public:
     DendrogramLine* next_line;
     DendrogramLine* second_line;
     Dendrogram *dendrogram;
+    DendrogramNode *d_node;
     int node;
     
     DendrogramLine(QLineF l, QPen p, Dendrogram* d);
@@ -107,6 +109,7 @@ public:
     double dwidth;
     double dheight;
     DendrogramLine *top_line;
+    set<int> *highlighted_for_selection;
     
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
     ~Dendrogram();
@@ -210,6 +213,7 @@ signals:
     void mouse(QMouseEvent* event, Canvas *_canvas);
     void swappingLipidomes(int source, int target);
     void context(Canvas *canvas, QPoint pos);
+    void rightClick(QPoint pos, set<int> *selected_d_lipidomes = 0);
     
     
 private:
