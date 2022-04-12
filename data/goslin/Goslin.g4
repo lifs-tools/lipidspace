@@ -251,4 +251,3 @@ element: 'C' | 'H' | 'N' | 'O' | 'P' | 'S' | 'Br' | 'I' | 'F' | 'Cl' | 'As';
 charge : '1' | '2' | '3' | '4';
 charge_sign : plus_minus;
 plus_minus : '-' | '+';
-
