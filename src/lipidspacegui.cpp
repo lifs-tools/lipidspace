@@ -109,10 +109,10 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
             keystrokes += string(1, (char)event->key());
             if (keystrokes.length() > 6) keystrokes = keystrokes.substr(1);
             if (keystrokes == "BUTTER"){
-                QMessageBox::information(this, "Important announcement.", "The butter, the better!");
+                QMessageBox::information(this, "Important announcement.", "The butter, the better!                              ");
             }
             else if (keystrokes.length() >= 3 && keystrokes.substr(keystrokes.length() - 3) == "FAT"){
-                QMessageBox::information(this, "Insight of the week.", "All that glitters is not fat!!");
+                QMessageBox::information(this, "Insight of the week.", "All that glitters is not fat!!                              ");
             }
         }
     }

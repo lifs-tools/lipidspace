@@ -113,32 +113,47 @@ void Dendrogram::clear(){
 
 void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* parent_line){
     if (!node) return;
+    
+    
+    
+    if (!node->left_child && !node->right_child){
+        if (parent_line) parent_line->node = node->order;
+        return;
+    }
+    
+    
     double minx = max(1e-3, x_max_d - x_min_d);
     double miny = max(1e-3, y_max_d - y_min_d);
     double x1 = (node->x_left - x_min_d) * dwidth / minx;
     double y1 = (-node->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
     double x2 = (node->x_right - x_min_d) * dwidth / minx;
     double y2 = (-node->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
-    
+    double m = (x1 + x2) * 0.5;
     
     QPen pen;
     pen.setColor(Qt::black);
     pen.setWidthF(DENDROGRAM_LINE_SIZE / view->transform().m11());
     
-    DendrogramLine* v_line = new DendrogramLine(QLineF(x1, y1, x2, y2), pen, this);
-    view->graphics_scene.addItem(v_line);
-    v_line->setAcceptHoverEvents(true);
+    DendrogramLine* v_line_l = new DendrogramLine(QLineF(x1, y1, m, y2), pen, this);
+    view->graphics_scene.addItem(v_line_l);
+    v_line_l->setAcceptHoverEvents(true);
     
-    bool is_node = true;
+    
+    
+    DendrogramLine* v_line_r = new DendrogramLine(QLineF(m, y1, x2, y2), pen, this);
+    view->graphics_scene.addItem(v_line_r);
+    v_line_r->setAcceptHoverEvents(true);
+    
+    
     if (node->left_child){
         double yl = (-node->left_child->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
         DendrogramLine* l_line = new DendrogramLine(QLineF(x1, y1, x1, yl), pen, this);
         l_line->d_node = node->left_child;
         view->graphics_scene.addItem(l_line);
         l_line->setAcceptHoverEvents(true);
-        v_line->next_line = l_line;
+        v_line_l->next_line = l_line;
         add_dendrogram_lines(node->left_child, l_line);
-        is_node = false;
+        if (l_line->d_node) v_line_l->d_node = l_line->d_node;
     }
     
     if (node->right_child){
@@ -147,16 +162,20 @@ void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* pare
         r_line->d_node = node->right_child;
         view->graphics_scene.addItem(r_line);
         r_line->setAcceptHoverEvents(true);
-        v_line->second_line = r_line;
+        v_line_r->next_line = r_line;
         add_dendrogram_lines(node->right_child, r_line);
-        is_node = false;
-    }
-    if (is_node){
-        v_line->node = node->order;
+        if (r_line->d_node) v_line_r->d_node = r_line->d_node;
     }
     
-    if (parent_line) parent_line->next_line = v_line;
-    else top_line = v_line;
+    if (parent_line){
+        parent_line->next_line = v_line_l;
+        parent_line->second_line = v_line_r;
+    }
+    else{
+        top_line = new DendrogramLine(QLineF(0, 0, 0, 0), pen, this);
+        top_line->next_line = v_line_l;
+        top_line->second_line = v_line_r;
+    }
 }
  
  
@@ -336,9 +355,13 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
             
         }
     }
-    painter->setPen(QPen());
+    
+    QPen black_pen = QPen();
+    black_pen.setWidthF(1. * resize_factor);
+    painter->setPen(black_pen);
     painter->setBrush(QBrush());
     painter->drawEllipse(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2);
+    
 }
 
 
