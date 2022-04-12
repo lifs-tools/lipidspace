@@ -1252,8 +1252,10 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
     if (ui->tabWidget->currentIndex() != 3){
         QAction *actionSelectAll = new QAction("Select all", this);
         QAction *actionDeselectAll = new QAction("Deselect all", this);
+        QAction *actionToggleAll = new QAction("Toggle all", this);
         menu->addAction(actionSelectAll);
         menu->addAction(actionDeselectAll);
+        menu->addAction(actionToggleAll);
         
         QListWidget *widget = nullptr;
         switch(ui->tabWidget->currentIndex()){
@@ -1267,6 +1269,7 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
         menu->popup(widget->viewport()->mapToGlobal(pos));
         connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::select_all_entities);
         connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::deselect_all_entities);
+        connect(actionToggleAll, &QAction::triggered, this, &LipidSpaceGUI::toggle_all_entities);
     }
     else {
         QAction *actionSelectAll = new QAction("Select all nominal features", this);
@@ -1311,6 +1314,22 @@ void LipidSpaceGUI::deselect_all_entities(){
     }
     for (int i = 0; i < widget->count(); ++i){
         widget->item(i)->setCheckState(Qt::Unchecked);
+    }
+}
+
+
+
+void LipidSpaceGUI::toggle_all_entities(){
+    QListWidget *widget = nullptr;
+    switch(ui->tabWidget->currentIndex()){
+        case 0: widget = ui->speciesList; break;
+        case 1: widget = ui->classList; break;
+        case 2: widget = ui->categoryList; break;
+        case 3: return;
+        case 4: widget = ui->sampleList; break;
+    }
+    for (int i = 0; i < widget->count(); ++i){
+        widget->item(i)->setCheckState(widget->item(i)->checkState() ? Qt::Unchecked :  Qt::Checked);
     }
 }
 

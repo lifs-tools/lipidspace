@@ -128,6 +128,7 @@ public slots:
     void updateView(int);
     void select_all_entities();
     void deselect_all_entities();
+    void toggle_all_entities();
     void select_all_features();
     void deselect_all_features();
     void reset_all_features();
