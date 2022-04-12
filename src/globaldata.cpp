@@ -11,6 +11,7 @@ int GlobalData::pie_tree_depth = 3;
 Linkage GlobalData::linkage = AverageLinkage;
 int GlobalData::feature_counter = 0;
 int GlobalData::dendrogram_height = 100;
+int GlobalData::pie_size = 100;
 string GlobalData::LipidSpace_version = "v0.x.x";
 string GlobalData::normalization = "absolute";
 map<string, QColor> GlobalData::colorMapFeatures;

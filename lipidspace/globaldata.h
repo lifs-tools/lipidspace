@@ -24,6 +24,7 @@ public:
     static map<string, QColor> colorMapFeatures;
     static int pie_tree_depth;
     static int dendrogram_height;
+    static int pie_size;
     static string normalization;
     static Linkage linkage;
     static string LipidSpace_version;

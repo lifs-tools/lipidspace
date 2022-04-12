@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1009</width>
+    <width>1057</width>
     <height>615</height>
    </rect>
   </property>
@@ -231,7 +231,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget_2">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_5">
         <attribute name="title">
@@ -299,7 +299,7 @@
              </rect>
             </property>
            </widget>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="labelSelectFeatur">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -312,7 +312,7 @@
              <string>Select feature</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="labelPieTreeDepth">
             <property name="geometry">
              <rect>
               <x>170</x>
@@ -338,7 +338,7 @@
              <number>3</number>
             </property>
            </widget>
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="labelDendrogramHeight">
             <property name="geometry">
              <rect>
               <x>270</x>
@@ -356,7 +356,42 @@
              <rect>
               <x>270</x>
               <y>40</y>
-              <width>81</width>
+              <width>91</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="suffix">
+             <string>%</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+           </widget>
+           <widget class="ClickableLabel" name="labelPieSize">
+            <property name="geometry">
+             <rect>
+              <x>410</x>
+              <y>20</y>
+              <width>131</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Pie size</string>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="pieSizeSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>410</x>
+              <y>40</y>
+              <width>91</width>
               <height>27</height>
              </rect>
             </property>
@@ -412,7 +447,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1009</width>
+     <width>1057</width>
      <height>23</height>
     </rect>
    </property>
@@ -700,6 +735,11 @@
   <customwidget>
    <class>Canvas</class>
    <extends>QGraphicsView</extends>
+   <header>lipidspace/canvas.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ClickableLabel</class>
+   <extends>QLabel</extends>
    <header>lipidspace/canvas.h</header>
   </customwidget>
  </customwidgets>

@@ -125,6 +125,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
     keystrokes = "";
+    knubbel = false;
     
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
     
@@ -180,7 +181,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->applyChangesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->pieTreeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieTree(int)));
     connect(ui->dendrogramHeightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setDendrogramHeight(int)));
+    connect(ui->pieSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieSize(int)));
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
+    connect(ui->labelPieSize, SIGNAL(clicked()), this, SLOT(setKnubbel()));
     
     ui->speciesList->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->classList->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -563,6 +566,7 @@ void LipidSpaceGUI::runAnalysis(){
     
     // reset parameters
     ui->dendrogramHeightSpinBox->setValue(100);
+    ui->pieSizeSpinBox->setValue(100);
     GlobalData::color_counter = 0;
     GlobalData::feature_counter = 0;
     GlobalData::colorMap.clear();
@@ -940,6 +944,12 @@ void LipidSpaceGUI::setDendrogramHeight(int height){
     ui->dendrogramView->setFeature(ui->featureComboBox->currentText().toStdString());
 }
 
+
+void LipidSpaceGUI::setPieSize(int size){
+    GlobalData::pie_size = size;
+    ui->dendrogramView->setFeature(ui->featureComboBox->currentText().toStdString());
+}
+
 void LipidSpaceGUI::openAbout(){
     About about(this);
     about.setModal(true);
@@ -953,6 +963,11 @@ void LipidSpaceGUI::openLog(){
     about.exec();
 }
 
+
+void LipidSpaceGUI::setKnubbel(){
+    knubbel = !knubbel;
+    ui->labelPieSize->setText(knubbel ? "Knubbelgröße" : "Pie size");
+}
 
 
 

@@ -225,8 +225,11 @@ QRectF Dendrogram::boundingRect() const {
 
 
 void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double threshold, double pie_x, double pie_y, LabelDirection direction){
-    double pie_radius = 30;
+    double resize_factor = (double)GlobalData::pie_size / 100.;
+    double pie_radius = 30. * resize_factor;
     int angle_start = 16 * 90;
+    QFont pie_font("Helvetica");
+    pie_font.setPointSizeF(10. * resize_factor);
     if (lipid_space->feature_values[feature].feature_type == NominalFeature){
         double sum = 0;
         for (auto kv : node->feature_count_nominal[feature]){
@@ -258,6 +261,7 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
         QPen piePen(brush.color());
         painter->setPen(piePen);
         painter->setBrush(brush);
+        painter->setFont(pie_font);
         if (span > 0) painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
         
         angle_start = (angle_start + span) % 5760;
@@ -268,33 +272,55 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
         painter->setBrush(brush);
         if (span > 0) painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
         
+        
         if (direction == LabelLeft){
             double x = pie_x - pie_radius * 1.2;
             double y = pie_y;
             
+            // drawing the legend squares
             QBrush brush(GlobalData::colorMapFeatures[feature_le]);
             QPen piePen(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
-            painter->drawRect(x - 15, y - 20, 15, 15);
+            painter->drawRect(x - 15 * resize_factor, y - 20 * resize_factor, 15 * resize_factor, 15 * resize_factor);
+            
+            brush.setColor(GlobalData::colorMapFeatures[feature_gr]);
+            piePen.setBrush(brush.color());
+            painter->setPen(piePen);
+            painter->setBrush(brush);
+            painter->drawRect(x - 15 * resize_factor, y + 5 * resize_factor, 15 * resize_factor, 15 * resize_factor);
             
             QPen textPen(Qt::black);
             painter->setPen(textPen);
-            painter->drawText(QRect(x - 300, y, 300, 60), Qt::AlignTop | Qt::AlignRight, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
+            painter->drawText(QRect(x - 320 * resize_factor, y - 42 * resize_factor, 300 * resize_factor, 60 * resize_factor), Qt::AlignVCenter | Qt::AlignRight, QString::number(threshold, 'g') + QString(" ") + QChar(0x2265));
+            painter->drawText(QRect(x - 320 * resize_factor, y - 18 * resize_factor, 300 * resize_factor, 60 * resize_factor), Qt::AlignVCenter | Qt::AlignRight, QString::number(threshold, 'g') + QString(" <") );
+            
+            
+            
         }
         else if (direction == LabelRight){
             double x = pie_x + pie_radius * 1.2;
             double y = pie_y;
             
+            // drawing the legend squares
             QBrush brush(GlobalData::colorMapFeatures[feature_le]);
             QPen piePen(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
-            painter->drawRect(x , y - 20, 15, 15);
+            painter->drawRect(x, y - 20 * resize_factor, 15 * resize_factor, 15 * resize_factor);
+            
+            brush.setColor(GlobalData::colorMapFeatures[feature_gr]);
+            piePen.setBrush(brush.color());
+            painter->setPen(piePen);
+            painter->setBrush(brush);
+            painter->drawRect(x, y + 5 * resize_factor, 15 * resize_factor, 15 * resize_factor);
+            
+            
             
             QPen textPen(Qt::black);
             painter->setPen(textPen);
-            painter->drawText(QRect(x, y, 300, 60), Qt::AlignTop | Qt::AlignLeft, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
+            painter->drawText(QRect(x + 20 * resize_factor, y - 42 * resize_factor, 300 * resize_factor, 60 * resize_factor), Qt::AlignVCenter | Qt::AlignLeft, QChar(0x2264) + QString(" ") + QString::number(threshold, 'g'));
+            painter->drawText(QRect(x + 20 * resize_factor, y - 18 * resize_factor, 300 * resize_factor, 60 * resize_factor), Qt::AlignVCenter | Qt::AlignLeft, QString("> ") + QString::number(threshold, 'g'));
             
         }
     }

@@ -132,7 +132,9 @@ public slots:
     void deselect_all_features();
     void reset_all_features();
     void setPieTree(int);
+    void setKnubbel();
     void setDendrogramHeight(int);
+    void setPieSize(int);
     void setNormalization(int);
     
     
@@ -149,6 +151,7 @@ private:
     QTimer timer;
     DragLayer *dragLayer;
     vector<Canvas*> canvases;
+    bool knubbel;
     bool table_transposed;
     map<string, vector<string>> sortings[4];
     vector<QComboBox*> sorting_boxes;
