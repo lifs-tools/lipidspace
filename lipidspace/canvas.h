@@ -51,9 +51,10 @@ public:
     DendrogramLine(QLineF l, QPen p, Dendrogram* d);
     void update_width(double);
     void update_height_factor(double, QPointF *);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    QPainterPath shape() const override;
     void highlight(bool);
     void make_permanent(bool);
 };

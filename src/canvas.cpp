@@ -21,6 +21,19 @@ void DendrogramLine::update_width(double w){
 }
 
 
+QPainterPath DendrogramLine::shape() const {
+    QPainterPath path;
+    double margin = 15. / dendrogram->view->transform().m11();
+    if (fabs(line().x2() - line().x1()) > fabs(line().y2() - line().y1())){
+        path.addRect(line().x1(), line().y1() - margin, line().x2() - line().x1(), 2 * margin);
+    }
+    else {
+        path.addRect(line().x1() - margin, line().y1(), 2 * margin, line().y2() - line().y1());
+    }
+    return path;
+}
+
+
 void DendrogramLine::hoverEnterEvent(QGraphicsSceneHoverEvent *){
     highlight(true);
     dendrogram->update();
