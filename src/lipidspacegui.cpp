@@ -126,6 +126,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->setupUi(this);
     keystrokes = "";
     
+    this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
+    
     
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
     connect(lipid_space, SIGNAL(reassembled()), this, SLOT(updateSelectionView()));

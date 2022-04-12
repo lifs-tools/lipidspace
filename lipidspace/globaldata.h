@@ -26,6 +26,7 @@ public:
     static int dendrogram_height;
     static string normalization;
     static Linkage linkage;
+    static string LipidSpace_version;
 };
 
 

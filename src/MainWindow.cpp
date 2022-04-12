@@ -1,6 +1,7 @@
 #include "lipidspace/lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/logging.h"
+#include "lipidspace/globaldata.h"
 #include <QApplication>
 
 
@@ -39,7 +40,7 @@ int main(int argc, char** argv) {
     if (argc == 1){
     
         QApplication application(argc, argv);
-        Logging::write_log("LipidSpace v.1.0.1 was launched in window mode");
+        Logging::write_log("LipidSpace " + GlobalData::LipidSpace_version + " was launched in window mode");
         LipidSpace lipid_space;
         LipidSpaceGUI lipid_space_gui(&lipid_space);
         lipid_space_gui.show();

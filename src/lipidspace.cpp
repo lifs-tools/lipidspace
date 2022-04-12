@@ -1116,9 +1116,9 @@ bool LipidSpace::compute_global_distance_matrix(){
         if (i < j){
             
             bool go_on = true;
-            #pragma omp critical
-            {
-                if (progress){
+            if (progress){
+                #pragma omp critical
+                {
                     go_on = !progress->stop_progress;
                     if (++progress->current_progress / total_num * 100. >= next_tp){
                         progress->set(progress->current_progress);
