@@ -136,10 +136,12 @@ public slots:
     void setDendrogramHeight(int);
     void setPieSize(int);
     void setNormalization(int);
+    void selectDendrogramLipidomes();
     
     
 private:
     Ui::LipidSpaceGUI *ui;
+    set<int> *selected_d_lipidomes;
     bool showDendrogram;
     bool showGlobalLipidome;
     TileLayout tileLayout;

@@ -125,6 +125,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
     keystrokes = "";
+    selected_d_lipidomes = 0;
     knubbel = false;
     
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
@@ -1189,15 +1190,7 @@ void LipidSpaceGUI::openLists(){
 
 
 
-void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos, set<int> *selected_d_lipidomes){
-    if (!lipid_space->analysis_finished) return;
-    QMenu *menu = new QMenu(this);
-    QAction *exportAsPdf = new QAction("Export as pdf", this);
-    menu->addAction(exportAsPdf);
-    menu->popup(ui->dendrogramView->viewport()->mapToGlobal(pos));
-    connect(exportAsPdf, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsPdf);
-    
-    
+void LipidSpaceGUI::selectDendrogramLipidomes(){
     if (selected_d_lipidomes){
         QListWidget *widget = ui->sampleList;
         for (int i = 0; i < widget->count(); ++i){
@@ -1212,6 +1205,32 @@ void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos, set<int> *select
                 widget->item(i)->setCheckState(Qt::Checked);
             }
         }
+        //ui->tabWidget->setCurrentWidget(widget);
+        emit ui->tabWidget->setCurrentIndex(4);
+        selected_d_lipidomes = 0;
+    }
+}
+
+
+
+
+void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos, set<int> *selected_d_lipidomes){
+    if (!lipid_space->analysis_finished) return;
+    
+    if (selected_d_lipidomes){
+        this->selected_d_lipidomes = selected_d_lipidomes;
+        QMenu *menu = new QMenu(this);
+        QAction *actionSelect = new QAction("Select these lipidomes in sample selection", this);
+        menu->addAction(actionSelect);
+        menu->popup(ui->dendrogramView->viewport()->mapToGlobal(pos));
+        connect(actionSelect, &QAction::triggered, this, &LipidSpaceGUI::selectDendrogramLipidomes);
+    }
+    else {
+        QMenu *menu = new QMenu(this);
+        QAction *exportAsPdf = new QAction("Export as pdf", this);
+        menu->addAction(exportAsPdf);
+        menu->popup(ui->dendrogramView->viewport()->mapToGlobal(pos));
+        connect(exportAsPdf, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsPdf);
     }
     
 }
