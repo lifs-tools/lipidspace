@@ -78,6 +78,8 @@ public:
     void load_row_table(string table_file, vector<TableColumnType> *column_types = 0);
     void load_column_table(string table_file, vector<TableColumnType> *column_types);
     void load_pivot_table(string table_file, vector<TableColumnType> *column_types);
+    void load_mzTabM(string mzTabM_file);
+    int extract_number(string line, int line_number = -1);
     
 signals:
     void fileLoaded();

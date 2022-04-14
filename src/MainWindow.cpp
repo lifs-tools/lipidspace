@@ -112,7 +112,11 @@ int main(int argc, char** argv) {
             delete tokens;
         }
     }
-    
+    else {
+        QApplication application(argc, argv);
+        LipidSpace lipid_space;
+        lipid_space.load_mzTabM("examples/mzTabM/singaporean-plasma-site1.mzTab");
+    }
     
     
     /*

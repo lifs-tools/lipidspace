@@ -1365,6 +1365,186 @@ void LipidSpace::normalize_intensities(){
 }
 
 
+inline int LipidSpace::extract_number(string line, int line_number){
+    unsigned long start_sample_num = line.find("[");
+    unsigned long end_sample_num = line.find("]");
+    if ((start_sample_num == std::string::npos) || (end_sample_num == std::string::npos) || (end_sample_num <= start_sample_num)){
+        throw LipidSpaceException("Error in line " + std::to_string(line_number) + ", line is corrupted.", CorruptedFileFormat);
+    }
+    start_sample_num += 1;
+    return atoi(line.substr(start_sample_num, end_sample_num - start_sample_num).c_str());
+}
+
+
+void LipidSpace::load_mzTabM(string mzTabM_file){
+    Logging::write_log("Importing table '" + mzTabM_file + "' as pivot table.");
+    
+    ifstream infile(mzTabM_file);
+    if (!infile.good()){
+        throw LipidSpaceException("Error: file '" + mzTabM_file + "' could not be found.", FileUnreadable);
+    }
+    vector<Table*> loaded_lipidomes;
+    map<int, string> feature_names;
+    
+    vector<string> *tokens = 0;
+    vector<string> *sample_data = 0;
+    vector<string> *content_tokens = 0;
+    try {
+        // go through file
+        string line;
+        int line_num = 0;
+        while (getline(infile, line)){
+            ++line_num;
+            if (line.length() == 0) continue;
+            
+            vector<string> *tokens = split_string(line, '\t', '"', true);
+            for (int i = 0; i < (int)tokens->size(); ++i) tokens->at(i) = strip(tokens->at(i), '"');
+            
+            if (tokens->size() == 0){
+                delete tokens;
+                tokens = 0;
+                continue;
+            }
+            
+            // found a sample information line
+            if (tokens->size() >= 3 && tokens->at(0) == "MTD" && tokens->at(1).substr(0, 6) == "sample"){
+                if (tokens->at(1).size() == 6){
+                    throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", sample number not provided. " + line, CorruptedFileFormat);
+                }
+                
+                if (tokens->at(1).substr(0, 7) != "sample[") continue;
+                
+                vector<string> *sample_data = split_string(tokens->at(1), '-', '"', true);
+                
+                // searching for pattern: sample[123]
+                if (sample_data->size() == 1){
+                    string sample_name = tokens->at(2);
+                    int sample_number = extract_number(sample_data->at(0), line_num);
+                    
+                    if (sample_number <= 0){
+                        throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", sample number must be a positive number.", CorruptedFileFormat);
+                    }
+                    if (sample_number > 1048576){
+                        throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", sample number is exceeding 1048576.", CorruptedFileFormat);
+                    }
+                    
+                    
+                    if ((int)loaded_lipidomes.size() < sample_number){
+                        loaded_lipidomes.resize(sample_number, 0);
+                    }
+                    if (loaded_lipidomes.at(sample_number - 1)){
+                        loaded_lipidomes[sample_number - 1]->file_name = sample_name;
+                        loaded_lipidomes[sample_number - 1]->cleaned_name = sample_name;
+                    }
+                    else {
+                        loaded_lipidomes[sample_number - 1] = new Table(sample_name);
+                    }
+                }
+                
+                // search for pattern: sample[123]-content[123]
+                else {
+                    string sample_name = tokens->at(2);
+                    int sample_number = extract_number(sample_data->at(0), line_num);
+                    
+                    if (sample_number <= 0){
+                        throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", sample number must be a positive number.", CorruptedFileFormat);
+                    }
+                    if (sample_number > 1048576){
+                        throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", sample number is exceeding 1048576.", CorruptedFileFormat);
+                    }
+                    
+                    if ((int)loaded_lipidomes.size() < sample_number){
+                        loaded_lipidomes.resize(sample_number, 0);
+                        loaded_lipidomes[sample_number - 1] = new Table("-");
+                    }
+                    
+                    int content_number = extract_number(sample_data->at(1), line_num);
+                    string content_name = sample_data->at(1).substr(0, sample_data->at(1).find("["));
+                    
+                    vector<string> *content_tokens = split_string(strip(strip(strip(tokens->at(2), ' '), '['), ']'), ',', '\0', true);
+                    for (uint i = 0; i < content_tokens->size(); ++i) content_tokens->at(i) = strip(content_tokens->at(i), ' ');
+                    
+                    if (content_name == "custom"){
+                        if (content_tokens->size() < 4 || content_tokens->at(2).size() == 0 || content_tokens->at(3).size() == 0){
+                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", line is corrupted.", CorruptedFileFormat);
+                        }
+                        string key = content_tokens->at(2);
+                        string value = content_tokens->at(3);
+                        if (uncontains_val(feature_names, content_number)){
+                            feature_names.insert({content_number, key});
+                        }
+                        else if (feature_names[content_number] != key){
+                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", different study variable key than already used, '" + feature_names[content_number] + "' vs. '" + key + "'", CorruptedFileFormat);
+                        }
+                        
+                        // is custom value a string?
+                        if (key.size() >= 3 && key[0] == '"' && key[key.size() - 1] == '"'){
+                            loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, strip(value, '"'))});
+                        }
+                        else {
+                            loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, atof(value.c_str()))});
+                        }
+                    }
+                    else if (content_name == "species"){
+                        if (content_tokens->size() < 3 || content_tokens->at(2).size() == 0){
+                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", line is corrupted.", CorruptedFileFormat);
+                        }
+                        string key = "Taxonomic species";
+                        string value = content_tokens->at(2);
+                        loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, strip(value, '"'))});
+                    }
+                    else if (content_name == "tissue"){
+                        if (content_tokens->size() < 3 || content_tokens->at(2).size() == 0){
+                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", line is corrupted.", CorruptedFileFormat);
+                        }
+                        string key = "Tissue";
+                        string value = content_tokens->at(2);
+                        loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, strip(value, '"'))});
+                    }
+                    
+                    delete content_tokens;
+                    content_tokens = 0;
+                }
+                
+                delete sample_data;
+                sample_data = 0;
+            }
+            
+            
+            delete tokens;
+            tokens = 0;
+        }
+        
+        // when all lipidomes are loaded successfully
+        // they will be added to the global lipidome set
+        for (auto lipidome : loaded_lipidomes){
+            lipidomes.push_back(lipidome);
+        }
+    }
+    catch(LipidSpaceException &e){
+        if (tokens) delete tokens;
+        if (sample_data) delete sample_data;
+        if (content_tokens) delete content_tokens;
+        for (auto lipidome : loaded_lipidomes){
+            delete lipidome;
+        }
+        throw e;
+    }
+    catch (exception &e){
+        if (tokens) delete tokens;
+        if (sample_data) delete sample_data;
+        if (content_tokens) delete content_tokens;
+        for (auto lipidome : loaded_lipidomes){
+            delete lipidome;
+        }
+        throw e;
+    }
+    
+    
+    
+    fileLoaded();
+}
+
 
 
 void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnType> *column_types){
