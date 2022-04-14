@@ -309,7 +309,7 @@
              </rect>
             </property>
             <property name="text">
-             <string>Select feature</string>
+             <string>Study variable</string>
             </property>
            </widget>
            <widget class="QLabel" name="labelPieTreeDepth">

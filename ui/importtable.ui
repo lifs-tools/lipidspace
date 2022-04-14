@@ -139,7 +139,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Numerical feature columns</string>
+      <string>Numerical study varibles</string>
      </property>
     </widget>
     <widget class="SingleListWidget" name="sampleListWidgetCol">
@@ -257,7 +257,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Nominal feature columns</string>
+      <string>Nominal study variables</string>
      </property>
     </widget>
     <widget class="QListWidget" name="nominalFeatureListWidgetCol">
@@ -305,7 +305,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Numerical feature columns</string>
+      <string>Numerical study variables</string>
      </property>
     </widget>
     <widget class="SingleListWidget" name="quantListWidgetPivot">
@@ -426,7 +426,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Nominal feature columns</string>
+      <string>Nominal study variables</string>
      </property>
     </widget>
     <widget class="QListWidget" name="nominalFeatureListWidgetPivot">
