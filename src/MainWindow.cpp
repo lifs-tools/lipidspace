@@ -115,6 +115,8 @@ int main(int argc, char** argv) {
     else {
         QApplication application(argc, argv);
         LipidSpace lipid_space;
+        lipid_space.ignore_unknown_lipids = true;
+        lipid_space.ignore_doublette_lipids = true;
         lipid_space.load_mzTabM("examples/mzTabM/singaporean-plasma-site1.mzTab");
     }
     

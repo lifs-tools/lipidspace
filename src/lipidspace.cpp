@@ -1378,6 +1378,7 @@ inline int LipidSpace::extract_number(string line, int line_number){
 
 void LipidSpace::load_mzTabM(string mzTabM_file){
     Logging::write_log("Importing table '" + mzTabM_file + "' as pivot table.");
+    set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     
     ifstream infile(mzTabM_file);
     if (!infile.good()){
@@ -1385,6 +1386,9 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
     }
     vector<Table*> loaded_lipidomes;
     map<int, string> feature_names;
+    
+    vector<Feature> headers;
+    set<string> lipid_set;
     
     vector<string> *tokens = 0;
     vector<string> *sample_data = 0;
@@ -1490,6 +1494,9 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                             throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", line is corrupted.", CorruptedFileFormat);
                         }
                         string key = "Taxonomic species";
+                        if (uncontains_val(feature_names, -1)){
+                            feature_names.insert({-1, key});
+                        }
                         string value = content_tokens->at(2);
                         loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, strip(value, '"'))});
                     }
@@ -1498,6 +1505,9 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                             throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", line is corrupted.", CorruptedFileFormat);
                         }
                         string key = "Tissue";
+                        if (uncontains_val(feature_names, -2)){
+                            feature_names.insert({-2, key});
+                        }
                         string value = content_tokens->at(2);
                         loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, strip(value, '"'))});
                     }
@@ -1510,10 +1520,79 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                 sample_data = 0;
             }
             
+            if (tokens->size() >= 1 && tokens->at(0) == "SMH"){
+                if (!headers.empty()){
+                    throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", header already defined.", CorruptedFileFormat);
+                }
+                    
+                    
+                for (uint i = 0; i < tokens->size(); ++i){
+                    string header = tokens->at(i);
+                    if (header.size() > 16 && header.substr(0, 16) == "abundance_assay["){
+                        int sample_number = extract_number(header, line_num) - 1;
+                        if (sample_number < 0 || sample_number >= (int)loaded_lipidomes.size()){
+                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", assay number '" + std::to_string(sample_number) + "' not registered.", CorruptedFileFormat);
+                        }
+                        headers.push_back(Feature("[s]", sample_number));
+                    }
+                    else {
+                        headers.push_back(Feature(header, ""));
+                    }
+                }
+            }
+            
+            if (tokens->size() >= 1 && tokens->at(0) == "SML"){
+                if (tokens->size() > headers.size()){
+                    throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", more elements (" + std::to_string(tokens->size()) + ") than defined in header (" + std::to_string(headers.size()) + ").", CorruptedFileFormat);
+                }
+                
+                LipidAdduct *l = 0;
+                
+                for (uint i = 0; i < tokens->size(); ++i){
+                    Feature &f = headers[i];
+                    string value = tokens->at(i);
+                    
+                    // found abundance
+                    if (f.name == "[s]"){
+                        if (!l && !ignore_unknown_lipids && !ignore_doublette_lipids){
+                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", lipid name (with header 'chemical_name') must occur before any abundance.", CorruptedFileFormat);
+                        }
+                        
+                        if (l && !contains_val(NA_VALUES, value)){ // valid abundance
+                            Table* lipidome = loaded_lipidomes.at((int)f.numerical_value);
+                            lipidome->lipids.push_back(l);
+                            lipidome->species.push_back(l->get_lipid_string());
+                            lipidome->classes.push_back(l->get_lipid_string(CLASS));
+                            lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
+                        }
+                        
+                    }
+                    else if (f.name == "chemical_name"){
+                        bool ignore_lipid = false;
+                        l = load_lipid(tokens->at(i), lipid_set, ignore_lipid);
+                    }
+                }
+            }
+            
+            
             
             delete tokens;
             tokens = 0;
         }
+        
+        
+        // checking consistancy of features
+        vector<string> registered_features;
+        for (auto kv : feature_names) registered_features.push_back(kv.second);
+        for (auto lipidome : loaded_lipidomes){
+            for (auto feature : registered_features){
+                if (uncontains_val(lipidome->features, feature)){
+                    throw LipidSpaceException("Error, study variable '" + feature + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
+                }
+            }
+        }
+        
+        
         
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
