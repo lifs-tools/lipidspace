@@ -506,9 +506,14 @@ void PointSet::loadPoints(){
         }
             
         
-        double xval = sign_log(lipidome->m(rr, GlobalData::PC1)) * POINT_BASE_FACTOR;
-        double yval = sign_log(lipidome->m(rr, GlobalData::PC2)) * POINT_BASE_FACTOR;
-        double intens = lipidome->intensities[rr] > 1 ? log(lipidome->intensities[rr]) : 0.5;
+        double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
+        f = 1. / log(f + 1.);
+        
+        //double xval = sign_log(lipidome->m(rr, GlobalData::PC1)) * POINT_BASE_FACTOR;
+        //double yval = sign_log(lipidome->m(rr, GlobalData::PC2)) * POINT_BASE_FACTOR;
+        double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
+        double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
+        double intens = lipidome->intensities[rr] > POINT_BASE_SIZE ? log(lipidome->intensities[rr]) : POINT_BASE_SIZE * 0.5;
         double intens_boundery = intens * 0.5;
         
         x_min = min(x_min, xval - intens_boundery);
@@ -632,10 +637,11 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     QPen pen_arr;
     pen_arr.setColor(QColor(LABEL_COLOR));
     pen_arr.setStyle(Qt::DashLine);
-    pen_arr.setWidth(5);
+    pen_arr.setWidth(10);
     
     
-    QFont f("Helvetica", 1);
+    QFont f("Helvetica");
+    f.setPointSizeF(1.2);
     painter->setFont(f);
     for (auto pc_label : labels){
         painter->setPen(pen_arr);
@@ -727,8 +733,12 @@ void PointSet::set_labels(){
     for (auto kv : indexes){
         double mx = 0, my = 0;
         for (auto i : kv.second){
-            mx += sign_log(lipidome->m(i, GlobalData::PC1)) * POINT_BASE_FACTOR;
-            my += sign_log(lipidome->m(i, GlobalData::PC2)) * POINT_BASE_FACTOR;
+            double f = sqrt(sq(lipidome->m(i, GlobalData::PC1)) + sq(lipidome->m(i, GlobalData::PC2)));
+            f = 1. / log(f + 1.);
+            //mx += sign_log(lipidome->m(i, GlobalData::PC1)) * POINT_BASE_FACTOR;
+            //my += sign_log(lipidome->m(i, GlobalData::PC2)) * POINT_BASE_FACTOR;
+            mx += lipidome->m(i, GlobalData::PC1) * f * POINT_BASE_FACTOR;
+            my += lipidome->m(i, GlobalData::PC2) * f * POINT_BASE_FACTOR;
         }
         mean_x.push_back(mx / (double)kv.second.size());
         mean_y.push_back(my / (double)kv.second.size());
@@ -741,8 +751,12 @@ void PointSet::set_labels(){
     }
     
     for (int i = 0; i < lipidome->m.rows; ++i){
-        mean_x.push_back(sign_log(lipidome->m(i, 0)) * POINT_BASE_FACTOR);
-        mean_y.push_back(sign_log(lipidome->m(i, 1)) * POINT_BASE_FACTOR);
+        double f = sqrt(sq(lipidome->m(i, 0)) + sq(lipidome->m(i, 1)));
+        f = 1. / log(f + 1.);
+        //mean_x.push_back(sign_log(lipidome->m(i, 0)) * POINT_BASE_FACTOR);
+        //mean_y.push_back(sign_log(lipidome->m(i, 1)) * POINT_BASE_FACTOR);
+        mean_x.push_back(lipidome->m(i, 0) * f * POINT_BASE_FACTOR);
+        mean_y.push_back(lipidome->m(i, 1) * f * POINT_BASE_FACTOR);
     }
 
     
@@ -1124,7 +1138,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         
         QStringList lipid_names;
         for (int i = 0; i < (int)pointSet->points.size(); ++i){
-            double intens = GlobalData::showQuant ? pointSet->points[i].intensity : 1.;
+            double intens = GlobalData::showQuant ? pointSet->points[i].intensity : POINT_BASE_SIZE;
             double margin = sq(0.5 * intens);
             if (sq(relative_mouse.x() - pointSet->points[i].point.x()) + sq(relative_mouse.y() - pointSet->points[i].point.y()) <= margin){
                 lipid_names.push_back(QString(pointSet->points[i].label));

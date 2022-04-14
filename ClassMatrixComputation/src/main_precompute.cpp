@@ -107,11 +107,11 @@ int main(){
         }
         
         else if (i <= j){
-            
+            /*
             #pragma omp critical
             {
                 cout << lipid_names.at(i) << " / " << lipid_names.at(j) << " | " << i << " " << j << " / " << n << endl;
-            }
+            }*/
             if (graphs.at(i) != 0 && graphs.at(j) != 0) cse.computeSimilarity(graphs.at(i), graphs.at(j), matrix[i][j]);
             else {
                 if (graphs.at(i) == 0 && graphs.at(j) == 0) {

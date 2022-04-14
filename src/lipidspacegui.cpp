@@ -139,6 +139,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     dragLayer->setVisible(false);
     dragLayer->setWindowFlags(Qt::FramelessWindowHint);
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->tableWidget->setSelectionMode(QAbstractItemView::ContiguousSelection);
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     
     ui->speciesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -171,6 +172,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionUnbound_lipid_distance_metric, &QAction::triggered, this, &LipidSpaceGUI::toggleBoundMetric);
     connect(ui->actionExport_Results, &QAction::triggered, this, &LipidSpaceGUI::setExport);
     connect(ui->tableWidget, SIGNAL(cornerButtonClick()), this, SLOT(transposeTable()));
+    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowTableContextMenu);
     connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
     connect(this, SIGNAL(featureChanged(string)), ui->dendrogramView, SLOT(setFeature(string)));
     connect(ui->speciesList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
@@ -541,6 +543,7 @@ void LipidSpaceGUI::runAnalysis(){
     // clear all windows with canvases
     ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
+    single_window = -1;
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
     
@@ -1214,6 +1217,28 @@ void LipidSpaceGUI::selectDendrogramLipidomes(){
 
 
 
+void LipidSpaceGUI::copy_to_clipboard(){
+    
+    QList<QTableWidgetSelectionRange> ranges = ui->tableWidget->selectedRanges();
+    if (ranges.size() != 1) return;
+    QTableWidgetSelectionRange range = ranges.first();
+    QTableWidget *t = ui->tableWidget;
+    QString str;
+    for (int r = range.topRow(); r <= range.bottomRow(); ++r){
+        for (int c = range.leftColumn(); c <= range.rightColumn(); ++c){
+            QTextStream(&str) << t->item(r, c)->text();
+            if (c < range.rightColumn()) QTextStream(&str) << "\t";
+        }
+        QTextStream(&str) << "\n";
+    }
+    
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(str);
+}
+
+
+
+
 void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos, set<int> *selected_d_lipidomes){
     if (!lipid_space->analysis_finished) return;
     
@@ -1244,6 +1269,16 @@ void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
     
     menu->popup(canvas->viewport()->mapToGlobal(pos));
     connect(exportAsPdf, &QAction::triggered, canvas, &Canvas::exportAsPdf);
+}
+
+
+void LipidSpaceGUI::ShowTableContextMenu(const QPoint pos){
+    QMenu *menu = new QMenu(this);
+    QAction *copyToClipboard = new QAction("Copy selection", this);
+    menu->addAction(copyToClipboard);
+    
+    menu->popup(ui->tableWidget->viewport()->mapToGlobal(pos));
+    connect(copyToClipboard, &QAction::triggered, this, &LipidSpaceGUI::copy_to_clipboard);
 }
 
 
@@ -1392,10 +1427,13 @@ void LipidSpaceGUI::fill_Table(){
     // achieve sorted list of lipid species
     set< string > sorted_lipid_species;
     set< string > selected_species;
+    set< string > selected_lipidomes;
+    set< int > unselected_lipidome_indexes;
     for (auto lipidome : lipid_space->lipidomes){
         for (auto lipid_species : lipidome->species) sorted_lipid_species.insert(lipid_species);
     }
     for (auto lipid_species : lipid_space->global_lipidome->species) selected_species.insert(lipid_species);
+    for (auto lipidome : lipid_space->selected_lipidomes) selected_lipidomes.insert(lipidome->cleaned_name.c_str());
     
     if (table_transposed){
         t->setColumnCount(lipid_space->lipidomes.size());
@@ -1405,6 +1443,7 @@ void LipidSpaceGUI::fill_Table(){
             item = new QTableWidgetItem(QString(lipid_space->lipidomes[c]->cleaned_name.c_str()));
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             t->setHorizontalHeaderItem(c, item);
+            if (uncontains_val(selected_lipidomes, lipid_space->lipidomes[c]->cleaned_name.c_str())) unselected_lipidome_indexes.insert(c);
         }
         
         int f = 0;
@@ -1446,6 +1485,10 @@ void LipidSpaceGUI::fill_Table(){
                     item = new QTableWidgetItem(QString::number(kv.second.numerical_value));
                 }
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+                
+                if (contains_val(unselected_lipidome_indexes, c)){
+                    item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
+                }
                 int r = feature_index[kv.first];
                 t->setItem(r, c, item);
                 free_cells.remove(r * C + c);
@@ -1456,7 +1499,7 @@ void LipidSpaceGUI::fill_Table(){
                 item = new QTableWidgetItem(qn);
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
                 
-                if (uncontains_val(selected_species, lipid_space->lipidomes[c]->species[r])){
+                if (uncontains_val(selected_species, lipid_space->lipidomes[c]->species[r]) || contains_val(unselected_lipidome_indexes, c)){
                     item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
                 }
                 
@@ -1494,6 +1537,7 @@ void LipidSpaceGUI::fill_Table(){
             item = new QTableWidgetItem(header_name);
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             t->setVerticalHeaderItem(r, item);
+            if (uncontains_val(selected_lipidomes, lipid_space->lipidomes[r]->cleaned_name.c_str())) unselected_lipidome_indexes.insert(r);
         }
         
         int f = 0;
@@ -1531,6 +1575,9 @@ void LipidSpaceGUI::fill_Table(){
                     item = new QTableWidgetItem(QString::number(kv.second.numerical_value));
                 }
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+                if (contains_val(unselected_lipidome_indexes, r)){
+                    item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
+                }
                 int c = feature_index[kv.first];
                 t->setItem(r, c, item);
                 free_cells.remove(r * C + c);
@@ -1540,7 +1587,7 @@ void LipidSpaceGUI::fill_Table(){
             for (int c = 0; c < (int)lipid_space->lipidomes[r]->species.size(); c++){
                 item = new QTableWidgetItem(QString::number(lipid_space->lipidomes[r]->original_intensities[c]));
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                if (uncontains_val(selected_species, lipid_space->lipidomes[r]->species[c])){
+                if (uncontains_val(selected_species, lipid_space->lipidomes[r]->species[c]) || contains_val(unselected_lipidome_indexes, r)){
                     item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
                 }
                 int cc = lipid_index[lipid_space->lipidomes[r]->species[c]];
