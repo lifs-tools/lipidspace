@@ -117,7 +117,8 @@ int main(int argc, char** argv) {
         LipidSpace lipid_space;
         lipid_space.ignore_unknown_lipids = true;
         lipid_space.ignore_doublette_lipids = true;
-        lipid_space.load_mzTabM("examples/mzTabM/singaporean-plasma-site1.mzTab");
+        //lipid_space.load_mzTabM("examples/mzTabM/singaporean-plasma-site1.mzTab");
+        lipid_space.load_mzTabM("Lab1-Phase1-ShotgunMS.mzTab");
     }
     
     

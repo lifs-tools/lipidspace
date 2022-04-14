@@ -31,7 +31,7 @@ public:
     LipidParser parser;
     Progress *progress;
     map<string, int*> class_matrix;
-    vector<LipidAdduct*> all_lipids;
+    map<string, LipidAdduct*> all_lipids;
     static const int cols_for_pca_init;
     static int cols_for_pca;
     static const vector< vector< vector< vector<int> > > > orders;
@@ -73,7 +73,7 @@ public:
     void reassembleSelection();
     //std::thread run_analysis_thread(Progress *_progress);
     void reset_analysis();
-    LipidAdduct* load_lipid(string lipid_name, set<string> &lipid_set, bool &ignore_lipid);
+    LipidAdduct* load_lipid(string lipid_name, map<string, LipidAdduct*> &lipid_set);
     
     void load_list(string lipid_list_file);
     void load_row_table(string table_file, vector<TableColumnType> *column_types = 0);
