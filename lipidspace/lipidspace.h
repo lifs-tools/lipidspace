@@ -58,6 +58,7 @@ public:
     ~LipidSpace();
     static void compute_PCA_variances(Matrix &m, Array &a);
     void cut_cycle(FattyAcid* fa);
+    static bool is_double(const string& s);
     void lipid_similarity(LipidAdduct* l1, LipidAdduct* l2, int& union_num, int& inter_num);
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
     double compute_hausdorff_distance(Matrix &m1, Matrix &m2);

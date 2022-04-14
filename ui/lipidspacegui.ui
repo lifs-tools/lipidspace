@@ -457,6 +457,7 @@
     </property>
     <addaction name="actionLoad_list_s"/>
     <addaction name="actionLoad_table"/>
+    <addaction name="actionImport_mzTabM"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Results"/>
     <addaction name="separator"/>
@@ -723,6 +724,11 @@
    </property>
    <property name="text">
     <string>Unweighted average linkage clustering</string>
+   </property>
+  </action>
+  <action name="actionImport_mzTabM">
+   <property name="text">
+    <string>Import mzTabM</string>
    </property>
   </action>
  </widget>

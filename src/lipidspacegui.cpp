@@ -120,7 +120,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
 
 
-LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent), timer(this) {
+LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent) {
     lipid_space = _lipid_space;
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
@@ -146,6 +146,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
+    connect(ui->actionImport_mzTabM, SIGNAL(triggered()), this, SLOT(openMzTabM()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
     
     connect(ui->actionComplete_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setCompleteLinkage);
@@ -565,6 +566,8 @@ void LipidSpaceGUI::runAnalysis(){
     lipid_space->start();
     progressbar->exec();
     
+    
+    
     if (!lipid_space->analysis_finished){
         return;
     }
@@ -586,6 +589,7 @@ void LipidSpaceGUI::runAnalysis(){
     int numTiles = 2 * (lipid_space->selected_lipidomes.size() > 1) + lipid_space->selected_lipidomes.size();
     ui->dendrogramView->resetDendrogram();
     
+    canvases.resize(numTiles, 0);
     for (int n = 0; n < numTiles; ++n){
         int num = 0;
         if ((lipid_space->selected_lipidomes.size() > 1) && (n == 0)) num = -2;
@@ -613,7 +617,7 @@ void LipidSpaceGUI::runAnalysis(){
         if (num == -1){
             connect(ui->speciesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), canvas, SLOT(moveToPoint(QListWidgetItem*)));
         }
-        canvases.push_back(canvas);
+        canvases[n] = canvas;
     }
     
     // define colors of features
@@ -1075,9 +1079,110 @@ void LipidSpaceGUI::updateGUI(){
 }
 
 
+
+
+void LipidSpaceGUI::openMzTabM(){
+    if (lipid_space->feature_values.size() > 0){
+        QMessageBox::warning(this, "List conflict", "Study variables have been loaded. Lists do not supported any study variable import routine. Please reset LipidSpace.");
+        return;
+    }
+    
+    
+    QString file_name = QFileDialog::getOpenFileName(this, "Select one or more lipid lists", ".", "mzTabM files *.mzTab *.mzTabM *.mztab *.mztabm (*.mzTab *.mzTabM *.mztab *.mztabm)");
+    if (file_name.size() <= 0) return;
+    
+    bool start_analysis = true;
+    bool repeat_loading = true;
+    while (repeat_loading){
+        try {
+            lipid_space->load_mzTabM(file_name.toUtf8().constData());
+            repeat_loading = false;
+        }
+        catch (LipidSpaceException &e) {
+            QMessageBox msgBox(this);
+            msgBox.setWindowTitle("Error during table import");
+            msgBox.setText(e.what());
+            
+            switch(e.type){
+                case LipidUnparsable:
+                    {
+                        msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
+                        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+                        msgBox.addButton(tr("Abort"), QMessageBox::NoRole);
+                        msgBox.exec();
+                        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+                            lipid_space->ignore_unknown_lipids = true;
+                        }
+                        else {
+                            repeat_loading = false;
+                            start_analysis = false;
+                        }
+                    }
+                    break;
+                
+                case FileUnreadable:
+                    {
+                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.exec();
+                        repeat_loading = false;
+                        start_analysis = false;
+                    }
+                    break;
+                    
+                case LipidDoublette:
+                    {
+                        msgBox.setInformativeText("Do you want to continue by ignoring doublette lipid species?");
+                        QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+                        msgBox.addButton(tr("Abort"), QMessageBox::NoRole);
+                        msgBox.exec();
+                        if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+                            lipid_space->ignore_doublette_lipids = true;
+                        }
+                        else {
+                            repeat_loading = false;
+                            start_analysis = false;
+                        }
+                    }
+                    break;
+                    
+                case NoColumnFound:
+                case ColumnNumMismatch:
+                    {
+                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.exec();
+                        repeat_loading = false;
+                        start_analysis = false;
+                    }
+                    break;
+                    
+                default:
+                    {
+                        msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
+                        msgBox.exec();
+                        repeat_loading = false;
+                        start_analysis = false;
+                    }
+                    break;
+            }
+        }
+        catch (exception &e){
+            Logging::write_log(e.what());
+            QMessageBox::critical(this, "Unexpected Error", "An unexpected error happened. Please check the log file and get in contact with the developers.");
+            repeat_loading = false;
+            break;
+        }
+    }
+    
+    if (start_analysis){
+        runAnalysis();
+    }
+}
+
+
+
 void LipidSpaceGUI::openLists(){
     if (lipid_space->feature_values.size() > 0){
-        QMessageBox::warning(this, "List conflict", "Features have been loaded. Lists do not supported any feature import routine. Please reset LipidSpace or load a table with exactly the same features.");
+        QMessageBox::warning(this, "List conflict", "Study variables have been loaded. Lists do not supported any study variable import routine. Please reset LipidSpace.");
         return;
     }
     
@@ -1120,7 +1225,6 @@ void LipidSpaceGUI::openLists(){
                             {
                                 msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
                                 msgBox.exec();
-                                resetAnalysis();
                                 repeat_loading = false;
                                 start_analysis = false;
                             }
@@ -1134,10 +1238,8 @@ void LipidSpaceGUI::openLists(){
                                 msgBox.exec();
                                 if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
                                     lipid_space->ignore_doublette_lipids = true;
-                                    resetAnalysis();
                                 }
                                 else {
-                                    resetAnalysis();
                                     repeat_loading = false;
                                     start_analysis = false;
                                 }
@@ -1145,14 +1247,6 @@ void LipidSpaceGUI::openLists(){
                             break;
                             
                         case NoColumnFound:
-                            {
-                                msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
-                                msgBox.exec();
-                                repeat_loading = false;
-                                start_analysis = false;
-                            }
-                            break;
-                            
                         case ColumnNumMismatch:
                             {
                                 msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
@@ -1184,9 +1278,6 @@ void LipidSpaceGUI::openLists(){
         
         if (start_analysis){
             runAnalysis();
-        }
-        else {
-            resetAnalysis();
         }
     }
 }

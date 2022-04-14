@@ -86,6 +86,7 @@ public slots:
     void quitProgram();
     void openLists();
     void openTable();
+    void openMzTabM();
     void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type);
     void resetAnalysis();
     void showMessage(QString message);
@@ -154,7 +155,6 @@ private:
     string keystrokes;
     Progress *progress;
     int single_window;
-    QTimer timer;
     DragLayer *dragLayer;
     vector<Canvas*> canvases;
     bool knubbel;

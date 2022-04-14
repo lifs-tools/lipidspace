@@ -499,7 +499,7 @@ void PointSet::loadPoints(){
     double x_max = 0;
     double y_min = 0;
     double y_max = 0;
-    
+
     for (int r = 0, rr = 0; r < (int)lipidome->species.size(); ++r){
         if (!lipidome->selection[r]){
             continue;
@@ -969,7 +969,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
         pointSet->title = QString(lipid_space->selected_lipidomes[num]->cleaned_name.c_str());
         
         Array vars;
-        LipidSpace::compute_PCA_variances(lipid_space->lipidomes[num]->m, vars);
+        LipidSpace::compute_PCA_variances(lipid_space->selected_lipidomes[num]->m, vars);
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
     }
 }
@@ -1274,7 +1274,7 @@ void Canvas::reloadPoints(){
             LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
         }
         else if (num >= 0){
-            LipidSpace::compute_PCA_variances(lipid_space->lipidomes[num]->m, vars);
+            LipidSpace::compute_PCA_variances(lipid_space->selected_lipidomes[num]->m, vars);
         }
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
     }

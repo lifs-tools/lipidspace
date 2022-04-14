@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
             if (ref_inter != inter_num || ref_union != union_num){
                 cout << "Test failed:" << endl;
                 cout << "Lipid1: " << tokens->at(0) << endl;
-                cout << "Lipid2: " << tokens->at(1) << endl;                
+                cout << "Lipid2: " << tokens->at(1) << endl;
                 cout << "Expected values; union: " << ref_union << ", inter: " << ref_inter << endl;
                 cout << "Computed values; union: " << union_num << ", inter: " << inter_num << endl;
                 cout << "--------------------------" << endl;
