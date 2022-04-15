@@ -767,8 +767,6 @@ void LipidSpace::load_list(string lipid_list_file){
     
     Table* lipidome = new Table(lipid_list_file);
     try {
-        selection[3].insert({lipidome->cleaned_name, true});
-        
         while (getline(infile, line)){
             if (line.length() == 0) continue;
             vector<string>* tokens = goslin::split_string(line, '\t', '"', true);
@@ -785,13 +783,17 @@ void LipidSpace::load_list(string lipid_list_file){
                 lipidome->classes.push_back(l->get_lipid_string(CLASS));
                 lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
                 lipidome->original_intensities.push_back(intensity);
-                selection[0].insert({lipidome->species.back(), true});
-                selection[1].insert({lipidome->classes.back(), true});
-                selection[2].insert({lipidome->categories.back(), true});
             }
         }
         
         lipidomes.push_back(lipidome);
+        selection[3].insert({lipidome->cleaned_name, true});
+            
+        for (uint i = 0; i < lipidome->lipids.size(); ++i){
+            selection[0].insert({lipidome->species.at(i), true});
+            selection[1].insert({lipidome->classes.at(i), true});
+            selection[2].insert({lipidome->categories.at(i), true});
+        }
         for (auto kv : lipid_set){
             if (uncontains_val(all_lipids, kv.first)) all_lipids.insert({kv.first, kv.second});
         }
@@ -1401,7 +1403,6 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                     else {
                         loaded_lipidomes[sample_number - 1] = new Table(sample_name);
                     }
-                    selection[3].insert({sample_name, true});
                 }
                 
                 // search for pattern: sample[123]-content[123]
@@ -1524,10 +1525,6 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                             lipidome->classes.push_back(l->get_lipid_string(CLASS));
                             lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
                             lipidome->original_intensities.push_back(atof(value.c_str()));
-                            
-                            selection[0].insert({lipidome->species.back(), true});
-                            selection[1].insert({lipidome->classes.back(), true});
-                            selection[2].insert({lipidome->categories.back(), true});
                         }
                         
                     }
@@ -1598,7 +1595,16 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
         
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
-        for (auto lipidome : loaded_lipidomes) lipidomes.push_back(lipidome);
+        for (auto lipidome : loaded_lipidomes){
+            lipidomes.push_back(lipidome);
+            selection[3].insert({lipidome->cleaned_name, true});
+            
+            for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                selection[0].insert({lipidome->species.at(i), true});
+                selection[1].insert({lipidome->classes.at(i), true});
+                selection[2].insert({lipidome->categories.at(i), true});
+            }
+        }
         for (auto kv : lipid_set){
             if (uncontains_val(all_lipids, kv.first)) all_lipids.insert({kv.first, kv.second});
         }
@@ -1978,7 +1984,6 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                 }
             }
             
-            selection[3].insert({measurement, true});
             loaded_lipidomes.push_back(new Table(measurement));
             Table *lipidome = loaded_lipidomes.back();
             for (auto kv : features){
@@ -1995,9 +2000,6 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                 lipidome->species.push_back(l->get_lipid_string());
                 lipidome->classes.push_back(l->get_lipid_string(CLASS));
                 lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
-                selection[0].insert({lipidome->species.back(), true});
-                selection[1].insert({lipidome->classes.back(), true});
-                selection[2].insert({lipidome->categories.back(), true});
             }
             lipidome->original_intensities.reset(intensities);
             
@@ -2007,7 +2009,16 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
     
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
-        for (auto lipidome : loaded_lipidomes) lipidomes.push_back(lipidome);
+        for (auto lipidome : loaded_lipidomes){
+            lipidomes.push_back(lipidome);
+            selection[3].insert({lipidome->cleaned_name, true});
+            
+            for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                selection[0].insert({lipidome->species.at(i), true});
+                selection[1].insert({lipidome->classes.at(i), true});
+                selection[2].insert({lipidome->categories.at(i), true});
+            }
+        }
         for (auto kv : lipid_set){
             if (uncontains_val(all_lipids, kv.first)) all_lipids.insert({kv.first, kv.second});
         }
@@ -2065,7 +2076,6 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                 if (line_cnt++ == 0){
                     num_cols = tokens->size();
                     for (int i = 1; i < (int)tokens->size(); ++i){
-                        selection[3].insert({tokens->at(i), true});
                         loaded_lipidomes.push_back(new Table(tokens->at(i)));
                         intensities.push_back(Array());
                     }
@@ -2093,9 +2103,6 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                             lipidome->species.push_back(l->get_lipid_string());
                             lipidome->classes.push_back(l->get_lipid_string(CLASS));
                             lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
-                            selection[0].insert({lipidome->species.back(), true});
-                            selection[1].insert({lipidome->classes.back(), true});
-                            selection[2].insert({lipidome->categories.back(), true});
                             intensities.at(i - 1).push_back(atof(val.c_str()));
                         }
                     }
@@ -2197,7 +2204,16 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
     
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
-        for (auto lipidome : loaded_lipidomes) lipidomes.push_back(lipidome);
+        for (auto lipidome : loaded_lipidomes){
+            lipidomes.push_back(lipidome);
+            selection[3].insert({lipidome->cleaned_name, true});
+            
+            for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                selection[0].insert({lipidome->species.at(i), true});
+                selection[1].insert({lipidome->classes.at(i), true});
+                selection[2].insert({lipidome->categories.at(i), true});
+            }
+        }
         for (auto kv : lipid_set){
             if (uncontains_val(all_lipids, kv.first)) all_lipids.insert({kv.first, kv.second});
         }
