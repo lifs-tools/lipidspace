@@ -160,11 +160,12 @@ LipidSpace::LipidSpace() {
     ignore_doublette_lipids = false;
     unboundend_distance = false;
     without_quant = false;
-    global_lipidome = new Table("global_lipidome");
+    global_lipidome = new Table("global_lipidome", "");
     progress = 0;
     analysis_finished = false;
     dendrogram_root = 0;
     progress = 0;
+    feature_values.insert({FILE_FEATURE_NAME, FeatureSet(FILE_FEATURE_NAME, NominalFeature)});
         
     // load precomputed class distance matrix
     
@@ -765,7 +766,7 @@ void LipidSpace::load_list(string lipid_list_file){
     string line;
     map<string, LipidAdduct*> lipid_set;
     
-    Table* lipidome = new Table(lipid_list_file, true);
+    Table* lipidome = new Table(lipid_list_file, lipid_list_file, true);
     try {
         while (getline(infile, line)){
             if (line.length() == 0) continue;
@@ -798,7 +799,10 @@ void LipidSpace::load_list(string lipid_list_file){
             }
         }
         
-        
+        if (feature_values.size() > 1){
+            throw LipidSpaceException("Study variables have been loaded. Lists do not supported any study variable import routine. Please reset LipidSpace.", FeatureNotRegistered);
+        }
+        feature_values[FILE_FEATURE_NAME].nominal_values.insert({lipidome->features[FILE_FEATURE_NAME].nominal_value, true});
         
         
         lipidomes.push_back(lipidome);
@@ -1418,7 +1422,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         loaded_lipidomes[sample_number - 1]->cleaned_name = sample_name;
                     }
                     else {
-                        loaded_lipidomes[sample_number - 1] = new Table(sample_name);
+                        loaded_lipidomes[sample_number - 1] = new Table(sample_name, mzTabM_file);
                     }
                 }
                 
@@ -1436,7 +1440,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                     
                     if ((int)loaded_lipidomes.size() < sample_number){
                         loaded_lipidomes.resize(sample_number, 0);
-                        loaded_lipidomes[sample_number - 1] = new Table("-");
+                        loaded_lipidomes[sample_number - 1] = new Table("-", mzTabM_file);
                     }
                     
                     int content_number = extract_number(sample_data->at(1), line_num);
@@ -1588,6 +1592,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
         
         // checking consistancy of features
         set<string> registered_features;
+        registered_features.insert(FILE_FEATURE_NAME);
         for (auto kv : feature_names) registered_features.insert(kv.second);
         for (auto lipidome : loaded_lipidomes){
             if (lipidome->cleaned_name == "-"){
@@ -1772,7 +1777,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             
             
             if (uncontains_val(lipidome_map, sample_name)){
-                lipidome = new Table(sample_name);
+                lipidome = new Table(sample_name, pivot_table_file);
                 lipidome_map.insert({sample_name, lipidome});
                 loaded_lipidomes.push_back(lipidome);
             }
@@ -1858,6 +1863,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         }
         
         // checking consistancy of features
+        registered_features.insert(FILE_FEATURE_NAME);
         for (auto lipidome : loaded_lipidomes){
             if (lipidome->cleaned_name == "-"){
                 throw LipidSpaceException("Error, sample has no sample name.", CorruptedFileFormat);
@@ -1870,7 +1876,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             }
         }
         
-        if (feature_values.size() > 0){
+        if (feature_values.size() > 1){
             for (auto feature : registered_features){
                 if (uncontains_val(feature_values, feature)){
                     throw LipidSpaceException("Error, study variable '" + feature + "' is not registed already.", FeatureNotRegistered);
@@ -2063,7 +2069,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                 }
             }
             
-            loaded_lipidomes.push_back(new Table(measurement));
+            loaded_lipidomes.push_back(new Table(measurement, data_table_file));
             Table *lipidome = loaded_lipidomes.back();
             for (auto kv : features){
                 if (kv.second.feature_type == NominalFeature){
@@ -2087,6 +2093,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         
         // checking consistancy of features
         set<string> registered_features;
+        registered_features.insert(FILE_FEATURE_NAME);
         for (auto feature : features_names_numerical) registered_features.insert(feature);
         for (auto feature : features_names_nominal) registered_features.insert(feature);
         for (auto lipidome : loaded_lipidomes){
@@ -2201,7 +2208,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                 if (line_cnt++ == 0){
                     num_cols = tokens->size();
                     for (int i = 1; i < (int)tokens->size(); ++i){
-                        loaded_lipidomes.push_back(new Table(tokens->at(i)));
+                        loaded_lipidomes.push_back(new Table(tokens->at(i), table_file));
                         intensities.push_back(Array());
                     }
                     delete tokens;
@@ -2272,7 +2279,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                             }
                             
                             selection[3].insert({header, true});
-                            loaded_lipidomes.push_back(new Table(header));
+                            loaded_lipidomes.push_back(new Table(header, table_file));
                             intensities.push_back(Array());
                         } 
                     }
@@ -2322,8 +2329,14 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             
             delete column_types;
         }
+        if (feature_values.size() > 1){
+            throw LipidSpaceException("Error, study variables are already registered, table does not contain any variables and thus cannot be imported.", FeatureNotRegistered);
+        }
+        
+        
         set<string> lipidome_names;
         for (auto lipidome : loaded_lipidomes){
+            
             string lm = lipidome->cleaned_name;
             if (uncontains_val(lipidome_names, lm)){
                 lipidome_names.insert(lm);
@@ -2349,6 +2362,8 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
         for (auto lipidome : loaded_lipidomes){
+            feature_values[FILE_FEATURE_NAME].nominal_values.insert({lipidome->features[FILE_FEATURE_NAME].nominal_value, true});
+            
             lipidomes.push_back(lipidome);
             selection[3].insert({lipidome->cleaned_name, true});
             
@@ -2570,6 +2585,7 @@ void LipidSpace::run(){
 void LipidSpace::reset_analysis(){
     analysis_finished = false;
     feature_values.clear();
+    feature_values.insert({"File", FeatureSet("File", NominalFeature)});
     if (dendrogram_root){
         delete dendrogram_root;
         dendrogram_root = 0;

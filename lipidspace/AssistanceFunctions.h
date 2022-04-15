@@ -57,16 +57,25 @@ struct Feature {
     double numerical_value;
     string nominal_value;
     
+    Feature(){
+        name = "";
+        feature_type = NominalFeature;
+        numerical_value = 0;
+        nominal_value = "";
+    }
+    
     Feature (string _name, string nom_val){
         name = _name;
         feature_type = NominalFeature;
         nominal_value = nom_val;
+        numerical_value = 0;
     }
     
     Feature (string _name, double num_val){
         name = _name;
         feature_type = NumericalFeature;
         numerical_value = num_val;
+        nominal_value = "";
     }
 };
 
@@ -134,14 +143,16 @@ public:
     map<string, Feature> features;
     Matrix m;
     
-    Table(string lipid_list_file, bool is_file_name = false) : file_name(lipid_list_file) {
+    Table(string lipidome_name, string lipidome_file, bool is_file_name = false) : file_name(lipidome_file) {
+        QFileInfo qFileInfo(file_name.c_str());
+        string cleaned_file = qFileInfo.baseName().toStdString();
         if (is_file_name){
-            QFileInfo qFileInfo(file_name.c_str());
-            cleaned_name = qFileInfo.baseName().toStdString();
+            cleaned_name = cleaned_file;
         }
         else {
-            cleaned_name = lipid_list_file;
+            cleaned_name = lipidome_name;
         }
+        features.insert({"File", Feature("File", cleaned_file)});
     }
 };
 

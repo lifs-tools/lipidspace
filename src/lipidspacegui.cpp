@@ -1185,7 +1185,7 @@ void LipidSpaceGUI::openMzTabM(){
 
 
 void LipidSpaceGUI::openLists(){
-    if (lipid_space->feature_values.size() > 0){
+    if (lipid_space->feature_values.size() > 1){
         QMessageBox::warning(this, "List conflict", "Study variables have been loaded. Lists do not supported any study variable import routine. Please reset LipidSpace.");
         return;
     }
