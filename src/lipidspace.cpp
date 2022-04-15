@@ -1335,7 +1335,7 @@ inline int LipidSpace::extract_number(string line, int line_number){
 
 
 void LipidSpace::load_mzTabM(string mzTabM_file){
-    Logging::write_log("Importing table '" + mzTabM_file + "' as pivot table.");
+    Logging::write_log("Importing table '" + mzTabM_file + "' as mzTabM table.");
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     
     ifstream infile(mzTabM_file);
@@ -1636,7 +1636,6 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         throw LipidSpaceException("Error: file '" + pivot_table_file + "' could not be found.", FileUnreadable);
     }
     vector<Table*> loaded_lipidomes;
-    map<string, LipidAdduct*> lipid_set;
     
     try {
         string line;
@@ -1714,9 +1713,9 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
                 if (sample_name.length()) sample_name += "_";
                 sample_name += tokens->at(sample_columns[i]);
             }
-            string lipid_name = tokens->at(lipid_species_column);
+            string lipid_table_name = tokens->at(lipid_species_column);
             
-            string index_key_pair = sample_name + " / " + lipid_name;
+            string index_key_pair = sample_name + " / " + lipid_table_name;
             if (uncontains_val(index_key_pairs, index_key_pair)){
                 index_key_pairs.insert(index_key_pair);
             }
@@ -1734,7 +1733,6 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             
             if (uncontains_val(lipidome_map, sample_name)){
                 lipidome = new Table(sample_name);
-                selection[3].insert({sample_name, true});
                 lipidome_map.insert({sample_name, lipidome});
                 loaded_lipidomes.push_back(lipidome);
             }
@@ -1760,56 +1758,70 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
                 feature_values[feature_names_numerical[i]].numerical_values.insert(val);
             }
             
+            delete tokens;
             
             
             // handle lipid
             LipidAdduct *l = 0;
-            if (uncontains_val(lipid_map, lipid_name)){
-                try {
-                    l = parser.parse(lipid_name);
-                        
-                    // deleting adduct since not necessary
-                    if (l->adduct != 0){
-                        delete l->adduct;
-                        l->adduct = 0;
-                    }
-                    l->sort_fatty_acyl_chains();
+            try {
+                l = parser.parse(lipid_table_name);
+                    
+                // deleting adduct since not necessary
+                if (l->adduct != 0){
+                    delete l->adduct;
+                    l->adduct = 0;
                 }
-                catch (exception &e) {
-                    if (!ignore_unknown_lipids){
-                        throw LipidSpaceException(string(e.what()) + ": lipid '" + lipid_name + "' cannot be parsed.", LipidUnparsable);
-                    }
-                    else {
-                        Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
-                        delete tokens;
-                        continue;
-                    }
-                }
-                lipid_map.insert({lipid_name, l});
+                l->sort_fatty_acyl_chains();
+                for (auto fa : l->lipid->fa_list) cut_cycle(fa);
             }
-            else {
+            catch (exception &e) {
+                if (!ignore_unknown_lipids){
+                    throw LipidSpaceException(string(e.what()) + ": lipid '" + lipid_table_name + "' cannot be parsed.", LipidUnparsable);
+                }
+                else {
+                    Logging::write_log("Ignoring unidentifiable lipid '" + lipid_table_name + "'");
+                    continue;
+                }
+            }
+            string lipid_name = l->get_lipid_string();
+            if (contains_val(all_lipids, lipid_name)){
+                delete l;
+                l = all_lipids[lipid_name];
+            }
+            else if (contains_val(lipid_map, lipid_name)){
+                delete l;
                 l = lipid_map[lipid_name];
             }
+            else {
+                lipid_map.insert({lipid_name, l});
+            }
+                
             
             lipidome->lipids.push_back(l);
             lipidome->species.push_back(l->get_lipid_string());
             lipidome->classes.push_back(l->get_lipid_string(CLASS));
             lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
-            selection[0].insert({lipidome->species.back(), true});
-            selection[1].insert({lipidome->classes.back(), true});
-            selection[2].insert({lipidome->categories.back(), true});
             double val = atof(quant_val.c_str());
             lipidome->original_intensities.push_back(val);
             
-            delete tokens;
         }
-        delete  column_types;
         
     
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
         for (auto lipidome : loaded_lipidomes){
             lipidomes.push_back(lipidome);
+            selection[3].insert({lipidome->cleaned_name, true});
+            
+            for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                selection[0].insert({lipidome->species.at(i), true});
+                selection[1].insert({lipidome->classes.at(i), true});
+                selection[2].insert({lipidome->categories.at(i), true});
+            }
+        }
+            
+        for (auto kv : lipid_map){
+            if (uncontains_val(all_lipids, kv.first)) all_lipids.insert({kv.first, kv.second});
         }
     
     }
@@ -1825,9 +1837,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         }
         throw e;
     }
-    
-    
-    
+    delete column_types;
     fileLoaded();
 }
 
