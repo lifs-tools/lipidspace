@@ -1353,6 +1353,8 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
     vector<string> *tokens = 0;
     vector<string> *sample_data = 0;
     vector<string> *content_tokens = 0;
+    map<string, FeatureType> feature_types;
+    
     try {
         // go through file
         string line;
@@ -1442,11 +1444,22 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         }
                         
                         // is custom value a number?
+                        FeatureType ft = NominalFeature;
                         if (is_double(value)){
                             loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, atof(value.c_str()))});
+                            ft = NumericalFeature;
                         }
                         else {
                             loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, value)});
+                        }
+                        
+                        if (uncontains_val(feature_types, key)){
+                            feature_types.insert({key, ft});
+                        }
+                        else {
+                            if (feature_types[key] != ft){
+                                throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", key of study variable '" + key + "' is already registered with different data type (string, number).", CorruptedFileFormat);
+                            }
                         }
                     }
                     else if (content_name == "species"){
@@ -1577,9 +1590,6 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                     }
                     else {
                         FeatureSet &fs = feature_values[kv.first];
-                        if (fs.feature_type != kv.second.feature_type){
-                            throw LipidSpaceException("Error, not all values for study variable '" + kv.first + "' are of the same data type (string, number).", CorruptedFileFormat);
-                        }
                         if (kv.second.feature_type == NumericalFeature){
                             fs.numerical_values.insert(kv.second.numerical_value);
                         }
@@ -1590,8 +1600,6 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                 }
             }
         }
-        
-        
         
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
@@ -1642,6 +1650,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         throw LipidSpaceException("Error: file '" + pivot_table_file + "' could not be found.", FileUnreadable);
     }
     vector<Table*> loaded_lipidomes;
+    set<string> registered_features;
     
     try {
         string line;
@@ -1683,21 +1692,13 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             if (line_cnt++ == 0){
                 for (auto fi : feature_columns_nominal){
                     string feature = tokens->at(fi);
-                    if (feature_values.empty() || contains_val(feature_values, feature)){
-                        feature_names_nominal.push_back(feature);
-                    }
-                    else {
-                        throw LipidSpaceException("Tables with features have already been imported, however feature '" + feature + "' is not registered. Please remove this feature or reset LipidSpace.", FeatureNotRegistered);
-                    }
+                    feature_names_nominal.push_back(feature);
+                    registered_features.insert(feature);
                 }
                 for (auto fi : feature_columns_numerical){
                     string feature = tokens->at(fi);
-                    if (feature_values.empty() || contains_val(feature_values, feature)) {
-                        feature_names_numerical.push_back(feature);
-                    }
-                    else {
-                        throw LipidSpaceException("Tables with features have already been imported, however feature '" + feature + "' is not registered. Please remove this feature or reset LipidSpace.", FeatureNotRegistered);
-                    }
+                    feature_names_numerical.push_back(feature);
+                    registered_features.insert(feature);
                 }
                 
                 delete tokens;
@@ -1749,19 +1750,11 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             // handle features
             for (int i = 0; i < (int)feature_columns_nominal.size(); ++i){
                 lipidome->features.insert({feature_names_nominal[i], Feature(feature_names_nominal[i], tokens->at(feature_columns_nominal[i]))});
-                if (uncontains_val(feature_values, feature_names_nominal[i])) {
-                    feature_values.insert({feature_names_nominal[i], FeatureSet(feature_names_nominal[i], NominalFeature)});
-                }
-                feature_values[feature_names_nominal[i]].nominal_values.insert({tokens->at(feature_columns_nominal[i]), true});
-
+                
             }
             for (int i = 0; i < (int)feature_columns_numerical.size(); ++i){
                 double val = atof(tokens->at(feature_columns_numerical[i]).c_str());
                 lipidome->features.insert({feature_names_numerical[i], Feature(feature_names_numerical[i], val)});
-                if (uncontains_val(feature_values, feature_names_numerical[i])) {
-                    feature_values.insert({feature_names_numerical[i], FeatureSet(feature_names_numerical[i], NumericalFeature)});
-                }
-                feature_values[feature_names_numerical[i]].numerical_values.insert(val);
             }
             
             delete tokens;
@@ -1810,6 +1803,52 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             double val = atof(quant_val.c_str());
             lipidome->original_intensities.push_back(val);
             
+        }
+        
+        // checking consistancy of features
+        for (auto lipidome : loaded_lipidomes){
+            if (lipidome->cleaned_name == "-"){
+                throw LipidSpaceException("Error, sample has no sample name.", CorruptedFileFormat);
+            }
+            
+            for (auto feature : registered_features){
+                if (uncontains_val(lipidome->features, feature)){
+                    throw LipidSpaceException("Error, study variable '" + feature + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
+                }
+            }
+        }
+        
+        if (feature_values.size() > 0){
+            for (auto feature : registered_features){
+                if (uncontains_val(feature_values, feature)){
+                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registed already.", FeatureNotRegistered);
+                }
+            }
+            
+            for (auto kv : feature_values){
+                if (uncontains_val(registered_features, kv.first)){
+                    throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", FeatureNotRegistered);
+                }
+            }
+        }
+        // register features
+        else {
+            for (auto lipidome : loaded_lipidomes){
+                for (auto kv : lipidome->features){
+                    if (uncontains_val(feature_values, kv.first)){
+                        feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
+                    }
+                    else {
+                        FeatureSet &fs = feature_values[kv.first];
+                        if (kv.second.feature_type == NumericalFeature){
+                            fs.numerical_values.insert(kv.second.numerical_value);
+                        }
+                        else {
+                            fs.nominal_values.insert({kv.second.nominal_value, true});
+                        }
+                    }
+                }
+            }
         }
         
     
@@ -1952,12 +1991,6 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                             string feature = features_names_nominal[feature_counter_nominal];
                             string feature_val = tokens->at(i);
                             features.insert({feature, Feature(feature, feature_val)});
-                            
-                            
-                            if (uncontains_val(feature_values, feature)) {
-                                feature_values.insert({feature, FeatureSet(feature, NominalFeature)});
-                            }
-                            feature_values[feature].nominal_values.insert({feature_val, true});
                         }
                         feature_counter_nominal++;
                         break;
@@ -1968,13 +2001,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                         {
                             string feature = features_names_numerical[feature_counter_numerical];
                             double feature_val = atof(tokens->at(i).c_str());
-                            //if (feature_val != 0) 
-                                features.insert({feature, Feature(feature, feature_val)});
-                            if (uncontains_val(feature_values, feature)) {
-                                feature_values.insert({feature, FeatureSet(feature, NumericalFeature)});
-                            }
-                            //if (feature_val != 0)
-                                feature_values[feature].numerical_values.insert(feature_val);
+                            features.insert({feature, Feature(feature, feature_val)});
                         }
                         feature_counter_numerical++;
                         break;
@@ -2005,7 +2032,55 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             
             delete tokens;
         }
-        delete column_types;
+        
+        // checking consistancy of features
+        set<string> registered_features;
+        for (auto feature : features_names_numerical) registered_features.insert(feature);
+        for (auto feature : features_names_nominal) registered_features.insert(feature);
+        for (auto lipidome : loaded_lipidomes){
+            if (lipidome->cleaned_name == "-"){
+                throw LipidSpaceException("Error, sample has no sample name.", CorruptedFileFormat);
+            }
+            
+            for (auto feature : registered_features){
+                if (uncontains_val(lipidome->features, feature)){
+                    throw LipidSpaceException("Error, study variable '" + feature + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
+                }
+            }
+        }
+        
+        if (feature_values.size() > 0){
+            for (auto feature : registered_features){
+                if (uncontains_val(feature_values, feature)){
+                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registed already.", FeatureNotRegistered);
+                }
+            }
+            
+            for (auto kv : feature_values){
+                if (uncontains_val(registered_features, kv.first)){
+                    throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", FeatureNotRegistered);
+                }
+            }
+        }
+        // register features
+        else {
+            for (auto lipidome : loaded_lipidomes){
+                for (auto kv : lipidome->features){
+                    if (uncontains_val(feature_values, kv.first)){
+                        feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
+                    }
+                    else {
+                        FeatureSet &fs = feature_values[kv.first];
+                        if (kv.second.feature_type == NumericalFeature){
+                            fs.numerical_values.insert(kv.second.numerical_value);
+                        }
+                        else {
+                            fs.nominal_values.insert({kv.second.nominal_value, true});
+                        }
+                    }
+                }
+            }
+        }
     
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
@@ -2036,7 +2111,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         throw e;
     }
     
-    
+    delete column_types;
     fileLoaded();
 }
 
@@ -2054,12 +2129,10 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
     }
     string line;
     
-
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     vector<Array> intensities;
     map<string, LipidAdduct*> lipid_set;
     vector<Table*> loaded_lipidomes;
-    
     
     try {
         // no specific column order is provided, we assume that first column contains
