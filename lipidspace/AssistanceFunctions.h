@@ -134,9 +134,14 @@ public:
     map<string, Feature> features;
     Matrix m;
     
-    Table(string lipid_list_file) : file_name(lipid_list_file) {
-        QFileInfo qFileInfo(file_name.c_str());
-        cleaned_name = qFileInfo.baseName().toStdString();
+    Table(string lipid_list_file, bool is_file_name = false) : file_name(lipid_list_file) {
+        if (is_file_name){
+            QFileInfo qFileInfo(file_name.c_str());
+            cleaned_name = qFileInfo.baseName().toStdString();
+        }
+        else {
+            cleaned_name = lipid_list_file;
+        }
     }
 };
 

@@ -589,6 +589,7 @@ void LipidSpaceGUI::runAnalysis(){
     int numTiles = 2 * (lipid_space->selected_lipidomes.size() > 1) + lipid_space->selected_lipidomes.size();
     ui->dendrogramView->resetDendrogram();
     
+    auto start = high_resolution_clock::now();
     canvases.resize(numTiles, 0);
     for (int n = 0; n < numTiles; ++n){
         int num = 0;
@@ -619,6 +620,9 @@ void LipidSpaceGUI::runAnalysis(){
         }
         canvases[n] = canvas;
     }
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "GUI: " << duration.count() << endl;
     
     // define colors of features
     for (auto kv : lipid_space->feature_values){

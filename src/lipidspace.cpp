@@ -765,7 +765,7 @@ void LipidSpace::load_list(string lipid_list_file){
     string line;
     map<string, LipidAdduct*> lipid_set;
     
-    Table* lipidome = new Table(lipid_list_file);
+    Table* lipidome = new Table(lipid_list_file, true);
     try {
         while (getline(infile, line)){
             if (line.length() == 0) continue;
@@ -785,6 +785,21 @@ void LipidSpace::load_list(string lipid_list_file){
                 lipidome->original_intensities.push_back(intensity);
             }
         }
+        
+        set<string> lipidome_names;
+        lipidome_names.insert(lipidome->cleaned_name);
+        for (auto lipidome : lipidomes){
+            string lm = lipidome->cleaned_name;
+            if (uncontains_val(lipidome_names, lm)){
+                lipidome_names.insert(lm);
+            }
+            else {
+                throw LipidSpaceException("Error, table contains sample name '" + lm + "' which is already registered in LipidSpace.", CorruptedFileFormat);
+            }
+        }
+        
+        
+        
         
         lipidomes.push_back(lipidome);
         selection[3].insert({lipidome->cleaned_name, true});
@@ -1551,7 +1566,25 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
             delete tokens;
             tokens = 0;
         }
-        
+        set<string> lipidome_names;
+        for (auto lipidome : loaded_lipidomes){
+            string lm = lipidome->cleaned_name;
+            if (uncontains_val(lipidome_names, lm)){
+                lipidome_names.insert(lm);
+            }
+            else {
+                throw LipidSpaceException("Error, table contains multiple time the sample name '" + lm + "'.", CorruptedFileFormat);
+            }
+        }
+        for (auto lipidome : lipidomes){
+            string lm = lipidome->cleaned_name;
+            if (uncontains_val(lipidome_names, lm)){
+                lipidome_names.insert(lm);
+            }
+            else {
+                throw LipidSpaceException("Error, table contains sample name '" + lm + "' which is already registered in LipidSpace.", CorruptedFileFormat);
+            }
+        }
         
         // checking consistancy of features
         set<string> registered_features;
@@ -1803,6 +1836,25 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             double val = atof(quant_val.c_str());
             lipidome->original_intensities.push_back(val);
             
+        }
+        set<string> lipidome_names;
+        for (auto lipidome : loaded_lipidomes){
+            string lm = lipidome->cleaned_name;
+            if (uncontains_val(lipidome_names, lm)){
+                lipidome_names.insert(lm);
+            }
+            else {
+                throw LipidSpaceException("Error, table contains multiple time the sample name '" + lm + "'.", CorruptedFileFormat);
+            }
+        }
+        for (auto lipidome : lipidomes){
+            string lm = lipidome->cleaned_name;
+            if (uncontains_val(lipidome_names, lm)){
+                lipidome_names.insert(lm);
+            }
+            else {
+                throw LipidSpaceException("Error, table contains sample name '" + lm + "' which is already registered in LipidSpace.", CorruptedFileFormat);
+            }
         }
         
         // checking consistancy of features
@@ -2269,6 +2321,25 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             }
             
             delete column_types;
+        }
+        set<string> lipidome_names;
+        for (auto lipidome : loaded_lipidomes){
+            string lm = lipidome->cleaned_name;
+            if (uncontains_val(lipidome_names, lm)){
+                lipidome_names.insert(lm);
+            }
+            else {
+                throw LipidSpaceException("Error, table contains multiple time the sample name '" + lm + "'.", CorruptedFileFormat);
+            }
+        }
+        for (auto lipidome : lipidomes){
+            string lm = lipidome->cleaned_name;
+            if (uncontains_val(lipidome_names, lm)){
+                lipidome_names.insert(lm);
+            }
+            else {
+                throw LipidSpaceException("Error, table contains sample name '" + lm + "' which is already registered in LipidSpace.", CorruptedFileFormat);
+            }
         }
         
         for (int i = 0; i < (int)loaded_lipidomes.size(); ++i){
