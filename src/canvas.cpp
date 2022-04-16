@@ -697,6 +697,40 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
 }
 
 
+void PointSet::set_point_size(){
+    if (GlobalData::showQuant){
+        for (uint r = 0, rr = 0; r < lipidome->species.size(); ++r){
+            if (!lipidome->selection[r]) continue;
+            
+            double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
+            f = 1. / log(f + 1.);
+            
+            double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
+            double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
+            double intens = lipidome->intensities[rr] > POINT_BASE_SIZE ? log(lipidome->intensities[rr]) : POINT_BASE_SIZE * 0.5;
+            
+            QRectF bubble(xval - intens * 0.5, yval - intens * 0.5,  intens, intens);
+            if (points.size() > rr) points[rr++].item->setRect(bubble);
+        }
+    }
+    else {
+        for (uint r = 0, rr = 0; r < lipidome->species.size(); ++r){
+            if (!lipidome->selection[r]) continue;
+            
+            double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
+            f = 1. / log(f + 1.);
+            
+            double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
+            double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
+            double intens = POINT_BASE_SIZE;
+            
+            QRectF bubble(xval - intens * 0.5, yval - intens * 0.5,  intens, intens);
+            if (points.size() > rr) points[rr++].item->setRect(bubble);
+        }
+    }
+}
+
+
 double pairwise_sum(Matrix &m){
     assert(m.cols == 2);
     Matrix tm(m, true);
@@ -1158,6 +1192,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
 
 
 void Canvas::setUpdate(){
+    if (pointSet) pointSet->set_point_size();
     repaint();
 }
 
