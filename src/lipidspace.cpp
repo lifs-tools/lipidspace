@@ -1606,7 +1606,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
             }
         }
         
-        if (feature_values.size() > 0){
+        if (feature_values.size() > 1){
             for (auto feature : registered_features){
                 if (uncontains_val(feature_values, feature)){
                     throw LipidSpaceException("Error, study variable '" + feature + "' is not registed already.", FeatureNotRegistered);

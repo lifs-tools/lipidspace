@@ -1085,12 +1085,7 @@ void LipidSpaceGUI::updateGUI(){
 
 
 
-void LipidSpaceGUI::openMzTabM(){
-    if (lipid_space->feature_values.size() > 0){
-        QMessageBox::warning(this, "List conflict", "Study variables have been loaded. Lists do not supported any study variable import routine. Please reset LipidSpace.");
-        return;
-    }
-    
+void LipidSpaceGUI::openMzTabM(){    
     
     QString file_name = QFileDialog::getOpenFileName(this, "Select one or more lipid lists", ".", "mzTabM files *.mzTab *.mzTabM *.mztab *.mztabm (*.mzTab *.mzTabM *.mztab *.mztabm)");
     if (file_name.size() <= 0) return;
