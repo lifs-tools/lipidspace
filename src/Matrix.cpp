@@ -46,6 +46,16 @@ Array& operator/=(Array &me, const double val){
     return me;
 }
 
+void Array::mult(Matrix &m, Array &a){
+    assert(m.cols == (int)a.size());
+    clear();
+    for (int r = 0; r < m.rows; ++r){
+        double sum = 0;
+        for (int c = 0; c < (int)a.size(); c++) sum += m(r, c) * a[c];
+        push_back(sum);
+    }
+}
+
 
 double Array::median(){
     assert (this->size() > 2);
@@ -78,6 +88,23 @@ void Array::add(Array &a){
 void Array::add(vector<double> &a){
     reserve(size() + a.size());
     for (auto val : a) push_back(val);
+}
+
+
+void Array::compute_coefficiants(Matrix &data, Array &values){
+    Matrix data_transpose;
+    data_transpose.rewrite(data);
+    data_transpose.transpose();
+    
+    Matrix dTd;
+    dTd.mult(data_transpose, data);
+    Matrix inversed;
+    inversed.inverse(dTd, true);
+    
+    Matrix dTdidT;
+    dTdidT.mult(inversed, data_transpose);
+    
+    mult(dTdidT, values);
 }
 
 
@@ -364,6 +391,26 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
     
     eigenvalues.add(evals);
     eigenvectors.rewrite(eigvecs);
+}
+
+
+void Matrix::inverse(Matrix &X, bool symmetric){
+    assert(rows == cols);
+    rewrite(X);
+    if (!symmetric) transpose();
+    
+    
+    int N = rows;
+    int *IPIV = new int[N];
+    int LWORK = N*N;
+    double *WORK = new double[LWORK];
+    int INFO;
+
+    dgetrf_(&N, &N, m.data(), &N, IPIV, &INFO);
+    dgetri_(&N, m.data(), &N, IPIV, WORK, &LWORK, &INFO);
+
+    delete[] IPIV;
+    delete[] WORK;
 }
 
 

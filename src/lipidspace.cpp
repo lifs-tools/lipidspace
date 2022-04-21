@@ -2615,3 +2615,98 @@ void LipidSpace::reset_analysis(){
 
 
 
+void LipidSpace::feature_analysis(string feature){
+    if (uncontains_val(feature_values, feature)) return;
+    
+    Array target_values;
+    map<string, double> nominal_target_values;
+    int nom_counter = 1;
+    
+    if (feature_values[feature].feature_type == NominalFeature){
+        for (auto lipidome : selected_lipidomes){
+            string nominal_value = lipidome->features[feature].nominal_value;
+            if (uncontains_val(nominal_target_values, nominal_value)) nominal_target_values.insert({nominal_value, nom_counter++});
+            target_values.push_back(nominal_target_values[nominal_value]);
+        }
+    }
+    else {
+        for (auto lipidome : selected_lipidomes){
+            target_values.push_back(lipidome->features[feature].numerical_value);
+        }
+    }
+    
+    // set up matrix for multiple linear regression
+    Matrix global_matrix(selected_lipidomes.size(), global_lipidome->lipids.size());
+    map<LipidAdduct*, int> lipid_map;
+    for (uint c = 0; c < global_lipidome->lipids.size(); c++) lipid_map.insert({global_lipidome->lipids[c], c});
+    for (uint r = 0; r < selected_lipidomes.size(); ++r){
+        Table* lipidome = selected_lipidomes[r];
+        for (uint i = 0; i < lipidome->lipids.size(); ++i) global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+    }
+    
+    
+    
+    
+    int population = 50;
+    int repetitions = 300;
+    double p_mutation = 0.001;
+    int n = global_matrix.cols;
+    
+    srand(time(0));
+    vector< Gene > genes;
+    for (int i = 0; i < population; ++i){
+        genes.push_back(Gene(n));
+    }
+    
+    for (int r = 0; r < repetitions; ++r){
+        cout << "Genetic round " << r << endl;
+        
+        for (auto &gene : genes){
+            if (gene.aic < 0){
+                Indexes feature_indexes;
+                gene.get_indexes(feature_indexes);
+                Matrix sub_features;
+                sub_features.rewrite(global_matrix, {}, feature_indexes);
+                
+                Array coefficiants;
+                coefficiants.compute_coefficiants(sub_features, target_values);    // estimating coefficiants
+                gene.aic = compute_aic(sub_features, coefficiants, target_values);  // computing aic
+            }
+        }
+        
+        
+        // sort AIC
+        sort(genes.begin(), genes.end(), gene_aic);
+        
+        // discard 50 % of the weekest population
+        for (int i = 0; i < (population >> 1); ++i) genes.pop_back();
+        
+        // populate with new genes
+        for (int i = 0; i < (population >> 1); i += 2){
+            genes.push_back(Gene(&(genes[i]), &(genes[i + 1]), p_mutation));
+        }
+        
+        while ((int)genes.size() < population - 1){
+            genes.push_back(Gene(n));
+        }
+        
+        genes.push_back(Gene(&(genes[0])));
+        
+        for (int g = 0; g < (population >> 1); ++g){
+            for (int i = 0; i < (int)genes[g].gene_code.size(); ++i){
+                if (rand() < p_mutation) genes[g].gene_code[i] = !genes[g].gene_code[i];
+            }
+        }
+        
+        cout << "best AIC: " << genes[0].aic << endl;
+    }
+    cout << endl;
+    // sort AIC
+    sort(genes.begin(), genes.end(), gene_aic);
+    
+    for (int i = 0; i < (int)genes[0].gene_code.size(); ++i) {
+        if (genes[0].gene_code[i]) cout << global_lipidome->lipids[i] << endl;
+    }
+}
+
+

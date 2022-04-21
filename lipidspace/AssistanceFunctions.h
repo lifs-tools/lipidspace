@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <math.h>
 
+#define rand() ((double)random() / (double)(RAND_MAX))
+
 using namespace std;
 
 enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
@@ -80,10 +82,22 @@ struct Feature {
 };
 
 
+class Gene {
+public:
+    vector<bool> gene_code;
+    double aic;
+    
+    Gene(int features);
+    Gene(Gene *gene);
+    Gene(Gene *g1, Gene *g2, double mutation_rate = 0.);
+    void get_indexes(Indexes &indexes);
+};
+
+
 double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
-
-
+double compute_aic(Matrix &data, Array &coefficiants, Array &values);
+bool gene_aic(Gene g1, Gene g2);
 
 
 class LipidSpaceException : public std::exception {

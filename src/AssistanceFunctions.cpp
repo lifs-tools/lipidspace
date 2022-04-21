@@ -265,6 +265,21 @@ double KS_pvalue(vector<double> &sample1, vector<double> &sample2){
 
 bool sort_order_one (pair<double, int> i, pair<double, int> j) { return (i.first < j.first); }
 
+double compute_aic(Matrix &data, Array &coefficiants, Array &values){
+    Array S;
+    S.mult(data, coefficiants);
+    int k = data.cols;
+    int n = data.rows;
+    double s = 0;
+    for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
+    return n * (log(2 * M_PI) + 1 + log(s / n)) + (k * 2);
+}
+
+
+bool gene_aic(Gene g1, Gene g2){
+    return g1.aic < g2.aic;
+}
+
 void BH_fdr(vector<double> &data){
     if (data.size() < 2) return;
         
@@ -302,4 +317,33 @@ TreeItem::TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent) : Q
 TreeItem::TreeItem(int pos, QString name, QTreeWidget* parent) : QTreeWidgetItem(parent){
     setText(pos, name);
     feature = "";
+}
+
+
+Gene::Gene(int features){
+    aic = -1;
+    for (int i = 0; i < features; ++i){
+        gene_code.push_back(rand() < 0.5);
+    }
+}
+
+Gene::Gene(Gene *gene){
+    aic = gene->aic;
+    for (bool feature : gene->gene_code) gene_code.push_back(feature);
+}
+
+Gene::Gene(Gene *g1, Gene *g2, double mutation_rate){
+    aic = -1;
+    for (int i = 0; i < (int)g1->gene_code.size(); ++i){
+        bool feature = rand() < 0.5 ? g1->gene_code[i] : g2->gene_code[i];
+        if (rand() < mutation_rate) feature = !feature;
+        gene_code.push_back(feature);
+    }
+}
+
+void Gene::get_indexes(Indexes &indexes){
+    indexes.clear();
+    for (int i = 0; i < (int)gene_code.size(); ++i){
+        if (gene_code[i]) indexes.push_back(i);
+    }
 }
