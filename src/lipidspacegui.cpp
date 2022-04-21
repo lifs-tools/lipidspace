@@ -722,7 +722,10 @@ void LipidSpaceGUI::featureItemDoubleClicked(QTreeWidgetItem *item, int){
 void LipidSpaceGUI::setExport(){
     QString outputFolder = QFileDialog::getExistingDirectory(0, ("Select Export Folder"), QDir::currentPath());
     
-    if (outputFolder.length()) exporting(outputFolder.toStdString());
+    if (outputFolder.length()){
+        exporting(outputFolder.toStdString());
+        QMessageBox::information(this, "Export completed", "The export is completed into the folder '" + outputFolder + "'.");
+    }
 }
 
 
