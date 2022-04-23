@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1057</width>
+    <width>1185</width>
     <height>615</height>
    </rect>
   </property>
@@ -231,7 +231,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget_2">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_5">
         <attribute name="title">
@@ -315,7 +315,7 @@
            <widget class="QLabel" name="labelPieTreeDepth">
             <property name="geometry">
              <rect>
-              <x>170</x>
+              <x>300</x>
               <y>20</y>
               <width>91</width>
               <height>18</height>
@@ -328,7 +328,7 @@
            <widget class="QSpinBox" name="pieTreeSpinBox">
             <property name="geometry">
              <rect>
-              <x>170</x>
+              <x>300</x>
               <y>40</y>
               <width>81</width>
               <height>27</height>
@@ -341,7 +341,7 @@
            <widget class="QLabel" name="labelDendrogramHeight">
             <property name="geometry">
              <rect>
-              <x>270</x>
+              <x>400</x>
               <y>20</y>
               <width>131</width>
               <height>18</height>
@@ -354,7 +354,7 @@
            <widget class="QSpinBox" name="dendrogramHeightSpinBox">
             <property name="geometry">
              <rect>
-              <x>270</x>
+              <x>400</x>
               <y>40</y>
               <width>91</width>
               <height>27</height>
@@ -376,9 +376,9 @@
            <widget class="ClickableLabel" name="labelPieSize">
             <property name="geometry">
              <rect>
-              <x>410</x>
+              <x>540</x>
               <y>20</y>
-              <width>131</width>
+              <width>130</width>
               <height>18</height>
              </rect>
             </property>
@@ -389,9 +389,9 @@
            <widget class="QSpinBox" name="pieSizeSpinBox">
             <property name="geometry">
              <rect>
-              <x>410</x>
+              <x>540</x>
               <y>40</y>
-              <width>91</width>
+              <width>90</width>
               <height>27</height>
              </rect>
             </property>
@@ -406,6 +406,19 @@
             </property>
             <property name="value">
              <number>100</number>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="startAnalysisPushButton">
+            <property name="geometry">
+             <rect>
+              <x>170</x>
+              <y>40</y>
+              <width>111</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Start analysis</string>
             </property>
            </widget>
           </widget>
@@ -447,7 +460,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1057</width>
+     <width>1185</width>
      <height>23</height>
     </rect>
    </property>

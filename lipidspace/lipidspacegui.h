@@ -107,6 +107,7 @@ public slots:
     void set5ColumnLayout();
     void set6ColumnLayout();
     void setSnPositions();
+    void startFeatureAnalysis();
     void openManageLipidomesWindow();
     void runAnalysis();
     void setTransforming(QRectF f);

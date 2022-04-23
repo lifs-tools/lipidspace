@@ -188,6 +188,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->pieSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieSize(int)));
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
     connect(ui->labelPieSize, SIGNAL(clicked()), this, SLOT(setKnubbel()));
+    connect(ui->startAnalysisPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::startFeatureAnalysis);
     
     ui->speciesList->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->classList->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -538,6 +539,11 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
     }
 }
 
+
+void LipidSpaceGUI::startFeatureAnalysis(){
+    string target_variable = ui->featureComboBox->currentText().toStdString();
+    lipid_space->feature_analysis(target_variable);
+}
 
 
 void LipidSpaceGUI::runAnalysis(){
