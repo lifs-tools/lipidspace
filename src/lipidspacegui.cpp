@@ -104,6 +104,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         
         loadTable("Data_Thrombocytes_UKR_04042022.csv", ct, PIVOT_TABLE);
     }
+    
     else {
         if (Qt::Key_A <= event->key() && event->key() <= Qt::Key_Z){
             keystrokes += string(1, (char)event->key());

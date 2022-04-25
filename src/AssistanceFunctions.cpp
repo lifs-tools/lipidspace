@@ -322,10 +322,9 @@ TreeItem::TreeItem(int pos, QString name, QTreeWidget* parent) : QTreeWidgetItem
 
 Gene::Gene(int features){
     aic = -1;
-    for (int i = 0; i < features; ++i){
-        gene_code.push_back(rand() < 0.5);
-    }
+    gene_code.resize(features, false);
 }
+
 
 Gene::Gene(Gene *gene){
     aic = gene->aic;

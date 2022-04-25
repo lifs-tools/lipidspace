@@ -328,7 +328,6 @@ void Matrix::scale(){
     for (int c = 0; c < cols; c++){
         // estimating the mean
         double mean = 0;
-        #pragma omp parallel for default(shared) reduction(+:mean)
         for (int it = c * rows; it < (c + 1) * rows; ++it){
             mean += m[it];
         }
@@ -336,14 +335,12 @@ void Matrix::scale(){
         
         // estimating the standard deviation
         double stdev_inv = 0;
-        #pragma omp parallel for default(shared) reduction(+:stdev_inv)
         for (int it = c * rows; it < (c + 1) * rows; ++it){
             stdev_inv += sq(mean - m[it]);
         }
         stdev_inv = sqrt((double)rows / stdev_inv);
         
         // performing z transformation, aka (x - mean) / st_dev
-        #pragma omp parallel for
         for (int it = c * rows; it < (c + 1) * rows; ++it){
             m[it] = (m[it] - mean) * stdev_inv;
         }
@@ -353,10 +350,10 @@ void Matrix::scale(){
 
 void Matrix::transpose(){
     double *tmp = new double[cols * rows];
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int i = 0; i < cols * rows; ++i) tmp[i] = m[i];
     
-    #pragma omp parallel for collapse(2)
+    //#pragma omp parallel for collapse(2)
     for (int c = 0; c < cols; c++){
         for (int r = 0; r < rows; ++r){
             m[r * cols + c] = tmp[c * rows + r];
