@@ -1389,29 +1389,55 @@ void LipidSpaceGUI::ShowTableContextMenu(const QPoint pos){
 }
 
 
+
+void LipidSpaceGUI::export_list(){
+    QString outputFile = QFileDialog::getSaveFileName(this, tr("Save File"), 0, tr("csv (*.csv)"));
+    
+    if (!outputFile.length()) return;
+
+    int selection = 0;
+    switch(ui->tabWidget->currentIndex()){
+        case 0:
+        case 1:
+        case 2: selection = ui->tabWidget->currentIndex(); break;
+        case 4: selection = 3; break;
+        default: return;
+    }
+    
+    ofstream output_stream(outputFile.toStdString().c_str());
+    for (auto &kv : lipid_space->selection[selection]){
+        if (kv.second) output_stream << kv.first << endl;
+    }
+    
+    QMessageBox::information(this, "Export completed", "The list was export into the file '" + outputFile + "'.");
+}
+
+
 void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
     QMenu *menu = new QMenu(this);
     if (ui->tabWidget->currentIndex() != 3){
         QAction *actionSelectAll = new QAction("Select all", this);
         QAction *actionDeselectAll = new QAction("Deselect all", this);
         QAction *actionToggleAll = new QAction("Toggle all", this);
+        QAction *actionExportList = new QAction("Export list (selected only)", this);
         menu->addAction(actionSelectAll);
         menu->addAction(actionDeselectAll);
         menu->addAction(actionToggleAll);
+        menu->addAction(actionExportList);
         
         QListWidget *widget = nullptr;
         switch(ui->tabWidget->currentIndex()){
             case 0: widget = ui->speciesList; break;
             case 1: widget = ui->classList; break;
             case 2: widget = ui->categoryList; break;
-            case 3: return;
             case 4: widget = ui->sampleList; break;
-            default: break;
+            default: return;
         }
         menu->popup(widget->viewport()->mapToGlobal(pos));
         connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::select_all_entities);
         connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::deselect_all_entities);
         connect(actionToggleAll, &QAction::triggered, this, &LipidSpaceGUI::toggle_all_entities);
+        connect(actionExportList, &QAction::triggered, this, &LipidSpaceGUI::export_list);
     }
     else {
         QAction *actionSelectAll = new QAction("Select all nominal features", this);
