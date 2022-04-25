@@ -165,6 +165,8 @@ LipidSpace::LipidSpace() {
     analysis_finished = false;
     dendrogram_root = 0;
     progress = 0;
+    process_id = 0;
+    target_variable = "";
     feature_values.insert({FILE_FEATURE_NAME, FeatureSet(FILE_FEATURE_NAME, NominalFeature)});
         
     // load precomputed class distance matrix
@@ -245,10 +247,7 @@ const vector< vector< vector< vector<int> > > > LipidSpace::orders{
 
 
 LipidSpace::~LipidSpace(){
-    for (auto kv : all_lipids) delete kv.second;
-    delete global_lipidome;
-    for (auto table : lipidomes) delete table;
-    if (dendrogram_root) delete dendrogram_root;
+    reset_analysis();
 }
 
 
@@ -2492,92 +2491,256 @@ std::thread LipidSpace::run_analysis_thread() {
 bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;}
 
 void LipidSpace::run(){
-    if (lipidomes.size() == 0){
+    if (process_id == 1){
+        if (lipidomes.size() == 0){
+            if (progress && !progress->stop_progress){
+                progress->finish();
+            }
+            return;
+        }
+        Logging::write_log("Started analysis");
+        
+        auto start = high_resolution_clock::now();
+        analysis_finished = false;
+        if (dendrogram_root){
+            delete dendrogram_root;
+            dendrogram_root = 0;
+        }
+        selected_lipidomes.clear();
+        dendrogram_sorting.clear();
+        dendrogram_points.clear();
+        
+        if (progress){
+            progress->set(0);
+        }
+        
+        
+        // compute PCA matrixes for the complete lipidome
+        if (!progress || !progress->stop_progress){
+            if (!compute_global_distance_matrix()){
+                if (progress){
+                    progress->setError(QString("Less than three lipids were taken for analysis. Analysis aborted. Select more lipids for analysis. Maybe consider the log messages."));
+                }
+                return;
+            }
+        }
+        
+        cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
+        
+        // perform the principal component analysis
+        if (!progress || !progress->stop_progress){
+            // set the step size for the next analyses
+            if (progress){
+                progress->prepare_steps(7);
+                progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
+            }
+            Matrix pca;
+            global_distances.rewrite(global_lipidome->m);
+            global_lipidome->m.PCA(pca, cols_for_pca);
+            global_lipidome->m.rewrite(pca);
+            if (progress){
+                progress->disconnect(&global_lipidome->m, SIGNAL(set_step()), 0, 0);
+            }
+        }
+        
+        // cutting the global PCA matrix back to a matrix for each lipidome
+        if (!progress || !progress->stop_progress){
+            separate_matrixes();
+            normalize_intensities();
+            if (progress){
+                progress->set_step();
+            }
+        }
+        
+        if (!progress || !progress->stop_progress){
+            if (selected_lipidomes.size() > 1){
+                compute_hausdorff_matrix();
+                if (progress){
+                    progress->set_step();
+                }
+            }
+        }
+        
+        if (!progress || !progress->stop_progress){
+            if (selected_lipidomes.size() > 1){
+                create_dendrogram();
+                if (progress){
+                    progress->set_step();
+                }
+            }
+        }
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+        cout << "Process: " << duration.count() << endl;
+        
         if (progress && !progress->stop_progress){
             progress->finish();
-            return;
+            analysis_finished = true;
+            Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(lipidomes.size()) + " lipidome" + (lipidomes.size() > 1 ? "s" : "") + " in total.");
         }
     }
-    Logging::write_log("Started analysis");
     
-    auto start = high_resolution_clock::now();
-    analysis_finished = false;
-    if (dendrogram_root){
-        delete dendrogram_root;
-        dendrogram_root = 0;
-    }
-    selected_lipidomes.clear();
-    dendrogram_sorting.clear();
-    dendrogram_points.clear();
-    
-    if (progress){
-        progress->set(0);
-    }
-    
-    
-    // compute PCA matrixes for the complete lipidome
-    if (!progress || !progress->stop_progress){
-        if (!compute_global_distance_matrix()){
-            if (progress){
-                progress->setError(QString("Less than three lipids were taken for analysis. Analysis aborted. Select more lipids for analysis. Maybe consider the log messages."));
+    else if (process_id == 2 && target_variable != ""){
+        
+        
+        
+        Array target_values;
+        map<string, double> nominal_target_values;
+        int nom_counter = 1;
+        map<LipidAdduct*, int> lipid_map;
+        map<string, int> lipid_name_map;
+        Matrix global_matrix;
+        vector< Gene* >genes;
+        
+        if (uncontains_val(feature_values, target_variable)){
+            if (progress && !progress->stop_progress){
+                progress->finish();
             }
             return;
         }
-    }
-    
-    cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
-    
-    // perform the principal component analysis
-    if (!progress || !progress->stop_progress){
-        // set the step size for the next analyses
+        Logging::write_log("Started feature analysis");
+        
         if (progress){
-            progress->prepare_steps(7);
-            progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
+            progress->set(0);
         }
-        Matrix pca;
-        global_distances.rewrite(global_lipidome->m);
-        global_lipidome->m.PCA(pca, cols_for_pca);
-        global_lipidome->m.rewrite(pca);
-        if (progress){
-            progress->disconnect(&global_lipidome->m, SIGNAL(set_step()), 0, 0);
+        // perform the principal component analysis
+        if (!progress || !progress->stop_progress){
+            // set the step size for the next analyses
+            
+            // setup array for target variable values, if nominal then each with incrementing number
+            if (feature_values[target_variable].feature_type == NominalFeature){
+                for (auto lipidome : selected_lipidomes){
+                    string nominal_value = lipidome->features[target_variable].nominal_value;
+                    if (uncontains_val(nominal_target_values, nominal_value)){
+                        nominal_target_values.insert({nominal_value, nom_counter++});
+                    }
+                    target_values.push_back(nominal_target_values[nominal_value]);
+                }
+            }
+            else {
+                for (auto lipidome : selected_lipidomes){
+                    target_values.push_back(lipidome->features[target_variable].numerical_value);
+                }
+            }
+            
+            // setting up lipid to column in matrix map
+            for (auto lipidome : selected_lipidomes){
+                for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                    LipidAdduct* lipid = lipidome->lipids[i];
+                    if (uncontains_val(lipid_map, lipid)){
+                        lipid_map.insert({lipid, lipid_map.size()});
+                        lipid_name_map.insert({lipidome->species[i], lipid_name_map.size()});
+                    }
+                }
+            }
+        
+            // set up matrix for multiple linear regression
+            global_matrix.reset(selected_lipidomes.size(), lipid_map.size());
+            for (uint r = 0; r < selected_lipidomes.size(); ++r){
+                Table* lipidome = selected_lipidomes[r];
+                for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                    global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+                }
+            }
         }
-    }
-    
-    // cutting the global PCA matrix back to a matrix for each lipidome
-    if (!progress || !progress->stop_progress){
-        separate_matrixes();
-        normalize_intensities();
-        if (progress){
-            progress->set_step();
-        }
-    }
-    
-    if (!progress || !progress->stop_progress){
-        if (selected_lipidomes.size() > 1){
-            compute_hausdorff_matrix();
+        
+        
+        // determining the upper number of features to consider
+        int n = global_matrix.cols;
+        int n_features = n;
+        if (n > 1) n = min(n_features - 1, (int)sqrt(n) * 2);
+        
+        // perform the principal component analysis
+        if (!progress || !progress->stop_progress){
+            // set the step size for the next analyses
+            if (progress){
+                int m = n_features - n;
+                progress->prepare_steps((((n_features + 1) * n_features) >> 1) - (((m + 1) * m) >> 1));
+                progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
+            }
+        
+        genes.resize(n + 1, 0);
+        genes[0] = new Gene(n_features);
+        genes[0]->aic = 1e100;
+        
+        // implementation of sequential forward feature selection
+        
+            separate_matrixes();
+            normalize_intensities();
             if (progress){
                 progress->set_step();
             }
         }
-    }
-    
-    if (!progress || !progress->stop_progress){
-        if (selected_lipidomes.size() > 1){
-            create_dendrogram();
-            if (progress){
-                progress->set_step();
+        
+        
+        for(int i = 1; i <= n && (!progress || !progress->stop_progress); ++i){
+            Gene* best = 0;
+            int pos = 0;
+            double best_aic = 1e100;
+            Gene* last = genes[i - 1];
+            while (pos < n_features - (i - 1) && (!progress || !progress->stop_progress)){
+                if (!last->gene_code[pos]){
+                    Gene* new_gene = new Gene(last);
+                    new_gene->gene_code[pos] = true;
+                
+                    Indexes feature_indexes;
+                    new_gene->get_indexes(feature_indexes);
+                    Matrix sub_features;
+                    sub_features.rewrite(global_matrix, {}, feature_indexes);
+                    
+                    Array coefficiants;
+                    coefficiants.compute_coefficiants(sub_features, target_values);    // estimating coefficiants
+                    new_gene->aic = compute_aic(sub_features, coefficiants, target_values);  // computing aic
+                    
+                    if (!best || best_aic > new_gene->aic){
+                        best = new_gene;
+                        best_aic = new_gene->aic;
+                    }
+                    else {
+                        delete new_gene;
+                    }
+                    
+                }
+                ++pos;
+                if (progress){
+                    progress->set_step();
+                }
             }
+                
+            genes[i] = best;
+            Indexes feature_indexes;
+            best->get_indexes(feature_indexes);
+        }
+        
+        if (!progress || !progress->stop_progress){
+            // find the feature subset with the lowest aic
+            double best_aic = 1e100;
+            int best_pos = 0;
+            for (uint i = 1; i < genes.size(); ++i){
+                if (best_aic > genes[i]->aic){
+                    best_aic = genes[i]->aic;
+                    best_pos = i;
+                }
+            }
+            
+            // do the selection
+            for (auto &kv : selection[0]){
+                kv.second = genes[best_pos]->gene_code[lipid_name_map[kv.first]];
+            }
+            
+            // cleanup
+            for (auto gene : genes){
+                if (gene) delete gene;
+            }
+            
+            if (progress && !progress->stop_progress){
+                progress->finish();
+            }
+            emit reassembled();
         }
     }
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Process: " << duration.count() << endl;
     
-    if (progress && !progress->stop_progress){
-        progress->finish();
-        analysis_finished = true;
-        Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(lipidomes.size()) + " lipidome" + (lipidomes.size() > 1 ? "s" : "") + " in total.");
-    }
+    process_id = 0;
 }
 
 
@@ -2614,111 +2777,5 @@ void LipidSpace::reset_analysis(){
 }
 
 
-
-void LipidSpace::feature_analysis(string feature){
-    if (uncontains_val(feature_values, feature)) return;
-    
-    Array target_values;
-    map<string, double> nominal_target_values;
-    int nom_counter = 1;
-    map<LipidAdduct*, int> lipid_map;
-    
-    if (feature_values[feature].feature_type == NominalFeature){
-        for (auto lipidome : selected_lipidomes){
-            string nominal_value = lipidome->features[feature].nominal_value;
-            if (uncontains_val(nominal_target_values, nominal_value)) nominal_target_values.insert({nominal_value, nom_counter++});
-            target_values.push_back(nominal_target_values[nominal_value]);
-        }
-    }
-    else {
-        for (auto lipidome : selected_lipidomes){
-            target_values.push_back(lipidome->features[feature].numerical_value);
-        }
-    }
-    
-    for (auto lipidome : selected_lipidomes){
-        for (auto lipid : lipidome->lipids){
-            if (uncontains_val(lipid_map, lipid)) lipid_map.insert({lipid, lipid_map.size()});
-        }
-    }
-    
-    // set up matrix for multiple linear regression
-    Matrix global_matrix(selected_lipidomes.size(), lipid_map.size());
-    for (uint r = 0; r < selected_lipidomes.size(); ++r){
-        Table* lipidome = selected_lipidomes[r];
-        for (uint i = 0; i < lipidome->lipids.size(); ++i) global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
-    }
-    
-    
-    
-    int n = global_matrix.cols;
-    int n_features = n;
-    if (n > 1) n = min(n_features - 1, (int)sqrt(n) * 2);
-    
-    
-    vector< Gene* >genes;
-    genes.resize(n + 1, 0);
-    genes[0] = new Gene(n_features);
-    genes[0]->aic = 1e100;
-    
-    // implementation of sequential forward feature selection
-    for(int i = 1; i <= n; ++i){
-        Gene* best = 0;
-        int pos = 0;
-        double best_aic = 1e100;
-        Gene* last = genes[i - 1];
-        while (pos < n_features - (i - 1)){
-            if (!last->gene_code[pos]){
-                Gene* new_gene = new Gene(last);
-                new_gene->gene_code[pos] = true;
-            
-                Indexes feature_indexes;
-                new_gene->get_indexes(feature_indexes);
-                Matrix sub_features;
-                sub_features.rewrite(global_matrix, {}, feature_indexes);
-                
-                Array coefficiants;
-                coefficiants.compute_coefficiants(sub_features, target_values);    // estimating coefficiants
-                new_gene->aic = compute_aic(sub_features, coefficiants, target_values);  // computing aic
-                
-                if (!best || best_aic > new_gene->aic){
-                    best = new_gene;
-                    best_aic = new_gene->aic;
-                }
-                else {
-                    delete new_gene;
-                }
-                
-            }
-            ++pos;
-        }
-            
-        genes[i] = best;
-        Indexes feature_indexes;
-        best->get_indexes(feature_indexes);
-    }
-    
-    // find the feature_set with the lowest aic
-    double best_aic = 1e100;
-    int best_pos = 0;
-    for (uint i = 1; i < genes.size(); ++i){
-        if (best_aic > genes[i]->aic){
-            best_aic = genes[i]->aic;
-            best_pos = i;
-        }
-    }
-    
-    // select the genes
-    set <string> selected_features;
-    for (int i = 0; i < (int)genes[best_pos]->gene_code.size(); ++i) {
-        if (genes[best_pos]->gene_code[i]) selected_features.insert(global_lipidome->species[i]);
-    }
-    
-    for (auto &kv : selection[0]) kv.second = contains_val(selected_features, kv.first);
-    
-    for (auto gene : genes) delete gene;
-    
-    emit reassembled();
-}
 
 

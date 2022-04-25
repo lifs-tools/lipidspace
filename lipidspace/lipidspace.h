@@ -53,7 +53,8 @@ public:
     vector<Table*> selected_lipidomes;
     map<string, vector<string>> lipid_sortings;
     Matrix global_distances;
-    void feature_analysis(string feature);
+    int process_id;
+    string target_variable;
     
 
     LipidSpace();
@@ -90,6 +91,7 @@ signals:
     
 public slots:
     void store_results(string);
+    
 };
 
 

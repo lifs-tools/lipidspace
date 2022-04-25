@@ -129,6 +129,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     selected_d_lipidomes = 0;
     knubbel = false;
     
+    qRegisterMetaType<string>("string");
+    
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
     
     
@@ -542,8 +544,12 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
 
 
 void LipidSpaceGUI::startFeatureAnalysis(){
-    string target_variable = ui->featureComboBox->currentText().toStdString();
-    lipid_space->feature_analysis(target_variable);
+    lipid_space->target_variable = ui->featureComboBox->currentText().toStdString();
+    lipid_space->process_id = 2;
+    
+    progress->reset();
+    lipid_space->start();
+    progressbar->exec();
 }
 
 
@@ -551,6 +557,7 @@ void LipidSpaceGUI::runAnalysis(){
     // clear all windows with canvases
     ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
+    lipid_space->process_id = 1;
     single_window = -1;
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
