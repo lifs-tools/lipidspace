@@ -28,6 +28,7 @@ public:
     static string normalization;
     static Linkage linkage;
     static string LipidSpace_version;
+    static QString last_folder;
 };
 
 

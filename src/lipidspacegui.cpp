@@ -232,13 +232,14 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     progressbar->setModal(true);
     ui->dendrogramView->setDendrogramData(lipid_space);
     ui->dendrogramView->setContextMenuPolicy(Qt::CustomContextMenu);
-    //connect(ui->dendrogramView, &QGraphicsView::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
     connect(ui->dendrogramView, &Canvas::rightClick, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
     
     if (GlobalData::linkage == SingleLinkage) ui->actionSingle_linkage_clustering->setChecked(true);
     else if (GlobalData::linkage == AverageLinkage) ui->actionAverage_linkage_clustering->setChecked(true);
     else if (GlobalData::linkage == CompleteLinkage) ui->actionComplete_linkage_clustering->setChecked(true);
+    GlobalData::last_folder = QCoreApplication::applicationDirPath();
     
+    ui->startAnalysisPushButton->setEnabled(false);
     updateGUI();
 }
 
@@ -559,6 +560,7 @@ void LipidSpaceGUI::runAnalysis(){
     lipid_space->analysis_finished = false;
     lipid_space->process_id = 1;
     single_window = -1;
+    ui->startAnalysisPushButton->setEnabled(false);
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
     
@@ -578,13 +580,11 @@ void LipidSpaceGUI::runAnalysis(){
     // (re)start analysis
     progress->reset();
     lipid_space->start();
-    progressbar->exec();
+    progressbar->exec(); // waiting for the progress bar to finish
     
+    if (!lipid_space->analysis_finished) return;
     
-    
-    if (!lipid_space->analysis_finished){
-        return;
-    }
+    if (lipid_space->feature_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
     
     // reset parameters
     ui->dendrogramHeightSpinBox->setValue(100);
@@ -734,9 +734,11 @@ void LipidSpaceGUI::featureItemDoubleClicked(QTreeWidgetItem *item, int){
 
 
 void LipidSpaceGUI::setExport(){
-    QString outputFolder = QFileDialog::getExistingDirectory(0, ("Select Export Folder"), QDir::currentPath());
+    QString outputFolder = QFileDialog::getExistingDirectory(0, "Select Export Folder", GlobalData::last_folder);
     
     if (outputFolder.length()){
+        QFileInfo fi(outputFolder);
+        GlobalData::last_folder = fi.absoluteDir().absolutePath();
         exporting(outputFolder.toStdString());
         QMessageBox::information(this, "Export completed", "The export is completed into the folder '" + outputFolder + "'.");
     }
@@ -1104,9 +1106,11 @@ void LipidSpaceGUI::updateGUI(){
 
 void LipidSpaceGUI::openMzTabM(){    
     
-    QString file_name = QFileDialog::getOpenFileName(this, "Select one or more lipid lists", ".", "mzTabM files *.mzTab *.mzTabM *.mztab *.mztabm (*.mzTab *.mzTabM *.mztab *.mztabm)");
-    if (file_name.size() <= 0) return;
+    QString file_name = QFileDialog::getOpenFileName(this, "Select one or more lipid lists", GlobalData::last_folder, "mzTabM files *.mzTab *.mzTabM *.mztab *.mztabm (*.mzTab *.mzTabM *.mztab *.mztabm)");
+    if (!file_name.length()) return;
     
+    QFileInfo fi(file_name);
+    GlobalData::last_folder = fi.absoluteDir().absolutePath();
     bool start_analysis = true;
     bool repeat_loading = true;
     while (repeat_loading){
@@ -1202,99 +1206,99 @@ void LipidSpaceGUI::openLists(){
         return;
     }
     
+    QStringList files = QFileDialog::getOpenFileNames(this, "Select one or more lipid lists", GlobalData::last_folder, "Lists *.csv *.tsv *.txt (*.csv *.tsv *.txt)");
+    if (files.isEmpty()) return;
     
-    QStringList files = QFileDialog::getOpenFileNames(this, "Select one or more lipid lists", ".", "Lists *.csv *.tsv *.txt (*.csv *.tsv *.txt)");
-    
-    if (files.size()){
-        bool start_analysis = true;
-        for (QString file_name : files){
-            if (!start_analysis) break;
-            bool repeat_loading = true;
-            while (repeat_loading){
-                try {
-                    lipid_space->load_list(file_name.toUtf8().constData());
-                    repeat_loading = false;
-                }
-                catch (LipidSpaceException &e) {
-                    QMessageBox msgBox(this);
-                    msgBox.setWindowTitle("Error during table import");
-                    msgBox.setText(e.what());
+    bool start_analysis = true;
+    for (QString file_name : files){
+        if (!start_analysis) break;
+        QFileInfo fi(file_name);
+        GlobalData::last_folder = fi.absoluteDir().absolutePath();
+        bool repeat_loading = true;
+        while (repeat_loading){
+            try {
+                lipid_space->load_list(file_name.toUtf8().constData());
+                repeat_loading = false;
+            }
+            catch (LipidSpaceException &e) {
+                QMessageBox msgBox(this);
+                msgBox.setWindowTitle("Error during table import");
+                msgBox.setText(e.what());
+                
+                switch(e.type){
+                    case LipidUnparsable:
+                        {
+                            msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
+                            QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+                            msgBox.addButton(tr("Abort"), QMessageBox::NoRole);
+                            msgBox.exec();
+                            if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+                                lipid_space->ignore_unknown_lipids = true;
+                            }
+                            else {
+                                repeat_loading = false;
+                                start_analysis = false;
+                            }
+                        }
+                        break;
                     
-                    switch(e.type){
-                        case LipidUnparsable:
-                            {
-                                msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
-                                QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
-                                msgBox.addButton(tr("Abort"), QMessageBox::NoRole);
-                                msgBox.exec();
-                                if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
-                                    lipid_space->ignore_unknown_lipids = true;
-                                }
-                                else {
-                                    repeat_loading = false;
-                                    start_analysis = false;
-                                }
-                            }
-                            break;
+                    case FileUnreadable:
+                        {
+                            msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                            msgBox.exec();
+                            repeat_loading = false;
+                            start_analysis = false;
+                        }
+                        break;
                         
-                        case FileUnreadable:
-                            {
-                                msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
-                                msgBox.exec();
+                    case LipidDoublette:
+                        {
+                            msgBox.setInformativeText("Do you want to continue by ignoring doublette lipid species?");
+                            QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
+                            msgBox.addButton(tr("Abort"), QMessageBox::NoRole);
+                            msgBox.exec();
+                            if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
+                                lipid_space->ignore_doublette_lipids = true;
+                            }
+                            else {
                                 repeat_loading = false;
                                 start_analysis = false;
                             }
-                            break;
-                            
-                        case LipidDoublette:
-                            {
-                                msgBox.setInformativeText("Do you want to continue by ignoring doublette lipid species?");
-                                QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::YesRole);
-                                msgBox.addButton(tr("Abort"), QMessageBox::NoRole);
-                                msgBox.exec();
-                                if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
-                                    lipid_space->ignore_doublette_lipids = true;
-                                }
-                                else {
-                                    repeat_loading = false;
-                                    start_analysis = false;
-                                }
-                            }
-                            break;
-                            
-                        case NoColumnFound:
-                        case ColumnNumMismatch:
-                            {
-                                msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
-                                msgBox.exec();
-                                repeat_loading = false;
-                                start_analysis = false;
-                            }
-                            break;
-                            
-                        default:
-                            {
-                                msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
-                                msgBox.exec();
-                                repeat_loading = false;
-                                start_analysis = false;
-                            }
-                            break;
-                    }
-                }
-                catch (exception &e){
-                    Logging::write_log(e.what());
-                    QMessageBox::critical(this, "Unexpected Error", "An unexpected error happened. Please check the log file and get in contact with the developers.");
-                    repeat_loading = false;
-                    break;
+                        }
+                        break;
+                        
+                    case NoColumnFound:
+                    case ColumnNumMismatch:
+                        {
+                            msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                            msgBox.exec();
+                            repeat_loading = false;
+                            start_analysis = false;
+                        }
+                        break;
+                        
+                    default:
+                        {
+                            msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
+                            msgBox.exec();
+                            repeat_loading = false;
+                            start_analysis = false;
+                        }
+                        break;
                 }
             }
-            
+            catch (exception &e){
+                Logging::write_log(e.what());
+                QMessageBox::critical(this, "Unexpected Error", "An unexpected error happened. Please check the log file and get in contact with the developers.");
+                repeat_loading = false;
+                break;
+            }
         }
         
-        if (start_analysis){
-            runAnalysis();
-        }
+    }
+    
+    if (start_analysis){
+        runAnalysis();
     }
 }
 
@@ -1391,9 +1395,12 @@ void LipidSpaceGUI::ShowTableContextMenu(const QPoint pos){
 
 
 void LipidSpaceGUI::export_list(){
-    QString outputFile = QFileDialog::getSaveFileName(this, tr("Save File"), 0, tr("csv (*.csv)"));
+    QString outputFile = QFileDialog::getSaveFileName(this, tr("Save File"), GlobalData::last_folder, tr("csv (*.csv)"));
     
     if (!outputFile.length()) return;
+    
+    QFileInfo fi(outputFile);
+    GlobalData::last_folder = fi.absoluteDir().absolutePath();
 
     int selection = 0;
     switch(ui->tabWidget->currentIndex()){

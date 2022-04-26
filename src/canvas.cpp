@@ -1072,10 +1072,11 @@ void Canvas::mousePressEvent(QMouseEvent *event){
 
 void Canvas::exportAsPdf(){
     if (!pointSet && !dendrogram) return;
-    QString file_name = QFileDialog::getSaveFileName(this, "Export as pdf", ".", "*.pdf");
-    if (!file_name.length()) {
-        return;
-    }
+    QString file_name = QFileDialog::getSaveFileName(this, "Export as pdf", GlobalData::last_folder, "*.pdf (*.pdf)");
+    if (!file_name.length()) return;
+    
+    QFileInfo fi(file_name);
+    GlobalData::last_folder = fi.absoluteDir().absolutePath();
     
     QPrinter printer(QPrinter::ScreenResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
