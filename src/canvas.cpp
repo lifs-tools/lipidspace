@@ -127,14 +127,11 @@ void Dendrogram::clear(){
 void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* parent_line){
     if (!node) return;
     
-    
-    
     if (!node->left_child && !node->right_child){
         if (parent_line) parent_line->node = node->order;
         return;
     }
-    
-    
+
     double minx = max(1e-3, x_max_d - x_min_d);
     double miny = max(1e-3, y_max_d - y_min_d);
     double x1 = (node->x_left - x_min_d) * dwidth / minx;
@@ -151,12 +148,9 @@ void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* pare
     view->graphics_scene.addItem(v_line_l);
     v_line_l->setAcceptHoverEvents(true);
     
-    
-    
     DendrogramLine* v_line_r = new DendrogramLine(QLineF(m, y1, x2, y2), pen, this);
     view->graphics_scene.addItem(v_line_r);
     v_line_r->setAcceptHoverEvents(true);
-    
     
     if (node->left_child){
         double yl = (-node->left_child->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
@@ -404,25 +398,56 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
         if (feature != ""){
             recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::pie_tree_depth);
             
+                // Draw global pie chart
+            if (contains_val(lipid_space->feature_values, feature) && lipid_space->feature_values[feature].feature_type == NominalFeature){
+                int angle_start = 16 * 90;
+                double sum = 0;
+                DendrogramNode* node = lipid_space->dendrogram_root;
+                for (auto kv : node->feature_count_nominal[feature]){
+                    sum += kv.second;
+                }
+                
+                double pie_radius = 15;
+                QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+                double pie_x = view->width() - 25;
+                double pie_y = 20;
+                QTransform qtrans = view->transform();
+                painter->save();
+                painter->translate(QPointF(v.x(), v.y()));
+                painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+                for (auto kv : node->feature_count_nominal[feature]){
+                    if (kv.second == 0) continue;
+                    int span = 16. * 360. * (double)kv.second / sum;
+                    QBrush brush(GlobalData::colorMapFeatures[feature + "_" + kv.first]);
+                    QPen piePen(brush.color());
+                    painter->setPen(piePen);
+                    painter->setBrush(brush);
+                    painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
+                    angle_start = (angle_start + span) % 5760; // 360 * 16
+                }
+                painter->restore();
+            
+            }
+                
+                
             // print the feature legend
             QFont legend_font("Helvetica", 8);
-            if (contains_val(lipid_space->feature_values, feature)){
-                int num_feature = 0; 
-                for (auto feature_value_kv : lipid_space->feature_values.at(feature).nominal_values){
-                    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
-                    QTransform qtrans = view->transform();
-                    painter->save();
-                    painter->translate(QPointF(v.x(), v.y()));
-                    painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
-                    if (contains_val(GlobalData::colorMapFeatures, feature + "_" + feature_value_kv.first)){
-                        painter->fillRect(QRectF(view->viewport()->geometry().width() - 20, 5 + 20 * num_feature, 15, 15), GlobalData::colorMapFeatures[feature + "_" + feature_value_kv.first]);
-                    }
-                    painter->setFont(legend_font);
-                    painter->drawText(QRectF(view->viewport()->geometry().width() - 225, 5 + 20 * num_feature, 200, 30), Qt::AlignTop | Qt::AlignRight, feature_value_kv.first.c_str());
-                    
-                    painter->restore();
-                    ++num_feature;
+            int num_feature = 0; 
+            for (auto feature_value_kv : lipid_space->feature_values.at(feature).nominal_values){
+                QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+                QTransform qtrans = view->transform();
+                painter->save();
+                painter->translate(QPointF(v.x(), v.y()));
+                painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+                if (contains_val(GlobalData::colorMapFeatures, feature + "_" + feature_value_kv.first)){
+                    painter->fillRect(QRectF(view->viewport()->geometry().width() - 20, 40 + 20 * num_feature, 15, 15), GlobalData::colorMapFeatures[feature + "_" + feature_value_kv.first]);
                 }
+                painter->setFont(legend_font);
+                string label_text = feature_value_kv.first + " (" + std::to_string(lipid_space->dendrogram_root->feature_count_nominal[feature][feature_value_kv.first]) + ")";
+                painter->drawText(QRectF(view->viewport()->geometry().width() - 525, 40 + 20 * num_feature, 500, 30), Qt::AlignTop | Qt::AlignRight, label_text.c_str());
+                
+                painter->restore();
+                ++num_feature;
             }
         }
     
