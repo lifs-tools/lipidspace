@@ -756,7 +756,6 @@ void LipidSpace::reassembleSelection(){
 
 
 void LipidSpace::load_list(string lipid_list_file){
-    
     // load and parse lipids
     ifstream infile(lipid_list_file);
     if (!infile.good()){
@@ -777,6 +776,7 @@ void LipidSpace::load_list(string lipid_list_file){
             delete tokens;
             
             LipidAdduct* l = load_lipid(lipid_name, lipid_set);
+            
             if (l){
                 lipidome->lipids.push_back(l);
                 lipidome->species.push_back(l->get_lipid_string());
@@ -2428,13 +2428,16 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
         delete l->adduct;
         l->adduct = nullptr;
     }
+    
     l->sort_fatty_acyl_chains();
     for (auto fa : l->lipid->fa_list) cut_cycle(fa);
     
     
     string lipid_unique_name = l->get_lipid_string();
+    bool from_repository = false;
     if (contains_val(all_lipids, lipid_unique_name)){
         delete l;
+        from_repository = true;
         l = all_lipids[lipid_unique_name];
     }
     
@@ -2442,13 +2445,13 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
         lipid_set.insert({lipid_unique_name, l});
     }
     else {
-        delete l;
+        if (!from_repository) delete l;
         l = nullptr;
         if (ignore_doublette_lipids){
             Logging::write_log("Ignoring doublette lipid '" + lipid_name + "'");
         }
         else {
-            throw LipidSpaceException("Error: lipid '" + lipid_name + "' appears twice in the table. " + lipid_unique_name, LipidDoublette);
+            throw LipidSpaceException("Error: lipid '" + lipid_name + "' appears twice in the table.", LipidDoublette);
         }
     }
     return l;
