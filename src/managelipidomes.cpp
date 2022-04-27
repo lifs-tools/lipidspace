@@ -14,8 +14,7 @@ ManageLipidomes::ManageLipidomes(LipidSpace *_lipid_space, QWidget *parent) : QD
     
     int i = 0;
     for (auto lipidome : lipid_space->lipidomes){
-        QFileInfo qFileInfo(lipidome->file_name.c_str());
-        QString title = qFileInfo.baseName();
+        QString title = lipidome->cleaned_name.c_str();
         ui->listView->addItem(title);
         itemIndex.insert({title, i++});
         

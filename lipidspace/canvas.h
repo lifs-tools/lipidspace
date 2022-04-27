@@ -8,6 +8,7 @@
 #include <QPixmap>
 #include <QWidget>
 #include <QLabel>
+#include <QFileDialog>
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>
@@ -17,6 +18,7 @@
 #include <QPrinter>
 #include <QCursor>
 #include <iostream>
+#include <QGraphicsSceneMouseEvent>
 #include <vector>
 #include <map>
 #include <math.h>
@@ -26,33 +28,100 @@
 using namespace std;
 
 #define MARGIN 0.01
-#define POINT_BASE_SIZE 1.8
+#define POINT_BASE_FACTOR 5
+#define POINT_BASE_SIZE 1
 #define LABEL_COLOR 200, 200, 200, 255
+#define sign_log(x) (x >= 0 ? log(x + 1) - 1 : -(log(-x + 1) - 1))
+#define DENDROGRAM_LINE_SIZE 2.
 
 class Canvas;
+class Dendrogram;
 
 enum LabelDirection {NoLabel, LabelLeft, LabelRight};
+
+
+class DendrogramLine : public QGraphicsLineItem {
+public:
+    bool permanent;
+    DendrogramLine* next_line;
+    DendrogramLine* second_line;
+    Dendrogram *dendrogram;
+    DendrogramNode *d_node;
+    int node;
+    
+    DendrogramLine(QLineF l, QPen p, Dendrogram* d);
+    void update_width(double);
+    void update_height_factor(double, QPointF *);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    QPainterPath shape() const override;
+    void highlight(bool);
+    void make_permanent(bool);
+};
+
+
+
+
+
+class ClickableLabel : public QLabel { 
+    Q_OBJECT 
+
+public:
+    explicit ClickableLabel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags = Qt::WindowFlags()) : QLabel(parent){}
+    ~ClickableLabel(){}
+
+signals:
+    void clicked();
+
+protected:
+    void mouseDoubleClickEvent(QMouseEvent*) {
+        emit clicked();
+    }
+
+};
+
+
 
 class Dendrogram : public QGraphicsItem {
 public:
     QRectF bound;
     Canvas *view;
     
+    struct DendrogramTitle {
+        QString title;
+        bool highlighted;
+        bool permanent;
+        
+        DendrogramTitle(QString t) : title(t), highlighted(false), permanent(false) {}
+    };
+    
     LipidSpace* lipid_space;
-    vector<QString> dendrogram_titles;
+    vector<DendrogramTitle> dendrogram_titles;
     QVector<QLineF> lines;
     double dendrogram_x_factor;
     double dendrogram_y_factor;
+    double dendrogram_height;
+    double dendrogram_y_offset;
     string feature;
+    double x_min_d;
+    double x_max_d;
+    double y_min_d;
+    double y_max_d;
+    double dwidth;
+    double dheight;
+    DendrogramLine *top_line;
+    set<int> *highlighted_for_selection;
     
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
     ~Dendrogram();
     void load();
     void clear();
+    void add_dendrogram_lines(DendrogramNode *node, DendrogramLine* line = 0);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     void recursive_paint(QPainter *painter, DendrogramNode *_node, int max_recursions, int recursion = 0);
     QRectF boundingRect() const override;
-    void draw_pie(QPainter *painter, DendrogramNode *node, double threshold, double pie_x, double pie_y, LabelDirection direction = NoLabel);
+    void draw_pie(QPainter *painter, DendrogramNode *node, double threshold_leq, double pie_x, double pie_y, LabelDirection direction = NoLabel);
 };
     
 
@@ -61,6 +130,8 @@ struct PCPoint {
     double intensity;
     QColor color;
     QString label;
+    QGraphicsEllipseItem *item;
+    int ref_lipid_species;
 };
 
 
@@ -77,7 +148,8 @@ public:
     Table* lipidome;
     Canvas *view;
     QRectF old_view;
-    
+    QString title;
+    QString variances;
     vector<PCPoint> points;
     set<QString> highlighted_points;
     vector<PCLabel> labels;
@@ -86,6 +158,7 @@ public:
     PointSet(Table* _lipidome, Canvas *_view);
     ~PointSet();
     void set_labels();
+    void set_point_size();
     void automated_annotation(Array &xx, Array &yy);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
     QRectF boundingRect() const override;
@@ -118,6 +191,7 @@ public:
     void wheelEvent(QWheelEvent *event);
     void setDendrogramData(LipidSpace *_lipid_space);
     void resetDendrogram();
+    void update_alpha();
     
     
 public slots:
@@ -125,8 +199,7 @@ public slots:
     void showHideQuant(bool _showQuant);
     void setTransforming(QRectF f);
     void setUpdate();
-    void exportPdf(QString outputFolder);
-    void setInitialized();
+    void exportAsPdf();
     void hoverOver();
     void setSwap(int source);
     void reloadPoints();
@@ -134,6 +207,7 @@ public slots:
     void clear();
     void highlightPoints();
     void moveToPoint(QListWidgetItem*);
+    void contextMenu(QPoint pos);
     
     
 signals:
@@ -142,6 +216,8 @@ signals:
     void doubleClicked(int);
     void mouse(QMouseEvent* event, Canvas *_canvas);
     void swappingLipidomes(int source, int target);
+    void context(Canvas *canvas, QPoint pos);
+    void rightClick(QPoint pos, set<int> *selected_d_lipidomes = 0);
     
     
 private:
@@ -152,9 +228,6 @@ private:
     QPoint oldCenter;
     PointSet *pointSet;
     Dendrogram *dendrogram;
-    bool initialized;
-    QLabel title;
-    QLabel *variances;
     QListWidget *listed_species;
 };
 

@@ -46,6 +46,26 @@ Array& operator/=(Array &me, const double val){
     return me;
 }
 
+void Array::mult(Matrix &m, Array &a){
+    assert(m.cols == (int)a.size());
+    clear();
+    for (int r = 0; r < m.rows; ++r){
+        double sum = 0;
+        for (int c = 0; c < (int)a.size(); c++) sum += m(r, c) * a[c];
+        push_back(sum);
+    }
+}
+
+
+double Array::median(){
+    assert (this->size() > 2);
+    Array median_vector;
+    median_vector.reserve(this->size());
+    for (auto val : *this) median_vector.push_back(val);
+    sort(median_vector.begin(), median_vector.end());
+    return median_vector[median_vector.size() >> 1];
+}
+
 
 double Array::mean(){
     double mn = 0;
@@ -68,6 +88,23 @@ void Array::add(Array &a){
 void Array::add(vector<double> &a){
     reserve(size() + a.size());
     for (auto val : a) push_back(val);
+}
+
+
+void Array::compute_coefficiants(Matrix &data, Array &values){
+    Matrix data_transpose;
+    data_transpose.rewrite(data);
+    data_transpose.transpose();
+    
+    Matrix dTd;
+    dTd.mult(data_transpose, data);
+    Matrix inversed;
+    inversed.inverse(dTd, true);
+    
+    Matrix dTdidT;
+    dTdidT.mult(inversed, data_transpose);
+    
+    mult(dTdidT, values);
 }
 
 
@@ -291,7 +328,6 @@ void Matrix::scale(){
     for (int c = 0; c < cols; c++){
         // estimating the mean
         double mean = 0;
-        #pragma omp parallel for default(shared) reduction(+:mean)
         for (int it = c * rows; it < (c + 1) * rows; ++it){
             mean += m[it];
         }
@@ -299,14 +335,12 @@ void Matrix::scale(){
         
         // estimating the standard deviation
         double stdev_inv = 0;
-        #pragma omp parallel for default(shared) reduction(+:stdev_inv)
         for (int it = c * rows; it < (c + 1) * rows; ++it){
             stdev_inv += sq(mean - m[it]);
         }
         stdev_inv = sqrt((double)rows / stdev_inv);
         
         // performing z transformation, aka (x - mean) / st_dev
-        #pragma omp parallel for
         for (int it = c * rows; it < (c + 1) * rows; ++it){
             m[it] = (m[it] - mean) * stdev_inv;
         }
@@ -316,10 +350,10 @@ void Matrix::scale(){
 
 void Matrix::transpose(){
     double *tmp = new double[cols * rows];
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int i = 0; i < cols * rows; ++i) tmp[i] = m[i];
     
-    #pragma omp parallel for collapse(2)
+    //#pragma omp parallel for collapse(2)
     for (int c = 0; c < cols; c++){
         for (int r = 0; r < rows; ++r){
             m[r * cols + c] = tmp[c * rows + r];
@@ -354,6 +388,26 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
     
     eigenvalues.add(evals);
     eigenvectors.rewrite(eigvecs);
+}
+
+
+void Matrix::inverse(Matrix &X, bool symmetric){
+    assert(rows == cols);
+    rewrite(X);
+    if (!symmetric) transpose();
+    
+    
+    int N = rows;
+    int *IPIV = new int[N];
+    int LWORK = N*N;
+    double *WORK = new double[LWORK];
+    int INFO;
+
+    dgetrf_(&N, &N, m.data(), &N, IPIV, &INFO);
+    dgetri_(&N, m.data(), &N, IPIV, WORK, &LWORK, &INFO);
+
+    delete[] IPIV;
+    delete[] WORK;
 }
 
 

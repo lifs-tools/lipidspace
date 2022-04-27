@@ -16,8 +16,17 @@ using namespace std;
 #define mmin(x, y) ((x) < (y) ? (x) : (y))
 #define mmax(x, y) ((x) > (y) ? (x) : (y))
 
+extern "C" {
+    // LU decomoposition of a general matrix
+    void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
+
+    // generate inverse of a matrix given its LU decomposition
+    void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
+}
+
 typedef vector<int> Indexes;
 
+class Matrix;
 
 class Array : public vector<double> {
     
@@ -27,11 +36,14 @@ public:
     Array(const Array &a, int l = -1);
     void reset(Array &a);
     double mean();
+    double median();
     double stdev();
     double sum();
+    void mult(Matrix &m, Array &a);
     void add(Array &a);
     void add(vector<double> &a);
     void compute_distances(Array &x, double dx, Array &y, double dy);
+    void compute_coefficiants(Matrix &data, Array &values);
     friend Array& operator+=(Array &me, const double val);
     friend Array& operator-=(Array &me, const double val);
     friend Array& operator*=(Array &me, const double val);
@@ -77,6 +89,7 @@ public:
     double col_min(int c);
     double col_max(int c);
     void transpose();
+    void inverse(Matrix &, bool symmetric = false);
     void mult_vector(const vector<double> &in, vector<double> &out);
     static double vector_vector_mult(int n, const double *x, const double *y);
     double pairwise_sum(Matrix &m);

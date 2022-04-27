@@ -26,6 +26,7 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 
 DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome){
     indexes.insert(index);
+    order = -1;
     left_child = 0;
     right_child = 0;
     distance = 0;
@@ -73,6 +74,7 @@ DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d)
 
 double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_ticks){
     if (left_child == 0){
+        order = cnt;
         sorted_ticks->push_back(*indexes.begin());
         return new double[3]{(double)cnt, 0, (double)cnt + 1};
     }
@@ -155,11 +157,6 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
             feature_numerical[kv.first].push_back(val);
         }
     }
-    
-    
-    
-    
-    
     return new double[3]{(x_left + x_right) / 2, y, (double)cnt};
 }
 
@@ -268,6 +265,21 @@ double KS_pvalue(vector<double> &sample1, vector<double> &sample2){
 
 bool sort_order_one (pair<double, int> i, pair<double, int> j) { return (i.first < j.first); }
 
+double compute_aic(Matrix &data, Array &coefficiants, Array &values){
+    Array S;
+    S.mult(data, coefficiants);
+    int k = data.cols;
+    int n = data.rows;
+    double s = 0;
+    for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
+    return n * (log(2 * M_PI) + 1 + log(s / n)) + (k * 2);
+}
+
+
+bool gene_aic(Gene g1, Gene g2){
+    return g1.aic < g2.aic;
+}
+
 void BH_fdr(vector<double> &data){
     if (data.size() < 2) return;
         
@@ -305,4 +317,32 @@ TreeItem::TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent) : Q
 TreeItem::TreeItem(int pos, QString name, QTreeWidget* parent) : QTreeWidgetItem(parent){
     setText(pos, name);
     feature = "";
+}
+
+
+Gene::Gene(int features){
+    aic = -1;
+    gene_code.resize(features, false);
+}
+
+
+Gene::Gene(Gene *gene){
+    aic = gene->aic;
+    for (bool feature : gene->gene_code) gene_code.push_back(feature);
+}
+
+Gene::Gene(Gene *g1, Gene *g2, double mutation_rate){
+    aic = -1;
+    for (int i = 0; i < (int)g1->gene_code.size(); ++i){
+        bool feature = rand() < 0.5 ? g1->gene_code[i] : g2->gene_code[i];
+        if (rand() < mutation_rate) feature = !feature;
+        gene_code.push_back(feature);
+    }
+}
+
+void Gene::get_indexes(Indexes &indexes){
+    indexes.clear();
+    for (int i = 0; i < (int)gene_code.size(); ++i){
+        if (gene_code[i]) indexes.push_back(i);
+    }
 }

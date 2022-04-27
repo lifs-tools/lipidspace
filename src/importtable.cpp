@@ -94,12 +94,14 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     connect(ui->quantListWidgetPivot, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
 
     
-    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", ".", "Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
+    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
     if (!file_name.length()) {
         QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
         return;
     }
-        
+    
+    QFileInfo fi(file_name);
+    GlobalData::last_folder = fi.absoluteDir().absolutePath();
     
     data_table_file = file_name.toStdString();
     ifstream infile(data_table_file);
@@ -134,6 +136,7 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
             int c = 0;
             map<QString, int> doublettes;
             for (string header : *tokens){
+                if (header[0] == '"' && header[header.length() - 1] == '"') header = strip(header, '"');
                 QString qheader = header.length() ? header.c_str() : "empty_field";
                 
                 if (uncontains_val(doublettes, qheader)){
@@ -182,6 +185,7 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
             }
             int c = 0;
             for (string header : *tokens){
+                if (header[0] == '"' && header[header.length() - 1] == '"') header = strip(header, '"');
                 QString qcell = header.length() ? header.c_str() : "";
                 
                 QTableWidgetItem *item = new QTableWidgetItem(qcell);

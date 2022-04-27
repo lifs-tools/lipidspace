@@ -42,6 +42,7 @@ InputGraph* LaWeCSE::makeGraph(string SMILES){
     
     for (int i = 0; i < mol.atoms.size(); ++i){
         n = fognode[i] = newGraph->newNode();
+        cout << mol.atoms[i].element << endl;
         string node_edge_label = std::to_string(mol.atoms[i].element);
         auto it = stringLabelToSimpleLabel.find(node_edge_label);
         if (it == stringLabelToSimpleLabel.end())

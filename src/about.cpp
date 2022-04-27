@@ -14,7 +14,7 @@ About::About(QWidget *parent, bool log_view) : QDialog(parent), ui(new Ui::About
         setWindowTitle("About");
         
         
-        ui->textBrowser->append("LipidSpace 0.0.1 (MIT License)\n");
+        ui->textBrowser->append(("LipidSpace " + GlobalData::LipidSpace_version + " (MIT License)\n").c_str());
         ui->textBrowser->append("Main Contributers:");
         ui->textBrowser->append("Dominik Kopczynski");
         ui->textBrowser->append("Nils Hoffmann");

@@ -16,13 +16,15 @@
 #include <algorithm>
 #include <math.h>
 
+#define rand() ((double)random() / (double)(RAND_MAX))
+
 using namespace std;
 
-enum Linkage {SingleLinkage, CompleteLinkage};
+enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
 enum FeatureType {NumericalFeature, NominalFeature};
 enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
 enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumerical, FeatureColumnNominal, IgnoreColumn};
-enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered, FeatureNotRegistered};
+enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered, FeatureNotRegistered, CorruptedFileFormat};
 enum FeatureFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, EqualFilter = 3, WithinRange = 4, OutsideRange = 5};
 
 
@@ -57,24 +59,45 @@ struct Feature {
     double numerical_value;
     string nominal_value;
     
+    Feature(){
+        name = "";
+        feature_type = NominalFeature;
+        numerical_value = 0;
+        nominal_value = "";
+    }
+    
     Feature (string _name, string nom_val){
         name = _name;
         feature_type = NominalFeature;
         nominal_value = nom_val;
+        numerical_value = 0;
     }
     
     Feature (string _name, double num_val){
         name = _name;
         feature_type = NumericalFeature;
         numerical_value = num_val;
+        nominal_value = "";
     }
+};
+
+
+class Gene {
+public:
+    vector<bool> gene_code;
+    double aic;
+    
+    Gene(int features);
+    Gene(Gene *gene);
+    Gene(Gene *g1, Gene *g2, double mutation_rate = 0.);
+    void get_indexes(Indexes &indexes);
 };
 
 
 double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
-
-
+double compute_aic(Matrix &data, Array &coefficiants, Array &values);
+bool gene_aic(Gene g1, Gene g2);
 
 
 class LipidSpaceException : public std::exception {
@@ -129,13 +152,21 @@ public:
     vector<LipidAdduct*> lipids;
     vector<bool> selection;
     Array intensities;
+    Array PCA_intensities;
     Array original_intensities;
     map<string, Feature> features;
     Matrix m;
     
-    Table(string lipid_list_file) : file_name(lipid_list_file) {
+    Table(string lipidome_name, string lipidome_file, bool is_file_name = false) : file_name(lipidome_file) {
         QFileInfo qFileInfo(file_name.c_str());
-        cleaned_name = qFileInfo.baseName().toStdString();
+        string cleaned_file = qFileInfo.baseName().toStdString();
+        if (is_file_name){
+            cleaned_name = cleaned_file;
+        }
+        else {
+            cleaned_name = lipidome_name;
+        }
+        features.insert({"File", Feature("File", cleaned_file)});
     }
 };
 
@@ -194,6 +225,7 @@ signals:
 class DendrogramNode {
 public:
     set<int> indexes;
+    int order;
     DendrogramNode* left_child;
     DendrogramNode* right_child;
     double distance;

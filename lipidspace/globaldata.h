@@ -5,10 +5,11 @@
 #include <vector>
 #include <string>
 #include <QColor>
+#include <lipidspace/AssistanceFunctions.h>
 
 using namespace std;
 
-#define DEFAULT_ALPHA 128
+#define DEFAULT_ALPHA 80
 
 class GlobalData {
 public:
@@ -21,6 +22,13 @@ public:
     static int PC2;
     static int feature_counter;
     static map<string, QColor> colorMapFeatures;
+    static int pie_tree_depth;
+    static int dendrogram_height;
+    static int pie_size;
+    static string normalization;
+    static Linkage linkage;
+    static string LipidSpace_version;
+    static QString last_folder;
 };
 
 

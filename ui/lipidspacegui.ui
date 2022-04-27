@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1009</width>
+    <width>1185</width>
     <height>615</height>
    </rect>
   </property>
@@ -21,205 +21,213 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
+    <item row="0" column="1">
      <widget class="QSplitter" name="splitter">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>0</height>
-        </size>
-       </property>
+      <widget class="QFrame" name="frame">
        <property name="maximumSize">
         <size>
          <width>500</width>
          <height>16777215</height>
         </size>
        </property>
-       <property name="currentIndex">
-        <number>3</number>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
        </property>
-       <widget class="QWidget" name="speciesTab">
-        <attribute name="title">
-         <string>Species</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QComboBox" name="speciesComboBox"/>
-         </item>
-         <item>
-          <widget class="QListWidget" name="speciesList"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="speciesPushButton">
-           <property name="text">
-            <string>Apply changes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="classTab">
-        <attribute name="title">
-         <string>Classes</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QComboBox" name="classComboBox"/>
-         </item>
-         <item>
-          <widget class="QListWidget" name="classList"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="classPushButton">
-           <property name="text">
-            <string>Apply changes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="categoryTab">
-        <attribute name="title">
-         <string>Categories</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QComboBox" name="categoryComboBox"/>
-         </item>
-         <item>
-          <widget class="QListWidget" name="categoryList"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="categoryPushButton">
-           <property name="text">
-            <string>Apply changes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="featureTab">
-        <attribute name="title">
-         <string>Features</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QTreeWidget" name="treeWidget">
-           <column>
-            <property name="text">
-             <string notr="true">1</string>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="speciesTab">
+           <attribute name="title">
+            <string>Species</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout1">
+            <property name="spacing">
+             <number>0</number>
             </property>
-           </column>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QComboBox" name="speciesComboBox"/>
+            </item>
+            <item>
+             <widget class="QListWidget" name="speciesList"/>
+            </item>
+           </layout>
           </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="featurePushButton">
-           <property name="text">
-            <string>Apply changes</string>
-           </property>
+          <widget class="QWidget" name="classTab">
+           <attribute name="title">
+            <string>Classes</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QComboBox" name="classComboBox"/>
+            </item>
+            <item>
+             <widget class="QListWidget" name="classList"/>
+            </item>
+           </layout>
           </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="sampleTab">
-        <attribute name="title">
-         <string>Samples</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QComboBox" name="sampleComboBox"/>
-         </item>
-         <item>
-          <widget class="QListWidget" name="sampleList"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="samplePushButton">
-           <property name="text">
-            <string>Apply changes</string>
-           </property>
+          <widget class="QWidget" name="categoryTab">
+           <attribute name="title">
+            <string>Categories</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QComboBox" name="categoryComboBox"/>
+            </item>
+            <item>
+             <widget class="QListWidget" name="categoryList"/>
+            </item>
+           </layout>
           </widget>
-         </item>
-        </layout>
-       </widget>
+          <widget class="QWidget" name="featureTab">
+           <attribute name="title">
+            <string>Features</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QTreeWidget" name="treeWidget">
+              <column>
+               <property name="text">
+                <string notr="true">1</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="sampleTab">
+           <attribute name="title">
+            <string>Samples</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QComboBox" name="sampleComboBox"/>
+            </item>
+            <item>
+             <widget class="QListWidget" name="sampleList"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="normalizationComboBox"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="applyChangesPushButton">
+          <property name="text">
+           <string>Apply changes</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QTabWidget" name="tabWidget_2">
        <property name="currentIndex">
@@ -285,10 +293,132 @@
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>30</y>
-              <width>261</width>
+              <y>40</y>
+              <width>151</width>
               <height>26</height>
              </rect>
+            </property>
+           </widget>
+           <widget class="QLabel" name="labelSelectFeatur">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>91</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Study variable</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="labelPieTreeDepth">
+            <property name="geometry">
+             <rect>
+              <x>300</x>
+              <y>20</y>
+              <width>91</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Pie tree depth</string>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="pieTreeSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>300</x>
+              <y>40</y>
+              <width>81</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="value">
+             <number>3</number>
+            </property>
+           </widget>
+           <widget class="QLabel" name="labelDendrogramHeight">
+            <property name="geometry">
+             <rect>
+              <x>400</x>
+              <y>20</y>
+              <width>131</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Dendrogram height</string>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="dendrogramHeightSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>400</x>
+              <y>40</y>
+              <width>91</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="suffix">
+             <string>%</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+           </widget>
+           <widget class="ClickableLabel" name="labelPieSize">
+            <property name="geometry">
+             <rect>
+              <x>540</x>
+              <y>20</y>
+              <width>130</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Pie size</string>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="pieSizeSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>540</x>
+              <y>40</y>
+              <width>90</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="suffix">
+             <string>%</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="startAnalysisPushButton">
+            <property name="geometry">
+             <rect>
+              <x>170</x>
+              <y>40</y>
+              <width>111</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Start analysis</string>
             </property>
            </widget>
           </widget>
@@ -330,7 +460,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1009</width>
+     <width>1185</width>
      <height>23</height>
     </rect>
    </property>
@@ -340,6 +470,7 @@
     </property>
     <addaction name="actionLoad_list_s"/>
     <addaction name="actionLoad_table"/>
+    <addaction name="actionImport_mzTabM"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Results"/>
     <addaction name="separator"/>
@@ -349,12 +480,21 @@
     <property name="title">
      <string>&amp;Analysis</string>
     </property>
+    <widget class="QMenu" name="menuClustering_strategy">
+     <property name="title">
+      <string>Clustering strategy</string>
+     </property>
+     <addaction name="actionSingle_linkage_clustering"/>
+     <addaction name="actionAverage_linkage_clustering"/>
+     <addaction name="actionComplete_linkage_clustering"/>
+    </widget>
     <addaction name="actionManage_lipidomes"/>
     <addaction name="actionSet_number_of_principal_components"/>
     <addaction name="separator"/>
     <addaction name="actionIgnoring_lipid_sn_positions"/>
     <addaction name="actionIgnore_quantitative_information"/>
     <addaction name="actionUnbound_lipid_distance_metric"/>
+    <addaction name="menuClustering_strategy"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -575,6 +715,35 @@
     <string>Import &amp;pivot table</string>
    </property>
   </action>
+  <action name="actionSingle_linkage_clustering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Single linkage clustering</string>
+   </property>
+  </action>
+  <action name="actionComplete_linkage_clustering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Complete linkage clustering</string>
+   </property>
+  </action>
+  <action name="actionAverage_linkage_clustering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Unweighted average linkage clustering</string>
+   </property>
+  </action>
+  <action name="actionImport_mzTabM">
+   <property name="text">
+    <string>Import mzTabM</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -585,6 +754,11 @@
   <customwidget>
    <class>Canvas</class>
    <extends>QGraphicsView</extends>
+   <header>lipidspace/canvas.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ClickableLabel</class>
+   <extends>QLabel</extends>
    <header>lipidspace/canvas.h</header>
   </customwidget>
  </customwidgets>

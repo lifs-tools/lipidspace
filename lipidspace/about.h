@@ -5,6 +5,7 @@
 #include "ui_about.h"
 #include <fstream>
 #include "lipidspace/logging.h"
+#include "lipidspace/globaldata.h"
 
 namespace Ui {
 class About;
