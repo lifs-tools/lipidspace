@@ -53,6 +53,7 @@ namespace goslin {
     string to_lower(string s);
     string to_upper(string s);
     bool endswith(const string &main_str, const string &to_match);
+    double get_mass(ElementTable *elements);
 }
 
 #endif /* STRINGFUNCTIONS_H */

@@ -162,7 +162,7 @@ void SwissLipidsParserEventHandler::mediator_event(TreeNode* node){
     
 
 void SwissLipidsParserEventHandler::new_fa(TreeNode *node) {
-    current_fa = new FattyAcid("FA" + to_string(fa_list->size() + 1));
+    current_fa = new FattyAcid("FA");
 }
     
     
@@ -195,10 +195,6 @@ void SwissLipidsParserEventHandler::append_fa(TreeNode *node) {
         set_lipid_level(SN_POSITION);
     }
     
-    if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
-            current_fa->position = fa_list->size() + 1;
-    }
-    
     fa_list->push_back(current_fa);
     current_fa = NULL;
 }
@@ -208,7 +204,6 @@ void SwissLipidsParserEventHandler::append_fa(TreeNode *node) {
 void SwissLipidsParserEventHandler::build_lipid(TreeNode *node) {
     if (lcb){
         set_lipid_level(STRUCTURE_DEFINED);
-        for (auto& fa : *fa_list) fa->position += 1;
         fa_list->insert(fa_list->begin(), lcb);
     }
 

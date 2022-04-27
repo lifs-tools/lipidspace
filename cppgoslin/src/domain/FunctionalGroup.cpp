@@ -103,6 +103,19 @@ void FunctionalGroup::shift_positions(int shift){
     }
 }
 
+int FunctionalGroup::get_total_functional_group_count(string fg_name){
+    if (functional_groups->find(fg_name) == functional_groups->end() ) {
+        return 0;
+    } else {
+        vector<FunctionalGroup*> fg = functional_groups->at(fg_name);
+        int count = 0;
+        for (auto fg_item : fg) {
+            count += fg_item->count;
+        }
+        return count;
+    }
+}
+
 
 ElementTable* FunctionalGroup::get_functional_group_elements(){
     ElementTable* _elements = create_empty_table();

@@ -57,6 +57,7 @@ public:
     virtual FunctionalGroup* copy();
     virtual ElementTable* get_elements();
     virtual void shift_positions(int shift);
+    virtual int get_total_functional_group_count(string fg_name);
     virtual ElementTable* get_functional_group_elements();
     virtual void compute_elements();
     virtual string to_string(LipidLevel level);

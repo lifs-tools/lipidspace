@@ -55,6 +55,7 @@ public:
     string get_sum_formula();
     LipidLevel get_lipid_level();
     ElementTable* get_elements();
+    void sort_fatty_acyl_chains();
 };
 
 #endif /* LIPID_ADDUCT_H */

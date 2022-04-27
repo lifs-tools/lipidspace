@@ -512,7 +512,7 @@ void FattyAcidParserEventHandler::set_fatty_acyl_type(TreeNode *node) {
     else if (contains_val(acetate_set, t)) headgroup = "WE";
     else if (t == "ne"){
         headgroup = "HC";
-        fatty_acyl_stack.back()->lipid_FA_bond_type = AMINE;
+        fatty_acyl_stack.back()->lipid_FA_bond_type = ETHER;
     }
     else {
         headgroup = t;
@@ -664,6 +664,9 @@ void FattyAcidParserEventHandler::add_functional_group(TreeNode *node) {
         t = func_groups.at(t);
         if (t.length() == 0) return;
         fg = KnownFunctionalGroups::get_functional_group(t);
+        if (fg == 0) {
+            throw LipidException("Functional group not registered: '" + t + "'");
+        }
     }
     else {
         fg = new AcylAlkylGroup(new FattyAcid("O", 2));
@@ -683,6 +686,7 @@ void FattyAcidParserEventHandler::add_functional_group(TreeNode *node) {
                 num_pos += gl->get_int(i) < pos;
             }
         }
+        
         FunctionalGroup* fg_insert = fg->copy();
         fg_insert->position = pos - num_pos;
         fa->functional_groups->at(t).push_back(fg_insert);
@@ -1057,9 +1061,7 @@ void FattyAcidParserEventHandler::add_wax_ester(TreeNode *node) {
     FattyAcid *fa = fatty_acyl_stack.back();
     fatty_acyl_stack.pop_back();
     
-    fa->name += "1";
-    fa->lipid_FA_bond_type = AMINE;
-    fatty_acyl_stack.back()->name += "2";
+    fa->lipid_FA_bond_type = ETHER;
     fatty_acyl_stack.insert(fatty_acyl_stack.begin(), fa);
 }
 
@@ -1110,9 +1112,8 @@ void FattyAcidParserEventHandler::add_amine(TreeNode *node) {
     FattyAcid *fa = fatty_acyl_stack.back();
     fatty_acyl_stack.pop_back();
     
-    fa->name += "1";
-    fatty_acyl_stack.back()->name += "2";
-    fa->lipid_FA_bond_type = AMINE;
+    fa->lipid_FA_bond_type = AMIDE;
+    fatty_acyl_stack[fatty_acyl_stack.size() - 1]->lipid_FA_bond_type = AMIDE;
     fatty_acyl_stack.insert(fatty_acyl_stack.begin(), fa);
 }
 

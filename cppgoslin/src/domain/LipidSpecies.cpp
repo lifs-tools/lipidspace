@@ -34,9 +34,13 @@ LipidSpecies::LipidSpecies(Headgroup* _headgroup, vector<FattyAcid*>* _fa){
     
     // add fatty acids
     if (_fa != 0){
+        int i = 0;
+        bool fa_it = (_fa->size() > 0) && (_fa->at(0)->lipid_FA_bond_type == LCB_EXCEPTION || _fa->at(0)->lipid_FA_bond_type == LCB_REGULAR);
         for (auto fatty_acid : *_fa){
+            fatty_acid->name = (fa_it && i == 0) ? "LCB" : "FA" + std::to_string(i + 1 - fa_it);
+            fatty_acid->position = -1;
             info->add(fatty_acid);
-            fa_list.push_back(fatty_acid);
+            ++i;
         }
     }
 }
@@ -97,16 +101,19 @@ string LipidSpecies::get_lipid_string(LipidLevel level){
 
 
 
+void LipidSpecies::sort_fatty_acyl_chains(){
+    
+}
+
+
+
 string LipidSpecies::get_extended_class(){
-    bool special_case = (info->num_carbon > 0) ? (headgroup->lipid_category == GP) : false;
+    LipidClassMeta &meta = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class);
+    bool special_case = (info->num_carbon > 0) ? contains_val(meta.special_cases, "Ether") : false;
     string class_name = headgroup->get_class_name();
     if (class_name == "UNDEFINED") return class_name;
-    if (special_case && (info->extended_class == ETHER_PLASMANYL || info->extended_class == ETHER_UNSPECIFIED)){
+    if (special_case && (info->extended_class == ETHER_PLASMANYL || info->extended_class == ETHER_UNSPECIFIED || info->extended_class == ETHER_PLASMENYL)){
         return class_name + "-O";
-    }
-    
-    else if (special_case && info->extended_class == ETHER_PLASMENYL){
-        return class_name + "-P";
     }
     
     return class_name;
@@ -158,6 +165,11 @@ ElementTable* LipidSpecies::get_elements(){
     
     elements->at(ELEMENT_O) -= -additional_fa + info->num_ethers + headgroup->sp_exception + hydrochain;
     elements->at(ELEMENT_H) += -additional_fa + remaining_H + 2 * info->num_ethers + 2 * hydrochain;
+    
+    if (contains_val(meta.special_cases, "Amide")){
+        elements->at(ELEMENT_O) -= meta.max_num_fa;
+        elements->at(ELEMENT_H) += meta.max_num_fa;
+    }
     
     return elements;
 }

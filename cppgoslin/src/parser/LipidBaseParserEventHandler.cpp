@@ -66,6 +66,7 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
     Headgroup *headgroup = new Headgroup(head_group, headgroup_decorators, use_head_group);
     
     if (use_head_group) return headgroup;
+    head_group = headgroup->get_class_name();
     int true_fa = 0;
     for (auto fa : *fa_list){
         true_fa += fa->num_carbon > 0 || fa->double_bonds->get_num() > 0;
@@ -106,11 +107,21 @@ Headgroup* LipidBaseParserEventHandler::prepare_headgroup_and_checks(){
         throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
     }
     
+    else if (contains_val(LipidClasses::get_instance().lipid_classes.at(Headgroup::get_class(head_group)).special_cases, "Lyso") && true_fa > poss_fa){
+        string hg_name = headgroup->headgroup;
+        delete headgroup;
+        throw ConstraintViolationException("Number of described fatty acyl chains (" + std::to_string(true_fa) + ") not allowed for lipid class '" + hg_name + "' (having " + std::to_string(poss_fa) + " fatty aycl chains).");
+    }
+    
     
     if (contains_val(LipidClasses::get_instance().lipid_classes, headgroup->lipid_class)){
         
         if (contains_val(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "HC")){
-            fa_list->front()->lipid_FA_bond_type = AMINE;
+            fa_list->front()->lipid_FA_bond_type = ETHER;
+        }
+        
+        if (contains_val(LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).special_cases, "Amide")){
+            for (auto fatty : *fa_list) fatty->lipid_FA_bond_type = AMIDE;
         }
         
         int max_num_fa = LipidClasses::get_instance().lipid_classes.at(headgroup->lipid_class).max_num_fa;

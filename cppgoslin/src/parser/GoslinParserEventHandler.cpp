@@ -482,7 +482,7 @@ void GoslinParserEventHandler::new_fa(TreeNode *node) {
         unspecified_ether = false;
         lipid_FA_bond_type = ETHER_UNSPECIFIED;
     }
-    current_fa = new FattyAcid("FA" + std::to_string(fa_list->size() + 1), 2, 0, 0, lipid_FA_bond_type);
+    current_fa = new FattyAcid("FA", 2, 0, 0, lipid_FA_bond_type);
 }
     
     
@@ -519,10 +519,6 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
         throw LipidException("Double bond count does not match with number of double bond positions");
     }
     
-    if (is_level(level, COMPLETE_STRUCTURE | FULL_STRUCTURE | STRUCTURE_DEFINED | SN_POSITION)){
-            current_fa->position = fa_list->size() + 1;
-    }
-    
 
     fa_list->push_back(current_fa);
     current_fa = NULL;
@@ -533,7 +529,6 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
 void GoslinParserEventHandler::build_lipid(TreeNode *node) {
     if (lcb){
         set_lipid_level(STRUCTURE_DEFINED);
-        for (auto& fa : *fa_list) fa->position += 1;
         fa_list->insert(fa_list->begin(), lcb);
     }
     
@@ -594,8 +589,8 @@ void GoslinParserEventHandler::add_carbon(TreeNode *node) {
 
 void GoslinParserEventHandler::add_hydroxyl(TreeNode *node) {
     int num_h = atoi(node->get_text().c_str());
-
     if (sp_regular_lcb()) num_h -= 1;
+    if (num_h <= 0) return;
     
     FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
     functional_group->count = num_h;

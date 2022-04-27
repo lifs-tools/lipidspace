@@ -76,17 +76,16 @@ string LipidAdduct::get_extended_class(){
 
 
 
+void LipidAdduct::sort_fatty_acyl_chains(){
+    lipid->sort_fatty_acyl_chains();
+}
+
+
+
 double LipidAdduct::get_mass(){
     ElementTable* elements = get_elements();
-    int charge = 0;
-    double mass = 0;
-          
-    if (adduct != NULL){
-        charge = adduct->get_charge();
-    }
-            
-    for (auto e : *elements) mass += element_masses.at(e.first) * e.second;
-    
+    int charge = (adduct != NULL) ? adduct->get_charge() : 0;
+    double mass = goslin::get_mass(elements);
     if (charge != 0) mass = (mass - charge * ELECTRON_REST_MASS) / fabs(charge);
     delete elements;
     

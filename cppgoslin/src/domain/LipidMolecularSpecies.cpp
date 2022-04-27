@@ -28,17 +28,19 @@ SOFTWARE.
 
 LipidMolecularSpecies::LipidMolecularSpecies (Headgroup* _headgroup, vector<FattyAcid*> *_fa) : LipidSpecies(_headgroup, _fa) {
     info->level = MOLECULAR_SPECIES;
-    for (auto fatty_acid : fa_list){
+    for (auto fatty_acid : *_fa){
         if (contains_val(fa, fatty_acid->name)){
             throw ConstraintViolationException("FA names must be unique! FA with name " + fatty_acid->name + " was already added!");
         }
         fa.insert({fatty_acid->name, fatty_acid});
+        fa_list.push_back(fatty_acid);
     }
            
             
     // add 0:0 dummys
     for (int i = (int)_fa->size(); i < info->total_fa; ++i){
         FattyAcid *fatty_acid = new FattyAcid("FA" + std::to_string(i + 1));
+        fatty_acid->position = -1;
         info->add(fatty_acid);
         fa.insert({fatty_acid->name, fatty_acid});
         fa_list.push_back(fatty_acid);
@@ -119,6 +121,29 @@ ElementTable* LipidMolecularSpecies::get_elements(){
     }
     
     return elements;
+}
+
+
+void LipidMolecularSpecies::sort_fatty_acyl_chains(){
+    if (info->level != MOLECULAR_SPECIES && fa_list.size() < 2) return;
+    sort(fa_list.begin(), fa_list.end(), [] (FattyAcid *fa1, FattyAcid *fa2) {
+        // treat empty fatty acids individually
+        if (fa1->num_carbon == 0) return false;
+        if (fa2->num_carbon == 0) return true;
+        
+        if (fa1->lipid_FA_bond_type != fa2->lipid_FA_bond_type) return fa1->lipid_FA_bond_type < fa2->lipid_FA_bond_type;
+        if (fa1->num_carbon != fa2->num_carbon) return fa1->num_carbon < fa2->num_carbon;
+        int db1 = fa1->get_double_bonds();
+        int db2 = fa2->get_double_bonds();
+        if (db1 != db2) return db1 < db2;
+        ElementTable *e1 = fa1->get_elements();
+        ElementTable *e2 = fa2->get_elements();
+        double mass1 = goslin::get_mass(e1);
+        double mass2 = goslin::get_mass(e2);
+        delete e1;
+        delete e2;
+        return mass1 < mass2;
+    });
 }
 
 

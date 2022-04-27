@@ -444,9 +444,24 @@ int main(int argc, char** argv){
     assert (lipid);
     assert(lipid->get_lipid_string() == "LPIN 20:4");
     delete lipid;
-    
-    
-    
+
+    lipid = lipid_parser.parse("Cer 36:1;2");
+    int ohCount = lipid->lipid->info->get_total_functional_group_count("OH");
+    assert(2==ohCount);
+    int asdCount = lipid->lipid->info->get_total_functional_group_count("ASD");
+    assert(0==asdCount);
+    lipid = lipid_parser.parse("Cer d36:1");
+    ohCount = lipid->lipid->info->get_total_functional_group_count("OH");
+    assert(2==ohCount);
+    lipid = lipid_parser.parse("Cer 18:1;2/18:0");
+    ohCount = lipid->lipid->info->get_total_functional_group_count("OH");
+    assert(2==ohCount);
+    lipid = lipid_parser.parse("Cer d18:1/18:0");
+    ohCount = lipid->lipid->info->get_total_functional_group_count("OH");
+    assert(2==ohCount);
+    lipid = lipid_parser.parse("Cer 18:1;(OH)2/18:0");
+    ohCount = lipid->lipid->info->get_total_functional_group_count("OH");
+    assert(2==ohCount);
     
     // testing lipid maps parser
     vector< vector<string> > lmp_data{{"PA(16:1/12:0)", "PA 16:1/12:0"},
