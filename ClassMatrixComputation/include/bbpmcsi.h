@@ -33,7 +33,7 @@ enum LaWeCSExpand
 
 class SkippedVertex
 {
-private:
+public:
 	vector<wType> m_weight; // calculated weights for the skipped vertices
 	node m_best_aH = nullptr, m_2nd_best_aH = nullptr; // child of H with best and 2nd best solution
 	wType m_best_weight = WEIGHT_NOT_COMPATIBLE, m_2nd_best_weight = WEIGHT_NOT_COMPATIBLE; // their weights
@@ -42,7 +42,6 @@ private:
 	int m_computed_instance = -1; // -1: no instance; 0..k: sub instance k; -2: all sub instances; only for children of H
 	node m_skipped_child = nullptr;// skipped block bH of the first sub instance of skipped vertices
 
-public:
 	SkippedVertex(unsigned neighbours);
 	~SkippedVertex() { }
 	void updateStoredBestSolutions(node aH, wType weight, const Mapping& mapping);
@@ -57,7 +56,7 @@ public:
 
 class BBP_MCSI
 {
-private:
+public:
 	LabelFunction &m_labelFunction;
 	InputGraph *m_ig_G,*m_ig_H;
 	BCTree *m_BC_G,*m_BC_H; // BC-Trees of G and H
@@ -112,7 +111,6 @@ private:
 	NodeArray<NodeArray<SkippedVertex*>> m_SkippedVertex; // Structure analog to MWMs for skipped vertices.
 
 	 // return weight of skipped vertex LAWECS for CVs of G and H. B-Node of aH is excluded, if aH is a vertex of a B-node.
-	wType getSkippedVertexValue(const node vG, const node aH);
 
 	// compute the weight of a matching edge for blocks bG, bH with fixed mapping vG->vH. Separate weights for expansion through matching and skipped vertex are also computed
 	wType computeMatchingEdgeWeight(node bG, node bH, node vG, node vH, wType &wMatching, wType &wSkippedVertex);
@@ -187,6 +185,7 @@ private:
 	void enumerateBbpEdgeaG(const node aG, const node aH); // enumerates next bridge  - maybe replace through previous method
 	void enumerateBbpSingleVertex(const node vG, const node vH);
 	void removeEnumMapping(int numNodes);
+	wType getSkippedVertexValue(const node vG, const node aH);
 
 	// Weight of mapping between two vertices / edges of the graphs G,H
 	wType w(const node vG, const node vH) const;
@@ -198,7 +197,6 @@ private:
 
 	void display(); // display the graphs, called from computeIsomorphism
 
-public:
 	wType getWeight(const node aG, const node aH) const { return w(m_BC_G->original(aG),m_BC_H->original(aH)); } // only for MCIS2
 	wType getWeightPlusCVMatching(const node vG, const node aH, bool &expand); // get weight of matching (if there is one, then expand is set to true, else false) plus the weight of the mapped vertices vG->aH.
 	wType getWeight(const edge eG, const edge eH) const { return w(m_BC_G->original(eG),m_BC_H->original(eH)); } // only for MCIS2

@@ -390,15 +390,13 @@ void BBP_MCSI::compute_BC_G_parents(node v)
 // computes the weight of a BBPMCSI between G and H
 wType BBP_MCSI::computeSize()
 {
-    if (m_weightBBPIso == WEIGHT_UNDEF)
-    {
+    //if (m_weightBBPIso == WEIGHT_UNDEF){
         m_parent_BC_G.init(*m_BCG,nullptr);
         m_parent_BC_G[m_b_initial] = m_b_initial;
         compute_BC_G_parents(m_b_initial);
 
-        //computeMatchings(m_b_initial,nullptr);
         m_weightBBPIso=setSx();
-    }
+    //}
     return m_weightBBPIso;
 }
 
@@ -910,7 +908,7 @@ void BBP_MCSI::computeIsomorphism()
             // beides Brücken oder beides Blöcke
             if ((numNodesbG == 2 && numNodesbH == 2) || (numNodesbG > 2 && numNodesbH > 2))
             {
-                if (bbpEdge(bG, bH, xG)==m_weightBBPIso) // in this set there is a BBP-MCSI
+                if (fabs(bbpEdge(bG, bH, xG) - m_weightBBPIso) < 1e-16) // in this set there is a BBP-MCSI
                 {
                     if (m_enumerate)
                     {
@@ -942,7 +940,7 @@ void BBP_MCSI::computeIsomorphism()
             {
                 forall_nodes(vH,*m_H)
                 {
-                    if (compatible(vG,vH) && bbpSingleVertex(bG, vG, vH)==m_weightBBPIso)
+                    if (compatible(vG,vH) && fabs(bbpSingleVertex(bG, vG, vH) - m_weightBBPIso) < 1e-16)
                     {
                         if (m_enumerate)
                         {
@@ -950,7 +948,7 @@ void BBP_MCSI::computeIsomorphism()
                             wType wSV = w(vG,vH);
                             if (m_BC_G->typeOfGNode(vG)== BCTree::GNodeType::CutVertex && m_BC_H->typeOfGNode(vH)== BCTree::GNodeType::CutVertex)
                                 wSV += getMatchingValue(vG,m_BC_H->rep(vH));
-                            if (wSV == m_weightBBPIso)
+                            if (fabs(wSV - m_weightBBPIso) < 1e-16)
                             //if (m_LocalIso_BBPSV_vGTovH[vG][vH]==nullptr)
                             //if (m_LocalIso_BBPSV_vGTovH[vG][vH].empty()==true)
                             {
@@ -981,7 +979,7 @@ void BBP_MCSI::computeIsomorphism()
                                     bG_=adjB->twinNode();
                                     if (bG_ != bG)
                                     {
-                                        if (bbpEdge(bG_,bH,nullptr,vG,vH)==m_weightBBPIso)
+                                        if (fabs(bbpEdge(bG_,bH,nullptr,vG,vH) - m_weightBBPIso) < 1e-16)
                                         {
                                             m_EnumMappingSourceNode.push_back(vG);
                                             m_EnumMappingTargetNode.push_back(vH);
@@ -1021,7 +1019,7 @@ void BBP_MCSI::computeIsomorphism()
                 // Possible LaWeCSu solution where vG is a skipped inner vertex
                 if (m_distancePenalty != WEIGHT_NOT_COMPATIBLE && m_BC_G->typeOfGNode(vG)== BCTree::GNodeType::CutVertex)
                 {
-                    if (m_LaWeCS_SkippedRootWeight[vG] == m_weightBBPIso)
+                    if (fabs(m_LaWeCS_SkippedRootWeight[vG] - m_weightBBPIso) < 1e-16)
                     {
                         outputIsomorphism(m_LaWeCS_SkippedRootMapping[vG]);
                         return;

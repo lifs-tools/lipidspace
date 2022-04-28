@@ -61,6 +61,21 @@ int main(){
     
     LaWeCSE cse;
     
+    
+    //InputGraph* g1 = cse.makeGraph("OCC(O)COP(=O)(O)OCC(N)C(=O)O");
+    //InputGraph* g2 = cse.makeGraph("OCC(O)COP(=O)(O)OCCN(C)(C)C");
+    InputGraph* g1 = cse.makeGraph("CCC(N)CO");
+    InputGraph* g2 = cse.makeGraph("OCC(O)CO");
+    
+    int nums[] = {0, 0};
+    
+    cse.computeSimilarity(g1, g2, nums);
+    
+    cout << nums[0] << " " << nums[1] << " " << endl;
+    
+    return 0;
+    
+    
     vector<string> lipid_names;
     vector<InputGraph*> graphs;
     

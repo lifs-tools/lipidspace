@@ -1617,6 +1617,19 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                     throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", FeatureNotRegistered);
                 }
             }
+            
+            // add new values into existing features
+            for (auto lipidome : loaded_lipidomes){
+                for (auto kv : lipidome->features){
+                    FeatureSet &fs = feature_values[kv.first];
+                    if (kv.second.feature_type == NumericalFeature){
+                        fs.numerical_values.insert(kv.second.numerical_value);
+                    }
+                    else {
+                        fs.nominal_values.insert({kv.second.nominal_value, true});
+                    }
+                }
+            }
         }
         // register features
         else {
@@ -1887,6 +1900,19 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
                     throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", FeatureNotRegistered);
                 }
             }
+            
+            // add new values into existing features
+            for (auto lipidome : loaded_lipidomes){
+                for (auto kv : lipidome->features){
+                    FeatureSet &fs = feature_values[kv.first];
+                    if (kv.second.feature_type == NumericalFeature){
+                        fs.numerical_values.insert(kv.second.numerical_value);
+                    }
+                    else {
+                        fs.nominal_values.insert({kv.second.nominal_value, true});
+                    }
+                }
+            }
         }
         // register features
         else {
@@ -2117,6 +2143,19 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             for (auto kv : feature_values){
                 if (uncontains_val(registered_features, kv.first)){
                     throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", FeatureNotRegistered);
+                }
+            }
+            
+            // add new values into existing features
+            for (auto lipidome : loaded_lipidomes){
+                for (auto kv : lipidome->features){
+                    FeatureSet &fs = feature_values[kv.first];
+                    if (kv.second.feature_type == NumericalFeature){
+                        fs.numerical_values.insert(kv.second.numerical_value);
+                    }
+                    else {
+                        fs.nominal_values.insert({kv.second.nominal_value, true});
+                    }
                 }
             }
         }
@@ -2579,7 +2618,7 @@ void LipidSpace::run(){
         if (progress && !progress->stop_progress){
             progress->finish();
             analysis_finished = true;
-            Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(lipidomes.size()) + " lipidome" + (lipidomes.size() > 1 ? "s" : "") + " in total.");
+            Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(lipidomes.size()) + " lipidome" + (selected_lipidomes.size() > 1 ? "s" : "") + " in total.");
         }
     }
     

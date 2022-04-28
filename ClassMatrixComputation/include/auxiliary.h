@@ -30,5 +30,6 @@ public:
 	LaWeCSE();
 	void computeSimilarity(InputGraph*, InputGraph*, int*);
     InputGraph* makeGraph(string);
+    void weight(bool);
 };
 #endif
