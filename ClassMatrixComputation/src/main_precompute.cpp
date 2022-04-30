@@ -58,14 +58,12 @@ vector<string>* split_string(string text, char separator, char _quote, bool with
 
 
 int main(){
-    
     LaWeCSE cse;
     
-    
     //InputGraph* g1 = cse.makeGraph("OCC(O)COP(=O)(O)OCC(N)C(=O)O");
-    //InputGraph* g2 = cse.makeGraph("OCC(O)COP(=O)(O)OCCN(C)(C)C");
-    InputGraph* g1 = cse.makeGraph("CCC(N)CO");
-    InputGraph* g2 = cse.makeGraph("OCC(O)CO");
+    InputGraph* g2 = cse.makeGraph("OCC(O)COP(=O)(O)OCCN(C)(C)C");
+    InputGraph* g1 = cse.makeGraph("CCC(N)COP(=O)(O)OCCN(C)(C)C");
+    //InputGraph* g2 = cse.makeGraph("CCC(N)CO");
     
     int nums[] = {0, 0};
     

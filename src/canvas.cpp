@@ -760,10 +760,12 @@ double pairwise_sum(Matrix &m){
 
 void PointSet::set_labels(){
     if (lipidome->m.rows == 0 || lipidome->m.cols == 0) return;
+    set<LipidAdduct*> selected_lipids;
+    for (auto lipid : view->lipid_space->global_lipidome->lipids) selected_lipids.insert(lipid);
     
     map<string, vector<int>> indexes;
-    for (int i = 0, j = 0; i < (int)lipidome->classes.size(); ++i){
-        if (!lipidome->selection[i]) continue;
+    for (int i = 0, j = 0; i < (int)lipidome->lipids.size(); ++i){
+        if (uncontains_val(selected_lipids, lipidome->lipids[i])) continue;
         string lipid_class = lipidome->lipids.at(i)->get_extended_class();
         if (uncontains_val(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
         indexes.at(lipid_class).push_back(j++);
