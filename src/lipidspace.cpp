@@ -344,78 +344,97 @@ bool LipidSpace::is_double(const std::string& s){
 void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& union_num, int& inter_num){
     set<LipidFaBondType> lcbs = {LCB_REGULAR, LCB_EXCEPTION};
     set<LipidFaBondType> bond_types = {fa1->lipid_FA_bond_type, fa2->lipid_FA_bond_type};
-    
+    //int uu = union_num, ii = inter_num;
     
     int db1 = 0, db2 = 0;
     if (bond_types.size() == 1){ // both equal
         if (contains_val(bond_types, ESTER)){
-            inter_num += 3; // two oxygens, one double bond
-            union_num += 3; // two oxygens, one double bond
-        }
-        if (contains_val(bond_types, ETHER_PLASMANYL) || contains_val(bond_types, ETHER_PLASMENYL)){
-            inter_num += 1; // one oxygen
-            union_num += 1; // one oxygen
+            inter_num += 2; // one oxygen, one double bond
+            union_num += 2; // one oxygen, one double bond
         }
     }
     
     else if (contains_val(bond_types, ESTER)){
-        if (contains_val(bond_types, ETHER_PLASMANYL)){
-            inter_num += 1; // one oxygen
-            union_num += 3; // two oxygens, one double bond
-            if (fa1->lipid_FA_bond_type == ETHER_PLASMANYL) db1 += 1;
-            else db2 += 1;
-        }
-        
-        else if (contains_val(bond_types, ETHER_PLASMENYL)){
-            inter_num += 1; // one oxygen
-            union_num += 3; // two oxygens, one double bond
-        }
-        
-        else if (contains_val(bond_types, LCB_REGULAR) || contains_val(bond_types, LCB_EXCEPTION)){
+        if (contains_val(bond_types, ETHER_PLASMANYL) || contains_val(bond_types, LCB_REGULAR) || contains_val(bond_types, LCB_EXCEPTION)){
             union_num += 2; // one oxygen, one double bond
+        }
+        else if (contains_val(bond_types, ETHER_PLASMENYL)){
+            union_num += 3; // one oxygen, two double bonds
         }
     }
     
     else if (contains_val(bond_types, LCB_EXCEPTION) || contains_val(bond_types, LCB_REGULAR)){
         if (contains_val(bond_types, ETHER_PLASMENYL)){
-            union_num += 1;
+            union_num += 1; // one double bond
+        }
+        else if (contains_val(bond_types, ETHER_PLASMANYL)){
+            
         }
     }
         
     else if (contains_val(bond_types, ETHER_PLASMENYL) && contains_val(bond_types, ETHER_PLASMANYL)){
-        inter_num += 1; // one oxygen
-        union_num += 1; // one oxygen
-        if (fa1->lipid_FA_bond_type == ETHER_PLASMANYL) db1 += 1;
-        else db2 += 1;
+        union_num += 1; // one double bond
     }
         
     else { 
         throw LipidException("Cannot compute similarity between chains");
     }
     
-    // compare lengths
-    int m1 = contains_val(lcbs, fa1->lipid_FA_bond_type) * 2;
-    int m2 = contains_val(lcbs, fa2->lipid_FA_bond_type) * 2;
     
-    inter_num += mmin(fa1->num_carbon - m1, fa2->num_carbon - m1);
-    union_num += mmax(fa1->num_carbon - m2, fa2->num_carbon - m2);
+    // prepare double bonds for counting
+    bool fa1db_new = contains_val(lcbs, fa1->lipid_FA_bond_type) && fa1->double_bonds->double_bond_positions.size() > 0;
+    bool fa2db_new = contains_val(lcbs, fa2->lipid_FA_bond_type) && fa2->double_bonds->double_bond_positions.size() > 0;
+    
+    map<int, string> *fa1db = 0;
+    map<int, string> *fa2db = 0;
+    if (fa1db_new){
+        fa1db = new map<int, string>();
+        for (auto kv : fa1->double_bonds->double_bond_positions){
+            if (kv.first > 4){
+                db1 += 1;
+                fa1db->insert({kv.first - 4, kv.second});
+            }
+        }
+    }
+    else {
+        fa1db = &fa1->double_bonds->double_bond_positions;
+    }
+    if (fa2db_new){
+        fa2db = new map<int, string>();
+        for (auto kv : fa2->double_bonds->double_bond_positions){
+            if (kv.first > 4){
+                db2 += 1;
+                fa2db->insert({kv.first - 4, kv.second});
+            }
+        }
+    }
+    else {
+        fa2db = &fa2->double_bonds->double_bond_positions;
+    }
+    
+    // compare lengths
+    int m1 = contains_val(lcbs, fa1->lipid_FA_bond_type) * 4;
+    int m2 = contains_val(lcbs, fa2->lipid_FA_bond_type) * 4;
+    
+    inter_num += max(0, min(fa1->num_carbon - m1, fa2->num_carbon - m1));
+    union_num += max(0, max(fa1->num_carbon - m2, fa2->num_carbon - m2));
     
     
     
     // compare double bonds
     int common = 0;
-    if (fa1->double_bonds->double_bond_positions.size() > 0 && fa2->double_bonds->double_bond_positions.size() > 0){
-        for (auto kv : fa1->double_bonds->double_bond_positions){
-            common += contains_val(fa2->double_bonds->double_bond_positions, kv.first) && fa2->double_bonds->double_bond_positions.at(kv.first) == kv.second;
+    if (fa1db->size() > 0 && fa2db->size() > 0){
+        for (auto kv : *fa1db){
+            common += contains_val_p(fa2db, kv.first) && fa2db->at(kv.first) == kv.second;
         }
         inter_num += common;
-        union_num += fa1->double_bonds->get_num() + fa2->double_bonds->get_num() - common;
-        db1 += fa1->double_bonds->get_num();
-        db2 += fa2->double_bonds->get_num();
+        union_num += fa1db->size() + fa2db->size() - common;
+        db1 += fa1db->size();
+        db2 += fa2db->size();
     }
     else {
-        db1 += fa1->double_bonds->get_num();
-        db2 += fa2->double_bonds->get_num();
+        db1 += fa1db->size() > 0 ? fa1db->size() : fa1->double_bonds->get_num();
+        db2 += fa2db->size() > 0 ? fa2db->size() : fa2->double_bonds->get_num();
             
         // old strategy of taking the minimum as intersect
         // does not go figure with database observations
@@ -430,11 +449,16 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     }
     
     // add all single bonds
-    inter_num += mmin(fa1->num_carbon - m1, fa2->num_carbon - m1) - (db1 + db2 - common);
-    union_num += mmax(fa1->num_carbon - m2, fa2->num_carbon - m2) - (db1 + db2 - common);
+    inter_num += max(0, min(fa1->num_carbon - m1, fa2->num_carbon - m1) - (db1 + db2 - common));
+    union_num += max(0, max(fa1->num_carbon - m2, fa2->num_carbon - m2) - (db1 + db2 - common));
     
     
-    if (fa1->functional_groups->size() == 0 && fa2->functional_groups->size() == 0) return;
+    if (fa1->functional_groups->size() == 0 && fa2->functional_groups->size() == 0){
+        if (fa1db_new) delete fa1db;
+        if (fa2db_new) delete fa2db;
+        //cout << fa1->name << " vs. " << fa2->name << ": " << (inter_num - ii) << " / " << (union_num - uu) << endl;
+        return;
+    }
     
     // compare functional groups
     for (auto kv : *(fa1->functional_groups)){
@@ -450,27 +474,22 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
                 for (auto f : fa1->functional_groups->at(key)) keys_fa1.push_back(f->position);
                 vector<int> keys_fa2;
                 for (auto f : fa2->functional_groups->at(key)) keys_fa2.push_back(f->position);
+                int naab = fa1->functional_groups->at(key).at(0)->num_atoms_and_bonds;
                 
                 vector<int> unions;
                 set_union(keys_fa1.begin(), keys_fa1.end(), keys_fa2.begin(), keys_fa2.end(), back_inserter(unions));
                 vector<int> inters;
                 set_intersection(keys_fa1.begin(), keys_fa1.end(), keys_fa2.begin(), keys_fa2.end(), back_inserter(unions));
                 
-                inter_num += inters.size();
-                union_num += unions.size();
+                inter_num += inters.size() * naab;
+                union_num += unions.size() * naab;
             }
         }
         // functional group occurs only in first fatty acid
         else {
             FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group(key);
             if (func_group){
-                int elements = func_group->get_double_bonds();
-                ElementTable* e = func_group->get_elements();
-                for (auto ekv : *e){
-                    if (ekv.first != ELEMENT_H) elements += ekv.second;
-                }
-                delete e;
-                delete func_group;
+                int naab = func_group->num_atoms_and_bonds;
                 
                 int num = 0;
                 if (fa1->functional_groups->at(key).at(0)->position > -1){
@@ -479,16 +498,13 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
                 else {
                     for (auto f : fa1->functional_groups->at(key)) num += f->count;
                 }
-                union_num += elements * num;
+                if (fa1->lipid_FA_bond_type == LCB_EXCEPTION && func_group->name == "O") num -= 1;
+                union_num += naab * num;
+                delete func_group;
             }
             else {
                 for (auto fg : kv.second){
-                    union_num += fg->get_double_bonds();
-                    ElementTable* eee = fg->get_elements();
-                    for (auto ekv : *eee){
-                        if (ekv.first != ELEMENT_H) union_num += ekv.second;
-                    }
-                    delete eee;
+                    union_num += fg->num_atoms_and_bonds;
                 }
             }
         }
@@ -509,13 +525,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     
         FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group(key);
         if (func_group){
-            int elements = func_group->get_double_bonds();
-            ElementTable* e = func_group->get_elements();
-            for (auto ekv : *e){
-                if (ekv.first != ELEMENT_H) elements += ekv.second;
-            }
-            delete e;
-            delete func_group;
+            int naab = func_group->num_atoms_and_bonds;
             
             int num = 0;
             if (fa2->functional_groups->at(key).at(0)->position > -1){
@@ -524,19 +534,19 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
             else {
                 for (auto fg : fa2->functional_groups->at(key)) num += fg->count;
             }
-            union_num += elements * num;
+            if (fa2->lipid_FA_bond_type == LCB_EXCEPTION && func_group->name == "O") num -= 1;
+            union_num += naab * num;
+            delete func_group;
         }
         else {
             for (auto fg : fa2->functional_groups->at(key)){
-                union_num += fg->get_double_bonds();
-                ElementTable* eee = fg->get_elements();
-                for (auto ekv : *eee){
-                    if (ekv.first != ELEMENT_H) union_num += ekv.second;
-                }
-                delete eee;
+                union_num += fg->num_atoms_and_bonds;
             } 
         }
     }
+    if (fa1db_new) delete fa1db;
+    if (fa2db_new) delete fa2db;
+    //cout << fa1->name << " vs. " << fa2->name << ": " << (inter_num - ii) << " / " << (union_num - uu) << endl;
 }
 
 
@@ -602,7 +612,11 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         }
         
         if (orig_fa_list_1->size() > orig_fa_list_2->size()){
+            FattyAcid *dummy = new FattyAcid("dummyFA", 0, 0, 0, ETHER_PLASMANYL);
             for (int i = (int)orig_fa_list_2->size(); i < (int)orig_fa_list_1->size(); ++i){
+                
+                fatty_acyl_similarity(orig_fa_list_1->at(i), dummy, union_num, inter_num);
+                /*
                 FattyAcid* fa = orig_fa_list_1->at(i);
                 union_num += fa->get_double_bonds();
                 ElementTable* e = fa->get_elements();
@@ -610,7 +624,9 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
                     if (kv.first != ELEMENT_H) union_num += kv.second;
                 }
                 delete e;
+                */
             }
+            delete dummy;
         }
     }
     
