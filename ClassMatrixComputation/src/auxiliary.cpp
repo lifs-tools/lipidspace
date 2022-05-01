@@ -41,7 +41,13 @@ InputGraph* LaWeCSE::makeGraph(string SMILES){
     EdgeArray<labelType> *newEASimple = new EdgeArray<labelType>(*newGraph, 0);
     newIG->edgeLabel=newEASimple;
     
-    parser.parse(SMILES);
+    try {
+        parser.parse(SMILES);
+    }
+    catch(Smiley::Exception &se){
+        cout << se.what() << endl;
+        exit(-1);
+    }
     
     node n,nQueue;
     adjEntry adj;
@@ -136,8 +142,9 @@ InputGraph* LaWeCSE::makeGraph(string SMILES){
 void LaWeCSE::computeSimilarity(InputGraph* firstGraph, InputGraph* secondGraph, int* values){
     {
         BBP_MCSI compC(m_labelFunction, *firstGraph, *secondGraph, true, false, &simpleLabelToString, -1, WEIGHT_NOT_COMPATIBLE);
+        //BBP_MCSI compC(m_labelFunction, *firstGraph, *secondGraph, false, true, &simpleLabelToString, -1, WEIGHT_NOT_COMPATIBLE);
         compC.computeIsomorphism();
-        values[0] = firstGraph->size + secondGraph->size - (int)compC.getNum();
-        values[1] = (int)compC.getSize();
+        values[0] = compC.u_size;
+        values[1] = compC.i_size;
     }
 }

@@ -66,7 +66,7 @@ public:
 	const EdgeArray<labelType> *m_edgeLabelSimpleG=nullptr,*m_edgeLabelSimpleH=nullptr;
 	const vector<string> *m_SimpleLabelToString;
 	bool m_simpleLabelG, m_simpleLabelH, m_enumerate;
-    int m_size;
+    int i_size, u_size;
 
 	NodeArray<vector<node>>& m_VbcG; // vertices of the auxiliary graph in a B oder C-node of BCG
 	NodeArray<vector<node>>& m_VbcH; // vertices of the auxiliary graph in a B oder C-node of BCH
@@ -211,7 +211,6 @@ public:
 	BCTree& getBCH() const { return *m_BC_H; }
 	wType computeSize(); // computes the weight of a BBPMCSI between G and H
 	wType getSize() { return m_weightBBPIso; } // returns the weight of a BBPMCSI between G and H; use only after it has been computed!
-	wType getNum() { return m_size; }
 	void computeIsomorphism(); // computes an isomorphism of weight weightBBPIso
 	InputGraph* get_ig_G() const { return m_ig_G; }
 	InputGraph* get_ig_H() const { return m_ig_H; }

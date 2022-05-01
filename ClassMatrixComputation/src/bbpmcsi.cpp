@@ -132,7 +132,8 @@ BBP_MCSI::BBP_MCSI(LabelFunction &labelFunction, InputGraph &iG, InputGraph &iH,
     m_edgeLabelSimpleH=iH.edgeLabel;
     m_simpleLabelG=iG.simpleLabel;
     m_simpleLabelH=iH.simpleLabel;
-    m_size = 0;
+    i_size = 0;
+    u_size = 0;
 
     // Compute BC Trees and vertices V(b) for all B-Nodes of G and H and the single parts of their auxiliary graphs if not done yet
     m_BC_G=initVbcAndSingleParts(iG);
@@ -798,7 +799,10 @@ wType BBP_MCSI::w(const node vG, const node vH) const
         {
             if ((*m_nodeLabelSimpleG)[vG]==(*m_nodeLabelSimpleH)[vH])
             {
-//				if (1.0 == m_labelFunction.sameNodeLabel)
+                // look if we found an anchor point with heavy weight
+                if (m_SimpleLabelToString->at((*m_nodeLabelSimpleG)[vG]) == "X"){
+                    return 10000.;
+                }
                     return m_labelFunction.sameNodeLabel;
 /*				else
                 {
@@ -1134,12 +1138,25 @@ void BBP_MCSI::maximizeIsomorphism()
 
 void BBP_MCSI::outputIsomorphism()
 {
-    m_size = 0;
+    i_size = 0;
+    u_size = 0;
     edge e_g;
     edge e_h;
     map<int, int> g_match;
+    
+    node nn;
+    forall_nodes(nn, m_ig_G->graph) u_size++;
+    forall_nodes(nn, m_ig_H->graph) u_size++;
+    forall_edges(e_g, m_ig_G->graph) u_size++;
+    forall_edges(e_h, m_ig_H->graph) u_size++;
+    
+    // check union and intersect matches for nodes
+    u_size -= m_EnumMappingSourceNode.size();
     for (std::vector<node,allocator<node>>::iterator it_s = m_EnumMappingSourceNode.begin(), it_t = m_EnumMappingTargetNode.begin(); it_s != m_EnumMappingSourceNode.end(); ++it_s, ++it_t){
-        g_match.insert({it_s.operator *()->index() + m_ig_G->fogNodeEdgeOffset, it_t.operator *()->index() + m_ig_H->fogNodeEdgeOffset});
+        node n_g = it_s.operator *();
+        node n_h = it_t.operator *();
+        g_match.insert({n_g->index() + m_ig_G->fogNodeEdgeOffset, n_h->index() + m_ig_H->fogNodeEdgeOffset});
+        i_size += (*m_ig_G->nodeLabel)[n_g] == (*m_ig_H->nodeLabel)[n_h];
     }
     
     int me = 0;
@@ -1153,12 +1170,14 @@ void BBP_MCSI::outputIsomorphism()
             forall_edges(e_h, m_ig_H->graph){
                 int h_s = e_h->source()->index();
                 int h_t = e_h->target()->index();
-                if ((h_s == id_h_s && h_t == id_h_t) || (h_s == id_h_t && h_t == id_h_s)) me++;
+                if ((h_s == id_h_s && h_t == id_h_t) || (h_s == id_h_t && h_t == id_h_s)){
+                    u_size--;
+                    i_size += (*m_ig_G->edgeLabel)[e_g] == (*m_ig_H->edgeLabel)[e_h];
+                }
                 
             }
         }
     }
-    m_size += me + m_EnumMappingSourceNode.size();
     
     /*
     return;
