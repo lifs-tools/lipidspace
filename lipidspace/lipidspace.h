@@ -55,6 +55,7 @@ public:
     Matrix global_distances;
     int process_id;
     string target_variable;
+    set<string> registered_lipid_classes;
     
 
     LipidSpace();

@@ -184,6 +184,8 @@ LipidSpace::LipidSpace() {
         vector<string>* tokens = goslin::split_string(line, '\t', '"');
         
         int* values = new int[2];
+        registered_lipid_classes.insert(tokens->at(0));
+        registered_lipid_classes.insert(tokens->at(1));
         string key = tokens->at(0) + "/" + tokens->at(1);
         string key2 = tokens->at(1) + "/" + tokens->at(0);
         values[0] = abs(atoi(tokens->at(2).c_str()));
@@ -1654,14 +1656,12 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                     if (uncontains_val(feature_values, kv.first)){
                         feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
                     }
+                    FeatureSet &fs = feature_values[kv.first];
+                    if (kv.second.feature_type == NumericalFeature){
+                        fs.numerical_values.insert(kv.second.numerical_value);
+                    }
                     else {
-                        FeatureSet &fs = feature_values[kv.first];
-                        if (kv.second.feature_type == NumericalFeature){
-                            fs.numerical_values.insert(kv.second.numerical_value);
-                        }
-                        else {
-                            fs.nominal_values.insert({kv.second.nominal_value, true});
-                        }
+                        fs.nominal_values.insert({kv.second.nominal_value, true});
                     }
                 }
             }
@@ -1830,6 +1830,16 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             LipidAdduct *l = 0;
             try {
                 l = parser.parse(lipid_table_name);
+                
+                if (uncontains_val(registered_lipid_classes, l->get_extended_class())){
+                    if (!ignore_unknown_lipids){
+                        throw LipidSpaceException("Lipid structure not registered: lipid '" + lipid_table_name + "' cannot be parsed.", LipidNotRegistered);
+                    }
+                    else {
+                        Logging::write_log("Ignoring unregistered lipid '" + lipid_table_name + "'");
+                        continue;
+                    }
+                }
                     
                 // deleting adduct since not necessary
                 if (l->adduct != 0){
@@ -1937,14 +1947,12 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
                     if (uncontains_val(feature_values, kv.first)){
                         feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
                     }
+                    FeatureSet &fs = feature_values[kv.first];
+                    if (kv.second.feature_type == NumericalFeature){
+                        fs.numerical_values.insert(kv.second.numerical_value);
+                    }
                     else {
-                        FeatureSet &fs = feature_values[kv.first];
-                        if (kv.second.feature_type == NumericalFeature){
-                            fs.numerical_values.insert(kv.second.numerical_value);
-                        }
-                        else {
-                            fs.nominal_values.insert({kv.second.nominal_value, true});
-                        }
+                        fs.nominal_values.insert({kv.second.nominal_value, true});
                     }
                 }
             }
@@ -2182,14 +2190,12 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                     if (uncontains_val(feature_values, kv.first)){
                         feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
                     }
+                    FeatureSet &fs = feature_values[kv.first];
+                    if (kv.second.feature_type == NumericalFeature){
+                        fs.numerical_values.insert(kv.second.numerical_value);
+                    }
                     else {
-                        FeatureSet &fs = feature_values[kv.first];
-                        if (kv.second.feature_type == NumericalFeature){
-                            fs.numerical_values.insert(kv.second.numerical_value);
-                        }
-                        else {
-                            fs.nominal_values.insert({kv.second.nominal_value, true});
-                        }
+                        fs.nominal_values.insert({kv.second.nominal_value, true});
                     }
                 }
             }
@@ -2464,7 +2470,7 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
         }
     }
     
-    if (l == nullptr || l->get_extended_class() == UNDEFINED_LIPID) {
+    if (l == nullptr || l->get_extended_class() == UNDEFINED_LIPID || uncontains_val(registered_lipid_classes, l->get_extended_class())) {
         if (l){
             delete l;
             l = nullptr;
@@ -2477,6 +2483,7 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
         }
     }
     if (l == nullptr) return l;
+    
         
     // deleting adduct since not necessary
     if (l->adduct != nullptr){
@@ -2783,7 +2790,7 @@ void LipidSpace::run(){
             
             // do the selection
             for (auto &kv : selection[0]){
-                kv.second = genes[best_pos]->gene_code[lipid_name_map[kv.first]];
+                kv.second = contains_val(lipid_name_map, kv.first) ? genes[best_pos]->gene_code[lipid_name_map[kv.first]] : false;
             }
             
             // cleanup
