@@ -36,7 +36,11 @@
 #include <cctype>
 
 //#include <cassert>
-#define DEBUG 0
+#ifdef DDEBUG
+    #define DEBUG 1
+#else 
+    #define DEBUG 0
+#endif
 
 //@cond DEV
 
@@ -313,7 +317,7 @@ namespace Smiley {
      K, Ca,                                                         Sc, Ti,  V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr,
     Rb, Sr,                                                          Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te,  I, Xe,
     Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta,  W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn,
-    Fr, Ra, Ac, Th, Pa,  U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn, Fl = 114, Lv = 116
+    Fr, Ra, Ac, Th, Pa,  U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn, Fl = 114, Lv = 116, X = 120
   };
 
   /**
@@ -1277,7 +1281,6 @@ namespace Smiley {
       std::pair<int, bool> parseSymbol(bool ignoreHydrogen = false)
       {
         m_aromatic = false;
-
         switch (m_str()[m_pos()]) {
           case 'H':
             if (checkNextChar('e'))
@@ -1529,6 +1532,8 @@ namespace Smiley {
           case 'X':
             if (checkNextChar('e'))
               m_element = Xe;
+            else
+              m_element = X;
             break;
           case 'W':
             m_element = W;
@@ -2324,6 +2329,10 @@ namespace Smiley {
             addAtom(P, true);
             ++m_pos();
             return true;
+          case 'X':
+            addAtom(X, true);
+            ++m_pos();
+            return true;
           case 'a':
             if (m_mode == SmilesMode)
               return false;
@@ -2350,7 +2359,6 @@ namespace Smiley {
       {
         if (DEBUG)
           std::cout << "parseAtom(" << m_str().substr(m_pos()) << ")" << std::endl;
-
         m_element = -1;
         m_isotope = -1;
         m_charge = 0;

@@ -230,13 +230,14 @@ void GraphVisualization::setVertexMcsID(node n, int id)
 	//if (m_mcs_id[n] != id)
 		//newid=true;
 	m_mcs_id[n]=id;
-	max_mcs_id=max(max_mcs_id,id);
+	max_mcs_id = max(max_mcs_id,id);
 	String label=to_string(id);
 	//if (newid==false)
 		//label="";
-	if (id<10)
+	if (id < 10)
 		m_MCSidText[n].move(m_vertexRadius/2.1*m_scaling,0);
 	m_MCSidText[n].setString(label);
+    cout << "max: " << max_mcs_id << endl;
 }
 
 void GraphVisualization::applyColors()

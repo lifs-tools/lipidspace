@@ -83,14 +83,14 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     else if (event->key() == Qt::Key_3){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 14; ++i) ct->push_back(IgnoreColumn);
-        ct->at(11) = LipidColumn;
+        for (int i = 0; i < 10; ++i) ct->push_back(IgnoreColumn);
+        ct->at(3) = LipidColumn;
         ct->at(7) = QuantColumn;
         ct->at(4) = FeatureColumnNominal;
-        ct->at(12) = FeatureColumnNumerical;
-        ct->at(13) = SampleColumn;
+        ct->at(5) = FeatureColumnNominal;
+        ct->at(0) = SampleColumn;
         
-        loadTable("blood.csv", ct, PIVOT_TABLE);
+        loadTable("Platelets_Peng.csv", ct, PIVOT_TABLE);
     }
     else if (event->key() == Qt::Key_4){
         resetAnalysis();

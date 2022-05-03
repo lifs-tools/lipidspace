@@ -58,8 +58,24 @@ vector<string>* split_string(string text, char separator, char _quote, bool with
 
 
 int main(){
-    
     LaWeCSE cse;
+    /*
+    //InputGraph* g1 = cse.makeGraph("OCC(O)CXP(=O)(O)OCC(N)C(=O)O");
+    //InputGraph* g2 = cse.makeGraph("OCC(O)COP(=O)(O)OCCN(C)(C)C");
+    //InputGraph* g2 = cse.makeGraph("CCC(N)CXP(=O)(O)OCCN(C)(C)C");
+    //InputGraph* g1 = cse.makeGraph("OCC(O)CX");
+    //InputGraph* g2 = cse.makeGraph("CCC(N)CX");
+    //InputGraph* g1 = cse.makeGraph("CC=CC"); 
+    //InputGraph* g2 = cse.makeGraph("CCCC"); 
+    
+    int nums[] = {0, 0};
+    
+    cse.computeSimilarity(g1, g2, nums);
+    
+    cout << nums[0] << " " << nums[1] << " " << endl;
+    
+    return 0;
+    */
     
     vector<string> lipid_names;
     vector<InputGraph*> graphs;
@@ -107,11 +123,11 @@ int main(){
         }
         
         else if (i <= j){
-            /*
+            
             #pragma omp critical
             {
                 cout << lipid_names.at(i) << " / " << lipid_names.at(j) << " | " << i << " " << j << " / " << n << endl;
-            }*/
+            }
             if (graphs.at(i) != 0 && graphs.at(j) != 0) cse.computeSimilarity(graphs.at(i), graphs.at(j), matrix[i][j]);
             else {
                 if (graphs.at(i) == 0 && graphs.at(j) == 0) {

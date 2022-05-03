@@ -132,6 +132,8 @@ BBP_MCSI::BBP_MCSI(LabelFunction &labelFunction, InputGraph &iG, InputGraph &iH,
     m_edgeLabelSimpleH=iH.edgeLabel;
     m_simpleLabelG=iG.simpleLabel;
     m_simpleLabelH=iH.simpleLabel;
+    i_size = 0;
+    u_size = 0;
 
     // Compute BC Trees and vertices V(b) for all B-Nodes of G and H and the single parts of their auxiliary graphs if not done yet
     m_BC_G=initVbcAndSingleParts(iG);
@@ -390,15 +392,13 @@ void BBP_MCSI::compute_BC_G_parents(node v)
 // computes the weight of a BBPMCSI between G and H
 wType BBP_MCSI::computeSize()
 {
-    if (m_weightBBPIso == WEIGHT_UNDEF)
-    {
+    //if (m_weightBBPIso == WEIGHT_UNDEF){
         m_parent_BC_G.init(*m_BCG,nullptr);
         m_parent_BC_G[m_b_initial] = m_b_initial;
         compute_BC_G_parents(m_b_initial);
 
-        //computeMatchings(m_b_initial,nullptr);
         m_weightBBPIso=setSx();
-    }
+    //}
     return m_weightBBPIso;
 }
 
@@ -799,7 +799,10 @@ wType BBP_MCSI::w(const node vG, const node vH) const
         {
             if ((*m_nodeLabelSimpleG)[vG]==(*m_nodeLabelSimpleH)[vH])
             {
-//				if (1.0 == m_labelFunction.sameNodeLabel)
+                // look if we found an anchor point with heavy weight
+                if (m_SimpleLabelToString->at((*m_nodeLabelSimpleG)[vG]) == "X"){
+                    return 10000.;
+                }
                     return m_labelFunction.sameNodeLabel;
 /*				else
                 {
@@ -910,8 +913,9 @@ void BBP_MCSI::computeIsomorphism()
             // beides Brücken oder beides Blöcke
             if ((numNodesbG == 2 && numNodesbH == 2) || (numNodesbG > 2 && numNodesbH > 2))
             {
-                if (bbpEdge(bG, bH, xG)==m_weightBBPIso) // in this set there is a BBP-MCSI
+                if (fabs(bbpEdge(bG, bH, xG) - m_weightBBPIso) < 1e-16) // in this set there is a BBP-MCSI
                 {
+        
                     if (m_enumerate)
                     {
                         m_EnumStackInProgressToMaximize.emplace(EnumStackElement(expansionType::BLOCK_BRIDGE_BG,bG,bH,1));
@@ -942,7 +946,7 @@ void BBP_MCSI::computeIsomorphism()
             {
                 forall_nodes(vH,*m_H)
                 {
-                    if (compatible(vG,vH) && bbpSingleVertex(bG, vG, vH)==m_weightBBPIso)
+                    if (compatible(vG,vH) && fabs(bbpSingleVertex(bG, vG, vH) - m_weightBBPIso) < 1e-16)
                     {
                         if (m_enumerate)
                         {
@@ -950,7 +954,7 @@ void BBP_MCSI::computeIsomorphism()
                             wType wSV = w(vG,vH);
                             if (m_BC_G->typeOfGNode(vG)== BCTree::GNodeType::CutVertex && m_BC_H->typeOfGNode(vH)== BCTree::GNodeType::CutVertex)
                                 wSV += getMatchingValue(vG,m_BC_H->rep(vH));
-                            if (wSV == m_weightBBPIso)
+                            if (fabs(wSV - m_weightBBPIso) < 1e-16)
                             //if (m_LocalIso_BBPSV_vGTovH[vG][vH]==nullptr)
                             //if (m_LocalIso_BBPSV_vGTovH[vG][vH].empty()==true)
                             {
@@ -981,7 +985,7 @@ void BBP_MCSI::computeIsomorphism()
                                     bG_=adjB->twinNode();
                                     if (bG_ != bG)
                                     {
-                                        if (bbpEdge(bG_,bH,nullptr,vG,vH)==m_weightBBPIso)
+                                        if (fabs(bbpEdge(bG_,bH,nullptr,vG,vH) - m_weightBBPIso) < 1e-16)
                                         {
                                             m_EnumMappingSourceNode.push_back(vG);
                                             m_EnumMappingTargetNode.push_back(vH);
@@ -1021,7 +1025,7 @@ void BBP_MCSI::computeIsomorphism()
                 // Possible LaWeCSu solution where vG is a skipped inner vertex
                 if (m_distancePenalty != WEIGHT_NOT_COMPATIBLE && m_BC_G->typeOfGNode(vG)== BCTree::GNodeType::CutVertex)
                 {
-                    if (m_LaWeCS_SkippedRootWeight[vG] == m_weightBBPIso)
+                    if (fabs(m_LaWeCS_SkippedRootWeight[vG] - m_weightBBPIso) < 1e-16)
                     {
                         outputIsomorphism(m_LaWeCS_SkippedRootMapping[vG]);
                         return;
@@ -1134,6 +1138,49 @@ void BBP_MCSI::maximizeIsomorphism()
 
 void BBP_MCSI::outputIsomorphism()
 {
+    i_size = 0;
+    u_size = 0;
+    edge e_g;
+    edge e_h;
+    map<int, int> g_match;
+    
+    node nn;
+    forall_nodes(nn, m_ig_G->graph) u_size++;
+    forall_nodes(nn, m_ig_H->graph) u_size++;
+    forall_edges(e_g, m_ig_G->graph) u_size++;
+    forall_edges(e_h, m_ig_H->graph) u_size++;
+    
+    // check union and intersect matches for nodes
+    u_size -= m_EnumMappingSourceNode.size();
+    for (std::vector<node,allocator<node>>::iterator it_s = m_EnumMappingSourceNode.begin(), it_t = m_EnumMappingTargetNode.begin(); it_s != m_EnumMappingSourceNode.end(); ++it_s, ++it_t){
+        node n_g = it_s.operator *();
+        node n_h = it_t.operator *();
+        g_match.insert({n_g->index() + m_ig_G->fogNodeEdgeOffset, n_h->index() + m_ig_H->fogNodeEdgeOffset});
+        i_size += (*m_ig_G->nodeLabel)[n_g] == (*m_ig_H->nodeLabel)[n_h];
+    }
+    
+    int me = 0;
+    forall_edges(e_g, m_ig_G->graph){
+        // check if edge in MCS if source and target node are in MCS
+        if (g_match.find(e_g->source()->index()) != g_match.end() && g_match.find(e_g->target()->index()) != g_match.end()){
+            
+            int id_h_s = g_match[e_g->source()->index()];
+            int id_h_t = g_match[e_g->target()->index()];
+            
+            forall_edges(e_h, m_ig_H->graph){
+                int h_s = e_h->source()->index();
+                int h_t = e_h->target()->index();
+                if ((h_s == id_h_s && h_t == id_h_t) || (h_s == id_h_t && h_t == id_h_s)){
+                    u_size--;
+                    i_size += (*m_ig_G->edgeLabel)[e_g] == (*m_ig_H->edgeLabel)[e_h];
+                }
+                
+            }
+        }
+    }
+    
+    /*
+    return;
     const int outputEveryXth=1;
     const int outputAtLeast=10;
 #ifdef GRAPHICS
@@ -1160,6 +1207,7 @@ void BBP_MCSI::outputIsomorphism()
     if (m_graphical_display)
         display();
 #endif
+    */
 }
 
 void BBP_MCSI::enumerateIsomorphisms()
