@@ -892,7 +892,7 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
             }
             double distance = dist[0] + dist[1] + dist[2] + dist[3];
             min_h = min(min_h, distance);
-            if (min_h < max_h || min_h == 0) break;
+            if (min_h <= max_h || min_h == 0) break;
         }
         max_h = max(max_h, min_h);
     }
@@ -912,7 +912,7 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
             }
             double distance = dist[0] + dist[1] + dist[2] + dist[3];
             min_h = min(min_h, distance);
-            if (min_h < max_h || min_h == 0) break;
+            if (min_h <= max_h || min_h == 0) break;
         }
         max_h = max(max_h, min_h);
     }
