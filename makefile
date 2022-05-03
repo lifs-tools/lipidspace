@@ -1,7 +1,11 @@
 ifeq ($(OS),Windows_NT)
-    rm_cmd = "rm -Force"
+    bin_grammar = ".\writeGrammarsHeader.exe"
+	bin_enums = ".\writeLipidEnums.exe"
+	bin = libcppGoslin.dll
 else
-    rm_cmd = "rm -f"
+    bin_grammar = "./writeGrammarsHeader"
+	bin_enums = "./writeLipidEnums"
+	bin = libcppGoslin.so
 endif
 install_dir = /usr
 ifeq ($(origin CC),default)
@@ -11,7 +15,6 @@ endif
 #CC = clang++-10
 AR = ar
 MARCH = -march=native
-bin = libcppGoslin.so
 abin = libcppGoslin.a
 domain = src/domain/Adduct.o src/domain/LipidMolecularSpecies.o src/domain/LipidSnPosition.o src/domain/LipidStructureDefined.o src/domain/FattyAcid.o src/domain/LipidAdduct.o src/domain/LipidSpecies.o src/domain/LipidFullStructure.o src/domain/LipidCompleteStructure.o src/domain/LipidSpeciesInfo.o src/domain/StringFunctions.o src/domain/LipidClasses.o src/domain/DoubleBonds.o src/domain/FunctionalGroup.o src/domain/Headgroup.o src/domain/Cycle.o src/domain/GenericDatastructures.o
 
@@ -27,6 +30,10 @@ else
   flags = -fstack-protector-strong	
 endif
 
+ifeq ($(OS),Windows_NT)
+  flags = -fopenmp
+endif
+
 opt = -std=c++11 -O3 ${MARCH} -Wvla -Wall ${flags} -D_FORTIFY_SOURCE=2
 
 main: ${bin}
@@ -40,14 +47,14 @@ static: cppgoslin/parser/KnownGrammars.h src/domain/LipidClasses.cpp ${obj}
 
 	
 cppgoslin/parser/KnownGrammars.h: data/goslin/Goslin.g4 data/goslin/LipidMaps.g4 data/goslin/LipidMaps.g4 data/goslin/SwissLipids.g4 data/goslin/HMDB.g4
-	${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp && ./writeGrammarsHeader "cppgoslin/parser/KnownGrammars.h"
+	${CC} ${opt} -I . -o writeGrammarsHeader writeGrammarsHeader.cpp && ${bin_grammar} "cppgoslin/parser/KnownGrammars.h"
 	
 
 cppgoslin/domain/ClassesEnum.h: src/domain/LipidClasses.cpp
 
 
 src/domain/LipidClasses.cpp: data/goslin/lipid-list.csv cppgoslin/parser/KnownGrammars.h
-	${CC} ${opt} -I . -o writeLipidEnums writeLipidEnums.cpp src/domain/StringFunctions.cpp src/parser/SumFormulaParserEventHandler.cpp src/parser/ParserClasses.cpp && ./writeLipidEnums "src/domain/LipidClasses.cpp"
+	${CC} ${opt} -I . -o writeLipidEnums writeLipidEnums.cpp src/domain/StringFunctions.cpp src/parser/SumFormulaParserEventHandler.cpp src/parser/ParserClasses.cpp && ${bin_enums} "src/domain/LipidClasses.cpp"
 	
 
 	
