@@ -1,3 +1,8 @@
+ifeq ($(OS),Windows_NT)
+    rm_cmd = "rm -Force"
+else
+    rm_cmd = "rm -f"
+endif
 install_dir = /usr
 ifeq ($(origin CC),default)
 CC  = g++
@@ -57,6 +62,9 @@ src/parser/%.o: src/parser/%.cpp cppgoslin/parser/KnownGrammars.h src/domain/Lip
 src/tests/%.o: src/tests/%.cpp libcppGoslin.so
 	${CC} ${opt} -I. -fPIC -o $@ -c $<
 	
+clean-win:
+	.\win-clean.bat
+	
 clean:
 	rm -f "cppgoslin/parser/KnownGrammars.h"
 	rm -f "src/domain/LipidClasses.cpp"
@@ -69,7 +77,6 @@ clean:
 	rm -f writeGrammarsHeader
 	rm -f writeLipidEnums
 	rm -f ${abin}
-	
 	
 dist-clean: clean
 	rm -f ${install_dir}/lib/${bin}
