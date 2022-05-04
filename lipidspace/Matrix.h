@@ -4,9 +4,9 @@
 #include <math.h>
 #include <iostream>
 #include <cassert>
-#ifndef _WIN32
+//#ifndef _WIN32
 #include <cblas.h>
-#endif
+//#endif
 #include <QtCore>
 
 using lambda_lanczos::LambdaLanczos;
@@ -84,7 +84,6 @@ public:
     void rewrite_transpose(Matrix &copy);
     void rewrite(vector<vector<double>> &copy);
     void rewrite(Matrix &copy, const Indexes &ri = {}, const Indexes &ci = {});
-    void rand_fill();
     void scale();
     double col_min(int c);
     double col_max(int c);

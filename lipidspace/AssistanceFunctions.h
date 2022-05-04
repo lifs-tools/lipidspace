@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <stdlib.h>
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/Matrix.h"
 #include "lipidspace/logging.h"
@@ -16,7 +17,7 @@
 #include <algorithm>
 #include <math.h>
 
-#define rand() ((double)random() / (double)(RAND_MAX))
+#define randnum() ((double)rand() / (double)(RAND_MAX))
 
 using namespace std;
 

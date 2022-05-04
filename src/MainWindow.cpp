@@ -3,7 +3,9 @@
 #include "lipidspace/logging.h"
 #include "lipidspace/globaldata.h"
 #include <QApplication>
+#include <string>
 
+using namespace std;
 
 
 void print_help(){

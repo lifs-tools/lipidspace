@@ -288,11 +288,6 @@ void Matrix::reset(int _rows, int _cols){
 }
 
 
-void Matrix::rand_fill(){
-    for (int i = 0; i < cols * rows; ++i) m[i] = 2 * (rand() / (double)RAND_MAX) - 1.;
-}
-
-
 double Matrix::pairwise_sum(Matrix &m){
     assert(m.cols == 2);
     Matrix tm(m, true);
@@ -372,13 +367,7 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
         
     // Prepare matrix-vector multiplication routine used in Lanczos algorithm
     auto mv_mul = [&](const vector<double>& in, vector<double>& out) {
-#ifndef _WIN32
-        cblas_dgemv(CblasColMajor, CblasNoTrans, rows, cols, 1.0, data(), rows, in.data(), 1, 0, out.data(), 1);
-        
-#else
-        
-        trans.mult_vector(in, out);
-#endif
+	cblas_dgemv(CblasColMajor, CblasNoTrans, rows, cols, 1.0, data(), rows, in.data(), 1, 0, out.data(), 1);
     };
     // Execute Lanczos algorithm
     LambdaLanczos<double> engine(mv_mul, rows, true); // true means to calculate the largest eigenvalue.
@@ -402,10 +391,10 @@ void Matrix::inverse(Matrix &X, bool symmetric){
     int LWORK = N*N;
     double *WORK = new double[LWORK];
     int INFO;
-
+	
     dgetrf_(&N, &N, m.data(), &N, IPIV, &INFO);
     dgetri_(&N, m.data(), &N, IPIV, WORK, &LWORK, &INFO);
-
+	
     delete[] IPIV;
     delete[] WORK;
 }

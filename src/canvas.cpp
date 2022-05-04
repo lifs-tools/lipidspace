@@ -815,10 +815,10 @@ void PointSet::automated_annotation(Array &xx, Array &yy){
     int l = labels.size();
     Array label_xx(xx, l);
     Array label_yy(yy, l);
-    double max_int = (double)(~0u) * 0.5;
+    //double max_int = (double)(~0u) * 0.5;
     for (int i = 0; i < l; ++i){
-        label_xx(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
-        label_yy(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
+        label_xx(i) += randnum() * 0.5 - 0.25;
+        label_yy(i) += randnum() * 0.5 - 0.25;
     }
     Array orig_label_xx(label_xx);
     Array orig_label_yy(label_yy);
@@ -928,7 +928,6 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     
     graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
     setScene(&graphics_scene);
-    resetMatrix();
     num = -3;
 }
 
@@ -959,7 +958,6 @@ void Canvas::setDendrogramData(LipidSpace *_lipid_space){
 
 
 void Canvas::resetDendrogram(){
-    resetMatrix();
     dendrogram->load();
     QResizeEvent resize(QSize(width(), height()), QSize(width(), height()));
     emit resizeEvent(&resize);
@@ -984,7 +982,6 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
     
     graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
     setScene(&graphics_scene);
-    resetMatrix();
     
     
     
@@ -1098,6 +1095,7 @@ void Canvas::mousePressEvent(QMouseEvent *event){
 
 
 void Canvas::exportAsPdf(){
+	/*
     if (!pointSet && !dendrogram) return;
     QString file_name = QFileDialog::getSaveFileName(this, "Export as pdf", GlobalData::last_folder, "*.pdf (*.pdf)");
     if (!file_name.length()) return;
@@ -1125,6 +1123,7 @@ void Canvas::exportAsPdf(){
     QPainter p(&printer);
     render(&p);
     p.end();
+	*/
 }
 
 
@@ -1252,11 +1251,11 @@ void Canvas::wheelEvent(QWheelEvent *event){
     
     
     QPointF center(v.x() + v.width() * 0.5, v.y() + v.height() * 0.5);
-    QPointF mouse_pos = mapToScene(event->pos());
-    
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QPointF mouse_pos = mapToScene(QPoint(event->position().x(), event->position().y()));
     double scale_factor = (event->angleDelta().y() > 0) ? 1.1 : 1. / 1.1;
 #else
+    QPointF mouse_pos = mapToScene(event->pos());
     double scale_factor = (event->delta() > 0) ? 1.1 : 1. / 1.1;
 #endif
     scale(scale_factor, scale_factor);
@@ -1333,7 +1332,6 @@ void Canvas::reloadPoints(){
 
 void Canvas::resetCanvas(){
     graphics_scene.clear();
-    resetMatrix();
 }
 
 

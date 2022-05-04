@@ -334,8 +334,8 @@ Gene::Gene(Gene *gene){
 Gene::Gene(Gene *g1, Gene *g2, double mutation_rate){
     aic = -1;
     for (int i = 0; i < (int)g1->gene_code.size(); ++i){
-        bool feature = rand() < 0.5 ? g1->gene_code[i] : g2->gene_code[i];
-        if (rand() < mutation_rate) feature = !feature;
+        bool feature = randnum() < 0.5 ? g1->gene_code[i] : g2->gene_code[i];
+        if (randnum() < mutation_rate) feature = !feature;
         gene_code.push_back(feature);
     }
 }
