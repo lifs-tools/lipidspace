@@ -67,8 +67,8 @@ void LipidSpace::create_dendrogram(){
     
     
     
-    /*
     
+    /*
     // compute importance of lipids using coefficient of variation and
     // Kolmogorv Smirnoff test on dendrogram branches
     map<string, int> species_to_index;
@@ -104,13 +104,13 @@ void LipidSpace::create_dendrogram(){
     }
     
     sort(CVs.begin(), CVs.end(), sort_double_string_desc);
-    lipid_sortings.insert({"Coefficient of Variation (highest)", vector<string>()});
-    lipid_sortings.insert({"Coefficient of Variation (lowest)", vector<string>()});
-    vector<string> &CVh = lipid_sortings["Coefficient of Variation (highest)"];
-    vector<string> &CVl = lipid_sortings["Coefficient of Variation (lowest)"];
+    lipid_sortings.insert({"Coefficient of Variation (Desc)", vector<string>()});
+    vector<string> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
     for (auto cv : CVs) CVh.push_back(cv.second);
-    for (auto miss : missing) CVh.push_back(miss);
-    for (int i = (int)CVs.size() - 1; i >= 0; --i) CVl.push_back(CVh[i]);
+    //for (auto miss : missing) CVh.push_back(miss);
+    //lipid_sortings.insert({"Coefficient of Variation (lowest)", vector<string>()});
+    //vector<string> &CVl = lipid_sortings["Coefficient of Variation (lowest)"];
+    //for (int i = (int)CVs.size() - 1; i >= 0; --i) CVl.push_back(CVh[i]);
     
     
     
@@ -196,6 +196,26 @@ void LipidSpace::create_dendrogram(){
         }
         mx_values.push_back(m / n);
     }
+    
+    
+    
+    // computing the coefficient of variation for each lipid
+    vector<pair<double, string>> CVs;
+    for (auto kv : lipid_name_map){
+        int c = kv.second;
+        Array values;
+        double* row = &(global_matrix.m[c * global_matrix.rows]);
+        for (int r = 0; r < global_matrix.rows; ++r){
+            if (row[r] > 1e-15) values.push_back(row[r]);
+            
+        }
+        CVs.push_back({values.stdev() / values.mean(), kv.first});
+    }
+    
+    sort(CVs.begin(), CVs.end(), sort_double_string_desc);
+    lipid_sortings.insert({"Coefficient of Variation (Desc)", vector<string>()});
+    vector<string> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
+    for (auto cv : CVs) CVh.push_back(cv.second);
     
     
     // going through all study variables
