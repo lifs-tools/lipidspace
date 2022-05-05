@@ -95,6 +95,17 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     else if (event->key() == Qt::Key_4){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
+        for (int i = 0; i < 392; ++i) ct->push_back(LipidColumn);
+        ct->at(0) = SampleColumn;
+        ct->at(1) = FeatureColumnNominal;
+        ct->at(2) = FeatureColumnNominal;
+        ct->at(3) = FeatureColumnNominal;
+        
+        loadTable("Platelets_Peng_WT-vs-KO.csv", ct, COLUMN_TABLE);
+    }
+    else if (event->key() == Qt::Key_5){
+        resetAnalysis();
+        vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 20; ++i) ct->push_back(IgnoreColumn);
         ct->at(0) = LipidColumn;
         ct->at(18) = QuantColumn;
@@ -254,6 +265,7 @@ LipidSpaceGUI::~LipidSpaceGUI(){
 
 
 void LipidSpaceGUI::setFeature(int){
+    GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
     featureChanged(ui->featureComboBox->currentText().toStdString());
 }
 
@@ -425,6 +437,8 @@ void LipidSpaceGUI::updateView(int){
     connect(ui->categoryList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->treeWidget, &QTreeWidget::itemChanged, this, &LipidSpaceGUI::featureItemChanged);
     connect(ui->sampleList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
+    
+    GlobalData::gui_string_var["species_selection"] = ui->speciesComboBox->currentText().toStdString();
 }
 
 
@@ -555,6 +569,9 @@ void LipidSpaceGUI::startFeatureAnalysis(){
 
 
 void LipidSpaceGUI::runAnalysis(){
+    string species_selection = GlobalData::gui_string_var["species_selection"];
+    string study_var = GlobalData::gui_string_var["study_var"];
+    
     // clear all windows with canvases
     ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
@@ -587,8 +604,6 @@ void LipidSpaceGUI::runAnalysis(){
     if (lipid_space->feature_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
     
     // reset parameters
-    ui->dendrogramHeightSpinBox->setValue(100);
-    ui->pieSizeSpinBox->setValue(100);
     GlobalData::color_counter = 0;
     GlobalData::feature_counter = 0;
     GlobalData::colorMap.clear();
@@ -665,6 +680,10 @@ void LipidSpaceGUI::runAnalysis(){
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
+    int pos = ui->speciesComboBox->findText(species_selection.c_str());
+    if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
+    pos = ui->featureComboBox->findText(study_var.c_str());
+    if (pos >= 0) ui->featureComboBox->setCurrentIndex(pos);
 }
 
 
@@ -961,7 +980,7 @@ void LipidSpaceGUI::openSetPCnum(){
 
 
 void LipidSpaceGUI::setPieTree(int depth){
-    GlobalData::pie_tree_depth = depth;
+    GlobalData::gui_num_var["pie_tree_depth"] = depth;
     ui->dendrogramView->setFeature(ui->featureComboBox->currentText().toStdString());
 }
 
@@ -972,13 +991,13 @@ void LipidSpaceGUI::setNormalization(int){
 
 
 void LipidSpaceGUI::setDendrogramHeight(int height){
-    GlobalData::dendrogram_height = height;
+    GlobalData::gui_num_var["dendrogram_height"] = height;
     ui->dendrogramView->setFeature(ui->featureComboBox->currentText().toStdString());
 }
 
 
 void LipidSpaceGUI::setPieSize(int size){
-    GlobalData::pie_size = size;
+    GlobalData::gui_num_var["pie_size"] = size;
     ui->dendrogramView->setFeature(ui->featureComboBox->currentText().toStdString());
 }
 

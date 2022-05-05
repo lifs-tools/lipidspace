@@ -63,6 +63,10 @@ void LipidSpace::create_dendrogram(){
     delete []ret;
     dendrogram_root = nodes.front();
     
+    
+    
+    
+    
     /*
     
     // compute importance of lipids using coefficient of variation and
@@ -149,6 +153,123 @@ void LipidSpace::create_dendrogram(){
     for (auto miss : missing) top_highest.push_back(miss);
     for (int i = (int)top_highest.size() - 1; i >= 0; --i) top_lowest.push_back(top_highest[i]);
     */
+    
+    
+    
+    // determining importance of lipids based on goodness of separating
+    // study variables applying simple 1D linear regression 
+    map<LipidAdduct*, int> lipid_map;
+    map<string, int> lipid_name_map;
+    Matrix global_matrix;
+    
+    
+    // setting up lipid to column in matrix map
+    for (auto lipidome : selected_lipidomes){
+        for (uint i = 0; i < lipidome->lipids.size(); ++i){
+            LipidAdduct* lipid = lipidome->lipids[i];
+            if (uncontains_val(lipid_map, lipid)){
+                lipid_map.insert({lipid, lipid_map.size()});
+                lipid_name_map.insert({lipidome->species[i], lipid_name_map.size()});
+            }
+        }
+    }
+
+    // set up matrix for multiple linear regression
+    global_matrix.reset(selected_lipidomes.size(), lipid_map.size());
+    for (uint r = 0; r < selected_lipidomes.size(); ++r){
+        Table* lipidome = selected_lipidomes[r];
+        for (uint i = 0; i < lipidome->lipids.size(); ++i){
+            global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+        }
+    }
+    
+    // computing mean values for all lipids
+    vector<double> mx_values;
+    for (int c = 0; c < global_matrix.cols; c++){
+        double m = 0;
+        double n = 0;
+        double* row = &(global_matrix.m[c * global_matrix.rows]);
+        for (int r = 0; r < global_matrix.rows; ++r){
+            if (row[r] <= 1e-15) continue;
+            m += row[r];
+            n += 1;
+        }
+        mx_values.push_back(m / n);
+    }
+    
+    
+    // going through all study variables
+    for (auto kv : feature_values){
+        string target_variable = kv.first;
+        
+        Array target_values;
+        vector<pair<double, string>> linear_regression;
+        map<string, double> nominal_target_values;
+        int nom_counter = 1;
+        
+        if (uncontains_val(feature_values, target_variable)){
+            return;
+        }
+        
+        // setup array for target variable values, if nominal then each with incrementing number
+        if (feature_values[target_variable].feature_type == NominalFeature){
+            for (auto lipidome : selected_lipidomes){
+                string nominal_value = lipidome->features[target_variable].nominal_value;
+                if (uncontains_val(nominal_target_values, nominal_value)){
+                    nominal_target_values.insert({nominal_value, nom_counter++});
+                }
+                target_values.push_back(nominal_target_values[nominal_value]);
+            }
+        }
+        else {
+            for (auto lipidome : selected_lipidomes){
+                target_values.push_back(lipidome->features[target_variable].numerical_value);
+            }
+        }
+        
+        // going through all lipids
+        for (auto kv : lipid_name_map){
+            int c = kv.second;
+            double mx = mx_values[c];
+            double my = 0, ny = 0;
+            // computing the study variable mean based on missing values of lipids
+            for (int r = 0; r < global_matrix.rows; ++r){
+                if (global_matrix(r, c) <= 1e-15) continue;
+                my += target_values[r];
+                ny += 1;
+            }
+            my /= ny;
+            
+            // estimate slope and intercept factors for linear regression
+            double slope_num = 0, slope_denom = 0;
+            double* row = &(global_matrix.m[c * global_matrix.rows]);
+            for (int r = 0; r < global_matrix.rows; ++r){
+                if (global_matrix(r, c) <= 1e-15) continue;
+                slope_num += (row[r] - mx) * (target_values[r] - my);
+                slope_denom += sq(row[r] - mx);
+            }
+            double slope = slope_num / slope_denom;
+            double intercept = my - slope * mx;
+            
+            // checking with R^2 performance indicator goodness of the fit
+            double SQR = 0, SQT = 0;
+            for (int r = 0; r < global_matrix.rows; ++r){
+                if (global_matrix(r, c) <= 1e-15) continue;
+                SQR += sq(target_values[r] - (slope * row[r] + intercept));
+                SQT += sq(target_values[r] - my);
+            }
+            double R2 = 1. - SQR / SQT;
+            
+            linear_regression.push_back({R2, kv.first});
+        }
+        
+        // sorting all lipids according to the performance indicator
+        sort(linear_regression.begin(), linear_regression.end(), sort_double_string_desc);
+        lipid_sortings.insert({target_variable + " regression (Desc)", vector<string>()});
+        vector<string> &regression_vector = lipid_sortings[target_variable + " regression (Desc)"];
+        for (auto kv_reg : linear_regression) regression_vector.push_back(kv_reg.second);
+        
+    }
 }
 
 

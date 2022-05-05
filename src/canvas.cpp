@@ -220,7 +220,7 @@ void Dendrogram::load(){
     }
   
     dendrogram_x_factor = 100;
-    dendrogram_y_factor = GlobalData::dendrogram_height;
+    dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
     
     dwidth = (lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor;
     dheight = dwidth / 16 * 9;
@@ -262,7 +262,7 @@ QRectF Dendrogram::boundingRect() const {
 
 
 void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double threshold, double pie_x, double pie_y, LabelDirection direction){
-    double resize_factor = (double)GlobalData::pie_size / 100.;
+    double resize_factor = GlobalData::gui_num_var["pie_size"] / 100.;
     double pie_radius = 30. * resize_factor;
     int angle_start = 16 * 90;
     QFont pie_font("Helvetica");
@@ -396,7 +396,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     
     if (lipid_space && lipid_space->dendrogram_root){
         if (feature != ""){
-            recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::pie_tree_depth);
+            recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::gui_num_var["pie_tree_depth"]);
             
                 // Draw global pie chart
             if (contains_val(lipid_space->feature_values, feature) && lipid_space->feature_values[feature].feature_type == NominalFeature){
@@ -1220,7 +1220,7 @@ void Canvas::setFeature(string _feature){
     if (dendrogram){
         dendrogram->feature = _feature;
         double tmp_factor = dendrogram->dendrogram_y_factor;
-        dendrogram->dendrogram_y_factor = GlobalData::dendrogram_height;
+        dendrogram->dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
         QPointF max_vals(1e9, -1e9);
         if (dendrogram->top_line) dendrogram->top_line->update_height_factor(dendrogram->dendrogram_y_factor / tmp_factor, &max_vals);
         double ybound = max(dendrogram->dendrogram_y_factor, 100.);
