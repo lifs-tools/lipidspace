@@ -4,6 +4,7 @@
 #include <QtCore>
 #include <QListWidget>
 #include <QTreeWidget>
+#include <QStyledItemDelegate>
 #include <QDropEvent>
 #include <set>
 #include <vector>

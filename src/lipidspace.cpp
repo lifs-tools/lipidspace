@@ -71,49 +71,6 @@ void LipidSpace::create_dendrogram(){
     /*
     // compute importance of lipids using coefficient of variation and
     // Kolmogorv Smirnoff test on dendrogram branches
-    map<string, int> species_to_index;
-    Matrix matrix(global_lipidome->m.rows, selected_lipidomes.size());
-    for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
-        species_to_index.insert({global_lipidome->species[i], i});
-    }
-    
-    vector<pair<double, string>> CVs(global_lipidome->m.rows, pair<double, string>());
-    vector<string> missing;
-    for (int c = 0; c < (int)selected_lipidomes.size(); c++){
-        auto lipidome = selected_lipidomes[c];
-        for (int r = 0; r < (int)lipidome->species.size(); ++r){
-            string species = lipidome->species[r];
-            if (contains_val(species_to_index, species)){
-                matrix(species_to_index[species], c) = lipidome->original_intensities(r);
-                CVs[species_to_index[species]].second = species;
-            }
-            else {
-                missing.push_back(species);
-            }
-        }
-    }
-    
-    for (int r = 0; r < matrix.rows; ++r){
-        double mean = 0, stdev = 0;
-        for (int c = 0; c < matrix.cols; c++) mean += matrix(r, c);
-        mean /= (double)matrix.cols;
-        
-        for (int c = 0; c < matrix.cols; c++) stdev += sq(mean - matrix(r, c));
-        stdev = sqrt(stdev / (double)matrix.cols);
-        CVs[r].first = stdev / mean;
-    }
-    
-    sort(CVs.begin(), CVs.end(), sort_double_string_desc);
-    lipid_sortings.insert({"Coefficient of Variation (Desc)", vector<string>()});
-    vector<string> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
-    for (auto cv : CVs) CVh.push_back(cv.second);
-    //for (auto miss : missing) CVh.push_back(miss);
-    //lipid_sortings.insert({"Coefficient of Variation (lowest)", vector<string>()});
-    //vector<string> &CVl = lipid_sortings["Coefficient of Variation (lowest)"];
-    //for (int i = (int)CVs.size() - 1; i >= 0; --i) CVl.push_back(CVh[i]);
-    
-    
-    
     vector<pair<double, string>> top_two_groups;
     vector<double> p_values;
     vector<double> fold_change;
@@ -211,11 +168,11 @@ void LipidSpace::create_dendrogram(){
         }
         CVs.push_back({values.stdev() / values.mean(), kv.first});
     }
-    
     sort(CVs.begin(), CVs.end(), sort_double_string_desc);
     lipid_sortings.insert({"Coefficient of Variation (Desc)", vector<string>()});
     vector<string> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
     for (auto cv : CVs) CVh.push_back(cv.second);
+    
     
     
     // going through all study variables
@@ -2795,6 +2752,7 @@ void LipidSpace::run(){
         int nom_counter = 1;
         map<LipidAdduct*, int> lipid_map;
         map<string, int> lipid_name_map;
+        vector<string> ml;
         Matrix global_matrix;
         vector< Gene* >genes;
         
@@ -2836,6 +2794,7 @@ void LipidSpace::run(){
                     if (uncontains_val(lipid_map, lipid)){
                         lipid_map.insert({lipid, lipid_map.size()});
                         lipid_name_map.insert({lipidome->species[i], lipid_name_map.size()});
+                        ml.push_back(lipidome->species[i]);
                     }
                 }
             }
@@ -2850,9 +2809,13 @@ void LipidSpace::run(){
             }
         }
         
+        Array constants;
+        constants.resize(global_matrix.rows, 1);
+        global_matrix.add_column(constants);
+        
         
         // determining the upper number of features to consider
-        int n = global_matrix.cols;
+        int n = global_matrix.cols - 1;
         int n_features = n;
         if (n > 1) n = min(n_features - 1, (int)sqrt(n) * 2);
         
@@ -2865,19 +2828,17 @@ void LipidSpace::run(){
                 progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
             }
         
-        genes.resize(n + 1, 0);
-        genes[0] = new Gene(n_features);
-        genes[0]->aic = 1e100;
+            genes.resize(n + 1, 0);
+            genes[0] = new Gene(n_features + 1);
+            genes[0]->gene_code[n_features] = true;
+            genes[0]->aic = 1e100;
         
         // implementation of sequential forward feature selection
         
-            separate_matrixes();
-            normalize_intensities();
             if (progress){
                 progress->set_step();
             }
         }
-        
         
         for(int i = 1; i <= n && (!progress || !progress->stop_progress); ++i){
             Gene* best = 0;

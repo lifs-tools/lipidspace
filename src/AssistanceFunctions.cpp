@@ -268,10 +268,16 @@ bool sort_order_one (pair<double, int> i, pair<double, int> j) { return (i.first
 double compute_aic(Matrix &data, Array &coefficiants, Array &values){
     Array S;
     S.mult(data, coefficiants);
+    double s = 0;
+    double t = 0;
+    double mue = S.mean();
+    for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
+    return s;
+    //for (int i = 0; i < (int)S.size(); ++i) t += sq(S[i] - mue);
+    //return s / t;
+    
     int k = data.cols;
     int n = data.rows;
-    double s = 0;
-    for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
     return n * (log(2 * M_PI) + 1 + log(s / n)) + (k * 2);
 }
 
@@ -304,6 +310,8 @@ void BH_fdr(vector<double> &data){
 ListItem::ListItem(QString name, ListItemType t, QListWidget* parent) : QListWidgetItem(name, parent) {
     type = t;
 }
+
+
 
 
 

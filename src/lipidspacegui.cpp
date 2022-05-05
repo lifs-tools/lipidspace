@@ -106,6 +106,17 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     else if (event->key() == Qt::Key_5){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
+        for (int i = 0; i < 10; ++i) ct->push_back(IgnoreColumn);
+        ct->at(1) = LipidColumn;
+        ct->at(8) = QuantColumn;
+        ct->at(3) = SampleColumn;
+        ct->at(2) = FeatureColumnNominal;
+        
+        loadTable("Heart_GPL.csv", ct, PIVOT_TABLE);
+    }
+    else if (event->key() == Qt::Key_6){
+        resetAnalysis();
+        vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 20; ++i) ct->push_back(IgnoreColumn);
         ct->at(0) = LipidColumn;
         ct->at(18) = QuantColumn;
