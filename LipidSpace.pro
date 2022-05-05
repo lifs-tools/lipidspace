@@ -5,6 +5,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++11
 QMAKE_CXXFLAGS += -fopenmp -march=native
 
+
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -19,10 +20,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 !win32 {
     LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas
 }
-#win32 {
-#    LIBS += -fopenmp ../cppgoslin/libcppGoslin.dll ../OpenBLAS/lib/libopenblas.lib
-#    INCLUDEPATH += -I ../cppgoslin -I ../OpenBLAS
-#}
 
 SOURCES += \
     src/about.cpp \
@@ -74,16 +71,15 @@ FORMS += \
     ui/setPCnum.ui
 
 # Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+#qnx: target.path = /tmp/$${TARGET}/bin
+#else: unix:!android: target.path = /opt/$${TARGET}/bin
+#!isEmpty(target.path): INSTALLS += target
 
-win32:LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/libcppGoslin.dll
-win32:LIBS += -fopenmp $$PWD/libraries/OpenBLAS/bin/libopenblas.dll
+win32:LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll
+win32:LIBS += -fopenmp $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll
 
 win32:INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
 win32:DEPENDPATH += $$PWD/libraries/OpenBLAS/include
 
 win32:INCLUDEPATH += $$PWD/libraries/cppgoslin
 win32:DEPENDPATH += $$PWD/libraries/cppgoslin
-

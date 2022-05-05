@@ -1362,8 +1362,8 @@ void LipidSpace::normalize_intensities(){
 
 
 inline int LipidSpace::extract_number(string line, int line_number){
-    unsigned long start_sample_num = line.find("[");
-    unsigned long end_sample_num = line.find("]");
+    size_t start_sample_num = line.find("[");
+    size_t end_sample_num = line.find("]");
     if ((start_sample_num == std::string::npos) || (end_sample_num == std::string::npos) || (end_sample_num <= start_sample_num)){
         throw LipidSpaceException("Error in line " + std::to_string(line_number) + ", line is corrupted.", CorruptedFileFormat);
     }
