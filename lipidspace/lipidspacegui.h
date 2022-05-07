@@ -161,7 +161,7 @@ private:
     vector<Canvas*> canvases;
     bool knubbel;
     bool table_transposed;
-    map<string, vector<string>> sortings[4];
+    map<string, vector<pair<string, double>>> sortings[4];
     vector<QComboBox*> sorting_boxes;
     
     void fill_Table();

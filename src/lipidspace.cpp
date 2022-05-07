@@ -28,6 +28,8 @@ double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkag
 
 bool sort_double_string_desc (pair<double, string> i, pair<double, string> j) { return (i.first > j.first); }
 
+
+
 void LipidSpace::create_dendrogram(){
     dendrogram_sorting.clear();
     dendrogram_points.clear();
@@ -169,9 +171,9 @@ void LipidSpace::create_dendrogram(){
         CVs.push_back({values.stdev() / values.mean(), kv.first});
     }
     sort(CVs.begin(), CVs.end(), sort_double_string_desc);
-    lipid_sortings.insert({"Coefficient of Variation (Desc)", vector<string>()});
-    vector<string> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
-    for (auto cv : CVs) CVh.push_back(cv.second);
+    lipid_sortings.insert({"Coefficient of Variation (Desc)", vector<pair<string, double>>()});
+    vector<pair<string, double>> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
+    for (auto cv : CVs) CVh.push_back({cv.second, cv.first});
     
     
     
@@ -180,16 +182,17 @@ void LipidSpace::create_dendrogram(){
         string target_variable = kv.first;
         
         Array target_values;
-        vector<pair<double, string>> linear_regression;
+        vector<pair<double, string>> regression_result;
         map<string, double> nominal_target_values;
-        int nom_counter = 1;
+        int nom_counter = 0;
+        bool is_nominal = feature_values[target_variable].feature_type == NominalFeature;
         
         if (uncontains_val(feature_values, target_variable)){
             return;
         }
         
         // setup array for target variable values, if nominal then each with incrementing number
-        if (feature_values[target_variable].feature_type == NominalFeature){
+        if (is_nominal){
             for (auto lipidome : selected_lipidomes){
                 string nominal_value = lipidome->features[target_variable].nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
@@ -207,44 +210,67 @@ void LipidSpace::create_dendrogram(){
         // going through all lipids
         for (auto kv : lipid_name_map){
             int c = kv.second;
-            double mx = mx_values[c];
-            double my = 0, ny = 0;
-            // computing the study variable mean based on missing values of lipids
-            for (int r = 0; r < global_matrix.rows; ++r){
-                if (global_matrix(r, c) <= 1e-15) continue;
-                my += target_values[r];
-                ny += 1;
+            if (is_nominal){
+                vector<Array> arrays(nom_counter);
+                
+                for (int r = 0; r < global_matrix.rows; ++r){
+                    if (global_matrix(r, c) <= 1e-15) continue;
+                    arrays[target_values[r]].push_back(global_matrix(r, c));
+                }
+                
+                double pos_max = 0, d = 0, score = 1;
+                for (uint ii = 0; ii < arrays.size() - 1; ++ii){
+                    for (uint jj = ii + 1; jj < arrays.size(); ++jj){
+                        ks_separation_value(arrays[ii], arrays[jj], d, pos_max);
+                        score *= d;
+                    }
+                }
+                double ll = 2. / ((double)(arrays.size() - 1) * (double)arrays.size());
+                score = pow(score, ll);
+                
+                regression_result.push_back({score, kv.first});
+                
             }
-            my /= ny;
-            
-            // estimate slope and intercept factors for linear regression
-            double slope_num = 0, slope_denom = 0;
-            double* row = &(global_matrix.m[c * global_matrix.rows]);
-            for (int r = 0; r < global_matrix.rows; ++r){
-                if (global_matrix(r, c) <= 1e-15) continue;
-                slope_num += (row[r] - mx) * (target_values[r] - my);
-                slope_denom += sq(row[r] - mx);
+            else {
+                double mx = mx_values[c];
+                double my = 0, ny = 0;
+                // computing the study variable mean based on missing values of lipids
+                for (int r = 0; r < global_matrix.rows; ++r){
+                    if (global_matrix(r, c) <= 1e-15) continue;
+                    my += target_values[r];
+                    ny += 1;
+                }
+                my /= ny;
+                
+                // estimate slope and intercept factors for linear regression
+                double slope_num = 0, slope_denom = 0;
+                double* row = &(global_matrix.m[c * global_matrix.rows]);
+                for (int r = 0; r < global_matrix.rows; ++r){
+                    if (global_matrix(r, c) <= 1e-15) continue;
+                    slope_num += (row[r] - mx) * (target_values[r] - my);
+                    slope_denom += sq(row[r] - mx);
+                }
+                double slope = slope_num / slope_denom;
+                double intercept = my - slope * mx;
+                
+                // checking with R^2 performance indicator goodness of the fit
+                double SQR = 0, SQT = 0;
+                for (int r = 0; r < global_matrix.rows; ++r){
+                    if (global_matrix(r, c) <= 1e-15) continue;
+                    SQR += sq(target_values[r] - (slope * row[r] + intercept));
+                    SQT += sq(target_values[r] - my);
+                }
+                double R2 = 1. - SQR / SQT;
+                regression_result.push_back({R2, kv.first});
             }
-            double slope = slope_num / slope_denom;
-            double intercept = my - slope * mx;
             
-            // checking with R^2 performance indicator goodness of the fit
-            double SQR = 0, SQT = 0;
-            for (int r = 0; r < global_matrix.rows; ++r){
-                if (global_matrix(r, c) <= 1e-15) continue;
-                SQR += sq(target_values[r] - (slope * row[r] + intercept));
-                SQT += sq(target_values[r] - my);
-            }
-            double R2 = 1. - SQR / SQT;
-            
-            linear_regression.push_back({R2, kv.first});
         }
         
         // sorting all lipids according to the performance indicator
-        sort(linear_regression.begin(), linear_regression.end(), sort_double_string_desc);
-        lipid_sortings.insert({target_variable + " regression (Desc)", vector<string>()});
-        vector<string> &regression_vector = lipid_sortings[target_variable + " regression (Desc)"];
-        for (auto kv_reg : linear_regression) regression_vector.push_back(kv_reg.second);
+        sort(regression_result.begin(), regression_result.end(), sort_double_string_desc);
+        lipid_sortings.insert({target_variable + " regression (Desc)", vector<pair<string, double>>()});
+        vector<pair<string, double>> &regression_vector = lipid_sortings[target_variable + " regression (Desc)"];
+        for (auto kv_reg : regression_result) regression_vector.push_back({kv_reg.second, kv_reg.first});
         
     }
 }
@@ -1092,7 +1118,7 @@ void LipidSpace::report_hausdorff_matrix(string output_folder){
 
 
 
-bool LipidSpace::compute_global_distance_matrix(){
+int LipidSpace::compute_global_distance_matrix(){
     global_lipidome->species.clear();
     global_lipidome->classes.clear();
     global_lipidome->categories.clear();
@@ -1181,7 +1207,11 @@ bool LipidSpace::compute_global_distance_matrix(){
     
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
-    if (n < 3) return false;
+    
+    // Lanczos algorithm computes one less principal components than
+    // lipids provided, we need at least 2 dimensions, therefore
+    // at least three lipids
+    if (n < 3) return n;
 
     
     global_lipidome->intensities.resize(n);
@@ -1237,7 +1267,7 @@ bool LipidSpace::compute_global_distance_matrix(){
             }
         }
     }
-    return true;
+    return n;
 }
 
 
@@ -1300,14 +1330,20 @@ inline double gauss(double x, double mue, double sigma){
 void LipidSpace::normalize_intensities(){
     
     int n = global_lipidome->m.rows;
-    double global_stdev = 0, global_mean = 0;
-    for (int i = 0; i < n; ++i) global_mean += global_lipidome->m.m[i];
-    global_mean /= (double)n;
-    for (int i = 0; i < n; ++i) global_stdev += sq(global_lipidome->m.m[i] - global_mean);
-    global_stdev = sqrt(global_stdev / (double)n);
-    
+    double global_stdev = 0;
+    if (global_lipidome->lipids.size() >= 3){
+        double global_mean = 0;
+        for (int i = 0; i < n; ++i) global_mean += global_lipidome->m.m[i];
+        global_mean /= (double)n;
+        for (int i = 0; i < n; ++i) global_stdev += sq(global_lipidome->m.m[i] - global_mean);
+        global_stdev = sqrt(global_stdev / (double)n);
+    }
+    else {
+        global_stdev = 1;
+    }
     
     if (GlobalData::normalization == "absolute" || GlobalData::normalization == ""){
+        
         Array data;
         for (auto lipidome : selected_lipidomes){
             for (auto val : lipidome->original_intensities) {
@@ -2644,12 +2680,6 @@ void LipidSpace::store_distance_table(string output_folder, Table* lipidome){
     output_stream << table_stream.str();
 }
 
-/*
-std::thread LipidSpace::run_analysis_thread() {
-    return std::thread([=] { run_analysis(); });
-}
-*/
-
 
 bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;}
 
@@ -2678,32 +2708,40 @@ void LipidSpace::run(){
         }
         
         
+        int num_for_PCA = 0;
         // compute PCA matrixes for the complete lipidome
         if (!progress || !progress->stop_progress){
-            if (!compute_global_distance_matrix()){
+            num_for_PCA = compute_global_distance_matrix();
+            if (num_for_PCA == 0){
                 if (progress){
-                    progress->setError(QString("Less than three lipids were taken for analysis. Analysis aborted. Select more lipids for analysis. Maybe consider the log messages."));
+                    progress->setError(QString("No lipids were taken for analysis. Analysis aborted. Select more lipids for analysis. Maybe consider the log messages."));
+                    
                 }
                 return;
             }
         }
         
-        cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
-        
-        // perform the principal component analysis
-        if (!progress || !progress->stop_progress){
-            // set the step size for the next analyses
-            if (progress){
-                progress->prepare_steps(7);
-                progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
+        if (num_for_PCA >= 3){
+            cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
+            
+            // perform the principal component analysis
+            if (!progress || !progress->stop_progress){
+                // set the step size for the next analyses
+                if (progress){
+                    progress->prepare_steps(7);
+                    progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
+                }
+                Matrix pca;
+                global_distances.rewrite(global_lipidome->m);
+                global_lipidome->m.PCA(pca, cols_for_pca);
+                global_lipidome->m.rewrite(pca);
+                if (progress){
+                    progress->disconnect(&global_lipidome->m, SIGNAL(set_step()), 0, 0);
+                }
             }
-            Matrix pca;
-            global_distances.rewrite(global_lipidome->m);
-            global_lipidome->m.PCA(pca, cols_for_pca);
-            global_lipidome->m.rewrite(pca);
-            if (progress){
-                progress->disconnect(&global_lipidome->m, SIGNAL(set_step()), 0, 0);
-            }
+        }
+        else {
+            global_lipidome->m.reset(selected_lipidomes.size(), global_lipidome->lipids.size());
         }
         
         // cutting the global PCA matrix back to a matrix for each lipidome
@@ -2749,12 +2787,13 @@ void LipidSpace::run(){
         
         Array target_values;
         map<string, double> nominal_target_values;
-        int nom_counter = 1;
+        int nom_counter = 0;
         map<LipidAdduct*, int> lipid_map;
         map<string, int> lipid_name_map;
         vector<string> ml;
         Matrix global_matrix;
         vector< Gene* >genes;
+        bool is_nominal = feature_values[target_variable].feature_type == NominalFeature;
         
         if (uncontains_val(feature_values, target_variable)){
             if (progress && !progress->stop_progress){
@@ -2772,7 +2811,7 @@ void LipidSpace::run(){
             // set the step size for the next analyses
             
             // setup array for target variable values, if nominal then each with incrementing number
-            if (feature_values[target_variable].feature_type == NominalFeature){
+            if (is_nominal){
                 for (auto lipidome : selected_lipidomes){
                     string nominal_value = lipidome->features[target_variable].nominal_value;
                     if (uncontains_val(nominal_target_values, nominal_value)){
@@ -2798,6 +2837,13 @@ void LipidSpace::run(){
                     }
                 }
             }
+            
+            if (is_nominal && nom_counter <= 1){
+                if (progress && !progress->stop_progress){
+                    progress->finish();
+                }
+                return;
+            }
         
             // set up matrix for multiple linear regression
             global_matrix.reset(selected_lipidomes.size(), lipid_map.size());
@@ -2809,13 +2855,18 @@ void LipidSpace::run(){
             }
         }
         
-        Array constants;
-        constants.resize(global_matrix.rows, 1);
-        global_matrix.add_column(constants);
+        if (is_nominal){
+            global_matrix.scale();
+        }
+        else {
+            Array constants;
+            constants.resize(global_matrix.rows, 1);
+            global_matrix.add_column(constants);
+        }
         
         
         // determining the upper number of features to consider
-        int n = global_matrix.cols - 1;
+        int n = global_matrix.cols - !is_nominal; // -1 because we added a column of constant values 1, 1, 1, 1, ...
         int n_features = n;
         if (n > 1) n = min(n_features - 1, (int)sqrt(n) * 2);
         
@@ -2830,8 +2881,8 @@ void LipidSpace::run(){
         
             genes.resize(n + 1, 0);
             genes[0] = new Gene(n_features + 1);
-            genes[0]->gene_code[n_features] = true;
-            genes[0]->aic = 1e100;
+            if (!is_nominal) genes[0]->gene_code[n_features] = true; // add constant value column
+            genes[0]->score = -1e100;
         
         // implementation of sequential forward feature selection
         
@@ -2843,7 +2894,7 @@ void LipidSpace::run(){
         for(int i = 1; i <= n && (!progress || !progress->stop_progress); ++i){
             Gene* best = 0;
             int pos = 0;
-            double best_aic = 1e100;
+            double best_score = 1e100;
             Gene* last = genes[i - 1];
             while (pos < n_features - (i - 1) && (!progress || !progress->stop_progress)){
                 if (!last->gene_code[pos]){
@@ -2855,13 +2906,41 @@ void LipidSpace::run(){
                     Matrix sub_features;
                     sub_features.rewrite(global_matrix, {}, feature_indexes);
                     
-                    Array coefficiants;
-                    coefficiants.compute_coefficiants(sub_features, target_values);    // estimating coefficiants
-                    new_gene->aic = compute_aic(sub_features, coefficiants, target_values);  // computing aic
+                    if (is_nominal){
+                        Array summed_values;
+                        summed_values.resize(sub_features.rows);
+                        
+                        for (int c = 0; c < sub_features.cols; c++){
+                        double *col = &(sub_features.m[c * sub_features.rows]);
+                            for (int r = 0; r < sub_features.rows; ++r){
+                                summed_values[r] += col[r];
+                            }
+                        }
+                        
+                        vector<Array> arrays(nom_counter);
+                        for (int r = 0; r < sub_features.rows; ++r) arrays[target_values[r]].push_back(summed_values[r]);
+                        
+                        
+                        double pos_max = 0, d = 0;
+                        new_gene->score = 1;
+                        for (uint ii = 0; ii < arrays.size() - 1; ++ii){
+                            for (uint jj = ii + 1; jj < arrays.size(); ++jj){
+                                ks_separation_value(arrays[ii], arrays[jj], d, pos_max);
+                                new_gene->score *= d;
+                            }
+                        }
+                        double ll = 2. / ((double)(arrays.size() - 1) * (double)arrays.size());
+                        new_gene->score = 1 - pow(new_gene->score, ll);
+                    }
+                    else {
+                        Array coefficiants;
+                        coefficiants.compute_coefficiants(sub_features, target_values);    // estimating coefficiants
+                        new_gene->score = compute_aic(sub_features, coefficiants, target_values);  // computing aic
+                    }
                     
-                    if (!best || best_aic > new_gene->aic){
+                    if (!best || best_score > new_gene->score){
                         best = new_gene;
-                        best_aic = new_gene->aic;
+                        best_score = new_gene->score;
                     }
                     else {
                         delete new_gene;
@@ -2875,17 +2954,16 @@ void LipidSpace::run(){
             }
                 
             genes[i] = best;
-            Indexes feature_indexes;
-            best->get_indexes(feature_indexes);
-        }
+            
+        }        
         
         if (!progress || !progress->stop_progress){
-            // find the feature subset with the lowest aic
-            double best_aic = 1e100;
+            // find the feature subset with the lowest best_score
+            double best_score = 1e100;
             int best_pos = 0;
             for (uint i = 1; i < genes.size(); ++i){
-                if (best_aic > genes[i]->aic){
-                    best_aic = genes[i]->aic;
+                if (best_score > genes[i]->score){
+                    best_score = genes[i]->score;
                     best_pos = i;
                 }
             }

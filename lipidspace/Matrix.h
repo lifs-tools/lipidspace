@@ -24,7 +24,6 @@ extern "C" {
     void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
 }
 
-typedef vector<int> Indexes;
 
 class Matrix;
 
@@ -61,6 +60,7 @@ public:
         return at(i);
     }
 };
+typedef Array Indexes;
 
 
 class Matrix : public QObject {

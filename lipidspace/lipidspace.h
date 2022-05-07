@@ -51,7 +51,7 @@ public:
     DendrogramNode *dendrogram_root;
     map<string, bool> selection[4];
     vector<Table*> selected_lipidomes;
-    map<string, vector<string>> lipid_sortings;
+    map<string, vector<pair<string, double>>> lipid_sortings;
     Matrix global_distances;
     int process_id;
     string target_variable;
@@ -68,7 +68,7 @@ public:
     double compute_hausdorff_distance(Matrix &m1, Matrix &m2);
     void compute_hausdorff_matrix();
     void report_hausdorff_matrix(string output_folder);
-    bool compute_global_distance_matrix();
+    int compute_global_distance_matrix();
     void separate_matrixes();
     void normalize_intensities();
     void create_dendrogram();

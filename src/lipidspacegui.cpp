@@ -261,6 +261,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     else if (GlobalData::linkage == CompleteLinkage) ui->actionComplete_linkage_clustering->setChecked(true);
     GlobalData::last_folder = QCoreApplication::applicationDirPath();
     
+    ui->speciesList->setItemDelegate(new ItemDelegate(ui->speciesList));
     ui->startAnalysisPushButton->setEnabled(false);
     updateGUI();
 }
@@ -296,12 +297,12 @@ void LipidSpaceGUI::openTable(){
 }
 
 
-bool compare_string_asc(string a, string b){
-    return a.compare(b) < 0;
+bool compare_string_asc(pair<string, double> a, pair<string, double> b){
+    return a.first.compare(b.first) < 0;
 }
 
-bool compare_string_desc(string a, string b){
-    return a.compare(b) > 0;
+bool compare_string_desc(pair<string, double> a, pair<string, double> b){
+    return a.first.compare(b.first) > 0;
 }
 
 void LipidSpaceGUI::updateSelectionView(){
@@ -316,18 +317,18 @@ void LipidSpaceGUI::updateSelectionView(){
     for (int i = 0; i < 4; ++i){
         
         sortings[i].clear();
-        sortings[i].insert({ALPHABETICALLY_ASC, vector<string>()});
-        sortings[i].insert({ALPHABETICALLY_DESC, vector<string>()});
+        sortings[i].insert({ALPHABETICALLY_ASC, vector<pair<string, double>>()});
+        sortings[i].insert({ALPHABETICALLY_DESC, vector<pair<string, double>>()});
     
-        vector<string> &sorting = sortings[i][ALPHABETICALLY_ASC];
+        vector<pair<string, double>> &sorting = sortings[i][ALPHABETICALLY_ASC];
         sorting.reserve(lipid_space->selection[i].size());
-        for (auto &kv : lipid_space->selection[i]) sorting.push_back(kv.first);
+        for (auto &kv : lipid_space->selection[i]) sorting.push_back({kv.first, 0});
         sort(sorting.begin(), sorting.end(), compare_string_asc);
         
         
-        vector<string> &sorting_desc = sortings[i][ALPHABETICALLY_DESC];
+        vector<pair<string, double>> &sorting_desc = sortings[i][ALPHABETICALLY_DESC];
         sorting_desc.reserve(lipid_space->selection[i].size());
-        for (auto &kv : lipid_space->selection[i]) sorting_desc.push_back(kv.first);
+        for (auto &kv : lipid_space->selection[i]) sorting_desc.push_back({kv.first, 0});
         sort(sorting_desc.begin(), sorting_desc.end(), compare_string_desc);
     }
     
@@ -367,10 +368,11 @@ void LipidSpaceGUI::updateView(int){
     
     // load new data
     map<string, int> sort_species;
-    vector<string> &sort_species_labels = sortings[0][sorting_boxes[0]->currentText().toStdString()];
+    vector<pair<string, double>> &sort_species_labels = sortings[0][sorting_boxes[0]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_species_labels.size(); ++i){
-        sort_species.insert({sort_species_labels[i], i});
+        sort_species.insert({sort_species_labels[i].first, i});
         ListItem *item = new ListItem("", SPECIES_ITEM, ui->speciesList);
+        item->length = sort_species_labels[i].second;
         ui->speciesList->addItem(item);
     }
     for (auto species : lipid_space->selection[0]){
@@ -381,9 +383,9 @@ void LipidSpaceGUI::updateView(int){
     
     
     map<string, int> sort_class;
-    vector<string> &sort_class_labels = sortings[1][sorting_boxes[1]->currentText().toStdString()];
+    vector<pair<string, double>> &sort_class_labels = sortings[1][sorting_boxes[1]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_class_labels.size(); ++i){
-        sort_class.insert({sort_class_labels[i], i});
+        sort_class.insert({sort_class_labels[i].first, i});
         ListItem *item = new ListItem("", CLASS_ITEM, ui->classList);
         ui->classList->addItem(item);
     }
@@ -394,9 +396,9 @@ void LipidSpaceGUI::updateView(int){
     }
     
     map<string, int> sort_category;
-    vector<string> &sort_category_labels = sortings[2][sorting_boxes[2]->currentText().toStdString()];
+    vector<pair<string, double>> &sort_category_labels = sortings[2][sorting_boxes[2]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_category_labels.size(); ++i){
-        sort_category.insert({sort_category_labels[i], i});
+        sort_category.insert({sort_category_labels[i].first, i});
         ListItem *item = new ListItem("", CATEGORY_ITEM, ui->categoryList);
         ui->categoryList->addItem(item);
     }
@@ -407,9 +409,9 @@ void LipidSpaceGUI::updateView(int){
     }
     
     map<string, int> sort_sample;
-    vector<string> &sort_sample_labels = sortings[3][sorting_boxes[3]->currentText().toStdString()];
+    vector<pair<string, double>> &sort_sample_labels = sortings[3][sorting_boxes[3]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_sample_labels.size(); ++i){
-        sort_sample.insert({sort_sample_labels[i], i});
+        sort_sample.insert({sort_sample_labels[i].first, i});
         ListItem *item = new ListItem("", SAMPLE_ITEM, ui->sampleList);
         ui->sampleList->addItem(item);
     }

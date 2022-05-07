@@ -4,8 +4,12 @@
 #include <QtCore>
 #include <QListWidget>
 #include <QTreeWidget>
-#include <QStyledItemDelegate>
+#include <QPen>
+#include <QBrush>
+#include <QPainter>
+#include <QItemDelegate>
 #include <QDropEvent>
+#include <QCheckBox>
 #include <set>
 #include <vector>
 #include <map>
@@ -87,7 +91,7 @@ struct Feature {
 class Gene {
 public:
     vector<bool> gene_code;
-    double aic;
+    double score;
     
     Gene(int features);
     Gene(Gene *gene);
@@ -100,6 +104,7 @@ double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
 double compute_aic(Matrix &data, Array &coefficiants, Array &values);
 bool gene_aic(Gene g1, Gene g2);
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max);
 
 
 class LipidSpaceException : public std::exception {
@@ -176,7 +181,20 @@ public:
 class ListItem : public QListWidgetItem {
 public:
     ListItemType type;
+    double length;
+    
     ListItem(QString name, ListItemType t, QListWidget* parent);
+};
+
+
+
+
+
+class ItemDelegate : public QItemDelegate
+{
+public:
+    explicit ItemDelegate(QObject *parent = 0) : QItemDelegate(parent) {}
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 };
 
 

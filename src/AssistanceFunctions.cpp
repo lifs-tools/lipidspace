@@ -121,6 +121,9 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
         vector<double> &set1 = kv.second;
         vector<double> &set2 = right_child->feature_numerical[kv.first];
         
+        double pos_max = 0, d = 0;
+        ks_separation_value(set1, set2, d, pos_max);
+        /*
         int num1 = set1.size();
         int num2 = set2.size();
         sort(set1.begin(), set1.end());
@@ -128,7 +131,6 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
         double inv_m = 1. / num1, inv_n = 1. / num2;
         double ptr1 = 0, ptr2 = 0;
         double cdf1 = 0, cdf2 =0;
-        double pos_max = 0, d = 0;
         while ((ptr1 < num1) && (ptr2 < num2)){
             if (set1[ptr1] <= set2[ptr2]){
                 cdf1 += inv_m;
@@ -146,7 +148,7 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
                 }
                 ptr2 += 1;
             }
-        }
+        }*/
         feature_numerical_thresholds.insert({kv.first, pos_max});
         
         feature_numerical.insert({kv.first, vector<double>()});
@@ -159,6 +161,39 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     }
     return new double[3]{(x_left + x_right) / 2, y, (double)cnt};
 }
+
+
+
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max){
+    d = 0;
+    pos_max = 0;
+    int num1 = a.size();
+    int num2 = b.size();
+    sort(a.begin(), a.end());
+    sort(b.begin(), b.end());
+    double inv_m = 1. / num1, inv_n = 1. / num2;
+    double ptr1 = 0, ptr2 = 0;
+    double cdf1 = 0, cdf2 = 0;
+    while ((ptr1 < num1) && (ptr2 < num2)){
+        if (a[ptr1] <= b[ptr2]){
+            cdf1 += inv_m;
+            if (d < fabs(cdf1 - cdf2)){
+                d = fabs(cdf1 - cdf2);
+                pos_max = a[ptr1];
+            }
+            ptr1 += 1;
+        }
+        else {
+            cdf2 += inv_n;
+            if (d < fabs(cdf1 - cdf2)){
+                d = fabs(cdf1 - cdf2);
+                pos_max = b[ptr2];
+            }
+            ptr2 += 1;
+        }
+    }
+}
+
 
 
 Progress::Progress(){
@@ -269,8 +304,8 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
     Array S;
     S.mult(data, coefficiants);
     double s = 0;
-    double t = 0;
-    double mue = S.mean();
+    //double t = 0;
+    //double mue = S.mean();
     for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
     return s;
     //for (int i = 0; i < (int)S.size(); ++i) t += sq(S[i] - mue);
@@ -283,7 +318,7 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
 
 
 bool gene_aic(Gene g1, Gene g2){
-    return g1.aic < g2.aic;
+    return g1.score < g2.score;
 }
 
 void BH_fdr(vector<double> &data){
@@ -309,10 +344,28 @@ void BH_fdr(vector<double> &data){
 
 ListItem::ListItem(QString name, ListItemType t, QListWidget* parent) : QListWidgetItem(name, parent) {
     type = t;
+    length = 0;
 }
 
 
 
+
+void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
+    
+    painter->setPen(QPen(Qt::NoPen));
+    int rr = index.row();
+    double l = ((ListItem*)((QListWidget*)parent())->item(rr))->length;
+    l = max(0., min(1., l));
+    
+    painter->save();
+    painter->setBrush(QBrush(QColor(128, 128, 128, 30)));
+    QRect r = option.rect;
+    r.setWidth(r.width() * l);
+    painter->drawRect(r);
+
+    QItemDelegate::paint(painter, option, index);
+    painter->restore();
+}
 
 
 TreeItem::TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent) : QTreeWidgetItem(parent){
@@ -329,18 +382,18 @@ TreeItem::TreeItem(int pos, QString name, QTreeWidget* parent) : QTreeWidgetItem
 
 
 Gene::Gene(int features){
-    aic = -1;
+    score = -1;
     gene_code.resize(features, false);
 }
 
 
 Gene::Gene(Gene *gene){
-    aic = gene->aic;
+    score = gene->score;
     for (bool feature : gene->gene_code) gene_code.push_back(feature);
 }
 
 Gene::Gene(Gene *g1, Gene *g2, double mutation_rate){
-    aic = -1;
+    score = -1;
     for (int i = 0; i < (int)g1->gene_code.size(); ++i){
         bool feature = randnum() < 0.5 ? g1->gene_code[i] : g2->gene_code[i];
         if (randnum() < mutation_rate) feature = !feature;

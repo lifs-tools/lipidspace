@@ -524,12 +524,13 @@ void PointSet::loadPoints(){
     double x_max = 0;
     double y_min = 0;
     double y_max = 0;
+    
+    if (view->lipid_space->global_lipidome->lipids.size() <= 2) return;
 
     for (int r = 0, rr = 0; r < (int)lipidome->species.size(); ++r){
         if (!lipidome->selection[r]){
             continue;
         }
-            
         
         double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
         f = 1. / log(f + 1.);
@@ -570,6 +571,7 @@ void PointSet::loadPoints(){
         points.back().item = ellipse;
         rr++;
     }
+    
     
     set_labels();
     
@@ -653,7 +655,7 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         p.addEllipse(bubble);
         painter->fillPath(p, qcolor);
         QPen pen_black(Qt::black);
-        pen_black.setWidthF(0.5);
+        pen_black.setWidthF(0.1);
         painter->setPen(pen_black);
         painter->drawEllipse(bubble);
     }
