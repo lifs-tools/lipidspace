@@ -1,5 +1,5 @@
-#ifndef IMPORTPIVOTTABLE_H
-#define IMPORTPIVOTTABLE_H
+#ifndef IMPORTTABLE_H
+#define IMPORTTABLE_H
 
 #include <QDialog>
 #include <QFileDialog>
@@ -33,7 +33,7 @@ signals:
 public slots:
     void okRow();
     void okCol();
-    void okPivot();
+    void okFlat();
     void cancel();
     void oneItemViolated(string field_name, int num);
     
@@ -43,4 +43,4 @@ private:
     map<QString, int> original_column_index;
 };
 
-#endif // IMPORTPIVOTTABLE_H
+#endif // IMPORTTABLE_H

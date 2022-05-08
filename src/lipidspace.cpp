@@ -136,7 +136,7 @@ void LipidSpace::create_dendrogram(){
     // set up matrix for multiple linear regression
     global_matrix.reset(selected_lipidomes.size(), lipid_map.size());
     for (uint r = 0; r < selected_lipidomes.size(); ++r){
-        Table* lipidome = selected_lipidomes[r];
+        Lipidome* lipidome = selected_lipidomes[r];
         for (uint i = 0; i < lipidome->lipids.size(); ++i){
             global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
         }
@@ -284,7 +284,7 @@ LipidSpace::LipidSpace() {
     ignore_doublette_lipids = false;
     unboundend_distance = false;
     without_quant = false;
-    global_lipidome = new Table("global_lipidome", "");
+    global_lipidome = new Lipidome("global_lipidome", "");
     progress = 0;
     analysis_finished = false;
     dendrogram_root = 0;
@@ -906,7 +906,7 @@ void LipidSpace::load_list(string lipid_list_file){
     string line;
     map<string, LipidAdduct*> lipid_set;
     
-    Table* lipidome = new Table(lipid_list_file, lipid_list_file, true);
+    Lipidome* lipidome = new Lipidome(lipid_list_file, lipid_list_file, true);
     try {
         while (getline(infile, line)){
             if (line.length() == 0) continue;
@@ -1514,7 +1514,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
     if (!infile.good()){
         throw LipidSpaceException("Error: file '" + mzTabM_file + "' could not be found.", FileUnreadable);
     }
-    vector<Table*> loaded_lipidomes;
+    vector<Lipidome*> loaded_lipidomes;
     map<int, string> feature_names;
     
     vector<Feature> headers;
@@ -1573,7 +1573,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         loaded_lipidomes[sample_number - 1]->cleaned_name = sample_name;
                     }
                     else {
-                        loaded_lipidomes[sample_number - 1] = new Table(sample_name, mzTabM_file);
+                        loaded_lipidomes[sample_number - 1] = new Lipidome(sample_name, mzTabM_file);
                     }
                 }
                 
@@ -1591,7 +1591,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                     
                     if ((int)loaded_lipidomes.size() < sample_number){
                         loaded_lipidomes.resize(sample_number, 0);
-                        loaded_lipidomes[sample_number - 1] = new Table("-", mzTabM_file);
+                        loaded_lipidomes[sample_number - 1] = new Lipidome("-", mzTabM_file);
                     }
                     
                     int content_number = extract_number(sample_data->at(1), line_num);
@@ -1702,7 +1702,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         }
                         
                         if (l && !contains_val(NA_VALUES, value)){ // valid abundance
-                            Table* lipidome = loaded_lipidomes.at((int)f.numerical_value);
+                            Lipidome* lipidome = loaded_lipidomes.at((int)f.numerical_value);
                             lipidome->lipids.push_back(l);
                             lipidome->species.push_back(l->get_lipid_string());
                             lipidome->classes.push_back(l->get_lipid_string(CLASS));
@@ -1849,7 +1849,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
     if (!infile.good()){
         throw LipidSpaceException("Error: file '" + pivot_table_file + "' could not be found.", FileUnreadable);
     }
-    vector<Table*> loaded_lipidomes;
+    vector<Lipidome*> loaded_lipidomes;
     set<string> registered_features;
     
     try {
@@ -1879,7 +1879,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
         int line_cnt = 0;
         map<string, LipidAdduct*> lipid_map;
-        map<string, Table*> lipidome_map;
+        map<string, Lipidome*> lipidome_map;
         vector<string> feature_names_nominal;
         vector<string> feature_names_numerical;
         map<string, LipidAdduct*> load_lipids;
@@ -1915,7 +1915,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             }
             
             // take or create sample / lipidome table
-            Table* lipidome = 0;
+            Lipidome* lipidome = 0;
             string sample_name = "";
             for (int i = 0; i < (int)sample_columns.size(); ++i){
                 if (sample_name.length()) sample_name += "_";
@@ -1940,7 +1940,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             
             
             if (uncontains_val(lipidome_map, sample_name)){
-                lipidome = new Table(sample_name, pivot_table_file);
+                lipidome = new Lipidome(sample_name, pivot_table_file);
                 lipidome_map.insert({sample_name, lipidome});
                 loaded_lipidomes.push_back(lipidome);
             }
@@ -2165,7 +2165,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
     vector<string> features_names_nominal;
     vector<LipidAdduct*> lipids;
     map<string, LipidAdduct*> lipid_set;
-    vector<Table*> loaded_lipidomes;
+    vector<Lipidome*> loaded_lipidomes;
     
     try {
         while (getline(infile, line)){
@@ -2259,8 +2259,8 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                 }
             }
             
-            loaded_lipidomes.push_back(new Table(measurement, data_table_file));
-            Table *lipidome = loaded_lipidomes.back();
+            loaded_lipidomes.push_back(new Lipidome(measurement, data_table_file));
+            Lipidome *lipidome = loaded_lipidomes.back();
             for (auto kv : features){
                 if (kv.second.feature_type == NominalFeature){
                     lipidome->features.insert({kv.first, Feature(kv.second.name, kv.second.nominal_value)});
@@ -2392,7 +2392,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     vector<Array> intensities;
     map<string, LipidAdduct*> lipid_set;
-    vector<Table*> loaded_lipidomes;
+    vector<Lipidome*> loaded_lipidomes;
     
     try {
         // no specific column order is provided, we assume that first column contains
@@ -2409,7 +2409,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                 if (line_cnt++ == 0){
                     num_cols = tokens->size();
                     for (int i = 1; i < (int)tokens->size(); ++i){
-                        loaded_lipidomes.push_back(new Table(tokens->at(i), table_file));
+                        loaded_lipidomes.push_back(new Lipidome(tokens->at(i), table_file));
                         intensities.push_back(Array());
                     }
                     delete tokens;
@@ -2431,7 +2431,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                     for (int i = 1; i < (int)tokens->size(); ++i){
                         string val = tokens->at(i);
                         if (!contains_val(NA_VALUES, val)){
-                            Table* lipidome = loaded_lipidomes.at(i - 1);
+                            Lipidome* lipidome = loaded_lipidomes.at(i - 1);
                             lipidome->lipids.push_back(l);
                             lipidome->species.push_back(l->get_lipid_string());
                             lipidome->classes.push_back(l->get_lipid_string(CLASS));
@@ -2480,7 +2480,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                             }
                             
                             selection[3].insert({header, true});
-                            loaded_lipidomes.push_back(new Table(header, table_file));
+                            loaded_lipidomes.push_back(new Lipidome(header, table_file));
                             intensities.push_back(Array());
                         } 
                     }
@@ -2511,7 +2511,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                     for (int i = 0; i < (int)quant_data.size(); ++i){
                         string val = quant_data[i];
                         if (!contains_val(NA_VALUES, val)){
-                            Table* lipidome = loaded_lipidomes.at(i);
+                            Lipidome* lipidome = loaded_lipidomes.at(i);
                             lipidome->lipids.push_back(l);
                             lipidome->species.push_back(l->get_lipid_string());
                             lipidome->classes.push_back(l->get_lipid_string(CLASS));
@@ -2667,7 +2667,7 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
 
 
 
-void LipidSpace::store_distance_table(string output_folder, Table* lipidome){
+void LipidSpace::store_distance_table(string output_folder, Lipidome* lipidome){
     vector<string> &species = (lipidome != 0) ? lipidome->species : global_lipidome->species;
     Matrix &output_matrix = (lipidome != 0) ? lipidome->m : global_distances;
     string output_file = output_folder + "/distance_matrix.csv";
@@ -2855,7 +2855,7 @@ void LipidSpace::run(){
             // set up matrix for multiple linear regression
             global_matrix.reset(selected_lipidomes.size(), lipid_map.size());
             for (uint r = 0; r < selected_lipidomes.size(); ++r){
-                Table* lipidome = selected_lipidomes[r];
+                Lipidome* lipidome = selected_lipidomes[r];
                 for (uint i = 0; i < lipidome->lipids.size(); ++i){
                     global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
                 }

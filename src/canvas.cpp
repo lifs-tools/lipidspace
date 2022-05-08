@@ -504,7 +504,7 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
 
 
 
-PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
+PointSet::PointSet(Lipidome *_lipidome, Canvas *_view) : view(_view) {
     lipidome = _lipidome;
     title = "";
     variances = "";

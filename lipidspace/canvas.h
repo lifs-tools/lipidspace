@@ -148,7 +148,7 @@ struct PCLabel {
 class PointSet : public QGraphicsItem {
 public:
     QRectF bound;
-    Table* lipidome;
+    Lipidome* lipidome;
     Canvas *view;
     QRectF old_view;
     QString title;
@@ -158,7 +158,7 @@ public:
     vector<PCLabel> labels;
     
     
-    PointSet(Table* _lipidome, Canvas *_view);
+    PointSet(Lipidome* _lipidome, Canvas *_view);
     ~PointSet();
     void set_labels();
     void set_point_size();

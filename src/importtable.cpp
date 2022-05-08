@@ -16,11 +16,11 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     ui->sampleListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
     ui->sampleListWidgetCol->addFieldName("sample");
     
-    ui->sampleListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->sampleListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
-    ui->sampleListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
-    ui->sampleListWidgetPivot->addFieldName("sample");
-    ui->sampleListWidgetPivot->setNum(3);
+    ui->sampleListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->sampleListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
+    ui->sampleListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->sampleListWidgetFlat->addFieldName("sample");
+    ui->sampleListWidgetFlat->setNum(3);
     
     
     // set ignore lists
@@ -32,9 +32,9 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     ui->ignoreListWidgetCol->setDefaultDropAction(Qt::MoveAction);
     ui->ignoreListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
     
-    ui->ignoreListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->ignoreListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
-    ui->ignoreListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->ignoreListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->ignoreListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
+    ui->ignoreListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
     
     
     // set lipid lists
@@ -47,10 +47,10 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     ui->lipidListWidgetCol->setDefaultDropAction(Qt::MoveAction);
     ui->lipidListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
     
-    ui->lipidListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->lipidListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
-    ui->lipidListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
-    ui->lipidListWidgetPivot->addFieldName("lipid");
+    ui->lipidListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->lipidListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
+    ui->lipidListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->lipidListWidgetFlat->addFieldName("lipid");
     
     
     // set feature lists
@@ -62,36 +62,36 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     ui->nominalFeatureListWidgetCol->setDefaultDropAction(Qt::MoveAction);
     ui->nominalFeatureListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
     
-    ui->numericalFeatureListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->numericalFeatureListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
-    ui->numericalFeatureListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->numericalFeatureListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->numericalFeatureListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
+    ui->numericalFeatureListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
     
-    ui->nominalFeatureListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->nominalFeatureListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
-    ui->nominalFeatureListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->nominalFeatureListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->nominalFeatureListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
+    ui->nominalFeatureListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
     
     
     // set quant list
-    ui->quantListWidgetPivot->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->quantListWidgetPivot->setDefaultDropAction(Qt::MoveAction);
-    ui->quantListWidgetPivot->setSelectionMode(QListWidget::ExtendedSelection);
-    ui->quantListWidgetPivot->addFieldName("quant");
+    ui->quantListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->quantListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
+    ui->quantListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->quantListWidgetFlat->addFieldName("quant");
 
 
     
     connect(ui->okButtonRow, SIGNAL(clicked()), this, SLOT(okRow()));
     connect(ui->okButtonCol, SIGNAL(clicked()), this, SLOT(okCol()));
-    connect(ui->okButtonPivot, SIGNAL(clicked()), this, SLOT(okPivot()));
+    connect(ui->okButtonFlat, SIGNAL(clicked()), this, SLOT(okFlat()));
     
     connect(ui->cancelButtonRow, SIGNAL(clicked()), this, SLOT(cancel()));
     connect(ui->cancelButtonCol, SIGNAL(clicked()), this, SLOT(cancel()));
-    connect(ui->cancelButtonPivot, SIGNAL(clicked()), this, SLOT(cancel()));
+    connect(ui->cancelButtonFlat, SIGNAL(clicked()), this, SLOT(cancel()));
     
     connect(ui->sampleListWidgetCol, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
-    connect(ui->sampleListWidgetPivot, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
+    connect(ui->sampleListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
     connect(ui->lipidListWidgetRow, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
-    connect(ui->lipidListWidgetPivot, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
-    connect(ui->quantListWidgetPivot, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
+    connect(ui->lipidListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
+    connect(ui->quantListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
 
     
     QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
@@ -162,10 +162,10 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
                 item_col->setText(qheader);
                 ui->ignoreListWidgetCol->addItem(item_col);
                 
-                QListWidgetItem* item_pivot = new QListWidgetItem();
-                item_pivot->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-                item_pivot->setText(qheader);
-                ui->ignoreListWidgetPivot->addItem(item_pivot);
+                QListWidgetItem* item_flat = new QListWidgetItem();
+                item_flat->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+                item_flat->setText(qheader);
+                ui->ignoreListWidgetFlat->addItem(item_flat);
             }
             delete tokens;
         }
@@ -235,7 +235,7 @@ void ImportTable::okRow(){
         
         column_types->at(original_column_index[ui->lipidListWidgetRow->item(0)->text()]) = LipidColumn;
         
-        importTable(data_table_file, column_types, ROW_TABLE);
+        importTable(data_table_file, column_types, ROW_PIVOT_TABLE);
         close();
     }
     else if (!ui->sampleListWidgetRow->count()) {
@@ -266,7 +266,7 @@ void ImportTable::okCol(){
             column_types->at(original_column_index[ui->nominalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNominal;
         }
         
-        importTable(data_table_file, column_types, COLUMN_TABLE);
+        importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE);
         close();
     }
     else if (!ui->sampleListWidgetCol->count()) {
@@ -280,33 +280,33 @@ void ImportTable::okCol(){
 
 
 
-void ImportTable::okPivot(){
-    if (ui->lipidListWidgetPivot->count() == 1 && ui->sampleListWidgetPivot->count() >= 1 && ui->quantListWidgetPivot->count() == 1) {
+void ImportTable::okFlat(){
+    if (ui->lipidListWidgetFlat->count() == 1 && ui->sampleListWidgetFlat->count() >= 1 && ui->quantListWidgetFlat->count() == 1) {
         vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
         
-        for (int i = 0; i < (int)ui->sampleListWidgetPivot->count(); ++i){
-            column_types->at(original_column_index[ui->sampleListWidgetPivot->item(i)->text()]) = SampleColumn;
+        for (int i = 0; i < (int)ui->sampleListWidgetFlat->count(); ++i){
+            column_types->at(original_column_index[ui->sampleListWidgetFlat->item(i)->text()]) = SampleColumn;
         }
         
-        column_types->at(original_column_index[ui->lipidListWidgetPivot->item(0)->text()]) = LipidColumn;
+        column_types->at(original_column_index[ui->lipidListWidgetFlat->item(0)->text()]) = LipidColumn;
         
-        column_types->at(original_column_index[ui->quantListWidgetPivot->item(0)->text()]) = QuantColumn;
+        column_types->at(original_column_index[ui->quantListWidgetFlat->item(0)->text()]) = QuantColumn;
         
-        for (int i = 0; i < (int)ui->numericalFeatureListWidgetPivot->count(); ++i){
-            column_types->at(original_column_index[ui->numericalFeatureListWidgetPivot->item(i)->text()]) = FeatureColumnNumerical;
+        for (int i = 0; i < (int)ui->numericalFeatureListWidgetFlat->count(); ++i){
+            column_types->at(original_column_index[ui->numericalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNumerical;
         }
         
-        for (int i = 0; i < (int)ui->nominalFeatureListWidgetPivot->count(); ++i){
-            column_types->at(original_column_index[ui->nominalFeatureListWidgetPivot->item(i)->text()]) = FeatureColumnNominal;
+        for (int i = 0; i < (int)ui->nominalFeatureListWidgetFlat->count(); ++i){
+            column_types->at(original_column_index[ui->nominalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNominal;
         }
         
-        importTable(data_table_file, column_types, PIVOT_TABLE);
+        importTable(data_table_file, column_types, FLAT_TABLE);
         close();
     }
-    else if (!ui->sampleListWidgetPivot->count()) {
+    else if (!ui->sampleListWidgetFlat->count()) {
         QMessageBox::warning(this, "No sample column selected", "Please select one column as sample column.");
     }
-    else if (!ui->quantListWidgetPivot->count()) {
+    else if (!ui->quantListWidgetFlat->count()) {
         QMessageBox::warning(this, "No quant column selected", "Please select one column as quant column.");
     }
     else {

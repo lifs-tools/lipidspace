@@ -27,7 +27,7 @@
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
-     <string>Lipid row table</string>
+     <string>Lipid row (pivot) table</string>
     </attribute>
     <widget class="QLabel" name="label_15">
      <property name="geometry">
@@ -127,7 +127,7 @@
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
-     <string>Lipid column table</string>
+     <string>Lipid column (pivot) table</string>
     </attribute>
     <widget class="QLabel" name="label_11">
      <property name="geometry">
@@ -273,9 +273,9 @@
    </widget>
    <widget class="QWidget" name="tab_3">
     <attribute name="title">
-     <string>Pivot table</string>
+     <string>Flat table</string>
     </attribute>
-    <widget class="SingleListWidget" name="lipidListWidgetPivot">
+    <widget class="SingleListWidget" name="lipidListWidgetFlat">
      <property name="geometry">
       <rect>
        <x>270</x>
@@ -285,7 +285,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QListWidget" name="ignoreListWidgetPivot">
+    <widget class="QListWidget" name="ignoreListWidgetFlat">
      <property name="geometry">
       <rect>
        <x>30</x>
@@ -308,7 +308,7 @@
       <string>Numerical study variables</string>
      </property>
     </widget>
-    <widget class="SingleListWidget" name="quantListWidgetPivot">
+    <widget class="SingleListWidget" name="quantListWidgetFlat">
      <property name="geometry">
       <rect>
        <x>270</x>
@@ -344,7 +344,7 @@
       <string>Recognized columns</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="okButtonPivot">
+    <widget class="QPushButton" name="okButtonFlat">
      <property name="geometry">
       <rect>
        <x>560</x>
@@ -357,7 +357,7 @@
       <string>Ok</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="numericalFeatureListWidgetPivot">
+    <widget class="QListWidget" name="numericalFeatureListWidgetFlat">
      <property name="geometry">
       <rect>
        <x>510</x>
@@ -367,7 +367,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QPushButton" name="cancelButtonPivot">
+    <widget class="QPushButton" name="cancelButtonFlat">
      <property name="geometry">
       <rect>
        <x>650</x>
@@ -393,7 +393,7 @@
       <string>Sample column</string>
      </property>
     </widget>
-    <widget class="SingleListWidget" name="sampleListWidgetPivot">
+    <widget class="SingleListWidget" name="sampleListWidgetFlat">
      <property name="geometry">
       <rect>
        <x>270</x>
@@ -429,7 +429,7 @@
       <string>Nominal study variables</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="nominalFeatureListWidgetPivot">
+    <widget class="QListWidget" name="nominalFeatureListWidgetFlat">
      <property name="geometry">
       <rect>
        <x>510</x>

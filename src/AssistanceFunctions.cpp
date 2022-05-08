@@ -24,7 +24,7 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 }
 
 
-DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome){
+DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_values, Lipidome *lipidome){
     indexes.insert(index);
     order = -1;
     left_child = 0;

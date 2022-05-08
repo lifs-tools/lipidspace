@@ -21,7 +21,7 @@
 using namespace std;
 using namespace std::chrono;
 
-enum TableType {ROW_TABLE, COLUMN_TABLE, PIVOT_TABLE};
+enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 
 
 
@@ -41,8 +41,8 @@ public:
     bool ignore_doublette_lipids;
     bool unboundend_distance;
     bool without_quant;
-    vector<Table*> lipidomes;
-    Table* global_lipidome;
+    vector<Lipidome*> lipidomes;
+    Lipidome* global_lipidome;
     Array dendrogram_points;
     vector<int> dendrogram_sorting;
     Matrix hausdorff_distances;
@@ -50,7 +50,7 @@ public:
     map<string, FeatureSet> feature_values;
     DendrogramNode *dendrogram_root;
     map<string, bool> selection[4];
-    vector<Table*> selected_lipidomes;
+    vector<Lipidome*> selected_lipidomes;
     map<string, vector<pair<string, double>>> lipid_sortings;
     Matrix global_distances;
     int process_id;
@@ -72,7 +72,7 @@ public:
     void separate_matrixes();
     void normalize_intensities();
     void create_dendrogram();
-    void store_distance_table(string output_folder, Table* lipidome = 0);
+    void store_distance_table(string output_folder, Lipidome* lipidome = 0);
     void run() override;
     void reassembleSelection();
     //std::thread run_analysis_thread(Progress *_progress);

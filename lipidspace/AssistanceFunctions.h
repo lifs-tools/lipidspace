@@ -149,7 +149,7 @@ private:
 
 
 
-class Table {
+class Lipidome {
 public:
     string file_name;
     string cleaned_name;
@@ -164,7 +164,7 @@ public:
     map<string, Feature> features;
     Matrix m;
     
-    Table(string lipidome_name, string lipidome_file, bool is_file_name = false) : file_name(lipidome_file) {
+    Lipidome(string lipidome_name, string lipidome_file, bool is_file_name = false) : file_name(lipidome_file) {
         QFileInfo qFileInfo(file_name.c_str());
         string cleaned_file = qFileInfo.baseName().toStdString();
         if (is_file_name){
@@ -256,7 +256,7 @@ public:
     map<string, vector<double>> feature_numerical;
     map<string, double> feature_numerical_thresholds;
     
-    DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome);
+    DendrogramNode(int index, map<string, FeatureSet> *feature_values, Lipidome *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);
