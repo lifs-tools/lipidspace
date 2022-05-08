@@ -1882,6 +1882,7 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
         map<string, Table*> lipidome_map;
         vector<string> feature_names_nominal;
         vector<string> feature_names_numerical;
+        map<string, LipidAdduct*> load_lipids;
         
         while (getline(infile, line)){
             if (line.length() == 0) continue;
@@ -1962,47 +1963,53 @@ void LipidSpace::load_pivot_table(string pivot_table_file, vector<TableColumnTyp
             
             // handle lipid
             LipidAdduct *l = 0;
-            try {
-                l = parser.parse(lipid_table_name);
-                
-                if (uncontains_val(registered_lipid_classes, l->get_extended_class())){
+            if (uncontains_val(load_lipids, lipid_table_name)){
+                try {
+                    l = parser.parse(lipid_table_name);
+                    
+                    if (uncontains_val(registered_lipid_classes, l->get_extended_class())){
+                        if (!ignore_unknown_lipids){
+                            throw LipidSpaceException("Lipid structure not registered: lipid '" + lipid_table_name + "' cannot be parsed.", LipidNotRegistered);
+                        }
+                        else {
+                            Logging::write_log("Ignoring unregistered lipid '" + lipid_table_name + "'");
+                            continue;
+                        }
+                    }
+                        
+                    // deleting adduct since not necessary
+                    if (l->adduct != 0){
+                        delete l->adduct;
+                        l->adduct = 0;
+                    }
+                    l->sort_fatty_acyl_chains();
+                    for (auto fa : l->lipid->fa_list) cut_cycle(fa);
+                }
+                catch (exception &e) {
                     if (!ignore_unknown_lipids){
-                        throw LipidSpaceException("Lipid structure not registered: lipid '" + lipid_table_name + "' cannot be parsed.", LipidNotRegistered);
+                        throw LipidSpaceException(string(e.what()) + ": lipid '" + lipid_table_name + "' cannot be parsed.", LipidUnparsable);
                     }
                     else {
-                        Logging::write_log("Ignoring unregistered lipid '" + lipid_table_name + "'");
+                        Logging::write_log("Ignoring unidentifiable lipid '" + lipid_table_name + "'");
                         continue;
                     }
                 }
-                    
-                // deleting adduct since not necessary
-                if (l->adduct != 0){
-                    delete l->adduct;
-                    l->adduct = 0;
+                string lipid_name = l->get_lipid_string();
+                if (contains_val(all_lipids, lipid_name)){
+                    delete l;
+                    l = all_lipids[lipid_name];
                 }
-                l->sort_fatty_acyl_chains();
-                for (auto fa : l->lipid->fa_list) cut_cycle(fa);
-            }
-            catch (exception &e) {
-                if (!ignore_unknown_lipids){
-                    throw LipidSpaceException(string(e.what()) + ": lipid '" + lipid_table_name + "' cannot be parsed.", LipidUnparsable);
+                else if (contains_val(lipid_map, lipid_name)){
+                    delete l;
+                    l = lipid_map[lipid_name];
                 }
                 else {
-                    Logging::write_log("Ignoring unidentifiable lipid '" + lipid_table_name + "'");
-                    continue;
+                    lipid_map.insert({lipid_name, l});
                 }
-            }
-            string lipid_name = l->get_lipid_string();
-            if (contains_val(all_lipids, lipid_name)){
-                delete l;
-                l = all_lipids[lipid_name];
-            }
-            else if (contains_val(lipid_map, lipid_name)){
-                delete l;
-                l = lipid_map[lipid_name];
+                load_lipids.insert({lipid_table_name, l});
             }
             else {
-                lipid_map.insert({lipid_name, l});
+                l = load_lipids[lipid_table_name];
             }
                 
             

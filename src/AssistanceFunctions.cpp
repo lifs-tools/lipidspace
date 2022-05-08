@@ -357,14 +357,13 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     double l = ((ListItem*)((QListWidget*)parent())->item(rr))->length;
     l = max(0., min(1., l));
     
-    painter->save();
-    painter->setBrush(QBrush(QColor(128, 128, 128, 30)));
-    QRect r = option.rect;
-    r.setWidth(r.width() * l);
-    painter->drawRect(r);
-
+    if (l > 1e-15) {
+        painter->setBrush(QBrush(QColor(128, 128, 128, 20)));
+        QRect r = option.rect;
+        r.setWidth(r.width() * l - 2);
+        painter->drawRect(r);
+    }
     QItemDelegate::paint(painter, option, index);
-    painter->restore();
 }
 
 

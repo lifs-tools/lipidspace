@@ -1455,8 +1455,8 @@ void LipidSpaceGUI::export_list(){
 void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
     QMenu *menu = new QMenu(this);
     if (ui->tabWidget->currentIndex() != 3){
-        QAction *actionSelectAll = new QAction("Select all", this);
-        QAction *actionDeselectAll = new QAction("Deselect all", this);
+        QAction *actionSelectAll = new QAction("Check all", this);
+        QAction *actionDeselectAll = new QAction("Uncheck all", this);
         QAction *actionToggleAll = new QAction("Toggle all", this);
         QAction *actionExportList = new QAction("Export list (selected only)", this);
         menu->addAction(actionSelectAll);
@@ -1473,8 +1473,8 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
             default: return;
         }
         menu->popup(widget->viewport()->mapToGlobal(pos));
-        connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::select_all_entities);
-        connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::deselect_all_entities);
+        connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::check_all_entities);
+        connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::uncheck_all_entities);
         connect(actionToggleAll, &QAction::triggered, this, &LipidSpaceGUI::toggle_all_entities);
         connect(actionExportList, &QAction::triggered, this, &LipidSpaceGUI::export_list);
     }
@@ -1494,7 +1494,7 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
 
 
 
-void LipidSpaceGUI::select_all_entities(){
+void LipidSpaceGUI::check_all_entities(){
     QListWidget *widget = nullptr;
     switch(ui->tabWidget->currentIndex()){
         case 0: widget = ui->speciesList; break;
@@ -1510,7 +1510,7 @@ void LipidSpaceGUI::select_all_entities(){
 
 
 
-void LipidSpaceGUI::deselect_all_entities(){
+void LipidSpaceGUI::uncheck_all_entities(){
     QListWidget *widget = nullptr;
     switch(ui->tabWidget->currentIndex()){
         case 0: widget = ui->speciesList; break;
