@@ -24,6 +24,62 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 }
 
 
+
+FileTableHandler::FileTableHandler(string file_name, string sheet_name){
+    // csv import
+    if (sheet_name.length() == 0){
+        
+        ifstream infile(file_name);
+        if (!infile.good()){
+            throw LipidSpaceException("Error: file '" + file_name + "' could not be found.", FileUnreadable);
+        }
+        int line_num = 0;
+        string line;
+        while (getline(infile, line)){
+            if (line.length() == 0) continue;
+            
+            vector<string>* tokens = split_string(line, ',', '"', true);
+            if (line_num++ == 0){
+                for (int i = 0; i < (int)tokens->size(); ++i) headers.push_back(goslin::strip(tokens->at(i), '"'));
+            }
+            else {
+                if (tokens->size() != headers.size()){
+                    delete tokens;
+                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells in line " + std::to_string(line_num) + " than in the header line.", FileUnreadable);
+                }
+                rows.push_back(vector<string>());
+                vector<string> &row = rows.back();
+                for (int i = 0; i < (int)tokens->size(); ++i) row.push_back(goslin::strip(tokens->at(i), '"'));
+            }
+            
+            delete tokens;
+        }
+    }
+    else {
+        XLDocument doc(file_name.c_str());
+
+        auto wks = doc.workbook().worksheet(sheet_name.c_str());
+        
+        int line_num = 0;
+        for (auto& wks_row : wks.rows()) {
+            if (line_num++ == 0){
+                for (auto cell : wks_row.cells()) headers.push_back(cell.value());
+            }
+            else {
+                rows.push_back(vector<string>());
+                vector<string> &row = rows.back();
+                for (auto cell : wks_row.cells()) headers.push_back(cell.value());
+                if (row.size() != headers.size()){
+                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells in line " + std::to_string(line_num) + " than in the header line.", FileUnreadable);
+                }
+            }
+        }
+    }
+}
+
+
+
+
 DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_values, Lipidome *lipidome){
     indexes.insert(index);
     order = -1;

@@ -8,6 +8,7 @@
 #include <QBrush>
 #include <QPainter>
 #include <QItemDelegate>
+#include <OpenXLSX.hpp>
 #include <QDropEvent>
 #include <QCheckBox>
 #include <set>
@@ -24,6 +25,7 @@
 
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 
+using namespace OpenXLSX;
 using namespace std;
 
 enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
@@ -146,6 +148,15 @@ private:
     int num;
 };
 
+
+
+
+class FileTableHandler {
+public:
+    vector<string> headers;
+    vector<vector<string>> rows;
+    FileTableHandler(string, string = "");
+};
 
 
 

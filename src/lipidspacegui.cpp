@@ -474,7 +474,7 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                     break;
                     
                 case FLAT_TABLE:
-                    lipid_space->load_pivot_table(file_name, column_types);
+                    lipid_space->load_flat_table(file_name, column_types);
                     break;
             }
             runAnalysis();
