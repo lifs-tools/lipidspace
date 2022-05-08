@@ -1845,6 +1845,12 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
 void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType> *column_types){
     Logging::write_log("Importing table '" + flat_table_file + "' as flat table.");
     
+    // load and parse lipid table, lipids and features per column, measurements per row
+    ifstream infile(flat_table_file);
+    if (!infile.good()){
+        throw LipidSpaceException("Error: file '" + flat_table_file + "' could not be found.", FileUnreadable);
+    }
+    
     vector<Lipidome*> loaded_lipidomes;
     set<string> registered_features;
     
@@ -2124,13 +2130,11 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
 void LipidSpace::load_column_table(string data_table_file, vector<TableColumnType> *column_types){
     Logging::write_log("Importing table '" + data_table_file + "' as lipid column table.");
     
-    
     // load and parse lipid table, lipids and features per column, measurements per row
     ifstream infile(data_table_file);
     if (!infile.good()){
         throw LipidSpaceException("Error: file '" + data_table_file + "' could not be found.", FileUnreadable);
     }
-    string line;
     
     bool has_sample_col = false;
     for (auto column_type : *column_types){
@@ -2143,53 +2147,41 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
     
     
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
-    int line_cnt = 0;
     vector<string> features_names_numerical;
     vector<string> features_names_nominal;
     vector<LipidAdduct*> lipids;
     map<string, LipidAdduct*> lipid_set;
     vector<Lipidome*> loaded_lipidomes;
     
+    FileTableHandler fth(data_table_file);
+    
     try {
-        while (getline(infile, line)){
-            if (line.length() == 0) continue;
-            
-            
-            // handle first / header line different to the others
-            vector<string>* tokens = split_string(line, ',', '"', true);
-            for (int i = 0; i < (int)tokens->size(); ++i) tokens->at(i) = goslin::strip(tokens->at(i), '"');
-            if (column_types->size() != tokens->size()){
-                throw LipidSpaceException("Inconsistant column size of header (" + std::to_string(column_types->size()) + ") and line " + std::to_string(line_cnt + 1) + " (" + std::to_string(tokens->size()) + ").", ColumnNumMismatch);
-            }
-            
-            if (line_cnt++ == 0){
-                // go through the column and handle them according to their column type
-                for (int i = 0; i < (int)tokens->size(); ++i){
-                    TableColumnType column_type = column_types->at(i);
-                    switch(column_type){
-                        case FeatureColumnNominal:
-                            features_names_nominal.push_back(tokens->at(i));
-                            break;
-                            
-                        case FeatureColumnNumerical:
-                            features_names_numerical.push_back(tokens->at(i));
-                            break;
-                            
-                        case LipidColumn:
-                            {
-                                LipidAdduct* l = load_lipid(tokens->at(i), lipid_set);
-                                lipids.push_back(l);
-                                break;
-                            }
-                            
-                        default:
-                            break;
+        // go through the column and handle them according to their column type
+        for (int i = 0; i < (int)fth.headers.size(); ++i){
+            TableColumnType column_type = column_types->at(i);
+            switch(column_type){
+                case FeatureColumnNominal:
+                    features_names_nominal.push_back(fth.headers.at(i));
+                    break;
+                    
+                case FeatureColumnNumerical:
+                    features_names_numerical.push_back(fth.headers.at(i));
+                    break;
+                    
+                case LipidColumn:
+                    {
+                        LipidAdduct* l = load_lipid(fth.headers.at(i), lipid_set);
+                        lipids.push_back(l);
+                        break;
                     }
-                }
-                delete tokens;
-                continue;
+                    
+                default:
+                    break;
             }
-            
+        }
+        
+        
+        for (auto tokens : fth.rows){
             map<string, Feature> features;
             vector<LipidAdduct*> measurement_lipids;
             Array intensities;
@@ -2199,16 +2191,16 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             int lipid_counter = 0;
             
             // handle all other rows
-            for (int i = 0; i < (int)tokens->size(); ++i){
+            for (int i = 0; i < (int)tokens.size(); ++i){
                 
                 switch(column_types->at(i)){
                     case SampleColumn:
-                        measurement = tokens->at(i);
+                        measurement = tokens.at(i);
                         break;
                         
                     case LipidColumn:
                         if (lipids[lipid_counter]){
-                            string val = tokens->at(i);
+                            string val = tokens.at(i);
                             if (!contains_val(NA_VALUES, val)){
                                 measurement_lipids.push_back(lipids[lipid_counter]);
                                 intensities.push_back(atof(val.c_str()));
@@ -2220,7 +2212,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                     case FeatureColumnNominal:
                         {
                             string feature = features_names_nominal[feature_counter_nominal];
-                            string feature_val = tokens->at(i);
+                            string feature_val = tokens.at(i);
                             features.insert({feature, Feature(feature, feature_val)});
                         }
                         feature_counter_nominal++;
@@ -2231,7 +2223,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                     case FeatureColumnNumerical:
                         {
                             string feature = features_names_numerical[feature_counter_numerical];
-                            double feature_val = atof(tokens->at(i).c_str());
+                            double feature_val = atof(tokens.at(i).c_str());
                             features.insert({feature, Feature(feature, feature_val)});
                         }
                         feature_counter_numerical++;
@@ -2260,8 +2252,6 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                 lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
             }
             lipidome->original_intensities.reset(intensities);
-            
-            delete tokens;
         }
         
         // checking consistancy of features
@@ -2370,7 +2360,6 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
         throw LipidSpaceException("Error: file '" + table_file + "' not found.");
         exit(-1);
     }
-    string line;
     
     set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
     vector<Array> intensities;
@@ -2378,41 +2367,27 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
     vector<Lipidome*> loaded_lipidomes;
     
     try {
+        
+        
+        FileTableHandler fth(table_file);
+        
         // no specific column order is provided, we assume that first column contains
         // lipid species names and all remaining columns correspond to a sample containing
         // intensity / quant values
         if (column_types == 0){
-            int line_cnt = 0;
-            int num_cols = 0;
-            while (getline(infile, line)){
-                vector<string>* tokens = split_string(line, ',', '"', true);
-                for (int i = 0; i < (int)tokens->size(); ++i) tokens->at(i) = goslin::strip(tokens->at(i), '"');
-                
-                // handle first / header line different to the others
-                if (line_cnt++ == 0){
-                    num_cols = tokens->size();
-                    for (int i = 1; i < (int)tokens->size(); ++i){
-                        loaded_lipidomes.push_back(new Lipidome(tokens->at(i), table_file));
-                        intensities.push_back(Array());
-                    }
-                    delete tokens;
-                    continue;
-                }
-                if (line.length() == 0) continue;
-                
-
-                        
-                // handle all other rows
-                if ((int)tokens->size() != num_cols) {
-                    throw LipidSpaceException("Error in line '" + std::to_string(line_cnt) + "' number of cells does not match with number of column labels", ColumnNumMismatch);
-                }
-                
-                LipidAdduct* l = load_lipid(tokens->at(0), lipid_set);
+            
+            for (auto header : fth.headers){
+                loaded_lipidomes.push_back(new Lipidome(header, table_file));
+                intensities.push_back(Array());
+            }
+            
+            for (auto tokens : fth.rows){
+                LipidAdduct* l = load_lipid(tokens.at(0), lipid_set);
                 
                 if (l){
                 
-                    for (int i = 1; i < (int)tokens->size(); ++i){
-                        string val = tokens->at(i);
+                    for (int i = 1; i < (int)tokens.size(); ++i){
+                        string val = tokens.at(i);
                         if (!contains_val(NA_VALUES, val)){
                             Lipidome* lipidome = loaded_lipidomes.at(i - 1);
                             lipidome->lipids.push_back(l);
@@ -2423,13 +2398,10 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                         }
                     }
                 }
-                
-                delete tokens;
             }
         }
         
         else {
-            int line_cnt = 0;
             bool has_lipid_col = false;
             for (auto column_type : *column_types){
                 has_lipid_col |= (column_type == LipidColumn);
@@ -2438,40 +2410,26 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             if (!has_lipid_col){
                 throw LipidSpaceException("No lipid column was defined", NoColumnFound);
             }
-                
             
-            while (getline(infile, line)){
-                vector<string>* tokens = split_string(line, ',', '"', true);
-                for (int i = 0; i < (int)tokens->size(); ++i) tokens->at(i) = goslin::strip(tokens->at(i), '"');
-                if (tokens->size() != column_types->size()) {
-                    throw LipidSpaceException("Error in line '" + std::to_string(line_cnt  + 1) + "': number of cells does not match with specified number of columns", ColumnNumMismatch);
-                    exit(-1);
-                }
-                
-                // handle first / header line different to the others
-                if (line_cnt++ == 0){
-                    
-                    map<string, int> doublettes;
-                    for (int i = 0; i < (int)column_types->size(); ++i){
-                        if (column_types->at(i) == SampleColumn){
-                            string header = tokens->at(i);
-                            if (uncontains_val(doublettes, header)){
-                                doublettes.insert({header, 1});
-                            }
-                            else {
-                                header += "." + std::to_string(++doublettes[header]);
-                            }
-                            
-                            selection[3].insert({header, true});
-                            loaded_lipidomes.push_back(new Lipidome(header, table_file));
-                            intensities.push_back(Array());
-                        } 
+            
+            map<string, int> doublettes;
+            for (int i = 0; i < (int)column_types->size(); ++i){
+                if (column_types->at(i) == SampleColumn){
+                    string header = fth.headers.at(i);
+                    if (uncontains_val(doublettes, header)){
+                        doublettes.insert({header, 1});
                     }
-                    delete tokens;
-                    continue;
-                }
-                if (line.length() == 0) continue;
+                    else {
+                        header += "." + std::to_string(++doublettes[header]);
+                    }
+                    
+                    selection[3].insert({header, true});
+                    loaded_lipidomes.push_back(new Lipidome(header, table_file));
+                    intensities.push_back(Array());
+                } 
+            }
                 
+            for (auto tokens : fth.rows){
                 
                 LipidAdduct* l = 0;
                 vector<string> quant_data;
@@ -2479,11 +2437,11 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                 for (int i = 0; i < (int)column_types->size(); ++i){
                     switch(column_types->at(i)){
                         case SampleColumn:
-                            quant_data.push_back(tokens->at(i));
+                            quant_data.push_back(tokens.at(i));
                             break;
                             
                         case LipidColumn:
-                            l = load_lipid(tokens->at(i), lipid_set);
+                            l = load_lipid(tokens.at(i), lipid_set);
                             break;
                             
                         default:
@@ -2507,8 +2465,6 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                         
                     }
                 }
-                
-                delete tokens;
             }
             
             delete column_types;

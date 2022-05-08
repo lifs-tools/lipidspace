@@ -45,7 +45,7 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
             else {
                 if (tokens->size() != headers.size()){
                     delete tokens;
-                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells in line " + std::to_string(line_num) + " than in the header line.", FileUnreadable);
+                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells in line " + std::to_string(line_num) + " than in the header line.", ColumnNumMismatch);
                 }
                 rows.push_back(vector<string>());
                 vector<string> &row = rows.back();
@@ -70,7 +70,7 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
                 vector<string> &row = rows.back();
                 for (auto cell : wks_row.cells()) headers.push_back(cell.value());
                 if (row.size() != headers.size()){
-                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells in line " + std::to_string(line_num) + " than in the header line.", FileUnreadable);
+                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells in line " + std::to_string(line_num) + " than in the header line.", ColumnNumMismatch);
                 }
             }
         }
