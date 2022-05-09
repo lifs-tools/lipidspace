@@ -71,6 +71,7 @@ public:
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
     void copy_to_clipboard();
+    void closeEvent(QCloseEvent *event) override;
     
     
     

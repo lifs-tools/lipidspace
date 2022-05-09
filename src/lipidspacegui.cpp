@@ -47,6 +47,16 @@ void DragLayer::paintEvent(QPaintEvent *) {
 
 
 
+void LipidSpaceGUI::closeEvent(QCloseEvent *event){
+    if (!lipid_space->analysis_finished || (QMessageBox::question(this, "Quit LipidSpace", "Do you want to quit LipidSpace?") == QMessageBox::Yes)) {
+        event->accept();
+    } else {
+        event->ignore();
+    }
+}
+
+
+
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
@@ -281,7 +291,7 @@ void LipidSpaceGUI::setFeature(int){
 
 
 void LipidSpaceGUI::quitProgram(){
-    QApplication::quit();
+    close();
 }
 
 

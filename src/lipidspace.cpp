@@ -2695,7 +2695,7 @@ void LipidSpace::run(){
             if (!progress || !progress->stop_progress){
                 // set the step size for the next analyses
                 if (progress){
-                    progress->prepare_steps(7);
+                    progress->prepare_steps(8);
                     progress->connect(&global_lipidome->m, SIGNAL(set_step()), progress, SLOT(set_step()));
                 }
                 Matrix pca;
