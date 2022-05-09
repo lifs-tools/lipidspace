@@ -81,10 +81,14 @@ FORMS += \
 #!isEmpty(target.path): INSTALLS += target
 
 win32:LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll
-win32:LIBS += -fopenmp $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll
+win32:LIBS += $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll
+win32:LIBS += -L $$PWD/libraries/OpenXLSX/bin/win64 -lOpenXLSX
 
 win32:INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
 win32:DEPENDPATH += $$PWD/libraries/OpenBLAS/include
 
 win32:INCLUDEPATH += $$PWD/libraries/cppgoslin
 win32:DEPENDPATH += $$PWD/libraries/cppgoslin
+
+win32:INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+win32:DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include

@@ -1071,10 +1071,10 @@ void LipidSpaceGUI::updateGUI(){
     
     
     if (single_window < 0){
-        for (auto canvas : canvases) canvas->setVisible(true);
+        for (auto canvas : canvases) canvas->setVisible(false);
         int numTiles = 2 * (lipid_space->selected_lipidomes.size() > 1) + lipid_space->selected_lipidomes.size();
         int tileColumns = tileLayout == AUTOMATIC ? ceil(sqrt((double)numTiles)) : (int)tileLayout;
-        
+        set<int> show_canvas;
         
         int c = 0, r = 0;
         // show dendrogram if enabled
@@ -1085,9 +1085,7 @@ void LipidSpaceGUI::updateGUI(){
                     c = 0;
                     ++r;
                 }
-            }
-            else {
-                canvases[0]->setVisible(false);
+				show_canvas.insert(0);
             }
         }
         
@@ -1099,9 +1097,7 @@ void LipidSpaceGUI::updateGUI(){
                     c = 0;
                     ++r;
                 }
-            }
-            else {
-                canvases[1]->setVisible(false);
+				show_canvas.insert(1);
             }
         }
         
@@ -1112,7 +1108,9 @@ void LipidSpaceGUI::updateGUI(){
                 c = 0;
                 ++r;
             }
+			show_canvas.insert(n);
         }
+        for (auto i : show_canvas) canvases[i]->setVisible(true);
     }
     else {
         for (auto canvas : canvases) canvas->setVisible(false);

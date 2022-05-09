@@ -105,6 +105,7 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     QFileInfo fi(file_name);
     data_table_file = file_name.toStdString();
     string ext = fi.suffix().toLower().toStdString();
+	
     
     if (ext == "xlsx"){
         try {
