@@ -84,6 +84,7 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
             else {
                 rows.push_back(vector<string>());
                 vector<string> &row = rows.back();
+                int empty_cells = 0;
                 for (auto cell : wks_row.cells()){
                     string value = "";
                     switch(cell.value().type()){
@@ -102,7 +103,13 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
                         default: break;
                     }
                     row.push_back(value);
+                    empty_cells += (value == "");
                 }
+                if (row.size() == 0 || empty_cells == wks_row.cells().size()){
+                    rows.pop_back();
+                    break;
+                }
+                
                 if (row.size() > headers.size()){
                     throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells (" + std::to_string(row.size()) + ") in line " + std::to_string(line_num) + " than in the header line (" + std::to_string(headers.size()) + ").", ColumnNumMismatch);
                 }

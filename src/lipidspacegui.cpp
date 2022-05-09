@@ -51,9 +51,10 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 283; ++i) ct->push_back(LipidColumn);
+        for (int i = 0; i < 284; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
         ct->at(1) = FeatureColumnNominal;
+        ct->at(2) = FeatureColumnNominal;
         loadTable("Plasma_Sales.csv", ct, COLUMN_PIVOT_TABLE, "");
         
     }
