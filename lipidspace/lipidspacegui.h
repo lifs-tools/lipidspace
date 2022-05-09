@@ -88,7 +88,7 @@ public slots:
     void openTable();
     void openMzTabM();
     void export_list();
-    void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type);
+    void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type, string sheet);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();

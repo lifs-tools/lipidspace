@@ -5,6 +5,7 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     setWindowTitle("Data table import");
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     setFixedSize(this->width(), this->height());
+    sheet = "";
     
     // set sample lists
     ui->sampleListWidgetRow->setDragDropMode(QAbstractItemView::DragDrop);
@@ -104,7 +105,6 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     QFileInfo fi(file_name);
     data_table_file = file_name.toStdString();
     string ext = fi.suffix().toLower().toStdString();
-    string sheet = "";
     
     if (ext == "xlsx"){
         try {
@@ -245,7 +245,7 @@ void ImportTable::okRow(){
         
         column_types->at(original_column_index[ui->lipidListWidgetRow->item(0)->text()]) = LipidColumn;
         
-        importTable(data_table_file, column_types, ROW_PIVOT_TABLE);
+        importTable(data_table_file, column_types, ROW_PIVOT_TABLE, sheet);
         close();
     }
     else if (!ui->sampleListWidgetRow->count()) {
@@ -276,7 +276,7 @@ void ImportTable::okCol(){
             column_types->at(original_column_index[ui->nominalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNominal;
         }
         
-        importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE);
+        importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
         close();
     }
     else if (!ui->sampleListWidgetCol->count()) {
@@ -310,7 +310,7 @@ void ImportTable::okFlat(){
             column_types->at(original_column_index[ui->nominalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNominal;
         }
         
-        importTable(data_table_file, column_types, FLAT_TABLE);
+        importTable(data_table_file, column_types, FLAT_TABLE, sheet);
         close();
     }
     else if (!ui->sampleListWidgetFlat->count()) {

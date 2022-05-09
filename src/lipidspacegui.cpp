@@ -58,7 +58,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(8) = FeatureColumnNominal;
         ct->at(10) = FeatureColumnNumerical;
         ct->at(11) = QuantColumn;
-        loadTable("Anxa7_pivot.csv", ct, FLAT_TABLE);
+        loadTable("Anxa7_pivot.csv", ct, FLAT_TABLE, "");
         
     }
     else if (event->key() == Qt::Key_2){
@@ -78,7 +78,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(9) = FeatureColumnNumerical;
         ct->at(10) = FeatureColumnNumerical;
         ct->at(11) = FeatureColumnNumerical;
-        loadTable("examples/Tablesets/Plasma-Singapore.csv", ct, COLUMN_PIVOT_TABLE);
+        loadTable("examples/Tablesets/Plasma-Singapore.csv", ct, COLUMN_PIVOT_TABLE, "");
     }
     else if (event->key() == Qt::Key_3){
         resetAnalysis();
@@ -90,7 +90,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(5) = FeatureColumnNominal;
         ct->at(0) = SampleColumn;
         
-        loadTable("Platelets_Peng.csv", ct, FLAT_TABLE);
+        loadTable("Platelets_Peng.csv", ct, FLAT_TABLE, "");
     }
     else if (event->key() == Qt::Key_4){
         resetAnalysis();
@@ -101,7 +101,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(2) = FeatureColumnNominal;
         ct->at(3) = FeatureColumnNominal;
         
-        loadTable("Platelets_Peng_WT-vs-KO.csv", ct, COLUMN_PIVOT_TABLE);
+        loadTable("Platelets_Peng_WT-vs-KO.csv", ct, COLUMN_PIVOT_TABLE, "");
     }
     else if (event->key() == Qt::Key_5){
         resetAnalysis();
@@ -112,7 +112,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(3) = SampleColumn;
         ct->at(2) = FeatureColumnNominal;
         
-        loadTable("Heart_GPL.csv", ct, FLAT_TABLE);
+        loadTable("Heart_GPL.csv", ct, FLAT_TABLE, "");
     }
     else if (event->key() == Qt::Key_6){
         resetAnalysis();
@@ -124,7 +124,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(13) = FeatureColumnNominal;
         ct->at(15) = FeatureColumnNominal;
         
-        loadTable("Data_Thrombocytes_UKR_04042022.csv", ct, FLAT_TABLE);
+        loadTable("Data_Thrombocytes_UKR_04042022.csv", ct, FLAT_TABLE, "");
     }
     
     else {
@@ -291,7 +291,7 @@ void LipidSpaceGUI::quitProgram(){
 
 void LipidSpaceGUI::openTable(){
     ImportTable it;
-    connect(&it, SIGNAL(importTable(string, vector<TableColumnType>*, TableType)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType)));
+    connect(&it, SIGNAL(importTable(string, vector<TableColumnType>*, TableType, string)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType, string)));
     it.setModal(true);
     it.exec();
 }
@@ -456,7 +456,7 @@ void LipidSpaceGUI::updateView(int){
 
 
     
-void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_types, TableType table_type){
+void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_types, TableType table_type, string sheet){
     bool repeat_loading = true;
     ui->normalizationComboBox->clear();
     ui->normalizationComboBox->addItem("Absolute normalization", "absolute");
@@ -466,15 +466,15 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
         try {
             switch(table_type){
                 case ROW_PIVOT_TABLE:
-                    lipid_space->load_row_table(file_name, column_types);
+                    lipid_space->load_row_table(file_name, column_types, sheet);
                     break;
                     
                 case COLUMN_PIVOT_TABLE:
-                    lipid_space->load_column_table(file_name, column_types);
+                    lipid_space->load_column_table(file_name, column_types, sheet);
                     break;
                     
                 case FLAT_TABLE:
-                    lipid_space->load_flat_table(file_name, column_types);
+                    lipid_space->load_flat_table(file_name, column_types, sheet);
                     break;
             }
             runAnalysis();

@@ -1842,7 +1842,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
 
 
 
-void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType> *column_types){
+void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType> *column_types, string sheet){
     Logging::write_log("Importing table '" + flat_table_file + "' as flat table.");
     
     // load and parse lipid table, lipids and features per column, measurements per row
@@ -1885,7 +1885,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
         map<string, LipidAdduct*> load_lipids;
         
         
-        FileTableHandler fth(flat_table_file);
+        FileTableHandler fth(flat_table_file, sheet);
         
         for (auto fi : feature_columns_nominal){
             string feature = fth.headers.at(fi);
@@ -2127,7 +2127,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
 
 
 
-void LipidSpace::load_column_table(string data_table_file, vector<TableColumnType> *column_types){
+void LipidSpace::load_column_table(string data_table_file, vector<TableColumnType> *column_types, string sheet){
     Logging::write_log("Importing table '" + data_table_file + "' as lipid column table.");
     
     // load and parse lipid table, lipids and features per column, measurements per row
@@ -2153,7 +2153,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
     map<string, LipidAdduct*> lipid_set;
     vector<Lipidome*> loaded_lipidomes;
     
-    FileTableHandler fth(data_table_file);
+    FileTableHandler fth(data_table_file, sheet);
     
     try {
         // go through the column and handle them according to their column type
@@ -2352,7 +2352,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
 
 
 
-void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *column_types){
+void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *column_types, string sheet){
     // load and parse lipid table, lipids per row, measurements per column
     Logging::write_log("Reading table '" + table_file + "' lipid row table.");
     ifstream infile(table_file);
@@ -2369,7 +2369,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
     try {
         
         
-        FileTableHandler fth(table_file);
+        FileTableHandler fth(table_file, sheet);
         
         // no specific column order is provided, we assume that first column contains
         // lipid species names and all remaining columns correspond to a sample containing

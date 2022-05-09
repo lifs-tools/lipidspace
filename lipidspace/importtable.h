@@ -25,11 +25,12 @@ class ImportTable : public QDialog
     Q_OBJECT
 
 public:
+    string sheet;
     explicit ImportTable(QWidget *parent = nullptr);
     ~ImportTable();
     
 signals:
-    void importTable(string file_name, vector<TableColumnType>* column_types, TableType table_type);
+    void importTable(string file_name, vector<TableColumnType>* column_types, TableType table_type, string sheet);
     
 public slots:
     void okRow();
