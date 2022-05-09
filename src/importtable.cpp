@@ -94,16 +94,39 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     connect(ui->quantListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
 
     
-    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
+    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Worksheets *.xlsx (*.xlsx);;Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
     if (!file_name.length()) {
         QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
         return;
     }
     
+    
     QFileInfo fi(file_name);
+    data_table_file = file_name.toStdString();
+    string ext = fi.suffix().toLower().toStdString();
+    string sheet = "";
+    
+    if (ext == "xlsx"){
+        try {
+            SelectWorksheet select_worksheet(data_table_file, sheet, this);
+            select_worksheet.setModal(true);
+            select_worksheet.exec();
+            if (sheet == ""){
+                QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+                return;
+            }
+        }
+        catch (exception &e){
+            Logging::write_log("Error: file '" + data_table_file + "' cannot be opened.");
+            QMessageBox::critical(this, "Error", "Error: file '" + file_name + "' cannot be opened.");
+            QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+            return;
+        }
+    }
+    
+    
     GlobalData::last_folder = fi.absoluteDir().absolutePath();
     
-    data_table_file = file_name.toStdString();
     ifstream infile(data_table_file);
     if (!infile.good()){
         Logging::write_log("Error: file '" + data_table_file + "' cannot be opened.");
@@ -113,96 +136,83 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     }
     
     
-    // load all column headers and split them
-    string file_line;
     
     QTableWidget *t = ui->tableWidget;
-    int line_count = 0;
+    int line_count = 1;
     t->setRowCount(0);
     int num_columns = 0;
-    while(getline(infile, file_line)){
-        // read the headers
-        if (line_count == 0){
-            if (file_line.length() == 0){
-                Logging::write_log("Error: first line in file '" + file_name.toStdString() + "' contains no data.");
-                QMessageBox::critical(this, "Error", "Error: first line in file '" + file_name + "' contains no data.");
-                QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
-                return;
-            }
+    
+    FileTableHandler *fth = 0;
+    try{
+        fth = new FileTableHandler(data_table_file, sheet);
+    }
+    catch (exception &e){
+        if (fth) delete fth;
+        cout << "Error: " << e.what() << endl;
+        Logging::write_log("Error: file '" + data_table_file + "' cannot be opened.");
+        QMessageBox::critical(this, "Error", "Error: file '" + file_name + "' cannot be opened.");
+        QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+        return;
+    }
+    
+    // read the headers
+    num_columns = fth->headers.size();
+    t->setColumnCount(num_columns);
             
-            vector<string>* tokens = split_string(file_line, ',', '"', true);
-            num_columns = tokens->size();
-            t->setColumnCount(num_columns);
-            int c = 0;
-            map<QString, int> doublettes;
-            for (string header : *tokens){
-                if (header[0] == '"' && header[header.length() - 1] == '"') header = strip(header, '"');
-                QString qheader = header.length() ? header.c_str() : "empty_field";
-                
-                if (uncontains_val(doublettes, qheader)){
-                    doublettes.insert({qheader, 1});
-                }
-                else {
-                    qheader += "." + QString::number(++doublettes[qheader]);
-                }
-                
-                original_column_index.insert({qheader, c});
-                
-                QTableWidgetItem *item = new QTableWidgetItem(qheader);
-                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                t->setHorizontalHeaderItem(c++, item);
-                
-                QListWidgetItem* item_row = new QListWidgetItem();
-                item_row->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-                item_row->setText(qheader);
-                ui->ignoreListWidgetRow->addItem(item_row);
-                
-                QListWidgetItem* item_col = new QListWidgetItem();
-                item_col->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-                item_col->setText(qheader);
-                ui->ignoreListWidgetCol->addItem(item_col);
-                
-                QListWidgetItem* item_flat = new QListWidgetItem();
-                item_flat->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-                item_flat->setText(qheader);
-                ui->ignoreListWidgetFlat->addItem(item_flat);
-            }
-            delete tokens;
-        }
+    int c = 0;
+    map<QString, int> doublettes;
+    for (string header : fth->headers){
+        QString qheader = header.length() ? header.c_str() : "empty_field";
         
-        // put all the other rows into the table
+        if (uncontains_val(doublettes, qheader)){
+            doublettes.insert({qheader, 1});
+        }
         else {
-            
-            t->setRowCount(line_count);
-            vector<string>* tokens = split_string(file_line, ',', '"', true);
-            
-            if ((int)tokens->size() > num_columns){
-                Logging::write_log("Error: line '" + std::to_string(line_count + 1) + "' has more cells than first line in file '" + file_name.toStdString() + "'.");
-                QMessageBox::critical(this, "Error", QStringLiteral("Error: line '%1' has more cells than first line in file '%2'.").arg(line_count + 1).arg(file_name));
-                QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
-                delete t;
-                return;
-            }
-            int c = 0;
-            for (string header : *tokens){
-                if (header[0] == '"' && header[header.length() - 1] == '"') header = strip(header, '"');
-                QString qcell = header.length() ? header.c_str() : "";
-                
-                QTableWidgetItem *item = new QTableWidgetItem(qcell);
-                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                t->setItem(line_count - 1, c++, item);
-            }
-            for (; c < num_columns; c++){
-                QTableWidgetItem *item = new QTableWidgetItem("");
-                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                t->setItem(line_count - 1, c++, item);
-            }
-            
-            delete tokens;
+            qheader += "." + QString::number(++doublettes[qheader]);
         }
         
+        original_column_index.insert({qheader, c});
+        
+        QTableWidgetItem *item = new QTableWidgetItem(qheader);
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        t->setHorizontalHeaderItem(c++, item);
+        
+        QListWidgetItem* item_row = new QListWidgetItem();
+        item_row->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+        item_row->setText(qheader);
+        ui->ignoreListWidgetRow->addItem(item_row);
+        
+        QListWidgetItem* item_col = new QListWidgetItem();
+        item_col->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+        item_col->setText(qheader);
+        ui->ignoreListWidgetCol->addItem(item_col);
+        
+        QListWidgetItem* item_flat = new QListWidgetItem();
+        item_flat->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+        item_flat->setText(qheader);
+        ui->ignoreListWidgetFlat->addItem(item_flat);
+    }
+    
+    // put all the other rows into the table
+    for (auto tokens : fth->rows){
+        t->setRowCount(line_count);
+        
+        c = 0;
+        for (string value : tokens){
+            QString qcell = value.length() ? value.c_str() : "";
+            
+            QTableWidgetItem *item = new QTableWidgetItem(qcell);
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            t->setItem(line_count - 1, c++, item);
+        }
+        for (; c < num_columns; c++){
+            QTableWidgetItem *item = new QTableWidgetItem("");
+            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            t->setItem(line_count - 1, c++, item);
+        }
         if (++line_count == 11) break;
     }
+    delete fth;
 }
 
 ImportTable::~ImportTable() {

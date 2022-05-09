@@ -28,6 +28,7 @@ SOURCES += \
     src/filterdialog.cpp \
     src/importtable.cpp \
     src/selectpc.cpp \
+    src/select_worksheet.cpp \
     src/globaldata.cpp \
     src/setalpha.cpp \
     src/CBTableWidget.cpp \
@@ -57,6 +58,7 @@ HEADERS += \
     lipidspace/managelipidomes.h \
     lipidspace/progressbar.h \
     lipidspace/selectpc.h \
+    lipidspace/select_worksheet.h \
     lipidspace/setalpha.h \
     lipidspace/setPCNum.h \
     lipidspace/logging.h
@@ -70,7 +72,8 @@ FORMS += \
     ui/progressbar.ui \
     ui/selectpc.ui \
     ui/setalpha.ui \
-    ui/setPCnum.ui
+    ui/setPCnum.ui \
+    ui/select_worksheet.ui
 
 # Default rules for deployment.
 #qnx: target.path = /tmp/$${TARGET}/bin

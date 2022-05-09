@@ -63,14 +63,51 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
         int line_num = 0;
         for (auto& wks_row : wks.rows()) {
             if (line_num++ == 0){
-                for (auto cell : wks_row.cells()) headers.push_back(cell.value());
+                for (auto cell : wks_row.cells()){
+                    string value = "";
+                    switch(cell.value().type()){
+                        case OpenXLSX::XLValueType::Boolean:
+                            value = (cell.value().get<bool>()) ? "true" : "false";
+                            break;
+                        case OpenXLSX::XLValueType::Integer:
+                        case OpenXLSX::XLValueType::Float:
+                            value = std::to_string(cell.value().get<double>());
+                            break;
+                        case OpenXLSX::XLValueType::String:
+                            value = cell.value().get<string>();
+                            break;
+                        default: break;
+                    }
+                    headers.push_back(value);
+                }
             }
             else {
                 rows.push_back(vector<string>());
                 vector<string> &row = rows.back();
-                for (auto cell : wks_row.cells()) headers.push_back(cell.value());
-                if (row.size() != headers.size()){
-                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells in line " + std::to_string(line_num) + " than in the header line.", ColumnNumMismatch);
+                for (auto cell : wks_row.cells()){
+                    string value = "";
+                    switch(cell.value().type()){
+                        case OpenXLSX::XLValueType::Boolean:
+                            value = (cell.value().get<bool>()) ? "true" : "false";
+                            break;
+                        case OpenXLSX::XLValueType::Integer:
+                            value = std::to_string(cell.value().get<int>());
+                            break;
+                        case OpenXLSX::XLValueType::Float:
+                            value = std::to_string(cell.value().get<double>());
+                            break;
+                        case OpenXLSX::XLValueType::String:
+                            value = cell.value().get<string>();
+                            break;
+                        default: break;
+                    }
+                    row.push_back(value);
+                }
+                if (row.size() > headers.size()){
+                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells (" + std::to_string(row.size()) + ") in line " + std::to_string(line_num) + " than in the header line (" + std::to_string(headers.size()) + ").", ColumnNumMismatch);
+                }
+                else if (row.size() < headers.size()){
+                    row.resize(headers.size(), "");
                 }
             }
         }

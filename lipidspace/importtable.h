@@ -8,6 +8,7 @@
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/logging.h"
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/select_worksheet.h"
 #include <string>
 #include <map>
 #include <vector>
