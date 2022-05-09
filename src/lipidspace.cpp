@@ -159,6 +159,7 @@ void LipidSpace::create_dendrogram(){
     
     
     // computing the coefficient of variation for each lipid
+    double max_cv = 0.;
     vector<pair<double, string>> CVs;
     for (auto kv : lipid_name_map){
         int c = kv.second;
@@ -169,7 +170,13 @@ void LipidSpace::create_dendrogram(){
             
         }
         CVs.push_back({values.stdev() / values.mean(), kv.first});
+        max_cv = max(max_cv, CVs.back().first);
     }
+    // normalizing all CV values by setting highest value to 1
+    if (max_cv > 0){
+        for (auto &val : CVs) val.first /= max_cv;
+    }
+    
     sort(CVs.begin(), CVs.end(), sort_double_string_desc);
     lipid_sortings.insert({"Coefficient of Variation (Desc)", vector<pair<string, double>>()});
     vector<pair<string, double>> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
@@ -2538,6 +2545,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
 
 LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*> &lipid_set){
     LipidAdduct* l = nullptr;
+    
     try {
         l = parser.parse(lipid_name);
     }
@@ -2550,7 +2558,7 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
         }
     }
     
-    if (l == nullptr || l->get_extended_class() == UNDEFINED_LIPID || uncontains_val(registered_lipid_classes, l->get_extended_class())) {
+    if (l == nullptr || l->get_extended_class() == UNDEFINED_LIPID) {
         if (l){
             delete l;
             l = nullptr;
@@ -2562,6 +2570,19 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
             Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
         }
     }
+    else if (uncontains_val(registered_lipid_classes, l->get_extended_class())) {
+        if (l){
+            delete l;
+            l = nullptr;
+        }
+        if (!ignore_unknown_lipids){
+            throw LipidSpaceException("Lipid '" + lipid_name + "' molecular structure is not registed in LipidSpace database.", LipidUnparsable);
+        }
+        else {
+            Logging::write_log("Ignoring unidentifiable lipid '" + lipid_name + "'");
+        }
+    }
+        
     if (l == nullptr) return l;
     
         

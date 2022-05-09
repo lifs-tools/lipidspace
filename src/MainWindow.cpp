@@ -114,6 +114,21 @@ int main(int argc, char** argv) {
             delete tokens;
         }
     }
+    else if (argc > 2 && string(argv[1]) == "identify"){
+        string lipid_name = goslin::strip(argv[2], '"');
+        LipidParser p;
+        try {
+            LipidAdduct *l = p.parse(lipid_name);
+            cout << "Lipid name: " << l->get_lipid_string() << endl;
+            cout << "Lipid sum formula: " << l->get_sum_formula() << endl;
+            cout << "Lipid mass: " << l->get_mass() << endl;
+            delete l;
+        }
+        catch (exception &e){
+            cout << "Lipid could not be parsed:" << endl;
+            cout << e.what() << endl;
+        }
+    }
     else {
         QApplication application(argc, argv);
         LipidSpace lipid_space;

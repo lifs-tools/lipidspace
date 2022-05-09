@@ -388,7 +388,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
         painter->rotate(-35);
         QPen pen((dtitle.highlighted || dtitle.permanent) ? Qt::red : Qt::black);
         painter->setPen(pen);
-        painter->drawText(QRectF(-200, -30, 200, 60), Qt::AlignVCenter | Qt::AlignRight, dtitle.title);
+        painter->drawText(QRectF(-1000, -30, 1000, 60), Qt::AlignVCenter | Qt::AlignRight, dtitle.title);
         dx += dendrogram_x_factor;
         painter->restore();
     }
