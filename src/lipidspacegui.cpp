@@ -374,18 +374,13 @@ void LipidSpaceGUI::updateView(int){
     
     
     // load new data
-    map<string, int> sort_species;
     vector<pair<string, double>> &sort_species_labels = sortings[0][sorting_boxes[0]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_species_labels.size(); ++i){
-        sort_species.insert({sort_species_labels[i].first, i});
-        ListItem *item = new ListItem("", SPECIES_ITEM, ui->speciesList);
+        string lipid_name = sort_species_labels[i].first;
+        ListItem *item = new ListItem(lipid_name.c_str(), SPECIES_ITEM, ui->speciesList);
         item->length = sort_species_labels[i].second;
+        item->setCheckState(lipid_space->selection[0][lipid_name] ? Qt::Checked : Qt::Unchecked);
         ui->speciesList->addItem(item);
-    }
-    for (auto species : lipid_space->selection[0]){
-        QListWidgetItem *item = ui->speciesList->item(sort_species[species.first]);
-        item->setText(species.first.c_str());
-        item->setCheckState(species.second ? Qt::Checked : Qt::Unchecked);
     }
     
     
@@ -621,7 +616,7 @@ void LipidSpaceGUI::runAnalysis(){
     
     if (!lipid_space->analysis_finished) return;
     
-    if (lipid_space->feature_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
+    if (lipid_space->feature_values.size() > 1 || lipid_space->feature_values[FILE_FEATURE_NAME].nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
     
     // reset parameters
     GlobalData::color_counter = 0;
@@ -1449,8 +1444,13 @@ void LipidSpaceGUI::export_list(){
     }
     
     ofstream output_stream(outputFile.toStdString().c_str());
-    for (auto &kv : lipid_space->selection[selection]){
-        if (kv.second) output_stream << kv.first << endl;
+    
+    vector<pair<string, double>> &sort_species_labels = sortings[selection][sorting_boxes[selection]->currentText().toStdString()];
+    map<string, bool> &selection_map = lipid_space->selection[selection];
+    for (int i = 0; i < (int)sort_species_labels.size(); ++i){
+        string label = sort_species_labels[i].first;
+        if (selection_map[label]) output_stream << label << endl;
+        
     }
     
     QMessageBox::information(this, "Export completed", "The list was export into the file '" + outputFile + "'.");
