@@ -442,7 +442,8 @@ void BH_fdr(vector<double> &data){
 }
 
 
-ListItem::ListItem(QString name, ListItemType t, QListWidget* parent) : QListWidgetItem(name, parent) {
+ListItem::ListItem(string show_name, ListItemType t, QListWidget* parent, string _system_name) : QListWidgetItem(show_name.c_str(), parent) {
+    system_name = system_name.length() > 0 ? system_name : show_name;
     type = t;
     length = 0;
 }

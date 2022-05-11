@@ -188,6 +188,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionShow_quantitative_information, &QAction::triggered, this, &LipidSpaceGUI::showHideQuant);
     connect(ui->actionShow_global_lipidome, &QAction::triggered, this, &LipidSpaceGUI::showHideGlobalLipidome);
     connect(ui->actionShow_dendrogram, &QAction::triggered, this, &LipidSpaceGUI::showHideDendrogram);
+    connect(ui->actionTranslate, &QAction::triggered, this, &LipidSpaceGUI::toggleLipidNameTranslation);
     connect(ui->action1_column, &QAction::triggered, this, &LipidSpaceGUI::set1ColumnLayout);
     connect(ui->action2_columns, &QAction::triggered, this, &LipidSpaceGUI::set2ColumnLayout);
     connect(ui->action3_columns, &QAction::triggered, this, &LipidSpaceGUI::set3ColumnLayout);
@@ -375,9 +376,10 @@ void LipidSpaceGUI::updateView(int){
     
     // load new data
     vector<pair<string, double>> &sort_species_labels = sortings[0][sorting_boxes[0]->currentText().toStdString()];
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
     for (int i = 0; i < (int)sort_species_labels.size(); ++i){
         string lipid_name = sort_species_labels[i].first;
-        ListItem *item = new ListItem(lipid_name.c_str(), SPECIES_ITEM, ui->speciesList);
+        ListItem *item = new ListItem(translations[lipid_name], SPECIES_ITEM, ui->speciesList, lipid_name);
         item->length = sort_species_labels[i].second;
         item->setCheckState(lipid_space->selection[0][lipid_name] ? Qt::Checked : Qt::Unchecked);
         ui->speciesList->addItem(item);
@@ -711,7 +713,7 @@ void LipidSpaceGUI::itemChanged(QListWidgetItem *item){
     if (item == 0) return;
     ListItem *list_item = (ListItem*)item;
     ListItemType lit = list_item->type;
-    string entity = list_item->text().toStdString();
+    string entity = list_item->system_name;
     if (contains_val(lipid_space->selection[(int)lit], entity)){
         lipid_space->selection[(int)lit][entity] = (item->checkState() == Qt::Checked);
     }
@@ -846,6 +848,13 @@ void LipidSpaceGUI::toggleBoundMetric(){
 
 void LipidSpaceGUI::showHideDendrogram(){
     showDendrogram = ui->actionShow_dendrogram->isChecked();
+    updateGUI();
+}
+
+void LipidSpaceGUI::toggleLipidNameTranslation(){
+    GlobalData::gui_num_var["translate"] = ui->actionTranslate->isChecked() ? TRANSLATED_NAME : IMPORT_NAME;
+    fill_Table();
+    updateView(0);
     updateGUI();
 }
 
@@ -1594,6 +1603,7 @@ void LipidSpaceGUI::fill_Table(){
     
     t->setRowCount(0);
     t->setColumnCount(0);
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
     
     if ((int)lipid_space->selected_lipidomes.size() == 0 || (int)lipid_space->global_lipidome->lipids.size() == 0) return;
     
@@ -1633,7 +1643,7 @@ void LipidSpaceGUI::fill_Table(){
         
         int rrr = 0;
         for (auto header_std : sorted_lipid_species){
-            QString header_name = header_std.c_str();
+            QString header_name = translations[header_std].c_str();
             
             // dirty way to make the transpose button completely visible
             if (f == 0 && header_name.length() < 10) {
@@ -1728,7 +1738,7 @@ void LipidSpaceGUI::fill_Table(){
         int ccc = 0;
         for (auto header_std : sorted_lipid_species){
         //for (int c = 0; c < (int)lipid_space->global_lipidome->species.size(); c++){
-            item = new QTableWidgetItem(header_std.c_str());
+            item = new QTableWidgetItem(translations[header_std].c_str());
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             t->setHorizontalHeaderItem(num_features + ccc, item);
             lipid_index.insert({header_std, num_features + ccc});

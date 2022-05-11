@@ -22,7 +22,7 @@ using namespace std;
 using namespace std::chrono;
 
 enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
-
+enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
 
 
 class LipidSpace : public QThread {
@@ -42,6 +42,7 @@ public:
     bool unboundend_distance;
     bool without_quant;
     vector<Lipidome*> lipidomes;
+    vector< map<string, string> > lipid_name_translations;
     Lipidome* global_lipidome;
     Array dendrogram_points;
     vector<int> dendrogram_sorting;

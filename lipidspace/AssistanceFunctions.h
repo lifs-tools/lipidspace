@@ -193,8 +193,9 @@ class ListItem : public QListWidgetItem {
 public:
     ListItemType type;
     double length;
+    string system_name;
     
-    ListItem(QString name, ListItemType t, QListWidget* parent);
+    ListItem(string name, ListItemType t, QListWidget* parent, string _system_name = "");
 };
 
 

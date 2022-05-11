@@ -517,6 +517,7 @@
     <addaction name="actionSelect_principal_components"/>
     <addaction name="menuTile_layout"/>
     <addaction name="separator"/>
+    <addaction name="actionTranslate"/>
     <addaction name="actionShow_global_lipidome"/>
     <addaction name="actionShow_dendrogram"/>
     <addaction name="actionShow_quantitative_information"/>
@@ -742,6 +743,17 @@
   <action name="actionImport_mzTabM">
    <property name="text">
     <string>Import mzTabM</string>
+   </property>
+  </action>
+  <action name="actionTranslate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Translate lipid names into new nomenclature</string>
    </property>
   </action>
  </widget>

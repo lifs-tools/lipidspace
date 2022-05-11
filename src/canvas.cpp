@@ -132,8 +132,8 @@ void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* pare
         return;
     }
 
-    double minx = max(1e-3, x_max_d - x_min_d);
-    double miny = max(1e-3, y_max_d - y_min_d);
+    double minx = max(1e-15, x_max_d - x_min_d);
+    double miny = max(1e-15, y_max_d - y_min_d);
     double x1 = (node->x_left - x_min_d) * dwidth / minx;
     double y1 = (-node->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
     double x2 = (node->x_right - x_min_d) * dwidth / minx;
@@ -235,18 +235,7 @@ void Dendrogram::load(){
     bound.setWidth(dwidth + 3 * w);
     bound.setHeight(dheight + 3 * h);
     
-    
     add_dendrogram_lines(lipid_space->dendrogram_root);
-    for (QLineF &line : lines){
-        line.setLine((line.x1() - x_min_d) * dwidth / (x_max_d - x_min_d),
-                     (line.y1() + y_max_d) * dheight / (y_max_d - y_min_d),
-                     (line.x2() - x_min_d) * dwidth / (x_max_d - x_min_d),
-                     (line.y2() + y_max_d) * dheight / (y_max_d - y_min_d));
-    }
-        
-    w = max(bound.width(), (double)view->viewport()->width());
-    h = max(bound.height(), (double)view->viewport()->height());
-    view->graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
 }
 
 
@@ -378,7 +367,8 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
 void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     if (!lipid_space->dendrogram_root) return;
     
-    QFont f("Helvetica", 18);
+    QFont f("Helvetica");
+    f.setPointSizeF(18);
     painter->setFont(f);
     double dx = 0;
     double dy = 10 + (((lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor) / 16. * 9.) * dendrogram_y_factor / 100;

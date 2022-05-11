@@ -299,6 +299,7 @@ LipidSpace::LipidSpace() {
     process_id = 0;
     target_variable = "";
     feature_values.insert({FILE_FEATURE_NAME, FeatureSet(FILE_FEATURE_NAME, NominalFeature)});
+    lipid_name_translations.resize(2);
         
     // load precomputed class distance matrix
     
@@ -549,19 +550,18 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     int m1 = contains_val(lcbs, fa1->lipid_FA_bond_type) * 4;
     int m2 = contains_val(lcbs, fa2->lipid_FA_bond_type) * 4;
     
-    inter_num += max(0, min(fa1->num_carbon - m1, fa2->num_carbon - m1));
-    union_num += max(0, max(fa1->num_carbon - m2, fa2->num_carbon - m2));
-    
+    inter_num += max(0, min(fa1->num_carbon - m1, fa2->num_carbon - m2));
+    union_num += max(0, max(fa1->num_carbon - m1, fa2->num_carbon - m2));
     
     
     // compare double bonds
-    int common = 0;
+    int common_db = 0;
     if (fa1db->size() > 0 && fa2db->size() > 0){
         for (auto kv : *fa1db){
-            common += contains_val_p(fa2db, kv.first) && fa2db->at(kv.first) == kv.second;
+            common_db += contains_val_p(fa2db, kv.first) && fa2db->at(kv.first) == kv.second;
         }
-        inter_num += common;
-        union_num += fa1db->size() + fa2db->size() - common;
+        inter_num += common_db;
+        union_num += fa1db->size() + fa2db->size() - common_db;
         db1 += fa1db->size();
         db2 += fa2db->size();
     }
@@ -581,9 +581,10 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
         union_num += db1 + db2;
     }
     
+    
     // add all single bonds
-    inter_num += max(0, min(fa1->num_carbon - m1, fa2->num_carbon - m1) - (db1 + db2 - common));
-    union_num += max(0, max(fa1->num_carbon - m2, fa2->num_carbon - m2) - (db1 + db2 - common));
+    inter_num += max(0, min(fa1->num_carbon - m1, fa2->num_carbon - m2) - (db1 + db2 - common_db));
+    union_num += max(0, max(fa1->num_carbon - m1, fa2->num_carbon - m2) - (db1 + db2 - common_db));
     
     
     if (fa1->functional_groups->size() == 0 && fa2->functional_groups->size() == 0){
@@ -896,6 +897,24 @@ void LipidSpace::reassembleSelection(){
         }
     }
     for (auto lipid : lipids_to_delete) delete lipid;
+    
+    set<string> all_lipid_names;
+    for (auto lipidome : lipidomes){
+        for (auto lipid_name : lipidome->species){
+            all_lipid_names.insert(lipid_name);
+        }
+    }
+    
+    // clean up translation maps
+    vector<string> lipid_names_to_delete;
+    for (auto &lipid_name_kv : lipid_name_translations[TRANSLATED_NAME]){
+        if (uncontains_val(all_lipid_names, lipid_name_kv.first)) lipid_names_to_delete.push_back(lipid_name_kv.first);
+    }
+    
+    for (auto lipid_name : lipid_names_to_delete){
+        lipid_name_translations[TRANSLATED_NAME].erase(lipid_name);
+        lipid_name_translations[IMPORT_NAME].erase(lipid_name);
+    }
     
     
     reassembled();
@@ -1959,6 +1978,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             
             // handle lipid
             LipidAdduct *l = 0;
+            string translated_name = "";
             if (uncontains_val(load_lipids, lipid_table_name)){
                 try {
                     l = parser.parse(lipid_table_name);
@@ -1972,6 +1992,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
                             continue;
                         }
                     }
+                    translated_name = l->get_lipid_string();
                         
                     // deleting adduct since not necessary
                     if (l->adduct != 0){
@@ -2009,8 +2030,14 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             }
                 
             
+            string lipid_string = l->get_lipid_string();
+            if (uncontains_val(lipid_name_translations[TRANSLATED_NAME], lipid_string))
+                lipid_name_translations[TRANSLATED_NAME].insert({lipid_string, translated_name});
+            if (uncontains_val(lipid_name_translations[IMPORT_NAME], lipid_string))
+                lipid_name_translations[IMPORT_NAME].insert({lipid_string, lipid_table_name});
+                
             lipidome->lipids.push_back(l);
-            lipidome->species.push_back(l->get_lipid_string());
+            lipidome->species.push_back(lipid_string);
             lipidome->classes.push_back(l->get_lipid_string(CLASS));
             lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
             double val = atof(quant_val.c_str());
@@ -2592,8 +2619,16 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
         l->adduct = nullptr;
     }
     
+    string translated_name = l->get_lipid_string();
+    
     l->sort_fatty_acyl_chains();
     for (auto fa : l->lipid->fa_list) cut_cycle(fa);
+    
+    string lipid_string = l->get_lipid_string();
+    if (uncontains_val(lipid_name_translations[TRANSLATED_NAME], lipid_string))
+        lipid_name_translations[TRANSLATED_NAME].insert({lipid_string, translated_name});
+    if (uncontains_val(lipid_name_translations[IMPORT_NAME], lipid_string))
+        lipid_name_translations[IMPORT_NAME].insert({lipid_string, lipid_name});
     
     
     string lipid_unique_name = l->get_lipid_string();
@@ -2823,7 +2858,7 @@ void LipidSpace::run(){
         }
         
         if (is_nominal){
-            global_matrix.scale();
+            //global_matrix.scale();
         }
         else {
             Array constants;
@@ -2934,6 +2969,7 @@ void LipidSpace::run(){
                     best_pos = i;
                 }
             }
+            cout << "accuracy: " << (1 - best_score) << endl;
             
             // do the selection
             for (auto &kv : selection[0]){

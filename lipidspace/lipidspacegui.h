@@ -95,6 +95,7 @@ public slots:
     void updateGUI();
     void showHideDendrogram();
     void showHideGlobalLipidome();
+    void toggleLipidNameTranslation();
     void showHideQuant();
     void toggleQuant();
     void toggleBoundMetric();
