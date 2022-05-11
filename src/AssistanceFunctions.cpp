@@ -443,7 +443,7 @@ void BH_fdr(vector<double> &data){
 
 
 ListItem::ListItem(string show_name, ListItemType t, QListWidget* parent, string _system_name) : QListWidgetItem(show_name.c_str(), parent) {
-    system_name = system_name.length() > 0 ? system_name : show_name;
+    system_name = _system_name.length() > 0 ? _system_name : show_name;
     type = t;
     length = 0;
 }

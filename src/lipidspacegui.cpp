@@ -390,39 +390,30 @@ void LipidSpaceGUI::updateView(int){
     vector<pair<string, double>> &sort_class_labels = sortings[1][sorting_boxes[1]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_class_labels.size(); ++i){
         sort_class.insert({sort_class_labels[i].first, i});
-        ListItem *item = new ListItem("", CLASS_ITEM, ui->classList);
+        string class_name = sort_class_labels[i].first;
+        ListItem *item = new ListItem(class_name, CLASS_ITEM, ui->classList);
+        item->setCheckState(lipid_space->selection[1][class_name] ? Qt::Checked : Qt::Unchecked);
         ui->classList->addItem(item);
-    }
-    for (auto lipid_class : lipid_space->selection[1]){
-        QListWidgetItem *item = ui->classList->item(sort_class[lipid_class.first]);
-        item->setText(lipid_class.first.c_str());
-        item->setCheckState(lipid_class.second ? Qt::Checked : Qt::Unchecked);
     }
     
     map<string, int> sort_category;
     vector<pair<string, double>> &sort_category_labels = sortings[2][sorting_boxes[2]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_category_labels.size(); ++i){
         sort_category.insert({sort_category_labels[i].first, i});
-        ListItem *item = new ListItem("", CATEGORY_ITEM, ui->categoryList);
+        string category_name = sort_category_labels[i].first;
+        ListItem *item = new ListItem(category_name, CATEGORY_ITEM, ui->categoryList);
+        item->setCheckState(lipid_space->selection[2][category_name] ? Qt::Checked : Qt::Unchecked);
         ui->categoryList->addItem(item);
-    }
-    for (auto category : lipid_space->selection[2]){
-        QListWidgetItem *item = ui->categoryList->item(sort_category[category.first]);
-        item->setText(category.first.c_str());
-        item->setCheckState(category.second ? Qt::Checked : Qt::Unchecked);
     }
     
     map<string, int> sort_sample;
     vector<pair<string, double>> &sort_sample_labels = sortings[3][sorting_boxes[3]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_sample_labels.size(); ++i){
         sort_sample.insert({sort_sample_labels[i].first, i});
-        ListItem *item = new ListItem("", SAMPLE_ITEM, ui->sampleList);
+        string sample_name = sort_sample_labels[i].first;
+        ListItem *item = new ListItem(sample_name, SAMPLE_ITEM, ui->sampleList);
+        item->setCheckState(lipid_space->selection[3][sample_name] ? Qt::Checked : Qt::Unchecked);
         ui->sampleList->addItem(item);
-    }
-    for (auto sample : lipid_space->selection[3]){
-        QListWidgetItem *item = ui->sampleList->item(sort_sample[sample.first]);
-        item->setText(sample.first.c_str());
-        item->setCheckState(sample.second ? Qt::Checked : Qt::Unchecked);
     }
     
     for (auto kv : lipid_space->feature_values){
