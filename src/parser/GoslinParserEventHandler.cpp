@@ -41,6 +41,7 @@ GoslinParserEventHandler::GoslinParserEventHandler() : LipidBaseParserEventHandl
     reg("hg_pl_pre_event", set_head_group_name);
     reg("hg_lpl_pre_event", set_head_group_name);
     reg("hg_lsl_pre_event", set_head_group_name);
+    reg("hg_so_lsl_pre_event", set_head_group_name);
     reg("hg_dsl_pre_event", set_head_group_name);
     reg("st_pre_event", set_head_group_name);
     reg("hg_ste_pre_event", set_head_group_name);
@@ -522,6 +523,17 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
 
     fa_list->push_back(current_fa);
     current_fa = NULL;
+    
+    if (head_group == "Sa" || head_group == "So"){
+        FattyAcid* fa = fa_list->at(0);
+        
+        fa->lipid_FA_bond_type = LCB_EXCEPTION;
+        FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
+        functional_group->count = 2;
+        if (uncontains_val_p(fa->functional_groups, "OH")) fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
+        fa->functional_groups->at("OH").push_back(functional_group);
+        
+    }
 }
     
     
