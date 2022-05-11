@@ -524,12 +524,18 @@ void GoslinParserEventHandler::append_fa(TreeNode *node) {
     fa_list->push_back(current_fa);
     current_fa = NULL;
     
-    if (head_group == "Sa" || head_group == "So"){
+    if (head_group == "Sa" || head_group == "So" || head_group == "S1P" || head_group == "Sa1P"){
         FattyAcid* fa = fa_list->at(0);
         
-        fa->lipid_FA_bond_type = LCB_EXCEPTION;
         FunctionalGroup* functional_group = KnownFunctionalGroups::get_functional_group("OH");
-        functional_group->count = 2;
+        if (head_group == "Sa" || head_group == "So"){
+            functional_group->count = 2;
+            fa->lipid_FA_bond_type = LCB_EXCEPTION;
+        }
+        else {
+            functional_group->count = 1;
+            fa->lipid_FA_bond_type = LCB_REGULAR;
+        }
         if (uncontains_val_p(fa->functional_groups, "OH")) fa->functional_groups->insert({"OH", vector<FunctionalGroup*>()});
         fa->functional_groups->at("OH").push_back(functional_group);
         
