@@ -24,7 +24,7 @@ void Statistics::updateChart(){
     chart->removeAllSeries();
     
     string target_variable = GlobalData::gui_string_var["study_var"];
-    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || lipid_space->feature_values[target_variable].feature_type != NominalFeature || !lipid_space->analysis_finished) return;
+    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
         
     
     bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
@@ -32,7 +32,7 @@ void Statistics::updateChart(){
     
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
-    vector<double> target_values;
+    Array target_values;
     int nom_counter = 0;
     vector<QBoxPlotSeries*> plot_series;
     if (is_nominal){
@@ -79,17 +79,80 @@ void Statistics::updateChart(){
             }
         }
     }
-    if (global_matrix.cols > 1) global_matrix.scale();
+    if (is_nominal){
+        if (global_matrix.cols > 1) global_matrix.scale();
     
-    
-    for (int r = 0; r < global_matrix.rows; ++r){
-        double sum = 0;
-        for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
-        if (global_matrix.cols > 1 || sum > 1e-15) plot_series[target_values[r]]->boxSets()[0]->append(sum);
+        for (int r = 0; r < global_matrix.rows; ++r){
+            double sum = 0;
+            for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
+            if (global_matrix.cols > 1 || sum > 1e-15) plot_series[target_values[r]]->boxSets()[0]->append(sum);
+        }
+        for (auto series : plot_series) chart->addSeries(series);
     }
-    for (auto series : plot_series) chart->addSeries(series);
+    else {
+        Array constants;
+        constants.resize(global_matrix.rows, 1);
+        global_matrix.add_column(constants);
+        
+        double min_x = 1e100;
+        double max_x = 0;
+        Array coefficiants;
+        coefficiants.compute_coefficiants(global_matrix, target_values);    // estimating coefficiants
+        Array S;
+        S.mult(global_matrix, coefficiants);
+    
+        QScatterSeries* series_model = new QScatterSeries();
+        series_model->setName((target_variable + " / Linear lipid model").c_str());
+        for (uint i = 0; i < S.size(); ++i){
+            series_model->append(S[i], target_values[i]);
+            min_x = min(min_x, S[i]);
+            max_x = max(max_x, S[i]);
+        }
+        chart->addSeries(series_model);
+        
+        
+        
+        
+        double mx = 0, my = 0, ny = 0;
+        // computing the study variable mean based on missing values of lipids
+        for (uint r = 0; r < S.size(); ++r){
+            if (S[r] <= 1e-15) continue;
+            mx += S[r];
+            my += target_values[r];
+            ny += 1;
+        }
+        mx /= ny;
+        my /= ny;
+        
+        // estimate slope and intercept factors for linear regression
+        double slope_num = 0, slope_denom = 0;
+        for (uint r = 0; r < S.size(); ++r){
+            if (S[r] <= 1e-15) continue;
+            slope_num += (S[r] - mx) * (target_values[r] - my);
+            slope_denom += sq(S[r] - mx);
+        }
+        double slope = slope_num / slope_denom;
+        double intercept = my - slope * mx;
+        
+        double SQR = 0, SQT = 0;
+        for (uint r = 0; r < S.size(); ++r){
+            if (S[r] <= 1e-15) continue;
+            SQR += sq(target_values[r] - (slope * S[r] + intercept));
+            SQT += sq(target_values[r] - my);
+        }
+        double R2 = 1. - SQR / SQT;
+        
+        QLineSeries* series_regression = new QLineSeries();
+        series_regression->setName(QString().asprintf("Model regression (R<sup>2</sup> = %0.3f)", R2));
+        series_regression->append(min_x, slope * min_x + intercept);
+        series_regression->append(max_x, slope * max_x + intercept);
+        chart->addSeries(series_regression);
+    }
     chart->createDefaultAxes();
-    for (auto axis : chart->axes()){
-        if (axis->orientation() == Qt::Horizontal) chart->removeAxis(axis);
+    
+    if (is_nominal){
+        for (auto axis : chart->axes()){
+            if (axis->orientation() == Qt::Horizontal) chart->removeAxis(axis);
+        }
     }
 }

@@ -13,6 +13,8 @@
 	#include <QtCharts/QChartView>
 #endif
 #include <QtCharts/QBoxPlotSeries>
+#include <QtCharts/QScatterSeries>
+#include <QtCharts/QLineSeries>
 #include <QtCharts/QBoxSet>
 #include <QtCharts/QLegend>
 #include <QtCharts/QBarCategoryAxis>
