@@ -1107,7 +1107,6 @@ void Canvas::exportAsPdf(){
     printer.setOutputFileName(file_name);
     
     // set margins to 0
-
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMarginsF margins;
 	margins.setTop(0);
@@ -1128,6 +1127,8 @@ void Canvas::exportAsPdf(){
     QPainter p(&printer);
     render(&p);
     p.end();
+    
+    QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
 }
 
 

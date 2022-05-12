@@ -173,6 +173,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->setSelectionMode(QAbstractItemView::ContiguousSelection);
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statistics->setContextMenuPolicy(Qt::CustomContextMenu);
     
     ui->speciesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     
@@ -233,6 +234,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->categoryList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
     connect(ui->treeWidget, &QTreeWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
     connect(ui->sampleList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
+    connect(ui->statistics, &Statistics::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatistics);
     
     sorting_boxes.push_back(ui->speciesComboBox);
     sorting_boxes.push_back(ui->classComboBox);
@@ -1473,6 +1475,18 @@ void LipidSpaceGUI::export_list(){
     }
     
     QMessageBox::information(this, "Export completed", "The list was export into the file '" + outputFile + "'.");
+}
+
+
+void LipidSpaceGUI::ShowContextMenuStatistics(const QPoint pos){
+    if (ui->statistics->chart->series().size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionExportPdf);
+    connect(actionExportPdf, &QAction::triggered, ui->statistics, &Statistics::exportAsPdf);
+    menu->popup(ui->statistics->viewport()->mapToGlobal(pos));
+    
+    
 }
 
 

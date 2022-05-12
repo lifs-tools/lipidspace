@@ -9,6 +9,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QPainter>
 #include <QPainterPath>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

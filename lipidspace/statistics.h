@@ -8,8 +8,14 @@
 #include <math.h>
 #include <QChartView>
 #include <QChart>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPrinter>
 #include <QBrush>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    #include <QMarginsF>
 	#include <QtCharts/QChartView>
 #endif
 #include <QtCharts/QBoxPlotSeries>
@@ -37,6 +43,7 @@ public:
     
 public slots:
     void updateChart();
+    void exportAsPdf();
 };
 
 

@@ -20,6 +20,48 @@ void Statistics::set_lipid_space(LipidSpace *_lipid_space){
 }
 
 
+void Statistics::exportAsPdf(){
+    if (chart->series().size() == 0) return;
+    QString file_name = QFileDialog::getSaveFileName(this, "Export as pdf", GlobalData::last_folder, "*.pdf (*.pdf)");
+    if (!file_name.length()) return;
+    
+    QFileInfo fi(file_name);
+    GlobalData::last_folder = fi.absoluteDir().absolutePath();
+    
+    QPrinter printer(QPrinter::ScreenResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setFontEmbeddingEnabled(true);
+    QPageSize pageSize(QSizeF(viewport()->width(), viewport()->height()) , QPageSize::Point);
+    printer.setPageSize(pageSize);
+    
+    printer.setOutputFileName(file_name);
+    
+    // set margins to 0
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QMarginsF margins;
+	margins.setTop(0);
+	margins.setLeft(0);
+	margins.setRight(0);
+	margins.setBottom(0);
+    printer.setPageMargins(margins);
+#else
+    QPagedPaintDevice::Margins margins;
+    margins.top = 0;
+    margins.left = 0;
+    margins.right = 0;
+    margins.bottom = 0;
+    printer.setMargins(margins);
+#endif
+
+    
+    QPainter p(&printer);
+    render(&p);
+    p.end();
+    
+    QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+}
+
+
 void Statistics::updateChart(){
     chart->removeAllSeries();
     
