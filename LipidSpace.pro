@@ -1,6 +1,4 @@
-QT       += core gui printsupport charts
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui printsupport widgets charts
 
 CONFIG += c++17
 QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas

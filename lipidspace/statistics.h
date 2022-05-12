@@ -9,7 +9,9 @@
 #include <QChartView>
 #include <QChart>
 #include <QBrush>
-#include <QtCharts/QChartView>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	#include <QtCharts/QChartView>
+#endif
 #include <QtCharts/QBoxPlotSeries>
 #include <QtCharts/QBoxSet>
 #include <QtCharts/QLegend>
@@ -17,7 +19,9 @@
 #include "lipidspace/lipidspace.h"
 
 using namespace std;
-using namespace QtCharts;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+	using namespace QtCharts;
+#endif
 
 class Statistics : public QChartView {
     Q_OBJECT
