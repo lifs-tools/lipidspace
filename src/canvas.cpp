@@ -236,6 +236,10 @@ void Dendrogram::load(){
     bound.setHeight(dheight + 3 * h);
     
     add_dendrogram_lines(lipid_space->dendrogram_root);
+     
+    w = max(bound.width(), (double)view->viewport()->width());
+    h = max(bound.height(), (double)view->viewport()->height());
+    view->graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
 }
 
 

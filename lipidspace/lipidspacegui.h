@@ -25,7 +25,7 @@
 #define ALPHABETICALLY_ASC "Alphabetically (Asc)"
 #define ALPHABETICALLY_DESC "Alphabetically (Desc)"
 
-
+using namespace QtCharts;
 QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }
 QT_END_NAMESPACE

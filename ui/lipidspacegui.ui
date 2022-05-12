@@ -231,7 +231,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget_2">
        <property name="currentIndex">
-        <number>1</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="tab_5">
         <attribute name="title">
@@ -447,6 +447,31 @@
          </property>
          <item row="0" column="0">
           <widget class="CBTableWidget" name="tableWidget"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Statistics</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="Statistics" name="statistics"/>
          </item>
         </layout>
        </widget>
@@ -767,6 +792,11 @@
    <class>Canvas</class>
    <extends>QGraphicsView</extends>
    <header>lipidspace/canvas.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Statistics</class>
+   <extends>QChartView</extends>
+   <header>lipidspace/statistics.h</header>
   </customwidget>
   <customwidget>
    <class>ClickableLabel</class>

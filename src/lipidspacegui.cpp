@@ -269,6 +269,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     else if (GlobalData::linkage == CompleteLinkage) ui->actionComplete_linkage_clustering->setChecked(true);
     GlobalData::last_folder = QCoreApplication::applicationDirPath();
     
+    ui->statistics->set_lipid_space(lipid_space);
     ui->speciesList->setItemDelegate(new ItemDelegate(ui->speciesList));
     ui->startAnalysisPushButton->setEnabled(false);
     updateGUI();
@@ -287,6 +288,7 @@ LipidSpaceGUI::~LipidSpaceGUI(){
 void LipidSpaceGUI::setFeature(int){
     GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
     featureChanged(ui->featureComboBox->currentText().toStdString());
+    ui->statistics->updateChart();
 }
 
 
@@ -602,6 +604,7 @@ void LipidSpaceGUI::runAnalysis(){
     updateGUI();
     
     
+    
     // (re)start analysis
     progress->reset();
     lipid_space->start();
@@ -610,6 +613,10 @@ void LipidSpaceGUI::runAnalysis(){
     if (!lipid_space->analysis_finished) return;
     
     if (lipid_space->feature_values.size() > 1 || lipid_space->feature_values[FILE_FEATURE_NAME].nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
+    
+    if (lipid_space->global_lipidome->lipids.size() < 3){
+        QMessageBox::warning(this, "LipidSpace Analsysis", "Less than three lipids were taken for analysis. Therefore, no lipid spaces could be computed.");
+    }
     
     // reset parameters
     GlobalData::color_counter = 0;
@@ -688,6 +695,7 @@ void LipidSpaceGUI::runAnalysis(){
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
+    ui->statistics->updateChart();
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBox->findText(study_var.c_str());

@@ -2792,7 +2792,6 @@ void LipidSpace::run(){
         int nom_counter = 0;
         map<LipidAdduct*, int> lipid_map;
         map<string, int> lipid_name_map;
-        vector<string> ml;
         Matrix global_matrix;
         vector< Gene* >genes;
         bool is_nominal = feature_values[target_variable].feature_type == NominalFeature;
@@ -2835,7 +2834,6 @@ void LipidSpace::run(){
                     if (uncontains_val(lipid_map, lipid)){
                         lipid_map.insert({lipid, lipid_map.size()});
                         lipid_name_map.insert({lipidome->species[i], lipid_name_map.size()});
-                        ml.push_back(lipidome->species[i]);
                     }
                 }
             }
@@ -2858,7 +2856,7 @@ void LipidSpace::run(){
         }
         
         if (is_nominal){
-            //global_matrix.scale();
+            global_matrix.scale();
         }
         else {
             Array constants;
@@ -2969,7 +2967,6 @@ void LipidSpace::run(){
                     best_pos = i;
                 }
             }
-            cout << "accuracy: " << (1 - best_score) << endl;
             
             // do the selection
             for (auto &kv : selection[0]){

@@ -1,4 +1,4 @@
-QT       += core gui printsupport
+QT       += core gui printsupport charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -43,7 +43,8 @@ SOURCES += \
     src/AssistanceFunctions.cpp \
     src/lipidspace.cpp \
     src/canvas.cpp \
-    src/logging.cpp
+    src/logging.cpp \
+    src/statistics.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -63,7 +64,8 @@ HEADERS += \
     lipidspace/select_worksheet.h \
     lipidspace/setalpha.h \
     lipidspace/setPCNum.h \
-    lipidspace/logging.h
+    lipidspace/logging.h \
+    lipidspace/statistics.h
 
 FORMS += \
     ui/about.ui \
