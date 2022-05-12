@@ -225,18 +225,17 @@ void LipidSpace::create_dendrogram(){
                     arrays[target_values[r]].push_back(global_matrix(r, c));
                 }
                 
-                double pos_max = 0, d = 0, score = 1;
+                double pos_max = 0, d = 0, sep = 0, score = 1;
                 for (uint ii = 0; ii < arrays.size() - 1; ++ii){
                     for (uint jj = ii + 1; jj < arrays.size(); ++jj){
-                        ks_separation_value(arrays[ii], arrays[jj], d, pos_max);
-                        score *= d;
+                        ks_separation_value(arrays[ii], arrays[jj], d, pos_max, sep);
+                        score *= sqrt(d * sep);
                     }
                 }
                 double ll = 2. / ((double)(arrays.size() - 1) * (double)arrays.size());
                 score = pow(score, ll);
                 
                 regression_result.push_back({score, kv.first});
-                
             }
             else {
                 double mx = mx_values[c];
@@ -2921,12 +2920,12 @@ void LipidSpace::run(){
                         for (int r = 0; r < sub_features.rows; ++r) arrays[target_values[r]].push_back(summed_values[r]);
                         
                         
-                        double pos_max = 0, d = 0;
+                        double pos_max = 0, d = 0, sep = 0;
                         new_gene->score = 1;
                         for (uint ii = 0; ii < arrays.size() - 1; ++ii){
                             for (uint jj = ii + 1; jj < arrays.size(); ++jj){
-                                ks_separation_value(arrays[ii], arrays[jj], d, pos_max);
-                                new_gene->score *= d;
+                                ks_separation_value(arrays[ii], arrays[jj], d, pos_max, sep);
+                                new_gene->score *= sqrt(d * sep);
                             }
                         }
                         double ll = 2. / ((double)(arrays.size() - 1) * (double)arrays.size());

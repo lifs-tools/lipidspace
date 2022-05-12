@@ -221,34 +221,8 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
         vector<double> &set1 = kv.second;
         vector<double> &set2 = right_child->feature_numerical[kv.first];
         
-        double pos_max = 0, d = 0;
-        ks_separation_value(set1, set2, d, pos_max);
-        /*
-        int num1 = set1.size();
-        int num2 = set2.size();
-        sort(set1.begin(), set1.end());
-        sort(set2.begin(), set2.end());
-        double inv_m = 1. / num1, inv_n = 1. / num2;
-        double ptr1 = 0, ptr2 = 0;
-        double cdf1 = 0, cdf2 =0;
-        while ((ptr1 < num1) && (ptr2 < num2)){
-            if (set1[ptr1] <= set2[ptr2]){
-                cdf1 += inv_m;
-                if (d < fabs(cdf1 - cdf2)){
-                    d = fabs(cdf1 - cdf2);
-                    pos_max = set1[ptr1];
-                }
-                ptr1 += 1;
-            }
-            else {
-                cdf2 += inv_n;
-                if (d < fabs(cdf1 - cdf2)){
-                    d = fabs(cdf1 - cdf2);
-                    pos_max = set2[ptr2];
-                }
-                ptr2 += 1;
-            }
-        }*/
+        double pos_max = 0, d = 0, sep = 0;
+        ks_separation_value(set1, set2, d, pos_max, sep);
         feature_numerical_thresholds.insert({kv.first, pos_max});
         
         feature_numerical.insert({kv.first, vector<double>()});
@@ -264,9 +238,10 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
 
 
 
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max){
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score){
     d = 0;
     pos_max = 0;
+    separation_score = 0;
     int num1 = a.size();
     int num2 = b.size();
     sort(a.begin(), a.end());
@@ -274,6 +249,16 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
     double inv_m = 1. / num1, inv_n = 1. / num2;
     double ptr1 = 0, ptr2 = 0;
     double cdf1 = 0, cdf2 = 0;
+    double overlap1 = 0, overlap2 = 0;
+    double min1 = 1, max1 = num1 - 1, min2 = 1, max2 = num2 - 1;
+    if (num1 >= 10){
+        min1 = floor(num1 * 0.25);
+        max1 = ceil(num1 * 0.75);
+    }
+    if (num2 >= 10){
+        min2 = floor(num2 * 0.25);
+        max2 = ceil(num2 * 0.75);
+    }
     while ((ptr1 < num1) && (ptr2 < num2)){
         if (a[ptr1] <= b[ptr2]){
             cdf1 += inv_m;
@@ -282,6 +267,7 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
                 pos_max = a[ptr1];
             }
             ptr1 += 1;
+            if (min1 <= ptr1 && ptr1 <= max1 && min2 <= ptr2 && ptr2 <= max2) overlap1 += 1;
         }
         else {
             cdf2 += inv_n;
@@ -290,7 +276,11 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
                 pos_max = b[ptr2];
             }
             ptr2 += 1;
+            if (min1 <= ptr1 && ptr1 <= max1 && min2 <= ptr2 && ptr2 <= max2) overlap2 += 1;
         }
+    }
+    if (num1 > 0 && num2 > 0){
+        separation_score = sqrt((1. - overlap1 / (double)num1) * (1. - overlap2 / (double)num2));
     }
 }
 
