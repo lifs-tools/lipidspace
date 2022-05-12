@@ -76,6 +76,7 @@ void DendrogramLine::highlight(bool h){
     if (node >= 0) dendrogram->dendrogram_titles[node].highlighted = h;
 }
 
+
 void DendrogramLine::update_height_factor(double update_factor, QPointF *max_vals){
     QLineF d_line = line();
     setLine(d_line.x1(), d_line.y1() * update_factor, d_line.x2(), d_line.y2() * update_factor);
@@ -372,7 +373,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     if (!lipid_space->dendrogram_root) return;
     
     QFont f("Helvetica");
-    f.setPointSizeF(18);
+    f.setPointSizeF(GlobalData::gui_num_var["label_size"]);
     painter->setFont(f);
     double dx = 0;
     double dy = 10 + (((lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor) / 16. * 9.) * dendrogram_y_factor / 100;
@@ -957,6 +958,12 @@ void Canvas::resetDendrogram(){
     dendrogram->load();
     QResizeEvent resize(QSize(width(), height()), QSize(width(), height()));
     emit resizeEvent(&resize);
+}
+
+
+void Canvas::setLabelSize(int font_size){
+    GlobalData::gui_num_var["label_size"] = font_size;
+    if (dendrogram) dendrogram->update();
 }
 
 

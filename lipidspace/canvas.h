@@ -212,6 +212,7 @@ public slots:
     void highlightPoints();
     void moveToPoint(QListWidgetItem*);
     void contextMenu(QPoint pos);
+    void setLabelSize(int);
     
     
 signals:

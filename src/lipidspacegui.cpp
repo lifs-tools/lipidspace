@@ -220,6 +220,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->applyChangesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->pieTreeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieTree(int)));
     connect(ui->dendrogramHeightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setDendrogramHeight(int)));
+    connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statistics, SLOT(setLegendSize(int)));
+    connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statistics, SLOT(setTickSize(int)));
+    connect(ui->labelSizeSpinBox, SIGNAL(valueChanged(int)), ui->dendrogramView, SLOT(setLabelSize(int)));
     connect(ui->pieSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieSize(int)));
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
     connect(ui->labelPieSize, SIGNAL(clicked()), this, SLOT(setKnubbel()));

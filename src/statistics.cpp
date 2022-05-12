@@ -11,13 +11,31 @@ Statistics::Statistics(QWidget *parent) : QChartView(parent) {
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
     setChart(chart);
-    chart->legend()->setFont(QFont("Helvetica", 14));
+    chart->legend()->setFont(QFont("Helvetica", GlobalData::gui_num_var["legend_size"]));
 }
 
 
 void Statistics::set_lipid_space(LipidSpace *_lipid_space){
     lipid_space = _lipid_space;
 }
+
+
+
+void Statistics::setLegendSize(int font_size){
+    resetMatrix();
+    GlobalData::gui_num_var["legend_size"] = font_size;
+    chart->legend()->setFont(QFont("Helvetica", font_size));
+}
+
+
+
+void Statistics::setTickSize(int font_size){
+    resetMatrix();
+    GlobalData::gui_num_var["tick_size"] = font_size;
+    updateChart();
+}
+
+
 
 
 void Statistics::exportAsPdf(){
@@ -192,9 +210,12 @@ void Statistics::updateChart(){
     }
     chart->createDefaultAxes();
     
-    if (is_nominal){
-        for (auto axis : chart->axes()){
-            if (axis->orientation() == Qt::Horizontal) chart->removeAxis(axis);
+    for (auto axis : chart->axes()){
+        if (is_nominal && axis->orientation() == Qt::Horizontal){
+            chart->removeAxis(axis);
+        }
+        else {
+            axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
         }
     }
 }

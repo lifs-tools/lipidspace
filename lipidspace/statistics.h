@@ -44,6 +44,8 @@ public:
 public slots:
     void updateChart();
     void exportAsPdf();
+    void setLegendSize(int);
+    void setTickSize(int);
 };
 
 

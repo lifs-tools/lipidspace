@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1185</width>
+    <width>1229</width>
     <height>615</height>
    </rect>
   </property>
@@ -421,6 +421,41 @@
              <string>Start analysis</string>
             </property>
            </widget>
+           <widget class="QSpinBox" name="labelSizeSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>650</x>
+              <y>40</y>
+              <width>90</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="suffix">
+             <string/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>200</number>
+            </property>
+            <property name="value">
+             <number>18</number>
+            </property>
+           </widget>
+           <widget class="ClickableLabel" name="labelPieSize_2">
+            <property name="geometry">
+             <rect>
+              <x>650</x>
+              <y>20</y>
+              <width>130</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Label size</string>
+            </property>
+           </widget>
           </widget>
          </item>
         </layout>
@@ -513,6 +548,76 @@
              <string>Study variable</string>
             </property>
            </widget>
+           <widget class="QSpinBox" name="tickSizeSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>210</x>
+              <y>40</y>
+              <width>89</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="suffix">
+             <string/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>200</number>
+            </property>
+            <property name="value">
+             <number>10</number>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="legendSizeSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>310</x>
+              <y>40</y>
+              <width>89</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="suffix">
+             <string/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>200</number>
+            </property>
+            <property name="value">
+             <number>14</number>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_2">
+            <property name="geometry">
+             <rect>
+              <x>210</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Tick size</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_3">
+            <property name="geometry">
+             <rect>
+              <x>310</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Legend size</string>
+            </property>
+           </widget>
           </widget>
          </item>
         </layout>
@@ -527,7 +632,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1185</width>
+     <width>1229</width>
      <height>23</height>
     </rect>
    </property>
