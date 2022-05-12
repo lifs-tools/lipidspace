@@ -208,6 +208,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->tableWidget, SIGNAL(cornerButtonClick()), this, SLOT(transposeTable()));
     connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowTableContextMenu);
     connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
+    connect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeatureStat(int)));
     connect(this, SIGNAL(featureChanged(string)), ui->dendrogramView, SLOT(setFeature(string)));
     connect(ui->speciesList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->classList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
@@ -288,6 +289,11 @@ LipidSpaceGUI::~LipidSpaceGUI(){
 void LipidSpaceGUI::setFeature(int){
     GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
     featureChanged(ui->featureComboBox->currentText().toStdString());
+}
+
+
+void LipidSpaceGUI::setFeatureStat(int){
+    GlobalData::gui_string_var["study_var_stat"] = ui->featureComboBoxStat->currentText().toStdString();
     ui->statistics->updateChart();
 }
 
@@ -581,6 +587,7 @@ void LipidSpaceGUI::startFeatureAnalysis(){
 void LipidSpaceGUI::runAnalysis(){
     string species_selection = GlobalData::gui_string_var["species_selection"];
     string study_var = GlobalData::gui_string_var["study_var"];
+    string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
     
     // clear all windows with canvases
     ui->dendrogramView->clear();
@@ -700,6 +707,8 @@ void LipidSpaceGUI::runAnalysis(){
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBox->findText(study_var.c_str());
     if (pos >= 0) ui->featureComboBox->setCurrentIndex(pos);
+    pos = ui->featureComboBoxStat->findText(study_var_stat.c_str());
+    if (pos >= 0) ui->featureComboBoxStat->setCurrentIndex(pos);
 }
 
 
@@ -1053,7 +1062,8 @@ void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
 void LipidSpaceGUI::updateGUI(){
     updating = true;
     
-    while (ui->featureComboBox->count()) ui->featureComboBox->removeItem(0);
+    ui->featureComboBox->clear();
+    ui->featureComboBoxStat->clear();
     
     ui->menuAnalysis->setEnabled(lipid_space->lipidomes.size());
     ui->menuView->setEnabled(lipid_space->lipidomes.size());
@@ -1134,6 +1144,7 @@ void LipidSpaceGUI::updateGUI(){
     
     for (auto kv : lipid_space->feature_values){
         ui->featureComboBox->addItem(kv.first.c_str());
+        ui->featureComboBoxStat->addItem(kv.first.c_str());
     }
     
     

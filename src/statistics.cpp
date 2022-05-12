@@ -23,7 +23,7 @@ void Statistics::set_lipid_space(LipidSpace *_lipid_space){
 void Statistics::updateChart(){
     chart->removeAllSeries();
     
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
         
     

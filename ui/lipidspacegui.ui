@@ -231,7 +231,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget_2">
        <property name="currentIndex">
-        <number>3</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_5">
         <attribute name="title">
@@ -294,7 +294,7 @@
              <rect>
               <x>10</x>
               <y>40</y>
-              <width>151</width>
+              <width>181</width>
               <height>26</height>
              </rect>
             </property>
@@ -315,7 +315,7 @@
            <widget class="QLabel" name="labelPieTreeDepth">
             <property name="geometry">
              <rect>
-              <x>300</x>
+              <x>440</x>
               <y>20</y>
               <width>91</width>
               <height>18</height>
@@ -328,7 +328,7 @@
            <widget class="QSpinBox" name="pieTreeSpinBox">
             <property name="geometry">
              <rect>
-              <x>300</x>
+              <x>440</x>
               <y>40</y>
               <width>81</width>
               <height>27</height>
@@ -341,22 +341,22 @@
            <widget class="QLabel" name="labelDendrogramHeight">
             <property name="geometry">
              <rect>
-              <x>400</x>
+              <x>330</x>
               <y>20</y>
-              <width>131</width>
+              <width>130</width>
               <height>18</height>
              </rect>
             </property>
             <property name="text">
-             <string>Dendrogram height</string>
+             <string>Tree height</string>
             </property>
            </widget>
            <widget class="QSpinBox" name="dendrogramHeightSpinBox">
             <property name="geometry">
              <rect>
-              <x>400</x>
+              <x>330</x>
               <y>40</y>
-              <width>91</width>
+              <width>89</width>
               <height>27</height>
              </rect>
             </property>
@@ -411,7 +411,7 @@
            <widget class="QPushButton" name="startAnalysisPushButton">
             <property name="geometry">
              <rect>
-              <x>170</x>
+              <x>200</x>
               <y>40</y>
               <width>111</width>
               <height>26</height>
@@ -471,7 +471,49 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="Statistics" name="statistics"/>
+          <widget class="Statistics" name="statistics" native="true"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>80</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>Statistic controls</string>
+           </property>
+           <widget class="QComboBox" name="featureComboBoxStat">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>40</y>
+              <width>181</width>
+              <height>26</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Study variable</string>
+            </property>
+           </widget>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -794,14 +836,14 @@
    <header>lipidspace/canvas.h</header>
   </customwidget>
   <customwidget>
-   <class>Statistics</class>
-   <extends>QChartView</extends>
-   <header>lipidspace/statistics.h</header>
-  </customwidget>
-  <customwidget>
    <class>ClickableLabel</class>
    <extends>QLabel</extends>
    <header>lipidspace/canvas.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Statistics</class>
+   <extends>QWidget</extends>
+   <header>lipidspace/statistics.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

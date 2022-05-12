@@ -128,6 +128,7 @@ public slots:
     void transposeTable();
     void reassembleSelection();
     void setFeature(int pos);
+    void setFeatureStat(int pos);
     void itemChanged(QListWidgetItem *item);
     void featureItemChanged(QTreeWidgetItem *item, int col);
     void featureItemDoubleClicked(QTreeWidgetItem *item, int col);
