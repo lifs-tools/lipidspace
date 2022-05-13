@@ -249,6 +249,19 @@
         <attribute name="title">
          <string>Home</string>
         </attribute>
+        <widget class="QPushButton" name="firstTutorialPushButton">
+         <property name="geometry">
+          <rect>
+           <x>410</x>
+           <y>210</y>
+           <width>111</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>first Tutorial</string>
+         </property>
+        </widget>
        </widget>
        <widget class="QWidget" name="tab_5">
         <property name="font">

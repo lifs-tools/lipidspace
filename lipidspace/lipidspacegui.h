@@ -31,7 +31,7 @@ namespace Ui { class LipidSpaceGUI; }
 QT_END_NAMESPACE
 
 class Canvas;
-
+class Tutorial;
 
 class DragLayer : public QWidget {
     Q_OBJECT
@@ -63,10 +63,12 @@ class LipidSpaceGUI : public QMainWindow
     Q_OBJECT
 
 public:
+    Ui::LipidSpaceGUI *ui;
     LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent = nullptr);
     ~LipidSpaceGUI();
     LipidSpace* lipid_space;
     QPixmap *arrow_bl;
+    Tutorial *tutorial;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;
@@ -151,7 +153,6 @@ public slots:
     
     
 private:
-    Ui::LipidSpaceGUI *ui;
     set<int> *selected_d_lipidomes;
     bool showDendrogram;
     bool showGlobalLipidome;

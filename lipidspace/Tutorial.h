@@ -24,27 +24,53 @@
 #include <QMessageBox>
 #include <QtWidgets/QWidget>
 #include "lipidspace/AssistanceFunctions.h"
+#include "lipidspace/lipidspacegui.h"
 #include <iostream>
 
 using namespace std;
 
 
+enum Arrow {ABL, ABR, ALT, ALB, ATL, ATR, ART, ARB};
+enum TutorialType {NoTutorial, FirstTutorial};
+enum FirstSteps {FStart, FDescription, FEnd};
 
+class LipidSpaceGUI;
 
 class Tutorial : public QFrame {
 public:
     QFrame *tutorialFrame;
     QLabel *titleLabel;
     QLabel *informationLabel;
+    QLabel *arrow_bl;
+    QLabel *arrow_br;
+    QLabel *arrow_lt;
+    QLabel *arrow_lb;
+    QLabel *arrow_tl;
+    QLabel *arrow_tr;
+    QLabel *arrow_rt;
+    QLabel *arrow_rb;
     QPushButton *continuePushButton;
     QLabel *pagesLabel;
     ClickableLabel *xLabel;
+    vector<QLabel*> arrows;
+    LipidSpaceGUI *lipidSpaceGUI;
+    TutorialType tutorialType = NoTutorial;
+    int step = -1;
     
-    Tutorial(QWidget *parent = 0);
+    Tutorial(LipidSpaceGUI *lipidSpaceGUI, QWidget *parent = 0);
     ~Tutorial();
     
+    void show_arrow(Arrow, QWidget *, int x, int y);
+    void show_arrow(Arrow, QWidget *, QPoint);
+    QPoint map_widget(QWidget *widget);
+    bool can_start_tutorial();
+    void first_tutorial_steps();
+    void continue_tutorial();
+    void close_tutorial();
+    
 public slots:
-    void closeTutorial();
+    void x_clicked();
+    void start_first_tutorial();
 };
 
 #endif /* TUTORIAL_H */

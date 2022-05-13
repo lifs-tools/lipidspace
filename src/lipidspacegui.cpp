@@ -48,7 +48,7 @@ void DragLayer::paintEvent(QPaintEvent *) {
 
 
 void LipidSpaceGUI::closeEvent(QCloseEvent *event){
-    if (!lipid_space->analysis_finished || (QMessageBox::question(this, "Quit LipidSpace", "Do you want to quit LipidSpace?") == QMessageBox::Yes)) {
+    if (lipid_space->lipidomes.empty() || (QMessageBox::question(this, "Quit LipidSpace", "Do you want to quit LipidSpace?") == QMessageBox::Yes)) {
         event->accept();
     } else {
         event->ignore();
@@ -157,36 +157,13 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     keystrokes = "";
     selected_d_lipidomes = 0;
     knubbel = false;
+    tutorial = new Tutorial(this, ui->centralwidget);
     
-    Tutorial* tutorial = new Tutorial(ui->centralwidget);
-    /*
-    QPixmap close_x("data/images/close-x.png");
-    ui->tutorialFrame->xLabel->setPixmap(close_x);
-    QRect r = ui->tutorialFrame->xLabel->geometry();
-    r.setWidth(mypix.size().width());
-    r.setHeight(mypix.size().height());
-    ui->tutorialFrame->xLabel->setGeometry(r);
-    
-    ui->tutorialFrame->titleLabel->setText("Welcome");
-    ui->tutorialFrame->informationLabel->setText("Welcome to the first tutorial. We will guide you interactively through LipidSpace.");
-    ui->tutorialFrame->pagesLabel->setText("1 / 29");
-    */
-    /*
-        QLabel *label = new QLabel(ui->centralwidget);
-        label->setPixmap(mypix);
-        //label->setScaledContents(true);
-        QRect r = label->geometry();
-        r.setWidth(mypix.size().width());
-        r.setHeight(mypix.size().height());
-        label->setGeometry(r);
-        label->move(QPoint(20, 20));
-        */
     
     qRegisterMetaType<string>("string");
-    
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
     
-    
+    connect(ui->firstTutorialPushButton, &QPushButton::clicked, tutorial, &Tutorial::start_first_tutorial);
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
     connect(lipid_space, SIGNAL(reassembled()), this, SLOT(updateSelectionView()));
     

@@ -33,7 +33,7 @@ void ManageLipidomes::cancel(){
 void ManageLipidomes::ok(){
     if (removeItems.size()){
         if (removeItems.size() == lipid_space->lipidomes.size()){
-            resetAnalysis();
+            emit resetAnalysis();
         }
         else {
             sort(removeItems.begin(), removeItems.end());
@@ -54,6 +54,7 @@ void ManageLipidomes::removeSelected(){
         ui->listView->takeItem(ui->listView->row(qitem));
     }
 }
+
 
 void ManageLipidomes::removeAll(){
     while (ui->listView->count()){
