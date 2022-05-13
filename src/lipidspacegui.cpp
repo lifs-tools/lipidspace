@@ -626,8 +626,15 @@ void LipidSpaceGUI::runAnalysis(){
     
     if (lipid_space->feature_values.size() > 1 || lipid_space->feature_values[FILE_FEATURE_NAME].nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
     
-    if (lipid_space->global_lipidome->lipids.size() < 3){
-        QMessageBox::warning(this, "LipidSpace Analsysis", "Less than three lipids were taken for analysis. Therefore, no lipid spaces could be computed.");
+    if (lipid_space->global_lipidome->lipids.size() < 3 && !GlobalData::gui_num_var["dont_less_3_message"]){
+        QMessageBox msg;
+        msg.setWindowTitle("LipidSpace Analysis");
+        msg.setWindowFlags(Qt::WindowStaysOnTopHint);
+        msg.setText("Less than three lipids were taken for analysis. Therefore, no lipid spaces could be computed.");
+        QCheckBox *check_box = new QCheckBox("Don't show this again");
+        msg.setCheckBox(check_box);
+        msg.exec();
+        GlobalData::gui_num_var["dont_less_3_message"] = check_box->isChecked();
     }
     
     // reset parameters
