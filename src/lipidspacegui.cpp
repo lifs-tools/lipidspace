@@ -157,8 +157,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     keystrokes = "";
     selected_d_lipidomes = 0;
     knubbel = false;
-    tutorial = new Tutorial(this, ui->centralwidget);
-    
+    //tutorial = new Tutorial(this, ui->centralwidget);
+    ui->firstTutorialPushButton->setVisible(false);
     
     qRegisterMetaType<string>("string");
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
@@ -631,7 +631,7 @@ void LipidSpaceGUI::runAnalysis(){
         QMessageBox msg;
         msg.setWindowTitle("LipidSpace Analysis");
         msg.setWindowFlags(Qt::WindowStaysOnTopHint);
-        msg.setText("Less than three lipids were taken for analysis. Therefore, no lipid spaces could be computed.");
+        msg.setText("Less than three lipids were taken for analysis. Therefore, no lipid spaces could be computed. However, dendrogram and statistics view can still be investigated.");
         QCheckBox *check_box = new QCheckBox("Don't show this again");
         msg.setCheckBox(check_box);
         msg.exec();
