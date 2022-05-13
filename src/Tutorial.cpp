@@ -138,6 +138,11 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_rb->setVisible(false);
     arrows.push_back(arrow_rb);
     
+    Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
+    main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_dendrogram, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->firstTutorialPushButton, ui->dendrogramView, ui->featureComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statistics, ui->featureComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget};
+    
+    connect(lipidSpaceGUI->ui->firstTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_first_tutorial);
+    
 }
 
 
@@ -158,6 +163,15 @@ void Tutorial::close_tutorial(){
     setVisible(false);
     tutorialType = NoTutorial;
     step = -1;
+    
+    for (auto obj : main_widgets){
+        if (instanceof(obj, QWidget)){
+            ((QWidget*)obj)->setEnabled(true);
+        }
+        else if (instanceof(obj, QAction)){
+            ((QAction*)obj)->setEnabled(true);
+        }
+    }
 }
 
 
@@ -221,11 +235,21 @@ void Tutorial::continue_tutorial(){
 }
 
 
-
+void Tutorial::disable(){
+    for (auto obj : main_widgets){
+        if (instanceof(obj, QWidget)){
+            ((QWidget*)obj)->setEnabled(false);
+        }
+        else if (instanceof(obj, QAction)){
+            ((QAction*)obj)->setEnabled(false);
+        }
+    }
+}
 
 
 
 void Tutorial::first_tutorial_steps(){
+    disable();
     pagesLabel->setText((std::to_string(step + 1) + " / 3").c_str());
     setVisible(true);
     
@@ -233,14 +257,14 @@ void Tutorial::first_tutorial_steps(){
         case FStart:
             move(20, 20);
             titleLabel->setText("First Tutorial");
-            informationLabel->setText("Weclome to the first tutorial of LipidSpace. The tutorials are designed to interactively guide you throught the interface of LipidSpace.");
+            informationLabel->setText("Welcome to the first tutorial of LipidSpace. The tutorials are designed to interactively guide you through the interface of LipidSpace. ");
             break;
             
         
         case FDescription:
             move(20, 20);
             titleLabel->setText("What is LipidSpace");
-            informationLabel->setText("LipidSpace is a tool to analyse a multitude of lipidomes, putting them together in one model, and offer several functions for a deeper investigation of your lipidomic data");
+            informationLabel->setText("LipidSpace is a tool to analyse a multitude of lipidomes, putting them together in one model, and offer several functions for a deeper and quicker investigation of your lipidomic data.");
             break;
             
             

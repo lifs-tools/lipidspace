@@ -163,7 +163,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     qRegisterMetaType<string>("string");
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
     
-    connect(ui->firstTutorialPushButton, &QPushButton::clicked, tutorial, &Tutorial::start_first_tutorial);
+    
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
     connect(lipid_space, SIGNAL(reassembled()), this, SLOT(updateSelectionView()));
     
@@ -1391,8 +1391,7 @@ void LipidSpaceGUI::selectDendrogramLipidomes(){
                 widget->item(i)->setCheckState(Qt::Checked);
             }
         }
-        //ui->tabWidget->setCurrentWidget(widget);
-        emit ui->tabWidget->setCurrentIndex(4);
+        emit ui->itemsTabWidget->setCurrentIndex(4);
         selected_d_lipidomes = 0;
     }
 }
@@ -1475,10 +1474,10 @@ void LipidSpaceGUI::export_list(){
     GlobalData::last_folder = fi.absoluteDir().absolutePath();
 
     int selection = 0;
-    switch(ui->tabWidget->currentIndex()){
+    switch(ui->itemsTabWidget->currentIndex()){
         case 0:
         case 1:
-        case 2: selection = ui->tabWidget->currentIndex(); break;
+        case 2: selection = ui->itemsTabWidget->currentIndex(); break;
         case 4: selection = 3; break;
         default: return;
     }
@@ -1511,7 +1510,7 @@ void LipidSpaceGUI::ShowContextMenuStatistics(const QPoint pos){
 
 void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
     QMenu *menu = new QMenu(this);
-    if (ui->tabWidget->currentIndex() != 3){
+    if (ui->itemsTabWidget->currentIndex() != 3){
         QAction *actionSelectAll = new QAction("Check all", this);
         QAction *actionDeselectAll = new QAction("Uncheck all", this);
         QAction *actionToggleAll = new QAction("Toggle all", this);
@@ -1522,7 +1521,7 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
         menu->addAction(actionExportList);
         
         QListWidget *widget = nullptr;
-        switch(ui->tabWidget->currentIndex()){
+        switch(ui->itemsTabWidget->currentIndex()){
             case 0: widget = ui->speciesList; break;
             case 1: widget = ui->classList; break;
             case 2: widget = ui->categoryList; break;
@@ -1553,7 +1552,7 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
 
 void LipidSpaceGUI::check_all_entities(){
     QListWidget *widget = nullptr;
-    switch(ui->tabWidget->currentIndex()){
+    switch(ui->itemsTabWidget->currentIndex()){
         case 0: widget = ui->speciesList; break;
         case 1: widget = ui->classList; break;
         case 2: widget = ui->categoryList; break;
@@ -1569,7 +1568,7 @@ void LipidSpaceGUI::check_all_entities(){
 
 void LipidSpaceGUI::uncheck_all_entities(){
     QListWidget *widget = nullptr;
-    switch(ui->tabWidget->currentIndex()){
+    switch(ui->itemsTabWidget->currentIndex()){
         case 0: widget = ui->speciesList; break;
         case 1: widget = ui->classList; break;
         case 2: widget = ui->categoryList; break;
@@ -1585,7 +1584,7 @@ void LipidSpaceGUI::uncheck_all_entities(){
 
 void LipidSpaceGUI::toggle_all_entities(){
     QListWidget *widget = nullptr;
-    switch(ui->tabWidget->currentIndex()){
+    switch(ui->itemsTabWidget->currentIndex()){
         case 0: widget = ui->speciesList; break;
         case 1: widget = ui->classList; break;
         case 2: widget = ui->categoryList; break;

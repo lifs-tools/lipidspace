@@ -27,6 +27,8 @@
 #include "lipidspace/lipidspacegui.h"
 #include <iostream>
 
+#define instanceof(ptr, base) (dynamic_cast<const base*>(ptr) != nullptr)
+
 using namespace std;
 
 
@@ -56,6 +58,7 @@ public:
     LipidSpaceGUI *lipidSpaceGUI;
     TutorialType tutorialType = NoTutorial;
     int step = -1;
+    vector<QObject*> main_widgets;
     
     Tutorial(LipidSpaceGUI *lipidSpaceGUI, QWidget *parent = 0);
     ~Tutorial();
@@ -67,6 +70,7 @@ public:
     void first_tutorial_steps();
     void continue_tutorial();
     void close_tutorial();
+    void disable();
     
 public slots:
     void x_clicked();

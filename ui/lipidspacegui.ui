@@ -56,7 +56,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QTabWidget" name="tabWidget">
+         <widget class="QTabWidget" name="itemsTabWidget">
           <property name="minimumSize">
            <size>
             <width>200</width>
@@ -229,7 +229,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QTabWidget" name="tabWidget_2">
+      <widget class="QTabWidget" name="viewsTabWidget">
        <property name="font">
         <font>
          <family>Noto Sans</family>
@@ -239,7 +239,7 @@
        <property name="currentIndex">
         <number>0</number>
        </property>
-       <widget class="QWidget" name="tab_2">
+       <widget class="QWidget" name="homeTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -263,7 +263,7 @@
          </property>
         </widget>
        </widget>
-       <widget class="QWidget" name="tab_5">
+       <widget class="QWidget" name="LipidomesTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -291,7 +291,7 @@
          </property>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab_6">
+       <widget class="QWidget" name="DendrogramTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -502,7 +502,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab_7">
+       <widget class="QWidget" name="rawDataTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -533,7 +533,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab">
+       <widget class="QWidget" name="statisticsTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
