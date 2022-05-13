@@ -19,6 +19,7 @@
 #include "lipidspace/globaldata.h"
 #include "lipidspace/CBTableWidget.h"
 #include "lipidspace/filterdialog.h"
+#include "lipidspace/Tutorial.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 
@@ -65,13 +66,13 @@ public:
     LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent = nullptr);
     ~LipidSpaceGUI();
     LipidSpace* lipid_space;
+    QPixmap *arrow_bl;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
     void copy_to_clipboard();
     void closeEvent(QCloseEvent *event) override;
-    
     
     
 signals:

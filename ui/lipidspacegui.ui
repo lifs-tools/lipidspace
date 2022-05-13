@@ -230,10 +230,33 @@
        </layout>
       </widget>
       <widget class="QTabWidget" name="tabWidget_2">
-       <property name="currentIndex">
-        <number>1</number>
+       <property name="font">
+        <font>
+         <family>Noto Sans</family>
+         <pointsize>16</pointsize>
+        </font>
        </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tab_2">
+        <property name="font">
+         <font>
+          <family>Noto Sans</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <attribute name="title">
+         <string>Home</string>
+        </attribute>
+       </widget>
        <widget class="QWidget" name="tab_5">
+        <property name="font">
+         <font>
+          <family>Noto Sans</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <attribute name="title">
          <string>Lipidomes</string>
         </attribute>
@@ -256,6 +279,12 @@
         </layout>
        </widget>
        <widget class="QWidget" name="tab_6">
+        <property name="font">
+         <font>
+          <family>Noto Sans</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <attribute name="title">
          <string>Dendrogram</string>
         </attribute>
@@ -461,6 +490,12 @@
         </layout>
        </widget>
        <widget class="QWidget" name="tab_7">
+        <property name="font">
+         <font>
+          <family>Noto Sans</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <attribute name="title">
          <string>Raw data table</string>
         </attribute>
@@ -486,6 +521,12 @@
         </layout>
        </widget>
        <widget class="QWidget" name="tab">
+        <property name="font">
+         <font>
+          <family>Noto Sans</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <attribute name="title">
          <string>Statistics</string>
         </attribute>

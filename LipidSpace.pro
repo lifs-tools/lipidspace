@@ -42,7 +42,8 @@ SOURCES += \
     src/lipidspace.cpp \
     src/canvas.cpp \
     src/logging.cpp \
-    src/statistics.cpp
+    src/statistics.cpp \
+    src/Tutorial.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -63,7 +64,8 @@ HEADERS += \
     lipidspace/setalpha.h \
     lipidspace/setPCNum.h \
     lipidspace/logging.h \
-    lipidspace/statistics.h
+    lipidspace/statistics.h \
+    lipidspace/Tutorial.h
 
 FORMS += \
     ui/about.ui \

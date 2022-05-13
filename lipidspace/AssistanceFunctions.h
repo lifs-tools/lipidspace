@@ -7,6 +7,7 @@
 #include <QPen>
 #include <QBrush>
 #include <QPainter>
+#include <QLabel>
 #include <QItemDelegate>
 #include <OpenXLSX.hpp>
 #include <QDropEvent>
@@ -59,6 +60,28 @@ public:
 
 
 
+
+class ClickableLabel : public QLabel { 
+    Q_OBJECT 
+
+public:
+    explicit ClickableLabel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags = Qt::WindowFlags()) : QLabel(parent){}
+    ~ClickableLabel(){}
+
+signals:
+    void clicked();
+    void doubleClicked();
+
+protected:
+    void mouseDoubleClickEvent(QMouseEvent*) {
+        emit doubleClicked();
+    }
+    
+    void mousePressEvent(QMouseEvent*) {
+        emit clicked();
+    }
+
+};
 
 
 struct Feature {

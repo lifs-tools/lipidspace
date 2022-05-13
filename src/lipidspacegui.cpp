@@ -158,6 +158,30 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     selected_d_lipidomes = 0;
     knubbel = false;
     
+    Tutorial* tutorial = new Tutorial(ui->centralwidget);
+    /*
+    QPixmap close_x("data/images/close-x.png");
+    ui->tutorialFrame->xLabel->setPixmap(close_x);
+    QRect r = ui->tutorialFrame->xLabel->geometry();
+    r.setWidth(mypix.size().width());
+    r.setHeight(mypix.size().height());
+    ui->tutorialFrame->xLabel->setGeometry(r);
+    
+    ui->tutorialFrame->titleLabel->setText("Welcome");
+    ui->tutorialFrame->informationLabel->setText("Welcome to the first tutorial. We will guide you interactively through LipidSpace.");
+    ui->tutorialFrame->pagesLabel->setText("1 / 29");
+    */
+    /*
+        QLabel *label = new QLabel(ui->centralwidget);
+        label->setPixmap(mypix);
+        //label->setScaledContents(true);
+        QRect r = label->geometry();
+        r.setWidth(mypix.size().width());
+        r.setHeight(mypix.size().height());
+        label->setGeometry(r);
+        label->move(QPoint(20, 20));
+        */
+    
     qRegisterMetaType<string>("string");
     
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
@@ -225,7 +249,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->labelSizeSpinBox, SIGNAL(valueChanged(int)), ui->dendrogramView, SLOT(setLabelSize(int)));
     connect(ui->pieSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieSize(int)));
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
-    connect(ui->labelPieSize, SIGNAL(clicked()), this, SLOT(setKnubbel()));
+    connect(ui->labelPieSize, SIGNAL(doubleClicked()), this, SLOT(setKnubbel()));
     connect(ui->startAnalysisPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::startFeatureAnalysis);
     
     ui->speciesList->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -721,12 +745,20 @@ void LipidSpaceGUI::runAnalysis(){
     if (pos >= 0) ui->featureComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBoxStat->findText(study_var_stat.c_str());
     if (pos >= 0) ui->featureComboBoxStat->setCurrentIndex(pos);
+    
+    
 }
 
 
 void LipidSpaceGUI::reassembleSelection(){
     lipid_space->reassembleSelection();
 }
+
+/*
+void LipidSpaceGUI::render(){
+    cout << "huhu" << endl;
+    //QMainWindow::render(painter, point, region, flags);
+}*/
 
 
 void LipidSpaceGUI::itemChanged(QListWidgetItem *item){

@@ -68,23 +68,6 @@ public:
 
 
 
-class ClickableLabel : public QLabel { 
-    Q_OBJECT 
-
-public:
-    explicit ClickableLabel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags = Qt::WindowFlags()) : QLabel(parent){}
-    ~ClickableLabel(){}
-
-signals:
-    void clicked();
-
-protected:
-    void mouseDoubleClickEvent(QMouseEvent*) {
-        emit clicked();
-    }
-
-};
-
 
 
 class Dendrogram : public QGraphicsItem {
