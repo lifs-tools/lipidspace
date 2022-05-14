@@ -139,10 +139,10 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
             keystrokes += string(1, (char)event->key());
             if (keystrokes.length() > 6) keystrokes = keystrokes.substr(1);
             if (keystrokes == "BUTTER"){
-                QMessageBox::information(this, "Important announcement.", "The butter, the better!                              ");
+                QMessageBox::information(this, "Important announcement.", "                  The butter, the better!                              ");
             }
             else if (keystrokes.length() >= 3 && keystrokes.substr(keystrokes.length() - 3) == "FAT"){
-                QMessageBox::information(this, "Insight of the week.", "All that glitters is not fat!!                              ");
+                QMessageBox::information(this, "Insight of the week.", "                  All that glitters is not fat!!                              ");
             }
         }
     }
@@ -157,8 +157,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     keystrokes = "";
     selected_d_lipidomes = 0;
     knubbel = false;
-    //tutorial = new Tutorial(this, ui->centralwidget);
-    ui->firstTutorialPushButton->setVisible(false);
+    tutorial = new Tutorial(this, ui->centralwidget);
+    
     
     qRegisterMetaType<string>("string");
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
@@ -279,6 +279,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statistics->set_lipid_space(lipid_space);
     ui->speciesList->setItemDelegate(new ItemDelegate(ui->speciesList));
     ui->startAnalysisPushButton->setEnabled(false);
+    
+    
+    connect(&import_table, SIGNAL(importTable(string, vector<TableColumnType>*, TableType, string)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType, string)));
+    import_table.setModal(true);
+    
     updateGUI();
 }
 
@@ -312,10 +317,7 @@ void LipidSpaceGUI::quitProgram(){
 
 
 void LipidSpaceGUI::openTable(){
-    ImportTable it;
-    connect(&it, SIGNAL(importTable(string, vector<TableColumnType>*, TableType, string)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType, string)));
-    it.setModal(true);
-    it.exec();
+    import_table.show();
 }
 
 

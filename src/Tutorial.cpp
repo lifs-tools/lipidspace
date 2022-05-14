@@ -141,8 +141,12 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_dendrogram, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->firstTutorialPushButton, ui->dendrogramView, ui->featureComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statistics, ui->featureComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget};
     
+    // tutorial starts
     connect(lipidSpaceGUI->ui->firstTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_first_tutorial);
+    connect(&lipidSpaceGUI->import_table, &ImportTable::rejected, this, &Tutorial::close_tutorial);
     
+    // actions
+    connect(&lipidSpaceGUI->import_table, &ImportTable::importOpened, this, &Tutorial::action_performed);
 }
 
 
@@ -161,6 +165,8 @@ void Tutorial::x_clicked(){
 
 void Tutorial::close_tutorial(){
     setVisible(false);
+    hide_arrows();
+    
     tutorialType = NoTutorial;
     step = -1;
     
@@ -188,6 +194,7 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, QPoint p){
 
 
 void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
+    hide_arrows();
     QLabel* arrow = arrows[a];
     int offset = 26;
     switch(a){
@@ -236,6 +243,8 @@ void Tutorial::continue_tutorial(){
 
 
 void Tutorial::disable(){
+    continuePushButton->setEnabled(false);
+    hide_arrows();
     for (auto obj : main_widgets){
         if (instanceof(obj, QWidget)){
             ((QWidget*)obj)->setEnabled(false);
@@ -247,30 +256,116 @@ void Tutorial::disable(){
 }
 
 
+void Tutorial::hide_arrows(){
+    for (auto arrow : arrows){
+        arrow->setVisible(false);
+    }
+}
+
+
+void Tutorial::action_performed(){
+    if (step < 0 || tutorialType == NoTutorial || !isVisible()) return;
+    
+    switch(tutorialType){
+        case FirstTutorial: {
+            
+            switch((FirstSteps)step){
+                case FOpenImport:
+                    {
+                        ImportTable &it = lipidSpaceGUI->import_table;
+                        if (it.sheet != "Platelets"){
+                            QMessageBox::warning(this, "Wrong table", "You have selected the wrong file, please select the correct file according to the tutorial.");
+                            it.close();
+                        }
+                        else {
+                            continue_tutorial();
+                        }
+                    }
+                    break;
+                    
+                default:
+                    break;
+            }
+            
+        } break;
+        
+        case SecondTutorial: {
+            
+        } break;
+        
+        default:
+            break;
+    }
+}
+
+
+void Tutorial::move(int x, int y, QWidget *w){
+    if (w) {
+        w->setVisible(false);
+        setParent(w);
+        w->setVisible(true);
+    }
+    QFrame::move(x, y);
+}
+
 
 void Tutorial::first_tutorial_steps(){
     disable();
     pagesLabel->setText((std::to_string(step + 1) + " / 3").c_str());
     setVisible(true);
+    titleLabel->setText("");
+    informationLabel->setText("");
     
     switch((FirstSteps)step){
         case FStart:
             move(20, 20);
-            titleLabel->setText("First Tutorial");
-            informationLabel->setText("Welcome to the first tutorial of LipidSpace. The tutorials are designed to interactively guide you through the interface of LipidSpace. ");
+            titleLabel->setText("First Tutorial - Data import");
+            continuePushButton->setEnabled(true);
+            informationLabel->setText("Welcome to the first tutorial of LipidSpace. The tutorials are designed to interactively guide you through the actual interface of LipidSpace. In this tutorial, we will go through the ways to import your lipidomics data into LipidSpace.");
             break;
             
         
         case FDescription:
             move(20, 20);
             titleLabel->setText("What is LipidSpace");
-            informationLabel->setText("LipidSpace is a tool to analyse a multitude of lipidomes, putting them together in one model, and offer several functions for a deeper and quicker investigation of your lipidomic data.");
+            continuePushButton->setEnabled(true);
+            informationLabel->setText("LipidSpace is a tool to analyse a multitude of lipidomes, putting them together in one model, and offer several functions for a deeper and quicker investigation of your lipidomic data. Usually, data of indentified and quantified lipidomics analyses are structured as a table of size (# of lipids) x (# of samples).");
             break;
             
             
+        case FFindImport:
+            {
+                move(200, 100);
+                QFontMetrics f(QApplication::font());
+                
+                show_arrow(ALT, lipidSpaceGUI->ui->centralwidget, f.boundingRect(lipidSpaceGUI->ui->menuLipidSpace->title()).width() / 2.0, 0);
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Where to import data?");
+                informationLabel->setText("LipidSpace supports three types of input data, pure csv lists containing lipid names (one per line), as an already mentioned table, or formatted in the mzTab format.");
+            }
+            break;
+            
+        case FOpenImport:
+            titleLabel->setText("Open Import Dialog");
+            informationLabel->setText("Please click on File > Import table. Browse to the directory where LipidSpace is stored, go into the folder 'Examples', select 'Platelets.xlsx', and select in the following dialog the work sheet 'Platelets'. Be aware, that LipidSpace supports xlsx and csv files, but not the deprecated xls format.");
+            lipidSpaceGUI->ui->menubar->setEnabled(true);
+            lipidSpaceGUI->ui->menuLipidSpace->setEnabled(true);
+            lipidSpaceGUI->ui->actionLoad_table->setEnabled(true);
+            break;
+            
+            
+            
+        case FEnteredImport:
+            move(20, 20, &(lipidSpaceGUI->import_table));
+            titleLabel->setText("Import dialog");
+            informationLabel->setText("Here we see the import dialog for tables. Tables can be structured in multiple ways. The three most common structures are lipid row based, lipid column based and flat based.");
+            continuePushButton->setEnabled(true);
+            break;
+            
+            
+            
+            
         case FEnd:
-            titleLabel->setText("Bla bla");
-            informationLabel->setText("bla bla bla");
             break;
             
         default:

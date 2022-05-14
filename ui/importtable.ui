@@ -39,7 +39,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Sample columns</string>
+      <string>Sample columns*</string>
      </property>
     </widget>
     <widget class="QListWidget" name="sampleListWidgetRow">
@@ -98,7 +98,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Lipid column</string>
+      <string>Lipid column*</string>
      </property>
     </widget>
     <widget class="SingleListWidget" name="lipidListWidgetRow">
@@ -201,7 +201,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Sample column</string>
+      <string>Sample column*</string>
      </property>
     </widget>
     <widget class="QListWidget" name="lipidListWidgetCol">
@@ -234,7 +234,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Lipid columns</string>
+      <string>Lipid columns*</string>
      </property>
     </widget>
     <widget class="QListWidget" name="numericalFeatureListWidgetCol">
@@ -328,7 +328,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Quant data column</string>
+      <string>Quant data column*</string>
      </property>
     </widget>
     <widget class="QLabel" name="label">
@@ -390,7 +390,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Sample column</string>
+      <string>Sample column*</string>
      </property>
     </widget>
     <widget class="SingleListWidget" name="sampleListWidgetFlat">
@@ -413,7 +413,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Lipid column</string>
+      <string>Lipid column*</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_6">

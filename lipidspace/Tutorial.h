@@ -33,8 +33,8 @@ using namespace std;
 
 
 enum Arrow {ABL, ABR, ALT, ALB, ATL, ATR, ART, ARB};
-enum TutorialType {NoTutorial, FirstTutorial};
-enum FirstSteps {FStart, FDescription, FEnd};
+enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial};
+enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnd};
 
 class LipidSpaceGUI;
 
@@ -60,7 +60,7 @@ public:
     int step = -1;
     vector<QObject*> main_widgets;
     
-    Tutorial(LipidSpaceGUI *lipidSpaceGUI, QWidget *parent = 0);
+    explicit Tutorial(LipidSpaceGUI *lipidSpaceGUI, QWidget *parent = 0);
     ~Tutorial();
     
     void show_arrow(Arrow, QWidget *, int x, int y);
@@ -69,12 +69,15 @@ public:
     bool can_start_tutorial();
     void first_tutorial_steps();
     void continue_tutorial();
-    void close_tutorial();
     void disable();
+    void hide_arrows();
+    void move(int x, int y, QWidget *w = 0);
     
 public slots:
     void x_clicked();
+    void close_tutorial();
     void start_first_tutorial();
+    void action_performed();
 };
 
 #endif /* TUTORIAL_H */

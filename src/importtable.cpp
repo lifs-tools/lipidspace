@@ -93,7 +93,25 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     connect(ui->lipidListWidgetRow, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
     connect(ui->lipidListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
     connect(ui->quantListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
-
+} 
+ 
+void ImportTable::show(){
+    ui->sampleListWidgetRow->clear();
+    ui->sampleListWidgetCol->clear();
+    ui->sampleListWidgetFlat->clear();
+    ui->ignoreListWidgetRow->clear();
+    ui->ignoreListWidgetCol->clear();
+    ui->ignoreListWidgetFlat->clear();
+    ui->lipidListWidgetRow->clear();
+    ui->lipidListWidgetCol->clear();
+    ui->lipidListWidgetFlat->clear();
+    ui->numericalFeatureListWidgetCol->clear();
+    ui->nominalFeatureListWidgetCol->clear();
+    ui->numericalFeatureListWidgetFlat->clear();
+    ui->nominalFeatureListWidgetFlat->clear();
+    ui->quantListWidgetFlat->clear();
+    ui->tableWidget->setColumnCount(0);
+    
     
     QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Worksheets *.xlsx (*.xlsx);;Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
     if (!file_name.length()) {
@@ -214,6 +232,9 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
         if (++line_count == 11) break;
     }
     delete fth;
+    QDialog::show();
+    
+    importOpened();
 }
 
 ImportTable::~ImportTable() {
