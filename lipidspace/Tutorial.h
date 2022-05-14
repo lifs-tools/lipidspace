@@ -34,7 +34,8 @@ using namespace std;
 
 enum Arrow {ABL, ABR, ALT, ALB, ATL, ATR, ART, ARB};
 enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial};
-enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnd};
+//enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FEnd};
+enum FirstSteps {FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FStart, FDescription, FFindImport, FOpenImport, FEnd};
 
 class LipidSpaceGUI;
 
