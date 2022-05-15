@@ -141,7 +141,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
     
-    main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_dendrogram, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->firstTutorialPushButton, ui->dendrogramView, ui->featureComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statistics, ui->featureComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget, ui_it->tabWidget, ui_it->rowTab, ui_it->label_15, ui_it->sampleListWidgetRow, ui_it->okButtonRow, ui_it->cancelButtonRow, ui_it->ignoreListWidgetRow, ui_it->lipidListWidgetRow, ui_it->columnTab, ui_it->sampleListWidgetCol, ui_it->cancelButtonCol, ui_it->lipidListWidgetCol, ui_it->ignoreListWidgetCol, ui_it->numericalFeatureListWidgetCol, ui_it->nominalFeatureListWidgetCol, ui_it->flatTab, ui_it->lipidListWidgetFlat, ui_it->ignoreListWidgetFlat, ui_it->quantListWidgetFlat, ui_it->okButtonFlat, ui_it->numericalFeatureListWidgetFlat, ui_it->cancelButtonFlat, ui_it->sampleListWidgetFlat, ui_it->nominalFeatureListWidgetFlat, ui_it->tableWidget};
+    main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_dendrogram, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->firstTutorialPushButton, ui->dendrogramView, ui->featureComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statistics, ui->featureComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget, ui_it->tabWidget, ui_it->label_15, ui_it->sampleListWidgetRow, ui_it->okButtonRow, ui_it->cancelButtonRow, ui_it->ignoreListWidgetRow, ui_it->lipidListWidgetRow, ui_it->sampleListWidgetCol, ui_it->cancelButtonCol, ui_it->lipidListWidgetCol, ui_it->ignoreListWidgetCol, ui_it->numericalFeatureListWidgetCol, ui_it->nominalFeatureListWidgetCol, ui_it->flatTab, ui_it->lipidListWidgetFlat, ui_it->ignoreListWidgetFlat, ui_it->quantListWidgetFlat, ui_it->okButtonFlat, ui_it->numericalFeatureListWidgetFlat, ui_it->cancelButtonFlat, ui_it->sampleListWidgetFlat, ui_it->nominalFeatureListWidgetFlat, ui_it->tableWidget};
     
 
     // tutorial starts
@@ -150,9 +150,16 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     
     // actions
     connect(&lipidSpaceGUI->import_table, &ImportTable::importOpened, this, &Tutorial::action_performed);
+    connect(lipidSpaceGUI, &LipidSpaceGUI::analysisCompleted, this, &Tutorial::action_performed);
     
     // tabs
     connect(lipidSpaceGUI->import_table.ui->tabWidget, &QTabWidget::currentChanged, this, &Tutorial::tab_changed);
+    
+    // lists
+    connect(lipidSpaceGUI->import_table.ui->sampleListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
+    connect(lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
+    connect(lipidSpaceGUI->import_table.ui->nominalFeatureListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
+    connect(lipidSpaceGUI->import_table.ui->lipidListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
 }
 
 
@@ -200,7 +207,6 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, QPoint p){
 
 
 void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
-    hide_arrows();
     QLabel* arrow = arrows[a];
     int offset = 26;
     switch(a){
@@ -289,6 +295,11 @@ void Tutorial::action_performed(){
                     }
                     break;
                     
+                case FFinishImport:
+                    cout << "huhu" << endl;
+                    continue_tutorial();
+                    break;
+                    
                 default:
                     break;
             }
@@ -313,9 +324,62 @@ void Tutorial::tab_changed(int index){
             
             switch((FirstSteps)step){
                 case FSelectColumnTable:
+                    if (index == 1) continue_tutorial();
+                    break;
+                    
+                case FSampleEntryAssignment:
+                case FStudyVarAssignment:
+                case FLipidAssignment:
+                    if (index != 1) lipidSpaceGUI->import_table.ui->tabWidget->setCurrentIndex(1);
+                    
+                default:
+                    break;
+            }
+            
+        } break;
+        
+        case SecondTutorial: {
+            
+        } break;
+        
+        default:
+            break;
+    }
+}
+
+
+//void Tutorial::item_changed(QListWidgetItem *){
+void Tutorial::item_changed(const QModelIndex &, int, int){
+    if (step < 0 || tutorialType == NoTutorial || !isVisible()) return;
+    
+    switch(tutorialType){
+        case FirstTutorial: {
+            
+            switch((FirstSteps)step){
+                case FSampleEntryAssignment:
                     {
-                        if (index == 1) continue_tutorial();
+                        QListWidget *list = lipidSpaceGUI->import_table.ui->sampleListWidgetCol;
+                        list->update();
+                        cout << list->count() << endl;
+                        if (list->count()) cout << list->item(0)->text().toStdString() << endl;
+                        continuePushButton->setEnabled(list->count() == 1 && list->item(0)->text().toStdString() == "Species");
                     }
+                    break;
+                    
+                case FStudyVarAssignment: {
+                        set<string> feature_set = {"Type", "Treatment", "Type-Treatment"};
+                        QListWidget *list = lipidSpaceGUI->import_table.ui->nominalFeatureListWidgetCol;
+                        for (int i = 0; i < list->count(); ++i){
+                            string s = list->item(i)->text().toStdString();
+                            if (uncontains_val(feature_set, s)) break;
+                            feature_set.erase(s);
+                        }
+                        continuePushButton->setEnabled(list->count() == 3 && feature_set.empty());
+                    }
+                    break;
+                    
+                case FLipidAssignment:
+                    continuePushButton->setEnabled(lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->count() == 0);
                     break;
                     
                 default:
@@ -339,6 +403,18 @@ void Tutorial::move(int x, int y, QWidget *w){
     QFrame::move(x, y);
     setVisible(true);
 }
+
+
+
+void Tutorial::changeSize(int w, int h){
+    continuePushButton->move(w - 105, 50);
+    pagesLabel->move(w - 126, h - 31);
+    xLabel->move(w - 25, 10);
+    informationLabel->setGeometry(QRect(20, 90, w - 40, h - 120));
+    QPoint p = pos();
+    setGeometry(p.x(), p.y(), w, h);
+}
+
 
 
 void Tutorial::first_tutorial_steps(){
@@ -467,13 +543,111 @@ void Tutorial::first_tutorial_steps(){
             break;
             
             
+        case FExplainColumnField: {
+                move(20, 400);   
+                QWidget *widget = lipidSpaceGUI->import_table.ui->ignoreListWidgetCol;
+                QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
+                show_arrow(ABL, &lipidSpaceGUI->import_table, p.x() + widget->width(), p.y() + widget->height() / 2.0);
+                titleLabel->setText("The Input Columns Field");
+                informationLabel->setText("To let LipidSpace know which information is stored in which column, you must assign the columns in your table to the specific content fields. On the left, you can see a field with all columns in your table.");
+                continuePushButton->setEnabled(true);
+            }
+            break;
+            
+            
+        case FExplainLipidColumnField: {
+                move(20, 400);   
+                QWidget *widget = lipidSpaceGUI->import_table.ui->lipidListWidgetCol;
+                QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
+                show_arrow(ABR, &lipidSpaceGUI->import_table, p.x(), p.y() + widget->height() / 2.0);
+                titleLabel->setText("The Lipid Column Field");
+                informationLabel->setText("In the middle, you have the first content field called 'Lipid columns'. Please notice that the asterisk (*) denotes a mandatory field. Here you have to drag'n'drop the columns from the input field containing lipid names and their column-wise stored data. Multiple columns can be assigned here.");
+                lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
+                lipidSpaceGUI->import_table.ui->columnTab->setEnabled(true);
+                continuePushButton->setEnabled(true);
+            }
+            break;
+            
+            
+        case FExplainSampleColumnField: {
+                move(20, 400);   
+                QWidget *widget = lipidSpaceGUI->import_table.ui->sampleListWidgetCol;
+                QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
+                show_arrow(ATR, &lipidSpaceGUI->import_table, p.x(), p.y() + widget->height() / 2.0);
+                titleLabel->setText("The Sample Column Field");
+                informationLabel->setText("The second mandatory field is the sample column field. Here one has to assign the input column with all distinct sample names. Only one input column can be assigned here.");
+                continuePushButton->setEnabled(true);
+            }
+            break;
+            
+            
+        case FExplainStudyFields: {
+                move(20, 400);   
+                QWidget *widget = lipidSpaceGUI->import_table.ui->numericalFeatureListWidgetCol;
+                QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
+                show_arrow(ARB, &lipidSpaceGUI->import_table, p.x() + widget->width() * 0.8, p.y());
+                widget = lipidSpaceGUI->import_table.ui->nominalFeatureListWidgetCol;
+                p = map_widget(widget, &lipidSpaceGUI->import_table);
+                show_arrow(ABR, &lipidSpaceGUI->import_table, p.x(), p.y() + widget->height() / 2.0);
+                titleLabel->setText("Study Variables");
+                informationLabel->setText("Additionally, if your table contains columns with study variable data, these colums can be assigned, either of numerical type (age, BMI) or of nominal / categorical type (condition, treatment). These fields can be optionally assigned.");
+                continuePushButton->setEnabled(true);
+            }
+            break;
+            
+            
+        case FSampleEntryAssignment:
+            move(20, 450);
+            titleLabel->setText("Assign Sample Column");
+            informationLabel->setText("It's your time, please assign the 'Species' entry (input column) from the 'Recognized columns' field to the 'Sample column' field.");
+            lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
+            lipidSpaceGUI->import_table.ui->sampleListWidgetCol->setEnabled(true);
+            lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
+            break;
+            
+            
+        case FStudyVarAssignment:
+            move(20, 450);
+            titleLabel->setText("Assign Study Variables");
+            informationLabel->setText("Great, please assign as next the optional study variables, that is 'Type', 'Treatment', and 'Type-Treatment'.");
+            lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
+            lipidSpaceGUI->import_table.ui->nominalFeatureListWidgetCol->setEnabled(true);
+            lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
+            break;
+            
+            
+        case FLipidAssignment:
+            move(20, 450);
+            titleLabel->setText("Assign Lipid Names");
+            informationLabel->setText("Awesome, now only column remained in the input field containg lipid names. Please drag them all into the 'Lipid column' field. You can select all by using the [CTRL] + A key combination.");
+            lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
+            lipidSpaceGUI->import_table.ui->lipidListWidgetCol->setEnabled(true);
+            lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
+            break;
+            
+            
+        case FFinishImport: {
+                move(20, 20); 
+                QWidget *widget = lipidSpaceGUI->import_table.ui->okButtonCol;
+                QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
+                show_arrow(ART, &lipidSpaceGUI->import_table, p.x() + widget->width() / 2., p.y() + widget->height());
+                titleLabel->setText("Finish Import.");
+                informationLabel->setText("To finish now the import, simply press the 'Ok' button.");
+                widget->setEnabled(true);
+                lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
+            }
+            break;
+            
+            
         case FEnd:
+            move(20, 20, lipidSpaceGUI->ui->centralwidget);
+            titleLabel->setText("First Tutorial Completed");
+            continuePushButton->setEnabled(true);
+            informationLabel->setText("Congratulations, you managed to import a first lipid data set into LipidSpace. Feel free to play around with the data set and explore LipidSpace or just start the second tutorial.");
             break;
             
         default:
             close_tutorial();
             break;
-    } 
-    // QPoint p = map_widget(lipidSpaceGUI->ui->firstTutorialPushButton);
-    // show_arrow(ARB, lipidSpaceGUI->ui->centralwidget,  p);
+    }
 }

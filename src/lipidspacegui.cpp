@@ -724,8 +724,9 @@ void LipidSpaceGUI::runAnalysis(){
     if (pos >= 0) ui->featureComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBoxStat->findText(study_var_stat.c_str());
     if (pos >= 0) ui->featureComboBoxStat->setCurrentIndex(pos);
+    if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
     
-    
+    emit analysisCompleted();
 }
 
 

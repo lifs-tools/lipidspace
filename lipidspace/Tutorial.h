@@ -34,8 +34,8 @@ using namespace std;
 
 enum Arrow {ABL, ABR, ALT, ALB, ATL, ATR, ART, ARB};
 enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial};
-//enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FEnd};
-enum FirstSteps {FEnteredImport, FSelectColumnTable, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FStart, FDescription, FFindImport, FOpenImport, FEnd};
+//enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FFinishImport, FEnd};
+enum FirstSteps {FEnteredImport, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FFinishImport, FEnd, FExplainSampleColumnField, FExplainStudyFields, FExplainLipidColumnField, FExplainColumnField, FSelectColumnTable, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FStart, FDescription, FFindImport, FOpenImport};
 
 class LipidSpaceGUI;
 
@@ -73,6 +73,9 @@ public:
     void disable();
     void hide_arrows();
     void move(int x, int y, QWidget *w = 0);
+    void changeSize(int w, int h);
+    //void item_changed(QListWidgetItem *item);
+    void item_changed(const QModelIndex &parent, int first, int last);
     
 public slots:
     void x_clicked();

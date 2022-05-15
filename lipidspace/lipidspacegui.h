@@ -84,6 +84,7 @@ signals:
     void exporting(string);
     void featureChanged(string);
     void updateHighlightedPoints(vector<QString> *);
+    void analysisCompleted();
     
     
 public slots:
