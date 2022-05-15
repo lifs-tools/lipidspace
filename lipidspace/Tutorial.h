@@ -34,8 +34,8 @@ using namespace std;
 
 enum Arrow {ABL, ABR, ALT, ALB, ATL, ATR, ART, ARB};
 enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial};
-//enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FEnd};
-enum FirstSteps {FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FStart, FDescription, FFindImport, FOpenImport, FEnd};
+//enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FEnd};
+enum FirstSteps {FEnteredImport, FSelectColumnTable, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FStart, FDescription, FFindImport, FOpenImport, FEnd};
 
 class LipidSpaceGUI;
 
@@ -66,7 +66,7 @@ public:
     
     void show_arrow(Arrow, QWidget *, int x, int y);
     void show_arrow(Arrow, QWidget *, QPoint);
-    QPoint map_widget(QWidget *widget);
+    QPoint map_widget(QWidget *widget, QWidget *main);
     bool can_start_tutorial();
     void first_tutorial_steps();
     void continue_tutorial();
@@ -79,6 +79,7 @@ public slots:
     void close_tutorial();
     void start_first_tutorial();
     void action_performed();
+    void tab_changed(int);
 };
 
 #endif /* TUTORIAL_H */

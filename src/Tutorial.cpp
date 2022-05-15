@@ -150,6 +150,9 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     
     // actions
     connect(&lipidSpaceGUI->import_table, &ImportTable::importOpened, this, &Tutorial::action_performed);
+    
+    // tabs
+    connect(lipidSpaceGUI->import_table.ui->tabWidget, &QTabWidget::currentChanged, this, &Tutorial::tab_changed);
 }
 
 
@@ -184,9 +187,9 @@ void Tutorial::close_tutorial(){
 }
 
 
-QPoint Tutorial::map_widget(QWidget *widget){
+QPoint Tutorial::map_widget(QWidget *widget, QWidget *main){
     QPoint p = widget->mapToGlobal(QPoint(0, 0));
-    return lipidSpaceGUI->ui->centralwidget->mapFromGlobal(p);
+    return main->mapFromGlobal(p);
 }
 
 
@@ -211,8 +214,8 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
         case ARB: x -= arrow->pixmap()->size().width() - offset; y -= arrow->pixmap()->size().height(); break;
     }
     arrow->setParent(widget);
-    arrow->setVisible(true);
     arrow->move(x, y);
+    arrow->setVisible(true);
 }
 
 
@@ -302,13 +305,39 @@ void Tutorial::action_performed(){
 }
 
 
-void Tutorial::move(int x, int y, QWidget *w){
-    if (w) {
-        w->setVisible(false);
-        setParent(w);
-        w->setVisible(true);
+void Tutorial::tab_changed(int index){
+    if (step < 0 || tutorialType == NoTutorial || !isVisible()) return;
+    
+    switch(tutorialType){
+        case FirstTutorial: {
+            
+            switch((FirstSteps)step){
+                case FSelectColumnTable:
+                    {
+                        if (index == 1) continue_tutorial();
+                    }
+                    break;
+                    
+                default:
+                    break;
+            }
+            
+        } break;
+        
+        case SecondTutorial: {
+            
+        } break;
+        
+        default:
+            break;
     }
+}
+
+
+void Tutorial::move(int x, int y, QWidget *w){
+    if (w) setParent(w);
     QFrame::move(x, y);
+    setVisible(true);
 }
 
 
@@ -318,6 +347,7 @@ void Tutorial::first_tutorial_steps(){
     setVisible(true);
     titleLabel->setText("");
     informationLabel->setText("");
+    QFontMetrics font_metrics(QApplication::font());
     
     switch((FirstSteps)step){
         case FStart:
@@ -338,8 +368,7 @@ void Tutorial::first_tutorial_steps(){
             
         case FFindImport: {
                 move(200, 100);
-                QFontMetrics f(QApplication::font());
-                show_arrow(ALT, lipidSpaceGUI->ui->centralwidget, f.boundingRect(lipidSpaceGUI->ui->menuLipidSpace->title()).width() / 2.0, 0);
+                show_arrow(ALT, lipidSpaceGUI->ui->centralwidget, font_metrics.boundingRect(lipidSpaceGUI->ui->menuLipidSpace->title()).width() / 2.0, 0);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Where to import data?");
                 informationLabel->setText("LipidSpace supports three types of input data, pure csv lists containing lipid names (one per line), as an already mentioned table, or formatted in the mzTab format.");
@@ -356,7 +385,7 @@ void Tutorial::first_tutorial_steps(){
             
             
             
-        case FEnteredImport:
+        case FEnteredImport:            
             lipidSpaceGUI->import_table.show();
             move(20, 20, &(lipidSpaceGUI->import_table));
             titleLabel->setText("Import Dialog");
@@ -367,9 +396,11 @@ void Tutorial::first_tutorial_steps(){
             
             
         case FExplainRow: {
-                move(20, 220);
-                QFontMetrics f(QApplication::font());
-                show_arrow(ALT, lipidSpaceGUI->ui->centralwidget, f.boundingRect(lipidSpaceGUI->ui->menuLipidSpace->title()).width() / 2.0, 0);
+                move(20, 300);
+                QTabWidget *tab_widget = lipidSpaceGUI->import_table.ui->tabWidget;
+                QRect r = tab_widget->tabBar()->tabRect(0);
+                QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
+                show_arrow(ALT, &lipidSpaceGUI->import_table, p.x() + r.width() / 2.0, p.y() + r.height());
                 titleLabel->setText("Lipid Row-Based Tables");
                 informationLabel->setText("The first type of table structures is called lipid row table. The abundences over all samples for one specific lipid are structured row-wise. Usually, all lipids are written in one column. This structure requires that all sample names are denoted in the top row.");
                 continuePushButton->setEnabled(true);
@@ -378,23 +409,62 @@ void Tutorial::first_tutorial_steps(){
             
             
             
-        case FExplainColumn:
-            move(20, 220);
-            titleLabel->setText("Lipid Column-Based Tables");
-            informationLabel->setText("The second type of table structures is called lipid column table. The abundences over all samples for one specific lipid are structured column-wise. This structure requires that all lipid names are denoted in the top row. This structure allows to add sample specific study variables such as age, condition, treatment, etc.");
-            continuePushButton->setEnabled(true);
+        case FExplainColumn: {
+                move(20, 300);
+                QTabWidget *tab_widget = lipidSpaceGUI->import_table.ui->tabWidget;
+                QRect r = tab_widget->tabBar()->tabRect(0);
+                QRect r2 = tab_widget->tabBar()->tabRect(1);
+                QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
+                show_arrow(ALT, &lipidSpaceGUI->import_table, p.x() + r.width() + r2.width() / 2.0, p.y() + r.height());
+                titleLabel->setText("Lipid Column-Based Tables");
+                informationLabel->setText("The second type of table structures is called lipid column table. The abundences over all samples for one specific lipid are structured column-wise. This structure requires that all lipid names are denoted in the top row. This structure allows to add sample specific study variables such as age, condition, treatment, etc.");
+                continuePushButton->setEnabled(true);
+            }
             break;
             
             
             
-        case FExplainFlat:
-            move(20, 220);
-            titleLabel->setText("Lipid Column-Based Tables");
-            informationLabel->setText("The second type of table structures is called lipid column table. The abundences over all samples for one specific lipid are structured column-wise. This structure requires that all lipid names are denoted in the top row. This structure allows to add sample specific study variables such as age, condition, treatment, etc.");
-            continuePushButton->setEnabled(true);
+        case FExplainFlat: {
+                move(20, 300);
+                QTabWidget *tab_widget = lipidSpaceGUI->import_table.ui->tabWidget;
+                QRect r = tab_widget->tabBar()->tabRect(0);
+                QRect r2 = tab_widget->tabBar()->tabRect(1);
+                QRect r3 = tab_widget->tabBar()->tabRect(2);
+                QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
+                show_arrow(ART, &lipidSpaceGUI->import_table, p.x() + r.width() + r2.width() + r3.width() / 2.0, p.y() + r.height());
+                titleLabel->setText("Flat Tables");
+                informationLabel->setText("The third type of table structures is called flat table. Here, the lipid names, the sample names, and their according abundence are written in separate columns. Typically, in this table many additional columns with additional information (e.g., study variables) are stored.");
+                continuePushButton->setEnabled(true);
+            }
             break;
             
             
+            
+        case FShowPreview: {
+                move(20, 20);
+                QTableWidget *table_widget = lipidSpaceGUI->import_table.ui->tableWidget;
+                QPoint p = map_widget(table_widget, &lipidSpaceGUI->import_table);
+                show_arrow(ARB, &lipidSpaceGUI->import_table, p.x() + table_widget->width() / 2.0, p.y());
+                titleLabel->setText("Table Preview");
+                informationLabel->setText("Here you have a preview of our opened example table to decide, of which structure type your table is.");
+                continuePushButton->setEnabled(true);
+            }
+            break;
+            
+           
+        case FSelectColumnTable: {
+                move(20, 300);
+                QTabWidget *tab_widget = lipidSpaceGUI->import_table.ui->tabWidget;
+                QRect r = tab_widget->tabBar()->tabRect(0);
+                QRect r2 = tab_widget->tabBar()->tabRect(1);
+                QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
+                show_arrow(ALT, &lipidSpaceGUI->import_table, p.x() + r.width() + r2.width() / 2.0, p.y() + r.height());
+                titleLabel->setText("Select Column-Based Table for import");
+                informationLabel->setText("Since the example table is column-based, please click at the 'Lipid column (pivot) table' tab.");
+                lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
+                lipidSpaceGUI->import_table.ui->columnTab->setEnabled(true);
+            }
+            break;
             
             
         case FEnd:

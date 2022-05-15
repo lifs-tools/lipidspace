@@ -232,8 +232,8 @@ void ImportTable::show(){
         if (++line_count == 11) break;
     }
     delete fth;
-    QDialog::show();
     
+    QDialog::show();
     importOpened();
 }
 
