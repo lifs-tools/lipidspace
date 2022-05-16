@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="rowTab">
     <attribute name="title">
@@ -121,7 +121,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Recognized columns</string>
+      <string>Input columns</string>
      </property>
     </widget>
    </widget>
@@ -162,7 +162,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Recognized columns</string>
+      <string>Input columns</string>
      </property>
     </widget>
     <widget class="QPushButton" name="cancelButtonCol">
@@ -341,7 +341,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Recognized columns</string>
+      <string>Input columns</string>
      </property>
     </widget>
     <widget class="QPushButton" name="okButtonFlat">

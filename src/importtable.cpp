@@ -250,7 +250,7 @@ void ImportTable::oneItemViolated(string field_name, int num){
 
 
 void ImportTable::cancel(){
-    close();
+    done(0);
 }
 
 
@@ -268,7 +268,7 @@ void ImportTable::okRow(){
         column_types->at(original_column_index[ui->lipidListWidgetRow->item(0)->text()]) = LipidColumn;
         
         importTable(data_table_file, column_types, ROW_PIVOT_TABLE, sheet);
-        close();
+        accept();
     }
     else if (!ui->sampleListWidgetRow->count()) {
         QMessageBox::warning(this, "No sample column selected", "Please select at least one column as sample column.");
@@ -299,7 +299,7 @@ void ImportTable::okCol(){
         }
         
         importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
-        close();
+        accept();
     }
     else if (!ui->sampleListWidgetCol->count()) {
         QMessageBox::warning(this, "No sample column selected", "Please select one column as sample column.");
@@ -333,7 +333,7 @@ void ImportTable::okFlat(){
         }
         
         importTable(data_table_file, column_types, FLAT_TABLE, sheet);
-        close();
+        accept();
     }
     else if (!ui->sampleListWidgetFlat->count()) {
         QMessageBox::warning(this, "No sample column selected", "Please select one column as sample column.");

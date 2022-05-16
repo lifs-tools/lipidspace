@@ -146,7 +146,8 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
 
     // tutorial starts
     connect(lipidSpaceGUI->ui->firstTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_first_tutorial);
-    connect(&lipidSpaceGUI->import_table, &ImportTable::rejected, this, &Tutorial::close_tutorial);
+    connect(&lipidSpaceGUI->import_table, &ImportTable::finished, this, &Tutorial::close_tutorial);
+    connect(&lipidSpaceGUI->import_table, &ImportTable::rejected, this, &Tutorial::close_directly_tutorial);
     
     // actions
     connect(&lipidSpaceGUI->import_table, &ImportTable::importOpened, this, &Tutorial::action_performed);
@@ -170,16 +171,21 @@ Tutorial::~Tutorial() {
 
 void Tutorial::x_clicked(){
     if (tutorialType == NoTutorial || (QMessageBox::question(this, "Quit tutorial", "Do you want to quit the tutorial?") == QMessageBox::Yes)){
-        close_tutorial();
+        close_tutorial(0);
     }
 }
 
 
 
-void Tutorial::close_tutorial(){
+void Tutorial::close_directly_tutorial(){
+    close_tutorial(0);
+}
+
+void Tutorial::close_tutorial(int state){
+    if (state) return;
+    
     setVisible(false);
     hide_arrows();
-    
     tutorialType = NoTutorial;
     step = -1;
     
@@ -249,7 +255,7 @@ void Tutorial::continue_tutorial(){
     step++;
     switch(tutorialType){
         case FirstTutorial: first_tutorial_steps(); break;
-        default: close_tutorial(); break;
+        default: close_tutorial(0); break;
     }
 }
 
@@ -287,7 +293,7 @@ void Tutorial::action_performed(){
                         ImportTable &it = lipidSpaceGUI->import_table;
                         if (it.sheet != "Platelets"){
                             QMessageBox::warning(this, "Wrong table", "You have selected the wrong file, please select the correct file according to the tutorial.");
-                            it.close();
+                            it.accept();
                         }
                         else {
                             continue_tutorial();
@@ -296,7 +302,6 @@ void Tutorial::action_performed(){
                     break;
                     
                 case FFinishImport:
-                    cout << "huhu" << endl;
                     continue_tutorial();
                     break;
                     
@@ -360,8 +365,6 @@ void Tutorial::item_changed(const QModelIndex &, int, int){
                     {
                         QListWidget *list = lipidSpaceGUI->import_table.ui->sampleListWidgetCol;
                         list->update();
-                        cout << list->count() << endl;
-                        if (list->count()) cout << list->item(0)->text().toStdString() << endl;
                         continuePushButton->setEnabled(list->count() == 1 && list->item(0)->text().toStdString() == "Species");
                     }
                     break;
@@ -419,7 +422,7 @@ void Tutorial::changeSize(int w, int h){
 
 void Tutorial::first_tutorial_steps(){
     disable();
-    pagesLabel->setText((std::to_string(step + 1) + " / 3").c_str());
+    pagesLabel->setText((std::to_string(step + 1) + " / 19").c_str());
     setVisible(true);
     titleLabel->setText("");
     informationLabel->setText("");
@@ -428,7 +431,7 @@ void Tutorial::first_tutorial_steps(){
     switch((FirstSteps)step){
         case FStart:
             move(20, 20);
-            titleLabel->setText("First Tutorial - Data import");
+            titleLabel->setText("First Tutorial - Data Import");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Welcome to the first tutorial of LipidSpace. The tutorials are designed to interactively guide you through the actual interface of LipidSpace. In this tutorial, we will go through the ways to import your lipidomics data into LipidSpace.");
             break;
@@ -462,10 +465,15 @@ void Tutorial::first_tutorial_steps(){
             
             
         case FEnteredImport:            
+            //TODO: delete
+            /*
             lipidSpaceGUI->import_table.show();
+            lipidSpaceGUI->import_table.ui->tabWidget->setCurrentIndex(1);
+            */
+            
             move(20, 20, &(lipidSpaceGUI->import_table));
             titleLabel->setText("Import Dialog");
-            informationLabel->setText("Here we see the import dialog for tables. Tables can be structured in multiple ways. The three most common structures are lipid row based, lipid column based and flat based.");
+            informationLabel->setText("Here we see the import dialog for tables. Tables can be structured in multiple ways. The three most common structures are lipid row-based, lipid column-based and flat-based.");
             continuePushButton->setEnabled(true);
             break;
             
@@ -493,7 +501,7 @@ void Tutorial::first_tutorial_steps(){
                 QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
                 show_arrow(ALT, &lipidSpaceGUI->import_table, p.x() + r.width() + r2.width() / 2.0, p.y() + r.height());
                 titleLabel->setText("Lipid Column-Based Tables");
-                informationLabel->setText("The second type of table structures is called lipid column table. The abundences over all samples for one specific lipid are structured column-wise. This structure requires that all lipid names are denoted in the top row. This structure allows to add sample specific study variables such as age, condition, treatment, etc.");
+                informationLabel->setText("The second type of table structures is called lipid column table. The abundences over all samples for one specific lipid are structured column-wise. This structure requires that all lipid names are denoted in the top row. Additionally, specific study variables assigned to the samples such as age, condition, treatment, etc may be present column-wise.");
                 continuePushButton->setEnabled(true);
             }
             break;
@@ -549,7 +557,7 @@ void Tutorial::first_tutorial_steps(){
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
                 show_arrow(ABL, &lipidSpaceGUI->import_table, p.x() + widget->width(), p.y() + widget->height() / 2.0);
                 titleLabel->setText("The Input Columns Field");
-                informationLabel->setText("To let LipidSpace know which information is stored in which column, you must assign the columns in your table to the specific content fields. On the left, you can see a field with all columns in your table.");
+                informationLabel->setText("To let LipidSpace know which information is stored in which column, you must assign the columns from your table to the specific content fields. On the left, you can see a field with all columns within your table.");
                 continuePushButton->setEnabled(true);
             }
             break;
@@ -561,7 +569,7 @@ void Tutorial::first_tutorial_steps(){
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
                 show_arrow(ABR, &lipidSpaceGUI->import_table, p.x(), p.y() + widget->height() / 2.0);
                 titleLabel->setText("The Lipid Column Field");
-                informationLabel->setText("In the middle, you have the first content field called 'Lipid columns'. Please notice that the asterisk (*) denotes a mandatory field. Here you have to drag'n'drop the columns from the input field containing lipid names and their column-wise stored data. Multiple columns can be assigned here.");
+                informationLabel->setText("In the middle, you have the first content field called 'Lipid columns'. Please notice that the asterisk (*) denotes a mandatory field. Here you have to drag'n'drop the columns from the input field that contain lipid names and their column-wise stored data. Multiple columns can be assigned here.");
                 lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
                 lipidSpaceGUI->import_table.ui->columnTab->setEnabled(true);
                 continuePushButton->setEnabled(true);
@@ -597,9 +605,10 @@ void Tutorial::first_tutorial_steps(){
             
             
         case FSampleEntryAssignment:
-            move(20, 450);
+            changeSize(650, 220);
+            move(20, 450); 
             titleLabel->setText("Assign Sample Column");
-            informationLabel->setText("It's your time, please assign the 'Species' entry (input column) from the 'Recognized columns' field to the 'Sample column' field.");
+            informationLabel->setText("It's your time, please assign the 'Species' entry from the 'Input columns' field to the 'Sample column' field.");
             lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->sampleListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
@@ -619,7 +628,7 @@ void Tutorial::first_tutorial_steps(){
         case FLipidAssignment:
             move(20, 450);
             titleLabel->setText("Assign Lipid Names");
-            informationLabel->setText("Awesome, now only column remained in the input field containg lipid names. Please drag them all into the 'Lipid column' field. You can select all by using the [CTRL] + A key combination.");
+            informationLabel->setText("Awesome, now only column remained in the input field containg lipid names. Please drag them all into the 'Lipid column' field. You can select all entries by using the [CTRL] + A key combination.");
             lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->lipidListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
@@ -639,15 +648,17 @@ void Tutorial::first_tutorial_steps(){
             break;
             
             
-        case FEnd:
+        case FFinish:
+            disable();
             move(20, 20, lipidSpaceGUI->ui->centralwidget);
             titleLabel->setText("First Tutorial Completed");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Congratulations, you managed to import a first lipid data set into LipidSpace. Feel free to play around with the data set and explore LipidSpace or just start the second tutorial.");
             break;
             
+        case FEnd:
         default:
-            close_tutorial();
+            close_tutorial(0);
             break;
     }
 }
