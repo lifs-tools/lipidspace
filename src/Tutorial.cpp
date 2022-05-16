@@ -640,7 +640,7 @@ void Tutorial::first_tutorial_steps(){
                 QWidget *widget = lipidSpaceGUI->import_table.ui->okButtonCol;
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
                 show_arrow(ART, &lipidSpaceGUI->import_table, p.x() + widget->width() / 2., p.y() + widget->height());
-                titleLabel->setText("Finish Import.");
+                titleLabel->setText("Finish Import");
                 informationLabel->setText("To finish now the import, simply press the 'Ok' button.");
                 widget->setEnabled(true);
                 lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
