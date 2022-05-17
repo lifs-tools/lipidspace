@@ -19,19 +19,19 @@
 #include "lipidspace/globaldata.h"
 #include "lipidspace/CBTableWidget.h"
 #include "lipidspace/filterdialog.h"
+#include "lipidspace/Tutorial.h"
 #include "cppgoslin/cppgoslin.h"
 #include <thread>
 
 #define ALPHABETICALLY_ASC "Alphabetically (Asc)"
 #define ALPHABETICALLY_DESC "Alphabetically (Desc)"
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }
 QT_END_NAMESPACE
 
 class Canvas;
-
+class Tutorial;
 
 class DragLayer : public QWidget {
     Q_OBJECT
@@ -63,15 +63,19 @@ class LipidSpaceGUI : public QMainWindow
     Q_OBJECT
 
 public:
+    Ui::LipidSpaceGUI *ui;
     LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent = nullptr);
     ~LipidSpaceGUI();
     LipidSpace* lipid_space;
+    QPixmap *arrow_bl;
+    Tutorial *tutorial;
+    ImportTable import_table;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
     void copy_to_clipboard();
-    
+    void closeEvent(QCloseEvent *event) override;
     
     
 signals:
@@ -80,6 +84,7 @@ signals:
     void exporting(string);
     void featureChanged(string);
     void updateHighlightedPoints(vector<QString> *);
+    void analysisCompleted();
     
     
 public slots:
@@ -88,12 +93,13 @@ public slots:
     void openTable();
     void openMzTabM();
     void export_list();
-    void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type);
+    void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type, string sheet);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();
     void showHideDendrogram();
     void showHideGlobalLipidome();
+    void toggleLipidNameTranslation();
     void showHideQuant();
     void toggleQuant();
     void toggleBoundMetric();
@@ -121,19 +127,21 @@ public slots:
     void openLog();
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
+    void ShowContextMenuStatistics(const QPoint);
     void ShowTableContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint, set<int> *selected_d_lipidomes = 0);
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);
     void transposeTable();
     void reassembleSelection();
     void setFeature(int pos);
+    void setFeatureStat(int pos);
     void itemChanged(QListWidgetItem *item);
     void featureItemChanged(QTreeWidgetItem *item, int col);
     void featureItemDoubleClicked(QTreeWidgetItem *item, int col);
     void updateSelectionView();
     void updateView(int);
-    void select_all_entities();
-    void deselect_all_entities();
+    void check_all_entities();
+    void uncheck_all_entities();
     void toggle_all_entities();
     void select_all_features();
     void deselect_all_features();
@@ -147,7 +155,6 @@ public slots:
     
     
 private:
-    Ui::LipidSpaceGUI *ui;
     set<int> *selected_d_lipidomes;
     bool showDendrogram;
     bool showGlobalLipidome;
@@ -161,7 +168,7 @@ private:
     vector<Canvas*> canvases;
     bool knubbel;
     bool table_transposed;
-    map<string, vector<string>> sortings[4];
+    map<string, vector<pair<string, double>>> sortings[4];
     vector<QComboBox*> sorting_boxes;
     
     void fill_Table();

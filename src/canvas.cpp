@@ -76,6 +76,7 @@ void DendrogramLine::highlight(bool h){
     if (node >= 0) dendrogram->dendrogram_titles[node].highlighted = h;
 }
 
+
 void DendrogramLine::update_height_factor(double update_factor, QPointF *max_vals){
     QLineF d_line = line();
     setLine(d_line.x1(), d_line.y1() * update_factor, d_line.x2(), d_line.y2() * update_factor);
@@ -132,8 +133,8 @@ void Dendrogram::add_dendrogram_lines(DendrogramNode* node, DendrogramLine* pare
         return;
     }
 
-    double minx = max(1e-3, x_max_d - x_min_d);
-    double miny = max(1e-3, y_max_d - y_min_d);
+    double minx = max(1e-15, x_max_d - x_min_d);
+    double miny = max(1e-15, y_max_d - y_min_d);
     double x1 = (node->x_left - x_min_d) * dwidth / minx;
     double y1 = (-node->y + y_max_d) * dheight / miny / 100. * dendrogram_y_factor;
     double x2 = (node->x_right - x_min_d) * dwidth / minx;
@@ -220,7 +221,7 @@ void Dendrogram::load(){
     }
   
     dendrogram_x_factor = 100;
-    dendrogram_y_factor = GlobalData::dendrogram_height;
+    dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
     
     dwidth = (lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor;
     dheight = dwidth / 16 * 9;
@@ -235,15 +236,8 @@ void Dendrogram::load(){
     bound.setWidth(dwidth + 3 * w);
     bound.setHeight(dheight + 3 * h);
     
-    
     add_dendrogram_lines(lipid_space->dendrogram_root);
-    for (QLineF &line : lines){
-        line.setLine((line.x1() - x_min_d) * dwidth / (x_max_d - x_min_d),
-                     (line.y1() + y_max_d) * dheight / (y_max_d - y_min_d),
-                     (line.x2() - x_min_d) * dwidth / (x_max_d - x_min_d),
-                     (line.y2() + y_max_d) * dheight / (y_max_d - y_min_d));
-    }
-        
+     
     w = max(bound.width(), (double)view->viewport()->width());
     h = max(bound.height(), (double)view->viewport()->height());
     view->graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
@@ -262,7 +256,7 @@ QRectF Dendrogram::boundingRect() const {
 
 
 void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double threshold, double pie_x, double pie_y, LabelDirection direction){
-    double resize_factor = (double)GlobalData::pie_size / 100.;
+    double resize_factor = GlobalData::gui_num_var["pie_size"] / 100.;
     double pie_radius = 30. * resize_factor;
     int angle_start = 16 * 90;
     QFont pie_font("Helvetica");
@@ -378,7 +372,8 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
 void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     if (!lipid_space->dendrogram_root) return;
     
-    QFont f("Helvetica", 18);
+    QFont f("Helvetica");
+    f.setPointSizeF(GlobalData::gui_num_var["label_size"]);
     painter->setFont(f);
     double dx = 0;
     double dy = 10 + (((lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor) / 16. * 9.) * dendrogram_y_factor / 100;
@@ -388,7 +383,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
         painter->rotate(-35);
         QPen pen((dtitle.highlighted || dtitle.permanent) ? Qt::red : Qt::black);
         painter->setPen(pen);
-        painter->drawText(QRectF(-200, -30, 200, 60), Qt::AlignVCenter | Qt::AlignRight, dtitle.title);
+        painter->drawText(QRectF(-1000, -30, 1000, 60), Qt::AlignVCenter | Qt::AlignRight, dtitle.title);
         dx += dendrogram_x_factor;
         painter->restore();
     }
@@ -396,7 +391,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     
     if (lipid_space && lipid_space->dendrogram_root){
         if (feature != ""){
-            recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::pie_tree_depth);
+            recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::gui_num_var["pie_tree_depth"]);
             
                 // Draw global pie chart
             if (contains_val(lipid_space->feature_values, feature) && lipid_space->feature_values[feature].feature_type == NominalFeature){
@@ -504,7 +499,7 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
 
 
 
-PointSet::PointSet(Table *_lipidome, Canvas *_view) : view(_view) {
+PointSet::PointSet(Lipidome *_lipidome, Canvas *_view) : view(_view) {
     lipidome = _lipidome;
     title = "";
     variances = "";
@@ -524,12 +519,13 @@ void PointSet::loadPoints(){
     double x_max = 0;
     double y_min = 0;
     double y_max = 0;
+    
+    if (view->lipid_space->global_lipidome->lipids.size() <= 2) return;
 
     for (int r = 0, rr = 0; r < (int)lipidome->species.size(); ++r){
         if (!lipidome->selection[r]){
             continue;
         }
-            
         
         double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
         f = 1. / log(f + 1.);
@@ -570,6 +566,7 @@ void PointSet::loadPoints(){
         points.back().item = ellipse;
         rr++;
     }
+    
     
     set_labels();
     
@@ -653,7 +650,7 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         p.addEllipse(bubble);
         painter->fillPath(p, qcolor);
         QPen pen_black(Qt::black);
-        pen_black.setWidthF(0.5);
+        pen_black.setWidthF(0.1);
         painter->setPen(pen_black);
         painter->drawEllipse(bubble);
     }
@@ -815,10 +812,10 @@ void PointSet::automated_annotation(Array &xx, Array &yy){
     int l = labels.size();
     Array label_xx(xx, l);
     Array label_yy(yy, l);
-    double max_int = (double)(~0u) * 0.5;
+    //double max_int = (double)(~0u) * 0.5;
     for (int i = 0; i < l; ++i){
-        label_xx(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
-        label_yy(i) += (((double)rand()) / max_int) * 0.5 - 0.25;
+        label_xx(i) += randnum() * 0.5 - 0.25;
+        label_yy(i) += randnum() * 0.5 - 0.25;
     }
     Array orig_label_xx(label_xx);
     Array orig_label_yy(label_yy);
@@ -928,7 +925,6 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     
     graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
     setScene(&graphics_scene);
-    resetMatrix();
     num = -3;
 }
 
@@ -959,10 +955,15 @@ void Canvas::setDendrogramData(LipidSpace *_lipid_space){
 
 
 void Canvas::resetDendrogram(){
-    resetMatrix();
     dendrogram->load();
     QResizeEvent resize(QSize(width(), height()), QSize(width(), height()));
     emit resizeEvent(&resize);
+}
+
+
+void Canvas::setLabelSize(int font_size){
+    GlobalData::gui_num_var["label_size"] = font_size;
+    if (dendrogram) dendrogram->update();
 }
 
 
@@ -984,7 +985,6 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
     
     graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
     setScene(&graphics_scene);
-    resetMatrix();
     
     
     
@@ -1114,17 +1114,28 @@ void Canvas::exportAsPdf(){
     printer.setOutputFileName(file_name);
     
     // set margins to 0
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QMarginsF margins;
+	margins.setTop(0);
+	margins.setLeft(0);
+	margins.setRight(0);
+	margins.setBottom(0);
+    printer.setPageMargins(margins);
+#else
     QPagedPaintDevice::Margins margins;
     margins.top = 0;
     margins.left = 0;
     margins.right = 0;
     margins.bottom = 0;
-    printer.setMargins (margins);
+    printer.setMargins(margins);
+#endif
 
     
     QPainter p(&printer);
     render(&p);
     p.end();
+    
+    QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
 }
 
 
@@ -1213,7 +1224,7 @@ void Canvas::setFeature(string _feature){
     if (dendrogram){
         dendrogram->feature = _feature;
         double tmp_factor = dendrogram->dendrogram_y_factor;
-        dendrogram->dendrogram_y_factor = GlobalData::dendrogram_height;
+        dendrogram->dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
         QPointF max_vals(1e9, -1e9);
         if (dendrogram->top_line) dendrogram->top_line->update_height_factor(dendrogram->dendrogram_y_factor / tmp_factor, &max_vals);
         double ybound = max(dendrogram->dendrogram_y_factor, 100.);
@@ -1252,11 +1263,11 @@ void Canvas::wheelEvent(QWheelEvent *event){
     
     
     QPointF center(v.x() + v.width() * 0.5, v.y() + v.height() * 0.5);
-    QPointF mouse_pos = mapToScene(event->pos());
-    
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QPointF mouse_pos = mapToScene(QPoint(event->position().x(), event->position().y()));
     double scale_factor = (event->angleDelta().y() > 0) ? 1.1 : 1. / 1.1;
 #else
+    QPointF mouse_pos = mapToScene(event->pos());
     double scale_factor = (event->delta() > 0) ? 1.1 : 1. / 1.1;
 #endif
     scale(scale_factor, scale_factor);
@@ -1333,7 +1344,6 @@ void Canvas::reloadPoints(){
 
 void Canvas::resetCanvas(){
     graphics_scene.clear();
-    resetMatrix();
 }
 
 

@@ -21,8 +21,8 @@
 using namespace std;
 using namespace std::chrono;
 
-enum TableType {ROW_TABLE, COLUMN_TABLE, PIVOT_TABLE};
-
+enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
+enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
 
 
 class LipidSpace : public QThread {
@@ -41,8 +41,9 @@ public:
     bool ignore_doublette_lipids;
     bool unboundend_distance;
     bool without_quant;
-    vector<Table*> lipidomes;
-    Table* global_lipidome;
+    vector<Lipidome*> lipidomes;
+    vector< map<string, string> > lipid_name_translations;
+    Lipidome* global_lipidome;
     Array dendrogram_points;
     vector<int> dendrogram_sorting;
     Matrix hausdorff_distances;
@@ -50,8 +51,8 @@ public:
     map<string, FeatureSet> feature_values;
     DendrogramNode *dendrogram_root;
     map<string, bool> selection[4];
-    vector<Table*> selected_lipidomes;
-    map<string, vector<string>> lipid_sortings;
+    vector<Lipidome*> selected_lipidomes;
+    map<string, vector<pair<string, double>>> lipid_sortings;
     Matrix global_distances;
     int process_id;
     string target_variable;
@@ -68,11 +69,11 @@ public:
     double compute_hausdorff_distance(Matrix &m1, Matrix &m2);
     void compute_hausdorff_matrix();
     void report_hausdorff_matrix(string output_folder);
-    bool compute_global_distance_matrix();
+    int compute_global_distance_matrix();
     void separate_matrixes();
     void normalize_intensities();
     void create_dendrogram();
-    void store_distance_table(string output_folder, Table* lipidome = 0);
+    void store_distance_table(string output_folder, Lipidome* lipidome = 0);
     void run() override;
     void reassembleSelection();
     //std::thread run_analysis_thread(Progress *_progress);
@@ -80,9 +81,9 @@ public:
     LipidAdduct* load_lipid(string lipid_name, map<string, LipidAdduct*> &lipid_set);
     
     void load_list(string lipid_list_file);
-    void load_row_table(string table_file, vector<TableColumnType> *column_types = 0);
-    void load_column_table(string table_file, vector<TableColumnType> *column_types);
-    void load_pivot_table(string table_file, vector<TableColumnType> *column_types);
+    void load_row_table(string table_file, vector<TableColumnType> *column_types = 0, string sheet = "");
+    void load_column_table(string table_file, vector<TableColumnType> *column_types, string sheet = "");
+    void load_flat_table(string table_file, vector<TableColumnType> *column_types, string sheet = "");
     void load_mzTabM(string mzTabM_file);
     int extract_number(string line, int line_number = -1);
     

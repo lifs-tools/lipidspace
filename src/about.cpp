@@ -25,6 +25,7 @@ About::About(QWidget *parent, bool log_view) : QDialog(parent), ui(new Ui::About
         ui->textBrowser->append("- Qt 5 (LGPL license)");
         ui->textBrowser->append("- cppGoslin (MIT license)");
         ui->textBrowser->append("- openBlas (BSD license)");
+        ui->textBrowser->append("- openXLSX (BSD license)");
         ui->textBrowser->append("- lambda-lanczos (MIT license)\n\n");
         
         
@@ -51,6 +52,24 @@ About::About(QWidget *parent, bool log_view) : QDialog(parent), ui(new Ui::About
         std::ifstream stream_license_openblas("LICENSE_OPENBLAS");
         if (stream_license_openblas.good()){
             std::getline(stream_license_openblas, file_content, '\0');
+            ui->textBrowser->append((file_content + "\n\n").c_str());
+            ui->textBrowser->append("----------------------------------------------------------------------------\n\n");
+        }
+        
+        
+        file_content = "";
+        std::ifstream stream_license_openxlsx("LICENSE_XLSX");
+        if (stream_license_openxlsx.good()){
+            std::getline(stream_license_openxlsx, file_content, '\0');
+            ui->textBrowser->append((file_content + "\n\n").c_str());
+            ui->textBrowser->append("----------------------------------------------------------------------------\n\n");
+        }
+        
+        
+        file_content = "";
+        std::ifstream stream_license_ll("LICENSE_LL");
+        if (stream_license_ll.good()){
+            std::getline(stream_license_ll, file_content, '\0');
             ui->textBrowser->append((file_content + "\n\n").c_str());
         }
         

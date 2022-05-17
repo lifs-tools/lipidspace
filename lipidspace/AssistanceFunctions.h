@@ -4,11 +4,19 @@
 #include <QtCore>
 #include <QListWidget>
 #include <QTreeWidget>
+#include <QPen>
+#include <QBrush>
+#include <QPainter>
+#include <QLabel>
+#include <QItemDelegate>
+#include <OpenXLSX.hpp>
 #include <QDropEvent>
+#include <QCheckBox>
 #include <set>
 #include <vector>
 #include <map>
 #include <string>
+#include <stdlib.h>
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/Matrix.h"
 #include "lipidspace/logging.h"
@@ -16,8 +24,9 @@
 #include <algorithm>
 #include <math.h>
 
-#define rand() ((double)random() / (double)(RAND_MAX))
+#define randnum() ((double)rand() / (double)(RAND_MAX))
 
+using namespace OpenXLSX;
 using namespace std;
 
 enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
@@ -52,6 +61,28 @@ public:
 
 
 
+class ClickableLabel : public QLabel { 
+    Q_OBJECT 
+
+public:
+    explicit ClickableLabel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags = Qt::WindowFlags()) : QLabel(parent){}
+    ~ClickableLabel(){}
+
+signals:
+    void clicked();
+    void doubleClicked();
+
+protected:
+    void mouseDoubleClickEvent(QMouseEvent*) {
+        emit doubleClicked();
+    }
+    
+    void mousePressEvent(QMouseEvent*) {
+        emit clicked();
+    }
+
+};
+
 
 struct Feature {
     string name;
@@ -85,7 +116,7 @@ struct Feature {
 class Gene {
 public:
     vector<bool> gene_code;
-    double aic;
+    double score;
     
     Gene(int features);
     Gene(Gene *gene);
@@ -98,6 +129,7 @@ double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
 double compute_aic(Matrix &data, Array &coefficiants, Array &values);
 bool gene_aic(Gene g1, Gene g2);
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score);
 
 
 class LipidSpaceException : public std::exception {
@@ -142,7 +174,16 @@ private:
 
 
 
-class Table {
+class FileTableHandler {
+public:
+    vector<string> headers;
+    vector<vector<string>> rows;
+    FileTableHandler(string, string = "");
+};
+
+
+
+class Lipidome {
 public:
     string file_name;
     string cleaned_name;
@@ -157,7 +198,7 @@ public:
     map<string, Feature> features;
     Matrix m;
     
-    Table(string lipidome_name, string lipidome_file, bool is_file_name = false) : file_name(lipidome_file) {
+    Lipidome(string lipidome_name, string lipidome_file, bool is_file_name = false) : file_name(lipidome_file) {
         QFileInfo qFileInfo(file_name.c_str());
         string cleaned_file = qFileInfo.baseName().toStdString();
         if (is_file_name){
@@ -174,7 +215,21 @@ public:
 class ListItem : public QListWidgetItem {
 public:
     ListItemType type;
-    ListItem(QString name, ListItemType t, QListWidget* parent);
+    double length;
+    string system_name;
+    
+    ListItem(string name, ListItemType t, QListWidget* parent, string _system_name = "");
+};
+
+
+
+
+
+class ItemDelegate : public QItemDelegate
+{
+public:
+    explicit ItemDelegate(QObject *parent = 0) : QItemDelegate(parent) {}
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 };
 
 
@@ -236,7 +291,7 @@ public:
     map<string, vector<double>> feature_numerical;
     map<string, double> feature_numerical_thresholds;
     
-    DendrogramNode(int index, map<string, FeatureSet> *feature_values, Table *lipidome);
+    DendrogramNode(int index, map<string, FeatureSet> *feature_values, Lipidome *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);

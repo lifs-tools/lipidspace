@@ -3,7 +3,9 @@
 #include "lipidspace/logging.h"
 #include "lipidspace/globaldata.h"
 #include <QApplication>
+#include <string>
 
+using namespace std;
 
 
 void print_help(){
@@ -110,6 +112,24 @@ int main(int argc, char** argv) {
             delete l1;
             delete l2;
             delete tokens;
+        }
+    }
+    else if (argc > 2 && string(argv[1]) == "identify"){
+        QApplication application(argc, argv);
+        LipidSpace lipid_space;
+        string lipid_name = goslin::strip(argv[2], '"');
+        LipidParser p;
+        try {
+            LipidAdduct *l = p.parse(lipid_name);
+            cout << "Lipid name: " << l->get_lipid_string() << endl;
+            cout << "Lipid sum formula: " << l->get_sum_formula() << endl;
+            cout << "Lipid mass: " << l->get_mass() << endl;
+            cout << "Lipid class is " << (contains_val(lipid_space.registered_lipid_classes, l->get_extended_class()) ? "" : "NOT ") << "registered in LipidSpace" << endl;
+            delete l;
+        }
+        catch (exception &e){
+            cout << "Lipid could not be parsed:" << endl;
+            cout << e.what() << endl;
         }
     }
     else {

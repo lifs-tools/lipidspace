@@ -9,8 +9,12 @@
 #include <QWidget>
 #include <QLabel>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QPainter>
 #include <QPainterPath>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QMarginsF>
+#endif
 #include <QMouseEvent>
 #include <QGraphicsView>
 #include <QMainWindow>
@@ -63,23 +67,6 @@ public:
 
 
 
-
-class ClickableLabel : public QLabel { 
-    Q_OBJECT 
-
-public:
-    explicit ClickableLabel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags = Qt::WindowFlags()) : QLabel(parent){}
-    ~ClickableLabel(){}
-
-signals:
-    void clicked();
-
-protected:
-    void mouseDoubleClickEvent(QMouseEvent*) {
-        emit clicked();
-    }
-
-};
 
 
 
@@ -145,7 +132,7 @@ struct PCLabel {
 class PointSet : public QGraphicsItem {
 public:
     QRectF bound;
-    Table* lipidome;
+    Lipidome* lipidome;
     Canvas *view;
     QRectF old_view;
     QString title;
@@ -155,7 +142,7 @@ public:
     vector<PCLabel> labels;
     
     
-    PointSet(Table* _lipidome, Canvas *_view);
+    PointSet(Lipidome* _lipidome, Canvas *_view);
     ~PointSet();
     void set_labels();
     void set_point_size();
@@ -208,6 +195,7 @@ public slots:
     void highlightPoints();
     void moveToPoint(QListWidgetItem*);
     void contextMenu(QPoint pos);
+    void setLabelSize(int);
     
     
 signals:

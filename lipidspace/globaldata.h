@@ -22,13 +22,12 @@ public:
     static int PC2;
     static int feature_counter;
     static map<string, QColor> colorMapFeatures;
-    static int pie_tree_depth;
-    static int dendrogram_height;
-    static int pie_size;
     static string normalization;
     static Linkage linkage;
     static string LipidSpace_version;
     static QString last_folder;
+    static map<string, string> gui_string_var;
+    static map<string, double> gui_num_var;
 };
 
 
