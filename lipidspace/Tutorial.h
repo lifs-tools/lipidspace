@@ -35,7 +35,6 @@ using namespace std;
 enum Arrow {ABL, ABR, ALT, ALB, ATL, ATR, ART, ARB};
 enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial};
 enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FFinishImport, FFinish, FEnd};
-//enum FirstSteps {FEnteredImport, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FFinishImport, FFinish, FEnd, FExplainSampleColumnField, FExplainStudyFields, FExplainLipidColumnField, FExplainColumnField, FSelectColumnTable, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FStart, FDescription, FFindImport, FOpenImport};
 
 class LipidSpaceGUI;
 
