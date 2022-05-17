@@ -37,7 +37,7 @@ COPY . /lipidspace
 WORKDIR /lipidspace/cppgoslin
 RUN make clean && make install
 WORKDIR /lipidspace
-RUN make clean && make
+RUN make
 ENTRYPOINT ["./LipidSpace"]
 CMD ["--help"]
 
