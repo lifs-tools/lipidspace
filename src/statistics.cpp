@@ -80,8 +80,22 @@ void Statistics::exportAsPdf(){
 }
 
 
+double Statistics::median(vector<double> &lst, int begin, int end){
+    int count = end - begin;
+    if (count & 1) {
+        return lst[(count >> 1) + begin];
+    } else {
+        double right = lst[(count >> 1) + begin];
+        double left = lst[(count >> 1) - 1 + begin];
+        return (right + left) / 2.0;
+    }
+}
+
+
 void Statistics::updateChart(){
     chart->removeAllSeries();
+    
+    
     
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
@@ -142,12 +156,30 @@ void Statistics::updateChart(){
     if (is_nominal){
         if (global_matrix.cols > 1) global_matrix.scale();
     
+        vector<vector<double>> series(nom_counter);
         for (int r = 0; r < global_matrix.rows; ++r){
             double sum = 0;
             for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
-            if (global_matrix.cols > 1 || sum > 1e-15) plot_series[target_values[r]]->boxSets()[0]->append(sum);
+            if (global_matrix.cols > 1 || sum > 1e-15){
+                plot_series[target_values[r]]->boxSets()[0]->append(sum);
+                series[target_values[r]].push_back(sum);
+            }
         }
-        for (auto series : plot_series) chart->addSeries(series);
+        for (uint i = 0; i < plot_series.size(); ++i){
+            auto single_plot_series = plot_series[i];
+            QBoxSet *box = single_plot_series->boxSets()[0];
+            
+            vector<double> &single_series = series[i];
+            sort(single_series.begin(), single_series.end());
+            int count = single_series.size();
+            box->setValue(QBoxSet::LowerExtreme, single_series.front());
+            box->setValue(QBoxSet::UpperExtreme, single_series.back());
+            box->setValue(QBoxSet::Median, median(single_series, 0, count));
+            box->setValue(QBoxSet::LowerQuartile, median(single_series, 0, count >> 1));
+            box->setValue(QBoxSet::UpperQuartile, median(single_series, (count >> 1) + (count & 1), count));
+            
+            chart->addSeries(single_plot_series);
+        }
     }
     else {
         Array constants;

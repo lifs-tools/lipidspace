@@ -40,6 +40,7 @@ public:
     
     Statistics(QWidget *parent = nullptr);
     void set_lipid_space(LipidSpace *_lipid_space);
+    double median(vector<double> &lst, int begin, int end);
     
 public slots:
     void updateChart();
