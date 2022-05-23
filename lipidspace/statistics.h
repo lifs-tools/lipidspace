@@ -47,6 +47,7 @@ public:
     static double hyperg_2F1(double a, double b, double c, double d);
     static double t_distribution_cdf(double t_stat, double free_deg);
     static double f_distribution_cdf(double fi_stat, double df1, double df2);
+    static double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2);
     static double p_value_student(Array &a, Array &b);
     static double p_value_welch(Array &a, Array &b);
     static double p_value_anova(vector<Array*> &v);

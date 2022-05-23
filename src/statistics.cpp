@@ -92,6 +92,12 @@ double Statistics::median(vector<double> &lst, int begin, int end){
 }
 
 
+
+/*
+Sources:
+https://www.cplusplus.com/forum/general/255896/
+https://scicomp.stackexchange.com/questions/40536/hypergeometric-function-2f-1z-with-z-1-in-gsl
+*/
 double Statistics::hyperg_2F1(double a, double b, double c, double d){
     double e = 1.;
     if (d > 1. || d < 0){
@@ -117,12 +123,19 @@ double Statistics::hyperg_2F1(double a, double b, double c, double d){
 }
 
 
+
+/*
+Source: https://en.wikipedia.org/wiki/Student%27s_t-distribution
+*/
 double Statistics::t_distribution_cdf(double t_stat, double free_deg){
     if (t_stat > 0) t_stat = -t_stat;
     return (0.5 + t_stat * tgamma((free_deg + 1.) / 2.) * hyperg_2F1(0.5, (free_deg + 1.) / 2., 1.5, - sq(t_stat) / free_deg) / (sqrt(M_PI * free_deg) * tgamma(free_deg / 2.))) * 2.;
 }
 
 
+/*
+Source: https://en.wikipedia.org/wiki/Welch%27s_t-test
+*/
 double Statistics::p_value_welch(Array &a, Array &b){
     double m1 = a.mean();
     double s1 = a.sample_stdev();
@@ -133,31 +146,37 @@ double Statistics::p_value_welch(Array &a, Array &b){
     
     double w0 = (m1 - m2);
     double t = w0 / sqrt(sq(s1 / sqrt(n)) + sq(s2 / sqrt(m)));
-    cout << "t: " << t << endl;
     double v = sq(sq(s1) / n + sq(s2) / m) / (sq(sq(s1)) / (sq(n) * (n - 1)) + sq(sq(s2)) / (sq(m) * (m - 1)));
     
     return t_distribution_cdf(t, v);
 }
 
 
-double Statistics::p_value_student(Array &a, Array &b){
-    double m1 = a.mean();
-    double s1 = a.sample_stdev();
-    double n = a.size();
-    double m2 = b.mean();
-    double s2 = b.sample_stdev();
-    double m = b.size();
+
+/*
+Source: https://en.wikipedia.org/wiki/Student%27s_t-test
+*/
+double Statistics::p_value_student(Array &sample1, Array &sample2){
+    double m1 = sample1.mean();
+    double s1 = sample1.sample_stdev();
+    double n = sample1.size();
+    double m2 = sample2.mean();
+    double s2 = sample2.sample_stdev();
+    double m = sample2.size();
     
     double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
-    double w0 = (m1 - m2);
-    double t = sqrt(n * m / (n + m)) * (w0 / s);
+    double t = sqrt(n * m / (n + m)) * ((m1 - m2) / s);
     
     return t_distribution_cdf(t, n + m - 2);
 }
 
 
 
-
+/*
+Sources:
+https://en.wikipedia.org/wiki/F-distribution
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.betainc.html
+*/
 double Statistics::f_distribution_cdf(double f_stat, double df1, double df2){
     
     double x = df1 * f_stat / (df1 * f_stat + df2);
@@ -170,31 +189,94 @@ double Statistics::f_distribution_cdf(double f_stat, double df1, double df2){
 
 
 
-double Statistics::p_value_anova(vector<Array*> &v){
+/*
+Algorithm adapted from: arXiv:2102.08037
+Thomas Viehmann
+Numerically more stable computation of the p-values for the two-sample Kolmogorov-Smirnov test
+*/
+double Statistics::p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
+    double d = 0, cdf1 = 0, cdf2 = 0;
+    int ptr1 = 0, ptr2 = 0, m = sample1.size(), n = sample2.size();
+    sort (sample1.begin(), sample1.end());
+    sort (sample2.begin(), sample2.end());
+    double inv_m = 1. / (double)m;
+    double inv_n = 1. / (double)n;
+    
+    while (ptr1 < m && ptr2 < n){
+        if (sample1[ptr1] < sample2[ptr2]){
+            cdf1 += inv_m;
+            ptr1 += 1;
+        }
+        else {
+            cdf2 += inv_n;
+            ptr2 += 1;
+        }
+        d = max(d, fabs(cdf1 - cdf2));
+    }
+    
+    int size = 2 * m * d + 2;
+    double *lastrow = new double[size];
+    double *row = new double[size];
+    for (int i = 0; i < size; ++i){
+        lastrow[i] = 0;
+        row[i] = 0;
+    }
+    int last_start_j = 0;
+    int start_j = 0;
+    for (int i = 0; i < n + 1; ++i){
+        start_j = max((int)(m * ((double)i / n + d )) + 1 - size, 0);
+        swap(lastrow, row);
+        double val = 0;
+        for (int jj = 0; jj < size; ++jj){
+            int j = jj + start_j;
+            double dist = (double)i / (double)n - (double)j / (double)m;
+            if (dist > d || dist < -d) val = 1;
+            else if (i == 0 || j == 0) val = 0;
+            else if (jj + start_j - last_start_j >= size) val = (double)(i + val * j) / (double)(i + j);
+            else  val = (lastrow[jj + start_j - last_start_j] * i + val * j) / (double)(i + j);
+            row[jj] = val;
+        }
+        last_start_j = start_j;
+    }
+    double p_val = row[m - start_j];
+    
+    
+    delete []lastrow;
+    delete []row;
+    return p_val;
+}
+
+
+/* 
+Source: https://en.wikipedia.org/wiki/One-way_analysis_of_variance
+*/
+double Statistics::p_value_anova(vector<Array*> &arrays){
     vector<double> mean_y;
     vector<double> std_y;
     double total_y = 0;
-    for (auto a : v){
+    for (auto a : arrays){
         mean_y.push_back(a->mean());
         std_y.push_back(a->sample_stdev());
         total_y += mean_y.back();
     }
     total_y /= (double)mean_y.size();
         
-    double MS = 0;
-    double SQR = 0;
+    double MSB = 0;
+    double MSW = 0;
     double N = 0;
     for (uint i = 0; i < mean_y.size(); ++i) {
-        MS += v[i]->size() * sq(mean_y[i] - total_y);
-        SQR += (v[i]->size() - 1.) * sq(std_y[i]);
-        N += v[i]->size();
+        MSB += arrays[i]->size() * sq(mean_y[i] - total_y);
+        MSW += (arrays[i]->size() - 1.) * sq(std_y[i]);
+        N += arrays[i]->size();
     }
-    MS /= ((double)mean_y.size() - 1.);
-    SQR /= (N - v.size());
+    double v1 = mean_y.size() - 1.;
+    double v2 = N - arrays.size();
+    MSB /= v1;
+    MSW /= v2;
     
     
-    double F = MS / SQR;
-    return f_distribution_cdf(F, v.size() - 1, N - v.size());
+    double F = MSB / MSW;
+    return f_distribution_cdf(F, v1, v2);
 }
 
 
@@ -202,6 +284,25 @@ double Statistics::p_value_anova(vector<Array*> &v){
 void Statistics::updateChart(){
     chart->removeAllSeries();
     
+    Array a;
+    a.push_back(6);
+    a.push_back(8);
+    a.push_back(4);
+    a.push_back(5);
+    a.push_back(3);
+    a.push_back(4);
+    
+    Array b;
+    b.push_back(8);
+    b.push_back(12);
+    b.push_back(9);
+    b.push_back(11);
+    b.push_back(6);
+    b.push_back(8);
+    b.push_back(13);
+    b.push_back(12);
+    
+    cout << "KS: " << p_value_kolmogorov_smirnov(a, b) << endl;
     
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
