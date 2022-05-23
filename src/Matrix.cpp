@@ -80,6 +80,13 @@ double Array::stdev(){
     return sqrt(st / (double)size());
 }
 
+
+double Array::sample_stdev(){
+    double mn = mean(), st = 0;
+    for (int i = 0; i < (int)size(); ++i) st += sq(at(i) - mn);
+    return sqrt(st / ((double)size() - 1));
+}
+
 void Array::add(Array &a){
     reserve(size() + a.size());
     for (auto val : a) push_back(val);

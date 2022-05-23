@@ -33,6 +33,52 @@ QT_END_NAMESPACE
 class Canvas;
 class Tutorial;
 
+
+class HomeItem : public QGraphicsItem {
+public:
+    HomeItem(QGraphicsView *v) : view(v) {};
+    
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
+        QLinearGradient gradient;
+        
+        gradient.setStart(0, 0);
+        gradient.setFinalStop(0, 1);
+        gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+        gradient.setColorAt(0.0, Qt::white);
+        gradient.setColorAt(0.04, Qt::white);
+        gradient.setColorAt(0.08, QColor("#e4eff7"));
+        gradient.setColorAt(0.6, QColor("#6babce"));
+        painter->setBrush(gradient);
+        painter->setPen(Qt::NoPen);
+        painter->drawRect(0, 0, view->width(), 400);
+        
+        QBrush bottom(QColor("#6babce"));
+        painter->setBrush(bottom);
+        painter->drawRect(0, 400, view->width(),view->height());
+        
+        
+        QBrush banner(QColor("#71a9cc"));
+        painter->setBrush(banner);
+        painter->drawRect(0, 90, 50, 70);
+        painter->drawRect(550, 90, view->width(), 70);
+        
+        QFont banner_font("Go", 70, QFont::Bold);
+        painter->setPen(QPen(Qt::white));
+        painter->setFont(banner_font);
+        painter->drawText(QRectF(60, 75, 4000, 100), Qt::AlignVCenter | Qt::AlignLeft, "LipidSpace");
+        
+    };
+    
+    QRectF boundingRect() const override {
+        return QRectF(0, 0, view->width(), view->height());
+    };
+    
+    QGraphicsView *view;
+};
+
+
+
+
 class DragLayer : public QWidget {
     Q_OBJECT
     

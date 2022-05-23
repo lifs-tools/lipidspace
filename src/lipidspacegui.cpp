@@ -284,6 +284,17 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(&import_table, SIGNAL(importTable(string, vector<TableColumnType>*, TableType, string)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType, string)));
     import_table.setModal(true);
     
+    
+    QGraphicsScene *scene = new QGraphicsScene();
+    ui->homeGraphicsView->setFrameStyle(QFrame::NoFrame);
+    ui->homeGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->homeGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->homeGraphicsView->setScene(scene);
+    ui->homeGraphicsView->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    
+    QRectF r(0, 0, ui->homeGraphicsView->width(), ui->homeGraphicsView->height());
+    ui->homeGraphicsView->setSceneRect(r);
+    scene->addItem(new HomeItem(ui->homeGraphicsView));
     updateGUI();
 }
 
@@ -1079,6 +1090,8 @@ void LipidSpaceGUI::setKnubbel(){
 
 
 void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
+    //QRectF r(0, 0, ui->homeGraphicsView->width(), ui->homeGraphicsView->height());
+    //ui->homeGraphicsView->setSceneRect(r);    
     event->ignore();
 }
 

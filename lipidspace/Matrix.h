@@ -37,6 +37,7 @@ public:
     double mean();
     double median();
     double stdev();
+    double sample_stdev();
     double sum();
     void mult(Matrix &m, Array &a);
     void add(Array &a);

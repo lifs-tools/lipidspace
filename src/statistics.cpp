@@ -92,9 +92,115 @@ double Statistics::median(vector<double> &lst, int begin, int end){
 }
 
 
+double Statistics::hyperg_2F1(double a, double b, double c, double d){
+    double e = 1.;
+    if (d > 1. || d < 0){
+        a = c - a;
+        e = pow(1. - d, b);
+        d = 1. - 1. / (1. - d);
+    }
+    double TOLERANCE = 1.0e-10;
+    double term = a * b * d / c;
+    double p = 1.0 + term;
+    double n = 1.;
+
+    while (abs( term ) > TOLERANCE){
+        a += 1.;
+        b += 1.;
+        c += 1.;
+        n += 1.;
+        term *= a * b * d / c / n;
+        if (isinf(term) or isnan(term)) break;
+        p += term;
+    }
+    return p / e;
+}
+
+
+double Statistics::t_distribution_cdf(double t_stat, double free_deg){
+    if (t_stat > 0) t_stat = -t_stat;
+    return (0.5 + t_stat * tgamma((free_deg + 1.) / 2.) * hyperg_2F1(0.5, (free_deg + 1.) / 2., 1.5, - sq(t_stat) / free_deg) / (sqrt(M_PI * free_deg) * tgamma(free_deg / 2.))) * 2.;
+}
+
+
+double Statistics::p_value_welch(Array &a, Array &b){
+    double m1 = a.mean();
+    double s1 = a.sample_stdev();
+    double n = a.size();
+    double m2 = b.mean();
+    double s2 = b.sample_stdev();
+    double m = b.size();
+    
+    double w0 = (m1 - m2);
+    double t = w0 / sqrt(sq(s1 / sqrt(n)) + sq(s2 / sqrt(m)));
+    cout << "t: " << t << endl;
+    double v = sq(sq(s1) / n + sq(s2) / m) / (sq(sq(s1)) / (sq(n) * (n - 1)) + sq(sq(s2)) / (sq(m) * (m - 1)));
+    
+    return t_distribution_cdf(t, v);
+}
+
+
+double Statistics::p_value_student(Array &a, Array &b){
+    double m1 = a.mean();
+    double s1 = a.sample_stdev();
+    double n = a.size();
+    double m2 = b.mean();
+    double s2 = b.sample_stdev();
+    double m = b.size();
+    
+    double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
+    double w0 = (m1 - m2);
+    double t = sqrt(n * m / (n + m)) * (w0 / s);
+    
+    return t_distribution_cdf(t, n + m - 2);
+}
+
+
+
+
+double Statistics::f_distribution_cdf(double f_stat, double df1, double df2){
+    
+    double x = df1 * f_stat / (df1 * f_stat + df2);
+    double a = df1 / 2.;
+    double b = df2 / 2.;
+    double B = exp(lgamma(a) + lgamma(b) - lgamma(a + b));
+    return 1. - pow(x, a) * hyperg_2F1(a, 1 - b, a + 1, x) / (a * B);
+    
+}
+
+
+
+double Statistics::p_value_anova(vector<Array*> &v){
+    vector<double> mean_y;
+    vector<double> std_y;
+    double total_y = 0;
+    for (auto a : v){
+        mean_y.push_back(a->mean());
+        std_y.push_back(a->sample_stdev());
+        total_y += mean_y.back();
+    }
+    total_y /= (double)mean_y.size();
+        
+    double MS = 0;
+    double SQR = 0;
+    double N = 0;
+    for (uint i = 0; i < mean_y.size(); ++i) {
+        MS += v[i]->size() * sq(mean_y[i] - total_y);
+        SQR += (v[i]->size() - 1.) * sq(std_y[i]);
+        N += v[i]->size();
+    }
+    MS /= ((double)mean_y.size() - 1.);
+    SQR /= (N - v.size());
+    
+    
+    double F = MS / SQR;
+    return f_distribution_cdf(F, v.size() - 1, N - v.size());
+}
+
+
+
 void Statistics::updateChart(){
     chart->removeAllSeries();
-    
     
     
     string target_variable = GlobalData::gui_string_var["study_var_stat"];

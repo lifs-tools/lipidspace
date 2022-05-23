@@ -30,6 +30,9 @@ using namespace std;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	using namespace QtCharts;
 #endif
+    
+    
+
 
 class Statistics : public QChartView {
     Q_OBJECT
@@ -41,6 +44,12 @@ public:
     Statistics(QWidget *parent = nullptr);
     void set_lipid_space(LipidSpace *_lipid_space);
     double median(vector<double> &lst, int begin, int end);
+    static double hyperg_2F1(double a, double b, double c, double d);
+    static double t_distribution_cdf(double t_stat, double free_deg);
+    static double f_distribution_cdf(double fi_stat, double df1, double df2);
+    static double p_value_student(Array &a, Array &b);
+    static double p_value_welch(Array &a, Array &b);
+    static double p_value_anova(vector<Array*> &v);
     
 public slots:
     void updateChart();
