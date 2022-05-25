@@ -139,10 +139,10 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
             keystrokes += string(1, (char)event->key());
             if (keystrokes.length() > 6) keystrokes = keystrokes.substr(1);
             if (keystrokes == "BUTTER"){
-                QMessageBox::information(this, "Important announcement.", "The butter, the better!                              ");
+                QMessageBox::information(this, "Important announcement.", "                  The butter, the better!                              ");
             }
             else if (keystrokes.length() >= 3 && keystrokes.substr(keystrokes.length() - 3) == "FAT"){
-                QMessageBox::information(this, "Insight of the week.", "All that glitters is not fat!!                              ");
+                QMessageBox::information(this, "Insight of the week.", "                  All that glitters is not fat!!                              ");
             }
         }
     }
@@ -157,8 +157,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     keystrokes = "";
     selected_d_lipidomes = 0;
     knubbel = false;
-    //tutorial = new Tutorial(this, ui->centralwidget);
-    ui->firstTutorialPushButton->setVisible(false);
+    tutorial = new Tutorial(this, ui->centralwidget);
+    
     
     qRegisterMetaType<string>("string");
     this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
@@ -279,6 +279,22 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statistics->set_lipid_space(lipid_space);
     ui->speciesList->setItemDelegate(new ItemDelegate(ui->speciesList));
     ui->startAnalysisPushButton->setEnabled(false);
+    
+    
+    connect(&import_table, SIGNAL(importTable(string, vector<TableColumnType>*, TableType, string)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType, string)));
+    import_table.setModal(true);
+    
+    
+    QGraphicsScene *scene = new QGraphicsScene();
+    ui->homeGraphicsView->setFrameStyle(QFrame::NoFrame);
+    ui->homeGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->homeGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->homeGraphicsView->setScene(scene);
+    ui->homeGraphicsView->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    
+    QRectF r(0, 0, ui->homeGraphicsView->width(), ui->homeGraphicsView->height());
+    ui->homeGraphicsView->setSceneRect(r);
+    scene->addItem(new HomeItem(ui->homeGraphicsView));
     updateGUI();
 }
 
@@ -312,10 +328,7 @@ void LipidSpaceGUI::quitProgram(){
 
 
 void LipidSpaceGUI::openTable(){
-    ImportTable it;
-    connect(&it, SIGNAL(importTable(string, vector<TableColumnType>*, TableType, string)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType, string)));
-    it.setModal(true);
-    it.exec();
+    import_table.show();
 }
 
 
@@ -722,8 +735,9 @@ void LipidSpaceGUI::runAnalysis(){
     if (pos >= 0) ui->featureComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBoxStat->findText(study_var_stat.c_str());
     if (pos >= 0) ui->featureComboBoxStat->setCurrentIndex(pos);
+    if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
     
-    
+    emit analysisCompleted();
 }
 
 
@@ -1076,6 +1090,8 @@ void LipidSpaceGUI::setKnubbel(){
 
 
 void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
+    //QRectF r(0, 0, ui->homeGraphicsView->width(), ui->homeGraphicsView->height());
+    //ui->homeGraphicsView->setSceneRect(r);    
     event->ignore();
 }
 
@@ -1499,8 +1515,11 @@ void LipidSpaceGUI::export_list(){
 void LipidSpaceGUI::ShowContextMenuStatistics(const QPoint pos){
     if (ui->statistics->chart->series().size() == 0) return;
     QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionData);
     menu->addAction(actionExportPdf);
+    connect(actionData, &QAction::triggered, ui->statistics, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, ui->statistics, &Statistics::exportAsPdf);
     menu->popup(ui->statistics->viewport()->mapToGlobal(pos));
     
