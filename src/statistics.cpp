@@ -22,7 +22,6 @@ void Statistics::set_lipid_space(LipidSpace *_lipid_space){
 
 
 void Statistics::setLegendSize(int font_size){
-    resetMatrix();
     GlobalData::gui_num_var["legend_size"] = font_size;
     chart->legend()->setFont(QFont("Helvetica", font_size));
 }
@@ -30,7 +29,6 @@ void Statistics::setLegendSize(int font_size){
 
 
 void Statistics::setTickSize(int font_size){
-    resetMatrix();
     GlobalData::gui_num_var["tick_size"] = font_size;
     updateChart();
 }

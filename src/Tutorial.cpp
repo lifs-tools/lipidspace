@@ -17,7 +17,6 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     QFont font2;
     font2.setPointSize(16);
     font2.setBold(true);
-    font2.setWeight(75);
     titleLabel->setFont(font2);
     titleLabel->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
     titleLabel->setWordWrap(true);
@@ -192,13 +191,13 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
     int offset = 26;
     switch(a){
         case ATL: y -= offset; break;
-        case ATR: x -= arrow->pixmap()->size().width(); y -= offset; break;
-        case ABL: y -= arrow->pixmap()->size().height() - offset; break;
-        case ABR: x -= arrow->pixmap()->size().width(); y -= arrow->pixmap()->size().height() - offset; break;
+        case ATR: x -= arrow->pixmap().size().width(); y -= offset; break;
+        case ABL: y -= arrow->pixmap().size().height() - offset; break;
+        case ABR: x -= arrow->pixmap().size().width(); y -= arrow->pixmap().size().height() - offset; break;
         case ALT: x -= offset; break;
-        case ALB: x -= offset; y -= arrow->pixmap()->size().height(); break;
-        case ART: x -= arrow->pixmap()->size().width() - offset; break;
-        case ARB: x -= arrow->pixmap()->size().width() - offset; y -= arrow->pixmap()->size().height(); break;
+        case ALB: x -= offset; y -= arrow->pixmap().size().height(); break;
+        case ART: x -= arrow->pixmap().size().width() - offset; break;
+        case ARB: x -= arrow->pixmap().size().width() - offset; y -= arrow->pixmap().size().height(); break;
     }
     arrow->setParent(widget);
     arrow->setVisible(true);
