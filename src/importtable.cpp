@@ -113,7 +113,7 @@ void ImportTable::show(){
     ui->tableWidget->setColumnCount(0);
     ui->tabWidget->setCurrentIndex(0);
     
-    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Worksheets *.xlsx (*.xlsx);;Data Tables *.csv *.tsv *.xls (*.csv *.tsv *.xls)");
+    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Worksheets *.xlsx (*.xlsx);;Data Tables *.csv *.tsv (*.csv *.tsv)");
     if (!file_name.length()) {
         QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
         return;

@@ -32,6 +32,7 @@ using namespace std;
 #endif
     
     
+using namespace OpenXLSX;
 
 
 class Statistics : public QChartView {
@@ -40,6 +41,8 @@ class Statistics : public QChartView {
 public:
     LipidSpace *lipid_space;
     QChart *chart;
+    vector<Array> series;
+    vector<string> series_titles;
     
     Statistics(QWidget *parent = nullptr);
     void set_lipid_space(LipidSpace *_lipid_space);
@@ -50,11 +53,12 @@ public:
     static double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2);
     static double p_value_student(Array &a, Array &b);
     static double p_value_welch(Array &a, Array &b);
-    static double p_value_anova(vector<Array*> &v);
+    static double p_value_anova(vector<Array> &v);
     
 public slots:
     void updateChart();
     void exportAsPdf();
+    void exportData();
     void setLegendSize(int);
     void setTickSize(int);
 };

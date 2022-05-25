@@ -1515,8 +1515,11 @@ void LipidSpaceGUI::export_list(){
 void LipidSpaceGUI::ShowContextMenuStatistics(const QPoint pos){
     if (ui->statistics->chart->series().size() == 0) return;
     QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionData);
     menu->addAction(actionExportPdf);
+    connect(actionData, &QAction::triggered, ui->statistics, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, ui->statistics, &Statistics::exportAsPdf);
     menu->popup(ui->statistics->viewport()->mapToGlobal(pos));
     

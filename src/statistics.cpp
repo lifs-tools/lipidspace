@@ -12,6 +12,7 @@ Statistics::Statistics(QWidget *parent) : QChartView(parent) {
     chart->legend()->setAlignment(Qt::AlignBottom);
     setChart(chart);
     chart->legend()->setFont(QFont("Helvetica", GlobalData::gui_num_var["legend_size"]));
+    chart->setTitleFont(QFont("Helvetica", GlobalData::gui_num_var["legend_size"]));
 }
 
 
@@ -25,6 +26,7 @@ void Statistics::setLegendSize(int font_size){
     resetMatrix();
     GlobalData::gui_num_var["legend_size"] = font_size;
     chart->legend()->setFont(QFont("Helvetica", font_size));
+    chart->setTitleFont(QFont("Helvetica", font_size));
 }
 
 
@@ -35,6 +37,59 @@ void Statistics::setTickSize(int font_size){
     updateChart();
 }
 
+
+
+
+
+
+void Statistics::exportData(){
+    if (chart->series().size() == 0) return;
+    QString file_name = QFileDialog::getSaveFileName(this, "Export as csv", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
+    if (!file_name.length()) return;
+    
+    if (file_name.toLower().endsWith("csv") || file_name.toLower().endsWith("tsv")){
+        string sep = file_name.toLower().endsWith("csv") ? "," : "\t";
+        
+        ofstream off(file_name.toStdString().c_str());
+        for (uint i = 0; i < series_titles.size(); ++i){
+            off << series_titles[i];
+            if (i < series_titles.size() - 1) off << sep;
+        }
+        off << endl;
+        
+        uint num_rows = 0;
+        for (auto s : series) num_rows = max(num_rows, (uint)s.size());
+        for (uint i = 0; i < num_rows; ++i){
+            for (uint j = 0; j < series.size(); ++j){
+                if (i < series[j].size()){
+                    off << series[j][i];
+                    if (j < series.size() - 1) off << sep;
+                }
+                else if (j < series.size() - 1) off << sep;
+            }
+            off << endl;
+        }
+    }
+    else if (file_name.toLower().endsWith("xlsx")) {
+        XLDocument doc;
+        doc.create(file_name.toStdString());
+        auto wks = doc.workbook().worksheet("Sheet1");
+        uint col = 1;
+        for (auto t : series_titles) wks.cell(1, col++).value() = t;
+        
+        for (col = 0; col < series.size(); ++col){
+            int row = 2;
+            for (auto s : series[col]) wks.cell(row++, col + 1).value() = s;
+        }
+    
+        doc.save();
+    }
+    else {
+        QMessageBox::information(this, "Export error", "Unknown export format for file '" + file_name + "'.");
+        return;
+    }
+    QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+}
 
 
 
@@ -102,9 +157,16 @@ double Statistics::hyperg_2F1(double a, double b, double c, double d){
     double e = 1.;
     if (d > 1. || d < 0){
         a = c - a;
-        e = pow(1. - d, b);
+        e = 1. / pow(1. - d, b);
         d = 1. - 1. / (1. - d);
     }
+    
+    if (b < 0){
+        e *= pow(1 - d, c - a - b);
+        a = c - a;
+        b = c - b;
+    }
+    
     double TOLERANCE = 1.0e-10;
     double term = a * b * d / c;
     double p = 1.0 + term;
@@ -119,7 +181,7 @@ double Statistics::hyperg_2F1(double a, double b, double c, double d){
         if (isinf(term) or isnan(term)) break;
         p += term;
     }
-    return p / e;
+    return p * e;
 }
 
 
@@ -129,7 +191,7 @@ Source: https://en.wikipedia.org/wiki/Student%27s_t-distribution
 */
 double Statistics::t_distribution_cdf(double t_stat, double free_deg){
     if (t_stat > 0) t_stat = -t_stat;
-    return (0.5 + t_stat * tgamma((free_deg + 1.) / 2.) * hyperg_2F1(0.5, (free_deg + 1.) / 2., 1.5, - sq(t_stat) / free_deg) / (sqrt(M_PI * free_deg) * tgamma(free_deg / 2.))) * 2.;
+    return (0.5 + t_stat * exp(lgamma((free_deg + 1.) / 2.) - lgamma(free_deg / 2.)) * hyperg_2F1(0.5, (free_deg + 1.) / 2., 1.5, - sq(t_stat) / free_deg) / sqrt(M_PI * free_deg)) * 2.;
 }
 
 
@@ -148,7 +210,8 @@ double Statistics::p_value_welch(Array &a, Array &b){
     double t = w0 / sqrt(sq(s1 / sqrt(n)) + sq(s2 / sqrt(m)));
     double v = sq(sq(s1) / n + sq(s2) / m) / (sq(sq(s1)) / (sq(n) * (n - 1)) + sq(sq(s2)) / (sq(m) * (m - 1)));
     
-    return t_distribution_cdf(t, v);
+    double pval = t_distribution_cdf(t, v);
+    return max(0., min(1., pval));
 }
 
 
@@ -166,7 +229,6 @@ double Statistics::p_value_student(Array &sample1, Array &sample2){
     
     double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
     double t = sqrt(n * m / (n + m)) * ((m1 - m2) / s);
-    
     return t_distribution_cdf(t, n + m - 2);
 }
 
@@ -182,8 +244,8 @@ double Statistics::f_distribution_cdf(double f_stat, double df1, double df2){
     double x = df1 * f_stat / (df1 * f_stat + df2);
     double a = df1 / 2.;
     double b = df2 / 2.;
-    double B = exp(lgamma(a) + lgamma(b) - lgamma(a + b));
-    return 1. - pow(x, a) * hyperg_2F1(a, 1 - b, a + 1, x) / (a * B);
+    double pval = 1. - pow(x, a) / a * hyperg_2F1(a, 1 - b, a + 1, x) / beta(a, b);
+    return max(0., min(1., pval));
     
 }
 
@@ -238,25 +300,25 @@ double Statistics::p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
         }
         last_start_j = start_j;
     }
-    double p_val = row[m - start_j];
+    double pval = row[m - start_j];
     
     
     delete []lastrow;
     delete []row;
-    return p_val;
+    return max(0., min(1., pval));
 }
 
 
 /* 
 Source: https://en.wikipedia.org/wiki/One-way_analysis_of_variance
 */
-double Statistics::p_value_anova(vector<Array*> &arrays){
+double Statistics::p_value_anova(vector<Array> &arrays){
     vector<double> mean_y;
     vector<double> std_y;
     double total_y = 0;
     for (auto a : arrays){
-        mean_y.push_back(a->mean());
-        std_y.push_back(a->sample_stdev());
+        mean_y.push_back(a.mean());
+        std_y.push_back(a.sample_stdev());
         total_y += mean_y.back();
     }
     total_y /= (double)mean_y.size();
@@ -265,9 +327,9 @@ double Statistics::p_value_anova(vector<Array*> &arrays){
     double MSW = 0;
     double N = 0;
     for (uint i = 0; i < mean_y.size(); ++i) {
-        MSB += arrays[i]->size() * sq(mean_y[i] - total_y);
-        MSW += (arrays[i]->size() - 1.) * sq(std_y[i]);
-        N += arrays[i]->size();
+        MSB += arrays[i].size() * sq(mean_y[i] - total_y);
+        MSW += (arrays[i].size() - 1.) * sq(std_y[i]);
+        N += arrays[i].size();
     }
     double v1 = mean_y.size() - 1.;
     double v2 = N - arrays.size();
@@ -283,26 +345,12 @@ double Statistics::p_value_anova(vector<Array*> &arrays){
 
 void Statistics::updateChart(){
     chart->removeAllSeries();
-    
-    Array a;
-    a.push_back(6);
-    a.push_back(8);
-    a.push_back(4);
-    a.push_back(5);
-    a.push_back(3);
-    a.push_back(4);
-    
-    Array b;
-    b.push_back(8);
-    b.push_back(12);
-    b.push_back(9);
-    b.push_back(11);
-    b.push_back(6);
-    b.push_back(8);
-    b.push_back(13);
-    b.push_back(12);
-    
-    cout << "KS: " << p_value_kolmogorov_smirnov(a, b) << endl;
+    for (auto axis : chart->axes()){
+        chart->removeAxis(axis);
+    }
+    series_titles.clear();
+    series.clear();
+    chart->setTitle("");
     
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
@@ -323,6 +371,7 @@ void Statistics::updateChart(){
                 nominal_target_values.insert({nominal_value, nom_counter++});
                 plot_series.push_back(new QBoxPlotSeries());
                 plot_series.back()->setName(nominal_value.c_str());
+                series_titles.push_back(nominal_value);
                 plot_series.back()->append(new QBoxSet());
                 string color_key = target_variable + "_" + nominal_value;
                 if (contains_val(GlobalData::colorMapFeatures, color_key)){
@@ -363,7 +412,7 @@ void Statistics::updateChart(){
     if (is_nominal){
         if (global_matrix.cols > 1) global_matrix.scale();
     
-        vector<vector<double>> series(nom_counter);
+        series.resize(nom_counter);
         for (int r = 0; r < global_matrix.rows; ++r){
             double sum = 0;
             for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
@@ -376,7 +425,7 @@ void Statistics::updateChart(){
             auto single_plot_series = plot_series[i];
             QBoxSet *box = single_plot_series->boxSets()[0];
             
-            vector<double> &single_series = series[i];
+            Array &single_series = series[i];
             sort(single_series.begin(), single_series.end());
             int count = single_series.size();
             box->setValue(QBoxSet::LowerExtreme, single_series.front());
@@ -386,6 +435,16 @@ void Statistics::updateChart(){
             box->setValue(QBoxSet::UpperQuartile, median(single_series, (count >> 1) + (count & 1), count));
             
             chart->addSeries(single_plot_series);
+        }
+        if (nom_counter == 2){
+            double p_student = p_value_student(series[0], series[1]);
+            double p_welch = p_value_welch(series[0], series[1]);
+            double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
+            chart->setTitle(QString("Statistics: p-value<sub>Student</sub> = %1,   p-value<sub>Welch</sub> = %2,   p-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
+        }
+        else if (nom_counter > 2){
+            double p_anova = p_value_anova(series);
+            chart->setTitle(QString("Statistics: <i>p-value</i><sub>AONVA</sub> = %1").arg(QString::number(p_anova, 'g', 3)));
         }
     }
     else {
