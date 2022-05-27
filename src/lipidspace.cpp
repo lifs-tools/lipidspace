@@ -121,9 +121,14 @@ void LipidSpace::create_dendrogram(){
     map<string, int> lipid_name_map;
     Matrix global_matrix;
     
+    vector<Lipidome*> lipidomes_for_feature_selection;
+    for (auto lipidome :  lipidomes){
+        string lipidome_name = lipidome->cleaned_name;
+        if (contains_val(selection[3], lipidome_name) && selection[3][lipidome_name]) lipidomes_for_feature_selection.push_back(lipidome);
+    }
     
     // setting up lipid to column in matrix map
-    for (auto lipidome : selected_lipidomes){
+    for (auto lipidome : lipidomes_for_feature_selection){
         for (uint i = 0; i < lipidome->lipids.size(); ++i){
             LipidAdduct* lipid = lipidome->lipids[i];
             if (uncontains_val(lipid_map, lipid)){
@@ -134,9 +139,9 @@ void LipidSpace::create_dendrogram(){
     }
 
     // set up matrix for multiple linear regression
-    global_matrix.reset(selected_lipidomes.size(), lipid_map.size());
-    for (uint r = 0; r < selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = selected_lipidomes[r];
+    global_matrix.reset(lipidomes_for_feature_selection.size(), lipid_map.size());
+    for (uint r = 0; r < lipidomes_for_feature_selection.size(); ++r){
+        Lipidome* lipidome = lipidomes_for_feature_selection[r];
         for (uint i = 0; i < lipidome->lipids.size(); ++i){
             global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
         }
@@ -200,7 +205,7 @@ void LipidSpace::create_dendrogram(){
         
         // setup array for target variable values, if nominal then each with incrementing number
         if (is_nominal){
-            for (auto lipidome : selected_lipidomes){
+            for (auto lipidome : lipidomes_for_feature_selection){
                 string nominal_value = lipidome->features[target_variable].nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
@@ -209,7 +214,7 @@ void LipidSpace::create_dendrogram(){
             }
         }
         else {
-            for (auto lipidome : selected_lipidomes){
+            for (auto lipidome : lipidomes_for_feature_selection){
                 target_values.push_back(lipidome->features[target_variable].numerical_value);
             }
         }
@@ -219,9 +224,11 @@ void LipidSpace::create_dendrogram(){
             int c = kv.second;
             if (is_nominal){
                 vector<Array> arrays(nom_counter);
+                double num_lipid_in_lipidomes = 0;
                 
                 for (int r = 0; r < global_matrix.rows; ++r){
                     if (global_matrix(r, c) <= 1e-15) continue;
+                    num_lipid_in_lipidomes += 1;
                     arrays[target_values[r]].push_back(global_matrix(r, c));
                 }
                 
@@ -233,7 +240,7 @@ void LipidSpace::create_dendrogram(){
                     }
                 }
                 double ll = 2. / ((double)(arrays.size() - 1) * (double)arrays.size());
-                score = pow(score, ll);
+                score = pow(score, ll) * num_lipid_in_lipidomes / (double)lipidomes_for_feature_selection.size();
                 
                 regression_result.push_back({score, kv.first});
             }
@@ -1785,7 +1792,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
         if (feature_values.size() > 1){
             for (auto feature : registered_features){
                 if (uncontains_val(feature_values, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registed already.", FeatureNotRegistered);
+                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registered, yet.", FeatureNotRegistered);
                 }
             }
             
@@ -2080,7 +2087,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
         if (feature_values.size() > 1){
             for (auto feature : registered_features){
                 if (uncontains_val(feature_values, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registed already.", FeatureNotRegistered);
+                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registered, yet.", FeatureNotRegistered);
                 }
             }
             
@@ -2292,6 +2299,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         registered_features.insert(FILE_FEATURE_NAME);
         for (auto feature : features_names_numerical) registered_features.insert(feature);
         for (auto feature : features_names_nominal) registered_features.insert(feature);
+        
         for (auto lipidome : loaded_lipidomes){
             if (lipidome->cleaned_name == "-"){
                 throw LipidSpaceException("Error, sample has no sample name.", CorruptedFileFormat);
@@ -2307,7 +2315,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         if (feature_values.size() > 1){
             for (auto feature : registered_features){
                 if (uncontains_val(feature_values, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registed already.", FeatureNotRegistered);
+                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registered, yet.", FeatureNotRegistered);
                 }
             }
             

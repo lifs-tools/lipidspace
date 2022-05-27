@@ -75,6 +75,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(0) = SampleColumn;
         ct->at(3) = FeatureColumnNominal;
         ct->at(4) = FeatureColumnNominal;
+        /*
         ct->at(12) = FeatureColumnNominal;
         ct->at(1) = FeatureColumnNumerical;
         ct->at(2) = FeatureColumnNumerical;
@@ -85,6 +86,17 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(9) = FeatureColumnNumerical;
         ct->at(10) = FeatureColumnNumerical;
         ct->at(11) = FeatureColumnNumerical;
+        */
+        ct->at(12) = IgnoreColumn;
+        ct->at(1) = IgnoreColumn;
+        ct->at(2) = IgnoreColumn;
+        ct->at(5) = IgnoreColumn;
+        ct->at(6) = IgnoreColumn;
+        ct->at(7) = IgnoreColumn;
+        ct->at(8) = IgnoreColumn;
+        ct->at(9) = IgnoreColumn;
+        ct->at(10) = IgnoreColumn;
+        ct->at(11) = IgnoreColumn;
         loadTable("examples/Tablesets/Plasma-Singapore.csv", ct, COLUMN_PIVOT_TABLE, "");
     }
     else if (event->key() == Qt::Key_3){

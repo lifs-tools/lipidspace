@@ -46,49 +46,70 @@ void Statistics::exportData(){
     if (chart->series().size() == 0) return;
     QString file_name = QFileDialog::getSaveFileName(this, "Export as csv", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
     if (!file_name.length()) return;
-    
-    if (file_name.toLower().endsWith("csv") || file_name.toLower().endsWith("tsv")){
-        string sep = file_name.toLower().endsWith("csv") ? "," : "\t";
-        
-        ofstream off(file_name.toStdString().c_str());
-        for (uint i = 0; i < series_titles.size(); ++i){
-            off << series_titles[i];
-            if (i < series_titles.size() - 1) off << sep;
+
+    try {
+        if (QFile::exists(file_name)){
+            cout << "deleting" << endl;
+            QFile::remove(file_name);
         }
-        off << endl;
-        
-        uint num_rows = 0;
-        for (auto s : series) num_rows = max(num_rows, (uint)s.size());
-        for (uint i = 0; i < num_rows; ++i){
-            for (uint j = 0; j < series.size(); ++j){
-                if (i < series[j].size()){
-                    off << series[j][i];
-                    if (j < series.size() - 1) off << sep;
-                }
-                else if (j < series.size() - 1) off << sep;
+
+        if (file_name.toLower().endsWith("csv") || file_name.toLower().endsWith("tsv")){
+            string sep = file_name.toLower().endsWith("csv") ? "," : "\t";
+            
+            ofstream off(file_name.toStdString().c_str());
+            for (uint i = 0; i < series_titles.size(); ++i){
+                off << series_titles[i];
+                if (i < series_titles.size() - 1) off << sep;
             }
             off << endl;
+            
+            uint num_rows = 0;
+            for (auto s : series) num_rows = max(num_rows, (uint)s.size());
+            for (uint i = 0; i < num_rows; ++i){
+                for (uint j = 0; j < series.size(); ++j){
+                    if (i < series[j].size()){
+                        off << series[j][i];
+                        if (j < series.size() - 1) off << sep;
+                    }
+                    else if (j < series.size() - 1) off << sep;
+                }
+                off << endl;
+            }
         }
-    }
-    else if (file_name.toLower().endsWith("xlsx")) {
-        XLDocument doc;
-        doc.create(file_name.toStdString());
-        auto wks = doc.workbook().worksheet("Sheet1");
-        uint col = 1;
-        for (auto t : series_titles) wks.cell(1, col++).value() = t;
+        else if (file_name.toLower().endsWith("xlsx")) {
+            XLDocument doc;
+            doc.create(file_name.toStdString());
+            auto wbk = doc.workbook();
+            wbk.addWorksheet("Data");
+            wbk.addWorksheet("Statistics");
+            wbk.deleteSheet("Sheet1");
+            auto wks_data = doc.workbook().worksheet("Data");
+            uint col = 1;
+            for (auto t : series_titles) wks_data.cell(1, col++).value() = t;
+            
+            for (col = 0; col < series.size(); ++col){
+                int row = 2;
+                for (auto s : series[col]) wks_data.cell(row++, col + 1).value() = s;
+            }
+            
+            auto wks_stat = doc.workbook().worksheet("Statistics");
+            int row = 1;
+            for (auto kv : stat_results){
+                wks_stat.cell(row, 1).value() = kv.first;
+                wks_stat.cell(row++, 2).value() = kv.second;
+            }
         
-        for (col = 0; col < series.size(); ++col){
-            int row = 2;
-            for (auto s : series[col]) wks.cell(row++, col + 1).value() = s;
+            doc.save();
         }
-    
-        doc.save();
+        else {
+            QMessageBox::information(this, "Export error", "Unknown export format for file '" + file_name + "'.");
+            return;
+        }
+        QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
     }
-    else {
-        QMessageBox::information(this, "Export error", "Unknown export format for file '" + file_name + "'.");
-        return;
+    catch(exception &){
+        QMessageBox::critical(this, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
     }
-    QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
 }
 
 
@@ -98,40 +119,45 @@ void Statistics::exportAsPdf(){
     QString file_name = QFileDialog::getSaveFileName(this, "Export as pdf", GlobalData::last_folder, "*.pdf (*.pdf)");
     if (!file_name.length()) return;
     
-    QFileInfo fi(file_name);
-    GlobalData::last_folder = fi.absoluteDir().absolutePath();
-    
-    QPrinter printer(QPrinter::ScreenResolution);
-    printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setFontEmbeddingEnabled(true);
-    QPageSize pageSize(QSizeF(viewport()->width(), viewport()->height()) , QPageSize::Point);
-    printer.setPageSize(pageSize);
-    
-    printer.setOutputFileName(file_name);
-    
-    // set margins to 0
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    QMarginsF margins;
-	margins.setTop(0);
-	margins.setLeft(0);
-	margins.setRight(0);
-	margins.setBottom(0);
-    printer.setPageMargins(margins);
-#else
-    QPagedPaintDevice::Margins margins;
-    margins.top = 0;
-    margins.left = 0;
-    margins.right = 0;
-    margins.bottom = 0;
-    printer.setMargins(margins);
-#endif
+    try {
+        QFileInfo fi(file_name);
+        GlobalData::last_folder = fi.absoluteDir().absolutePath();
+        
+        QPrinter printer(QPrinter::ScreenResolution);
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setFontEmbeddingEnabled(true);
+        QPageSize pageSize(QSizeF(viewport()->width(), viewport()->height()) , QPageSize::Point);
+        printer.setPageSize(pageSize);
+        
+        printer.setOutputFileName(file_name);
+        
+        // set margins to 0
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        QMarginsF margins;
+        margins.setTop(0);
+        margins.setLeft(0);
+        margins.setRight(0);
+        margins.setBottom(0);
+        printer.setPageMargins(margins);
+    #else
+        QPagedPaintDevice::Margins margins;
+        margins.top = 0;
+        margins.left = 0;
+        margins.right = 0;
+        margins.bottom = 0;
+        printer.setMargins(margins);
+    #endif
 
-    
-    QPainter p(&printer);
-    render(&p);
-    p.end();
-    
-    QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+        
+        QPainter p(&printer);
+        render(&p);
+        p.end();
+        
+        QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+    }
+    catch(exception &){
+        QMessageBox::critical(this, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
+    }
 }
 
 
@@ -351,6 +377,7 @@ void Statistics::updateChart(){
     series_titles.clear();
     series.clear();
     chart->setTitle("");
+    stat_results.clear();
     
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
@@ -440,10 +467,14 @@ void Statistics::updateChart(){
             double p_student = p_value_student(series[0], series[1]);
             double p_welch = p_value_welch(series[0], series[1]);
             double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
+            stat_results.insert({"p_value(Student)", p_student});
+            stat_results.insert({"p_value(Welch)", p_welch});
+            stat_results.insert({"p_value(KS)", p_ks});
             chart->setTitle(QString("Statistics: p-value<sub>Student</sub> = %1,   p-value<sub>Welch</sub> = %2,   p-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
         }
         else if (nom_counter > 2){
             double p_anova = p_value_anova(series);
+            stat_results.insert({"p_value(ANOVA)", p_anova});
             chart->setTitle(QString("Statistics: <i>p-value</i><sub>AONVA</sub> = %1").arg(QString::number(p_anova, 'g', 3)));
         }
     }
@@ -499,6 +530,7 @@ void Statistics::updateChart(){
             SQT += sq(target_values[r] - my);
         }
         double R2 = 1. - SQR / SQT;
+        stat_results.insert({"R^2", R2});
         
         QLineSeries* series_regression = new QLineSeries();
         series_regression->setName(QString().asprintf("Model regression (R<sup>2</sup> = %0.3f)", R2));

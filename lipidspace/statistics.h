@@ -43,6 +43,7 @@ public:
     QChart *chart;
     vector<Array> series;
     vector<string> series_titles;
+    map<string, double> stat_results;
     
     Statistics(QWidget *parent = nullptr);
     void set_lipid_space(LipidSpace *_lipid_space);
