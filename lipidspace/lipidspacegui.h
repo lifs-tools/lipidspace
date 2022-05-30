@@ -179,7 +179,8 @@ public slots:
     void openLog();
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
-    void ShowContextMenuStatistics(const QPoint);
+    void ShowContextMenuStatisticsBoxPlot(const QPoint);
+    void ShowContextMenuStatisticsHistogram(const QPoint);
     void ShowTableContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint, set<int> *selected_d_lipidomes = 0);
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);

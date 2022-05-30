@@ -563,7 +563,7 @@
         <attribute name="title">
          <string>Statistics</string>
         </attribute>
-        <layout class="QGridLayout" name="gridLayout_5">
+        <layout class="QGridLayout" name="gridLayoutStatistics">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -584,8 +584,11 @@
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
-           <widget class="Statistics" name="statistics" native="true"/>
-           <widget class="Statistics" name="statisticsBarPlots" native="true"/>
+           <property name="handleWidth">
+            <number>8</number>
+           </property>
+           <widget class="Statistics" name="statisticsBoxPlot" native="true"/>
+           <widget class="Statistics" name="statisticsHistogram" native="true"/>
           </widget>
          </item>
          <item row="1" column="0">

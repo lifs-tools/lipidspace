@@ -189,9 +189,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->setSelectionMode(QAbstractItemView::ContiguousSelection);
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->statistics->setContextMenuPolicy(Qt::CustomContextMenu);
-    
     ui->speciesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->statisticsBoxPlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statisticsHistogram->setContextMenuPolicy(Qt::CustomContextMenu);
     
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
@@ -236,11 +236,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->applyChangesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->pieTreeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieTree(int)));
     connect(ui->dendrogramHeightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setDendrogramHeight(int)));
-    connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statistics, SLOT(setLegendSize(int)));
-    connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBarPlots, SLOT(setLegendSizeBar(int)));
-    connect(ui->barNumberSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBarPlots, SLOT(setBarNumber(int)));
-    connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statistics, SLOT(setTickSize(int)));
-    connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBarPlots, SLOT(setTickSizeBar(int)));
+    connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBoxPlot, SLOT(setLegendSizeBoxPlot(int)));
+    connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsHistogram, SLOT(setLegendSizeHistogram(int)));
+    connect(ui->barNumberSpinBox, SIGNAL(valueChanged(int)), ui->statisticsHistogram, SLOT(setBarNumber(int)));
+    connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBoxPlot, SLOT(setTickSizeBoxPlot(int)));
+    connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsHistogram, SLOT(setTickSizeHistogram(int)));
     connect(ui->labelSizeSpinBox, SIGNAL(valueChanged(int)), ui->dendrogramView, SLOT(setLabelSize(int)));
     connect(ui->pieSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieSize(int)));
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
@@ -256,7 +256,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->categoryList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
     connect(ui->treeWidget, &QTreeWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
     connect(ui->sampleList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
-    connect(ui->statistics, &Statistics::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatistics);
+    connect(ui->statisticsBoxPlot, &Statistics::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot);
+    connect(ui->statisticsHistogram, &Statistics::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsHistogram);
     
     sorting_boxes.push_back(ui->speciesComboBox);
     sorting_boxes.push_back(ui->classComboBox);
@@ -294,8 +295,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     else if (GlobalData::linkage == CompleteLinkage) ui->actionComplete_linkage_clustering->setChecked(true);
     GlobalData::last_folder = QCoreApplication::applicationDirPath();
     
-    ui->statistics->set_lipid_space(lipid_space);
-    ui->statisticsBarPlots->set_lipid_space(lipid_space);
+    ui->statisticsBoxPlot->set_lipid_space(lipid_space);
+    ui->statisticsHistogram->set_lipid_space(lipid_space);
+    
     ui->speciesList->setItemDelegate(new ItemDelegate(ui->speciesList));
     ui->startAnalysisPushButton->setEnabled(false);
     
@@ -339,8 +341,8 @@ void LipidSpaceGUI::setFeature(int){
 
 void LipidSpaceGUI::setFeatureStat(int){
     GlobalData::gui_string_var["study_var_stat"] = ui->featureComboBoxStat->currentText().toStdString();
-    ui->statistics->updateBoxChart();
-    ui->statisticsBarPlots->updateBarChart();
+    ui->statisticsBoxPlot->updateBoxPlot();
+    ui->statisticsHistogram->updateHistogram();
 }
 
 
@@ -760,8 +762,8 @@ void LipidSpaceGUI::runAnalysis(){
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
-    ui->statistics->updateBoxChart();
-    ui->statisticsBarPlots->updateBarChart();
+    ui->statisticsBoxPlot->updateBoxPlot();
+    ui->statisticsHistogram->updateHistogram();
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBox->findText(study_var.c_str());
@@ -1545,16 +1547,31 @@ void LipidSpaceGUI::export_list(){
 }
 
 
-void LipidSpaceGUI::ShowContextMenuStatistics(const QPoint pos){
-    if (ui->statistics->chart->series().size() == 0) return;
+void LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot(const QPoint pos){
+    if (ui->statisticsBoxPlot->chart->series().size() == 0) return;
     QMenu *menu = new QMenu(this);
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
-    connect(actionData, &QAction::triggered, ui->statistics, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, ui->statistics, &Statistics::exportAsPdf);
-    menu->popup(ui->statistics->viewport()->mapToGlobal(pos));
+    connect(actionData, &QAction::triggered, ui->statisticsBoxPlot, &Statistics::exportData);
+    connect(actionExportPdf, &QAction::triggered, ui->statisticsBoxPlot, &Statistics::exportAsPdf);
+    menu->popup(ui->statisticsBoxPlot->viewport()->mapToGlobal(pos));
+    
+    
+}
+
+
+void LipidSpaceGUI::ShowContextMenuStatisticsHistogram(const QPoint pos){
+    if (ui->statisticsHistogram->chart->series().size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
+    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionData);
+    menu->addAction(actionExportPdf);
+    connect(actionData, &QAction::triggered, ui->statisticsHistogram, &Statistics::exportData);
+    connect(actionExportPdf, &QAction::triggered, ui->statisticsHistogram, &Statistics::exportAsPdf);
+    menu->popup(ui->statisticsHistogram->viewport()->mapToGlobal(pos));
     
     
 }

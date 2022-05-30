@@ -6,14 +6,15 @@
 #include <vector>
 #include <map>
 #include <math.h>
+
+#include <QFileDialog>
 #include <QChartView>
 #include <QChart>
-#include <QFileDialog>
 #include <QMessageBox>
-#include <QPainter>
-#include <QPainterPath>
+#include <QGraphicsLayout>
 #include <QPrinter>
 #include <QBrush>
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     #include <QMarginsF>
 	#include <QtCharts/QChartView>
@@ -27,6 +28,7 @@
 #include <QtCharts/QLegend>
 #include <QtCharts/QBarCategoryAxis>
 #include <QtCharts/QValueAxis>
+
 #include "lipidspace/lipidspace.h"
 
 using namespace std;
@@ -62,14 +64,14 @@ public:
     static double p_value_anova(vector<Array> &v);
     
 public slots:
-    void updateBoxChart();
-    void updateBarChart();
+    void updateBoxPlot();
+    void updateHistogram();
     void exportAsPdf();
     void exportData();
-    void setLegendSize(int);
-    void setLegendSizeBar(int);
-    void setTickSize(int);
-    void setTickSizeBar(int);
+    void setLegendSizeBoxPlot(int);
+    void setLegendSizeHistogram(int);
+    void setTickSizeBoxPlot(int);
+    void setTickSizeHistogram(int);
     void setBarNumber(int);
 };
 

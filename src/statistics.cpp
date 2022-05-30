@@ -13,6 +13,9 @@ Statistics::Statistics(QWidget *parent) : QChartView(parent) {
     setChart(chart);
     chart->legend()->setFont(QFont("Helvetica", GlobalData::gui_num_var["legend_size"]));
     chart->setTitleFont(QFont("Helvetica", GlobalData::gui_num_var["legend_size"]));
+    
+    chart->layout()->setContentsMargins(0,0,0,0);
+    chart->setBackgroundRoundness(0);
 }
 
 
@@ -22,41 +25,41 @@ void Statistics::set_lipid_space(LipidSpace *_lipid_space){
 
 
 
-void Statistics::setLegendSize(int font_size){
+void Statistics::setLegendSizeBoxPlot(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
     chart->legend()->setFont(QFont("Helvetica", font_size));
     chart->setTitleFont(QFont("Helvetica", font_size));
-    updateBoxChart();
+    updateBoxPlot();
 }
 
 
 
-void Statistics::setLegendSizeBar(int font_size){
+void Statistics::setLegendSizeHistogram(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
     chart->legend()->setFont(QFont("Helvetica", font_size));
     chart->setTitleFont(QFont("Helvetica", font_size));
-    updateBarChart();
+    updateHistogram();
 }
 
 
 
-void Statistics::setTickSize(int font_size){
+void Statistics::setTickSizeBoxPlot(int font_size){
     GlobalData::gui_num_var["tick_size"] = font_size;
-    updateBoxChart();
+    updateBoxPlot();
 }
 
 
 
-void Statistics::setTickSizeBar(int font_size){
+void Statistics::setTickSizeHistogram(int font_size){
     GlobalData::gui_num_var["tick_size"] = font_size;
-    updateBarChart();
+    updateHistogram();
 }
 
 
 
 void Statistics::setBarNumber(int bar_number){
     GlobalData::gui_num_var["bar_number"] = bar_number;
-    updateBarChart();
+    updateHistogram();
 }
 
 
@@ -391,7 +394,7 @@ double Statistics::p_value_anova(vector<Array> &arrays){
 
 
 
-void Statistics::updateBarChart(){
+void Statistics::updateHistogram(){
     
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
@@ -513,7 +516,7 @@ void Statistics::updateBarChart(){
 
 
 
-void Statistics::updateBoxChart(){
+void Statistics::updateBoxPlot(){
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
         chart->removeAxis(axis);
