@@ -215,6 +215,7 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
     QLabel* arrow = arrows[a];
     int offset = 26;
     switch(a){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         case ATL: y -= offset; break;
         case ATR: x -= arrow->pixmap().size().width(); y -= offset; break;
         case ABL: y -= arrow->pixmap().size().height() - offset; break;
@@ -223,6 +224,16 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
         case ALB: x -= offset; y -= arrow->pixmap().size().height(); break;
         case ART: x -= arrow->pixmap().size().width() - offset; break;
         case ARB: x -= arrow->pixmap().size().width() - offset; y -= arrow->pixmap().size().height(); break;
+#else
+        case ATL: y -= offset; break;
+        case ATR: x -= arrow->pixmap()->size().width(); y -= offset; break;
+        case ABL: y -= arrow->pixmap()->size().height() - offset; break;
+        case ABR: x -= arrow->pixmap()->size().width(); y -= arrow->pixmap()->size().height() - offset; break;
+        case ALT: x -= offset; break;
+        case ALB: x -= offset; y -= arrow->pixmap()->size().height(); break;
+        case ART: x -= arrow->pixmap()->size().width() - offset; break;
+        case ARB: x -= arrow->pixmap()->size().width() - offset; y -= arrow->pixmap()->size().height(); break;
+#endif
     }
     arrow->setParent(widget);
     arrow->move(x, y);
