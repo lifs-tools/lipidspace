@@ -32,7 +32,7 @@
 using namespace std;
 
 
-enum Arrow {ABL, ABR, ALT, ALB, ATL, ATR, ART, ARB};
+enum Arrow {ABL = 0, ABR = 1, ALT = 2, ALB = 3, ATL = 4, ATR = 5, ART = 6, ARB = 7};
 enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial};
 enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FFinishImport, FFinish, FEnd};
 

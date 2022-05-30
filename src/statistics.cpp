@@ -23,18 +23,40 @@ void Statistics::set_lipid_space(LipidSpace *_lipid_space){
 
 
 void Statistics::setLegendSize(int font_size){
-    resetMatrix();
     GlobalData::gui_num_var["legend_size"] = font_size;
     chart->legend()->setFont(QFont("Helvetica", font_size));
     chart->setTitleFont(QFont("Helvetica", font_size));
+    updateBoxChart();
+}
+
+
+
+void Statistics::setLegendSizeBar(int font_size){
+    GlobalData::gui_num_var["legend_size"] = font_size;
+    chart->legend()->setFont(QFont("Helvetica", font_size));
+    chart->setTitleFont(QFont("Helvetica", font_size));
+    updateBarChart();
 }
 
 
 
 void Statistics::setTickSize(int font_size){
-    resetMatrix();
     GlobalData::gui_num_var["tick_size"] = font_size;
-    updateChart();
+    updateBoxChart();
+}
+
+
+
+void Statistics::setTickSizeBar(int font_size){
+    GlobalData::gui_num_var["tick_size"] = font_size;
+    updateBarChart();
+}
+
+
+
+void Statistics::setBarNumber(int bar_number){
+    GlobalData::gui_num_var["bar_number"] = bar_number;
+    updateBarChart();
 }
 
 
@@ -369,7 +391,129 @@ double Statistics::p_value_anova(vector<Array> &arrays){
 
 
 
-void Statistics::updateChart(){
+void Statistics::updateBarChart(){
+    
+    chart->removeAllSeries();
+    for (auto axis : chart->axes()){
+        chart->removeAxis(axis);
+    }
+    series_titles.clear();
+    series.clear();
+    chart->setTitle("");
+    stat_results.clear();
+    
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
+    
+    bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
+    setVisible(is_nominal);
+    
+    if (!is_nominal) return;
+    
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Array target_values;
+    int nom_counter = 0;
+    vector<QBarSet*> plot_series;
+    
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        string nominal_value = lipidome->features[target_variable].nominal_value;
+        if (uncontains_val(nominal_target_values, nominal_value)){
+            nominal_target_values.insert({nominal_value, nom_counter++});
+            plot_series.push_back(new QBarSet(nominal_value.c_str()));
+            series_titles.push_back(nominal_value);
+            string color_key = target_variable + "_" + nominal_value;
+            if (contains_val(GlobalData::colorMapFeatures, color_key)){
+                QColor color(GlobalData::colorMapFeatures[color_key]);
+                color.setAlpha(128);
+                plot_series.back()->setBrush(QBrush(color));
+                plot_series.back()->setPen(Qt::NoPen);
+            }
+        }
+        target_values.push_back(nominal_target_values[nominal_value]);
+    }
+    
+    Matrix global_matrix;
+    map<LipidAdduct*, int> lipid_map;
+    map<string, int> lipid_name_map;
+    // setting up lipid to column in matrix map
+    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
+        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
+        if (uncontains_val(lipid_map, lipid)){
+            lipid_map.insert({lipid, lipid_map.size()});
+            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
+        }
+    }
+    
+    // set up matrix for multiple linear regression
+    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
+    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
+        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        for (uint i = 0; i < lipidome->lipids.size(); ++i){
+            if (contains_val(lipid_map, lipidome->lipids[i])){
+                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+            }
+        }
+    }
+    
+    if (global_matrix.cols > 1) global_matrix.scale();
+
+    series.resize(nom_counter);
+    double all_min = 1e9;
+    double all_max = -1e9;
+    for (int r = 0; r < global_matrix.rows; ++r){
+        double sum = 0;
+        for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
+        if (global_matrix.cols > 1 || sum > 1e-15){
+            series[target_values[r]].push_back(sum);
+            all_min = min(all_min, sum);
+            all_max = max(all_max, sum);
+        }
+    }
+    
+    double num_bars = GlobalData::gui_num_var["bar_number"];
+    double bar_size = (all_max - all_min) / num_bars;
+    
+    QValueAxis *axisX = new QValueAxis();
+    QValueAxis *axisY = new QValueAxis();
+    axisX->setRange(all_min, all_max);
+    axisY->setRange(0, 1);
+    chart->addAxis(axisX, Qt::AlignBottom);
+    chart->addAxis(axisY, Qt::AlignLeft);
+    int max_hist = 0;
+    for (uint i = 0; i < plot_series.size(); ++i){
+        Array &single_series = series[i];
+        
+        vector<int> counts(num_bars + 1, 0);
+        for (auto val : single_series){
+            max_hist = max(max_hist, ++counts[int((val - all_min) / bar_size)]);
+        }
+        
+        QBarSeries *bar_series = new QBarSeries();
+        bar_series->setBarWidth(plot_series.size());
+        QBarSet *set = plot_series[i];
+        for (auto cnt : counts) set->append(cnt);
+        bar_series->append(set);
+        chart->addSeries(bar_series);
+        bar_series->attachAxis(axisY);
+    }
+    axisY->setRange(0, max_hist);
+    
+    for (auto axis : chart->axes()){
+        axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
+    }
+}
+
+
+
+
+
+
+
+
+
+
+void Statistics::updateBoxChart(){
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
         chart->removeAxis(axis);
@@ -382,7 +526,6 @@ void Statistics::updateChart(){
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
         
-    
     bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
     
     

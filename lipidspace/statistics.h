@@ -19,11 +19,14 @@
 	#include <QtCharts/QChartView>
 #endif
 #include <QtCharts/QBoxPlotSeries>
+#include <QtCharts/QBarSeries>
 #include <QtCharts/QScatterSeries>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QBoxSet>
+#include <QtCharts/QBarSet>
 #include <QtCharts/QLegend>
 #include <QtCharts/QBarCategoryAxis>
+#include <QtCharts/QValueAxis>
 #include "lipidspace/lipidspace.h"
 
 using namespace std;
@@ -33,6 +36,8 @@ using namespace std;
     
     
 using namespace OpenXLSX;
+
+
 
 
 class Statistics : public QChartView {
@@ -57,11 +62,15 @@ public:
     static double p_value_anova(vector<Array> &v);
     
 public slots:
-    void updateChart();
+    void updateBoxChart();
+    void updateBarChart();
     void exportAsPdf();
     void exportData();
     void setLegendSize(int);
+    void setLegendSizeBar(int);
     void setTickSize(int);
+    void setTickSizeBar(int);
+    void setBarNumber(int);
 };
 
 

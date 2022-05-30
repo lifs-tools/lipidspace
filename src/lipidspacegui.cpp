@@ -75,7 +75,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(0) = SampleColumn;
         ct->at(3) = FeatureColumnNominal;
         ct->at(4) = FeatureColumnNominal;
-        /*
+        
         ct->at(12) = FeatureColumnNominal;
         ct->at(1) = FeatureColumnNumerical;
         ct->at(2) = FeatureColumnNumerical;
@@ -86,7 +86,8 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(9) = FeatureColumnNumerical;
         ct->at(10) = FeatureColumnNumerical;
         ct->at(11) = FeatureColumnNumerical;
-        */
+        
+        /*
         ct->at(12) = IgnoreColumn;
         ct->at(1) = IgnoreColumn;
         ct->at(2) = IgnoreColumn;
@@ -97,6 +98,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(9) = IgnoreColumn;
         ct->at(10) = IgnoreColumn;
         ct->at(11) = IgnoreColumn;
+        */
         loadTable("examples/Tablesets/Plasma-Singapore.csv", ct, COLUMN_PIVOT_TABLE, "");
     }
     else if (event->key() == Qt::Key_3){
@@ -170,6 +172,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     selected_d_lipidomes = 0;
     knubbel = false;
     tutorial = new Tutorial(this, ui->centralwidget);
+    connect(ui->firstTutorialPushButton, &QPushButton::clicked, tutorial, &Tutorial::start_first_tutorial);
     
     
     qRegisterMetaType<string>("string");
@@ -234,7 +237,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->pieTreeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieTree(int)));
     connect(ui->dendrogramHeightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setDendrogramHeight(int)));
     connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statistics, SLOT(setLegendSize(int)));
+    connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBarPlots, SLOT(setLegendSizeBar(int)));
+    connect(ui->barNumberSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBarPlots, SLOT(setBarNumber(int)));
     connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statistics, SLOT(setTickSize(int)));
+    connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBarPlots, SLOT(setTickSizeBar(int)));
     connect(ui->labelSizeSpinBox, SIGNAL(valueChanged(int)), ui->dendrogramView, SLOT(setLabelSize(int)));
     connect(ui->pieSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieSize(int)));
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
@@ -289,24 +295,27 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     GlobalData::last_folder = QCoreApplication::applicationDirPath();
     
     ui->statistics->set_lipid_space(lipid_space);
+    ui->statisticsBarPlots->set_lipid_space(lipid_space);
     ui->speciesList->setItemDelegate(new ItemDelegate(ui->speciesList));
     ui->startAnalysisPushButton->setEnabled(false);
     
     
     connect(&import_table, SIGNAL(importTable(string, vector<TableColumnType>*, TableType, string)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType, string)));
     import_table.setModal(true);
+
     
-    
+    // adding scene for home tab
     QGraphicsScene *scene = new QGraphicsScene();
     ui->homeGraphicsView->setFrameStyle(QFrame::NoFrame);
     ui->homeGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->homeGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->homeGraphicsView->setScene(scene);
-    ui->homeGraphicsView->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-    
+    ui->homeGraphicsView->setAlignment(Qt::AlignTop | Qt::AlignLeft);    
     QRectF r(0, 0, ui->homeGraphicsView->width(), ui->homeGraphicsView->height());
     ui->homeGraphicsView->setSceneRect(r);
     scene->addItem(new HomeItem(ui->homeGraphicsView));
+    
+    
     updateGUI();
 }
 
@@ -320,16 +329,20 @@ LipidSpaceGUI::~LipidSpaceGUI(){
 }
 
 
+
 void LipidSpaceGUI::setFeature(int){
     GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
     featureChanged(ui->featureComboBox->currentText().toStdString());
 }
 
 
+
 void LipidSpaceGUI::setFeatureStat(int){
     GlobalData::gui_string_var["study_var_stat"] = ui->featureComboBoxStat->currentText().toStdString();
-    ui->statistics->updateChart();
+    ui->statistics->updateBoxChart();
+    ui->statisticsBarPlots->updateBarChart();
 }
+
 
 
 
@@ -339,18 +352,25 @@ void LipidSpaceGUI::quitProgram(){
 
 
 
+
 void LipidSpaceGUI::openTable(){
     import_table.show();
 }
+
 
 
 bool compare_string_asc(pair<string, double> a, pair<string, double> b){
     return a.first.compare(b.first) < 0;
 }
 
+
+
+
 bool compare_string_desc(pair<string, double> a, pair<string, double> b){
     return a.first.compare(b.first) > 0;
 }
+
+
 
 void LipidSpaceGUI::updateSelectionView(){
     
@@ -740,7 +760,8 @@ void LipidSpaceGUI::runAnalysis(){
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
-    ui->statistics->updateChart();
+    ui->statistics->updateBoxChart();
+    ui->statisticsBarPlots->updateBarChart();
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBox->findText(study_var.c_str());

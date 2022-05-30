@@ -243,7 +243,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>4</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -580,7 +580,13 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="Statistics" name="statistics" native="true"/>
+          <widget class="QSplitter" name="splitterStat">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <widget class="Statistics" name="statistics" native="true"/>
+           <widget class="Statistics" name="statisticsBarPlots" native="true"/>
+          </widget>
          </item>
          <item row="1" column="0">
           <widget class="QGroupBox" name="groupBox_2">
@@ -690,6 +696,41 @@
             </property>
             <property name="text">
              <string>Legend size</string>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="barNumberSpinBox">
+            <property name="geometry">
+             <rect>
+              <x>410</x>
+              <y>40</y>
+              <width>89</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="suffix">
+             <string/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>200</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_4">
+            <property name="geometry">
+             <rect>
+              <x>410</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Bar number</string>
             </property>
            </widget>
           </widget>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>642</width>
-    <height>467</height>
+    <width>971</width>
+    <height>731</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,7 +39,29 @@
     </rect>
    </property>
   </widget>
+  <widget class="QSplitter" name="splitter">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>200</y>
+     <width>0</width>
+     <height>0</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <widget class="Statistics" name="statistics" native="true"/>
+   <widget class="Statistics" name="statisticsBarPlots" native="true"/>
+  </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Statistics</class>
+   <extends>QWidget</extends>
+   <header>lipidspace/statistics.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
