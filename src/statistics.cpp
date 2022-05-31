@@ -621,7 +621,7 @@ void Statistics::updateBoxPlot(){
         else if (nom_counter > 2){
             double p_anova = p_value_anova(series);
             stat_results.insert({"p_value(ANOVA)", p_anova});
-            chart->setTitle(QString("Statistics: <i>p-value</i><sub>AONVA</sub> = %1").arg(QString::number(p_anova, 'g', 3)));
+            chart->setTitle(QString("Statistics: <i>p-value</i><sub>ANOVA</sub> = %1").arg(QString::number(p_anova, 'g', 3)));
         }
     }
     else {

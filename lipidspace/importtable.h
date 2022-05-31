@@ -28,6 +28,7 @@ public:
     string sheet;
     Ui::ImportTable *ui;
     string data_table_file;
+    QString file_name;
     map<QString, int> original_column_index;
     
     explicit ImportTable(QWidget *parent = nullptr);

@@ -93,6 +93,8 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     connect(ui->lipidListWidgetRow, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
     connect(ui->lipidListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
     connect(ui->quantListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
+    
+    file_name = "";
 } 
  
 void ImportTable::show(){
@@ -113,7 +115,7 @@ void ImportTable::show(){
     ui->tableWidget->setColumnCount(0);
     ui->tabWidget->setCurrentIndex(0);
     
-    QString file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Worksheets *.xlsx (*.xlsx);;Data Tables *.csv *.tsv (*.csv *.tsv)");
+    file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Worksheets *.xlsx (*.xlsx);;Data Tables *.csv *.tsv (*.csv *.tsv)");
     if (!file_name.length()) {
         QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
         return;

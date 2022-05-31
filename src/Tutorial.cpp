@@ -301,7 +301,9 @@ void Tutorial::action_performed(){
                 case FOpenImport:
                     {
                         ImportTable &it = lipidSpaceGUI->import_table;
-                        if (it.sheet != "Example-Dataset"){
+                        QFileInfo qFileInfo(it.file_name);
+                        string cleaned_file_name = qFileInfo.baseName().toStdString();
+                        if (cleaned_file_name != "Example-Dataset" || it.sheet != "Data"){
                             QMessageBox::warning(this, "Wrong table", "You have selected the wrong file, please select the correct file according to the tutorial.");
                             it.accept();
                         }
