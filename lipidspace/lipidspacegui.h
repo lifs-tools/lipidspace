@@ -47,8 +47,8 @@ public:
         gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
         gradient.setColorAt(0.0, Qt::white);
         gradient.setColorAt(0.04, Qt::white);
-        gradient.setColorAt(0.08, QColor("#f7f0e4")); // e4eff7
-        gradient.setColorAt(0.6, QColor("#ceab6b")); // 6babce
+        gradient.setColorAt(0.08, QColor("#e4eff7")); // e4eff7 / f7f0e4
+        gradient.setColorAt(0.6, QColor("#6babce")); // 6babce / ceab6b
         painter->setBrush(gradient);
         painter->setPen(Qt::NoPen);
         painter->drawRect(0, 0, view->width(), 400 * factor);
@@ -60,19 +60,16 @@ public:
         QRectF text_bound;
         painter->drawText(QRectF(60 * factor, 65 * factor, 4000, 120 * factor), Qt::AlignVCenter | Qt::AlignLeft, "LipidSpace", &text_bound);
         
-        QBrush bottom(QColor("#ceab6b")); // 6babce
+        QBrush bottom(QColor("#6babce")); // 6babce / ceab6b
         painter->setPen(Qt::NoPen);
         painter->setBrush(bottom);
         painter->drawRect(0, 400 * factor, view->width(),view->height());
         
         
-        QBrush banner(QColor("#ce956b")); // 71a9cc
+        QBrush banner(QColor("#71a9cc")); // 71a9cc / ce956b
         painter->setBrush(banner);
         painter->drawRect(0, 90 * factor, 50 * factor, 70 * factor);
         painter->drawRect(80 * factor + text_bound.width(), 90 * factor, view->width(), 70 * factor);
-        
-        
-        
     };
     
     QRectF boundingRect() const override {

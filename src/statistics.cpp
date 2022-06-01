@@ -7,6 +7,7 @@ Statistics::Statistics(QWidget *parent) : QChartView(parent) {
     lipid_space = 0;
     chart = new QChart();
     chart->setAnimationOptions(QChart::SeriesAnimations);
+	setRenderHint(QPainter::Antialiasing);
     chart->createDefaultAxes();
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
