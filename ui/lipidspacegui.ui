@@ -604,6 +604,7 @@
            </property>
            <widget class="Statistics" name="statisticsBoxPlot" native="true"/>
            <widget class="Statistics" name="statisticsHistogram" native="true"/>
+           <widget class="Statistics" name="statisticsBarPlot" native="true"/>
           </widget>
          </item>
          <item row="1" column="0">

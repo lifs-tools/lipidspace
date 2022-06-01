@@ -65,12 +65,15 @@ public:
     
 public slots:
     void updateBoxPlot();
+    void updateBarPlot();
     void updateHistogram();
     void exportAsPdf();
     void exportData();
     void setLegendSizeBoxPlot(int);
+    void setLegendSizeBarPlot(int);
     void setLegendSizeHistogram(int);
     void setTickSizeBoxPlot(int);
+    void setTickSizeBarPlot(int);
     void setTickSizeHistogram(int);
     void setBarNumber(int);
 };

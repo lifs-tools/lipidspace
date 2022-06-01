@@ -34,6 +34,15 @@ void Statistics::setLegendSizeBoxPlot(int font_size){
 
 
 
+void Statistics::setLegendSizeBarPlot(int font_size){
+    GlobalData::gui_num_var["legend_size"] = font_size;
+    chart->legend()->setFont(QFont("Helvetica", font_size));
+    chart->setTitleFont(QFont("Helvetica", font_size));
+    updateBarPlot();
+}
+
+
+
 void Statistics::setLegendSizeHistogram(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
     chart->legend()->setFont(QFont("Helvetica", font_size));
@@ -46,6 +55,13 @@ void Statistics::setLegendSizeHistogram(int font_size){
 void Statistics::setTickSizeBoxPlot(int font_size){
     GlobalData::gui_num_var["tick_size"] = font_size;
     updateBoxPlot();
+}
+
+
+
+void Statistics::setTickSizeBarPlot(int font_size){
+    GlobalData::gui_num_var["tick_size"] = font_size;
+    updateBarPlot();
 }
 
 
@@ -394,6 +410,132 @@ double Statistics::p_value_anova(vector<Array> &arrays){
 
 
 
+void Statistics::updateBarPlot(){
+    
+    chart->removeAllSeries();
+    for (auto axis : chart->axes()){
+        chart->removeAxis(axis);
+    }
+    series_titles.clear();
+    series.clear();
+    chart->setTitle("");
+    stat_results.clear();
+    
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
+    
+    bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
+    setVisible(is_nominal);
+    
+    if (!is_nominal) return;
+    
+   
+    
+    
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Array target_values;
+    vector<string> target_titles;
+    int nom_counter = 0;
+    vector<QBoxPlotSeries*> plot_series;
+    
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        string nominal_value = lipidome->features[target_variable].nominal_value;
+        if (uncontains_val(nominal_target_values, nominal_value)){
+            nominal_target_values.insert({nominal_value, nom_counter++});
+            plot_series.push_back(new QBoxPlotSeries());
+            plot_series.back()->setName(nominal_value.c_str());
+            target_titles.push_back(nominal_value);
+            string color_key = target_variable + "_" + nominal_value;
+            if (contains_val(GlobalData::colorMapFeatures, color_key)){
+                QBrush brush(GlobalData::colorMapFeatures[color_key]);
+                plot_series.back()->setBrush(brush);
+            }
+        }
+        target_values.push_back(nominal_target_values[nominal_value]);
+    }
+    
+    Matrix global_matrix;
+    map<LipidAdduct*, int> lipid_map;
+    map<string, int> lipid_name_map;
+    // setting up lipid to column in matrix map
+    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
+        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
+        if (uncontains_val(lipid_map, lipid)){
+            lipid_map.insert({lipid, lipid_map.size()});
+            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
+        }
+    }
+    
+    vector<string> lipid_names(lipid_map.size(), "");
+    for (auto kv : lipid_name_map) lipid_names[kv.second] = kv.first;
+    
+    // set up matrix for multiple linear regression
+    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
+    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
+        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        for (uint i = 0; i < lipidome->lipids.size(); ++i){
+            if (contains_val(lipid_map, lipidome->lipids[i])){
+                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+            }
+        }
+    }
+    
+    for (int t = 0; t < nom_counter; ++t){
+        for (int c = 0; c < global_matrix.cols; c++){
+            series_titles.push_back(lipid_names[c] + " / " + target_titles[t]);
+            plot_series[t]->append(new QBoxSet(lipid_names[c].c_str()));
+        }
+    }
+    
+    for (int r = 0; r < global_matrix.rows; ++r){ // for all values of a study variable
+        for (int c = 0; c < global_matrix.cols; c++){
+            if (global_matrix(r, c) > 1e-15){
+                plot_series[target_values[r]]->boxSets()[c]->append(global_matrix(r, c));
+            }
+        }
+    }
+    
+    series.resize(series_titles.size());
+    int series_iter = 0;
+    for (auto single_plot_series : plot_series){
+        
+        for (auto box : single_plot_series->boxSets()){
+            Array vals;
+            for (int i = 0; i < box->count(); ++i){
+                vals.push_back(box->at(i));
+                series[series_iter].push_back(box->at(i));
+            }
+            ++series_iter;
+            
+            double mean = vals.mean();
+            if (isnan(mean) || isinf(mean)) mean = 0;
+            double std = vals.sample_stdev();
+            if (isnan(std) || isinf(std)) std = 0;
+            
+            box->setValue(QBoxSet::LowerExtreme, 0);
+            box->setValue(QBoxSet::UpperExtreme, mean + std);
+            box->setValue(QBoxSet::Median, 0);
+            box->setValue(QBoxSet::LowerQuartile, 0);
+            box->setValue(QBoxSet::UpperQuartile, mean);
+        }
+        single_plot_series->setBoxWidth(1.5);
+        chart->addSeries(single_plot_series);
+    }
+    
+    chart->createDefaultAxes();
+    
+    for (auto axis : chart->axes()){
+        axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
+    }
+}
+
+
+
+
+
+
+
 void Statistics::updateHistogram(){
     
     chart->removeAllSeries();
@@ -616,12 +758,12 @@ void Statistics::updateBoxPlot(){
             stat_results.insert({"p_value(Student)", p_student});
             stat_results.insert({"p_value(Welch)", p_welch});
             stat_results.insert({"p_value(KS)", p_ks});
-            chart->setTitle(QString("Statistics: p-value<sub>Student</sub> = %1,   p-value<sub>Welch</sub> = %2,   p-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
+            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>Student</sub> = %1,   <i>p</i>-value<sub>Welch</sub> = %2,   <i>p</i>-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
         }
         else if (nom_counter > 2){
             double p_anova = p_value_anova(series);
             stat_results.insert({"p_value(ANOVA)", p_anova});
-            chart->setTitle(QString("Statistics: <i>p-value</i><sub>ANOVA</sub> = %1").arg(QString::number(p_anova, 'g', 3)));
+            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>ANOVA</sub> = %1").arg(QString::number(p_anova, 'g', 3)));
         }
     }
     else {
