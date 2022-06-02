@@ -1,6 +1,7 @@
 #ifndef LIPIDSPACEGUI_H
 #define LIPIDSPACEGUI_H
 
+
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -33,10 +34,25 @@ QT_END_NAMESPACE
 class Canvas;
 class Tutorial;
 
+/*
+
+class HomeTabButton : public QGraphicsPixmapItem {
+public:
+    HomeTabButton() : QGraphicsPixmapItem(QPixmap(QCoreApplication::applicationDirPath() + "/data/images/button.svg")) {
+        
+    }
+};
+
+*/
+
 
 class HomeItem : public QGraphicsItem {
+    
 public:
-    HomeItem(QGraphicsView *v) : view(v) {};
+    QGraphicsView *view;
+    
+    HomeItem(QGraphicsView *v) : view(v) {
+    }
     
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
         QLinearGradient gradient;
@@ -70,13 +86,13 @@ public:
         painter->setBrush(banner);
         painter->drawRect(0, 90 * factor, 50 * factor, 70 * factor);
         painter->drawRect(80 * factor + text_bound.width(), 90 * factor, view->width(), 70 * factor);
-    };
+    }
     
     QRectF boundingRect() const override {
         return QRectF(0, 0, view->width(), view->height());
-    };
+    }
     
-    QGraphicsView *view;
+    
 };
 
 

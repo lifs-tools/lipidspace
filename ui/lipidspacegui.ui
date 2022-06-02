@@ -287,14 +287,7 @@
           <number>0</number>
          </property>
          <item row="1" column="0">
-          <widget class="QGraphicsView" name="homeGraphicsView"/>
-         </item>
-         <item row="0" column="0">
-          <widget class="QPushButton" name="firstTutorialPushButton">
-           <property name="text">
-            <string>first Tutorial</string>
-           </property>
-          </widget>
+          <widget class="HomeView" name="homeGraphicsView"/>
          </item>
         </layout>
        </widget>
@@ -1065,6 +1058,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>Statistics</class>
+   <extends>QWidget</extends>
+   <header>lipidspace/statistics.h</header>
+  </customwidget>
+  <customwidget>
    <class>CBTableWidget</class>
    <extends>QTableWidget</extends>
    <header>lipidspace/CBTableWidget.h</header>
@@ -1075,14 +1073,14 @@
    <header>lipidspace/canvas.h</header>
   </customwidget>
   <customwidget>
-   <class>ClickableLabel</class>
-   <extends>QLabel</extends>
+   <class>HomeView</class>
+   <extends>QGraphicsView</extends>
    <header>lipidspace/canvas.h</header>
   </customwidget>
   <customwidget>
-   <class>Statistics</class>
-   <extends>QWidget</extends>
-   <header>lipidspace/statistics.h</header>
+   <class>ClickableLabel</class>
+   <extends>QLabel</extends>
+   <header>lipidspace/canvas.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

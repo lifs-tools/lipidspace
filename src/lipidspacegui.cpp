@@ -172,7 +172,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     selected_d_lipidomes = 0;
     knubbel = false;
     tutorial = new Tutorial(this, ui->centralwidget);
-    connect(ui->firstTutorialPushButton, &QPushButton::clicked, tutorial, &Tutorial::start_first_tutorial);
+    connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, tutorial, &Tutorial::start_first_tutorial);
     
     
     qRegisterMetaType<string>("string");
@@ -321,7 +321,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     QRectF r(0, 0, ui->homeGraphicsView->width(), ui->homeGraphicsView->height());
     ui->homeGraphicsView->setSceneRect(r);
     scene->addItem(new HomeItem(ui->homeGraphicsView));
-    
     
     updateGUI();
 }
@@ -1132,8 +1131,6 @@ void LipidSpaceGUI::setKnubbel(){
 
 
 void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
-    //QRectF r(0, 0, ui->homeGraphicsView->width(), ui->homeGraphicsView->height());
-    //ui->homeGraphicsView->setSceneRect(r);    
     event->ignore();
 }
 

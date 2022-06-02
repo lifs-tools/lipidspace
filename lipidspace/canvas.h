@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QApplication>
 #include <QPainter>
 #include <QPainterPath>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -21,6 +22,7 @@
 #include <QGraphicsItem>
 #include <QPrinter>
 #include <QCursor>
+#include <QPushButton>
 #include <iostream>
 #include <QGraphicsSceneMouseEvent>
 #include <vector>
@@ -68,6 +70,43 @@ public:
 
 
 
+class HomeView : public QGraphicsView {
+public:
+    
+    QPushButton *firstTutorialPushButton;
+    QPushButton *secondTutorialPushButton;
+    QPushButton *thirdTutorialPushButton;
+    
+    HomeView(QWidget *parent = nullptr) : QGraphicsView(parent){
+        firstTutorialPushButton = new QPushButton(this);
+        firstTutorialPushButton->setObjectName(QString::fromUtf8("firstTutorialPushButton"));
+        firstTutorialPushButton->setGeometry(QRect(60, 330, 141, 31));
+        firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "First Tutorial", nullptr));
+        secondTutorialPushButton = new QPushButton(this);
+        secondTutorialPushButton->setObjectName(QString::fromUtf8("secondTutorialPushButton"));
+        secondTutorialPushButton->setGeometry(QRect(250, 330, 141, 31));
+        secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Second Tutorial", nullptr));
+        thirdTutorialPushButton = new QPushButton(this);
+        thirdTutorialPushButton->setObjectName(QString::fromUtf8("thirdTutorialPushButton"));
+        thirdTutorialPushButton->setGeometry(QRect(60, 370, 141, 31));
+        thirdTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Third Tutorial", nullptr));
+        
+    }
+    
+    void resizeEvent(QResizeEvent *) override {
+        double factor = min((double)width() / 1207., (double)height() / 483.);
+        QFont font = firstTutorialPushButton->font();
+        font.setPointSizeF(10 * factor);
+        
+        firstTutorialPushButton->setGeometry(QRect(60. * factor, 330. * factor, 141. * factor, 31. * factor));
+        secondTutorialPushButton->setGeometry(QRect(250. * factor, 330. * factor, 141. * factor, 31. * factor));
+        thirdTutorialPushButton->setGeometry(QRect(60. * factor, 370. * factor, 141. * factor, 31. * factor));
+        
+        firstTutorialPushButton->setFont(font);
+        secondTutorialPushButton->setFont(font);
+        thirdTutorialPushButton->setFont(font);
+    }
+};
 
 
 class Dendrogram : public QGraphicsItem {
