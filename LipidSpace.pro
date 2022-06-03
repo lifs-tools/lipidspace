@@ -1,4 +1,4 @@
-QT       += core gui printsupport widgets charts
+QT       += core gui printsupport widgets charts svg
 
 CONFIG += c++17
 QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
@@ -43,7 +43,8 @@ SOURCES += \
     src/canvas.cpp \
     src/logging.cpp \
     src/statistics.cpp \
-    src/Tutorial.cpp
+    src/Tutorial.cpp \
+    src/SvgPathHandler.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -65,7 +66,8 @@ HEADERS += \
     lipidspace/setPCNum.h \
     lipidspace/logging.h \
     lipidspace/statistics.h \
-    lipidspace/Tutorial.h
+    lipidspace/Tutorial.h \
+    lipidspace/SvgPathHandler.h
 
 FORMS += \
     ui/about.ui \

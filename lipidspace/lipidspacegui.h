@@ -1,7 +1,6 @@
 #ifndef LIPIDSPACEGUI_H
 #define LIPIDSPACEGUI_H
 
-
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -9,6 +8,7 @@
 #include <QClipboard>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/SvgPathHandler.h"
 #include "lipidspace/canvas.h"
 #include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
@@ -34,16 +34,6 @@ QT_END_NAMESPACE
 class Canvas;
 class Tutorial;
 
-/*
-
-class HomeTabButton : public QGraphicsPixmapItem {
-public:
-    HomeTabButton() : QGraphicsPixmapItem(QPixmap(QCoreApplication::applicationDirPath() + "/data/images/button.svg")) {
-        
-    }
-};
-
-*/
 
 
 class HomeItem : public QGraphicsItem {
@@ -54,10 +44,16 @@ public:
     HomeItem(QGraphicsView *v) : view(v) {
     }
     
+    ~HomeItem(){
+    }
+    
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
         QLinearGradient gradient;
         double factor = min((double)view->width() / 1207., (double)view->height() / 483.);
 
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        
+        
         gradient.setStart(0, 0);
         gradient.setFinalStop(0, 1);
         gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
@@ -69,23 +65,21 @@ public:
         painter->setPen(Qt::NoPen);
         painter->drawRect(0, 0, view->width(), 400 * factor);
         
-        QFont banner_font("Go", 70, QFont::Bold);
-        banner_font.setPointSizeF(70 * factor);
-        painter->setPen(QPen(Qt::white));
-        painter->setFont(banner_font);
-        QRectF text_bound;
-        painter->drawText(QRectF(60 * factor, 65 * factor, 4000, 120 * factor), Qt::AlignVCenter | Qt::AlignLeft, "LipidSpace", &text_bound);
+        
+        
+        double l_banner = 502.5 * factor;
         
         QBrush bottom(QColor("#6babce")); // 6babce / ceab6b
         painter->setPen(Qt::NoPen);
         painter->setBrush(bottom);
-        painter->drawRect(0, 400 * factor, view->width(),view->height());
+        painter->drawRect(0., 400. * factor, view->width(), view->height());
         
         
         QBrush banner(QColor("#71a9cc")); // 71a9cc / ce956b
         painter->setBrush(banner);
-        painter->drawRect(0, 90 * factor, 50 * factor, 70 * factor);
-        painter->drawRect(80 * factor + text_bound.width(), 90 * factor, view->width(), 70 * factor);
+        painter->drawRect(QRectF(0., 90. * factor, 50. * factor, 70. * factor));
+        painter->drawRect(QRectF(l_banner + 70. * factor, 90. * factor, view->width(), 70. * factor));
+        
     }
     
     QRectF boundingRect() const override {

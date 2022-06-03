@@ -8,6 +8,7 @@
 #include <QPixmap>
 #include <QWidget>
 #include <QLabel>
+#include <QCoreApplication>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QApplication>
@@ -20,6 +21,8 @@
 #include <QGraphicsView>
 #include <QMainWindow>
 #include <QGraphicsItem>
+#include <QGraphicsSvgItem>
+#include <QSvgRenderer>
 #include <QPrinter>
 #include <QCursor>
 #include <QPushButton>
@@ -76,6 +79,7 @@ public:
     QPushButton *firstTutorialPushButton;
     QPushButton *secondTutorialPushButton;
     QPushButton *thirdTutorialPushButton;
+    QGraphicsSvgItem *banner;
     
     HomeView(QWidget *parent = nullptr) : QGraphicsView(parent){
         firstTutorialPushButton = new QPushButton(this);
@@ -90,10 +94,15 @@ public:
         thirdTutorialPushButton->setObjectName(QString::fromUtf8("thirdTutorialPushButton"));
         thirdTutorialPushButton->setGeometry(QRect(60, 370, 141, 31));
         thirdTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Third Tutorial", nullptr));
-        
+        banner = 0;
     }
     
     void resizeEvent(QResizeEvent *) override {
+        if (!banner) {
+            banner = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LipidSpace-banner.svg");
+            scene()->addItem(banner);
+        }
+        
         double factor = min((double)width() / 1207., (double)height() / 483.);
         QFont font = firstTutorialPushButton->font();
         font.setPointSizeF(10 * factor);
@@ -105,6 +114,10 @@ public:
         firstTutorialPushButton->setFont(font);
         secondTutorialPushButton->setFont(font);
         thirdTutorialPushButton->setFont(font);
+        
+        double banner_factor = 92. / (double)banner->boundingRect().height() * factor;
+        banner->setPos(60. * factor, 85. * factor);
+        banner->setScale(banner_factor);
     }
 };
 
