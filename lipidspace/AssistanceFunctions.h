@@ -191,8 +191,9 @@ public:
     vector<string> classes;
     vector<string> categories;
     vector<LipidAdduct*> lipids;
-    vector<bool> selection;
-    Array intensities;
+    Array visualization_intensities;
+    vector<int> selected_lipid_indexes;
+    Array normalized_intensities;
     Array PCA_intensities;
     Array original_intensities;
     map<string, Feature> features;

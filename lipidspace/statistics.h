@@ -14,6 +14,8 @@
 #include <QGraphicsLayout>
 #include <QPrinter>
 #include <QBrush>
+#include <QLogValueAxis>
+#include <QBarCategoryAxis>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     #include <QMarginsF>
@@ -51,6 +53,7 @@ public:
     vector<Array> series;
     vector<string> series_titles;
     map<string, double> stat_results;
+    bool log_scale;
     
     Statistics(QWidget *parent = nullptr);
     void set_lipid_space(LipidSpace *_lipid_space);
@@ -76,6 +79,7 @@ public slots:
     void setTickSizeBarPlot(int);
     void setTickSizeHistogram(int);
     void setBarNumber(int);
+    void set_log_scale();
 };
 
 

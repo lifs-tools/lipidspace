@@ -17,6 +17,7 @@ Statistics::Statistics(QWidget *parent) : QChartView(parent) {
     
     chart->layout()->setContentsMargins(0,0,0,0);
     chart->setBackgroundRoundness(0);
+    log_scale = false;
 }
 
 
@@ -24,6 +25,12 @@ void Statistics::set_lipid_space(LipidSpace *_lipid_space){
     lipid_space = _lipid_space;
 }
 
+
+
+void Statistics::set_log_scale(){
+    log_scale = !log_scale;
+    updateBarPlot();
+}
 
 
 void Statistics::setLegendSizeBoxPlot(int font_size){
@@ -475,9 +482,10 @@ void Statistics::updateBarPlot(){
     global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
-        for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+        for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
+            int index = lipidome->selected_lipid_indexes[i];
+            if (contains_val(lipid_map, lipidome->lipids[index])){
+                global_matrix(r, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[i];
             }
         }
     }
@@ -499,6 +507,23 @@ void Statistics::updateBarPlot(){
     
     series.resize(series_titles.size());
     int series_iter = 0;
+    QLogValueAxis *axisY = 0;
+    QBarCategoryAxis *axisX = 0;
+    if (log_scale){
+        axisY = new QLogValueAxis();
+        axisY->setLabelFormat("%g");
+        axisY->setBase(10.0);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        
+        axisX = new QBarCategoryAxis();
+        for (auto lipid_name : lipid_names){
+            QString category = lipid_name.c_str();
+            axisX->append(category);
+        }
+        chart->addAxis(axisX, Qt::AlignBottom);
+    }
+    double min_y_val = 1e100;
+    double max_y_val = 0;
     for (auto single_plot_series : plot_series){
         
         for (auto box : single_plot_series->boxSets()){
@@ -510,21 +535,35 @@ void Statistics::updateBarPlot(){
             ++series_iter;
             
             double mean = vals.mean();
-            if (isnan(mean) || isinf(mean)) mean = 0;
+            if (log_scale && !isnan(mean) && !isinf(mean)) min_y_val = min(min_y_val, mean);
+            if (isnan(mean) || isinf(mean) || mean < 1e-19) mean = log_scale ? 1e-19 : 0;
             double std = vals.sample_stdev();
             if (isnan(std) || isinf(std)) std = 0;
+            max_y_val = max(max_y_val, mean + std);
             
-            box->setValue(QBoxSet::LowerExtreme, 0);
+            box->setValue(QBoxSet::LowerExtreme, log_scale ? 1e-19 : 0);
             box->setValue(QBoxSet::UpperExtreme, mean + std);
-            box->setValue(QBoxSet::Median, 0);
-            box->setValue(QBoxSet::LowerQuartile, 0);
+            box->setValue(QBoxSet::Median, log_scale ? 1e-19 : 0);
+            box->setValue(QBoxSet::LowerQuartile, log_scale ? 1e-19 : 0);
             box->setValue(QBoxSet::UpperQuartile, mean);
         }
         single_plot_series->setBoxWidth(1.5);
         chart->addSeries(single_plot_series);
+        if (log_scale){
+            single_plot_series->attachAxis(axisY);
+            //single_plot_series->attachAxis(axisX);
+        }
     }
     
-    chart->createDefaultAxes();
+    if (log_scale){
+        axisY->setMin(min_y_val / 10.);
+        axisY->setMax(max_y_val * 2.);
+        cout << min_y_val << " " << max_y_val << endl;
+    }
+    else {
+        chart->createDefaultAxes();
+    }
+    
     
     for (auto axis : chart->axes()){
         axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));

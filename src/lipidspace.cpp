@@ -1155,7 +1155,9 @@ int LipidSpace::compute_global_distance_matrix(){
     global_lipidome->classes.clear();
     global_lipidome->categories.clear();
     global_lipidome->lipids.clear();
-    global_lipidome->intensities.clear();
+    global_lipidome->selected_lipid_indexes.clear();
+    global_lipidome->normalized_intensities.clear();
+    global_lipidome->visualization_intensities.clear();
     global_lipidome->PCA_intensities.clear();
     global_lipidome->m.reset(1, 1);
     
@@ -1246,10 +1248,9 @@ int LipidSpace::compute_global_distance_matrix(){
     if (n < 3) return n;
 
     
-    global_lipidome->intensities.resize(n);
-    global_lipidome->PCA_intensities.resize(n);
-    for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = 1;
-    for (int i = 0; i < n; ++i) global_lipidome->PCA_intensities[i] = 1;
+    global_lipidome->visualization_intensities.resize(n, 1);
+    global_lipidome->normalized_intensities.resize(n, 1);
+    global_lipidome->PCA_intensities.resize(n, 1);
     
     // compute distances
     Matrix& distance_matrix = global_lipidome->m;
@@ -1312,17 +1313,18 @@ int LipidSpace::compute_global_distance_matrix(){
 
 void LipidSpace::separate_matrixes(){
     for (auto lipidome : lipidomes){
-        lipidome->intensities.clear();
+        lipidome->visualization_intensities.clear();
+        lipidome->normalized_intensities.clear();
         lipidome->PCA_intensities.clear();
-        lipidome->selection.clear();
+        lipidome->selected_lipid_indexes.clear();
     }
-    global_lipidome->selection.clear();
+    global_lipidome->selected_lipid_indexes.clear();
     
     map<string, int> lipid_indexes;
     for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
         string lipid_species = global_lipidome->species.at(i);
         lipid_indexes.insert({lipid_species, i});
-        global_lipidome->selection.push_back(true);
+        global_lipidome->selected_lipid_indexes.push_back(i);
     }
     
     vector<int> remove_lipidomes;
@@ -1331,13 +1333,12 @@ void LipidSpace::separate_matrixes(){
         Indexes indexes;
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
             string lipid_species = lipidome->species[i];
-            bool lipid_selection = selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species);
-            lipidome->selection.push_back(lipid_selection);
-            if (lipid_selection){
-                indexes.push_back(lipid_indexes.at(lipid_species));
-                lipidome->intensities.push_back(lipidome->original_intensities[i]);
-                lipidome->PCA_intensities.push_back(lipidome->original_intensities[i]);
-            }
+            if (!(selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species))) continue;
+            indexes.push_back(lipid_indexes.at(lipid_species));
+            lipidome->selected_lipid_indexes.push_back(i);
+            lipidome->visualization_intensities.push_back(lipidome->original_intensities[i]);
+            lipidome->normalized_intensities.push_back(lipidome->original_intensities[i]);
+            lipidome->PCA_intensities.push_back(lipidome->original_intensities[i]);
         }
         if (indexes.size() > 0){
             lipidome->m.rewrite(global_lipidome->m, indexes);
@@ -1388,9 +1389,9 @@ void LipidSpace::normalize_intensities(){
         
         for (auto lipidome : selected_lipidomes){
 
-            for (int i = 0; i < (int)lipidome->intensities.size(); ++i){
+            for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
                 lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
-                lipidome->intensities[i] = 100. * lipidome->intensities[i] / values_std;
+                lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
             }
         }
     }
@@ -1404,11 +1405,10 @@ void LipidSpace::normalize_intensities(){
             double values_mean = data.mean();
             double values_std = data.stdev();
             if (values_std < 1e-19) continue;
-            
-            
-            for (int i = 0; i < (int)lipidome->intensities.size(); ++i){
+            for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
+                lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
                 lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
-                lipidome->intensities[i] = 100. * lipidome->intensities[i] / values_std;
+                lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
             }
         }
     }
@@ -1432,9 +1432,10 @@ void LipidSpace::normalize_intensities(){
                 
             for (auto lipidome : selected_lipidomes){
                 if (uncontains_val(lipidome->features, fv) || lipidome->features.at(fv).nominal_value != kv.first) continue;
-                for (int i = 0; i < (int)lipidome->intensities.size(); ++i){
+                for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
+                    lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
                     lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
-                    lipidome->intensities[i] = 100. * lipidome->intensities[i] / values_std;
+                    lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
                 }
             }
         }
@@ -2782,10 +2783,10 @@ void LipidSpace::run(){
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
         cout << "Process: " << duration.count() << endl;
+        analysis_finished = true;
         
         if (progress && !progress->stop_progress){
             progress->finish();
-            analysis_finished = true;
             Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(lipidomes.size()) + " lipidome" + (selected_lipidomes.size() > 1 ? "s" : "") + " in total.");
         }
     }
@@ -3021,10 +3022,14 @@ void LipidSpace::reset_analysis(){
     
     
     global_lipidome->species.clear();
+    global_lipidome->selected_lipid_indexes.clear();
     global_lipidome->classes.clear();
     global_lipidome->categories.clear();
     global_lipidome->lipids.clear();
-    global_lipidome->intensities.clear();
+    global_lipidome->visualization_intensities.clear();
+    global_lipidome->normalized_intensities.clear();
+    global_lipidome->original_intensities.clear();
+    global_lipidome->PCA_intensities.clear();
     global_lipidome->m.reset(1, 1);
 }
 

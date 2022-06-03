@@ -1561,18 +1561,21 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot(const QPoint pos){
     connect(actionData, &QAction::triggered, ui->statisticsBoxPlot, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, ui->statisticsBoxPlot, &Statistics::exportAsPdf);
     menu->popup(ui->statisticsBoxPlot->viewport()->mapToGlobal(pos));
-    
-    
 }
 
 
 void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
     if (ui->statisticsBarPlot->chart->series().size() == 0) return;
     QMenu *menu = new QMenu(this);
+    QAction *actionLogScale = new QAction("Y-axis in log scale", this);
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
+    actionLogScale->setCheckable(true);
+    actionLogScale->setChecked(ui->statisticsBarPlot->log_scale);
+    menu->addAction(actionLogScale);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
+    connect(actionLogScale, &QAction::triggered, ui->statisticsBarPlot, &Statistics::set_log_scale);
     connect(actionData, &QAction::triggered, ui->statisticsBarPlot, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, ui->statisticsBarPlot, &Statistics::exportAsPdf);
     menu->popup(ui->statisticsBarPlot->viewport()->mapToGlobal(pos));

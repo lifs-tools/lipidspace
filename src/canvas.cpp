@@ -520,12 +520,11 @@ void PointSet::loadPoints(){
     double y_min = 0;
     double y_max = 0;
     
+    // we need at least three lipids to span a lipid space
     if (view->lipid_space->global_lipidome->lipids.size() <= 2) return;
 
-    for (int r = 0, rr = 0; r < (int)lipidome->species.size(); ++r){
-        if (!lipidome->selection[r]){
-            continue;
-        }
+    for (uint rr = 0; rr < lipidome->selected_lipid_indexes.size(); ++rr){
+        int r = lipidome->selected_lipid_indexes[rr];
         
         double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
         f = 1. / log(f + 1.);
@@ -534,7 +533,7 @@ void PointSet::loadPoints(){
         //double yval = sign_log(lipidome->m(rr, GlobalData::PC2)) * POINT_BASE_FACTOR;
         double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
         double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
-        double intens = GlobalData::showQuant ? (lipidome->intensities[rr] > POINT_BASE_SIZE ? log(lipidome->intensities[rr]) : POINT_BASE_SIZE) : POINT_BASE_SIZE;
+        double intens = GlobalData::showQuant ? (lipidome->visualization_intensities[rr] > POINT_BASE_SIZE ? log(lipidome->visualization_intensities[rr]) : POINT_BASE_SIZE) : POINT_BASE_SIZE;
         double intens_boundery = intens * 0.5;
         
         x_min = min(x_min, xval - intens_boundery);
@@ -564,7 +563,6 @@ void PointSet::loadPoints(){
         ellipse->setPen(pen);
         view->graphics_scene.addItem(ellipse);
         points.back().item = ellipse;
-        rr++;
     }
     
     
@@ -999,8 +997,8 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
     else if (num == -1){ // global lipidome
         pointSet = new PointSet(lipid_space->global_lipidome, this);
         graphics_scene.addItem(pointSet);
-        pointSet->loadPoints();
         pointSet->title = "Global lipidome";
+        pointSet->loadPoints();
         
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
@@ -1009,8 +1007,8 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
     else { // regular lipidome
         pointSet = new PointSet(lipid_space->selected_lipidomes[num], this);
         graphics_scene.addItem(pointSet);
-        pointSet->loadPoints();
         pointSet->title = QString(lipid_space->selected_lipidomes[num]->cleaned_name.c_str());
+        pointSet->loadPoints();
         
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->selected_lipidomes[num]->m, vars);
