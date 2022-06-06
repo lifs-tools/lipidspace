@@ -80,6 +80,19 @@ public:
         painter->drawRect(QRectF(0., 90. * factor, 50. * factor, 70. * factor));
         painter->drawRect(QRectF(l_banner + 70. * factor, 90. * factor, view->width(), 70. * factor));
         
+        
+        // Write the text
+        QFont f = painter->font();
+        painter->setPen(QPen(Qt::white));
+        f.setPointSizeF(11. * factor);
+        painter->setFont(f);
+        painter->drawText(QRectF(60. * factor, 190. * factor, 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "Accessing the chemical space of individual lipidomes:\n  • Comprehensive study of multiple lipidomes\n  • Providing mechanism for quality control\n  • Feature analysis and lipid selection\n  • Integration of study variables");
+        
+        painter->drawText(QRectF(60. * factor, 310. * factor, 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "LipidSpace offers several interactive tutorials for an easy introduction\ninto its functionality:");
+        
+        
+        //painter->drawText(QRectF(60. * factor, 440. * factor, 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "Citation: Kopczynski, Dominik et al. The Journal 47(11):08-15, 2022.");
+        
     }
     
     QRectF boundingRect() const override {
