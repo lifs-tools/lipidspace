@@ -125,11 +125,21 @@ public:
 };
 
 
-double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
 double compute_aic(Matrix &data, Array &coefficiants, Array &values);
 bool gene_aic(Gene g1, Gene g2);
 void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, vector<pair<double, double>> *ROC = 0);
+double hyperg_2F1(double a, double b, double c, double d);
+double t_distribution_cdf(double t_stat, double free_deg);
+double f_distribution_cdf(double fi_stat, double df1, double df2);
+double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2);
+double p_value_student(Array &a, Array &b);
+double p_value_welch(Array &a, Array &b);
+double p_value_anova(vector<Array> &v);
+
+
+
+
 
 
 class LipidSpaceException : public std::exception {
