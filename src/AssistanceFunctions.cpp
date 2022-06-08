@@ -158,10 +158,14 @@ DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_value
     }
 }
 
+
+
 DendrogramNode::~DendrogramNode(){
     if (left_child) delete left_child;
     if (right_child) delete right_child;
 }
+    
+    
     
 DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d){
     left_child = n1;
@@ -170,6 +174,7 @@ DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d)
     for (auto i : n2->indexes) indexes.insert(i);
     distance = d;
 }
+
 
 
 double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_ticks){
@@ -238,7 +243,8 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
 
 
 
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, vector<pair<double, double>> *ROC){
+
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, pair<vector<double>, vector<double>> *ROC){
     d = 0;
     pos_max = 0;
     separation_score = 0;
@@ -251,16 +257,19 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
     double cdf1 = 0, cdf2 = 0;
     double overlap1 = 0, overlap2 = 0;
     double min1 = 1, max1 = num1 - 1, min2 = 1, max2 = num2 - 1;
-    if (num1 >= 10){
+    if (num1 >= 10 && ROC == 0){
         min1 = floor(num1 * 0.25);
         max1 = ceil(num1 * 0.75);
     }
-    if (num2 >= 10){
+    if (num2 >= 10 && ROC == 0){
         min2 = floor(num2 * 0.25);
         max2 = ceil(num2 * 0.75);
     }
     while ((ptr1 < num1) && (ptr2 < num2)){
-        if (ROC) ROC->push_back({(num1 - ptr1) * inv_m, (num2 - ptr2) * inv_n});
+        if (ROC){
+            ROC->first.push_back((num1 - ptr1) * inv_m);
+            ROC->second.push_back((num2 - ptr2) * inv_n);
+        }
         if (a[ptr1] <= b[ptr2]){
             cdf1 += inv_m;
             if (d < fabs(cdf1 - cdf2)){
@@ -393,6 +402,7 @@ double f_distribution_cdf(double f_stat, double df1, double df2){
 
 
 
+
 /*
 Algorithm adapted from: arXiv:2102.08037
 Thomas Viehmann
@@ -451,6 +461,8 @@ double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
 }
 
 
+
+
 /* 
 Source: https://en.wikipedia.org/wiki/One-way_analysis_of_variance
 */
@@ -485,6 +497,7 @@ double p_value_anova(vector<Array> &arrays){
 
 
 
+
 Progress::Progress(){
     current_progress = 0;
     max_progress = 0;
@@ -494,10 +507,12 @@ Progress::Progress(){
 }
 
 
+
 void Progress::increment(){
     current_progress += 1;
     set_current(current_progress);
 }
+
 
 
 void Progress::set(int cp){
@@ -505,14 +520,17 @@ void Progress::set(int cp){
     set_current(current_progress);
 }
 
+
 void Progress::setError(QString interrupt_message){
     stop_progress = true;
     error(interrupt_message);
 }
 
+
 void Progress::interrupt(){
     stop_progress = true;
 }
+
 
 
 void Progress::reset(){
@@ -520,9 +538,12 @@ void Progress::reset(){
 }
 
 
+
 void Progress::prepare_steps(int steps){
     step_size = ceil((double)(max_progress - current_progress) / (double)steps);
 }
+
+
 
 void Progress::set_step(){
     current_progress += step_size;
@@ -534,16 +555,13 @@ void Progress::set_step(){
 
 bool sort_order_one (pair<double, int> i, pair<double, int> j) { return (i.first < j.first); }
 
+
 double compute_aic(Matrix &data, Array &coefficiants, Array &values){
     Array S;
     S.mult(data, coefficiants);
     double s = 0;
-    //double t = 0;
-    //double mue = S.mean();
     for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
     return s;
-    //for (int i = 0; i < (int)S.size(); ++i) t += sq(S[i] - mue);
-    //return s / t;
     
     int k = data.cols;
     int n = data.rows;
@@ -551,9 +569,13 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
 }
 
 
+
+
 bool gene_aic(Gene g1, Gene g2){
     return g1.score < g2.score;
 }
+
+
 
 void BH_fdr(vector<double> &data){
     if (data.size() < 2) return;

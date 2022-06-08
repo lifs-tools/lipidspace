@@ -2780,6 +2780,38 @@ void LipidSpace::run(){
                 }
             }
         }
+        
+        
+        
+        
+        
+        if (!progress || !progress->stop_progress){
+            // for statistics
+            statistics_matrix.reset(0, 0);
+            map<LipidAdduct*, int> lipid_map;
+            map<string, int> lipid_name_map;
+            // setting up lipid to column in matrix map
+            for (uint i = 0; i < global_lipidome->lipids.size(); ++i){
+                LipidAdduct* lipid = global_lipidome->lipids[i];
+                if (uncontains_val(lipid_map, lipid)){
+                    lipid_map.insert({lipid, lipid_map.size()});
+                    lipid_name_map.insert({global_lipidome->species[i], lipid_name_map.size()});
+                }
+            }
+            
+            // set up matrix for multiple linear regression
+            statistics_matrix.reset(selected_lipidomes.size(), lipid_map.size());
+            for (uint r = 0; r < selected_lipidomes.size(); ++r){
+                Lipidome* lipidome = selected_lipidomes[r];
+                for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                    if (contains_val(lipid_map, lipidome->lipids[i])){
+                        statistics_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+                    }
+                }
+            }
+        }
+        
+        
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
         cout << "Process: " << duration.count() << endl;

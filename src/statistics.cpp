@@ -284,7 +284,7 @@ void Statistics::updateBarPlot(){
         target_values.push_back(nominal_target_values[nominal_value]);
     }
     
-    Matrix global_matrix;
+    Matrix statistics_matrix;
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     // setting up lipid to column in matrix map
@@ -296,32 +296,32 @@ void Statistics::updateBarPlot(){
         }
     }
     
-    vector<string> lipid_names(lipid_map.size(), "");
-    for (auto kv : lipid_name_map) lipid_names[kv.second] = kv.first;
-    
     // set up matrix for multiple linear regression
-    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
+    statistics_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
         for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
             int index = lipidome->selected_lipid_indexes[i];
             if (contains_val(lipid_map, lipidome->lipids[index])){
-                global_matrix(r, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[i];
+                statistics_matrix(r, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[i];
             }
         }
     }
     
+    vector<string> lipid_names(lipid_map.size(), "");
+    for (auto kv : lipid_name_map) lipid_names[kv.second] = kv.first;
+    
     for (int t = 0; t < nom_counter; ++t){
-        for (int c = 0; c < global_matrix.cols; c++){
+        for (int c = 0; c < statistics_matrix.cols; c++){
             series_titles.push_back(lipid_names[c] + " / " + target_titles[t]);
             plot_series[t]->append(new QBoxSet(lipid_names[c].c_str()));
         }
     }
     
-    for (int r = 0; r < global_matrix.rows; ++r){ // for all values of a study variable
-        for (int c = 0; c < global_matrix.cols; c++){
-            if (global_matrix(r, c) > 1e-15){
-                plot_series[target_values[r]]->boxSets()[c]->append(global_matrix(r, c));
+    for (int r = 0; r < statistics_matrix.rows; ++r){ // for all values of a study variable
+        for (int c = 0; c < statistics_matrix.cols; c++){
+            if (statistics_matrix(r, c) > 1e-15){
+                plot_series[target_values[r]]->boxSets()[c]->append(statistics_matrix(r, c));
             }
         }
     }
@@ -372,7 +372,6 @@ void Statistics::updateBarPlot(){
         chart->addSeries(single_plot_series);
         if (log_scale){
             single_plot_series->attachAxis(axisY);
-            //single_plot_series->attachAxis(axisX);
         }
     }
     
@@ -439,38 +438,17 @@ void Statistics::updateHistogram(){
         target_values.push_back(nominal_target_values[nominal_value]);
     }
     
-    Matrix global_matrix;
-    map<LipidAdduct*, int> lipid_map;
-    map<string, int> lipid_name_map;
-    // setting up lipid to column in matrix map
-    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
-        if (uncontains_val(lipid_map, lipid)){
-            lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
-        }
-    }
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
     
-    // set up matrix for multiple linear regression
-    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
-    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
-        for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
-            }
-        }
-    }
-    
-    if (global_matrix.cols > 1) global_matrix.scale();
+    if (statistics_matrix.cols > 1) statistics_matrix.scale();
 
     series.resize(nom_counter);
     double all_min = 1e9;
     double all_max = -1e9;
-    for (int r = 0; r < global_matrix.rows; ++r){
+    for (int r = 0; r < statistics_matrix.rows; ++r){
         double sum = 0;
-        for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
-        if (global_matrix.cols > 1 || sum > 1e-15){
+        for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+        if (statistics_matrix.cols > 1 || sum > 1e-15){
             series[target_values[r]].push_back(sum);
             all_min = min(all_min, sum);
             all_max = max(all_max, sum);
@@ -509,10 +487,6 @@ void Statistics::updateHistogram(){
         axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
     }
 }
-
-
-
-
 
 
 
@@ -567,41 +541,21 @@ void Statistics::updateROCCurve(){
         return;
     }
     
-    Matrix global_matrix;
-    map<LipidAdduct*, int> lipid_map;
-    map<string, int> lipid_name_map;
-    // setting up lipid to column in matrix map
-    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
-        if (uncontains_val(lipid_map, lipid)){
-            lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
-        }
-    }
     
-    // set up matrix for multiple linear regression
-    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
-    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
-        for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
-            }
-        }
-    }
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
     
-    if (global_matrix.cols > 1) global_matrix.scale();
+    if (statistics_matrix.cols > 1) statistics_matrix.scale();
 
     series.resize(nom_counter);
-    for (int r = 0; r < global_matrix.rows; ++r){
+    for (int r = 0; r < statistics_matrix.rows; ++r){
         double sum = 0;
-        for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
-        if (global_matrix.cols > 1 || sum > 1e-15){
+        for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+        if (statistics_matrix.cols > 1 || sum > 1e-15){
             series[target_values[r]].push_back(sum);
         }
     }
     
-    vector<pair<double, double>> ROC;
+    pair<vector<double>, vector<double>> ROC;
     double dist = 0;
     double pos_max = 0;
     double sep_score = 0;
@@ -614,31 +568,43 @@ void Statistics::updateROCCurve(){
     double auc = 0, fp = 0;
     
     bool flip = median(series[0], 0, series[0].size()) > median(series[1], 0, series[1].size());
+    if (flip) swap(ROC.first, ROC.second);
     
-    if (ROC[0].first != 1 && ROC[0].second != 1) ROC.insert(ROC.begin(), {ROC[ROC.size() - 1].first, 1});
-    if (ROC[ROC.size() - 1].first != 0 && ROC[ROC.size() - 1].second != 0) ROC.push_back({0, ROC[ROC.size() - 1].second});
     
-    for (auto row : ROC){
-        if (flip){
-            line_series->append(row.second, row.first);
-            auc += (row.first - fp) * row.second;
-            fp = row.first;
-        }
-        else {
-            line_series->append(row.first, row.second);
-            auc += (row.second - fp) * row.first;
-            fp = row.second;
-        }
+    
+    if (ROC.second[0] != 1){
+        ROC.first.insert(ROC.first.begin(), ROC.first[0]);
+        ROC.second.insert(ROC.second.begin(), 1);
+    }
+    if (ROC.first[0] != 1){
+        ROC.first.insert(ROC.first.begin(), 1);
+        ROC.second.insert(ROC.second.begin(), 1);
+    }
+    if (ROC.first[ROC.first.size() - 1] != 0){
+        ROC.first.push_back(0);
+        ROC.second.push_back(ROC.second.back());
+    }
+    if (ROC.second[ROC.second.size() - 1] != 0){
+        ROC.first.push_back(0);
+        ROC.second.push_back(0);
     }
     
+    for (uint i = 0; i < ROC.first.size(); ++i){
+        line_series->append(ROC.first[i], ROC.second[i]);
+        auc += (ROC.second[i] - fp) * ROC.first[i];
+        fp = ROC.second[i];
+    } cout << endl;
+
+    stat_results.insert({"AUC", auc});
+    
     QValueAxis *axisX = new QValueAxis;
-    axisX->setRange(0, 1);
+    axisX->setRange(-0.001, 1.001);
     axisX->setTitleText("False positive Rate");
     axisX->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
     chart->addAxis(axisX, Qt::AlignBottom);
     
     QValueAxis *axisY = new QValueAxis;
-    axisY->setRange(0, 1);
+    axisY->setRange(-0.001, 1.001);
     axisY->setTitleText("Sensetivity");
     axisY->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
     chart->addAxis(axisY, Qt::AlignLeft);
@@ -702,36 +668,16 @@ void Statistics::updateBoxPlot(){
             target_values.push_back(lipidome->features[target_variable].numerical_value);
         }
     }
-    Matrix global_matrix;
-    map<LipidAdduct*, int> lipid_map;
-    map<string, int> lipid_name_map;
-    // setting up lipid to column in matrix map
-    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
-        if (uncontains_val(lipid_map, lipid)){
-            lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
-        }
-    }
     
-    // set up matrix for multiple linear regression
-    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
-    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
-        for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
-            }
-        }
-    }
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
     if (is_nominal){
-        if (global_matrix.cols > 1) global_matrix.scale();
+        if (statistics_matrix.cols > 1) statistics_matrix.scale();
     
         series.resize(nom_counter);
-        for (int r = 0; r < global_matrix.rows; ++r){
+        for (int r = 0; r < statistics_matrix.rows; ++r){
             double sum = 0;
-            for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
-            if (global_matrix.cols > 1 || sum > 1e-15){
+            for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+            if (statistics_matrix.cols > 1 || sum > 1e-15){
                 plot_series[target_values[r]]->boxSets()[0]->append(sum);
                 series[target_values[r]].push_back(sum);
             }
@@ -768,15 +714,15 @@ void Statistics::updateBoxPlot(){
     }
     else {
         Array constants;
-        constants.resize(global_matrix.rows, 1);
-        global_matrix.add_column(constants);
+        constants.resize(statistics_matrix.rows, 1);
+        statistics_matrix.add_column(constants);
         
         double min_x = 1e100;
         double max_x = 0;
         Array coefficiants;
-        coefficiants.compute_coefficiants(global_matrix, target_values);    // estimating coefficiants
+        coefficiants.compute_coefficiants(statistics_matrix, target_values);    // estimating coefficiants
         Array S;
-        S.mult(global_matrix, coefficiants);
+        S.mult(statistics_matrix, coefficiants);
     
         QScatterSeries* series_model = new QScatterSeries();
         series_model->setName((target_variable + " / Linear lipid model").c_str());

@@ -128,7 +128,7 @@ public:
 void BH_fdr(vector<double> &data);
 double compute_aic(Matrix &data, Array &coefficiants, Array &values);
 bool gene_aic(Gene g1, Gene g2);
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, vector<pair<double, double>> *ROC = 0);
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, pair<vector<double>, vector<double>> *ROC = 0);
 double hyperg_2F1(double a, double b, double c, double d);
 double t_distribution_cdf(double t_stat, double free_deg);
 double f_distribution_cdf(double fi_stat, double df1, double df2);

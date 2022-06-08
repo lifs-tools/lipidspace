@@ -683,6 +683,8 @@ void LipidSpaceGUI::runAnalysis(){
     
     if (!lipid_space->analysis_finished) return;
     
+    
+    
     if (lipid_space->feature_values.size() > 1 || lipid_space->feature_values[FILE_FEATURE_NAME].nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
     
     if (lipid_space->global_lipidome->lipids.size() < 3 && !GlobalData::gui_num_var["dont_less_3_message"]){
