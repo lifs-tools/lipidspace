@@ -129,7 +129,7 @@ double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
 double compute_aic(Matrix &data, Array &coefficiants, Array &values);
 bool gene_aic(Gene g1, Gene g2);
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score);
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, vector<pair<double, double>> *ROC = 0);
 
 
 class LipidSpaceException : public std::exception {

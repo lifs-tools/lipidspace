@@ -202,6 +202,7 @@ public slots:
     void ShowContextMenuStatisticsBoxPlot(const QPoint);
     void ShowContextMenuStatisticsBarPlot(const QPoint);
     void ShowContextMenuStatisticsHistogram(const QPoint);
+    void ShowContextMenuStatisticsROCCurve(const QPoint);
     void ShowTableContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint, set<int> *selected_d_lipidomes = 0);
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);

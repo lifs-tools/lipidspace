@@ -193,6 +193,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statisticsBoxPlot->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsBarPlot->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsHistogram->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statisticsROCCurve->setContextMenuPolicy(Qt::CustomContextMenu);
     
     connect(ui->actionLoad_list_s, SIGNAL(triggered()), this, SLOT(openLists()));
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
@@ -240,10 +241,12 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBoxPlot, SLOT(setLegendSizeBoxPlot(int)));
     connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBarPlot, SLOT(setLegendSizeBarPlot(int)));
     connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsHistogram, SLOT(setLegendSizeHistogram(int)));
+    connect(ui->legendSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsROCCurve, SLOT(setLegendSizeROCCurve(int)));
     connect(ui->barNumberSpinBox, SIGNAL(valueChanged(int)), ui->statisticsHistogram, SLOT(setBarNumber(int)));
     connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBoxPlot, SLOT(setTickSizeBoxPlot(int)));
     connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsBarPlot, SLOT(setTickSizeBarPlot(int)));
     connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsHistogram, SLOT(setTickSizeHistogram(int)));
+    connect(ui->tickSizeSpinBox, SIGNAL(valueChanged(int)), ui->statisticsROCCurve, SLOT(setTickSizeROCCurve(int)));
     connect(ui->labelSizeSpinBox, SIGNAL(valueChanged(int)), ui->dendrogramView, SLOT(setLabelSize(int)));
     connect(ui->pieSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPieSize(int)));
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
@@ -262,6 +265,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsBoxPlot, &Statistics::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot);
     connect(ui->statisticsBarPlot, &Statistics::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBarPlot);
     connect(ui->statisticsHistogram, &Statistics::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsHistogram);
+    connect(ui->statisticsROCCurve, &Statistics::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsROCCurve);
     
     sorting_boxes.push_back(ui->speciesComboBox);
     sorting_boxes.push_back(ui->classComboBox);
@@ -302,6 +306,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statisticsBoxPlot->set_lipid_space(lipid_space);
     ui->statisticsBarPlot->set_lipid_space(lipid_space);
     ui->statisticsHistogram->set_lipid_space(lipid_space);
+    ui->statisticsROCCurve->set_lipid_space(lipid_space);
     
     ui->speciesList->setItemDelegate(new ItemDelegate(ui->speciesList));
     ui->startAnalysisPushButton->setEnabled(false);
@@ -348,6 +353,7 @@ void LipidSpaceGUI::setFeatureStat(int){
     ui->statisticsBoxPlot->updateBoxPlot();
     ui->statisticsBarPlot->updateBarPlot();
     ui->statisticsHistogram->updateHistogram();
+    ui->statisticsROCCurve->updateROCCurve();
 }
 
 
@@ -770,6 +776,7 @@ void LipidSpaceGUI::runAnalysis(){
     ui->statisticsBoxPlot->updateBoxPlot();
     ui->statisticsBarPlot->updateBarPlot();
     ui->statisticsHistogram->updateHistogram();
+    ui->statisticsROCCurve->updateROCCurve();
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBox->findText(study_var.c_str());
@@ -1144,6 +1151,7 @@ void LipidSpaceGUI::updateGUI(){
     ui->menuAnalysis->setEnabled(lipid_space->lipidomes.size());
     ui->menuView->setEnabled(lipid_space->lipidomes.size());
     ui->actionExport_Results->setEnabled(lipid_space->lipidomes.size());
+    
     
     ui->actionAutomatically->setChecked(false);
     ui->action1_column->setChecked(false);
@@ -1561,6 +1569,19 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot(const QPoint pos){
     connect(actionData, &QAction::triggered, ui->statisticsBoxPlot, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, ui->statisticsBoxPlot, &Statistics::exportAsPdf);
     menu->popup(ui->statisticsBoxPlot->viewport()->mapToGlobal(pos));
+}
+
+
+void LipidSpaceGUI::ShowContextMenuStatisticsROCCurve(const QPoint pos){
+    if (ui->statisticsROCCurve->chart->series().size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
+    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionData);
+    menu->addAction(actionExportPdf);
+    connect(actionData, &QAction::triggered, ui->statisticsROCCurve, &Statistics::exportData);
+    connect(actionExportPdf, &QAction::triggered, ui->statisticsROCCurve, &Statistics::exportAsPdf);
+    menu->popup(ui->statisticsROCCurve->viewport()->mapToGlobal(pos));
 }
 
 

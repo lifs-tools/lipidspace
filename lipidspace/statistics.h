@@ -68,6 +68,7 @@ public:
     
 public slots:
     void updateBoxPlot();
+    void updateROCCurve();
     void updateBarPlot();
     void updateHistogram();
     void exportAsPdf();
@@ -75,9 +76,11 @@ public slots:
     void setLegendSizeBoxPlot(int);
     void setLegendSizeBarPlot(int);
     void setLegendSizeHistogram(int);
+    void setLegendSizeROCCurve(int);
     void setTickSizeBoxPlot(int);
     void setTickSizeBarPlot(int);
     void setTickSizeHistogram(int);
+    void setTickSizeROCCurve(int);
     void setBarNumber(int);
     void set_log_scale();
 };

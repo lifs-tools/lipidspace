@@ -238,7 +238,7 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
 
 
 
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score){
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, vector<pair<double, double>> *ROC){
     d = 0;
     pos_max = 0;
     separation_score = 0;
@@ -260,6 +260,7 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
         max2 = ceil(num2 * 0.75);
     }
     while ((ptr1 < num1) && (ptr2 < num2)){
+        if (ROC) ROC->push_back({(num1 - ptr1) * inv_m, (num2 - ptr2) * inv_n});
         if (a[ptr1] <= b[ptr2]){
             cdf1 += inv_m;
             if (d < fabs(cdf1 - cdf2)){
