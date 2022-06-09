@@ -1931,6 +1931,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             registered_features.insert(feature);
         }
         
+        
         for (auto tokens : fth.rows){
             
             // check if quant information is valid
@@ -3041,6 +3042,11 @@ void LipidSpace::reset_analysis(){
     selected_lipidomes.clear();
     dendrogram_sorting.clear();
     dendrogram_points.clear();
+    lipid_name_translations[0].clear();
+    lipid_name_translations[1].clear();
+    lipid_sortings.clear();
+    global_distances.reset(0, 0);
+    statistics_matrix.reset(0, 0);
     
     for (int i = 0; i < 4; ++i) selection[i].clear();
     
@@ -3051,18 +3057,8 @@ void LipidSpace::reset_analysis(){
     lipidomes.clear();
     cols_for_pca = cols_for_pca_init;
     
-    
-    
-    global_lipidome->species.clear();
-    global_lipidome->selected_lipid_indexes.clear();
-    global_lipidome->classes.clear();
-    global_lipidome->categories.clear();
-    global_lipidome->lipids.clear();
-    global_lipidome->visualization_intensities.clear();
-    global_lipidome->normalized_intensities.clear();
-    global_lipidome->original_intensities.clear();
-    global_lipidome->PCA_intensities.clear();
-    global_lipidome->m.reset(1, 1);
+    delete global_lipidome;
+    global_lipidome = new Lipidome("global_lipidome", "");
 }
 
 

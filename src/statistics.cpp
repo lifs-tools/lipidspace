@@ -109,12 +109,11 @@ void Statistics::setBarNumber(int bar_number){
 
 void Statistics::exportData(){
     if (chart->series().size() == 0) return;
-    QString file_name = QFileDialog::getSaveFileName(this, "Export as csv", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
+    QString file_name = QFileDialog::getSaveFileName(this, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
     if (!file_name.length()) return;
 
     try {
         if (QFile::exists(file_name)){
-            cout << "deleting" << endl;
             QFile::remove(file_name);
         }
 
@@ -378,7 +377,6 @@ void Statistics::updateBarPlot(){
     if (log_scale){
         axisY->setMin(min_y_val / 10.);
         axisY->setMax(max_y_val * 2.);
-        cout << min_y_val << " " << max_y_val << endl;
     }
     else {
         chart->createDefaultAxes();
@@ -593,7 +591,7 @@ void Statistics::updateROCCurve(){
         line_series->append(ROC.first[i], ROC.second[i]);
         auc += (ROC.second[i] - fp) * ROC.first[i];
         fp = ROC.second[i];
-    } cout << endl;
+    }
 
     stat_results.insert({"AUC", auc});
     

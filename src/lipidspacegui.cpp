@@ -147,6 +147,20 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         
         loadTable("Data_Thrombocytes_UKR_04042022.csv", ct, FLAT_TABLE, "");
     }
+    else if (event->key() == Qt::Key_7){
+        resetAnalysis();
+        vector<TableColumnType> *ct = new vector<TableColumnType>();
+        for (int i = 0; i < 13; ++i) ct->push_back(IgnoreColumn);
+        ct->at(9) = LipidColumn;
+        ct->at(10) = QuantColumn;
+        ct->at(1) = SampleColumn;
+        ct->at(2) = FeatureColumnNominal;
+        ct->at(4) = FeatureColumnNominal;
+        ct->at(5) = FeatureColumnNominal;
+        ct->at(6) = FeatureColumnNominal;
+        
+        loadTable("examples/000.csv", ct, FLAT_TABLE, "");
+    }
     
     else {
         if (Qt::Key_A <= event->key() && event->key() <= Qt::Key_Z){
@@ -775,10 +789,12 @@ void LipidSpaceGUI::runAnalysis(){
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
+    
     ui->statisticsBoxPlot->updateBoxPlot();
     ui->statisticsBarPlot->updateBarPlot();
     ui->statisticsHistogram->updateHistogram();
     ui->statisticsROCCurve->updateROCCurve();
+    
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
     pos = ui->featureComboBox->findText(study_var.c_str());
@@ -1522,11 +1538,67 @@ void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
 void LipidSpaceGUI::ShowTableContextMenu(const QPoint pos){
     QMenu *menu = new QMenu(this);
     QAction *copyToClipboard = new QAction("Copy selection", this);
+    QAction *exportTable = new QAction("Export complete Table", this);
     menu->addAction(copyToClipboard);
+    menu->addAction(exportTable);
     
     menu->popup(ui->tableWidget->viewport()->mapToGlobal(pos));
     connect(copyToClipboard, &QAction::triggered, this, &LipidSpaceGUI::copy_to_clipboard);
+    connect(exportTable, &QAction::triggered, this, &LipidSpaceGUI::export_table);
 }
+
+
+
+
+void LipidSpaceGUI::export_table(){
+    QString file_name = QFileDialog::getSaveFileName(this, "Export table", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx)");
+    if (!file_name.length()) return;
+
+    try {
+        if (QFile::exists(file_name)){
+            QFile::remove(file_name);
+        }
+
+        XLDocument doc;
+        doc.create(file_name.toStdString());
+        auto wbk = doc.workbook();
+        wbk.addWorksheet("LipidomicsData");
+        wbk.deleteSheet("Sheet1");
+        auto wks_data = doc.workbook().worksheet("LipidomicsData");
+        
+        
+        QTableWidget *t = ui->tableWidget;
+        int cols = t->columnCount();
+        int rows = t->rowCount();
+        
+        for (int col = 0; col < cols; ++col) wks_data.cell(1, 2 + col).value() = t->horizontalHeaderItem(col)->text().toStdString();
+        for (int row = 0; row < rows; ++row) wks_data.cell(2 + row, 1).value() = t->verticalHeaderItem(row)->text().toStdString();
+        
+        for (int col = 0; col < cols; ++col){
+            for (int row = 0; row < rows; ++row){
+                bool isnumber = false;
+                QVariant variant = t->item(row, col)->data(1);
+                double value = t->item(row, col)->data(1).toDouble(&isnumber);
+                if (isnumber){
+                    wks_data.cell(2 + row, 2 + col).value() = value;
+                }
+                else {
+                    wks_data.cell(2 + row, 2 + col).value() = t->item(row, col)->data(1).toString().toStdString();
+                }
+            }
+        }
+    
+        doc.save();
+            
+        QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+    }
+    catch(exception &){
+        QMessageBox::critical(this, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
+    }
+}
+
+
+
 
 
 
@@ -1757,6 +1829,8 @@ void LipidSpaceGUI::fill_Table(){
     QTableWidget *t = ui->tableWidget;
     QTableWidgetItem *item = 0;
     
+    QFont item_font("Helvetica", 10);
+    
     t->setRowCount(0);
     t->setColumnCount(0);
     map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
@@ -1784,7 +1858,9 @@ void LipidSpaceGUI::fill_Table(){
         
         for (int c = 0; c < (int)lipid_space->lipidomes.size(); c++){
             item = new QTableWidgetItem(QString(lipid_space->lipidomes[c]->cleaned_name.c_str()));
+            item->setData(1, lipid_space->lipidomes[c]->cleaned_name.c_str());
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            item->setFont(item_font);
             t->setHorizontalHeaderItem(c, item);
             if (uncontains_val(selected_lipidomes, lipid_space->lipidomes[c]->cleaned_name.c_str())) unselected_lipidome_indexes.insert(c);
         }
@@ -1792,7 +1868,9 @@ void LipidSpaceGUI::fill_Table(){
         int f = 0;
         for (auto kv : lipid_space->feature_values){
             item = new QTableWidgetItem(kv.first.c_str());
+            item->setData(1, kv.first.c_str());
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            item->setFont(item_font);
             feature_index.insert({kv.first, f});
             t->setVerticalHeaderItem(f++, item);
         }
@@ -1806,6 +1884,8 @@ void LipidSpaceGUI::fill_Table(){
                 while (header_name.length() < 14) header_name += " ";
             }
             item = new QTableWidgetItem(header_name);
+            item->setData(1, header_name);
+            item->setFont(item_font);
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             t->setVerticalHeaderItem(num_features + rrr, item);
             lipid_index.insert({header_std, num_features + rrr});
@@ -1823,15 +1903,18 @@ void LipidSpaceGUI::fill_Table(){
             for(auto kv : lipid_space->lipidomes[c]->features){
                 if (kv.second.feature_type == NominalFeature){
                     item = new QTableWidgetItem(kv.second.nominal_value.c_str());
+                    item->setData(1, kv.second.nominal_value.c_str());
                 }
                 else {
                     item = new QTableWidgetItem(QString::number(kv.second.numerical_value));
+                    item->setData(1, kv.second.numerical_value);
                 }
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
                 
                 if (contains_val(unselected_lipidome_indexes, c)){
                     item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
                 }
+                item->setFont(item_font);
                 int r = feature_index[kv.first];
                 t->setItem(r, c, item);
                 free_cells.remove(r * C + c);
@@ -1840,7 +1923,9 @@ void LipidSpaceGUI::fill_Table(){
             for (int r = 0; r < (int)lipid_space->lipidomes[c]->species.size(); r++){
                 QString qn = QString::number(lipid_space->lipidomes[c]->original_intensities[r]);
                 item = new QTableWidgetItem(qn);
+                item->setData(1, lipid_space->lipidomes[c]->original_intensities[r]);
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+                item->setFont(item_font);
                 
                 if (uncontains_val(selected_species, lipid_space->lipidomes[c]->species[r]) || contains_val(unselected_lipidome_indexes, c)){
                     item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
@@ -1854,6 +1939,8 @@ void LipidSpaceGUI::fill_Table(){
         // fill the empty fields with disabled cells
         for (auto pos : free_cells){
             item = new QTableWidgetItem("");
+            item->setData(1, "");
+            item->setFont(item_font);
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             int r = pos / C;
             int c = pos % C;
@@ -1878,6 +1965,8 @@ void LipidSpaceGUI::fill_Table(){
                 while (header_name.length() < 14) header_name += " ";
             }
             item = new QTableWidgetItem(header_name);
+            item->setData(1, header_name);
+            item->setFont(item_font);
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             t->setVerticalHeaderItem(r, item);
             if (uncontains_val(selected_lipidomes, lipid_space->lipidomes[r]->cleaned_name.c_str())) unselected_lipidome_indexes.insert(r);
@@ -1886,7 +1975,9 @@ void LipidSpaceGUI::fill_Table(){
         int f = 0;
         for (auto kv : lipid_space->feature_values){
             item = new QTableWidgetItem(kv.first.c_str());
+            item->setData(1, kv.first.c_str());
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            item->setFont(item_font);
             feature_index.insert({kv.first, f});
             t->setHorizontalHeaderItem(f++, item);
         }
@@ -1895,7 +1986,9 @@ void LipidSpaceGUI::fill_Table(){
         for (auto header_std : sorted_lipid_species){
         //for (int c = 0; c < (int)lipid_space->global_lipidome->species.size(); c++){
             item = new QTableWidgetItem(translations[header_std].c_str());
+            item->setData(1, translations[header_std].c_str());
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            item->setFont(item_font);
             t->setHorizontalHeaderItem(num_features + ccc, item);
             lipid_index.insert({header_std, num_features + ccc});
             ccc++;
@@ -1913,14 +2006,17 @@ void LipidSpaceGUI::fill_Table(){
             for(auto kv : lipid_space->lipidomes[r]->features){
                 if (kv.second.feature_type == NominalFeature){
                     item = new QTableWidgetItem(kv.second.nominal_value.c_str());
+                    item->setData(1, kv.second.nominal_value.c_str());
                 }
                 else {
                     item = new QTableWidgetItem(QString::number(kv.second.numerical_value));
+                    item->setData(1, kv.second.numerical_value);
                 }
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
                 if (contains_val(unselected_lipidome_indexes, r)){
                     item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
                 }
+                item->setFont(item_font);
                 int c = feature_index[kv.first];
                 t->setItem(r, c, item);
                 free_cells.remove(r * C + c);
@@ -1929,10 +2025,12 @@ void LipidSpaceGUI::fill_Table(){
             // add lipid quant data
             for (int c = 0; c < (int)lipid_space->lipidomes[r]->species.size(); c++){
                 item = new QTableWidgetItem(QString::number(lipid_space->lipidomes[r]->original_intensities[c]));
+                    item->setData(1, lipid_space->lipidomes[r]->original_intensities[c]);
                 item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
                 if (uncontains_val(selected_species, lipid_space->lipidomes[r]->species[c]) || contains_val(unselected_lipidome_indexes, r)){
                     item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
                 }
+                item->setFont(item_font);
                 int cc = lipid_index[lipid_space->lipidomes[r]->species[c]];
                 t->setItem(r, cc, item);
                 free_cells.remove(r * C + cc);
@@ -1941,10 +2039,14 @@ void LipidSpaceGUI::fill_Table(){
         // fill the empty fields with disabled cells
         for (auto pos : free_cells){
             item = new QTableWidgetItem("");
+            item->setFont(item_font);
             item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            item->setData(1, "");
             int r = pos / C;
             int c = pos % C;
             t->setItem(r, c, item);
         }
     }
+    t->resizeRowsToContents(); 
+    t->resizeColumnsToContents(); 
 }

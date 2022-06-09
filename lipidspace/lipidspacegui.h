@@ -197,6 +197,7 @@ public slots:
     void openSelectPC();
     void openAbout();
     void openLog();
+    void export_table();
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
     void ShowContextMenuStatisticsBoxPlot(const QPoint);
