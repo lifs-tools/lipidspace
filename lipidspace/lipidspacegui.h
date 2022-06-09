@@ -142,10 +142,12 @@ public:
     QPixmap *arrow_bl;
     Tutorial *tutorial;
     ImportTable import_table;
+    bool ctrl_pressed;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
     void copy_to_clipboard();
     void closeEvent(QCloseEvent *event) override;
     
@@ -164,6 +166,7 @@ public slots:
     void openLists();
     void openTable();
     void openMzTabM();
+    void fill_table();
     void export_list();
     void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type, string sheet);
     void resetAnalysis();
@@ -247,6 +250,5 @@ private:
     map<string, vector<pair<string, double>>> sortings[4];
     vector<QComboBox*> sorting_boxes;
     
-    void fill_Table();
 };
 #endif // LIPIDSPACEGUI_H

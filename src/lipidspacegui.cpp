@@ -57,6 +57,13 @@ void LipidSpaceGUI::closeEvent(QCloseEvent *event){
 
 
 
+void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
+    if (event->key() == Qt::Key_Control){
+        ctrl_pressed = false;
+    }
+}
+
+    
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
@@ -162,6 +169,10 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         loadTable("examples/000.csv", ct, FLAT_TABLE, "");
     }
     
+    else if (event->key() == Qt::Key_Control){
+        ctrl_pressed = true;
+    }
+    
     else {
         if (Qt::Key_A <= event->key() && event->key() <= Qt::Key_Z){
             keystrokes += string(1, (char)event->key());
@@ -185,7 +196,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     keystrokes = "";
     selected_d_lipidomes = 0;
     knubbel = false;
+    ctrl_pressed = false;
     tutorial = new Tutorial(this, ui->centralwidget);
+    ui->tableWidget->set_ctrl(&ctrl_pressed);
     connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, tutorial, &Tutorial::start_first_tutorial);
     
     
@@ -213,7 +226,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionImport_mzTabM, SIGNAL(triggered()), this, SLOT(openMzTabM()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
-    
+    connect(ui->tableWidget, SIGNAL(zooming()), this, SLOT(fill_table()));
     connect(ui->actionComplete_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setCompleteLinkage);
     connect(ui->actionAverage_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setAverageLinkage);
     connect(ui->actionSingle_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setSingleLinkage);
@@ -785,7 +798,7 @@ void LipidSpaceGUI::runAnalysis(){
         }
     }
     
-    fill_Table();
+    fill_table();
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
@@ -932,7 +945,7 @@ void LipidSpaceGUI::resetAnalysis(){
     
     ui->dendrogramView->resetDendrogram();
     ui->frame->setVisible(false);
-    fill_Table();
+    fill_table();
     updateGUI();
 }
 
@@ -962,7 +975,7 @@ void LipidSpaceGUI::showHideDendrogram(){
 
 void LipidSpaceGUI::toggleLipidNameTranslation(){
     GlobalData::gui_num_var["translate"] = ui->actionTranslate->isChecked() ? TRANSLATED_NAME : IMPORT_NAME;
-    fill_Table();
+    fill_table();
     updateView(0);
     updateGUI();
 }
@@ -1821,21 +1834,31 @@ void LipidSpaceGUI::reset_all_features(){
 
 void LipidSpaceGUI::transposeTable(){
     table_transposed = !table_transposed;
-    fill_Table();
+    fill_table();
 }
 
 
-void LipidSpaceGUI::fill_Table(){
+/*
+void LipidSpaceGUI::table_zoom(){
+int zoom_value = max(1, (int)GlobalData::gui_num_var["table_zoom"] + (2 * zoom - 1));
+    GlobalData::gui_num_var["table_zoom"] = zoom_value;
+    fill_table();
+}*/
+
+
+
+void LipidSpaceGUI::fill_table(){
     QTableWidget *t = ui->tableWidget;
     QTableWidgetItem *item = 0;
     
-    QFont item_font("Helvetica", 10);
+    QFont item_font("Helvetica", (int)GlobalData::gui_num_var["table_zoom"]);
+    
     
     t->setRowCount(0);
     t->setColumnCount(0);
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
     
     if ((int)lipid_space->selected_lipidomes.size() == 0 || (int)lipid_space->global_lipidome->lipids.size() == 0) return;
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
     
     int num_features = lipid_space->feature_values.size();
     map<string, int> lipid_index;
@@ -2048,5 +2071,5 @@ void LipidSpaceGUI::fill_Table(){
         }
     }
     t->resizeRowsToContents(); 
-    t->resizeColumnsToContents(); 
+    t->resizeColumnsToContents();
 }
