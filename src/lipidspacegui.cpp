@@ -2070,6 +2070,6 @@ void LipidSpaceGUI::fill_table(){
             t->setItem(r, c, item);
         }
     }
-    t->resizeRowsToContents(); 
     t->resizeColumnsToContents();
+    t->resizeRowsToContents(); 
 }
