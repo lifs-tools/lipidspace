@@ -80,12 +80,12 @@ int Array::greatest_less(double key, int L, int R) {
     assert(size() > 0);
     if (L < 0) L = 0;
     if (R < 0) R = size() - 1;
-    int hit = -1;
+    int hit = L - 1;
  
     while (L <= R) {
         int mid = L + ((R - L + 1) >> 1);
  
-        if (at(mid) < key) {
+        if (at(mid) <= key) {
             hit = mid;
             L = mid + 1;
         }

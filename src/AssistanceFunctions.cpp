@@ -249,6 +249,10 @@ bool sort_double_double_asc (pair<double, double> i, pair<double, double> j) { r
 
 
 
+
+
+
+
 double compute_accuracy(vector<Array> &v){
     vector<pair<double, double>> medians;
     for (uint i = 0; i < v.size(); ++i){
@@ -257,11 +261,39 @@ double compute_accuracy(vector<Array> &v){
         medians.push_back({a.median(-1, -1, true), i});
     }
     sort(medians.begin(), medians.end(), sort_double_double_asc);
-    
     double TP = 0, TN = 0, FP = 0, FN = 0;
     
+    Array borders;
+    for (uint i = 0; i < medians.size() - 1; ++i){
+        double d = 0;
+        double pos_max = 0;
+        double separation_score = 0;
+        int index_first = medians[i].second;
+        int index_second = medians[i + 1].second;
+        ks_separation_value(v[index_first], v[index_second], d, pos_max, separation_score);
+        borders.push_back(pos_max);
+    }
+    borders.push_back(1e100);
+    vector<int> pointers(v.size(), -1);
     
-    
+    for (uint i = 0; i < borders.size(); ++i){
+        double border = borders[i];
+        
+        uint current_index = medians[i].second;
+        for (uint j = 0; j < v.size(); ++j){
+            int index = v[j].greatest_less(border, pointers[j]);
+            
+            if (current_index == j){
+                TP += index - pointers[j];
+                FN += v[j].size() - (index - pointers[j]);
+            }
+            else {
+                FP += index - pointers[j];
+                TN += v[j].size() - (index - pointers[j]);
+            }
+            pointers[j] = index;
+        }
+    }
     
     return (TP + TN) / (TP + TN + FP + FN);
 }

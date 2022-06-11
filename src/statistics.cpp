@@ -695,19 +695,22 @@ void Statistics::updateBoxPlot(){
             
             chart->addSeries(single_plot_series);
         }
+        double accuracy = compute_accuracy(series);
+        stat_results.insert({"accuracy", accuracy});
         if (nom_counter == 2){
             double p_student = p_value_student(series[0], series[1]);
             double p_welch = p_value_welch(series[0], series[1]);
             double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
+            double accuracy = compute_accuracy(series);
             stat_results.insert({"p_value(Student)", p_student});
             stat_results.insert({"p_value(Welch)", p_welch});
             stat_results.insert({"p_value(KS)", p_ks});
-            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>Student</sub> = %1,   <i>p</i>-value<sub>Welch</sub> = %2,   <i>p</i>-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
+            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>Student</sub> = %2,   <i>p</i>-value<sub>Welch</sub> = %3,   <i>p</i>-value<sub>KS</sub> = %4").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
         }
         else if (nom_counter > 2){
             double p_anova = p_value_anova(series);
             stat_results.insert({"p_value(ANOVA)", p_anova});
-            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>ANOVA</sub> = %1").arg(QString::number(p_anova, 'g', 3)));
+            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
         }
     }
     else {
