@@ -26,10 +26,6 @@ double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkag
 
 
 
-bool sort_double_string_desc (pair<double, string> i, pair<double, string> j) { return (i.first > j.first); }
-
-
-
 void LipidSpace::create_dendrogram(){
     dendrogram_sorting.clear();
     dendrogram_points.clear();

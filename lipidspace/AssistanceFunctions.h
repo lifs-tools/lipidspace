@@ -136,10 +136,12 @@ double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2);
 double p_value_student(Array &a, Array &b);
 double p_value_welch(Array &a, Array &b);
 double p_value_anova(vector<Array> &v);
+double compute_accuracy(vector<Array> &v);
 
 
 
-
+bool sort_double_string_desc (pair<double, string> i, pair<double, string> j);
+bool sort_double_double_asc (pair<double, double> i, pair<double, double>);
 
 
 class LipidSpaceException : public std::exception {

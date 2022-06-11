@@ -244,6 +244,32 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
 
 
 
+bool sort_double_string_desc (pair<double, string> i, pair<double, string> j) { return (i.first > j.first); }
+bool sort_double_double_asc (pair<double, double> i, pair<double, double> j) { return (i.first < j.first); }
+
+
+
+double compute_accuracy(vector<Array> &v){
+    vector<pair<double, double>> medians;
+    for (uint i = 0; i < v.size(); ++i){
+        auto &a = v[i];
+        sort(a.begin(), a.end());
+        medians.push_back({a.median(-1, -1, true), i});
+    }
+    sort(medians.begin(), medians.end(), sort_double_double_asc);
+    
+    double TP = 0, TN = 0, FP = 0, FN = 0;
+    
+    
+    
+    
+    return (TP + TN) / (TP + TN + FP + FN);
+}
+
+
+
+
+
 void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, pair<vector<double>, vector<double>> *ROC){
     d = 0;
     pos_max = 0;

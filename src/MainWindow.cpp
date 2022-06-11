@@ -26,6 +26,8 @@ void print_help(){
 
 
 int main(int argc, char** argv) {
+    
+    
     // parameters to change
     /*
     bool keep_sn_position = true;

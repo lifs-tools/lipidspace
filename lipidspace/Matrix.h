@@ -35,13 +35,14 @@ public:
     Array(const Array &a, int l = -1);
     void reset(Array &a);
     double mean();
-    double median();
     double stdev();
     double sample_stdev();
     double sum();
     void mult(Matrix &m, Array &a);
     void add(Array &a);
+    double median(int begin_v = -1, int end_v = -1, bool sorted = false);
     void add(vector<double> &a);
+    int greatest_less(double key, int L = -1, int R = -1);
     void compute_distances(Array &x, double dx, Array &y, double dy);
     void compute_coefficiants(Matrix &data, Array &values);
     friend Array& operator+=(Array &me, const double val);
