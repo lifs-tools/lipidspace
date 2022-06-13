@@ -226,7 +226,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionLoad_table, SIGNAL(triggered()), this, SLOT(openTable()));
     connect(ui->actionImport_mzTabM, SIGNAL(triggered()), this, SLOT(openMzTabM()));
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quitProgram()));
-    connect(ui->tableWidget, SIGNAL(zooming()), this, SLOT(fill_table()));
+    connect(ui->tableWidget, SIGNAL(zooming()), this, SLOT(updateTable()));
     connect(ui->actionComplete_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setCompleteLinkage);
     connect(ui->actionAverage_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setAverageLinkage);
     connect(ui->actionSingle_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setSingleLinkage);
@@ -1838,12 +1838,27 @@ void LipidSpaceGUI::transposeTable(){
 }
 
 
-/*
-void LipidSpaceGUI::table_zoom(){
-int zoom_value = max(1, (int)GlobalData::gui_num_var["table_zoom"] + (2 * zoom - 1));
-    GlobalData::gui_num_var["table_zoom"] = zoom_value;
-    fill_table();
-}*/
+
+
+void LipidSpaceGUI::updateTable(){
+    QTableWidget *t = ui->tableWidget;
+    
+    int rows = t->rowCount();
+    int cols = t->columnCount();
+    
+    if (rows == 0 || cols == 0) return;
+    
+    QFont item_font("Helvetica", (int)GlobalData::gui_num_var["table_zoom"]);
+    for (int c = 0; c < cols; c++) t->horizontalHeaderItem(c)->setFont(item_font);
+    for (int r = 0; r < rows; ++r){
+        t->verticalHeaderItem(r)->setFont(item_font);
+        for (int c = 0; c < cols; c++) t->item(r, c)->setFont(item_font);
+    }
+    t->resizeColumnsToContents();
+    t->resizeRowsToContents();
+}
+
+
 
 
 

@@ -219,6 +219,7 @@ public slots:
     void featureItemDoubleClicked(QTreeWidgetItem *item, int col);
     void updateSelectionView();
     void updateView(int);
+    void updateTable();
     void check_all_entities();
     void uncheck_all_entities();
     void toggle_all_entities();
