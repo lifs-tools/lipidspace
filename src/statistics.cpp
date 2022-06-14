@@ -104,6 +104,9 @@ void Statistics::setBarNumber(int bar_number){
 
 
 
+void Statistics::bar_plot_hovered(bool is_over, QBoxSet *boxset) {
+    if (is_over) QToolTip::showText(QCursor::pos(), boxset->label());
+}
 
 
 
@@ -271,13 +274,15 @@ void Statistics::updateBarPlot(){
         string nominal_value = lipidome->features[target_variable].nominal_value;
         if (uncontains_val(nominal_target_values, nominal_value)){
             nominal_target_values.insert({nominal_value, nom_counter++});
-            plot_series.push_back(new QBoxPlotSeries());
-            plot_series.back()->setName(nominal_value.c_str());
+            QBoxPlotSeries *box_plot_series = new QBoxPlotSeries();
+            plot_series.push_back(box_plot_series);
+            connect(box_plot_series, SIGNAL(hovered(bool, QBoxSet*)), this, SLOT(bar_plot_hovered(bool, QBoxSet*)));
+            box_plot_series->setName(nominal_value.c_str());
             target_titles.push_back(nominal_value);
             string color_key = target_variable + "_" + nominal_value;
             if (contains_val(GlobalData::colorMapFeatures, color_key)){
                 QBrush brush(GlobalData::colorMapFeatures[color_key]);
-                plot_series.back()->setBrush(brush);
+                box_plot_series->setBrush(brush);
             }
         }
         target_values.push_back(nominal_target_values[nominal_value]);

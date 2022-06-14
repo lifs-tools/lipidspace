@@ -1717,13 +1717,13 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
         QAction *actionDeselectSelected = new QAction("Uncheck selected", this);
         QAction *actionToggleSelected = new QAction("Toggle selected", this);
         QAction *actionExportList = new QAction("Export list (selected only)", this);
-        menu->addAction(actionSelectAll);
-        menu->addAction(actionDeselectAll);
-        menu->addAction(actionToggleAll);
-        menu->addSeparator();
         menu->addAction(actionSelectSelected);
         menu->addAction(actionDeselectSelected);
         menu->addAction(actionToggleSelected);
+        menu->addSeparator();
+        menu->addAction(actionSelectAll);
+        menu->addAction(actionDeselectAll);
+        menu->addAction(actionToggleAll);
         menu->addSeparator();
         menu->addAction(actionExportList);
         

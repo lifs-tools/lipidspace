@@ -9,6 +9,7 @@
 
 #include <QFileDialog>
 #include <QChartView>
+#include <QToolTip>
 #include <QChart>
 #include <QMessageBox>
 #include <QGraphicsLayout>
@@ -40,7 +41,6 @@ using namespace std;
     
     
 using namespace OpenXLSX;
-
 
 
 
@@ -76,6 +76,7 @@ public slots:
     void setTickSizeROCCurve(int);
     void setBarNumber(int);
     void set_log_scale();
+    void bar_plot_hovered(bool, QBoxSet*);
 };
 
 
