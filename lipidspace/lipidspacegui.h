@@ -222,7 +222,10 @@ public slots:
     void updateTable();
     void check_all_entities();
     void uncheck_all_entities();
+    void check_selected_entities();
+    void uncheck_selected_entities();
     void toggle_all_entities();
+    void toggle_selected_entities();
     void select_all_features();
     void deselect_all_features();
     void reset_all_features();

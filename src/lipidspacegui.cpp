@@ -1713,10 +1713,18 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
         QAction *actionSelectAll = new QAction("Check all", this);
         QAction *actionDeselectAll = new QAction("Uncheck all", this);
         QAction *actionToggleAll = new QAction("Toggle all", this);
+        QAction *actionSelectSelected = new QAction("Check selected", this);
+        QAction *actionDeselectSelected = new QAction("Uncheck selected", this);
+        QAction *actionToggleSelected = new QAction("Toggle selected", this);
         QAction *actionExportList = new QAction("Export list (selected only)", this);
         menu->addAction(actionSelectAll);
         menu->addAction(actionDeselectAll);
         menu->addAction(actionToggleAll);
+        menu->addSeparator();
+        menu->addAction(actionSelectSelected);
+        menu->addAction(actionDeselectSelected);
+        menu->addAction(actionToggleSelected);
+        menu->addSeparator();
         menu->addAction(actionExportList);
         
         QListWidget *widget = nullptr;
@@ -1731,6 +1739,9 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
         connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::check_all_entities);
         connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::uncheck_all_entities);
         connect(actionToggleAll, &QAction::triggered, this, &LipidSpaceGUI::toggle_all_entities);
+        connect(actionSelectSelected, &QAction::triggered, this, &LipidSpaceGUI::check_selected_entities);
+        connect(actionDeselectSelected, &QAction::triggered, this, &LipidSpaceGUI::uncheck_selected_entities);
+        connect(actionToggleSelected, &QAction::triggered, this, &LipidSpaceGUI::toggle_selected_entities);
         connect(actionExportList, &QAction::triggered, this, &LipidSpaceGUI::export_list);
     }
     else {
@@ -1765,6 +1776,22 @@ void LipidSpaceGUI::check_all_entities(){
 
 
 
+void LipidSpaceGUI::check_selected_entities(){
+    QListWidget *widget = nullptr;
+    switch(ui->itemsTabWidget->currentIndex()){
+        case 0: widget = ui->speciesList; break;
+        case 1: widget = ui->classList; break;
+        case 2: widget = ui->categoryList; break;
+        case 3: return;
+        case 4: widget = ui->sampleList; break;
+    }
+    for (auto item : widget->selectedItems()){
+        item->setCheckState(Qt::Checked);
+    }
+}
+
+
+
 void LipidSpaceGUI::uncheck_all_entities(){
     QListWidget *widget = nullptr;
     switch(ui->itemsTabWidget->currentIndex()){
@@ -1781,6 +1808,23 @@ void LipidSpaceGUI::uncheck_all_entities(){
 
 
 
+void LipidSpaceGUI::uncheck_selected_entities(){
+    cout << "huhu" << endl;
+    QListWidget *widget = nullptr;
+    switch(ui->itemsTabWidget->currentIndex()){
+        case 0: widget = ui->speciesList; break;
+        case 1: widget = ui->classList; break;
+        case 2: widget = ui->categoryList; break;
+        case 3: return;
+        case 4: widget = ui->sampleList; break;
+    }
+    for (auto item : widget->selectedItems()){
+        item->setCheckState(Qt::Unchecked);
+    }
+}
+
+
+
 void LipidSpaceGUI::toggle_all_entities(){
     QListWidget *widget = nullptr;
     switch(ui->itemsTabWidget->currentIndex()){
@@ -1792,6 +1836,22 @@ void LipidSpaceGUI::toggle_all_entities(){
     }
     for (int i = 0; i < widget->count(); ++i){
         widget->item(i)->setCheckState(widget->item(i)->checkState() ? Qt::Unchecked :  Qt::Checked);
+    }
+}
+
+
+
+void LipidSpaceGUI::toggle_selected_entities(){
+    QListWidget *widget = nullptr;
+    switch(ui->itemsTabWidget->currentIndex()){
+        case 0: widget = ui->speciesList; break;
+        case 1: widget = ui->classList; break;
+        case 2: widget = ui->categoryList; break;
+        case 3: return;
+        case 4: widget = ui->sampleList; break;
+    }
+    for (auto item : widget->selectedItems()){
+        item->setCheckState(item->checkState() ? Qt::Unchecked :  Qt::Checked);
     }
 }
 

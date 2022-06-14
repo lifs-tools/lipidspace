@@ -167,7 +167,6 @@ void LipidSpace::create_dendrogram(){
     }
     
     
-    
     // computing the coefficient of variation for each lipid
     double max_cv = 0.;
     vector<pair<double, string>> CVs;
