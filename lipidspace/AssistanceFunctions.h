@@ -211,7 +211,7 @@ public:
     map<string, Feature> features;
     Matrix m;
     
-    Lipidome(string lipidome_name, string lipidome_file, bool is_file_name = false) : file_name(lipidome_file) {
+    Lipidome(string lipidome_name, string lipidome_file, string sheet_name = "", bool is_file_name = false) : file_name(lipidome_file) {
         QFileInfo qFileInfo(file_name.c_str());
         string cleaned_file = qFileInfo.baseName().toStdString();
         if (is_file_name){
@@ -220,7 +220,7 @@ public:
         else {
             cleaned_name = lipidome_name;
         }
-        features.insert({"File", Feature("File", cleaned_file)});
+        features.insert({"File", Feature("File", cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
     }
 };
 

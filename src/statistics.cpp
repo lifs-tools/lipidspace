@@ -464,6 +464,7 @@ void Statistics::updateHistogram(){
     chart->addAxis(axisY, Qt::AlignLeft);
     int max_hist = 0;
     for (uint i = 0; i < plot_series.size(); ++i){
+        plot_series[i]->setLabel((plot_series[i]->label() + " (%1)").arg(series[i].size()));
         Array &single_series = series[i];
         
         vector<int> counts(num_bars + 1, 0);
@@ -681,6 +682,7 @@ void Statistics::updateBoxPlot(){
             }
         }
         for (uint i = 0; i < plot_series.size(); ++i){
+            plot_series[i]->setName((plot_series[i]->name() + " (%1)").arg(series[i].size()));
             auto single_plot_series = plot_series[i];
             QBoxSet *box = single_plot_series->boxSets()[0];
             

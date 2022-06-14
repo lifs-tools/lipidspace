@@ -78,7 +78,7 @@ public:
     Citation(const QString &text, QGraphicsItem *parent = nullptr) : QGraphicsTextItem(text, parent){}
     
     void mousePressEvent(QGraphicsSceneMouseEvent *) override {
-        QString link = "http://www.lifs-tools.org";
+        QString link = "https://lifs-tools.org";
         QDesktopServices::openUrl(QUrl(link));
     }
 };
@@ -92,6 +92,7 @@ public:
     QPushButton *thirdTutorialPushButton;
     QGraphicsSvgItem *banner;
     QGraphicsSvgItem *LIFS;
+    QGraphicsSvgItem *LIFS_monitor;
     Citation *citation;
     
     HomeView(QWidget *parent = nullptr) : QGraphicsView(parent){
@@ -122,6 +123,8 @@ public:
             citation = new Citation("Citation: Kopczynski, Dominik et al. The Journal 47(11):08-15, 2022.");
             citation->setDefaultTextColor(Qt::white);
             scene()->addItem(citation);
+            LIFS_monitor = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS-monitor.svg");
+            scene()->addItem(LIFS_monitor);
         }
         
         double factor = min((double)width() / 1207., (double)height() / 483.);
@@ -149,6 +152,11 @@ public:
         citation->setFont(f);
         citation->setPos(60. * factor, 440. * factor);
         citation->setCursor(Qt::PointingHandCursor);
+        
+        
+        double monitor_factor = 0.75;
+        LIFS_monitor->setPos(width() - (564 * monitor_factor + 120) * factor, 1. * factor);
+        LIFS_monitor->setScale(monitor_factor * factor);
     }
 };
 
