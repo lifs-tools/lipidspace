@@ -287,14 +287,7 @@
           <number>0</number>
          </property>
          <item row="1" column="0">
-          <widget class="QGraphicsView" name="homeGraphicsView"/>
-         </item>
-         <item row="0" column="0">
-          <widget class="QPushButton" name="firstTutorialPushButton">
-           <property name="text">
-            <string>first Tutorial</string>
-           </property>
-          </widget>
+          <widget class="HomeView" name="homeGraphicsView"/>
          </item>
         </layout>
        </widget>
@@ -481,6 +474,9 @@
             <property name="maximum">
              <number>10000</number>
             </property>
+            <property name="singleStep">
+             <number>10</number>
+            </property>
             <property name="value">
              <number>100</number>
             </property>
@@ -537,37 +533,6 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="rawDataTab">
-        <property name="font">
-         <font>
-          <family>Noto Sans</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <attribute name="title">
-         <string>Raw data table</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_4">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <item row="0" column="0">
-          <widget class="CBTableWidget" name="tableWidget"/>
-         </item>
-        </layout>
-       </widget>
        <widget class="QWidget" name="statisticsTab">
         <property name="font">
          <font>
@@ -600,11 +565,31 @@
             <enum>Qt::Horizontal</enum>
            </property>
            <property name="handleWidth">
+            <number>9</number>
+           </property>
+          <widget class="QSplitter" name="splitterStatV1">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="handleWidth">
             <number>8</number>
            </property>
            <widget class="Statistics" name="statisticsBoxPlot" native="true"/>
            <widget class="Statistics" name="statisticsHistogram" native="true"/>
+          </widget>
+           
+           
+           
+          <widget class="QSplitter" name="splitterStatV2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="handleWidth">
+            <number>10</number>
+           </property>
+           <widget class="Statistics" name="statisticsROCCurve" native="true"/>
            <widget class="Statistics" name="statisticsBarPlot" native="true"/>
+          </widget>
           </widget>
          </item>
          <item row="1" column="0">
@@ -753,6 +738,37 @@
             </property>
            </widget>
           </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="rawDataTab">
+        <property name="font">
+         <font>
+          <family>Noto Sans</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <attribute name="title">
+         <string>Raw data table</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="CBTableWidget" name="tableWidget"/>
          </item>
         </layout>
        </widget>
@@ -1065,6 +1081,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>Statistics</class>
+   <extends>QWidget</extends>
+   <header>lipidspace/statistics.h</header>
+  </customwidget>
+  <customwidget>
    <class>CBTableWidget</class>
    <extends>QTableWidget</extends>
    <header>lipidspace/CBTableWidget.h</header>
@@ -1075,14 +1096,14 @@
    <header>lipidspace/canvas.h</header>
   </customwidget>
   <customwidget>
-   <class>ClickableLabel</class>
-   <extends>QLabel</extends>
+   <class>HomeView</class>
+   <extends>QGraphicsView</extends>
    <header>lipidspace/canvas.h</header>
   </customwidget>
   <customwidget>
-   <class>Statistics</class>
-   <extends>QWidget</extends>
-   <header>lipidspace/statistics.h</header>
+   <class>ClickableLabel</class>
+   <extends>QLabel</extends>
+   <header>lipidspace/canvas.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

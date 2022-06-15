@@ -125,11 +125,23 @@ public:
 };
 
 
-double KS_pvalue(vector<double> &sample1, vector<double> &sample2);
 void BH_fdr(vector<double> &data);
 double compute_aic(Matrix &data, Array &coefficiants, Array &values);
 bool gene_aic(Gene g1, Gene g2);
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score);
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, pair<vector<double>, vector<double>> *ROC = 0);
+double hyperg_2F1(double a, double b, double c, double d);
+double t_distribution_cdf(double t_stat, double free_deg);
+double f_distribution_cdf(double fi_stat, double df1, double df2);
+double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2);
+double p_value_student(Array &a, Array &b);
+double p_value_welch(Array &a, Array &b);
+double p_value_anova(vector<Array> &v);
+double compute_accuracy(vector<Array> &v);
+
+
+
+bool sort_double_string_desc (pair<double, string> i, pair<double, string> j);
+bool sort_double_double_asc (pair<double, double> i, pair<double, double>);
 
 
 class LipidSpaceException : public std::exception {
@@ -191,14 +203,15 @@ public:
     vector<string> classes;
     vector<string> categories;
     vector<LipidAdduct*> lipids;
-    vector<bool> selection;
-    Array intensities;
+    Array visualization_intensities;
+    vector<int> selected_lipid_indexes;
+    Array normalized_intensities;
     Array PCA_intensities;
     Array original_intensities;
     map<string, Feature> features;
     Matrix m;
     
-    Lipidome(string lipidome_name, string lipidome_file, bool is_file_name = false) : file_name(lipidome_file) {
+    Lipidome(string lipidome_name, string lipidome_file, string sheet_name = "", bool is_file_name = false) : file_name(lipidome_file) {
         QFileInfo qFileInfo(file_name.c_str());
         string cleaned_file = qFileInfo.baseName().toStdString();
         if (is_file_name){
@@ -207,7 +220,7 @@ public:
         else {
             cleaned_name = lipidome_name;
         }
-        features.insert({"File", Feature("File", cleaned_file)});
+        features.insert({"File", Feature("File", cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
     }
 };
 

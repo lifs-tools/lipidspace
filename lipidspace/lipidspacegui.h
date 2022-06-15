@@ -34,14 +34,25 @@ class Canvas;
 class Tutorial;
 
 
+
 class HomeItem : public QGraphicsItem {
+    
 public:
-    HomeItem(QGraphicsView *v) : view(v) {};
+    QGraphicsView *view;
+    
+    HomeItem(QGraphicsView *v) : view(v) {
+    }
+    
+    ~HomeItem(){
+    }
     
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
         QLinearGradient gradient;
         double factor = min((double)view->width() / 1207., (double)view->height() / 483.);
 
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        
+        
         gradient.setStart(0, 0);
         gradient.setFinalStop(0, 1);
         gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
@@ -53,30 +64,41 @@ public:
         painter->setPen(Qt::NoPen);
         painter->drawRect(0, 0, view->width(), 400 * factor);
         
-        QFont banner_font("Go", 70, QFont::Bold);
-        banner_font.setPointSizeF(70 * factor);
-        painter->setPen(QPen(Qt::white));
-        painter->setFont(banner_font);
-        QRectF text_bound;
-        painter->drawText(QRectF(60 * factor, 65 * factor, 4000, 120 * factor), Qt::AlignVCenter | Qt::AlignLeft, "LipidSpace", &text_bound);
+        
+        
+        double l_banner = 502.5 * factor;
         
         QBrush bottom(QColor("#6babce")); // 6babce / ceab6b
         painter->setPen(Qt::NoPen);
         painter->setBrush(bottom);
-        painter->drawRect(0, 400 * factor, view->width(),view->height());
+        painter->drawRect(0., 400. * factor, view->width(), view->height());
         
         
         QBrush banner(QColor("#71a9cc")); // 71a9cc / ce956b
         painter->setBrush(banner);
-        painter->drawRect(0, 90 * factor, 50 * factor, 70 * factor);
-        painter->drawRect(80 * factor + text_bound.width(), 90 * factor, view->width(), 70 * factor);
-    };
+        painter->drawRect(QRectF(0., 90. * factor, 50. * factor, 70. * factor));
+        painter->drawRect(QRectF(l_banner + 70. * factor, 90. * factor, view->width(), 70. * factor));
+        
+        
+        // Write the text
+        QFont f = painter->font();
+        painter->setPen(QPen(Qt::white));
+        f.setPointSizeF(11. * factor);
+        painter->setFont(f);
+        painter->drawText(QRectF(60. * factor, 190. * factor, 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "Accessing the chemical space of individual lipidomes:\n  • Comprehensive study of multiple lipidomes\n  • Providing mechanism for quality control\n  • Feature analysis and lipid selection\n  • Integration of study variables");
+        
+        painter->drawText(QRectF(60. * factor, 310. * factor, 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "LipidSpace offers several interactive tutorials for an easy introduction\ninto its functionality:");
+        
+        
+        //painter->drawText(QRectF(60. * factor, 440. * factor, 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "Citation: Kopczynski, Dominik et al. The Journal 47(11):08-15, 2022.");
+        
+    }
     
     QRectF boundingRect() const override {
         return QRectF(0, 0, view->width(), view->height());
-    };
+    }
     
-    QGraphicsView *view;
+    
 };
 
 
@@ -119,10 +141,13 @@ public:
     QPixmap *arrow_bl;
     Tutorial *tutorial;
     ImportTable import_table;
+    bool ctrl_pressed;
+    bool set_feature_semaphore;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
     void copy_to_clipboard();
     void closeEvent(QCloseEvent *event) override;
     
@@ -141,6 +166,7 @@ public slots:
     void openLists();
     void openTable();
     void openMzTabM();
+    void fill_table();
     void export_list();
     void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type, string sheet);
     void resetAnalysis();
@@ -174,11 +200,13 @@ public slots:
     void openSelectPC();
     void openAbout();
     void openLog();
+    void export_table();
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
     void ShowContextMenuStatisticsBoxPlot(const QPoint);
     void ShowContextMenuStatisticsBarPlot(const QPoint);
     void ShowContextMenuStatisticsHistogram(const QPoint);
+    void ShowContextMenuStatisticsROCCurve(const QPoint);
     void ShowTableContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint, set<int> *selected_d_lipidomes = 0);
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);
@@ -191,9 +219,13 @@ public slots:
     void featureItemDoubleClicked(QTreeWidgetItem *item, int col);
     void updateSelectionView();
     void updateView(int);
+    void updateTable();
     void check_all_entities();
     void uncheck_all_entities();
+    void check_selected_entities();
+    void uncheck_selected_entities();
     void toggle_all_entities();
+    void toggle_selected_entities();
     void select_all_features();
     void deselect_all_features();
     void reset_all_features();
@@ -222,6 +254,5 @@ private:
     map<string, vector<pair<string, double>>> sortings[4];
     vector<QComboBox*> sorting_boxes;
     
-    void fill_Table();
 };
 #endif // LIPIDSPACEGUI_H

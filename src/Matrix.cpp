@@ -57,13 +57,44 @@ void Array::mult(Matrix &m, Array &a){
 }
 
 
-double Array::median(){
-    assert (this->size() > 2);
-    Array median_vector;
-    median_vector.reserve(this->size());
-    for (auto val : *this) median_vector.push_back(val);
-    sort(median_vector.begin(), median_vector.end());
-    return median_vector[median_vector.size() >> 1];
+double Array::median(int begin_v, int end_v, bool sorted){
+    assert (size() >= 2);
+    
+    if (begin_v == -1) begin_v = 0;
+    if (end_v == -1) end_v = size() - 1;
+    if (!sorted) sort(begin(), end());
+    
+    int count = end_v - begin_v;
+    if (count & 1) {
+        return at((count >> 1) + begin_v);
+    }
+    else {
+        double right = at((count >> 1) + begin_v);
+        double left = at((count >> 1) - 1 + begin_v);
+        return (right + left) / 2.0;
+    }
+}
+
+
+int Array::greatest_less(double key, int L, int R) {
+    assert(size() > 0);
+    if (L < 0) L = 0;
+    if (R < 0) R = size() - 1;
+    int hit = L - 1;
+ 
+    while (L <= R) {
+        int mid = L + ((R - L + 1) >> 1);
+ 
+        if (at(mid) <= key) {
+            hit = mid;
+            L = mid + 1;
+        }
+        else if (at(mid) > key) {
+            R = mid - 1;
+        }
+    }
+ 
+    return hit;
 }
 
 

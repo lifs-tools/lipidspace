@@ -8,8 +8,10 @@
 #include <QPixmap>
 #include <QWidget>
 #include <QLabel>
+#include <QCoreApplication>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QApplication>
 #include <QPainter>
 #include <QPainterPath>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -19,8 +21,13 @@
 #include <QGraphicsView>
 #include <QMainWindow>
 #include <QGraphicsItem>
+#include <QGraphicsSvgItem>
+#include <QGraphicsTextItem>
+#include <QSvgRenderer>
 #include <QPrinter>
 #include <QCursor>
+#include <QDesktopServices>
+#include <QPushButton>
 #include <iostream>
 #include <QGraphicsSceneMouseEvent>
 #include <vector>
@@ -66,8 +73,92 @@ public:
 
 
 
+class Citation : public QGraphicsTextItem {
+public:
+    Citation(const QString &text, QGraphicsItem *parent = nullptr) : QGraphicsTextItem(text, parent){}
+    
+    void mousePressEvent(QGraphicsSceneMouseEvent *) override {
+        QString link = "https://lifs-tools.org";
+        QDesktopServices::openUrl(QUrl(link));
+    }
+};
 
 
+class HomeView : public QGraphicsView {
+public:
+    
+    QPushButton *firstTutorialPushButton;
+    QPushButton *secondTutorialPushButton;
+    QPushButton *thirdTutorialPushButton;
+    QGraphicsSvgItem *banner;
+    QGraphicsSvgItem *LIFS;
+    QGraphicsSvgItem *LIFS_monitor;
+    Citation *citation;
+    
+    HomeView(QWidget *parent = nullptr) : QGraphicsView(parent){
+        firstTutorialPushButton = new QPushButton(this);
+        firstTutorialPushButton->setObjectName(QString::fromUtf8("firstTutorialPushButton"));
+        firstTutorialPushButton->setGeometry(QRect(60, 360, 181, 31));
+        firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "First Tutorial", nullptr));
+        secondTutorialPushButton = new QPushButton(this);
+        secondTutorialPushButton->setObjectName(QString::fromUtf8("secondTutorialPushButton"));
+        secondTutorialPushButton->setGeometry(QRect(280, 360, 181, 31));
+        secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Second Tutorial", nullptr));
+        thirdTutorialPushButton = new QPushButton(this);
+        thirdTutorialPushButton->setObjectName(QString::fromUtf8("thirdTutorialPushButton"));
+        thirdTutorialPushButton->setGeometry(QRect(60, 400, 181, 31));
+        thirdTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Third Tutorial", nullptr));
+        
+        banner = 0;
+        
+        
+    }
+    
+    void resizeEvent(QResizeEvent *) override {
+        if (!banner) {
+            banner = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LipidSpace-banner.svg");
+            scene()->addItem(banner);
+            LIFS = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS.svg");
+            scene()->addItem(LIFS);
+            citation = new Citation("Citation: Kopczynski, Dominik et al. The Journal 47(11):08-15, 2022.");
+            citation->setDefaultTextColor(Qt::white);
+            scene()->addItem(citation);
+            LIFS_monitor = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS-monitor.svg");
+            scene()->addItem(LIFS_monitor);
+        }
+        
+        double factor = min((double)width() / 1207., (double)height() / 483.);
+        QFont font = firstTutorialPushButton->font();
+        font.setPointSizeF(10 * factor);
+        
+        firstTutorialPushButton->setGeometry(QRect(60. * factor, 360. * factor, 181. * factor, 31. * factor));
+        secondTutorialPushButton->setGeometry(QRect(280. * factor, 360. * factor, 181. * factor, 31. * factor));
+        thirdTutorialPushButton->setGeometry(QRect(60. * factor, 400. * factor, 181. * factor, 31. * factor));
+        
+        firstTutorialPushButton->setFont(font);
+        secondTutorialPushButton->setFont(font);
+        thirdTutorialPushButton->setFont(font);
+        
+        double banner_factor = 92. / (double)banner->boundingRect().height() * factor;
+        banner->setPos(60. * factor, 85. * factor);
+        banner->setScale(banner_factor);
+        
+        double LIFS_factor = 18. / (double)LIFS->boundingRect().height() * factor;
+        LIFS->setPos(60. * factor, 50. * factor);
+        LIFS->setScale(LIFS_factor);
+        
+        QFont f = citation->font();
+        f.setPointSizeF(11. * factor);
+        citation->setFont(f);
+        citation->setPos(60. * factor, 440. * factor);
+        citation->setCursor(Qt::PointingHandCursor);
+        
+        
+        double monitor_factor = 0.75;
+        LIFS_monitor->setPos(width() - (564 * monitor_factor + 120) * factor, 1. * factor);
+        LIFS_monitor->setScale(monitor_factor * factor);
+    }
+};
 
 
 class Dendrogram : public QGraphicsItem {

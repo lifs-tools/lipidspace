@@ -44,7 +44,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     xLabel->move(width() - 25, 10);
     connect(xLabel, &ClickableLabel::clicked, this, &Tutorial::x_clicked);
     
-    QPixmap close_x("data/images/close-x.png");
+    QPixmap close_x(QCoreApplication::applicationDirPath() + "/data/images/close-x.png");
     xLabel->setPixmap(close_x);
     xLabel->setAlignment(Qt::AlignLeading|Qt::AlignRight|Qt::AlignTop);
     QRect r = xLabel->geometry();
@@ -57,7 +57,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     pagesLabel->setText("1 / 29");
     setVisible(false);
     
-    QPixmap p_arrow_bl("data/images/arrow-bottom-left.png");
+    QPixmap p_arrow_bl(QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-left.png");
     arrow_bl = new QLabel();
     arrow_bl->setPixmap(p_arrow_bl);
     r = arrow_bl->geometry();
@@ -67,7 +67,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_bl->setVisible(false);
     arrows.push_back(arrow_bl);
     
-    QPixmap p_arrow_br("data/images/arrow-bottom-right.png");
+    QPixmap p_arrow_br(QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-right.png");
     arrow_br = new QLabel();
     arrow_br->setPixmap(p_arrow_br);
     r = arrow_br->geometry();
@@ -77,7 +77,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_br->setVisible(false);
     arrows.push_back(arrow_br);
     
-    QPixmap p_arrow_lt("data/images/arrow-left-top.png");
+    QPixmap p_arrow_lt(QCoreApplication::applicationDirPath() + "/data/images/arrow-left-top.png");
     arrow_lt = new QLabel();
     arrow_lt->setPixmap(p_arrow_lt);
     r = arrow_lt->geometry();
@@ -87,7 +87,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_lt->setVisible(false);
     arrows.push_back(arrow_lt);
     
-    QPixmap p_arrow_lb("data/images/arrow-left-bottom.png");
+    QPixmap p_arrow_lb(QCoreApplication::applicationDirPath() + "/data/images/arrow-left-bottom.png");
     arrow_lb = new QLabel();
     arrow_lb->setPixmap(p_arrow_lb);
     r = arrow_lb->geometry();
@@ -97,7 +97,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_lb->setVisible(false);
     arrows.push_back(arrow_lb);
     
-    QPixmap p_arrow_tl("data/images/arrow-top-left.png");
+    QPixmap p_arrow_tl(QCoreApplication::applicationDirPath() + "/data/images/arrow-top-left.png");
     arrow_tl = new QLabel();
     arrow_tl->setPixmap(p_arrow_tl);
     r = arrow_tl->geometry();
@@ -107,7 +107,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_tl->setVisible(false);
     arrows.push_back(arrow_tl);
     
-    QPixmap p_arrow_tr("data/images/arrow-top-right.png");
+    QPixmap p_arrow_tr(QCoreApplication::applicationDirPath() + "/data/images/arrow-top-right.png");
     arrow_tr = new QLabel();
     arrow_tr->setPixmap(p_arrow_tr);
     r = arrow_tr->geometry();
@@ -117,7 +117,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_tr->setVisible(false);
     arrows.push_back(arrow_tr);
     
-    QPixmap p_arrow_rt("data/images/arrow-right-top.png");
+    QPixmap p_arrow_rt(QCoreApplication::applicationDirPath() + "/data/images/arrow-right-top.png");
     arrow_rt = new QLabel();
     arrow_rt->setPixmap(p_arrow_rt);
     r = arrow_rt->geometry();
@@ -127,7 +127,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_rt->setVisible(false);
     arrows.push_back(arrow_rt);
     
-    QPixmap p_arrow_rb("data/images/arrow-right-bottom.png");
+    QPixmap p_arrow_rb(QCoreApplication::applicationDirPath() + "/data/images/arrow-right-bottom.png");
     arrow_rb = new QLabel();
     arrow_rb->setPixmap(p_arrow_rb);
     r = arrow_rb->geometry();
@@ -140,11 +140,11 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
     
-    main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_dendrogram, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->firstTutorialPushButton, ui->dendrogramView, ui->featureComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statisticsBoxPlot, ui->statisticsHistogram, ui->featureComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->barNumberSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget, ui_it->tabWidget, ui_it->label_15, ui_it->sampleListWidgetRow, ui_it->okButtonRow, ui_it->cancelButtonRow, ui_it->ignoreListWidgetRow, ui_it->lipidListWidgetRow, ui_it->sampleListWidgetCol, ui_it->cancelButtonCol, ui_it->lipidListWidgetCol, ui_it->ignoreListWidgetCol, ui_it->numericalFeatureListWidgetCol, ui_it->nominalFeatureListWidgetCol, ui_it->flatTab, ui_it->lipidListWidgetFlat, ui_it->ignoreListWidgetFlat, ui_it->quantListWidgetFlat, ui_it->okButtonFlat, ui_it->numericalFeatureListWidgetFlat, ui_it->cancelButtonFlat, ui_it->sampleListWidgetFlat, ui_it->nominalFeatureListWidgetFlat, ui_it->tableWidget};
+    main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_dendrogram, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->homeGraphicsView->firstTutorialPushButton, ui->homeGraphicsView->secondTutorialPushButton, ui->homeGraphicsView->thirdTutorialPushButton, ui->dendrogramView, ui->featureComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statisticsBoxPlot, ui->statisticsHistogram, ui->featureComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->barNumberSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget, ui_it->tabWidget, ui_it->label_15, ui_it->sampleListWidgetRow, ui_it->okButtonRow, ui_it->cancelButtonRow, ui_it->ignoreListWidgetRow, ui_it->lipidListWidgetRow, ui_it->sampleListWidgetCol, ui_it->cancelButtonCol, ui_it->lipidListWidgetCol, ui_it->ignoreListWidgetCol, ui_it->numericalFeatureListWidgetCol, ui_it->nominalFeatureListWidgetCol, ui_it->flatTab, ui_it->lipidListWidgetFlat, ui_it->ignoreListWidgetFlat, ui_it->quantListWidgetFlat, ui_it->okButtonFlat, ui_it->numericalFeatureListWidgetFlat, ui_it->cancelButtonFlat, ui_it->sampleListWidgetFlat, ui_it->nominalFeatureListWidgetFlat, ui_it->tableWidget};
     
 
     // tutorial starts
-    connect(lipidSpaceGUI->ui->firstTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_first_tutorial);
+    connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_first_tutorial);
     connect(&lipidSpaceGUI->import_table, &ImportTable::finished, this, &Tutorial::close_tutorial);
     connect(&lipidSpaceGUI->import_table, &ImportTable::rejected, this, &Tutorial::close_directly_tutorial);
     

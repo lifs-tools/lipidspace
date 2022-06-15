@@ -26,10 +26,6 @@ double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkag
 
 
 
-bool sort_double_string_desc (pair<double, string> i, pair<double, string> j) { return (i.first > j.first); }
-
-
-
 void LipidSpace::create_dendrogram(){
     dendrogram_sorting.clear();
     dendrogram_points.clear();
@@ -69,52 +65,6 @@ void LipidSpace::create_dendrogram(){
     
     
     
-    
-    /*
-    // compute importance of lipids using coefficient of variation and
-    // Kolmogorv Smirnoff test on dendrogram branches
-    vector<pair<double, string>> top_two_groups;
-    vector<double> p_values;
-    vector<double> fold_change;
-    double max_log_fc = 0;
-    for (int r = 0; r < matrix.rows; ++r){
-        Array sample1;
-        Array sample2;
-        for (int c1 : dendrogram_root->left_child->indexes){
-            if (matrix(r, c1) > 0) sample1.push_back(matrix(r, c1));
-        }
-        for (int c2 : dendrogram_root->right_child->indexes){
-            if (matrix(r, c2) > 0) sample2.push_back(matrix(r, c2));
-        }
-        
-        if (sample1.size() < 2 || sample2.size() < 2){
-            missing.push_back(global_lipidome->species[r]);
-            continue;
-        }
-        
-        top_two_groups.push_back({0, global_lipidome->species[r]});
-        p_values.push_back(KS_pvalue(sample1, sample2));
-        fold_change.push_back(fabs(log(sample2.mean() / sample1.mean())));
-        max_log_fc = max(max_log_fc, fold_change.back());
-    }
-    
-    BH_fdr(p_values);
-    //for (int i = 0; i < (int)p_values.size(); ++i) top_two_groups[i].first = sqrt((1 - p_values[i]) * fold_change[i] / max_log_fc);
-    for (int i = 0; i < (int)p_values.size(); ++i) top_two_groups[i].first = (1 - p_values[i]) * fold_change[i];
-    
-    sort(top_two_groups.begin(), top_two_groups.end(), sort_double_string_desc);
-    
-    lipid_sortings.insert({"Top 2 groups (highest)", vector<string>()});
-    lipid_sortings.insert({"Top 2 groups (lowest)", vector<string>()});
-    vector<string> &top_highest = lipid_sortings["Top 2 groups (highest)"];
-    vector<string> &top_lowest = lipid_sortings["Top 2 groups (lowest)"];
-    for (auto kv : top_two_groups) top_highest.push_back(kv.second);
-    for (auto miss : missing) top_highest.push_back(miss);
-    for (int i = (int)top_highest.size() - 1; i >= 0; --i) top_lowest.push_back(top_highest[i]);
-    */
-    
-    
-    
     // determining importance of lipids based on goodness of separating
     // study variables applying simple 1D linear regression 
     map<LipidAdduct*, int> lipid_map;
@@ -123,8 +73,63 @@ void LipidSpace::create_dendrogram(){
     
     vector<Lipidome*> lipidomes_for_feature_selection;
     for (auto lipidome :  lipidomes){
+        bool select_lipidome = true;
         string lipidome_name = lipidome->cleaned_name;
-        if (contains_val(selection[3], lipidome_name) && selection[3][lipidome_name]) lipidomes_for_feature_selection.push_back(lipidome);
+        
+        for (auto kv : lipidome->features){
+            string feature_name = kv.first;
+            Feature &feature = kv.second;
+            if (feature.feature_type == NominalFeature){
+                if (!feature_values[feature_name].nominal_values[feature.nominal_value]){
+                    select_lipidome = false;
+                    break;
+                }
+            }
+            else {
+                double numerical_value = feature.numerical_value;
+                auto filter = feature_values[feature_name].numerical_filter.first;
+                auto filter_values = feature_values[feature_name].numerical_filter.second;
+                switch (filter){
+                    
+                    case LessFilter: // inverse logic, Less tells us, what to keep, greater we filter out
+                        if (filter_values.size() < 1) continue;
+                        if (filter_values[0] < numerical_value) select_lipidome = false;
+                        break;
+                        
+                    case GreaterFilter:
+                        if (filter_values.size() < 1) continue;
+                        if (filter_values[0] > numerical_value) select_lipidome = false;
+                        break;
+                        
+                    case EqualFilter:
+                        {
+                            if (filter_values.size() < 1) continue;
+                            bool filtered_out = true; // < 1e-16 due to floating point rounding errors
+                            for (double filter_value : filter_values) filtered_out &= !(fabs(numerical_value - filter_value) < 1e-16);
+                            select_lipidome = !filtered_out;
+                        }
+                        break;
+                    
+                    case WithinRange:
+                        if (filter_values.size() < 2) continue;
+                        if (numerical_value < filter_values[0] || filter_values[1] < numerical_value) select_lipidome = false;
+                        break;
+                    
+                    case OutsideRange:
+                        if (filter_values.size() < 2) continue;
+                        if (filter_values[0] <= numerical_value && numerical_value <= filter_values[1]) select_lipidome = false;
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
+        }
+        
+        
+        if (select_lipidome && contains_val(selection[3], lipidome_name) && selection[3][lipidome_name]){
+            lipidomes_for_feature_selection.push_back(lipidome);
+        }
     }
     
     // setting up lipid to column in matrix map
@@ -160,7 +165,6 @@ void LipidSpace::create_dendrogram(){
         }
         mx_values.push_back(m / n);
     }
-    
     
     
     // computing the coefficient of variation for each lipid
@@ -938,7 +942,7 @@ void LipidSpace::load_list(string lipid_list_file){
     string line;
     map<string, LipidAdduct*> lipid_set;
     
-    Lipidome* lipidome = new Lipidome(lipid_list_file, lipid_list_file, true);
+    Lipidome* lipidome = new Lipidome(lipid_list_file, lipid_list_file, "", true);
     try {
         while (getline(infile, line)){
             if (line.length() == 0) continue;
@@ -1155,7 +1159,9 @@ int LipidSpace::compute_global_distance_matrix(){
     global_lipidome->classes.clear();
     global_lipidome->categories.clear();
     global_lipidome->lipids.clear();
-    global_lipidome->intensities.clear();
+    global_lipidome->selected_lipid_indexes.clear();
+    global_lipidome->normalized_intensities.clear();
+    global_lipidome->visualization_intensities.clear();
     global_lipidome->PCA_intensities.clear();
     global_lipidome->m.reset(1, 1);
     
@@ -1246,10 +1252,9 @@ int LipidSpace::compute_global_distance_matrix(){
     if (n < 3) return n;
 
     
-    global_lipidome->intensities.resize(n);
-    global_lipidome->PCA_intensities.resize(n);
-    for (int i = 0; i < n; ++i) global_lipidome->intensities[i] = 1;
-    for (int i = 0; i < n; ++i) global_lipidome->PCA_intensities[i] = 1;
+    global_lipidome->visualization_intensities.resize(n, 1);
+    global_lipidome->normalized_intensities.resize(n, 1);
+    global_lipidome->PCA_intensities.resize(n, 1);
     
     // compute distances
     Matrix& distance_matrix = global_lipidome->m;
@@ -1312,17 +1317,18 @@ int LipidSpace::compute_global_distance_matrix(){
 
 void LipidSpace::separate_matrixes(){
     for (auto lipidome : lipidomes){
-        lipidome->intensities.clear();
+        lipidome->visualization_intensities.clear();
+        lipidome->normalized_intensities.clear();
         lipidome->PCA_intensities.clear();
-        lipidome->selection.clear();
+        lipidome->selected_lipid_indexes.clear();
     }
-    global_lipidome->selection.clear();
+    global_lipidome->selected_lipid_indexes.clear();
     
     map<string, int> lipid_indexes;
     for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
         string lipid_species = global_lipidome->species.at(i);
         lipid_indexes.insert({lipid_species, i});
-        global_lipidome->selection.push_back(true);
+        global_lipidome->selected_lipid_indexes.push_back(i);
     }
     
     vector<int> remove_lipidomes;
@@ -1331,13 +1337,12 @@ void LipidSpace::separate_matrixes(){
         Indexes indexes;
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
             string lipid_species = lipidome->species[i];
-            bool lipid_selection = selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species);
-            lipidome->selection.push_back(lipid_selection);
-            if (lipid_selection){
-                indexes.push_back(lipid_indexes.at(lipid_species));
-                lipidome->intensities.push_back(lipidome->original_intensities[i]);
-                lipidome->PCA_intensities.push_back(lipidome->original_intensities[i]);
-            }
+            if (!(selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species))) continue;
+            indexes.push_back(lipid_indexes.at(lipid_species));
+            lipidome->selected_lipid_indexes.push_back(i);
+            lipidome->visualization_intensities.push_back(lipidome->original_intensities[i]);
+            lipidome->normalized_intensities.push_back(lipidome->original_intensities[i]);
+            lipidome->PCA_intensities.push_back(lipidome->original_intensities[i]);
         }
         if (indexes.size() > 0){
             lipidome->m.rewrite(global_lipidome->m, indexes);
@@ -1388,9 +1393,9 @@ void LipidSpace::normalize_intensities(){
         
         for (auto lipidome : selected_lipidomes){
 
-            for (int i = 0; i < (int)lipidome->intensities.size(); ++i){
+            for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
                 lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
-                lipidome->intensities[i] = 100. * lipidome->intensities[i] / values_std;
+                lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
             }
         }
     }
@@ -1404,11 +1409,10 @@ void LipidSpace::normalize_intensities(){
             double values_mean = data.mean();
             double values_std = data.stdev();
             if (values_std < 1e-19) continue;
-            
-            
-            for (int i = 0; i < (int)lipidome->intensities.size(); ++i){
+            for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
+                lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
                 lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
-                lipidome->intensities[i] = 100. * lipidome->intensities[i] / values_std;
+                lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
             }
         }
     }
@@ -1432,9 +1436,10 @@ void LipidSpace::normalize_intensities(){
                 
             for (auto lipidome : selected_lipidomes){
                 if (uncontains_val(lipidome->features, fv) || lipidome->features.at(fv).nominal_value != kv.first) continue;
-                for (int i = 0; i < (int)lipidome->intensities.size(); ++i){
+                for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
+                    lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
                     lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
-                    lipidome->intensities[i] = 100. * lipidome->intensities[i] / values_std;
+                    lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
                 }
             }
         }
@@ -1930,6 +1935,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             registered_features.insert(feature);
         }
         
+        
         for (auto tokens : fth.rows){
             
             // check if quant information is valid
@@ -1964,7 +1970,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             
             
             if (uncontains_val(lipidome_map, sample_name)){
-                lipidome = new Lipidome(sample_name, flat_table_file);
+                lipidome = new Lipidome(sample_name, flat_table_file, sheet);
                 lipidome_map.insert({sample_name, lipidome});
                 loaded_lipidomes.push_back(lipidome);
             }
@@ -2274,7 +2280,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                 }
             }
             
-            loaded_lipidomes.push_back(new Lipidome(measurement, data_table_file));
+            loaded_lipidomes.push_back(new Lipidome(measurement, data_table_file, sheet));
             Lipidome *lipidome = loaded_lipidomes.back();
             for (auto kv : features){
                 if (kv.second.feature_type == NominalFeature){
@@ -2418,7 +2424,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
         if (column_types == 0){
             
             for (auto header : fth.headers){
-                loaded_lipidomes.push_back(new Lipidome(header, table_file));
+                loaded_lipidomes.push_back(new Lipidome(header, table_file, sheet));
                 intensities.push_back(Array());
             }
             
@@ -2465,7 +2471,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                     }
                     
                     selection[3].insert({header, true});
-                    loaded_lipidomes.push_back(new Lipidome(header, table_file));
+                    loaded_lipidomes.push_back(new Lipidome(header, table_file, sheet));
                     intensities.push_back(Array());
                 } 
             }
@@ -2779,13 +2785,45 @@ void LipidSpace::run(){
                 }
             }
         }
+        
+        
+        
+        
+        
+        if (!progress || !progress->stop_progress){
+            // for statistics
+            statistics_matrix.reset(0, 0);
+            map<LipidAdduct*, int> lipid_map;
+            map<string, int> lipid_name_map;
+            // setting up lipid to column in matrix map
+            for (uint i = 0; i < global_lipidome->lipids.size(); ++i){
+                LipidAdduct* lipid = global_lipidome->lipids[i];
+                if (uncontains_val(lipid_map, lipid)){
+                    lipid_map.insert({lipid, lipid_map.size()});
+                    lipid_name_map.insert({global_lipidome->species[i], lipid_name_map.size()});
+                }
+            }
+            
+            // set up matrix for multiple linear regression
+            statistics_matrix.reset(selected_lipidomes.size(), lipid_map.size());
+            for (uint r = 0; r < selected_lipidomes.size(); ++r){
+                Lipidome* lipidome = selected_lipidomes[r];
+                for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                    if (contains_val(lipid_map, lipidome->lipids[i])){
+                        statistics_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+                    }
+                }
+            }
+        }
+        
+        
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
         cout << "Process: " << duration.count() << endl;
+        analysis_finished = true;
         
         if (progress && !progress->stop_progress){
             progress->finish();
-            analysis_finished = true;
             Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(lipidomes.size()) + " lipidome" + (selected_lipidomes.size() > 1 ? "s" : "") + " in total.");
         }
     }
@@ -3008,6 +3046,11 @@ void LipidSpace::reset_analysis(){
     selected_lipidomes.clear();
     dendrogram_sorting.clear();
     dendrogram_points.clear();
+    lipid_name_translations[0].clear();
+    lipid_name_translations[1].clear();
+    lipid_sortings.clear();
+    global_distances.reset(0, 0);
+    statistics_matrix.reset(0, 0);
     
     for (int i = 0; i < 4; ++i) selection[i].clear();
     
@@ -3018,14 +3061,8 @@ void LipidSpace::reset_analysis(){
     lipidomes.clear();
     cols_for_pca = cols_for_pca_init;
     
-    
-    
-    global_lipidome->species.clear();
-    global_lipidome->classes.clear();
-    global_lipidome->categories.clear();
-    global_lipidome->lipids.clear();
-    global_lipidome->intensities.clear();
-    global_lipidome->m.reset(1, 1);
+    delete global_lipidome;
+    global_lipidome = new Lipidome("global_lipidome", "");
 }
 
 

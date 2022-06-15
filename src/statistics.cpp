@@ -17,6 +17,7 @@ Statistics::Statistics(QWidget *parent) : QChartView(parent) {
     
     chart->layout()->setContentsMargins(0,0,0,0);
     chart->setBackgroundRoundness(0);
+    log_scale = false;
 }
 
 
@@ -24,6 +25,12 @@ void Statistics::set_lipid_space(LipidSpace *_lipid_space){
     lipid_space = _lipid_space;
 }
 
+
+
+void Statistics::set_log_scale(){
+    log_scale = !log_scale;
+    updateBarPlot();
+}
 
 
 void Statistics::setLegendSizeBoxPlot(int font_size){
@@ -49,6 +56,22 @@ void Statistics::setLegendSizeHistogram(int font_size){
     chart->legend()->setFont(QFont("Helvetica", font_size));
     chart->setTitleFont(QFont("Helvetica", font_size));
     updateHistogram();
+}
+
+
+
+void Statistics::setLegendSizeROCCurve(int font_size){
+    GlobalData::gui_num_var["legend_size"] = font_size;
+    chart->legend()->setFont(QFont("Helvetica", font_size));
+    chart->setTitleFont(QFont("Helvetica", font_size));
+    updateROCCurve();
+}
+
+
+
+void Statistics::setTickSizeROCCurve(int font_size){
+    GlobalData::gui_num_var["tick_size"] = font_size;
+    updateROCCurve();
 }
 
 
@@ -81,17 +104,19 @@ void Statistics::setBarNumber(int bar_number){
 
 
 
+void Statistics::bar_plot_hovered(bool is_over, QBoxSet *boxset) {
+    if (is_over) QToolTip::showText(QCursor::pos(), boxset->label());
+}
 
 
 
 void Statistics::exportData(){
     if (chart->series().size() == 0) return;
-    QString file_name = QFileDialog::getSaveFileName(this, "Export as csv", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
+    QString file_name = QFileDialog::getSaveFileName(this, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
     if (!file_name.length()) return;
 
     try {
         if (QFile::exists(file_name)){
-            cout << "deleting" << endl;
             QFile::remove(file_name);
         }
 
@@ -216,201 +241,6 @@ double Statistics::median(vector<double> &lst, int begin, int end){
 
 
 
-/*
-Sources:
-https://www.cplusplus.com/forum/general/255896/
-https://scicomp.stackexchange.com/questions/40536/hypergeometric-function-2f-1z-with-z-1-in-gsl
-*/
-double Statistics::hyperg_2F1(double a, double b, double c, double d){
-    double e = 1.;
-    if (d > 1. || d < 0){
-        a = c - a;
-        e = 1. / pow(1. - d, b);
-        d = 1. - 1. / (1. - d);
-    }
-    
-    if (b < 0){
-        e *= pow(1 - d, c - a - b);
-        a = c - a;
-        b = c - b;
-    }
-    
-    double TOLERANCE = 1.0e-10;
-    double term = a * b * d / c;
-    double p = 1.0 + term;
-    double n = 1.;
-
-    while (abs( term ) > TOLERANCE){
-        a += 1.;
-        b += 1.;
-        c += 1.;
-        n += 1.;
-        term *= a * b * d / c / n;
-        if (isinf(term) or isnan(term)) break;
-        p += term;
-    }
-    return p * e;
-}
-
-
-
-/*
-Source: https://en.wikipedia.org/wiki/Student%27s_t-distribution
-*/
-double Statistics::t_distribution_cdf(double t_stat, double free_deg){
-    if (t_stat > 0) t_stat = -t_stat;
-    return (0.5 + t_stat * exp(lgamma((free_deg + 1.) / 2.) - lgamma(free_deg / 2.)) * hyperg_2F1(0.5, (free_deg + 1.) / 2., 1.5, - sq(t_stat) / free_deg) / sqrt(M_PI * free_deg)) * 2.;
-}
-
-
-/*
-Source: https://en.wikipedia.org/wiki/Welch%27s_t-test
-*/
-double Statistics::p_value_welch(Array &a, Array &b){
-    double m1 = a.mean();
-    double s1 = a.sample_stdev();
-    double n = a.size();
-    double m2 = b.mean();
-    double s2 = b.sample_stdev();
-    double m = b.size();
-    
-    double w0 = (m1 - m2);
-    double t = w0 / sqrt(sq(s1 / sqrt(n)) + sq(s2 / sqrt(m)));
-    double v = sq(sq(s1) / n + sq(s2) / m) / (sq(sq(s1)) / (sq(n) * (n - 1)) + sq(sq(s2)) / (sq(m) * (m - 1)));
-    
-    double pval = t_distribution_cdf(t, v);
-    return max(0., min(1., pval));
-}
-
-
-
-/*
-Source: https://en.wikipedia.org/wiki/Student%27s_t-test
-*/
-double Statistics::p_value_student(Array &sample1, Array &sample2){
-    double m1 = sample1.mean();
-    double s1 = sample1.sample_stdev();
-    double n = sample1.size();
-    double m2 = sample2.mean();
-    double s2 = sample2.sample_stdev();
-    double m = sample2.size();
-    
-    double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
-    double t = sqrt(n * m / (n + m)) * ((m1 - m2) / s);
-    return t_distribution_cdf(t, n + m - 2);
-}
-
-
-
-/*
-Sources:
-https://en.wikipedia.org/wiki/F-distribution
-https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.betainc.html
-*/
-double Statistics::f_distribution_cdf(double f_stat, double df1, double df2){
-    
-    double x = df1 * f_stat / (df1 * f_stat + df2);
-    double a = df1 / 2.;
-    double b = df2 / 2.;
-    double pval = 1. - pow(x, a) / a * hyperg_2F1(a, 1 - b, a + 1, x) / beta(a, b);
-    return max(0., min(1., pval));
-    
-}
-
-
-
-/*
-Algorithm adapted from: arXiv:2102.08037
-Thomas Viehmann
-Numerically more stable computation of the p-values for the two-sample Kolmogorov-Smirnov test
-*/
-double Statistics::p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
-    double d = 0, cdf1 = 0, cdf2 = 0;
-    int ptr1 = 0, ptr2 = 0, m = sample1.size(), n = sample2.size();
-    sort (sample1.begin(), sample1.end());
-    sort (sample2.begin(), sample2.end());
-    double inv_m = 1. / (double)m;
-    double inv_n = 1. / (double)n;
-    
-    while (ptr1 < m && ptr2 < n){
-        if (sample1[ptr1] < sample2[ptr2]){
-            cdf1 += inv_m;
-            ptr1 += 1;
-        }
-        else {
-            cdf2 += inv_n;
-            ptr2 += 1;
-        }
-        d = max(d, fabs(cdf1 - cdf2));
-    }
-    
-    int size = 2 * m * d + 2;
-    double *lastrow = new double[size];
-    double *row = new double[size];
-    for (int i = 0; i < size; ++i){
-        lastrow[i] = 0;
-        row[i] = 0;
-    }
-    int last_start_j = 0;
-    int start_j = 0;
-    for (int i = 0; i < n + 1; ++i){
-        start_j = max((int)(m * ((double)i / n + d )) + 1 - size, 0);
-        swap(lastrow, row);
-        double val = 0;
-        for (int jj = 0; jj < size; ++jj){
-            int j = jj + start_j;
-            double dist = (double)i / (double)n - (double)j / (double)m;
-            if (dist > d || dist < -d) val = 1;
-            else if (i == 0 || j == 0) val = 0;
-            else if (jj + start_j - last_start_j >= size) val = (double)(i + val * j) / (double)(i + j);
-            else  val = (lastrow[jj + start_j - last_start_j] * i + val * j) / (double)(i + j);
-            row[jj] = val;
-        }
-        last_start_j = start_j;
-    }
-    double pval = row[m - start_j];
-    
-    
-    delete []lastrow;
-    delete []row;
-    return max(0., min(1., pval));
-}
-
-
-/* 
-Source: https://en.wikipedia.org/wiki/One-way_analysis_of_variance
-*/
-double Statistics::p_value_anova(vector<Array> &arrays){
-    vector<double> mean_y;
-    vector<double> std_y;
-    double total_y = 0;
-    for (auto a : arrays){
-        mean_y.push_back(a.mean());
-        std_y.push_back(a.sample_stdev());
-        total_y += mean_y.back();
-    }
-    total_y /= (double)mean_y.size();
-        
-    double MSB = 0;
-    double MSW = 0;
-    double N = 0;
-    for (uint i = 0; i < mean_y.size(); ++i) {
-        MSB += arrays[i].size() * sq(mean_y[i] - total_y);
-        MSW += (arrays[i].size() - 1.) * sq(std_y[i]);
-        N += arrays[i].size();
-    }
-    double v1 = mean_y.size() - 1.;
-    double v2 = N - arrays.size();
-    MSB /= v1;
-    MSW /= v2;
-    
-    
-    double F = MSB / MSW;
-    return f_distribution_cdf(F, v1, v2);
-}
-
-
-
 void Statistics::updateBarPlot(){
     
     chart->removeAllSeries();
@@ -444,19 +274,21 @@ void Statistics::updateBarPlot(){
         string nominal_value = lipidome->features[target_variable].nominal_value;
         if (uncontains_val(nominal_target_values, nominal_value)){
             nominal_target_values.insert({nominal_value, nom_counter++});
-            plot_series.push_back(new QBoxPlotSeries());
-            plot_series.back()->setName(nominal_value.c_str());
+            QBoxPlotSeries *box_plot_series = new QBoxPlotSeries();
+            plot_series.push_back(box_plot_series);
+            connect(box_plot_series, SIGNAL(hovered(bool, QBoxSet*)), this, SLOT(bar_plot_hovered(bool, QBoxSet*)));
+            box_plot_series->setName(nominal_value.c_str());
             target_titles.push_back(nominal_value);
             string color_key = target_variable + "_" + nominal_value;
             if (contains_val(GlobalData::colorMapFeatures, color_key)){
                 QBrush brush(GlobalData::colorMapFeatures[color_key]);
-                plot_series.back()->setBrush(brush);
+                box_plot_series->setBrush(brush);
             }
         }
         target_values.push_back(nominal_target_values[nominal_value]);
     }
     
-    Matrix global_matrix;
+    Matrix statistics_matrix;
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     // setting up lipid to column in matrix map
@@ -468,37 +300,55 @@ void Statistics::updateBarPlot(){
         }
     }
     
-    vector<string> lipid_names(lipid_map.size(), "");
-    for (auto kv : lipid_name_map) lipid_names[kv.second] = kv.first;
-    
     // set up matrix for multiple linear regression
-    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
+    statistics_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
-        for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+        for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
+            int index = lipidome->selected_lipid_indexes[i];
+            if (contains_val(lipid_map, lipidome->lipids[index])){
+                statistics_matrix(r, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[i];
             }
         }
     }
     
+    vector<string> lipid_names(lipid_map.size(), "");
+    for (auto kv : lipid_name_map) lipid_names[kv.second] = kv.first;
+    
     for (int t = 0; t < nom_counter; ++t){
-        for (int c = 0; c < global_matrix.cols; c++){
+        for (int c = 0; c < statistics_matrix.cols; c++){
             series_titles.push_back(lipid_names[c] + " / " + target_titles[t]);
             plot_series[t]->append(new QBoxSet(lipid_names[c].c_str()));
         }
     }
     
-    for (int r = 0; r < global_matrix.rows; ++r){ // for all values of a study variable
-        for (int c = 0; c < global_matrix.cols; c++){
-            if (global_matrix(r, c) > 1e-15){
-                plot_series[target_values[r]]->boxSets()[c]->append(global_matrix(r, c));
+    for (int r = 0; r < statistics_matrix.rows; ++r){ // for all values of a study variable
+        for (int c = 0; c < statistics_matrix.cols; c++){
+            if (statistics_matrix(r, c) > 1e-15){
+                plot_series[target_values[r]]->boxSets()[c]->append(statistics_matrix(r, c));
             }
         }
     }
     
     series.resize(series_titles.size());
     int series_iter = 0;
+    QLogValueAxis *axisY = 0;
+    QBarCategoryAxis *axisX = 0;
+    if (log_scale){
+        axisY = new QLogValueAxis();
+        axisY->setLabelFormat("%g");
+        axisY->setBase(10.0);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        
+        axisX = new QBarCategoryAxis();
+        for (auto lipid_name : lipid_names){
+            QString category = lipid_name.c_str();
+            axisX->append(category);
+        }
+        chart->addAxis(axisX, Qt::AlignBottom);
+    }
+    double min_y_val = 1e100;
+    double max_y_val = 0;
     for (auto single_plot_series : plot_series){
         
         for (auto box : single_plot_series->boxSets()){
@@ -510,21 +360,33 @@ void Statistics::updateBarPlot(){
             ++series_iter;
             
             double mean = vals.mean();
-            if (isnan(mean) || isinf(mean)) mean = 0;
+            if (log_scale && !isnan(mean) && !isinf(mean)) min_y_val = min(min_y_val, mean);
+            if (isnan(mean) || isinf(mean) || mean < 1e-19) mean = log_scale ? 1e-19 : 0;
             double std = vals.sample_stdev();
             if (isnan(std) || isinf(std)) std = 0;
+            max_y_val = max(max_y_val, mean + std);
             
-            box->setValue(QBoxSet::LowerExtreme, 0);
+            box->setValue(QBoxSet::LowerExtreme, log_scale ? 1e-19 : 0);
             box->setValue(QBoxSet::UpperExtreme, mean + std);
-            box->setValue(QBoxSet::Median, 0);
-            box->setValue(QBoxSet::LowerQuartile, 0);
+            box->setValue(QBoxSet::Median, log_scale ? 1e-19 : 0);
+            box->setValue(QBoxSet::LowerQuartile, log_scale ? 1e-19 : 0);
             box->setValue(QBoxSet::UpperQuartile, mean);
         }
         single_plot_series->setBoxWidth(1.5);
         chart->addSeries(single_plot_series);
+        if (log_scale){
+            single_plot_series->attachAxis(axisY);
+        }
     }
     
-    chart->createDefaultAxes();
+    if (log_scale){
+        axisY->setMin(min_y_val / 10.);
+        axisY->setMax(max_y_val * 2.);
+    }
+    else {
+        chart->createDefaultAxes();
+    }
+    
     
     for (auto axis : chart->axes()){
         axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
@@ -579,38 +441,17 @@ void Statistics::updateHistogram(){
         target_values.push_back(nominal_target_values[nominal_value]);
     }
     
-    Matrix global_matrix;
-    map<LipidAdduct*, int> lipid_map;
-    map<string, int> lipid_name_map;
-    // setting up lipid to column in matrix map
-    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
-        if (uncontains_val(lipid_map, lipid)){
-            lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
-        }
-    }
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
     
-    // set up matrix for multiple linear regression
-    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
-    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
-        for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
-            }
-        }
-    }
-    
-    if (global_matrix.cols > 1) global_matrix.scale();
+    if (statistics_matrix.cols > 1) statistics_matrix.scale();
 
     series.resize(nom_counter);
     double all_min = 1e9;
     double all_max = -1e9;
-    for (int r = 0; r < global_matrix.rows; ++r){
+    for (int r = 0; r < statistics_matrix.rows; ++r){
         double sum = 0;
-        for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
-        if (global_matrix.cols > 1 || sum > 1e-15){
+        for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+        if (statistics_matrix.cols > 1 || sum > 1e-15){
             series[target_values[r]].push_back(sum);
             all_min = min(all_min, sum);
             all_max = max(all_max, sum);
@@ -628,6 +469,7 @@ void Statistics::updateHistogram(){
     chart->addAxis(axisY, Qt::AlignLeft);
     int max_hist = 0;
     for (uint i = 0; i < plot_series.size(); ++i){
+        plot_series[i]->setLabel((plot_series[i]->label() + " (%1)").arg(series[i].size()));
         Array &single_series = series[i];
         
         vector<int> counts(num_bars + 1, 0);
@@ -648,6 +490,133 @@ void Statistics::updateHistogram(){
     for (auto axis : chart->axes()){
         axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
     }
+}
+
+
+
+
+
+
+void Statistics::updateROCCurve(){
+    chart->removeAllSeries();
+    for (auto axis : chart->axes()){
+        chart->removeAxis(axis);
+    }
+    series_titles.clear();
+    series.clear();
+    chart->setTitle("");
+    stat_results.clear();
+    
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
+        
+    bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
+    setVisible(is_nominal);
+    
+    if (!is_nominal) return;
+    
+    
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Array target_values;
+    int nom_counter = 0;
+    if (is_nominal){
+        for (auto lipidome : lipid_space->selected_lipidomes){
+            string nominal_value = lipidome->features[target_variable].nominal_value;
+            if (uncontains_val(nominal_target_values, nominal_value)){
+                nominal_target_values.insert({nominal_value, nom_counter++});
+                series_titles.push_back(nominal_value);
+                string color_key = target_variable + "_" + nominal_value;
+                if (contains_val(GlobalData::colorMapFeatures, color_key)){
+                    QBrush brush(GlobalData::colorMapFeatures[color_key]);
+                }
+            }
+            target_values.push_back(nominal_target_values[nominal_value]);
+        }
+    }
+    else {
+        for (auto lipidome : lipid_space->selected_lipidomes){
+            target_values.push_back(lipidome->features[target_variable].numerical_value);
+        }
+    }
+    
+    if (nom_counter != 2){
+        setVisible(false);
+        return;
+    }
+    
+    
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
+    
+    if (statistics_matrix.cols > 1) statistics_matrix.scale();
+
+    series.resize(nom_counter);
+    for (int r = 0; r < statistics_matrix.rows; ++r){
+        double sum = 0;
+        for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+        if (statistics_matrix.cols > 1 || sum > 1e-15){
+            series[target_values[r]].push_back(sum);
+        }
+    }
+    
+    pair<vector<double>, vector<double>> ROC;
+    double dist = 0;
+    double pos_max = 0;
+    double sep_score = 0;
+    
+    ks_separation_value(series[0], series[1], dist, pos_max, sep_score, &ROC);
+    
+    QLineSeries *line_series = new QLineSeries();
+    QLineSeries *random_series = new QLineSeries();
+    *random_series << QPointF(0, 0) << QPointF(1, 1);
+    double auc = 0, fp = 0;
+    
+    bool flip = median(series[0], 0, series[0].size()) > median(series[1], 0, series[1].size());
+    if (flip) swap(ROC.first, ROC.second);
+    
+    
+    
+    if (ROC.second[0] != 1){
+        ROC.first.insert(ROC.first.begin(), ROC.first[0]);
+        ROC.second.insert(ROC.second.begin(), 1);
+    }
+    if (ROC.first[0] != 1){
+        ROC.first.insert(ROC.first.begin(), 1);
+        ROC.second.insert(ROC.second.begin(), 1);
+    }
+    if (ROC.first[ROC.first.size() - 1] != 0){
+        ROC.first.push_back(0);
+        ROC.second.push_back(ROC.second.back());
+    }
+    if (ROC.second[ROC.second.size() - 1] != 0){
+        ROC.first.push_back(0);
+        ROC.second.push_back(0);
+    }
+    
+    for (uint i = 0; i < ROC.first.size(); ++i){
+        line_series->append(ROC.first[i], ROC.second[i]);
+        auc += (ROC.second[i] - fp) * ROC.first[i];
+        fp = ROC.second[i];
+    }
+
+    stat_results.insert({"AUC", auc});
+    
+    QValueAxis *axisX = new QValueAxis;
+    axisX->setRange(-0.001, 1.001);
+    axisX->setTitleText("False positive Rate");
+    axisX->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
+    chart->addAxis(axisX, Qt::AlignBottom);
+    
+    QValueAxis *axisY = new QValueAxis;
+    axisY->setRange(-0.001, 1.001);
+    axisY->setTitleText("Sensetivity");
+    axisY->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
+    chart->addAxis(axisY, Qt::AlignLeft);
+    
+    chart->addSeries(line_series);
+    chart->addSeries(random_series);
+    chart->setTitle(QString("ROC Curve, AUC = %1 %").arg(QString::number(auc * 100., 'g', 4)));
+    chart->legend()->hide();
 }
 
 
@@ -703,41 +672,22 @@ void Statistics::updateBoxPlot(){
             target_values.push_back(lipidome->features[target_variable].numerical_value);
         }
     }
-    Matrix global_matrix;
-    map<LipidAdduct*, int> lipid_map;
-    map<string, int> lipid_name_map;
-    // setting up lipid to column in matrix map
-    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
-        if (uncontains_val(lipid_map, lipid)){
-            lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
-        }
-    }
     
-    // set up matrix for multiple linear regression
-    global_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
-    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
-        for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
-            }
-        }
-    }
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
     if (is_nominal){
-        if (global_matrix.cols > 1) global_matrix.scale();
+        if (statistics_matrix.cols > 1) statistics_matrix.scale();
     
         series.resize(nom_counter);
-        for (int r = 0; r < global_matrix.rows; ++r){
+        for (int r = 0; r < statistics_matrix.rows; ++r){
             double sum = 0;
-            for (int c = 0; c < global_matrix.cols; c++) sum += global_matrix(r, c);
-            if (global_matrix.cols > 1 || sum > 1e-15){
+            for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+            if (statistics_matrix.cols > 1 || sum > 1e-15){
                 plot_series[target_values[r]]->boxSets()[0]->append(sum);
                 series[target_values[r]].push_back(sum);
             }
         }
         for (uint i = 0; i < plot_series.size(); ++i){
+            plot_series[i]->setName((plot_series[i]->name() + " (%1)").arg(series[i].size()));
             auto single_plot_series = plot_series[i];
             QBoxSet *box = single_plot_series->boxSets()[0];
             
@@ -752,32 +702,35 @@ void Statistics::updateBoxPlot(){
             
             chart->addSeries(single_plot_series);
         }
+        double accuracy = compute_accuracy(series);
+        stat_results.insert({"accuracy", accuracy});
         if (nom_counter == 2){
             double p_student = p_value_student(series[0], series[1]);
             double p_welch = p_value_welch(series[0], series[1]);
             double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
+            double accuracy = compute_accuracy(series);
             stat_results.insert({"p_value(Student)", p_student});
             stat_results.insert({"p_value(Welch)", p_welch});
             stat_results.insert({"p_value(KS)", p_ks});
-            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>Student</sub> = %1,   <i>p</i>-value<sub>Welch</sub> = %2,   <i>p</i>-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
+            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>Student</sub> = %2,   <i>p</i>-value<sub>Welch</sub> = %3,   <i>p</i>-value<sub>KS</sub> = %4").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
         }
         else if (nom_counter > 2){
             double p_anova = p_value_anova(series);
             stat_results.insert({"p_value(ANOVA)", p_anova});
-            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>ANOVA</sub> = %1").arg(QString::number(p_anova, 'g', 3)));
+            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
         }
     }
     else {
         Array constants;
-        constants.resize(global_matrix.rows, 1);
-        global_matrix.add_column(constants);
+        constants.resize(statistics_matrix.rows, 1);
+        statistics_matrix.add_column(constants);
         
         double min_x = 1e100;
         double max_x = 0;
         Array coefficiants;
-        coefficiants.compute_coefficiants(global_matrix, target_values);    // estimating coefficiants
+        coefficiants.compute_coefficiants(statistics_matrix, target_values);    // estimating coefficiants
         Array S;
-        S.mult(global_matrix, coefficiants);
+        S.mult(statistics_matrix, coefficiants);
     
         QScatterSeries* series_model = new QScatterSeries();
         series_model->setName((target_variable + " / Linear lipid model").c_str());
