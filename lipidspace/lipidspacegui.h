@@ -143,6 +143,7 @@ public:
     Tutorial *tutorial;
     ImportTable import_table;
     bool ctrl_pressed;
+    bool set_feature_semaphore;
     
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;

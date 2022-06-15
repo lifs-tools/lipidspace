@@ -197,6 +197,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     selected_d_lipidomes = 0;
     knubbel = false;
     ctrl_pressed = false;
+    set_feature_semaphore = false;
     tutorial = new Tutorial(this, ui->centralwidget);
     ui->tableWidget->set_ctrl(&ctrl_pressed);
     connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, tutorial, &Tutorial::start_first_tutorial);
@@ -368,19 +369,30 @@ LipidSpaceGUI::~LipidSpaceGUI(){
 
 
 
-void LipidSpaceGUI::setFeature(int){
+void LipidSpaceGUI::setFeature(int c){
+    if (!set_feature_semaphore){
+        set_feature_semaphore = true;
+        ui->featureComboBoxStat->setCurrentIndex(c);
+    }
     GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
     featureChanged(ui->featureComboBox->currentText().toStdString());
+    set_feature_semaphore = false;
 }
 
 
 
-void LipidSpaceGUI::setFeatureStat(int){
+void LipidSpaceGUI::setFeatureStat(int c){
+    if (!set_feature_semaphore){
+        set_feature_semaphore = true;
+        ui->featureComboBox->setCurrentIndex(c);
+    }
+    
     GlobalData::gui_string_var["study_var_stat"] = ui->featureComboBoxStat->currentText().toStdString();
     ui->statisticsBoxPlot->updateBoxPlot();
     ui->statisticsBarPlot->updateBarPlot();
     ui->statisticsHistogram->updateHistogram();
     ui->statisticsROCCurve->updateROCCurve();
+    set_feature_semaphore = false;
 }
 
 
