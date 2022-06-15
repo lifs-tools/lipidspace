@@ -8,7 +8,6 @@
 #include <QClipboard>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
-#include "lipidspace/SvgPathHandler.h"
 #include "lipidspace/canvas.h"
 #include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
