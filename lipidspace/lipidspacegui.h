@@ -71,7 +71,7 @@ public:
         QBrush bottom(QColor("#6babce")); // 6babce / ceab6b
         painter->setPen(Qt::NoPen);
         painter->setBrush(bottom);
-        painter->drawRect(0., 400. * factor, view->width(), view->height());
+        painter->drawRect(0., 399. * factor, view->width(), view->height());
         
         
         QBrush banner(QColor("#71a9cc")); // 71a9cc / ce956b
