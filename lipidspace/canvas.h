@@ -148,10 +148,11 @@ public:
         LIFS->setScale(LIFS_factor);
         
         QFont f = citation->font();
-        f.setPointSizeF(11. * factor);
+        f.setPointSizeF(11.);
         citation->setFont(f);
         citation->setPos(60. * factor, 440. * factor);
         citation->setCursor(Qt::PointingHandCursor);
+        citation->setScale(factor);
         
         
         double monitor_factor = 0.75;

@@ -200,7 +200,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     set_feature_semaphore = false;
     tutorial = new Tutorial(this, ui->centralwidget);
     ui->tableWidget->set_ctrl(&ctrl_pressed);
-    connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, tutorial, &Tutorial::start_first_tutorial);
     
     
     qRegisterMetaType<string>("string");

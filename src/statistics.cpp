@@ -256,11 +256,7 @@ void Statistics::updateBarPlot(){
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
     
     bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
-    setVisible(is_nominal);
     
-    if (!is_nominal) return;
-    
-   
     
     
     // setup array for target variable values, if nominal then each with incrementing number
@@ -270,22 +266,36 @@ void Statistics::updateBarPlot(){
     int nom_counter = 0;
     vector<QBoxPlotSeries*> plot_series;
     
-    for (auto lipidome : lipid_space->selected_lipidomes){
-        string nominal_value = lipidome->features[target_variable].nominal_value;
-        if (uncontains_val(nominal_target_values, nominal_value)){
-            nominal_target_values.insert({nominal_value, nom_counter++});
-            QBoxPlotSeries *box_plot_series = new QBoxPlotSeries();
-            plot_series.push_back(box_plot_series);
-            connect(box_plot_series, SIGNAL(hovered(bool, QBoxSet*)), this, SLOT(bar_plot_hovered(bool, QBoxSet*)));
-            box_plot_series->setName(nominal_value.c_str());
-            target_titles.push_back(nominal_value);
-            string color_key = target_variable + "_" + nominal_value;
-            if (contains_val(GlobalData::colorMapFeatures, color_key)){
-                QBrush brush(GlobalData::colorMapFeatures[color_key]);
-                box_plot_series->setBrush(brush);
+    if (is_nominal){
+        for (auto lipidome : lipid_space->selected_lipidomes){
+            string nominal_value = lipidome->features[target_variable].nominal_value;
+            if (uncontains_val(nominal_target_values, nominal_value)){
+                nominal_target_values.insert({nominal_value, nom_counter++});
+                QBoxPlotSeries *box_plot_series = new QBoxPlotSeries();
+                plot_series.push_back(box_plot_series);
+                connect(box_plot_series, SIGNAL(hovered(bool, QBoxSet*)), this, SLOT(bar_plot_hovered(bool, QBoxSet*)));
+                box_plot_series->setName(nominal_value.c_str());
+                target_titles.push_back(nominal_value);
+                string color_key = target_variable + "_" + nominal_value;
+                if (contains_val(GlobalData::colorMapFeatures, color_key)){
+                    QBrush brush(GlobalData::colorMapFeatures[color_key]);
+                    box_plot_series->setBrush(brush);
+                }
             }
+            target_values.push_back(nominal_target_values[nominal_value]);
         }
-        target_values.push_back(nominal_target_values[nominal_value]);
+    }
+    else {
+        string lipid_label = "Selected lipids";
+        nominal_target_values.insert({lipid_label, nom_counter++});
+        QBoxPlotSeries *box_plot_series = new QBoxPlotSeries();
+        plot_series.push_back(box_plot_series);
+        connect(box_plot_series, SIGNAL(hovered(bool, QBoxSet*)), this, SLOT(bar_plot_hovered(bool, QBoxSet*)));
+        box_plot_series->setName(lipid_label.c_str());
+        target_titles.push_back(lipid_label);
+        target_values.push_back(nominal_target_values[lipid_label]);
+        QBrush brush(QColor("#F6A611"));
+        box_plot_series->setBrush(brush);
     }
     
     Matrix statistics_matrix;
@@ -322,13 +332,30 @@ void Statistics::updateBarPlot(){
         }
     }
     
-    for (int r = 0; r < statistics_matrix.rows; ++r){ // for all values of a study variable
-        for (int c = 0; c < statistics_matrix.cols; c++){
-            if (statistics_matrix(r, c) > 1e-15){
-                plot_series[target_values[r]]->boxSets()[c]->append(statistics_matrix(r, c));
+    if (is_nominal){
+        for (int r = 0; r < statistics_matrix.rows; ++r){ // for all values of a study variable
+            for (int c = 0; c < statistics_matrix.cols; c++){
+                if (statistics_matrix(r, c) > 1e-15){
+                    plot_series[target_values[r]]->boxSets()[c]->append(statistics_matrix(r, c));
+                }
             }
         }
     }
+    else {
+        for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
+            Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+            for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
+                int index = lipidome->selected_lipid_indexes[i];
+                if (contains_val(lipid_map, lipidome->lipids[index])){
+                    string lipid_category = lipidome->lipids[index]->get_lipid_string(CATEGORY);
+                    int c = lipid_map[lipidome->lipids[index]];
+                    plot_series[0]->boxSets()[c]->append(statistics_matrix(r, c));
+                }
+            }
+        }
+        plot_series[0]->setName(QString("Selected lipids (%2)").arg(plot_series[0]->boxSets().size()));
+    }
+    
     
     series.resize(series_titles.size());
     int series_iter = 0;
