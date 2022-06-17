@@ -158,10 +158,14 @@ DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_value
     }
 }
 
+
+
 DendrogramNode::~DendrogramNode(){
     if (left_child) delete left_child;
     if (right_child) delete right_child;
 }
+    
+    
     
 DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d){
     left_child = n1;
@@ -170,6 +174,7 @@ DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d)
     for (auto i : n2->indexes) indexes.insert(i);
     distance = d;
 }
+
 
 
 double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_ticks){
@@ -238,7 +243,66 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
 
 
 
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score){
+
+bool sort_double_string_desc (pair<double, string> i, pair<double, string> j) { return (i.first > j.first); }
+bool sort_double_double_asc (pair<double, double> i, pair<double, double> j) { return (i.first < j.first); }
+
+
+
+
+
+
+
+double compute_accuracy(vector<Array> &v){
+    vector<pair<double, double>> medians;
+    for (uint i = 0; i < v.size(); ++i){
+        auto &a = v[i];
+        sort(a.begin(), a.end());
+        medians.push_back({a.median(-1, -1, true), i});
+    }
+    sort(medians.begin(), medians.end(), sort_double_double_asc);
+    double TP = 0, TN = 0, FP = 0, FN = 0;
+    
+    Array borders;
+    for (uint i = 0; i < medians.size() - 1; ++i){
+        double d = 0;
+        double pos_max = 0;
+        double separation_score = 0;
+        int index_first = medians[i].second;
+        int index_second = medians[i + 1].second;
+        ks_separation_value(v[index_first], v[index_second], d, pos_max, separation_score);
+        borders.push_back(pos_max);
+    }
+    borders.push_back(1e100);
+    vector<int> pointers(v.size(), -1);
+    
+    for (uint i = 0; i < borders.size(); ++i){
+        double border = borders[i];
+        
+        uint current_index = medians[i].second;
+        for (uint j = 0; j < v.size(); ++j){
+            int index = v[j].greatest_less(border, pointers[j]);
+            
+            if (current_index == j){
+                TP += index - pointers[j];
+                FN += v[j].size() - (index - pointers[j]);
+            }
+            else {
+                FP += index - pointers[j];
+                TN += v[j].size() - (index - pointers[j]);
+            }
+            pointers[j] = index;
+        }
+    }
+    
+    return (TP + TN) / (TP + TN + FP + FN);
+}
+
+
+
+
+
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, pair<vector<double>, vector<double>> *ROC){
     d = 0;
     pos_max = 0;
     separation_score = 0;
@@ -251,15 +315,19 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
     double cdf1 = 0, cdf2 = 0;
     double overlap1 = 0, overlap2 = 0;
     double min1 = 1, max1 = num1 - 1, min2 = 1, max2 = num2 - 1;
-    if (num1 >= 10){
+    if (num1 >= 10 && ROC == 0){
         min1 = floor(num1 * 0.25);
         max1 = ceil(num1 * 0.75);
     }
-    if (num2 >= 10){
+    if (num2 >= 10 && ROC == 0){
         min2 = floor(num2 * 0.25);
         max2 = ceil(num2 * 0.75);
     }
     while ((ptr1 < num1) && (ptr2 < num2)){
+        if (ROC){
+            ROC->first.push_back((num1 - ptr1) * inv_m);
+            ROC->second.push_back((num2 - ptr2) * inv_n);
+        }
         if (a[ptr1] <= b[ptr2]){
             cdf1 += inv_m;
             if (d < fabs(cdf1 - cdf2)){
@@ -286,56 +354,119 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
 
 
 
-Progress::Progress(){
-    current_progress = 0;
-    max_progress = 0;
-    stop_progress = false;
-    connected = false;
-    step_size = 0;
+
+
+
+/*
+Sources:
+https://www.cplusplus.com/forum/general/255896/
+https://scicomp.stackexchange.com/questions/40536/hypergeometric-function-2f-1z-with-z-1-in-gsl
+*/
+double hyperg_2F1(double a, double b, double c, double d){
+    double e = 1.;
+    if (d > 1. || d < 0){
+        a = c - a;
+        e = 1. / pow(1. - d, b);
+        d = 1. - 1. / (1. - d);
+    }
+    
+    if (b < 0){
+        e *= pow(1 - d, c - a - b);
+        a = c - a;
+        b = c - b;
+    }
+    
+    double TOLERANCE = 1.0e-10;
+    double term = a * b * d / c;
+    double p = 1.0 + term;
+    double n = 1.;
+
+    while (abs( term ) > TOLERANCE){
+        a += 1.;
+        b += 1.;
+        c += 1.;
+        n += 1.;
+        term *= a * b * d / c / n;
+        if (isinf(term) or isnan(term)) break;
+        p += term;
+    }
+    return p * e;
 }
 
 
-void Progress::increment(){
-    current_progress += 1;
-    set_current(current_progress);
+
+/*
+Source: https://en.wikipedia.org/wiki/Student%27s_t-distribution
+*/
+double t_distribution_cdf(double t_stat, double free_deg){
+    if (t_stat > 0) t_stat = -t_stat;
+    return (0.5 + t_stat * exp(lgamma((free_deg + 1.) / 2.) - lgamma(free_deg / 2.)) * hyperg_2F1(0.5, (free_deg + 1.) / 2., 1.5, - sq(t_stat) / free_deg) / sqrt(M_PI * free_deg)) * 2.;
 }
 
 
-void Progress::set(int cp){
-    current_progress = cp;
-    set_current(current_progress);
+/*
+Source: https://en.wikipedia.org/wiki/Welch%27s_t-test
+*/
+double p_value_welch(Array &a, Array &b){
+    double m1 = a.mean();
+    double s1 = a.sample_stdev();
+    double n = a.size();
+    double m2 = b.mean();
+    double s2 = b.sample_stdev();
+    double m = b.size();
+    
+    double w0 = (m1 - m2);
+    double t = w0 / sqrt(sq(s1 / sqrt(n)) + sq(s2 / sqrt(m)));
+    double v = sq(sq(s1) / n + sq(s2) / m) / (sq(sq(s1)) / (sq(n) * (n - 1)) + sq(sq(s2)) / (sq(m) * (m - 1)));
+    
+    double pval = t_distribution_cdf(t, v);
+    return max(0., min(1., pval));
 }
 
-void Progress::setError(QString interrupt_message){
-    stop_progress = true;
-    error(interrupt_message);
+
+
+/*
+Source: https://en.wikipedia.org/wiki/Student%27s_t-test
+*/
+double p_value_student(Array &sample1, Array &sample2){
+    double m1 = sample1.mean();
+    double s1 = sample1.sample_stdev();
+    double n = sample1.size();
+    double m2 = sample2.mean();
+    double s2 = sample2.sample_stdev();
+    double m = sample2.size();
+    
+    double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
+    double t = sqrt(n * m / (n + m)) * ((m1 - m2) / s);
+    return t_distribution_cdf(t, n + m - 2);
 }
 
-void Progress::interrupt(){
-    stop_progress = true;
+
+
+/*
+Sources:
+https://en.wikipedia.org/wiki/F-distribution
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.betainc.html
+*/
+double f_distribution_cdf(double f_stat, double df1, double df2){
+    
+    double x = df1 * f_stat / (df1 * f_stat + df2);
+    double a = df1 / 2.;
+    double b = df2 / 2.;
+    double pval = 1. - pow(x, a) / a * hyperg_2F1(a, 1 - b, a + 1, x) / beta(a, b);
+    return max(0., min(1., pval));
+    
 }
 
 
-void Progress::reset(){
-    stop_progress = false;
-}
 
-
-void Progress::prepare_steps(int steps){
-    step_size = ceil((double)(max_progress - current_progress) / (double)steps);
-}
-
-void Progress::set_step(){
-    current_progress += step_size;
-    set_current(current_progress);
-}
 
 /*
 Algorithm adapted from: arXiv:2102.08037
 Thomas Viehmann
 Numerically more stable computation of the p-values for the two-sample Kolmogorov-Smirnov test
 */
-double KS_pvalue(vector<double> &sample1, vector<double> &sample2){
+double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
     double d = 0, cdf1 = 0, cdf2 = 0;
     int ptr1 = 0, ptr2 = 0, m = sample1.size(), n = sample2.size();
     sort (sample1.begin(), sample1.end());
@@ -344,7 +475,7 @@ double KS_pvalue(vector<double> &sample1, vector<double> &sample2){
     double inv_n = 1. / (double)n;
     
     while (ptr1 < m && ptr2 < n){
-        if (sample1[ptr1] <= sample2[ptr2]){
+        if (sample1[ptr1] < sample2[ptr2]){
             cdf1 += inv_m;
             ptr1 += 1;
         }
@@ -379,27 +510,116 @@ double KS_pvalue(vector<double> &sample1, vector<double> &sample2){
         }
         last_start_j = start_j;
     }
-    double p_val = row[m - start_j];
+    double pval = row[m - start_j];
     
     
     delete []lastrow;
     delete []row;
-    return p_val;
+    return max(0., min(1., pval));
 }
 
 
+
+
+/* 
+Source: https://en.wikipedia.org/wiki/One-way_analysis_of_variance
+*/
+double p_value_anova(vector<Array> &arrays){
+    vector<double> mean_y;
+    vector<double> std_y;
+    double total_y = 0;
+    for (auto a : arrays){
+        mean_y.push_back(a.mean());
+        std_y.push_back(a.sample_stdev());
+        total_y += mean_y.back();
+    }
+    total_y /= (double)mean_y.size();
+        
+    double MSB = 0;
+    double MSW = 0;
+    double N = 0;
+    for (uint i = 0; i < mean_y.size(); ++i) {
+        MSB += arrays[i].size() * sq(mean_y[i] - total_y);
+        MSW += (arrays[i].size() - 1.) * sq(std_y[i]);
+        N += arrays[i].size();
+    }
+    double v1 = mean_y.size() - 1.;
+    double v2 = N - arrays.size();
+    MSB /= v1;
+    MSW /= v2;
+    
+    
+    double F = MSB / MSW;
+    return f_distribution_cdf(F, v1, v2);
+}
+
+
+
+
+Progress::Progress(){
+    current_progress = 0;
+    max_progress = 0;
+    stop_progress = false;
+    connected = false;
+    step_size = 0;
+}
+
+
+
+void Progress::increment(){
+    current_progress += 1;
+    set_current(current_progress);
+}
+
+
+
+void Progress::set(int cp){
+    current_progress = cp;
+    set_current(current_progress);
+}
+
+
+void Progress::setError(QString interrupt_message){
+    stop_progress = true;
+    error(interrupt_message);
+}
+
+
+void Progress::interrupt(){
+    stop_progress = true;
+}
+
+
+
+void Progress::reset(){
+    stop_progress = false;
+}
+
+
+
+void Progress::prepare_steps(int steps){
+    step_size = ceil((double)(max_progress - current_progress) / (double)steps);
+}
+
+
+
+void Progress::set_step(){
+    current_progress += step_size;
+    set_current(current_progress);
+}
+
+
+
+
 bool sort_order_one (pair<double, int> i, pair<double, int> j) { return (i.first < j.first); }
+
 
 double compute_aic(Matrix &data, Array &coefficiants, Array &values){
     Array S;
     S.mult(data, coefficiants);
     double s = 0;
-    //double t = 0;
-    //double mue = S.mean();
     for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
     return s;
-    //for (int i = 0; i < (int)S.size(); ++i) t += sq(S[i] - mue);
-    //return s / t;
     
     int k = data.cols;
     int n = data.rows;
@@ -407,9 +627,13 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
 }
 
 
+
+
 bool gene_aic(Gene g1, Gene g2){
     return g1.score < g2.score;
 }
+
+
 
 void BH_fdr(vector<double> &data){
     if (data.size() < 2) return;

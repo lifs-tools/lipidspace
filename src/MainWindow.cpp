@@ -8,6 +8,7 @@
 using namespace std;
 
 
+
 void print_help(){
     cerr << "usage: " << endl;
     cerr << "  > ./lipidspace [options] output_folder table lipid_table[csv]" << endl;
@@ -26,6 +27,7 @@ void print_help(){
 
 
 int main(int argc, char** argv) {
+    
     // parameters to change
     /*
     bool keep_sn_position = true;

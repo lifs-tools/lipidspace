@@ -57,6 +57,7 @@ public:
     int process_id;
     string target_variable;
     set<string> registered_lipid_classes;
+    Matrix statistics_matrix;
     
 
     LipidSpace();

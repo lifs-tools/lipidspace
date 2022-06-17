@@ -22,6 +22,7 @@ public:
     static int PC2;
     static int feature_counter;
     static map<string, QColor> colorMapFeatures;
+    static map<string, QColor> colorMapCategories;
     static string normalization;
     static Linkage linkage;
     static string LipidSpace_version;
