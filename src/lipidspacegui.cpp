@@ -683,6 +683,7 @@ void LipidSpaceGUI::startFeatureAnalysis(){
     progress->reset();
     lipid_space->start();
     progressbar->exec();
+    ui->itemsTabWidget->setCurrentIndex(0);
 }
 
 

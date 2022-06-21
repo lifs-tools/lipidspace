@@ -743,7 +743,7 @@ void Statistics::updateBoxPlot(){
         }
         else if (nom_counter > 2){
             double p_anova = p_value_anova(series);
-            stat_results.insert({"p_value(ANOVA)", p_anova});
+            stat_results.insert({"p_value(ANOVA)", p_anova});            
             chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
         }
     }
@@ -760,7 +760,7 @@ void Statistics::updateBoxPlot(){
         S.mult(statistics_matrix, coefficiants);
     
         QScatterSeries* series_model = new QScatterSeries();
-        series_model->setName((target_variable + " / Linear lipid model").c_str());
+        series_model->setName(target_variable.c_str());
         for (uint i = 0; i < S.size(); ++i){
             series_model->append(S[i], target_values[i]);
             min_x = min(min_x, S[i]);
@@ -802,10 +802,12 @@ void Statistics::updateBoxPlot(){
         stat_results.insert({"R^2", R2});
         
         QLineSeries* series_regression = new QLineSeries();
-        series_regression->setName(QString().asprintf("Model regression (R<sup>2</sup> = %0.3f)", R2));
+        series_regression->setName(QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2));
         series_regression->append(min_x, slope * min_x + intercept);
         series_regression->append(max_x, slope * max_x + intercept);
         chart->addSeries(series_regression);
+        QString sign = intercept >= 0 ? "+" : "-";
+        chart->setTitle(QString("Linear regression model"));
     }
     chart->createDefaultAxes();
     

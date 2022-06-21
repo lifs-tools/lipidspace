@@ -2839,6 +2839,7 @@ void LipidSpace::run(){
         map<string, int> lipid_name_map;
         Matrix global_matrix;
         vector< Gene* >genes;
+        Array missing_values;
         bool is_nominal = feature_values[target_variable].feature_type == NominalFeature;
         
         if (uncontains_val(feature_values, target_variable)){
@@ -2898,6 +2899,17 @@ void LipidSpace::run(){
                     global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
                 }
             }
+            
+            // counting missing values per lipid
+            missing_values.resize(global_matrix.cols, 0);
+            for (int c = 0; c < global_matrix.cols; ++c){
+                double* row = &(global_matrix.m[c * global_matrix.rows]);
+                int missing = 0;
+                for (int r = 0; r < global_matrix.rows; ++r){
+                    missing += row[r] <= 1e-15;
+                }
+                missing_values[c] = missing;
+            }
         }
         
         if (is_nominal){
@@ -2913,7 +2925,7 @@ void LipidSpace::run(){
         // determining the upper number of features to consider
         int n = global_matrix.cols - !is_nominal; // -1 because we added a column of constant values 1, 1, 1, 1, ...
         int n_features = n;
-        if (n > 1) n = min(n_features - 1, (int)sqrt(n) * 2);
+        if (n > 1) n = min(n_features - 2, (int)sqrt(n) * 5);
         
         // perform the principal component analysis
         if (!progress || !progress->stop_progress){
@@ -2929,19 +2941,21 @@ void LipidSpace::run(){
             if (!is_nominal) genes[0]->gene_code[n_features] = true; // add constant value column
             genes[0]->score = -1e100;
         
-        // implementation of sequential forward feature selection
         
             if (progress){
                 progress->set_step();
             }
         }
         
+        // implementation of sequential forward feature selection
         for(int i = 1; i <= n && (!progress || !progress->stop_progress); ++i){
             Gene* best = 0;
             int pos = 0;
             double best_score = 1e100;
             Gene* last = genes[i - 1];
-            while (pos < n_features - (i - 1) && (!progress || !progress->stop_progress)){
+            while (pos < n_features && (!progress || !progress->stop_progress)){
+                Indexes feature_i;
+                last->get_indexes(feature_i);
                 if (!last->gene_code[pos]){
                     Gene* new_gene = new Gene(last);
                     new_gene->gene_code[pos] = true;
@@ -2950,6 +2964,10 @@ void LipidSpace::run(){
                     new_gene->get_indexes(feature_indexes);
                     Matrix sub_features;
                     sub_features.rewrite(global_matrix, {}, feature_indexes);
+                    
+                    double missing_lipids = 0;
+                    for (auto feature_index : feature_indexes) missing_lipids += missing_values[feature_index];
+                    double cnt_lipids = feature_indexes.size() * global_matrix.rows;
                     
                     if (is_nominal){
                         Array summed_values;
@@ -2982,6 +3000,8 @@ void LipidSpace::run(){
                         coefficiants.compute_coefficiants(sub_features, target_values);    // estimating coefficiants
                         new_gene->score = compute_aic(sub_features, coefficiants, target_values);  // computing aic
                     }
+                    new_gene->score *= 1. + missing_lipids / cnt_lipids;
+                    
                     
                     if (!best || best_score > new_gene->score){
                         best = new_gene;
@@ -2999,8 +3019,8 @@ void LipidSpace::run(){
             }
                 
             genes[i] = best;
-            
-        }        
+        }
+        
         
         if (!progress || !progress->stop_progress){
             // find the feature subset with the lowest best_score
