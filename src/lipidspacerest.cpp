@@ -4,13 +4,13 @@
 #include <QtGlobal>
 #include <QJsonDocument>
 #include <QByteArray>
+#include <QtCore>
 
 using namespace std;
 using namespace httplib;
 
 class LipidSpaceRest
 {
-
 public:
   Server svr;
   thread t;
@@ -20,7 +20,8 @@ public:
     // stop(SIGINT);
     qInfo("Starting server on host='%s' port='%d'", host, port);
     // register handlers
-    svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res){
+    svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res)
+             {
       if(req.get_header_value("Content-Type")=="application/json") {
         qInfo("Received req body: '%s'", req.body.c_str());
         QByteArray qbytes = QByteArray(req.body.c_str());
@@ -37,8 +38,7 @@ public:
         qWarning("Unsupported content type: '%s'", req.get_header_value("Content-Type").c_str());
         res.status = 415;
         res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
-      }
-    });
+      } });
     svr.Get("/hi", [](const Request &req, Response &res)
             { res.set_content("Hello World!", "text/plain"); });
 
@@ -78,13 +78,45 @@ void handleSigInt(int x)
   exit(status);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
   using namespace std;
   using namespace httplib;
 
   signal(SIGINT, handleSigInt);
-  lsr.start("localhost", 8888);
+
+  QCoreApplication app(argc, argv);
+  QCoreApplication::setApplicationName("LipidSpaceREST");
+  QCoreApplication::setApplicationVersion("1.0");
+
+  QCommandLineParser parser;
+  parser.setApplicationDescription("REST Api for LipidSpace");
+  parser.addHelpOption();
+  parser.addVersionOption();
+  QCommandLineOption hostOption({"b","bind"}, QCoreApplication::translate("main", "Host address to <bind> to."), "bind", "0.0.0.0");
+  parser.addOption(hostOption);
+  QCommandLineOption portOption({"p","port"}, QCoreApplication::translate("main", "Host <port> to listen on."), "port", "8888");
+  parser.addOption(portOption);
+
+  parser.process(QCoreApplication::arguments());
+
+  QString host = "0.0.0.0";
+
+  if (parser.isSet(hostOption))
+  {
+    host = parser.value(hostOption);
+    qInfo("Host set to: %s", host.toStdString().c_str());
+  }
+
+  int port = 8888;
+  if (parser.isSet(portOption))
+  {
+    QString portValue = parser.value(portOption);
+    port = atoi(portValue.toStdString().c_str());
+    qInfo("Port set to: %s", portValue.toStdString().c_str());
+  }
+
+  lsr.start(host.toStdString().c_str(), port);
   while (!(lsr.svr.is_running()))
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
