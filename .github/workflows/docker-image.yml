@@ -15,7 +15,7 @@ jobs:
     env:
       IMAGE_NAME: 'lifs/lipidspace'
       REGISTRY_NAME: 'docker.lifs-tools.org'
-      BUILD_DATE: $(date +%s)
+      BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
       
     steps:
     - uses: actions/checkout@v3
