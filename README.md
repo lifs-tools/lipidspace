@@ -3,6 +3,14 @@ LipidSpace
 
 ## Prerequisites
 
+### Cloning the repository
+
+  git clone --recurse-submodules git@github.com:lifs-tools/lipidspace.git
+
+To initialize the library submodules manually, e.g. if you cloned without `--recurse-submodules` run:
+
+  git submodule update --init --recursive
+
 ### Linux
 
 qt5
@@ -10,11 +18,6 @@ qmake
 make
 
 See the `LipidSpaceRest.docker` file for required Ubuntu packages.
-
-cpp-httplib
-
-  git submodule add git@github.com:yhirose/cpp-httplib.git cpp-httplib
-  git checkout <TAG_VERSION>
 
 ## Building LipidSpace
 
@@ -46,3 +49,10 @@ Using curl to test the server:
   docker run -p8888:8888 --rm lifs-tools.org/lipidspace:latest
 
 The same curl call from above works on the running Docker container.
+
+# Defining Git Submodules for libraries
+
+cpp-httplib
+
+  git submodule add git@github.com:yhirose/cpp-httplib.git cpp-httplib
+  git checkout <TAG_VERSION>
