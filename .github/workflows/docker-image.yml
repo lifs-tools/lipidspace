@@ -36,7 +36,7 @@ jobs:
         password: ${{ secrets.LIFS_TOOLS_DOCKER_REGISTRY_PW }}
 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}
+      run: docker build . --file LipidSpaceRest.docker --tag ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}
       
     - name: Push Docker image
       run: docker push ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}
