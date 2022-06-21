@@ -1,6 +1,6 @@
 QT       += core gui printsupport widgets charts svg
 
-CONFIG += c++17
+CONFIG += c++17 debug_and_release
 QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
 
 
