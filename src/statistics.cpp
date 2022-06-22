@@ -524,6 +524,8 @@ void Statistics::updateHistogram(){
 
 
 
+
+
 void Statistics::updateROCCurve(){
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
@@ -547,30 +549,24 @@ void Statistics::updateROCCurve(){
     map<string, double> nominal_target_values;
     Array target_values;
     int nom_counter = 0;
-    if (is_nominal){
-        for (auto lipidome : lipid_space->selected_lipidomes){
-            string nominal_value = lipidome->features[target_variable].nominal_value;
-            if (uncontains_val(nominal_target_values, nominal_value)){
-                nominal_target_values.insert({nominal_value, nom_counter++});
-                series_titles.push_back(nominal_value);
-                string color_key = target_variable + "_" + nominal_value;
-                if (contains_val(GlobalData::colorMapFeatures, color_key)){
-                    QBrush brush(GlobalData::colorMapFeatures[color_key]);
-                }
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        string nominal_value = lipidome->features[target_variable].nominal_value;
+        if (uncontains_val(nominal_target_values, nominal_value)){
+            nominal_target_values.insert({nominal_value, nom_counter++});
+            series_titles.push_back(nominal_value);
+            string color_key = target_variable + "_" + nominal_value;
+            if (contains_val(GlobalData::colorMapFeatures, color_key)){
+                QBrush brush(GlobalData::colorMapFeatures[color_key]);
             }
-            target_values.push_back(nominal_target_values[nominal_value]);
         }
-    }
-    else {
-        for (auto lipidome : lipid_space->selected_lipidomes){
-            target_values.push_back(lipidome->features[target_variable].numerical_value);
-        }
+        target_values.push_back(nominal_target_values[nominal_value]);
     }
     
     if (nom_counter != 2){
         setVisible(false);
         return;
     }
+    
     
     
     Matrix statistics_matrix(lipid_space->statistics_matrix);
