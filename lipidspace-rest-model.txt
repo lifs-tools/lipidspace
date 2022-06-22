@@ -1,0 +1,14 @@
+[
+    {
+        LipidomeName: "foo",
+        TableType: 
+        TableColumnTypes: [SampleColumn, LipidColumn, LipidColumn, LipidColumn],
+        Table: "[hier Tabelle als csv kodiert mit " als quote sign]",
+    },
+    {
+        LipidomeName: "foo2",
+        TableType: 
+        TableColumnTypes: [SampleColumn, LipidColumn, LipidColumn, LipidColumn],
+        Table: "[hier Tabelle als csv kodiert mit " als quote sign]",
+    }
+]

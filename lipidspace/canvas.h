@@ -98,16 +98,16 @@ public:
     HomeView(QWidget *parent = nullptr) : QGraphicsView(parent){
         firstTutorialPushButton = new QPushButton(this);
         firstTutorialPushButton->setObjectName(QString::fromUtf8("firstTutorialPushButton"));
-        firstTutorialPushButton->setGeometry(QRect(60, 360, 181, 31));
-        firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "First Tutorial", nullptr));
+        firstTutorialPushButton->setGeometry(QRect(60, 360, 221, 31));
+        firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "1. Tutorial - Load tables", nullptr));
         secondTutorialPushButton = new QPushButton(this);
         secondTutorialPushButton->setObjectName(QString::fromUtf8("secondTutorialPushButton"));
-        secondTutorialPushButton->setGeometry(QRect(280, 360, 181, 31));
-        secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Second Tutorial", nullptr));
+        secondTutorialPushButton->setGeometry(QRect(320, 360, 221, 31));
+        secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "2. Tutorial - Quality control", nullptr));
         thirdTutorialPushButton = new QPushButton(this);
         thirdTutorialPushButton->setObjectName(QString::fromUtf8("thirdTutorialPushButton"));
-        thirdTutorialPushButton->setGeometry(QRect(60, 400, 181, 31));
-        thirdTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Third Tutorial", nullptr));
+        thirdTutorialPushButton->setGeometry(QRect(60, 400, 221, 31));
+        thirdTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "3. Tutorial - Feature Selection", nullptr));
         
         banner = 0;
         
@@ -131,9 +131,9 @@ public:
         QFont font = firstTutorialPushButton->font();
         font.setPointSizeF(10 * factor);
         
-        firstTutorialPushButton->setGeometry(QRect(60. * factor, 360. * factor, 181. * factor, 31. * factor));
-        secondTutorialPushButton->setGeometry(QRect(280. * factor, 360. * factor, 181. * factor, 31. * factor));
-        thirdTutorialPushButton->setGeometry(QRect(60. * factor, 400. * factor, 181. * factor, 31. * factor));
+        firstTutorialPushButton->setGeometry(QRect(60. * factor, 360. * factor, 221. * factor, 31. * factor));
+        secondTutorialPushButton->setGeometry(QRect(320. * factor, 360. * factor, 221. * factor, 31. * factor));
+        thirdTutorialPushButton->setGeometry(QRect(60. * factor, 400. * factor, 221. * factor, 31. * factor));
         
         firstTutorialPushButton->setFont(font);
         secondTutorialPushButton->setFont(font);

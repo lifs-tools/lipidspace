@@ -21,9 +21,6 @@
 using namespace std;
 using namespace std::chrono;
 
-enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
-enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
-
 
 class LipidSpace : public QThread {
     Q_OBJECT

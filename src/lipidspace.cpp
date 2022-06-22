@@ -2633,6 +2633,7 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
     }
     
     string translated_name = l->get_lipid_string();
+    cout << lipid_name << " " << translated_name << endl;
     
     l->sort_fatty_acyl_chains();
     for (auto fa : l->lipid->fa_list) cut_cycle(fa);
