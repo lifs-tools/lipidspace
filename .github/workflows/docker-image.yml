@@ -15,12 +15,13 @@ jobs:
     env:
       IMAGE_NAME: 'lifs/lipidspace'
       REGISTRY_NAME: 'docker.lifs-tools.org'
-      BUILD_DATE: $(date +%s)
+      BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
       
     steps:
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
+        submodules: recursive
     - name: Set Git user
       run: |
         git config --global committer.email "noreply@github.com"
