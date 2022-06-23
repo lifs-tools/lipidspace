@@ -58,7 +58,8 @@ void Array::mult(Matrix &m, Array &a){
 
 
 double Array::median(int begin_v, int end_v, bool sorted){
-    assert (size() >= 2);
+    assert(size() >= 1);
+    if (size() == 1) return at(0);
     
     if (begin_v == -1) begin_v = 0;
     if (end_v == -1) end_v = size() - 1;
@@ -78,6 +79,7 @@ double Array::median(int begin_v, int end_v, bool sorted){
 
 int Array::greatest_less(double key, int L, int R) {
     assert(size() > 0);
+    
     if (L < 0) L = 0;
     if (R < 0) R = size() - 1;
     int hit = L - 1;

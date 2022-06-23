@@ -220,66 +220,66 @@ public:
     }
 };
 
+
+
 static LipidSpaceRest lsr;
 extern "C" void signal_handler(int signum) { lsr.stop(signum); }
 
-void handleSigInt(int x)
-{
-  int status = lsr.stop(x);
-  exit(status);
+
+
+void handleSigInt(int x){
+    int status = lsr.stop(x);
+    exit(status);
 }
 
-int main(int argc, char *argv[])
-{
-  using namespace std;
-  using namespace httplib;
 
-  signal(SIGINT, handleSigInt);
 
-  QCoreApplication app(argc, argv);
-  QCoreApplication::setApplicationName("LipidSpaceREST");
-  QCoreApplication::setApplicationVersion(GlobalData::LipidSpace_version.c_str());
+int main(int argc, char *argv[]){
+    using namespace std;
+    using namespace httplib;
 
-  QCommandLineParser parser;
-  parser.setApplicationDescription("REST API for LipidSpace");
-  parser.addHelpOption();
-  parser.addVersionOption();
-  QCommandLineOption hostOption({"b","bind"}, QCoreApplication::translate("main", "Host address to <bind> to."), "bind", "0.0.0.0");
-  parser.addOption(hostOption);
-  QCommandLineOption portOption({"p","port"}, QCoreApplication::translate("main", "Host <port> to listen on."), "port", "8888");
-  parser.addOption(portOption);
-  QCommandLineOption tmpOption({"t","tmp_folder"}, QCoreApplication::translate("main", "Temp folder <tmp_folder> path."), "tmp_folder", ".");
-  parser.addOption(tmpOption);
+    signal(SIGINT, handleSigInt);
 
-  parser.process(QCoreApplication::arguments());
+    QCoreApplication app(argc, argv);
+    QCoreApplication::setApplicationName("LipidSpaceREST");
+    QCoreApplication::setApplicationVersion(GlobalData::LipidSpace_version.c_str());
 
-  QString host = "0.0.0.0";
-  QString tmp_folder = ".";
-  int port = 8888;
+    QCommandLineParser parser;
+    parser.setApplicationDescription("REST API for LipidSpace");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QCommandLineOption hostOption({"b","bind"}, QCoreApplication::translate("main", "Host address to <bind> to."), "bind", "0.0.0.0");
+    parser.addOption(hostOption);
+    QCommandLineOption portOption({"p","port"}, QCoreApplication::translate("main", "Host <port> to listen on."), "port", "8888");
+    parser.addOption(portOption);
+    QCommandLineOption tmpOption({"t","tmp_folder"}, QCoreApplication::translate("main", "Temp folder <tmp_folder> path."), "tmp_folder", ".");
+    parser.addOption(tmpOption);
 
-  if (parser.isSet(hostOption))
-  {
-    host = parser.value(hostOption);
-    qInfo("Host set to: %s", host.toStdString().c_str());
-  }
+    parser.process(QCoreApplication::arguments());
 
-  if (parser.isSet(tmpOption))
-  {
-    tmp_folder = parser.value(tmpOption);
-    qInfo("Tmp folder set to: '%s'", host.toStdString().c_str());
-  }
+    QString host = "0.0.0.0";
+    QString tmp_folder = ".";
+    int port = 8888;
 
-  if (parser.isSet(portOption))
-  {
-    QString portValue = parser.value(portOption);
-    port = atoi(portValue.toStdString().c_str());
-    qInfo("Port set to: %s", portValue.toStdString().c_str());
-  }
+    if (parser.isSet(hostOption)){
+        host = parser.value(hostOption);
+        qInfo("Host set to: %s", host.toStdString().c_str());
+    }
 
-  lsr.start(host.toStdString(), port, tmp_folder.toStdString());
-  while (!(lsr.svr.is_running()))
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
-  lsr.t.join();
+    if (parser.isSet(tmpOption)){
+        tmp_folder = parser.value(tmpOption);
+        qInfo("Tmp folder set to: '%s'", host.toStdString().c_str());
+    }
+
+    if (parser.isSet(portOption)){
+        QString portValue = parser.value(portOption);
+        port = atoi(portValue.toStdString().c_str());
+        qInfo("Port set to: %s", portValue.toStdString().c_str());
+    }
+
+    lsr.start(host.toStdString(), port, tmp_folder.toStdString());
+    while (!(lsr.svr.is_running())){
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    lsr.t.join();
 }
