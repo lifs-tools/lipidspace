@@ -90,27 +90,33 @@ public:
                         }
                     }
                     
+                    // check if table is of string type
                     if (!pcaRequest["Table"].isString()){
                         res.status = 400;
                         res.reason = "Malformed JSON, 'Table' value is not a string";
                         return;
                     }
                     
+                    
+                    // store table on the disk
                     string table_file_name = GlobalData::rest_temp_folder + string("/table_file.csv");
                     ofstream table_file(table_file_name.c_str());
                     table_file << pcaRequest["Table"].toString().toStdString();
                     table_file.flush();
                     
+                    // retrieve data from the request
                     TableType table_type = TableTypeMap.at(pcaRequest["TableType"].toString().toStdString());
-                    
                     vector<TableColumnType> *column_types = new vector<TableColumnType>();
                     for (auto value : pcaRequest["TableColumnTypes"].toArray()){
                         column_types->push_back(TableColumnTypeMap.at(value.toString().toStdString()));
                     }
                     
+                    // setup LipidSpace
                     LipidSpace lipid_space;
                     stringstream sstream;
         
+                    
+                    // load the provided table (which is stored on disk)
                     try {
                         switch(table_type){
                             case ROW_PIVOT_TABLE:
@@ -136,14 +142,12 @@ public:
                     }
                     
                     
+                    // check if enough lipids and lipidomes are provided for the analysis
                     if (lipid_space.lipidomes.size() < 1){
                         res.status = 400;
                         res.reason = string("An error occurred during LipidSpace analysis, no lipidome was provided");
                         return;
                     }
-                        
-                        
-                        
                     if (lipid_space.global_lipidome->lipids.size() < 3){
                         res.status = 400;
                         res.reason = string("An error occurred during LipidSpace analysis, less than 3 lipids in total were provided");
@@ -151,6 +155,7 @@ public:
                     }
                     
                     
+                    // write output stream in json format
                     // add a list of lipid spaces
                     sstream << "{\"LipidSpaces\": [";
                     sstream << lipid_space.global_lipidome->to_json();
@@ -171,10 +176,9 @@ public:
                         }
                         sstream << "]";
                     }
-                    
                     sstream << "]}";
                     
-                    
+                    // send it back
                     res.status = 200;
                     res.set_content(sstream.str(), "application/json");
                 }
@@ -200,8 +204,7 @@ public:
 
     inline int stop(int signal){
         qInfo("Server received signal: %d", signal);
-        if (signal == SIGINT)
-        { // only handle SIG INTERRUPT for now
+        if (signal == SIGINT) { // only handle SIG INTERRUPT for now
             if (svr.is_running()) {
                 qInfo("Stopping server...");
                 svr.stop();
@@ -235,10 +238,10 @@ int main(int argc, char *argv[])
 
   QCoreApplication app(argc, argv);
   QCoreApplication::setApplicationName("LipidSpaceREST");
-  QCoreApplication::setApplicationVersion("1.0");
+  QCoreApplication::setApplicationVersion(GlobalData::LipidSpace_version.c_str());
 
   QCommandLineParser parser;
-  parser.setApplicationDescription("REST Api for LipidSpace");
+  parser.setApplicationDescription("REST API for LipidSpace");
   parser.addHelpOption();
   parser.addVersionOption();
   QCommandLineOption hostOption({"b","bind"}, QCoreApplication::translate("main", "Host address to <bind> to."), "bind", "0.0.0.0");
