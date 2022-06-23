@@ -23,8 +23,6 @@ void SingleListWidget::dropEvent(QDropEvent *event){
     }
 }
 
-
-
 FileTableHandler::FileTableHandler(string file_name, string sheet_name){
     // csv import
     if (sheet_name.length() == 0){
@@ -120,6 +118,60 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
         }
     }
 }
+
+
+Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name, bool is_file_name) : file_name(lipidome_file) {
+    QFileInfo qFileInfo(file_name.c_str());
+    string cleaned_file = qFileInfo.baseName().toStdString();
+    if (is_file_name){
+        cleaned_name = cleaned_file;
+    }
+    else {
+        cleaned_name = lipidome_name;
+    }
+    features.insert({"File", Feature("File", cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
+}
+
+
+
+
+string Lipidome::to_json(){
+    stringstream s;
+    
+    s << "{\"LipidomeName\": \"" << replace_all(cleaned_name, "\"", "") << "\", ";
+    
+    s << "\"LipidNames\": [";
+    for (uint l = 0; l < species.size(); ++l) {
+        if (l) s << ", ";
+        s << "\"" << repace_all(species[l], "\"", "") << "\"";
+    }
+    s << "], ";
+    
+    s << "\"Intensities\": [";
+    for (uint l = 0; l < original_intensities.size(); ++l) {
+        if (l) s << ", ";
+        s << original_intensities[l];
+    }
+    s << "], ";
+    
+    s << "\"X\": [";
+    for (int r = 0; r < m.rows; ++r) {
+        if (r) s << ", ";
+        s << m(r, 0);
+    }
+    s << "], ";
+    
+    s << "\"Y\": [";
+    for (int r = 0; r < m.rows; ++r) {
+        if (r) s << ", ";
+        s << m(r, 1);
+    }
+    s << "]";
+    
+    s << "}";
+    return s.str();
+}
+
 
 
 

@@ -5,68 +5,201 @@
 #include <QJsonDocument>
 #include <QByteArray>
 #include <QtCore>
+#include <vector>
+#include <fstream>
+#include "cppgoslin/cppgoslin.h"
+#include "lipidspace/AssistanceFunctions.h"
+#include "lipidspace/globaldata.h"
+#include "lipidspace/lipidspace.h"
+#include "lipidspace/logging.h"
 
 using namespace std;
 using namespace httplib;
 
+vector<string> dict_keys{"TableType", "TableColumnTypes", "Table"};
+
 class LipidSpaceRest
 {
 public:
-  Server svr;
-  thread t;
+    Server svr;
+    thread t;
 
-  inline int start(const char *host, int port)
-  {
-    // stop(SIGINT);
-    qInfo("Starting server on host='%s' port='%d'", host, port);
-    // register handlers
-    svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res)
-             {
-      if(req.get_header_value("Content-Type")=="application/json") {
-        qInfo("Received req body: '%s'", req.body.c_str());
-        QByteArray qbytes = QByteArray(req.body.c_str());
-        QJsonDocument pcaRequest = QJsonDocument::fromJson(qbytes);
-        if(pcaRequest.isNull()) {
-          qWarning("Malformed JSON: '%s'", req.body.c_str());
-          res.status = 400;
-          res.reason = "Malformed JSON";
-        }
-        std::string response = pcaRequest.toJson().toStdString();
-        res.set_content(response, "application/json");
-        qInfo("Setting response '%s'", response.c_str());
-      } else {
-        qWarning("Unsupported content type: '%s'", req.get_header_value("Content-Type").c_str());
-        res.status = 415;
-        res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
-      } });
-    svr.Get("/hi", [](const Request &req, Response &res)
-            { res.set_content("Hello World!", "text/plain"); });
+    inline int start(string host, int port, string temp_folder){
+        GlobalData::rest_temp_folder = temp_folder;
+        // stop(SIGINT);
+        qInfo("Starting server on host='%s' port='%d'", host.c_str(), port);
+        // register handlers
 
-    t = thread([&]()
-               { svr.listen("0.0.0.0", 8888); });
-    qInfo("Started server! SIGINT (CTRL+c) will stop the server.");
-    return 0;
-  }
+        svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res) {
+            if(req.get_header_value("Content-Type") == "application/json") {
+                QByteArray qbytes = QByteArray(req.body.c_str());
+                QJsonDocument pcaRequest = QJsonDocument::fromJson(qbytes);
+                if(pcaRequest.isNull()) {
+                    qWarning("Malformed JSON: '%s'", req.body.c_str());
+                    res.status = 400;
+                    res.reason = "Malformed JSON";
+                }
+                else {
+                    // check if request is an object
+                    if (!pcaRequest.isObject()){
+                        res.status = 400;
+                        res.reason = "Malformed JSON, not a dictionary";
+                        return;
+                    }
+                    
+                    // check if request contains valid keys
+                    for (auto key : dict_keys){
+                        if (!pcaRequest.object().contains(key.c_str())){
+                            res.status = 400;
+                            res.reason = "Malformed JSON, key '" + key + "' not a dictionary";
+                            return;
+                        }
+                    }
+                    
+                    // check if request contains valid table type
+                    if (!pcaRequest["TableType"].isString()){
+                        res.status = 400;
+                        res.reason = "Malformed JSON, 'TableType' value is not a string";
+                        return;
+                    }
+                    
+                    // check if request contains valid table type
+                    if (uncontains_val(TableTypeMap, pcaRequest["TableType"].toString().toStdString())){
+                        res.status = 400;
+                        res.reason = "Malformed JSON, '" + pcaRequest["TableType"].toString().toStdString() + "'is not a valid table type";
+                        return;
+                    }
+                    
+                    // check if table column types are valid
+                    if (!pcaRequest["TableColumnTypes"].isArray()){
+                        res.status = 400;
+                        res.reason = "Malformed JSON, 'TableColumnTypes' value is not an array";
+                        return;
+                    }
+                    for (auto value : pcaRequest["TableColumnTypes"].toArray()){
+                        if (!value.isString()) {
+                            res.status = 400;
+                            res.reason = "Malformed JSON, 'TableColumnTypes' array contains a non string";
+                            return;
+                        }
+                        
+                        if (uncontains_val(TableColumnTypeMap, value.toString().toStdString())){
+                            res.status = 400;
+                            res.reason = "Malformed JSON, '" + value.toString().toStdString() + "' is not a valid table column type";
+                            return;
+                        }
+                    }
+                    
+                    if (!pcaRequest["Table"].isString()){
+                        res.status = 400;
+                        res.reason = "Malformed JSON, 'Table' value is not a string";
+                        return;
+                    }
+                    
+                    string table_file_name = GlobalData::rest_temp_folder + string("/table_file.csv");
+                    ofstream table_file(table_file_name.c_str());
+                    table_file << pcaRequest["Table"].toString().toStdString();
+                    table_file.flush();
+                    
+                    TableType table_type = TableTypeMap.at(pcaRequest["TableType"].toString().toStdString());
+                    
+                    vector<TableColumnType> *column_types = new vector<TableColumnType>();
+                    for (auto value : pcaRequest["TableColumnTypes"].toArray()){
+                        column_types->push_back(TableColumnTypeMap.at(value.toString().toStdString()));
+                    }
+                    
+                    LipidSpace lipid_space;
+                    stringstream sstream;
+        
+                    try {
+                        switch(table_type){
+                            case ROW_PIVOT_TABLE:
+                                lipid_space.load_row_table(table_file_name, column_types, "");
+                                break;
+                                
+                            case COLUMN_PIVOT_TABLE:
+                                lipid_space.load_column_table(table_file_name, column_types, "");
+                                break;
+                                
+                            case FLAT_TABLE:
+                                lipid_space.load_flat_table(table_file_name, column_types, "");
+                                break;
+                        }
+                        lipid_space.run_analysis();
+                        
+                        
+                    }
+                    catch (LipidSpaceException &e) {
+                        res.status = 400;
+                        res.reason = string("An error occurred during LipidSpace analysis, '") + e.what() + string("'");
+                        return;
+                    }
+                    
+                    
+                    // add a list of lipid spaces
+                    sstream << "{\"LipidSpaces\": [";
+                    sstream << lipid_space.global_lipidome->to_json();
+                    for (auto lipidome : lipid_space.lipidomes){
+                        sstream << ", " << lipidome->to_json();
+                    }
+                    
+                    // add the lipidome distance matrix
+                    sstream << "], \"LipidomeDistanceMatrix\": [";
 
-  inline int stop(int signal)
-  {
-    qInfo("Server received signal: %d", signal);
-    if (signal == SIGINT)
-    { // only handle SIG INTERRUPT for now
-      if (svr.is_running())
-      {
-        qInfo("Stopping server...");
-        svr.stop();
-        t.join();
-        qInfo("Stopped server!");
-        return 0; // server and thread have terminated
-      }
-      qInfo("Server is not running!");
-      return 1; // server is not running
+                    Matrix &m = lipid_space.hausdorff_distances;
+                    for (int r = 0; r < m.rows; ++r){
+                        if (r) sstream << ", ";
+                        sstream << "[";
+                        for (int c = 0; c < m.cols; c++){
+                            if (c) sstream << ", ";
+                            sstream << m(r, c);
+                        }
+                        sstream << "]";
+                    }
+                    
+                    sstream << "]}";
+                    
+                    cout << sstream.str() << endl;
+                    res.status = 200;
+                    res.set_content(sstream.str(), "application/json");
+                }
+            }
+            else {
+                qWarning("Unsupported content type: '%s'", req.get_header_value("Content-Type").c_str());
+                res.status = 415;
+                res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
+            }
+            
+        });
+
+        /*
+        svr.Post("/hi", [](const Request &req, Response &res){
+            res.set_content("Hello World!", "text/plain");
+        });
+        */
+
+        t = thread([&](){ svr.listen(host.c_str(), port); });
+        qInfo("Started server! SIGINT (CTRL+c) will stop the server.");
+        return 0;
     }
-    qInfo("Server does not handle signal.");
-    return 0;
-  }
+
+    inline int stop(int signal){
+        qInfo("Server received signal: %d", signal);
+        if (signal == SIGINT)
+        { // only handle SIG INTERRUPT for now
+            if (svr.is_running()) {
+                qInfo("Stopping server...");
+                svr.stop();
+                t.join();
+                qInfo("Stopped server!");
+                return 0; // server and thread have terminated
+            }
+            qInfo("Server is not running!");
+            return 1; // server is not running
+        }
+        qInfo("Server does not handle signal.");
+        return 0;
+    }
 };
 
 static LipidSpaceRest lsr;
@@ -97,10 +230,14 @@ int main(int argc, char *argv[])
   parser.addOption(hostOption);
   QCommandLineOption portOption({"p","port"}, QCoreApplication::translate("main", "Host <port> to listen on."), "port", "8888");
   parser.addOption(portOption);
+  QCommandLineOption tmpOption({"t","tmp_folder"}, QCoreApplication::translate("main", "Temp folder <tmp_folder> path."), "tmp_folder", ".");
+  parser.addOption(tmpOption);
 
   parser.process(QCoreApplication::arguments());
 
   QString host = "0.0.0.0";
+  QString tmp_folder = ".";
+  int port = 8888;
 
   if (parser.isSet(hostOption))
   {
@@ -108,7 +245,12 @@ int main(int argc, char *argv[])
     qInfo("Host set to: %s", host.toStdString().c_str());
   }
 
-  int port = 8888;
+  if (parser.isSet(tmpOption))
+  {
+    tmp_folder = parser.value(tmpOption);
+    qInfo("Tmp folder set to: '%s'", host.toStdString().c_str());
+  }
+
   if (parser.isSet(portOption))
   {
     QString portValue = parser.value(portOption);
@@ -116,7 +258,7 @@ int main(int argc, char *argv[])
     qInfo("Port set to: %s", portValue.toStdString().c_str());
   }
 
-  lsr.start(host.toStdString().c_str(), port);
+  lsr.start(host.toStdString(), port, tmp_folder.toStdString());
   while (!(lsr.svr.is_running()))
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));

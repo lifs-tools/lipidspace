@@ -10,6 +10,7 @@ int GlobalData::PC2 = 1;
 Linkage GlobalData::linkage = AverageLinkage;
 int GlobalData::feature_counter = 0;
 string GlobalData::LipidSpace_version = "v0.x.x";
+string GlobalData::rest_temp_folder = ".";
 string GlobalData::normalization = "absolute";
 QString GlobalData::last_folder = "";
 map<string, QColor> GlobalData::colorMapFeatures;

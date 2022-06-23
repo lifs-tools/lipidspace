@@ -59,6 +59,7 @@ public:
 
     LipidSpace();
     ~LipidSpace();
+    void run_analysis();
     static void compute_PCA_variances(Matrix &m, Array &a);
     void cut_cycle(FattyAcid* fa);
     static bool is_double(const string& s);
@@ -74,7 +75,6 @@ public:
     void store_distance_table(string output_folder, Lipidome* lipidome = 0);
     void run() override;
     void reassembleSelection();
-    //std::thread run_analysis_thread(Progress *_progress);
     void reset_analysis();
     LipidAdduct* load_lipid(string lipid_name, map<string, LipidAdduct*> &lipid_set);
     
