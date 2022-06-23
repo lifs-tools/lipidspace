@@ -529,8 +529,6 @@ void PointSet::loadPoints(){
         double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
         f = 1. / log(f + 1.);
         
-        //double xval = sign_log(lipidome->m(rr, GlobalData::PC1)) * POINT_BASE_FACTOR;
-        //double yval = sign_log(lipidome->m(rr, GlobalData::PC2)) * POINT_BASE_FACTOR;
         double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
         double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
         double intens = GlobalData::showQuant ? (lipidome->visualization_intensities[rr] > POINT_BASE_SIZE ? log(lipidome->visualization_intensities[rr]) : POINT_BASE_SIZE) : POINT_BASE_SIZE;

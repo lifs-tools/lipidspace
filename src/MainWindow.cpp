@@ -51,6 +51,41 @@ int main(int argc, char** argv) {
         return application.exec();
     }
     
+    else if (argc > 1 && string(argv[1]) == "compare"){
+        if (argc < 4) {
+            cout << "not enough arguments for lipid comparison" << endl;
+            return 0;
+        }
+        
+        QApplication application(argc, argv);
+        LipidSpace lipid_space;
+        LipidParser parser;
+        LipidAdduct *l1 = 0, *l2 = 0;
+        
+        try {
+            l1 = parser.parse(argv[2]);
+        }
+        catch(exception &e){
+            cout << "Error: could not parse lipid '" << argv[2] << "'." << endl;
+            exit(-1);
+        }
+        try {
+            l2 = parser.parse(argv[3]);
+        }
+        catch(exception &e){
+            cout << "Error: could not parse lipid '" << argv[3] << "'." << endl;
+            exit(-1);
+        }
+        
+        
+        int union_num = 0, inter_num = 0;
+        lipid_space.lipid_similarity(l1, l2, union_num, inter_num);
+        
+        cout << argv[2] << " vs. " << argv[3] << endl;
+        cout << "union: " << union_num << endl;
+        cout << "inter: " << inter_num << endl;
+    }
+    
     else if (argc > 1 && string(argv[1]) == "test"){
         QApplication application(argc, argv);
         LipidSpace lipid_space;
