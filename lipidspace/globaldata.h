@@ -16,6 +16,7 @@ public:
     static int color_counter;
     static const vector<QColor> COLORS;
     static bool showQuant;
+    static bool debug;
     static int alpha;
     static map<string, QColor> colorMap;
     static int PC1;

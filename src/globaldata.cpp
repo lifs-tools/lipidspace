@@ -3,6 +3,7 @@
 
 int GlobalData::alpha = DEFAULT_ALPHA;
 bool GlobalData::showQuant = true;
+bool GlobalData::debug = false;
 int GlobalData::color_counter = 0;
 map<string, QColor> GlobalData::colorMap;
 int GlobalData::PC1 = 0;
