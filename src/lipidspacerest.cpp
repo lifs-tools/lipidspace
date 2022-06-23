@@ -21,19 +21,19 @@ vector<string> dict_keys{"TableType", "TableColumnTypes", "Table"};
 class LipidSpaceRest
 {
 public:
-  Server svr;
-  thread t;
+    Server svr;
+    thread t;
 
-  inline int start(string host, int port, string temp_folder, bool debug)
-  {
-    GlobalData::rest_temp_folder = temp_folder;
-    GlobalData::debug = debug;
-    // stop(SIGINT);
-    qInfo("Starting server on host='%s' port='%d' tmp_folder='%s' debug='%s'", host.c_str(), port, temp_folder.c_str(), debug ? "true" : "false");
-    // register handlers
+    inline int start(string host, int port, string temp_folder, bool debug)
+    {
+        GlobalData::rest_temp_folder = temp_folder;
+        GlobalData::debug = debug;
+        // stop(SIGINT);
+        qInfo("Starting LipidSpaceRest server version='%s' on host='%s' port='%d' tmp_folder='%s' debug='%s'", GlobalData::LipidSpace_version.c_str(), host.c_str(), port, temp_folder.c_str(), debug ? "true" : "false");
+        // register handlers
 
-    svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res)
-             {
+        svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res)
+                 {
                if (req.get_header_value("Content-Type") == "application/json")
                {
                  QString callId = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
@@ -232,37 +232,37 @@ public:
                  res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
                } });
 
-    /*
-    svr.Post("/hi", [](const Request &req, Response &res){
-        res.set_content("Hello World!", "text/plain");
-    });
-    */
+        /*
+        svr.Post("/hi", [](const Request &req, Response &res){
+            res.set_content("Hello World!", "text/plain");
+        });
+        */
 
-    t = thread([&]()
-               { svr.listen(host.c_str(), port); });
-    qInfo("Started server! SIGINT (CTRL+c) will stop the server.");
-    return 0;
-  }
-
-  inline int stop(int signal)
-  {
-    qInfo("Server received signal: %d", signal);
-    if (signal == SIGINT)
-    { // only handle SIG INTERRUPT for now
-      if (svr.is_running())
-      {
-        qInfo("Stopping server...");
-        svr.stop();
-        t.join();
-        qInfo("Stopped server!");
-        return 0; // server and thread have terminated
-      }
-      qInfo("Server is not running!");
-      return 1; // server is not running
+        t = thread([&]()
+                   { svr.listen(host.c_str(), port); });
+        qInfo("Started server! SIGINT (CTRL+c) will stop the server.");
+        return 0;
     }
-    qInfo("Server does not handle signal.");
-    return 0;
-  }
+
+    inline int stop(int signal)
+    {
+        qInfo("Server received signal: %d", signal);
+        if (signal == SIGINT)
+        { // only handle SIG INTERRUPT for now
+            if (svr.is_running())
+            {
+                qInfo("Stopping server...");
+                svr.stop();
+                t.join();
+                qInfo("Stopped server!");
+                return 0; // server and thread have terminated
+            }
+            qInfo("Server is not running!");
+            return 1; // server is not running
+        }
+        qInfo("Server does not handle signal.");
+        return 0;
+    }
 };
 
 static LipidSpaceRest lsr;
@@ -270,69 +270,60 @@ extern "C" void signal_handler(int signum) { lsr.stop(signum); }
 
 void handleSigInt(int x)
 {
-  int status = lsr.stop(x);
-  exit(status);
+    int status = lsr.stop(x);
+    exit(status);
 }
 
 int main(int argc, char *argv[])
 {
-  using namespace std;
-  using namespace httplib;
+    using namespace std;
+    using namespace httplib;
 
-  signal(SIGINT, handleSigInt);
+    QCommandLineParser parser;
+    parser.setApplicationDescription("REST API for LipidSpace");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QCommandLineOption hostOption({"b", "bind"}, QCoreApplication::translate("main", "Host address to <bind> to."), "bind", "0.0.0.0");
+    parser.addOption(hostOption);
+    QCommandLineOption portOption({"p", "port"}, QCoreApplication::translate("main", "Host <port> to listen on."), "port", "8888");
+    parser.addOption(portOption);
+    QCommandLineOption tmpOption({"t", "tmp_folder"}, QCoreApplication::translate("main", "Temp folder <tmp_folder> path."), "tmp_folder", ".");
+    parser.addOption(tmpOption);
+    QCommandLineOption debugOption({"d", "debug"}, QCoreApplication::translate("main", "Set the server to run in mode. Saves incoming and outgoing JSON requests."));
+    parser.addOption(debugOption);
 
-  QCoreApplication app(argc, argv);
-  QCoreApplication::setApplicationName("LipidSpaceREST");
-  QCoreApplication::setApplicationVersion(GlobalData::LipidSpace_version.c_str());
+    QCoreApplication app(argc, argv);
+    QCoreApplication::setApplicationName("LipidSpaceREST");
+    QCoreApplication::setApplicationVersion(GlobalData::LipidSpace_version.c_str());
 
-  QCommandLineParser parser;
-  parser.setApplicationDescription("REST API for LipidSpace");
-  parser.addHelpOption();
-  parser.addVersionOption();
-  QCommandLineOption hostOption({"b", "bind"}, QCoreApplication::translate("main", "Host address to <bind> to."), "bind", "0.0.0.0");
-  parser.addOption(hostOption);
-  QCommandLineOption portOption({"p", "port"}, QCoreApplication::translate("main", "Host <port> to listen on."), "port", "8888");
-  parser.addOption(portOption);
-  QCommandLineOption tmpOption({"t", "tmp_folder"}, QCoreApplication::translate("main", "Temp folder <tmp_folder> path."), "tmp_folder", ".");
-  parser.addOption(tmpOption);
-  QCommandLineOption debugOption({"d", "debug"}, QCoreApplication::translate("main", "Set the server to run in mode. Saves incoming and outgoing JSON requests."));
-  parser.addOption(debugOption);
+    QString host = "0.0.0.0";
+    QString tmp_folder = ".";
+    int port = 8888;
+    bool debug = false;
 
-  parser.process(QCoreApplication::arguments());
+    parser.process(QCoreApplication::arguments());
 
-  QString host = "0.0.0.0";
-  QString tmp_folder = ".";
-  int port = 8888;
-  bool debug = false;
+    if (parser.isSet(hostOption))
+    {
+        host = parser.value(hostOption);
+        qInfo("Host set to: %s", host.toStdString().c_str());
+    }
 
-  if (parser.isSet(hostOption))
-  {
-    host = parser.value(hostOption);
-    qInfo("Host set to: %s", host.toStdString().c_str());
-  }
+    if (parser.isSet(tmpOption))
+    {
+        tmp_folder = parser.value(tmpOption);
+        qInfo("Tmp folder set to: '%s'", host.toStdString().c_str());
+    }
 
-  if (parser.isSet(tmpOption))
-  {
-    tmp_folder = parser.value(tmpOption);
-    qInfo("Tmp folder set to: '%s'", host.toStdString().c_str());
-  }
+    if (parser.isSet(debugOption))
+    {
+        debug = true;
+    }
 
-  if (parser.isSet(portOption))
-  {
-    QString portValue = parser.value(portOption);
-    port = atoi(portValue.toStdString().c_str());
-    qInfo("Port set to: %s", portValue.toStdString().c_str());
-  }
-
-  if (parser.isSet(debugOption))
-  {
-    debug = true;
-  }
-
-  lsr.start(host.toStdString(), port, tmp_folder.toStdString(), debug);
-  while (!(lsr.svr.is_running()))
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
-  lsr.t.join();
+    lsr.start(host.toStdString(), port, tmp_folder.toStdString(), debug);
+    while (!(lsr.svr.is_running()))
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    lsr.t.join();
 }
