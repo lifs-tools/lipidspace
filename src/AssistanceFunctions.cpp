@@ -143,7 +143,7 @@ string Lipidome::to_json(){
     s << "\"LipidNames\": [";
     for (uint l = 0; l < species.size(); ++l) {
         if (l) s << ", ";
-        s << "\"" << repace_all(species[l], "\"", "") << "\"";
+        s << "\"" << replace_all(species[l], "\"", "") << "\"";
     }
     s << "], ";
     

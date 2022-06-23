@@ -136,6 +136,21 @@ public:
                     }
                     
                     
+                    if (lipid_space.lipidomes.size() < 1){
+                        res.status = 400;
+                        res.reason = string("An error occurred during LipidSpace analysis, no lipidome was provided");
+                        return;
+                    }
+                        
+                        
+                        
+                    if (lipid_space.global_lipidome->lipids.size() < 3){
+                        res.status = 400;
+                        res.reason = string("An error occurred during LipidSpace analysis, less than 3 lipids in total were provided");
+                        return;
+                    }
+                    
+                    
                     // add a list of lipid spaces
                     sstream << "{\"LipidSpaces\": [";
                     sstream << lipid_space.global_lipidome->to_json();
@@ -159,7 +174,7 @@ public:
                     
                     sstream << "]}";
                     
-                    cout << sstream.str() << endl;
+                    
                     res.status = 200;
                     res.set_content(sstream.str(), "application/json");
                 }
