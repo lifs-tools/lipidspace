@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
         int union_num = 0, inter_num = 0;
         lipid_space.lipid_similarity(l1, l2, union_num, inter_num);
         
-        cout << argv[2] << " vs. " << argv[3] << endl;
+        cout << argv[2] << "(" << l1->get_lipid_string() << ")" << " vs. " << argv[3] << "(" << l2->get_lipid_string() << ")" << endl;
         cout << "union: " << union_num << endl;
         cout << "inter: " << inter_num << endl;
     }
