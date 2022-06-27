@@ -24,6 +24,7 @@ public:
     Server svr;
     thread t;
 
+    inline int start(string host, int port, string temp_folder, bool debug)
     {
         GlobalData::rest_temp_folder = temp_folder;
         GlobalData::debug = debug;
@@ -62,6 +63,52 @@ public:
                  {
                    // check if request is an object
                    if (!pcaRequest.isObject())
+                   {
+                     res.status = 400;
+                     res.reason = "Malformed JSON, not a dictionary";
+                     return;
+                   }
+
+                   // check if request contains valid keys
+                   for (auto key : dict_keys)
+                   {
+                     if (!pcaRequest.object().contains(key.c_str()))
+                     {
+                       res.status = 400;
+                       res.reason = "Malformed JSON, key '" + key + "' not a dictionary";
+                       return;
+                     }
+                   }
+
+                   // check if request contains valid table type
+                   if (!pcaRequest["TableType"].isString())
+                   {
+                     res.status = 400;
+                     res.reason = "Malformed JSON, 'TableType' value is not a string";
+                     return;
+                   }
+
+                   // check if request contains valid table type
+                   if (uncontains_val(TableTypeMap, pcaRequest["TableType"].toString().toStdString()))
+                   {
+                     res.status = 400;
+                     res.reason = "Malformed JSON, '" + pcaRequest["TableType"].toString().toStdString() + "'is not a valid table type";
+                     return;
+                   }
+
+                   // check if table column types are valid
+                   if (!pcaRequest["TableColumnTypes"].isArray())
+                   {
+                     res.status = 400;
+                     res.reason = "Malformed JSON, 'TableColumnTypes' value is not an array";
+                     return;
+                   }
+                   for (auto value : pcaRequest["TableColumnTypes"].toArray())
+                   {
+                     if (!value.isString())
+                     {
+                       res.status = 400;
+                       res.reason = "Malformed JSON, 'TableColumnTypes' array contains a non string";
                        return;
                      }
 
