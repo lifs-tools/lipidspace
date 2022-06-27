@@ -17,14 +17,14 @@
 
 #define UNDEFINED_LIPID "UNDEFINED"
 #define FILE_FEATURE_NAME "File"
- 
+
 using namespace std;
 using namespace std::chrono;
 
 
 class LipidSpace : public QThread {
     Q_OBJECT
-    
+
 public:
     LipidParser parser;
     Progress *progress;
@@ -55,7 +55,8 @@ public:
     string target_variable;
     set<string> registered_lipid_classes;
     Matrix statistics_matrix;
-    
+    inline static const set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
+
 
     LipidSpace();
     ~LipidSpace();
@@ -77,21 +78,21 @@ public:
     void reassembleSelection();
     void reset_analysis();
     LipidAdduct* load_lipid(string lipid_name, map<string, LipidAdduct*> &lipid_set);
-    
+
     void load_list(string lipid_list_file);
     void load_row_table(string table_file, vector<TableColumnType> *column_types = 0, string sheet = "");
     void load_column_table(string table_file, vector<TableColumnType> *column_types, string sheet = "");
     void load_flat_table(string table_file, vector<TableColumnType> *column_types, string sheet = "");
     void load_mzTabM(string mzTabM_file);
     int extract_number(string line, int line_number = -1);
-    
+
 signals:
     void fileLoaded();
     void reassembled();
-    
+
 public slots:
     void store_results(string);
-    
+
 };
 
 

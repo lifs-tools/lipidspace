@@ -6,7 +6,7 @@ Array::Array() : vector<double>(){
 
 Array::Array(int len, double val) : vector<double> (len, val){
 }
-    
+
 Array::Array(const Array &a, int l) : vector<double>() {
     if (l != -1){
         assert(0 < l && l <= (int)a.size());
@@ -60,11 +60,11 @@ void Array::mult(Matrix &m, Array &a){
 double Array::median(int begin_v, int end_v, bool sorted){
     assert(size() >= 1);
     if (size() == 1) return at(0);
-    
+
     if (begin_v == -1) begin_v = 0;
     if (end_v == -1) end_v = size() - 1;
     if (!sorted) sort(begin(), end());
-    
+
     int count = end_v - begin_v;
     if (count & 1) {
         return at((count >> 1) + begin_v);
@@ -79,14 +79,14 @@ double Array::median(int begin_v, int end_v, bool sorted){
 
 int Array::greatest_less(double key, int L, int R) {
     assert(size() > 0);
-    
+
     if (L < 0) L = 0;
     if (R < 0) R = size() - 1;
     int hit = L - 1;
- 
+
     while (L <= R) {
         int mid = L + ((R - L + 1) >> 1);
- 
+
         if (at(mid) <= key) {
             hit = mid;
             L = mid + 1;
@@ -95,7 +95,7 @@ int Array::greatest_less(double key, int L, int R) {
             R = mid - 1;
         }
     }
- 
+
     return hit;
 }
 
@@ -135,15 +135,15 @@ void Array::compute_coefficiants(Matrix &data, Array &values){
     Matrix data_transpose;
     data_transpose.rewrite(data);
     data_transpose.transpose();
-    
+
     Matrix dTd;
     dTd.mult(data_transpose, data);
     Matrix inversed;
     inversed.inverse(dTd, true);
-    
+
     Matrix dTdidT;
     dTdidT.mult(inversed, data_transpose);
-    
+
     mult(dTdidT, values);
 }
 
@@ -160,8 +160,8 @@ void Array::compute_distances(Array &x, double dx, Array &y, double dy){
     resize(x.size());
     for (int i = 0 ; i < (int)x.size(); ++i) at(i) = sq(x[i] - dx) + sq(y[i] - dy);
 }
-    
-    
+
+
 Matrix::Matrix() : QObject(){
     rows = 0;
     cols = 0;
@@ -205,7 +205,7 @@ Matrix::Matrix(Matrix &mat, bool transpose) : QObject(){
     else rewrite(mat);
 }
 
-    
+
 void Matrix::rewrite_transpose(Matrix &mat){
     cols = mat.rows;
     rows = mat.cols;
@@ -257,7 +257,7 @@ void Matrix::rewrite(Matrix &mat, const Indexes &ri, const Indexes &ci){
             }
         }
     }
-        
+
 }
 
 
@@ -303,7 +303,7 @@ double Matrix::col_max(int c){
 }
 
 
-    
+
 void Matrix::rewrite(vector<vector<double>> &mat){
     cols = mat.size();
     rows = mat[0].size();
@@ -331,7 +331,7 @@ void Matrix::reset(int _rows, int _cols){
 double Matrix::pairwise_sum(Matrix &m){
     assert(m.cols == 2);
     Matrix tm(m, true);
-    
+
     double dist_sum = 0;
     for (int tm2c = 0; tm2c < tm.cols; tm2c++){
         double* tm2col = tm.data() + (tm2c * tm.rows);
@@ -367,14 +367,14 @@ void Matrix::scale(){
             mean += m[it];
         }
         mean /= (double)rows;
-        
+
         // estimating the standard deviation
         double stdev_inv = 0;
         for (int it = c * rows; it < (c + 1) * rows; ++it){
             stdev_inv += sq(mean - m[it]);
         }
         stdev_inv = sqrt((double)rows / stdev_inv);
-        
+
         // performing z transformation, aka (x - mean) / st_dev
         for (int it = c * rows; it < (c + 1) * rows; ++it){
             m[it] = (m[it] - mean) * stdev_inv;
@@ -387,7 +387,7 @@ void Matrix::transpose(){
     double *tmp = new double[cols * rows];
     //#pragma omp parallel for
     for (int i = 0; i < cols * rows; ++i) tmp[i] = m[i];
-    
+
     //#pragma omp parallel for collapse(2)
     for (int c = 0; c < cols; c++){
         for (int r = 0; r < rows; ++r){
@@ -395,16 +395,16 @@ void Matrix::transpose(){
         }
     }
     swap(rows, cols);
-        
+
     delete []tmp;
 }
 
 
 void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int top_n){
     assert(rows == cols);
-    
+
     Matrix trans(*this, true);
-        
+
     // Prepare matrix-vector multiplication routine used in Lanczos algorithm
     auto mv_mul = [&](const vector<double>& in, vector<double>& out) {
 	cblas_dgemv(CblasColMajor, CblasNoTrans, rows, cols, 1.0, data(), rows, in.data(), 1, 0, out.data(), 1);
@@ -414,7 +414,7 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
     vector<double> evals(top_n);
     vector<vector<double>> eigvecs(top_n);
     engine.run(evals, eigvecs);
-    
+
     eigenvalues.add(evals);
     eigenvectors.rewrite(eigvecs);
 }
@@ -424,17 +424,17 @@ void Matrix::inverse(Matrix &X, bool symmetric){
     assert(rows == cols);
     rewrite(X);
     if (!symmetric) transpose();
-    
-    
+
+
     int N = rows;
     int *IPIV = new int[N];
     int LWORK = N*N;
     double *WORK = new double[LWORK];
     int INFO;
-	
+
     dgetrf_(&N, &N, m.data(), &N, IPIV, &INFO);
     dgetri_(&N, m.data(), &N, IPIV, WORK, &LWORK, &INFO);
-	
+
     delete[] IPIV;
     delete[] WORK;
 }
@@ -444,7 +444,7 @@ double Matrix::vector_vector_mult(int n, const double *x, const double *y){
     int i, n8 = n & ~7;
     double sum;
     __m256d vector_sum = {0., 0., 0., 0.};
-    
+
     for (i = 0; i < n8; i += 8) {
         __m256d vector_x1 = _mm256_loadu_pd(&x[i]);
         __m256d vector_y1 = _mm256_loadu_pd(&y[i]);
@@ -474,26 +474,26 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
 
 #ifndef _WIN32
     assert((transA ? A.rows : A.cols) == (transB ? B.cols : B.rows));
-    
+
     int mm = transA ? A.cols : A.rows;
     int kk = transA ? A.rows : A.cols;
     int nn = transB ? B.rows : B.cols;
     reset(mm, nn);
     cblas_dgemm(CblasColMajor, transA ? CblasTrans : CblasNoTrans, transB ? CblasTrans : CblasNoTrans, mm, nn, kk, alpha, A.data(), A.rows, B.data(), B.rows, 0.0, data(), rows);
-    
+
 #else
-    
+
     int tile_size = 16;
     Matrix mA(A, !transA);
     Matrix mB(B, transB);
-    
+
     assert(mA.rows == mB.rows);
-    
+
     int num_cols_A = mA.cols;
     int num_cols_B = mB.cols;
     reset(num_cols_A, num_cols_B);
-    
-    
+
+
     #pragma omp parallel for collapse(2)
     for (int i = 0; i < num_cols_A; i += tile_size) {
         for (int j = 0; j < num_cols_B; j += tile_size) {
@@ -515,23 +515,23 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
 void Matrix::PCA(Matrix &pca, int dimensions){
     // Scale data
     scale();
-    set_step();
-    
+    increment();
+
     // compute covariance matrix
     Matrix cov_matrix;
     covariance_matrix(cov_matrix);
-    set_step();
-    
+    increment();
+
     // compute eigenvectors
     Array eigenvalues;
     Matrix eigenvectors;
     cov_matrix.compute_eigen_data(eigenvalues, eigenvectors, dimensions);
-    set_step();
-    
+    increment();
+
     // multiply the eigenvectors with the original matrix
     pca.mult(eigenvectors, *this, true, true);
     pca.transpose();
-    set_step();
+    increment();
 }
 
 

@@ -165,12 +165,10 @@ void ImportTable::show(){
 
     FileTableHandler *fth = 0;
     try{
-        cout << "'" << sheet << "'" << endl;
         fth = new FileTableHandler(data_table_file, sheet);
     }
     catch (exception &e){
         if (fth) delete fth;
-        cout << "Error: " << e.what() << endl;
         Logging::write_log("Error: file '" + data_table_file + "' cannot be opened.");
         QMessageBox::critical(this, "Error", "Error: file '" + file_name + "' cannot be opened.");
         QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
