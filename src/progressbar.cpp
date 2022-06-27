@@ -34,11 +34,14 @@ void Progressbar::finish(){
 
 void Progressbar::set_max(int m){
     ui->progressBar->setMaximum(m);
+    ui->progressBar->setMinimum(0);
+    ui->progressBar->setValue(0);
 }
 
 
 void Progressbar::set_current(int c){
     ui->progressBar->setValue(c);
+    cout << c << " " << ui->progressBar->value() << " " << ui->progressBar->maximum() << endl;
 }
 
 void Progressbar::closeWindow(bool successful){
@@ -49,5 +52,5 @@ void Progressbar::closeWindow(bool successful){
         interrupt();
     }
     accept();
-    
+
 }

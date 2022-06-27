@@ -26,7 +26,6 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 FileTableHandler::FileTableHandler(string file_name, string sheet_name){
     // csv import
     if (sheet_name.length() == 0){
-        cout << file_name << endl;
         ifstream infile(file_name);
         if (!infile.good()){
             throw LipidSpaceException("Error: file '" + file_name + "' could not be found.", FileUnreadable);
@@ -624,13 +623,6 @@ void Progress::increment(){
 }
 
 
-
-void Progress::set(int cp){
-    current_progress = cp;
-    set_current(current_progress);
-}
-
-
 void Progress::setError(QString interrupt_message){
     stop_progress = true;
     error(interrupt_message);
@@ -645,21 +637,16 @@ void Progress::interrupt(){
 
 void Progress::reset(){
     stop_progress = false;
+    current_progress = 0;
 }
 
 
 
-void Progress::prepare_steps(int steps){
-    step_size = ceil((double)(max_progress - current_progress) / (double)steps);
+void Progress::prepare(int max_val){
+    max_progress = max_val;
+    current_progress = 0;
+    set_max(max_progress);
 }
-
-
-
-void Progress::set_step(){
-    current_progress += step_size;
-    set_current(current_progress);
-}
-
 
 
 

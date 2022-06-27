@@ -52,22 +52,22 @@ public:
     map<string, bool> nominal_values;
     set<double> numerical_values;
     pair<FeatureFilter, vector<double>> numerical_filter;
-    
+
     FeatureSet(string _name, FeatureType f_type){
         name = _name;
         feature_type = f_type;
     }
-    
+
     FeatureSet(){
         name = "";
         feature_type = NominalFeature;
         numerical_filter = {NoFilter, vector<double>()};
     }
 };
-    
 
-class ClickableLabel : public QLabel { 
-    Q_OBJECT 
+
+class ClickableLabel : public QLabel {
+    Q_OBJECT
 
 public:
     explicit ClickableLabel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags = Qt::WindowFlags()) : QLabel(parent){}
@@ -81,7 +81,7 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent*) {
         emit doubleClicked();
     }
-    
+
     void mousePressEvent(QMouseEvent*) {
         emit clicked();
     }
@@ -94,26 +94,38 @@ struct Feature {
     FeatureType feature_type;
     double numerical_value;
     string nominal_value;
-    
+    bool missing;
+
     Feature(){
         name = "";
         feature_type = NominalFeature;
         numerical_value = 0;
         nominal_value = "";
+        missing = false;
     }
-    
-    Feature (string _name, string nom_val){
+
+    Feature (string _name, string nom_val, bool _missing = false){
         name = _name;
         feature_type = NominalFeature;
         nominal_value = nom_val;
         numerical_value = 0;
+        missing = _missing;
     }
-    
-    Feature (string _name, double num_val){
+
+    Feature (string _name, double num_val, bool _missing = false){
         name = _name;
         feature_type = NumericalFeature;
         numerical_value = num_val;
         nominal_value = "";
+        missing = _missing;
+    }
+
+    Feature (Feature *f){
+        name = f->name;
+        feature_type = f->feature_type;
+        numerical_value = f->numerical_value;
+        nominal_value = f->nominal_value;
+        missing = f->missing;
     }
 };
 
@@ -122,7 +134,7 @@ class Gene {
 public:
     vector<bool> gene_code;
     double score;
-    
+
     Gene(int features);
     Gene(Gene *gene);
     Gene(Gene *g1, Gene *g2, double mutation_rate = 0.);
@@ -157,11 +169,11 @@ public:
         message = _message;
         type = _type;
     }
-    
+
     const char * what() const throw(){
         return message.c_str();
     }
-    
+
     LipidSpaceExceptionType type;
 };
 
@@ -170,20 +182,20 @@ public:
 
 class SingleListWidget : public QListWidget {
     Q_OBJECT
-    
+
 public:
     SingleListWidget(QWidget *parent = nullptr);
     string field_name;
-    
+
     void addFieldName(string _field_name);
     void setNum(int _num);
-    
+
 signals:
     void oneItemViolation(string, int);
-    
+
 public slots:
     void dropEvent(QDropEvent *event) override;
-    
+
 private:
     int num;
 };
@@ -215,7 +227,7 @@ public:
     Array original_intensities;
     map<string, Feature> features;
     Matrix m;
-    
+
     Lipidome(string lipidome_name, string lipidome_file, string sheet_name = "", bool is_file_name = false);
     string to_json();
 };
@@ -226,7 +238,7 @@ public:
     ListItemType type;
     double length;
     string system_name;
-    
+
     ListItem(string name, ListItemType t, QListWidget* parent, string _system_name = "");
 };
 
@@ -257,27 +269,24 @@ public:
 
 class Progress : public QObject {
     Q_OBJECT
-    
+
 public:
     int current_progress;
     int max_progress;
     bool stop_progress;
     int step_size;
     bool connected;
-    
     Progress();
-    void increment();
-    void set(int);
-    
+
 public slots:
     void interrupt();
+    void increment();
     void setError(QString);
-    void set_step();
-    void prepare_steps(int);
+    void prepare(int max);
     void reset();
-    
-    
-    
+
+
+
 signals:
     void set_current(int);
     void set_max(int);
@@ -299,7 +308,7 @@ public:
     map<string, map<string, int>> feature_count_nominal;
     map<string, vector<double>> feature_numerical;
     map<string, double> feature_numerical_thresholds;
-    
+
     DendrogramNode(int index, map<string, FeatureSet> *feature_values, Lipidome *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
     ~DendrogramNode();
