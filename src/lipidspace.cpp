@@ -600,7 +600,6 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     if (fa1->functional_groups->size() == 0 && fa2->functional_groups->size() == 0){
         if (fa1db_new) delete fa1db;
         if (fa2db_new) delete fa2db;
-        //cout << fa1->name << " vs. " << fa2->name << ": " << (inter_num - ii) << " / " << (union_num - uu) << endl;
         return;
     }
     
@@ -690,7 +689,6 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     }
     if (fa1db_new) delete fa1db;
     if (fa2db_new) delete fa2db;
-    //cout << fa1->name << " vs. " << fa2->name << ": " << (inter_num - ii) << " / " << (union_num - uu) << endl;
 }
 
 
@@ -1252,6 +1250,7 @@ int LipidSpace::compute_global_distance_matrix(){
     if (n < 3) return n;
 
     
+    global_lipidome->original_intensities.resize(n, 1);
     global_lipidome->visualization_intensities.resize(n, 1);
     global_lipidome->normalized_intensities.resize(n, 1);
     global_lipidome->PCA_intensities.resize(n, 1);
@@ -1444,91 +1443,6 @@ void LipidSpace::normalize_intensities(){
             }
         }
     }
-    
-    
-    /*
-    for (auto lipidome : selected_lipidomes){
-        // compute the standard deviation of the first principal component,
-        // mean of all PCs should be always 0 per definition
-        int n = lipidome->m.rows;
-        double global_stdev = 0, global_mean = 0;
-        for (int i = 0; i < n; ++i) global_mean += lipidome->m.m[i];
-        global_mean /= (double)n;
-        for (int i = 0; i < n; ++i) global_stdev += sq(lipidome->m.m[i] - global_mean);
-        global_stdev = sqrt(global_stdev / (double)n);
-        
-        
-        // Use expectation maximization algorithm to identify outliers
-        // for a more stable estimation of the standard deviation
-        Array data;
-        for (auto val : lipidome->intensities) {
-            if (val > 0) data.push_back(val);
-        }
-        int l = data.size();
-        double *X = new double[l];
-        double *w = new double[l];
-        double min_v = 1e90;
-        double max_v = 0;
-        for (int i = 0; i < l; ++i){
-            X[i] = log(data.at(i));
-            min_v = min(min_v, X[i]);
-            max_v = max(max_v, X[i]);
-        }
-        double mue = log(data.median());
-        double sigma = 1;
-        double weight = 0.99;
-        double bgm = 1. / (max_v - min_v); // background model
-        
-        double old_mue = 0, old_sigma = 0;
-        for (int rep = 0; rep < 1000; ++rep){
-            old_mue = mue;
-            old_sigma = sigma;
-            
-            // expectation step
-            double W = 0, W2 = 0;
-            double gbg = bgm * (1. - weight);
-            for (int i = 0; i < l; ++i){
-                double g = weight * gauss(X[i], mue, sigma);
-                w[i] = g / (g + bgm * (1. - weight));
-                W += w[i];
-                W2 += gbg / (g + gbg);
-            }
-            
-            // maximization step
-            // maximizing weight
-            weight = W / (W + W2);
-            
-            // maximizing mean value mue
-            mue = 0;
-            for (int i = 0; i < l; ++i) mue += w[i] * X[i];
-            mue /= W;
-            
-            // maximizing standard deviation sigma
-            sigma = 0;
-            for (int i = 0; i < l; ++i) sigma += w[i] * sq(X[i] - mue);
-            sigma = sqrt(sigma / W);
-            
-            // check if values converge
-            bool halt = false;
-            halt |= fabs(mue) / fabs(max(mue, old_mue)) < 0.001;
-            halt |= fabs(sigma) / fabs(max(sigma, old_sigma)) < 0.001;
-            if (halt) break;
-        }
-        
-        Array mod_intens;
-        for (int i = 0; i < l; ++i) mod_intens.push_back(data[i] * w[i]);
-        
-        double mn = mod_intens.mean();
-        double stdev = mod_intens.stdev();
-        cout << lipidome->cleaned_name << " " << global_stdev << " " << stdev << endl;
-        if (stdev > 0){
-            for (int i = 0; i < l; ++i) lipidome->intensities[i] = global_stdev * (lipidome->intensities[i] - mn) / stdev;
-        }
-        
-        delete []X;
-        delete []w;
-    }
-    */
 }
 
 
@@ -2633,7 +2547,6 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
     }
     
     string translated_name = l->get_lipid_string();
-    cout << lipid_name << " " << translated_name << endl;
     
     l->sort_fatty_acyl_chains();
     for (auto fa : l->lipid->fa_list) cut_cycle(fa);
@@ -2698,6 +2611,47 @@ void LipidSpace::store_distance_table(string output_folder, Lipidome* lipidome){
 
 
 bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;}
+
+
+void LipidSpace::run_analysis(){
+    
+    // compute PCA matrixes for the complete lipidome
+    int num_for_PCA = compute_global_distance_matrix();
+    if (num_for_PCA == 0){
+        return;
+    }
+    
+    if (num_for_PCA >= 3){
+        cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
+        
+        // perform the principal component analysis
+        Matrix pca;
+        global_distances.rewrite(global_lipidome->m);
+        global_lipidome->m.PCA(pca, cols_for_pca);
+        global_lipidome->m.rewrite(pca);
+    }
+    else {
+        global_lipidome->m.reset(selected_lipidomes.size(), global_lipidome->lipids.size());
+    }
+    
+    // cutting the global PCA matrix back to a matrix for each lipidome
+    separate_matrixes();
+    normalize_intensities();
+    
+    if (selected_lipidomes.size() > 1){
+        compute_hausdorff_matrix();
+    }
+    
+    /*
+    if (selected_lipidomes.size() > 1){
+        create_dendrogram();
+        
+    }
+    */
+    
+    analysis_finished = true;
+}
+
 
 void LipidSpace::run(){
     if (process_id == 1){

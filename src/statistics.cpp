@@ -240,7 +240,6 @@ double Statistics::median(vector<double> &lst, int begin, int end){
 }
 
 
-
 void Statistics::updateBarPlot(){
     
     chart->removeAllSeries();
@@ -440,10 +439,10 @@ void Statistics::updateHistogram(){
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
     
-    bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
-    setVisible(is_nominal);
+    bool do_continue = (lipid_space->feature_values[target_variable].feature_type == NominalFeature) && (lipid_space->selected_lipidomes.size() > 1);
+    setVisible(do_continue);
     
-    if (!is_nominal) return;
+    if (!do_continue) return;
     
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
@@ -527,6 +526,7 @@ void Statistics::updateHistogram(){
 
 
 void Statistics::updateROCCurve(){
+
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
         chart->removeAxis(axis);
@@ -539,10 +539,10 @@ void Statistics::updateROCCurve(){
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
         
-    bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
-    setVisible(is_nominal);
+    bool do_continue = (lipid_space->feature_values[target_variable].feature_type == NominalFeature) && (lipid_space->selected_lipidomes.size() > 1);
+    setVisible(do_continue);
     
-    if (!is_nominal) return;
+    if (!do_continue) return;
     
     
     // setup array for target variable values, if nominal then each with incrementing number
@@ -666,6 +666,11 @@ void Statistics::updateBoxPlot(){
         
     bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
     
+    if (lipid_space->selected_lipidomes.size() <= 1){
+        setVisible(false);
+        return;
+    }
+    
     
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
@@ -715,6 +720,8 @@ void Statistics::updateBoxPlot(){
             QBoxSet *box = single_plot_series->boxSets()[0];
             
             Array &single_series = series[i];
+            if (single_series.size() < 2) continue;
+            
             sort(single_series.begin(), single_series.end());
             int count = single_series.size();
             box->setValue(QBoxSet::LowerExtreme, single_series.front());

@@ -1,5 +1,6 @@
 #include "lipidspace/logging.h"
 
+
 void Logging::write_log(string log_string){
     time_t now = time(0);
     tm *ltm = localtime(&now);
@@ -20,6 +21,15 @@ void Logging::write_log(string log_string){
     if (second.length() == 1) second = "0" + second;
     
     log_stream << (1900 + ltm->tm_year) << "/" << month << "/" << day << " - " << hour << ":" << minute << ":" << second << " - " << log_string << endl;
+    
+    if (Logging::to_stdout){
+        cout << (1900 + ltm->tm_year) << "/" << month << "/" << day << " - " << hour << ":" << minute << ":" << second << " - " << log_string << endl;
+    }
+}
+
+
+void Logging::set_stdout(bool out){
+    Logging::to_stdout = out;
 }
 
 
@@ -31,3 +41,4 @@ string Logging::get_log(){
 
 
 stringstream Logging::log_stream;
+bool Logging::to_stdout = false;

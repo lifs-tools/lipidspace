@@ -39,6 +39,11 @@ enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
 
 
+static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_TABLE}, {"COLUMN_PIVOT_TABLE", COLUMN_PIVOT_TABLE}, {"FLAT_TABLE", FLAT_TABLE}};
+static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"FeatureColumnNumerical", FeatureColumnNumerical}, {"FeatureColumnNominal", FeatureColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
+
+
+
 
 class FeatureSet {
 public:
@@ -59,9 +64,7 @@ public:
         numerical_filter = {NoFilter, vector<double>()};
     }
 };
-
-
-
+    
 
 class ClickableLabel : public QLabel { 
     Q_OBJECT 
@@ -213,17 +216,8 @@ public:
     map<string, Feature> features;
     Matrix m;
     
-    Lipidome(string lipidome_name, string lipidome_file, string sheet_name = "", bool is_file_name = false) : file_name(lipidome_file) {
-        QFileInfo qFileInfo(file_name.c_str());
-        string cleaned_file = qFileInfo.baseName().toStdString();
-        if (is_file_name){
-            cleaned_name = cleaned_file;
-        }
-        else {
-            cleaned_name = lipidome_name;
-        }
-        features.insert({"File", Feature("File", cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
-    }
+    Lipidome(string lipidome_name, string lipidome_file, string sheet_name = "", bool is_file_name = false);
+    string to_json();
 };
 
 

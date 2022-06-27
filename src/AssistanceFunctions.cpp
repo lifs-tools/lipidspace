@@ -23,12 +23,10 @@ void SingleListWidget::dropEvent(QDropEvent *event){
     }
 }
 
-
-
 FileTableHandler::FileTableHandler(string file_name, string sheet_name){
     // csv import
     if (sheet_name.length() == 0){
-        
+        cout << file_name << endl;
         ifstream infile(file_name);
         if (!infile.good()){
             throw LipidSpaceException("Error: file '" + file_name + "' could not be found.", FileUnreadable);
@@ -37,7 +35,7 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
         string line;
         while (getline(infile, line)){
             if (line.length() == 0) continue;
-            
+
             vector<string>* tokens = split_string(line, ',', '"', true);
             if (line_num++ == 0){
                 for (int i = 0; i < (int)tokens->size(); ++i) headers.push_back(goslin::strip(tokens->at(i), '"'));
@@ -51,7 +49,7 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
                 vector<string> &row = rows.back();
                 for (int i = 0; i < (int)tokens->size(); ++i) row.push_back(goslin::strip(tokens->at(i), '"'));
             }
-            
+
             delete tokens;
         }
     }
@@ -59,7 +57,7 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
         XLDocument doc(file_name.c_str());
 
         auto wks = doc.workbook().worksheet(sheet_name.c_str());
-        
+
         int line_num = 0;
         for (auto& wks_row : wks.rows()) {
             if (line_num++ == 0){
@@ -109,7 +107,7 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
                     rows.pop_back();
                     break;
                 }
-                
+
                 if (row.size() > headers.size()){
                     throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells (" + std::to_string(row.size()) + ") in line " + std::to_string(line_num) + " than in the header line (" + std::to_string(headers.size()) + ").", ColumnNumMismatch);
                 }
@@ -120,6 +118,60 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
         }
     }
 }
+
+
+Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name, bool is_file_name) : file_name(lipidome_file) {
+    QFileInfo qFileInfo(file_name.c_str());
+    string cleaned_file = qFileInfo.baseName().toStdString();
+    if (is_file_name){
+        cleaned_name = cleaned_file;
+    }
+    else {
+        cleaned_name = lipidome_name;
+    }
+    features.insert({"File", Feature("File", cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
+}
+
+
+
+
+string Lipidome::to_json(){
+    stringstream s;
+
+    s << "{\"LipidomeName\": \"" << replace_all(cleaned_name, "\"", "") << "\", ";
+
+    s << "\"LipidNames\": [";
+    for (uint l = 0; l < species.size(); ++l) {
+        if (l) s << ", ";
+        s << "\"" << replace_all(species[l], "\"", "") << "\"";
+    }
+    s << "], ";
+
+    s << "\"Intensities\": [";
+    for (uint l = 0; l < original_intensities.size(); ++l) {
+        if (l) s << ", ";
+        s << original_intensities[l];
+    }
+    s << "], ";
+
+    s << "\"X\": [";
+    for (int r = 0; r < m.rows; ++r) {
+        if (r) s << ", ";
+        s << m(r, 0);
+    }
+    s << "], ";
+
+    s << "\"Y\": [";
+    for (int r = 0; r < m.rows; ++r) {
+        if (r) s << ", ";
+        s << m(r, 1);
+    }
+    s << "]";
+
+    s << "}";
+    return s.str();
+}
+
 
 
 
@@ -133,8 +185,8 @@ DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_value
     x_left = 0;
     x_right = 0;
     y = 0;
-    
-    
+
+
     // initialize empty feature count table
     for (auto kv : *feature_values){
         if (kv.second.feature_type == NominalFeature){
@@ -147,7 +199,7 @@ DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_value
             feature_numerical.insert({kv.first, vector<double>()});
         }
     }
-    
+
     for (auto kv : lipidome->features){
         if (kv.second.feature_type == NominalFeature){
             feature_count_nominal[kv.first][kv.second.nominal_value] = 1;
@@ -164,9 +216,9 @@ DendrogramNode::~DendrogramNode(){
     if (left_child) delete left_child;
     if (right_child) delete right_child;
 }
-    
-    
-    
+
+
+
 DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d){
     left_child = n1;
     right_child = n2;
@@ -189,30 +241,30 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     double yl = left_result[1];
     cnt = left_result[2];
     delete []left_result;
-    
+
     double* right_result = right_child->execute(cnt, points, sorted_ticks);
     x_right = right_result[0];
     double yr = right_result[1];
     cnt = right_result[2];
     delete []right_result;
-    
+
     y = distance;
-    
+
     points->push_back(x_left);
     points->push_back(yl);
     points->push_back(x_left);
     points->push_back(y);
-    
+
     points->push_back(x_right);
     points->push_back(yr);
     points->push_back(x_right);
     points->push_back(y);
-    
+
     points->push_back(x_left);
     points->push_back(y);
     points->push_back(x_right);
     points->push_back(y);
-    
+
     // count features
     for (auto kv : left_child->feature_count_nominal){
         feature_count_nominal.insert({kv.first, map<string, int>()});
@@ -220,16 +272,16 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
             feature_count_nominal[kv.first].insert({kv2.first, kv2.second + right_child->feature_count_nominal[kv.first][kv2.first]});
         }
     }
-    
+
     for (auto kv : left_child->feature_numerical){
         // find intersection points for numerical features
         vector<double> &set1 = kv.second;
         vector<double> &set2 = right_child->feature_numerical[kv.first];
-        
+
         double pos_max = 0, d = 0, sep = 0;
         ks_separation_value(set1, set2, d, pos_max, sep);
         feature_numerical_thresholds.insert({kv.first, pos_max});
-        
+
         feature_numerical.insert({kv.first, vector<double>()});
         for(double val : kv.second){
             feature_numerical[kv.first].push_back(val);
@@ -262,7 +314,7 @@ double compute_accuracy(vector<Array> &v){
     }
     sort(medians.begin(), medians.end(), sort_double_double_asc);
     double TP = 0, TN = 0, FP = 0, FN = 0;
-    
+
     Array borders;
     for (uint i = 0; i < medians.size() - 1; ++i){
         double d = 0;
@@ -275,14 +327,14 @@ double compute_accuracy(vector<Array> &v){
     }
     borders.push_back(1e100);
     vector<int> pointers(v.size(), -1);
-    
+
     for (uint i = 0; i < borders.size(); ++i){
         double border = borders[i];
-        
+
         uint current_index = medians[i].second;
         for (uint j = 0; j < v.size(); ++j){
             int index = v[j].greatest_less(border, pointers[j]);
-            
+
             if (current_index == j){
                 TP += index - pointers[j];
                 FN += v[j].size() - (index - pointers[j]);
@@ -294,7 +346,7 @@ double compute_accuracy(vector<Array> &v){
             pointers[j] = index;
         }
     }
-    
+
     return (TP + TN) / (TP + TN + FP + FN);
 }
 
@@ -369,13 +421,13 @@ double hyperg_2F1(double a, double b, double c, double d){
         e = 1. / pow(1. - d, b);
         d = 1. - 1. / (1. - d);
     }
-    
+
     if (b < 0){
         e *= pow(1 - d, c - a - b);
         a = c - a;
         b = c - b;
     }
-    
+
     double TOLERANCE = 1.0e-10;
     double term = a * b * d / c;
     double p = 1.0 + term;
@@ -414,11 +466,11 @@ double p_value_welch(Array &a, Array &b){
     double m2 = b.mean();
     double s2 = b.sample_stdev();
     double m = b.size();
-    
+
     double w0 = (m1 - m2);
     double t = w0 / sqrt(sq(s1 / sqrt(n)) + sq(s2 / sqrt(m)));
     double v = sq(sq(s1) / n + sq(s2) / m) / (sq(sq(s1)) / (sq(n) * (n - 1)) + sq(sq(s2)) / (sq(m) * (m - 1)));
-    
+
     double pval = t_distribution_cdf(t, v);
     return max(0., min(1., pval));
 }
@@ -435,7 +487,7 @@ double p_value_student(Array &sample1, Array &sample2){
     double m2 = sample2.mean();
     double s2 = sample2.sample_stdev();
     double m = sample2.size();
-    
+
     double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
     double t = sqrt(n * m / (n + m)) * ((m1 - m2) / s);
     return t_distribution_cdf(t, n + m - 2);
@@ -449,13 +501,13 @@ https://en.wikipedia.org/wiki/F-distribution
 https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.betainc.html
 */
 double f_distribution_cdf(double f_stat, double df1, double df2){
-    
+
     double x = df1 * f_stat / (df1 * f_stat + df2);
     double a = df1 / 2.;
     double b = df2 / 2.;
     double pval = 1. - pow(x, a) / a * hyperg_2F1(a, 1 - b, a + 1, x) / beta(a, b);
     return max(0., min(1., pval));
-    
+
 }
 
 
@@ -473,7 +525,7 @@ double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
     sort (sample2.begin(), sample2.end());
     double inv_m = 1. / (double)m;
     double inv_n = 1. / (double)n;
-    
+
     while (ptr1 < m && ptr2 < n){
         if (sample1[ptr1] < sample2[ptr2]){
             cdf1 += inv_m;
@@ -485,7 +537,7 @@ double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
         }
         d = max(d, fabs(cdf1 - cdf2));
     }
-    
+
     int size = 2 * m * d + 2;
     double *lastrow = new double[size];
     double *row = new double[size];
@@ -511,8 +563,8 @@ double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
         last_start_j = start_j;
     }
     double pval = row[m - start_j];
-    
-    
+
+
     delete []lastrow;
     delete []row;
     return max(0., min(1., pval));
@@ -521,7 +573,7 @@ double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
 
 
 
-/* 
+/*
 Source: https://en.wikipedia.org/wiki/One-way_analysis_of_variance
 */
 double p_value_anova(vector<Array> &arrays){
@@ -534,7 +586,7 @@ double p_value_anova(vector<Array> &arrays){
         total_y += mean_y.back();
     }
     total_y /= (double)mean_y.size();
-        
+
     double MSB = 0;
     double MSW = 0;
     double N = 0;
@@ -547,8 +599,8 @@ double p_value_anova(vector<Array> &arrays){
     double v2 = N - arrays.size();
     MSB /= v1;
     MSW /= v2;
-    
-    
+
+
     double F = MSB / MSW;
     return f_distribution_cdf(F, v1, v2);
 }
@@ -620,7 +672,7 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
     double s = 0;
     for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
     return s;
-    
+
     int k = data.cols;
     int n = data.rows;
     return n * (log(2 * M_PI) + 1 + log(s / n)) + (k * 2);
@@ -637,20 +689,20 @@ bool gene_aic(Gene g1, Gene g2){
 
 void BH_fdr(vector<double> &data){
     if (data.size() < 2) return;
-        
+
     // sort p_values and store order for back ordering
     vector<pair<double, int>> sorted;
     for (int i = 0; i < (int)data.size(); ++i){
         sorted.push_back({data[i], i});
     }
     sort (sorted.begin(), sorted.end(), sort_order_one);
-    
+
     // perform Benjamini-Hochberg correction
     double n = data.size();
     for (int i = n - 2; i >= 0; --i){
         sorted[i].first = min(sorted[i].first * n / (double)(i + 1), sorted[i + 1].first);
     }
-    
+
     // sort corrected values back into original data vector
     for (auto p : sorted) data[p.second] = p.first;
 }
@@ -666,12 +718,12 @@ ListItem::ListItem(string show_name, ListItemType t, QListWidget* parent, string
 
 
 void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
-    
+
     painter->setPen(QPen(Qt::NoPen));
     int rr = index.row();
     double l = ((ListItem*)((QListWidget*)parent())->item(rr))->length;
     l = max(0., min(1., l));
-    
+
     if (l > 1e-15) {
         painter->setBrush(QBrush(QColor(128, 128, 128, 20)));
         QRect r = option.rect;

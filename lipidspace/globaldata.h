@@ -16,11 +16,13 @@ public:
     static int color_counter;
     static const vector<QColor> COLORS;
     static bool showQuant;
+    static bool debug;
     static int alpha;
     static map<string, QColor> colorMap;
     static int PC1;
     static int PC2;
     static int feature_counter;
+    static string rest_temp_folder;
     static map<string, QColor> colorMapFeatures;
     static map<string, QColor> colorMapCategories;
     static string normalization;
