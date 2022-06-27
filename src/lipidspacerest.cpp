@@ -20,6 +20,11 @@ public:
     // stop(SIGINT);
     qInfo("Starting server on host='%s' port='%d'", host, port);
     // register handlers
+    // compute global distance matrix (lipidspace.cpp 2729, PCA: 2749, 2764, 2765, 2773, createDendrogram: 2782, )
+    // feature selection: (lipidspace.cpp 2831), "Genes" are bitvectors for feature selection
+    // TableType s.h. AssistanceFunctions.h
+    // input: one table per lipidome (with id + name), columns: "Species" (SampleColumn), optional: Study Variables + concatenierungs spalte aller study variables + 1 column per lipid name with quantities (LipidColumn) + column type info (SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumerical, FeatureColumnNominal, IgnoreColumn)
+    // create Lipidome objects (AssistanceFunction.h)
     svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res)
              {
       if(req.get_header_value("Content-Type")=="application/json") {
@@ -33,6 +38,7 @@ public:
         }
         std::string response = pcaRequest.toJson().toStdString();
         res.set_content(response, "application/json");
+        // response is distance matrix, columns / rows are lipidomes, order is the same as in input
         qInfo("Setting response '%s'", response.c_str());
       } else {
         qWarning("Unsupported content type: '%s'", req.get_header_value("Content-Type").c_str());
@@ -43,7 +49,7 @@ public:
             { res.set_content("Hello World!", "text/plain"); });
 
     t = thread([&]()
-               { svr.listen("0.0.0.0", 8888); });
+               { svr.listen("0.0.0.0", port); });
     qInfo("Started server! SIGINT (CTRL+c) will stop the server.");
     return 0;
   }
