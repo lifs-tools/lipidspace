@@ -2685,7 +2685,7 @@ void LipidSpace::run(){
             if (!progress || !progress->stop_progress){
                 // set the step size for the next analyses
                 if (progress){
-                    progress->connect(&global_lipidome->m, SIGNAL(increment()), progress, SLOT(increment()));
+                    progress->connect(&global_lipidome->m, &Matrix::increment, progress, &Progress::increment);
                 }
                 Matrix pca;
                 global_distances.rewrite(global_lipidome->m);
@@ -2937,10 +2937,7 @@ void LipidSpace::run(){
         if (!progress || !progress->stop_progress){
             // set the step size for the next analyses
             if (progress){
-                int m = n_features - n;
-                progress->prepare((((n_features + 1) * n_features) >> 1) - (((m + 1) * m) >> 1));
-                cout << "num: " << (((n_features + 1) * n_features) >> 1) - (((m + 1) * m) >> 1) << endl;
-                progress->connect(&global_lipidome->m, &Matrix::increment, progress, &Progress::increment);
+                progress->prepare(n * n_features);
             }
 
             genes.resize(n + 1, 0);
@@ -2955,15 +2952,14 @@ void LipidSpace::run(){
         }
 
         // implementation of sequential forward lipid (feature) selection
-        int iii = 0;
         for(int i = 1; i <= n && (!progress || !progress->stop_progress); ++i){
+            if (progress->stop_progress) break;
             Gene* best = 0;
             int pos = 0;
             double best_score = is_nominal ? 0 : 1e100;
             Gene* last = genes[i - 1];
             while (pos < n_features && (!progress || !progress->stop_progress)){
-                if (iii > 0 && iii % 1000 == 0) cout << iii << endl;
-                ++iii;
+                if (progress->stop_progress) break;
                 Indexes feature_i;
                 last->get_indexes(feature_i);
                 if (!last->gene_code[pos]){
@@ -3032,9 +3028,6 @@ void LipidSpace::run(){
                         }
 
                     }
-
-
-
 
                 }
                 ++pos;
