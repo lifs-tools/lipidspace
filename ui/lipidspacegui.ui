@@ -258,7 +258,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -590,7 +590,7 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QGroupBox" name="groupBox_2">
+          <widget class="QGroupBox" name="groupBoxStatistics">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -732,6 +732,29 @@
             </property>
             <property name="text">
              <string>Bar number</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="secondaryComboBox">
+            <property name="geometry">
+             <rect>
+              <x>520</x>
+              <y>40</y>
+              <width>181</width>
+              <height>26</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLabel" name="secondaryLabel">
+            <property name="geometry">
+             <rect>
+              <x>520</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Conditional coloring</string>
             </property>
            </widget>
           </widget>

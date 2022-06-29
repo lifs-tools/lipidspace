@@ -280,6 +280,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->normalizationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setNormalization(int)));
     connect(ui->labelPieSize, SIGNAL(doubleClicked()), this, SLOT(setKnubbel()));
     connect(ui->startAnalysisPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::startFeatureAnalysis);
+    connect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSecondarySorting(int)));
 
     ui->speciesList->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->classList->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -377,6 +378,7 @@ void LipidSpaceGUI::setFeature(int c){
     GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
     featureChanged(ui->featureComboBox->currentText().toStdString());
     set_feature_semaphore = false;
+    setSecondarySorting();
 }
 
 
@@ -393,6 +395,7 @@ void LipidSpaceGUI::setFeatureStat(int c){
     ui->statisticsHistogram->updateHistogram();
     ui->statisticsROCCurve->updateROCCurve();
     set_feature_semaphore = false;
+    setSecondarySorting();
 }
 
 
@@ -420,6 +423,44 @@ bool compare_string_asc(pair<string, double> a, pair<string, double> b){
 
 bool compare_string_desc(pair<string, double> a, pair<string, double> b){
     return a.first.compare(b.first) > 0;
+}
+
+
+
+void LipidSpaceGUI::updateSecondarySorting(int){
+    GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
+    ui->statisticsBoxPlot->updateBoxPlot();
+    ui->statisticsBarPlot->updateBarPlot();
+    ui->statisticsHistogram->updateHistogram();
+    ui->statisticsROCCurve->updateROCCurve();
+}
+
+
+void LipidSpaceGUI::setSecondarySorting(){
+    ui->secondaryComboBox->clear();
+    ui->secondaryLabel->setText("Secondary sorting");
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
+
+    bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
+    if (is_nominal){
+        ui->secondaryLabel->setText("Secondary sorting");
+        ui->secondaryComboBox->addItem("no secondary sorting");
+        for (auto kv : lipid_space->feature_values){
+            if (kv.second.feature_type == NumericalFeature){
+                ui->secondaryComboBox->addItem(kv.first.c_str());
+            }
+        }
+    }
+    else {
+        ui->secondaryLabel->setText("Conditional coloring");
+        ui->secondaryComboBox->addItem("no conditional coloring");
+        for (auto kv : lipid_space->feature_values){
+            if (kv.second.feature_type == NominalFeature){
+                ui->secondaryComboBox->addItem(kv.first.c_str());
+            }
+        }
+    }
 }
 
 
@@ -788,6 +829,8 @@ void LipidSpaceGUI::runAnalysis(){
     auto duration = duration_cast<microseconds>(stop - start);
     cout << "GUI: " << duration.count() << endl;
 
+
+
     // define colors of features
     for (auto kv : lipid_space->feature_values){
         if (kv.second.feature_type == NominalFeature){
@@ -830,6 +873,9 @@ void LipidSpaceGUI::runAnalysis(){
     if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
 
     emit analysisCompleted();
+
+
+
 }
 
 
@@ -1274,6 +1320,7 @@ void LipidSpaceGUI::updateGUI(){
 
     updating = false;
     dragLayer->raise();
+
 }
 
 

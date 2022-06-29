@@ -2141,7 +2141,6 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
 
             // handle all other rows
             for (int i = 0; i < (int)tokens.size(); ++i){
-
                 switch(column_types->at(i)){
                     case SampleColumn:
                         measurement = tokens.at(i);
@@ -2775,7 +2774,6 @@ void LipidSpace::run(){
     else if (process_id == 2 && target_variable != ""){
 
 
-
         Array target_values;
         map<string, double> nominal_target_values;
         int nom_counter = 0;
@@ -2793,6 +2791,7 @@ void LipidSpace::run(){
             return;
         }
         Logging::write_log("Started feature analysis");
+
 
 
         // select lipidomes for feature selection
@@ -2851,7 +2850,6 @@ void LipidSpace::run(){
                 }
             }
 
-
             if (select_lipidome && contains_val(selection[3], lipidome_name) && selection[3][lipidome_name]){
                 lipidomes_for_feature_selection.push_back(lipidome);
             }
@@ -2867,6 +2865,7 @@ void LipidSpace::run(){
             if (is_nominal){
                 for (auto lipidome : lipidomes_for_feature_selection){
                     string nominal_value = lipidome->features[target_variable].nominal_value;
+
                     if (uncontains_val(nominal_target_values, nominal_value)){
                         nominal_target_values.insert({nominal_value, nom_counter++});
                     }
@@ -2931,7 +2930,7 @@ void LipidSpace::run(){
         // determining the upper number of features to consider
         int n = global_matrix.cols - !is_nominal; // -1 because we added a column of constant values 1, 1, 1, 1, ...
         int n_features = n;
-        if (n > 1) n = min(n_features - 2, (int)sqrt(n) * 5);
+        if (n > 1) n = min(n_features - 2, (int)sqrt(n) * 2);
 
         // perform the principal component analysis
         if (!progress || !progress->stop_progress){

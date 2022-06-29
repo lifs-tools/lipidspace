@@ -40,7 +40,7 @@ using namespace std;
 
 #define MARGIN 0.01
 #define POINT_BASE_FACTOR 5
-#define POINT_BASE_SIZE 1
+#define POINT_BASE_SIZE 0.5
 #define LABEL_COLOR 200, 200, 200, 255
 #define sign_log(x) (x >= 0 ? log(x + 1) - 1 : -(log(-x + 1) - 1))
 #define DENDROGRAM_LINE_SIZE 2.

@@ -36,23 +36,23 @@ class Tutorial;
 
 
 class HomeItem : public QGraphicsItem {
-    
+
 public:
     QGraphicsView *view;
-    
+
     HomeItem(QGraphicsView *v) : view(v) {
     }
-    
+
     ~HomeItem(){
     }
-    
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
         QLinearGradient gradient;
         double factor = min((double)view->width() / 1207., (double)view->height() / 483.);
 
         painter->setRenderHint(QPainter::Antialiasing, true);
-        
-        
+
+
         gradient.setStart(0, 0);
         gradient.setFinalStop(0, 1);
         gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
@@ -63,23 +63,23 @@ public:
         painter->setBrush(gradient);
         painter->setPen(Qt::NoPen);
         painter->drawRect(0, 0, view->width(), 400 * factor);
-        
-        
-        
+
+
+
         double l_banner = 502.5 * factor;
-        
+
         QBrush bottom(QColor("#6babce")); // 6babce / ceab6b
         painter->setPen(Qt::NoPen);
         painter->setBrush(bottom);
         painter->drawRect(0., 399. * factor, view->width(), view->height());
-        
-        
+
+
         QBrush banner(QColor("#71a9cc")); // 71a9cc / ce956b
         painter->setBrush(banner);
         painter->drawRect(QRectF(0., 90. * factor, 50. * factor, 70. * factor));
         painter->drawRect(QRectF(l_banner + 70. * factor, 90. * factor, view->width(), 70. * factor));
-        
-        
+
+
         painter->save();
         painter->translate(QPointF(60. * factor, 190 * factor));
         painter->scale(factor, factor);
@@ -88,16 +88,16 @@ public:
         f.setPointSizeF(11.);
         painter->setFont(f);
         painter->drawText(QRectF(0., 0., 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "Accessing the chemical space of individual lipidomes:\n  • Comprehensive study of multiple lipidomes\n  • Providing mechanism for quality control\n  • Feature analysis and lipid selection\n  • Integration of study variables");
-        
+
         painter->drawText(QRectF(0, 120., 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "LipidSpace offers several interactive tutorials for an easy introduction\ninto its functionality:");
         painter->restore();
     }
-    
+
     QRectF boundingRect() const override {
         return QRectF(0, 0, view->width(), view->height());
     }
-    
-    
+
+
 };
 
 
@@ -105,26 +105,26 @@ public:
 
 class DragLayer : public QWidget {
     Q_OBJECT
-    
+
 public:
     QPoint start_position;
     QPoint delta;
     int source_tile;
-    
+
     explicit DragLayer(QWidget *parent = 0);
-    
+
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
-    
+
 public slots:
     void mousePressEvent(QMouseEvent* event, Canvas *canvas);
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-    
+
 signals:
     void hover();
     void swapping(int);
-    
+
 };
 
 
@@ -142,15 +142,15 @@ public:
     ImportTable import_table;
     bool ctrl_pressed;
     bool set_feature_semaphore;
-    
+
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
     void copy_to_clipboard();
     void closeEvent(QCloseEvent *event) override;
-    
-    
+
+
 signals:
     void transforming(QRectF f);
     void updateCanvas();
@@ -158,8 +158,8 @@ signals:
     void featureChanged(string);
     void updateHighlightedPoints(vector<QString> *);
     void analysisCompleted();
-    
-    
+
+
 public slots:
     void quitProgram();
     void openLists();
@@ -190,6 +190,8 @@ public slots:
     void setSnPositions();
     void startFeatureAnalysis();
     void openManageLipidomesWindow();
+    void setSecondarySorting();
+    void updateSecondarySorting(int);
     void runAnalysis();
     void setTransforming(QRectF f);
     void setDoubleClick(int _num);
@@ -234,8 +236,8 @@ public slots:
     void setPieSize(int);
     void setNormalization(int);
     void selectDendrogramLipidomes();
-    
-    
+
+
 private:
     set<int> *selected_d_lipidomes;
     bool showDendrogram;
@@ -252,6 +254,6 @@ private:
     bool table_transposed;
     map<string, vector<pair<string, double>>> sortings[4];
     vector<QComboBox*> sorting_boxes;
-    
+
 };
 #endif // LIPIDSPACEGUI_H

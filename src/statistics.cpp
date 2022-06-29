@@ -109,7 +109,6 @@ void Statistics::bar_plot_hovered(bool is_over, QBoxSet *boxset) {
 }
 
 
-
 void Statistics::exportData(){
     if (chart->series().size() == 0) return;
     QString file_name = QFileDialog::getSaveFileName(this, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
@@ -652,6 +651,7 @@ void Statistics::updateROCCurve(){
 
 
 void Statistics::updateBoxPlot(){
+
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
         chart->removeAxis(axis);
@@ -677,12 +677,20 @@ void Statistics::updateBoxPlot(){
 
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
+    Indexes target_indexes;
     Array target_values;
     int nom_counter = 0;
     vector<QBoxPlotSeries*> plot_series;
+    vector<QScatterSeries*> scatter_series;
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    bool has_secondary = contains_val(lipid_space->feature_values, secondary_target_variable);
+
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->features[target_variable].missing) continue;
+            if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
             string nominal_value = lipidome->features[target_variable].nominal_value;
             if (uncontains_val(nominal_target_values, nominal_value)){
                 nominal_target_values.insert({nominal_value, nom_counter++});
@@ -696,17 +704,36 @@ void Statistics::updateBoxPlot(){
                     plot_series.back()->setBrush(brush);
                 }
             }
-            target_values.push_back(nominal_target_values[nominal_value]);
+            target_indexes.push_back(nominal_target_values[nominal_value]);
+            if (has_secondary) target_values.push_back(lipidome->features[secondary_target_variable].numerical_value);
+
+
         }
     }
     else {
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->features[target_variable].missing) continue;
+            if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
             target_values.push_back(lipidome->features[target_variable].numerical_value);
+
+            if (has_secondary){
+                string nominal_value = lipidome->features[secondary_target_variable].nominal_value;
+                if (uncontains_val(nominal_target_values, nominal_value)){
+                    nominal_target_values.insert({nominal_value, nom_counter++});
+                    scatter_series.push_back(new QScatterSeries());
+                    scatter_series.back()->setName(nominal_value.c_str());
+                    series_titles.push_back(nominal_value);
+                    string color_key = secondary_target_variable + "_" + nominal_value;
+                    if (contains_val(GlobalData::colorMapFeatures, color_key)){
+                        QBrush brush(GlobalData::colorMapFeatures[color_key]);
+                        scatter_series.back()->setBrush(brush);
+                    }
+                }
+                target_indexes.push_back(nominal_target_values[nominal_value]);
+            }
         }
     }
-
-
 
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
@@ -726,8 +753,8 @@ void Statistics::updateBoxPlot(){
             double sum = 0;
             for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
             if (statistics_matrix.cols > 1 || sum > 1e-15){
-                plot_series[target_values[r]]->boxSets()[0]->append(sum);
-                series[target_values[r]].push_back(sum);
+                plot_series[target_indexes[r]]->boxSets()[0]->append(sum);
+                series[target_indexes[r]].push_back(sum);
             }
         }
         for (uint i = 0; i < plot_series.size(); ++i){
@@ -778,14 +805,24 @@ void Statistics::updateBoxPlot(){
         Array S;
         S.mult(statistics_matrix, coefficiants);
 
-        QScatterSeries* series_model = new QScatterSeries();
-        series_model->setName(target_variable.c_str());
-        for (uint i = 0; i < S.size(); ++i){
-            series_model->append(S[i], target_values[i]);
-            min_x = min(min_x, S[i]);
-            max_x = max(max_x, S[i]);
+        if (!has_secondary){
+            QScatterSeries* series_model = new QScatterSeries();
+            series_model->setName(target_variable.c_str());
+            for (uint i = 0; i < S.size(); ++i){
+                series_model->append(S[i], target_values[i]);
+                min_x = min(min_x, S[i]);
+                max_x = max(max_x, S[i]);
+            }
+            chart->addSeries(series_model);
         }
-        chart->addSeries(series_model);
+        else {
+            for (uint i = 0; i < S.size(); ++i){
+                scatter_series[target_indexes[i]]->append(S[i], target_values[i]);
+                min_x = min(min_x, S[i]);
+                max_x = max(max_x, S[i]);
+            }
+            for (auto s_series : scatter_series) chart->addSeries(s_series);
+        }
 
 
 
