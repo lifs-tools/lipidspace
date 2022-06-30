@@ -1,0 +1,124 @@
+openapi: "3.0.2"
+info:
+    title: LipidSpace REST API
+    version: "1.0"
+servers:
+    - url: https://apps.lifs-tools.org/lipidspace/v1
+
+components:
+    schemas:
+        TableType:
+            type: string
+            enum:
+                - ROW_PIVOT_TABLE
+                - COLUMN_PIVOT_TABLE
+                - FLAT_TABLE
+        TableColumnType:
+            type: string
+            enum:
+                - SampleColumn
+                - QuantColumn
+                - LipidColumn
+                - FeatureColumnNumerical
+                - FeatureColumnNominal
+                - IgnoreColumn
+        LipidSpacePcaRequest:
+            type: object
+            properties:
+                TableType:
+                    $ref: "#/components/schemas/TableType"
+                TableColumnTypes:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/TableColumnType"
+                Table:
+                    type: string
+            required:
+                - TableType
+                - TableColumnTypes
+                - Table
+        LipidSpace:
+            type: object
+            properties:
+                LipidomeName:
+                    type: string
+                LipidNames:
+                    type: array
+                    items:
+                        type: string
+                Intensities:
+                    type: array
+                    items:
+                        type: integer
+                X:
+                    type: array
+                    items:
+                        type: number
+                Y:
+                    type: array
+                    items:
+                        type: number
+            required:
+                - LipidomeName
+                - LipidNames
+                - Intensities
+                - X
+                - Y
+
+        LipidSpaces:
+            type: array
+            items:
+                $ref: "#/components/schemas/LipidSpace"
+
+        LipidomeDistanceMatrixRow:
+            type: array
+            items:
+                type: number
+
+        LipidomeDistanceMatrix:
+            type: array
+            items:
+                type: array
+                items:
+                    $ref: "#/components/schemas/LipidomeDistanceMatrixRow"
+
+        LipidSpacePcaResponse:
+            type: object
+            properties:
+                LipidSpaces:
+                    $ref: "#/components/schemas/LipidSpaces"
+                LipidomeDistanceMatrix:
+                    $ref: "#/components/schemas/LipidomeDistanceMatrix"
+            required:
+                - LipidSpaces
+                - LipidomeDistanceMatrix
+
+paths:
+    /pca:
+        post:
+            summary: Post lipidome quantity table to LipidSpace
+            operationId: postTablePca
+            requestBody:
+                description: >
+                    Send a LipidSpacePcaRequest to the server. Users need to define the table type and
+                    the table column types. The table itself, including the first row that contains the column names,
+                    should be transmitted as a comma separated single string. Newlines need to encoding as "\n".
+                required: true
+                content:
+                    "application/json":
+                        schema:
+                            $ref: "#/components/schemas/LipidSpacePcaRequest"
+
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/LipidSpacePcaResponse"
+                "400":
+                    description: Invalid request or malformed JSON
+                "415":
+                    description: Unsupported content type
+                "500":
+                    description: Server error
