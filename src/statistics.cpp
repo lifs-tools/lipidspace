@@ -254,6 +254,7 @@ void Statistics::updateBarPlot(){
     if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
 
 
 
@@ -304,7 +305,7 @@ void Statistics::updateBarPlot(){
         LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
         if (uncontains_val(lipid_map, lipid)){
             lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
+            lipid_name_map.insert({translations[lipid_space->global_lipidome->species[i]], lipid_name_map.size()});
         }
     }
 

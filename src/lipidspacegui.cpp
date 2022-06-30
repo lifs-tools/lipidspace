@@ -1689,12 +1689,13 @@ void LipidSpaceGUI::export_list(){
     }
 
     ofstream output_stream(outputFile.toStdString().c_str());
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
 
     vector<pair<string, double>> &sort_species_labels = sortings[selection][sorting_boxes[selection]->currentText().toStdString()];
     map<string, bool> &selection_map = lipid_space->selection[selection];
     for (int i = 0; i < (int)sort_species_labels.size(); ++i){
         string label = sort_species_labels[i].first;
-        if (selection_map[label]) output_stream << label << endl;
+        if (selection_map[label]) output_stream << translations[label] << endl;
 
     }
 

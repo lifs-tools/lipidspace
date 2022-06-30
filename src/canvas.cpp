@@ -522,6 +522,7 @@ void PointSet::loadPoints(){
 
     // we need at least three lipids to span a lipid space
     if (view->lipid_space->global_lipidome->lipids.size() <= 2) return;
+    map<string, string> &translations = view->lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
 
     for (uint rr = 0; rr < lipidome->selected_lipid_indexes.size(); ++rr){
         int r = lipidome->selected_lipid_indexes[rr];
@@ -544,7 +545,7 @@ void PointSet::loadPoints(){
         pc_point.point = QPointF(xval, yval);
         pc_point.intensity = intens;
         pc_point.color = GlobalData::colorMap[lipidome->classes[r]];
-        pc_point.label = lipidome->species[r].c_str();
+        pc_point.label = translations[lipidome->species[r]].c_str();
         pc_point.ref_lipid_species = r;
 
         QRectF bubble(xval - intens * 0.5, yval - intens * 0.5,  intens, intens);
