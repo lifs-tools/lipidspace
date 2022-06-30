@@ -264,6 +264,7 @@ void Statistics::updateBarPlot(){
     vector<string> target_titles;
     int nom_counter = 0;
     vector<QBoxPlotSeries*> plot_series;
+    vector<vector<Array>> data_series;
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
@@ -272,6 +273,7 @@ void Statistics::updateBarPlot(){
                 nominal_target_values.insert({nominal_value, nom_counter++});
                 QBoxPlotSeries *box_plot_series = new QBoxPlotSeries();
                 plot_series.push_back(box_plot_series);
+                data_series.push_back(vector<Array>());
                 connect(box_plot_series, SIGNAL(hovered(bool, QBoxSet*)), this, SLOT(bar_plot_hovered(bool, QBoxSet*)));
                 box_plot_series->setName(nominal_value.c_str());
                 target_titles.push_back(nominal_value);
@@ -289,6 +291,7 @@ void Statistics::updateBarPlot(){
         nominal_target_values.insert({lipid_label, nom_counter++});
         QBoxPlotSeries *box_plot_series = new QBoxPlotSeries();
         plot_series.push_back(box_plot_series);
+        data_series.push_back(vector<Array>());
         connect(box_plot_series, SIGNAL(hovered(bool, QBoxSet*)), this, SLOT(bar_plot_hovered(bool, QBoxSet*)));
         box_plot_series->setName(lipid_label.c_str());
         target_titles.push_back(lipid_label);
@@ -327,7 +330,7 @@ void Statistics::updateBarPlot(){
     for (int t = 0; t < nom_counter; ++t){
         for (int c = 0; c < statistics_matrix.cols; c++){
             series_titles.push_back(lipid_names[c] + " / " + target_titles[t]);
-            plot_series[t]->append(new QBoxSet(lipid_names[c].c_str()));
+            data_series[t].push_back(Array());
         }
     }
 
@@ -335,7 +338,7 @@ void Statistics::updateBarPlot(){
         for (int r = 0; r < statistics_matrix.rows; ++r){ // for all values of a study variable
             for (int c = 0; c < statistics_matrix.cols; c++){
                 if (statistics_matrix(r, c) > 1e-15){
-                    plot_series[target_values[r]]->boxSets()[c]->append(statistics_matrix(r, c));
+                    data_series[target_values[r]][c].push_back(statistics_matrix(r, c));
                 }
             }
         }
@@ -375,13 +378,17 @@ void Statistics::updateBarPlot(){
     }
     double min_y_val = 1e100;
     double max_y_val = 0;
-    for (auto single_plot_series : plot_series){
 
-        for (auto box : single_plot_series->boxSets()){
-            Array vals;
-            for (int i = 0; i < box->count(); ++i){
-                vals.push_back(box->at(i));
-                series[series_iter].push_back(box->at(i));
+    for (uint plot_it = 0; plot_it < data_series.size(); ++plot_it){
+        auto single_plot_series = plot_series[plot_it];
+        auto single_data_series = data_series[plot_it];
+
+        for (uint box_it = 0; box_it < single_data_series.size(); ++box_it){
+            Array &vals = single_data_series[box_it];
+            auto box = new QBoxSet(lipid_names[box_it].c_str());
+
+            for (uint i = 0; i < vals.size(); ++i){
+                series[series_iter].push_back(vals[i]);
             }
             ++series_iter;
 
@@ -397,6 +404,7 @@ void Statistics::updateBarPlot(){
             box->setValue(QBoxSet::Median, log_scale ? 1e-19 : 0);
             box->setValue(QBoxSet::LowerQuartile, log_scale ? 1e-19 : 0);
             box->setValue(QBoxSet::UpperQuartile, mean);
+            single_plot_series->append(box);
         }
         single_plot_series->setBoxWidth(1.5);
         chart->addSeries(single_plot_series);
@@ -754,7 +762,6 @@ void Statistics::updateBoxPlot(){
             double sum = 0;
             for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
             if (statistics_matrix.cols > 1 || sum > 1e-15){
-                plot_series[target_indexes[r]]->boxSets()[0]->append(sum);
                 series[target_indexes[r]].push_back(sum);
             }
         }
