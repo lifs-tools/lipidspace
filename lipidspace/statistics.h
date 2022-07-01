@@ -38,8 +38,8 @@ using namespace std;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	using namespace QtCharts;
 #endif
-    
-    
+
+
 using namespace OpenXLSX;
 
 
@@ -54,11 +54,11 @@ public:
     vector<string> series_titles;
     map<string, double> stat_results;
     bool log_scale;
-    
+
     Statistics(QWidget *parent = nullptr);
     void set_lipid_space(LipidSpace *_lipid_space);
     double median(vector<double> &lst, int begin, int end);
-    
+
 public slots:
     void updateBoxPlot();
     void updateROCCurve();

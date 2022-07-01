@@ -1,0 +1,37 @@
+Eingabe:
+{
+    "TableType": "COLUMN_PIVOT_TABLE",
+    "TableColumnTypes": ["SampleColumn", "LipidColumn", "LipidColumn", "LipidColumn"],
+    "Table": "[hier Tabelle als csv kodiert mit " als quote sign]",
+}
+
+
+
+Ausgabe:
+{
+    "LipidSpaces": [
+        {
+            "LipidomeName": "global_lipidome":
+            "LipidNames": ["lipid1", "lipid2", "lipid3", "lipid4"],
+            "Intensities": [1, 2, 3, 4],
+            "X": [1, 2, 3, 4],
+            "Y": [1, 2, 3, 4]
+        },
+        {
+            "LipidomeName": "lipidome2":
+            "LipidNames": ["lipid1", "lipid2", "lipid3", "lipid4"],
+            "Intensities": [1, 2, 3, 4],
+            "X": [1, 2, 3, 4],
+            "Y": [1, 2, 3, 4]
+        }
+    ],
+    
+    "LipidomeDistanceMatrix": [
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3]
+    ]
+}
+
+

@@ -40,7 +40,7 @@ using namespace std;
 
 #define MARGIN 0.01
 #define POINT_BASE_FACTOR 5
-#define POINT_BASE_SIZE 1
+#define POINT_BASE_SIZE 0.5
 #define LABEL_COLOR 200, 200, 200, 255
 #define sign_log(x) (x >= 0 ? log(x + 1) - 1 : -(log(-x + 1) - 1))
 #define DENDROGRAM_LINE_SIZE 2.
@@ -59,7 +59,7 @@ public:
     Dendrogram *dendrogram;
     DendrogramNode *d_node;
     int node;
-    
+
     DendrogramLine(QLineF l, QPen p, Dendrogram* d);
     void update_width(double);
     void update_height_factor(double, QPointF *);
@@ -76,7 +76,7 @@ public:
 class Citation : public QGraphicsTextItem {
 public:
     Citation(const QString &text, QGraphicsItem *parent = nullptr) : QGraphicsTextItem(text, parent){}
-    
+
     void mousePressEvent(QGraphicsSceneMouseEvent *) override {
         QString link = "https://lifs-tools.org";
         QDesktopServices::openUrl(QUrl(link));
@@ -86,34 +86,39 @@ public:
 
 class HomeView : public QGraphicsView {
 public:
-    
+
     QPushButton *firstTutorialPushButton;
     QPushButton *secondTutorialPushButton;
     QPushButton *thirdTutorialPushButton;
+    QPushButton *fourthTutorialPushButton;
     QGraphicsSvgItem *banner;
     QGraphicsSvgItem *LIFS;
     QGraphicsSvgItem *LIFS_monitor;
     Citation *citation;
-    
+
     HomeView(QWidget *parent = nullptr) : QGraphicsView(parent){
         firstTutorialPushButton = new QPushButton(this);
         firstTutorialPushButton->setObjectName(QString::fromUtf8("firstTutorialPushButton"));
-        firstTutorialPushButton->setGeometry(QRect(60, 360, 181, 31));
-        firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "First Tutorial", nullptr));
+        firstTutorialPushButton->setGeometry(QRect(60, 360, 221, 31));
+        firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "1. Tutorial - Load tables", nullptr));
         secondTutorialPushButton = new QPushButton(this);
         secondTutorialPushButton->setObjectName(QString::fromUtf8("secondTutorialPushButton"));
-        secondTutorialPushButton->setGeometry(QRect(280, 360, 181, 31));
-        secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Second Tutorial", nullptr));
+        secondTutorialPushButton->setGeometry(QRect(320, 360, 221, 31));
+        secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "2. Tutorial - UI introduction", nullptr));
         thirdTutorialPushButton = new QPushButton(this);
         thirdTutorialPushButton->setObjectName(QString::fromUtf8("thirdTutorialPushButton"));
-        thirdTutorialPushButton->setGeometry(QRect(60, 400, 181, 31));
-        thirdTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "Third Tutorial", nullptr));
-        
+        thirdTutorialPushButton->setGeometry(QRect(60, 400, 221, 31));
+        thirdTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "3. Tutorial - Feature Selection", nullptr));
+        fourthTutorialPushButton = new QPushButton(this);
+        fourthTutorialPushButton->setObjectName(QString::fromUtf8("fourthTutorialPushButton"));
+        fourthTutorialPushButton->setGeometry(QRect(320, 400, 221, 31));
+        fourthTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "4. Tutorial - Quality control", nullptr));
+
         banner = 0;
-        
-        
+
+
     }
-    
+
     void resizeEvent(QResizeEvent *) override {
         if (!banner) {
             banner = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LipidSpace-banner.svg");
@@ -126,34 +131,37 @@ public:
             LIFS_monitor = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS-monitor.svg");
             scene()->addItem(LIFS_monitor);
         }
-        
+
         double factor = min((double)width() / 1207., (double)height() / 483.);
         QFont font = firstTutorialPushButton->font();
         font.setPointSizeF(10 * factor);
-        
-        firstTutorialPushButton->setGeometry(QRect(60. * factor, 360. * factor, 181. * factor, 31. * factor));
-        secondTutorialPushButton->setGeometry(QRect(280. * factor, 360. * factor, 181. * factor, 31. * factor));
-        thirdTutorialPushButton->setGeometry(QRect(60. * factor, 400. * factor, 181. * factor, 31. * factor));
-        
+
+        firstTutorialPushButton->setGeometry(QRect(60. * factor, 360. * factor, 221. * factor, 31. * factor));
+        secondTutorialPushButton->setGeometry(QRect(320. * factor, 360. * factor, 221. * factor, 31. * factor));
+        thirdTutorialPushButton->setGeometry(QRect(60. * factor, 400. * factor, 221. * factor, 31. * factor));
+        fourthTutorialPushButton->setGeometry(QRect(320. * factor, 400. * factor, 221. * factor, 31. * factor));
+
         firstTutorialPushButton->setFont(font);
         secondTutorialPushButton->setFont(font);
         thirdTutorialPushButton->setFont(font);
-        
+        fourthTutorialPushButton->setFont(font);
+
         double banner_factor = 92. / (double)banner->boundingRect().height() * factor;
         banner->setPos(60. * factor, 85. * factor);
         banner->setScale(banner_factor);
-        
+
         double LIFS_factor = 18. / (double)LIFS->boundingRect().height() * factor;
         LIFS->setPos(60. * factor, 50. * factor);
         LIFS->setScale(LIFS_factor);
-        
+
         QFont f = citation->font();
-        f.setPointSizeF(11. * factor);
+        f.setPointSizeF(11.);
         citation->setFont(f);
         citation->setPos(60. * factor, 440. * factor);
         citation->setCursor(Qt::PointingHandCursor);
-        
-        
+        citation->setScale(factor);
+
+
         double monitor_factor = 0.75;
         LIFS_monitor->setPos(width() - (564 * monitor_factor + 120) * factor, 1. * factor);
         LIFS_monitor->setScale(monitor_factor * factor);
@@ -165,15 +173,15 @@ class Dendrogram : public QGraphicsItem {
 public:
     QRectF bound;
     Canvas *view;
-    
+
     struct DendrogramTitle {
         QString title;
         bool highlighted;
         bool permanent;
-        
+
         DendrogramTitle(QString t) : title(t), highlighted(false), permanent(false) {}
     };
-    
+
     LipidSpace* lipid_space;
     vector<DendrogramTitle> dendrogram_titles;
     QVector<QLineF> lines;
@@ -190,7 +198,7 @@ public:
     double dheight;
     DendrogramLine *top_line;
     set<int> *highlighted_for_selection;
-    
+
     Dendrogram(LipidSpace* _lipid_space, Canvas *_view);
     ~Dendrogram();
     void load();
@@ -201,7 +209,7 @@ public:
     QRectF boundingRect() const override;
     void draw_pie(QPainter *painter, DendrogramNode *node, double threshold_leq, double pie_x, double pie_y, LabelDirection direction = NoLabel);
 };
-    
+
 
 struct PCPoint {
     QPointF point;
@@ -231,8 +239,8 @@ public:
     vector<PCPoint> points;
     set<QString> highlighted_points;
     vector<PCLabel> labels;
-    
-    
+
+
     PointSet(Lipidome* _lipidome, Canvas *_view);
     ~PointSet();
     void set_labels();
@@ -257,7 +265,7 @@ public:
     QMainWindow *mainWindow;
     int num;
     bool hovered_for_swap;
-    
+
     Canvas(QWidget *parent = nullptr);
     Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species, QWidget *parent = nullptr);
     ~Canvas();
@@ -270,8 +278,8 @@ public:
     void setDendrogramData(LipidSpace *_lipid_space);
     void resetDendrogram();
     void update_alpha();
-    
-    
+
+
 public slots:
     void resetCanvas();
     void showHideQuant(bool _showQuant);
@@ -287,8 +295,8 @@ public slots:
     void moveToPoint(QListWidgetItem*);
     void contextMenu(QPoint pos);
     void setLabelSize(int);
-    
-    
+
+
 signals:
     void showMessage(QString message);
     void transforming(QRectF f);
@@ -297,10 +305,10 @@ signals:
     void swappingLipidomes(int source, int target);
     void context(Canvas *canvas, QPoint pos);
     void rightClick(QPoint pos, set<int> *selected_d_lipidomes = 0);
-    
-    
+
+
 private:
-    
+
     bool showQuant;
     QPoint m_lastMousePos;
     bool leftMousePressed;

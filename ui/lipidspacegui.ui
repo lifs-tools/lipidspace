@@ -179,7 +179,7 @@
           </widget>
           <widget class="QWidget" name="featureTab">
            <attribute name="title">
-            <string>Features</string>
+            <string>Study Variarbles</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <property name="spacing">
@@ -567,33 +567,30 @@
            <property name="handleWidth">
             <number>9</number>
            </property>
-          <widget class="QSplitter" name="splitterStatV1">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="handleWidth">
-            <number>8</number>
-           </property>
-           <widget class="Statistics" name="statisticsBoxPlot" native="true"/>
-           <widget class="Statistics" name="statisticsHistogram" native="true"/>
-          </widget>
-           
-           
-           
-          <widget class="QSplitter" name="splitterStatV2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="handleWidth">
-            <number>10</number>
-           </property>
-           <widget class="Statistics" name="statisticsROCCurve" native="true"/>
-           <widget class="Statistics" name="statisticsBarPlot" native="true"/>
-          </widget>
+           <widget class="QSplitter" name="splitterStatV1">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="handleWidth">
+             <number>8</number>
+            </property>
+            <widget class="Statistics" name="statisticsBoxPlot" native="true"/>
+            <widget class="Statistics" name="statisticsHistogram" native="true"/>
+           </widget>
+           <widget class="QSplitter" name="splitterStatV2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="handleWidth">
+             <number>10</number>
+            </property>
+            <widget class="Statistics" name="statisticsROCCurve" native="true"/>
+            <widget class="Statistics" name="statisticsBarPlot" native="true"/>
+           </widget>
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QGroupBox" name="groupBox_2">
+          <widget class="QGroupBox" name="groupBoxStatistics">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -735,6 +732,29 @@
             </property>
             <property name="text">
              <string>Bar number</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="secondaryComboBox">
+            <property name="geometry">
+             <rect>
+              <x>520</x>
+              <y>40</y>
+              <width>181</width>
+              <height>26</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLabel" name="secondaryLabel">
+            <property name="geometry">
+             <rect>
+              <x>520</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Conditional coloring</string>
             </property>
            </widget>
           </widget>

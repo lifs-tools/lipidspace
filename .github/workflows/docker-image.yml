@@ -15,12 +15,13 @@ jobs:
     env:
       IMAGE_NAME: 'lifs/lipidspace'
       REGISTRY_NAME: 'docker.lifs-tools.org'
-      BUILD_DATE: $(date +%s)
+      BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
       
     steps:
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
+        submodules: recursive
     - name: Set Git user
       run: |
         git config --global committer.email "noreply@github.com"
@@ -36,7 +37,7 @@ jobs:
         password: ${{ secrets.LIFS_TOOLS_DOCKER_REGISTRY_PW }}
 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}
+      run: docker build . --file LipidSpaceRest.docker --tag ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}
       
     - name: Push Docker image
       run: docker push ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}

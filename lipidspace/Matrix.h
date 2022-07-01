@@ -28,7 +28,7 @@ extern "C" {
 class Matrix;
 
 class Array : public vector<double> {
-    
+
 public:
     Array();
     Array(int len, double val);
@@ -54,7 +54,7 @@ public:
         os << endl;
         return os;
     }
-    
+
     inline double& operator ()(int i){
         if (i < 0 || (int)size() <= i){
             throw "Constrain violation, 0 <= i <=" + std::to_string(size());
@@ -67,12 +67,12 @@ typedef Array Indexes;
 
 class Matrix : public QObject {
     Q_OBJECT
-    
+
 public:
     Array m;
     int rows;
     int cols;
-    
+
     Matrix();
     Matrix(const Array &copy, int _rows, int _cols);
     Matrix(vector<vector<double>> &copy);
@@ -109,14 +109,14 @@ public:
         }
         return os;
     }
-    
+
     inline double& operator ()(int r, int c){
         if (r < 0 || rows <= r || c < 0 || cols <= c){
             throw "Constrain violation, 0 <= r <=" + std::to_string(rows) + ", 0 <= c <= " + std::to_string(cols);
         }
         return m[c * rows + r];
     }
-    
+
 signals:
-    void set_step();
+    void increment();
 };

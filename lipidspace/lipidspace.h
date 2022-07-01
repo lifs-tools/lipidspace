@@ -17,17 +17,14 @@
 
 #define UNDEFINED_LIPID "UNDEFINED"
 #define FILE_FEATURE_NAME "File"
- 
+
 using namespace std;
 using namespace std::chrono;
-
-enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
-enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
 
 
 class LipidSpace : public QThread {
     Q_OBJECT
-    
+
 public:
     LipidParser parser;
     Progress *progress;
@@ -58,10 +55,12 @@ public:
     string target_variable;
     set<string> registered_lipid_classes;
     Matrix statistics_matrix;
-    
+    inline static const set<string> NA_VALUES = {"NA", "nan", "N/A", "0", "", "n/a", "NaN"};
+
 
     LipidSpace();
     ~LipidSpace();
+    void run_analysis();
     static void compute_PCA_variances(Matrix &m, Array &a);
     void cut_cycle(FattyAcid* fa);
     static bool is_double(const string& s);
@@ -77,24 +76,23 @@ public:
     void store_distance_table(string output_folder, Lipidome* lipidome = 0);
     void run() override;
     void reassembleSelection();
-    //std::thread run_analysis_thread(Progress *_progress);
     void reset_analysis();
     LipidAdduct* load_lipid(string lipid_name, map<string, LipidAdduct*> &lipid_set);
-    
+
     void load_list(string lipid_list_file);
     void load_row_table(string table_file, vector<TableColumnType> *column_types = 0, string sheet = "");
     void load_column_table(string table_file, vector<TableColumnType> *column_types, string sheet = "");
     void load_flat_table(string table_file, vector<TableColumnType> *column_types, string sheet = "");
     void load_mzTabM(string mzTabM_file);
     int extract_number(string line, int line_number = -1);
-    
+
 signals:
     void fileLoaded();
     void reassembled();
-    
+
 public slots:
     void store_results(string);
-    
+
 };
 
 
