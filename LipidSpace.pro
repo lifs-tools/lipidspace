@@ -1,4 +1,4 @@
-QT       += core gui printsupport widgets charts svg
+QT       += core gui printsupport widgets charts svg svgwidgets
 
 CONFIG += c++17
 QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
