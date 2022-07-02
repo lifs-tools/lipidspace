@@ -2761,7 +2761,7 @@ void LipidSpace::run(){
                 Lipidome* lipidome = selected_lipidomes[r];
                 for (uint i = 0; i < lipidome->lipids.size(); ++i){
                     if (contains_val(lipid_map, lipidome->lipids[i])){
-                        statistics_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+                        statistics_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
                     }
                 }
             }
