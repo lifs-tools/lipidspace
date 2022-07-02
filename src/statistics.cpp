@@ -319,7 +319,7 @@ void Statistics::updateBarPlot(){
         for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
             int index = lipidome->selected_lipid_indexes[i];
             if (contains_val(lipid_map, lipidome->lipids[index])){
-                statistics_matrix(r, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[i];
+                statistics_matrix(r, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[index];
             }
         }
     }
@@ -351,11 +351,11 @@ void Statistics::updateBarPlot(){
                 if (contains_val(lipid_map, lipidome->lipids[index])){
                     string lipid_category = lipidome->lipids[index]->get_lipid_string(CATEGORY);
                     int c = lipid_map[lipidome->lipids[index]];
-                    plot_series[0]->boxSets()[c]->append(statistics_matrix(r, c));
+                    data_series[0][c].push_back(statistics_matrix(r, c));
                 }
             }
         }
-        plot_series[0]->setName(QString("Selected lipids (%2)").arg(plot_series[0]->boxSets().size()));
+        plot_series[0]->setName(QString("Selected lipids (%2)").arg(data_series[0].size()));
     }
 
 
@@ -378,6 +378,7 @@ void Statistics::updateBarPlot(){
     }
     double min_y_val = 1e100;
     double max_y_val = 0;
+
 
     for (uint plot_it = 0; plot_it < data_series.size(); ++plot_it){
         auto single_plot_series = plot_series[plot_it];

@@ -169,6 +169,21 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
         loadTable("examples/000.csv", ct, FLAT_TABLE, "");
     }
+    else if (event->key() == Qt::Key_8){
+        resetAnalysis();
+        vector<TableColumnType> *ct = new vector<TableColumnType>();
+        for (int i = 0; i < 327; ++i) ct->push_back(LipidColumn);
+        ct->at(0) = IgnoreColumn;
+        ct->at(1) = SampleColumn;
+        ct->at(2) = IgnoreColumn;
+        ct->at(3) = IgnoreColumn;
+        ct->at(4) = IgnoreColumn;
+        ct->at(5) = FeatureColumnNominal;
+        ct->at(6) = FeatureColumnNumerical;
+        ct->at(7) = FeatureColumnNominal;
+
+        loadTable("Bakerpanel.csv", ct, COLUMN_PIVOT_TABLE, "");
+    }
 
     else if (event->key() == Qt::Key_Control){
         ctrl_pressed = true;

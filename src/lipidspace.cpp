@@ -148,7 +148,7 @@ void LipidSpace::create_dendrogram(){
     for (uint r = 0; r < lipidomes_for_feature_selection.size(); ++r){
         Lipidome* lipidome = lipidomes_for_feature_selection[r];
         for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+            global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
         }
     }
 
@@ -1324,11 +1324,11 @@ void LipidSpace::separate_matrixes(){
         Indexes indexes;
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
             string lipid_species = lipidome->species[i];
+            lipidome->normalized_intensities.push_back(lipidome->original_intensities[i]);
             if (!(selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species))) continue;
             indexes.push_back(lipid_indexes.at(lipid_species));
             lipidome->selected_lipid_indexes.push_back(i);
             lipidome->visualization_intensities.push_back(lipidome->original_intensities[i]);
-            lipidome->normalized_intensities.push_back(lipidome->original_intensities[i]);
             lipidome->PCA_intensities.push_back(lipidome->original_intensities[i]);
         }
         if (indexes.size() > 0){
@@ -1396,8 +1396,11 @@ void LipidSpace::normalize_intensities(){
             double values_mean = data.mean();
             double values_std = data.stdev();
             if (values_std < 1e-19) continue;
-            for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
+            for (int i = 0; i < (int)lipidome->normalized_intensities.size(); ++i){
                 lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
+            }
+
+            for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
                 lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
                 lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
             }
@@ -1423,6 +1426,11 @@ void LipidSpace::normalize_intensities(){
 
             for (auto lipidome : selected_lipidomes){
                 if (uncontains_val(lipidome->features, fv) || lipidome->features.at(fv).nominal_value != kv.first) continue;
+
+                for (int i = 0; i < (int)lipidome->normalized_intensities.size(); ++i){
+                    lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
+                }
+
                 for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
                     lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
                     lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
@@ -2900,8 +2908,10 @@ void LipidSpace::run(){
             global_matrix.reset(lipidomes_for_feature_selection.size(), lipid_map.size());
             for (uint r = 0; r < lipidomes_for_feature_selection.size(); ++r){
                 Lipidome* lipidome = lipidomes_for_feature_selection[r];
-                for (uint i = 0; i < lipidome->lipids.size(); ++i){
-                    global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->original_intensities[i];
+
+                for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
+                    int orig_iter = lipidome->selected_lipid_indexes[i];
+                    global_matrix(r, lipid_map[lipidome->lipids[orig_iter]]) = lipidome->normalized_intensities[orig_iter];
                 }
             }
 
