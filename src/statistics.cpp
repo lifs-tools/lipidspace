@@ -773,12 +773,12 @@ void Statistics::updateBoxPlot(){
 
         series.resize(nom_counter);
         if (has_secondary){
-            if (statistics_matrix.cols > 1) statistics_matrix.scale();
             for (uint r = 0; r < target_indexes.size(); ++r){
                 series[target_indexes[r]].push_back(target_values[r]);
             }
         }
         else {
+            if (statistics_matrix.cols > 1) statistics_matrix.scale();
             for (int r = 0; r < statistics_matrix.rows; ++r){
                 double sum = 0;
                 for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);

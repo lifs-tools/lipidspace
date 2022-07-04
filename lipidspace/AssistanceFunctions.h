@@ -26,6 +26,10 @@
 
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 
+
+#define UNDEFINED_LIPID "UNDEFINED"
+#define FILE_FEATURE_NAME "Origin"
+
 using namespace OpenXLSX;
 using namespace std;
 

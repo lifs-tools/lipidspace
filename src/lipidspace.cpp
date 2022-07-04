@@ -3100,7 +3100,7 @@ void LipidSpace::run(){
 void LipidSpace::reset_analysis(){
     analysis_finished = false;
     feature_values.clear();
-    feature_values.insert({"File", FeatureSet("File", NominalFeature)});
+    feature_values.insert({FILE_FEATURE_NAME, FeatureSet(FILE_FEATURE_NAME, NominalFeature)});
     if (dendrogram_root){
         delete dendrogram_root;
         dendrogram_root = 0;

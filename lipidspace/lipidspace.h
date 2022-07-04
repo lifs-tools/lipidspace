@@ -15,8 +15,6 @@
 #include "lipidspace/globaldata.h"
 #include <chrono>
 
-#define UNDEFINED_LIPID "UNDEFINED"
-#define FILE_FEATURE_NAME "File"
 
 using namespace std;
 using namespace std::chrono;

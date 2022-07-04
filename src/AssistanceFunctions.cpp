@@ -128,7 +128,7 @@ Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name
     else {
         cleaned_name = lipidome_name;
     }
-    features.insert({"File", Feature("File", cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
+    features.insert({FILE_FEATURE_NAME, Feature(FILE_FEATURE_NAME, cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
 }
 
 
@@ -366,13 +366,13 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
     double cdf1 = 0, cdf2 = 0;
     double overlap1 = 0, overlap2 = 0;
     double min1 = 1, max1 = num1 - 1, min2 = 1, max2 = num2 - 1;
-    if (num1 >= 10 && ROC == 0){
-        min1 = floor(num1 * 0.25);
-        max1 = ceil(num1 * 0.75);
+    if (num1 >= 15 && ROC == 0){
+        min1 = floor(num1 * 0.05);
+        max1 = ceil(num1 * 0.95);
     }
-    if (num2 >= 10 && ROC == 0){
-        min2 = floor(num2 * 0.25);
-        max2 = ceil(num2 * 0.75);
+    if (num2 >= 15 && ROC == 0){
+        min2 = floor(num2 * 0.05);
+        max2 = ceil(num2 * 0.95);
     }
     while ((ptr1 < num1) && (ptr2 < num2)){
         if (ROC){
