@@ -803,13 +803,13 @@ void Statistics::updateBoxPlot(){
         }
     }
     else {
-        Array constants;
-        constants.resize(statistics_matrix.rows, 1);
+        Array constants(statistics_matrix.rows, 1);
         statistics_matrix.add_column(constants);
 
         double min_x = 1e100;
         double max_x = 0;
         Array coefficiants;
+
         coefficiants.compute_coefficiants(statistics_matrix, target_values);    // estimating coefficiants
         Array S;
         S.mult(statistics_matrix, coefficiants);

@@ -2685,6 +2685,8 @@ void LipidSpace::run(){
             }
         }
 
+
+
         if (num_for_PCA >= 3){
             cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
 
@@ -2897,6 +2899,7 @@ void LipidSpace::run(){
                 }
             }
 
+
             if (is_nominal && nom_counter <= 1){
                 if (progress && !progress->stop_progress){
                     progress->finish();
@@ -2909,9 +2912,8 @@ void LipidSpace::run(){
             for (uint r = 0; r < lipidomes_for_feature_selection.size(); ++r){
                 Lipidome* lipidome = lipidomes_for_feature_selection[r];
 
-                for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
-                    int orig_iter = lipidome->selected_lipid_indexes[i];
-                    global_matrix(r, lipid_map[lipidome->lipids[orig_iter]]) = lipidome->normalized_intensities[orig_iter];
+                for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                    global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
                 }
             }
 
@@ -2934,6 +2936,8 @@ void LipidSpace::run(){
             Array constants;
             constants.resize(global_matrix.rows, 1);
             global_matrix.add_column(constants);
+
+
         }
 
 
