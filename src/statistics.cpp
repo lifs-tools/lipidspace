@@ -455,9 +455,13 @@ void Statistics::updateHistogram(){
 
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
+    Indexes target_indexes;
     Array target_values;
     int nom_counter = 0;
     vector<QBarSet*> plot_series;
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    bool has_secondary = contains_val(lipid_space->feature_values, secondary_target_variable);
 
     for (auto lipidome : lipid_space->selected_lipidomes){
         string nominal_value = lipidome->features[target_variable].nominal_value;
@@ -473,23 +477,33 @@ void Statistics::updateHistogram(){
                 plot_series.back()->setPen(Qt::NoPen);
             }
         }
-        target_values.push_back(nominal_target_values[nominal_value]);
+        target_indexes.push_back(nominal_target_values[nominal_value]);
+        if (has_secondary) target_values.push_back(lipidome->features[secondary_target_variable].numerical_value);
     }
 
-    Matrix statistics_matrix(lipid_space->statistics_matrix);
-
-    if (statistics_matrix.cols > 1) statistics_matrix.scale();
-
-    series.resize(nom_counter);
     double all_min = 1e9;
     double all_max = -1e9;
-    for (int r = 0; r < statistics_matrix.rows; ++r){
-        double sum = 0;
-        for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
-        if (statistics_matrix.cols > 1 || sum > 1e-15){
-            series[target_values[r]].push_back(sum);
-            all_min = min(all_min, sum);
-            all_max = max(all_max, sum);
+    series.resize(nom_counter);
+    if (has_secondary){
+        for (uint r = 0; r < target_values.size(); ++r){
+            double value = target_values[r];
+            series[target_indexes[r]].push_back(value);
+            all_min = min(all_min, value);
+            all_max = max(all_max, value);
+        }
+    }
+    else {
+        Matrix statistics_matrix(lipid_space->statistics_matrix);
+        if (statistics_matrix.cols > 1) statistics_matrix.scale();
+
+        for (int r = 0; r < statistics_matrix.rows; ++r){
+            double sum = 0;
+            for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+            if (statistics_matrix.cols > 1 || sum > 1e-15){
+                series[target_indexes[r]].push_back(sum);
+                all_min = min(all_min, sum);
+                all_max = max(all_max, sum);
+            }
         }
     }
 
@@ -756,14 +770,21 @@ void Statistics::updateBoxPlot(){
 
 
     if (is_nominal){
-        if (statistics_matrix.cols > 1) statistics_matrix.scale();
 
         series.resize(nom_counter);
-        for (int r = 0; r < statistics_matrix.rows; ++r){
-            double sum = 0;
-            for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
-            if (statistics_matrix.cols > 1 || sum > 1e-15){
-                series[target_indexes[r]].push_back(sum);
+        if (has_secondary){
+            if (statistics_matrix.cols > 1) statistics_matrix.scale();
+            for (uint r = 0; r < target_indexes.size(); ++r){
+                series[target_indexes[r]].push_back(target_values[r]);
+            }
+        }
+        else {
+            for (int r = 0; r < statistics_matrix.rows; ++r){
+                double sum = 0;
+                for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+                if (statistics_matrix.cols > 1 || sum > 1e-15){
+                    series[target_indexes[r]].push_back(sum);
+                }
             }
         }
         for (uint i = 0; i < plot_series.size(); ++i){
