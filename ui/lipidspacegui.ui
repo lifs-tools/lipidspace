@@ -258,7 +258,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -575,6 +575,7 @@
              <number>8</number>
             </property>
             <widget class="Statistics" name="statisticsBoxPlot" native="true"/>
+            <widget class="Boxplot" name="statBoxPlot"/>
             <widget class="Statistics" name="statisticsHistogram" native="true"/>
            </widget>
            <widget class="QSplitter" name="splitterStatV2">
@@ -1124,6 +1125,11 @@
    <class>ClickableLabel</class>
    <extends>QLabel</extends>
    <header>lipidspace/canvas.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Boxplot</class>
+   <extends>QGraphicsView</extends>
+   <header>lipidspace/boxplot.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

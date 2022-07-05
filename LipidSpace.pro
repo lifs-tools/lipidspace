@@ -44,7 +44,9 @@ SOURCES += \
     src/canvas.cpp \
     src/logging.cpp \
     src/statistics.cpp \
-    src/Tutorial.cpp
+    src/Tutorial.cpp \
+    src/Chart.cpp \
+    src/Boxplot.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -66,7 +68,9 @@ HEADERS += \
     lipidspace/setPCNum.h \
     lipidspace/logging.h \
     lipidspace/statistics.h \
-    lipidspace/Tutorial.h
+    lipidspace/Tutorial.h \
+    lipidspace/Chart.h \
+    lipidspace/Boxplot.h
 
 FORMS += \
     ui/about.ui \

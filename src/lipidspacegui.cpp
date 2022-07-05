@@ -372,6 +372,20 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     scene->addItem(new HomeItem(ui->homeGraphicsView));
 
     updateGUI();
+
+
+
+    Array a;
+    a.push_back(1);
+    a.push_back(1);
+    a.push_back(3);
+    a.push_back(5);
+    a.push_back(16);
+    a.push_back(10);
+    a.push_back(4);
+
+    ui->statBoxPlot->add(a, "foo");
+
 }
 
 
