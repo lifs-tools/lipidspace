@@ -564,7 +564,6 @@ void PointSet::loadPoints(){
         points.back().item = ellipse;
     }
 
-
     set_labels();
 
     for (auto pc_label : labels){

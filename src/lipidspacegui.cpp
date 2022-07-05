@@ -377,14 +377,35 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     Array a;
     a.push_back(1);
-    a.push_back(1);
+    a.push_back(2);
     a.push_back(3);
+    a.push_back(4);
     a.push_back(5);
+    a.push_back(6);
+    a.push_back(7);
+    a.push_back(9);
     a.push_back(16);
     a.push_back(10);
     a.push_back(4);
 
     ui->statBoxPlot->add(a, "foo");
+
+
+
+    Array b;
+    b.push_back(10);
+    b.push_back(20);
+    b.push_back(30);
+    b.push_back(40);
+    b.push_back(50);
+    b.push_back(60);
+    b.push_back(70);
+    b.push_back(90);
+    b.push_back(160);
+    b.push_back(100);
+    b.push_back(40);
+
+    ui->statBoxPlot->add(b, "foo");
 
 }
 

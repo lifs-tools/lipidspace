@@ -18,6 +18,7 @@ struct WhiskerBox {
     QGraphicsLineItem *median_line;
     QGraphicsLineItem *base_line;
     QGraphicsRectItem *rect;
+    QColor color;
 
     WhiskerBox(QGraphicsScene *scene){
         upper_extreme_line = new QGraphicsLineItem();
@@ -31,6 +32,7 @@ struct WhiskerBox {
         scene->addItem(median_line);
         scene->addItem(base_line);
         scene->addItem(rect);
+        color = Qt::white;
     }
 };
 

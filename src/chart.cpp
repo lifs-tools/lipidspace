@@ -54,6 +54,8 @@ void Chart::clear(){
     xlabel->setPlainText("");
     ylabel->setPlainText("");
 
+    legend_categories.clear();
+
     show_x_axis = false;
     show_y_axis = false;
 }
@@ -78,13 +80,6 @@ void Chart::translate(double &x, double &y){
 void Chart::update_chart(){
     if (!loaded) return;
     scene.setSceneRect(0, 0, width(), height());
-
-    /*
-    title_box.setRect(0, 0, width(), 0);
-    xlabel_box.setRect(0, 0, 0, 0);
-    ylabel_box.setRect(0, 0, 0, 0);
-    legend_box.setRect(0, 0, width(), 0);
-    */
 
     QGraphicsTextItem title_test_item("test");
     title_test_item.setFont(title_legend_font);
@@ -149,6 +144,7 @@ void Chart::update_chart(){
         QGraphicsTextItem x_tick(QString("%1").arg(xrange.y() + (double)i / (TICK_NUM - 1.) * (xrange.y() - xrange.x()), 1, 'g'));
         sum_x_tick_width += x_tick.boundingRect().width();
     }
+    max_tick_width += TICK_SIZE;
 
     QGraphicsTextItem max_x_tick(QString("%1").arg(xrange.y(), 1, 'g'));
     double max_x_tick_width = max(max_x_tick.boundingRect().width() / 2., 20.);
@@ -172,7 +168,7 @@ void Chart::update_chart(){
             tick->setVisible(true);
             tick->setFont(tick_font);
             tick->setPlainText(QString("%1").arg(yrange.x() + (TICK_NUM - 1. - (double)i) / (TICK_NUM - 1) * (yrange.y() - yrange.x()), 1, 'g'));
-            double x = chart_box_inner.x() - tick->boundingRect().width();
+            double x = chart_box_inner.x() - tick->boundingRect().width() - TICK_SIZE;
             double y = chart_box_inner.y() + (double)i / (TICK_NUM - 1) * chart_box_inner.height() - tick->boundingRect().height() / 2.;
             tick->setPos(x, y);
         }
@@ -183,8 +179,8 @@ void Chart::update_chart(){
         line = v_grid[i];
         if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && show_x_axis){
             line->setVisible(true);
-            double w = chart_box_inner.x() + (double)i / (TICK_NUM - 1)  * (chart_box_inner.width() - TICK_NUM);
-            line->setLine(w, chart_box_inner.y(), w, chart_box_inner.y() + chart_box_inner.height());
+            double w = chart_box_inner.x() + (double)i / (TICK_NUM - 1)  * chart_box_inner.width();
+            line->setLine(w, chart_box_inner.y(), w, chart_box_inner.y() + chart_box_inner.height() + 5);
         }
         else {
             line->setVisible(false);
@@ -196,12 +192,16 @@ void Chart::update_chart(){
             tick->setFont(tick_font);
             tick->setPlainText(QString("%1").arg(xrange.x() + (double)i / (TICK_NUM - 1) * (xrange.y() - xrange.x()), 1, 'g'));
             double x = chart_box_inner.x() + (double)i / (TICK_NUM - 1)  * (chart_box_inner.width() - TICK_NUM) - tick->boundingRect().width() / 2.;
-            double y = chart_box_inner.y() + chart_box_inner.height();
+            double y = chart_box_inner.y() + chart_box_inner.height() + TICK_SIZE;
             tick->setPos(x, y);
         }
         else {
             tick->setVisible(false);
         }
+    }
+
+    for (auto category : legend_categories){
+
     }
 }
 

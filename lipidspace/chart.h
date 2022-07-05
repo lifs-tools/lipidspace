@@ -14,9 +14,20 @@
 #include "lipidspace/AssistanceFunctions.h"
 
 #define TICK_NUM 5
-#define TICK_SIZE 10
+#define TICK_SIZE 5
 
 using namespace std;
+
+
+struct LegendCategory {
+    QColor *color;
+    QString category;
+
+    LegendCategory(QString _category, QColor *_color){
+        color = _color;
+        category = _category;
+    }
+};
 
 
 class Chart : public QGraphicsView {
@@ -36,7 +47,7 @@ public:
     bool loaded;
     bool show_x_axis;
     bool show_y_axis;
-    vector<string> legend_categories;
+    vector<LegendCategory> legend_categories;
     QPointF xrange;
     QPointF yrange;
 
