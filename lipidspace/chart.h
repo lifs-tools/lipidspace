@@ -12,20 +12,31 @@
 #include <QString>
 #include <QColor>
 #include "lipidspace/AssistanceFunctions.h"
+#include "lipidspace/globaldata.h"
+#include "lipidspace/chartplot.h"
+#include "lipidspace/boxplot.h"
 
 #define TICK_NUM 5
 #define TICK_SIZE 5
 
 using namespace std;
 
+class Chartplot;
 
 struct LegendCategory {
-    QColor *color;
-    QString category;
+    QColor color;
+    QString category_string;
 
-    LegendCategory(QString _category, QColor *_color){
+    QGraphicsRectItem *rect;
+    QGraphicsTextItem *category;
+
+    LegendCategory(QString _category, QColor _color, QGraphicsScene *scene){
         color = _color;
-        category = _category;
+        category_string = _category;
+        rect = new QGraphicsRectItem();
+        category = new QGraphicsTextItem(_category);
+        scene->addItem(rect);
+        scene->addItem(category);
     }
 };
 
@@ -50,6 +61,7 @@ public:
     vector<LegendCategory> legend_categories;
     QPointF xrange;
     QPointF yrange;
+    vector<Chartplot*> chart_plots;
 
 
     vector<QGraphicsLineItem*> v_grid;
@@ -59,11 +71,11 @@ public:
 
     Chart(QWidget *parent = nullptr);
     void resizeEvent(QResizeEvent *);
-    void setTitle(string t);
-    void setXLabel(string l);
-    void setYLabel(string l);
-    double median(vector<double> &lst, int begin, int end);
+    void setTitle(QString t);
+    void setXLabel(QString l);
+    void setYLabel(QString l);
     void translate(double &x, double &y);
+    void add(Chartplot* plot);
 
     virtual void update_chart();
     virtual void clear();

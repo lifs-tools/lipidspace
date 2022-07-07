@@ -1,7 +1,7 @@
 #ifndef BOXPLOT_H
 #define BOXPLOT_H
 
-#include "lipidspace/chart.h"
+#include "lipidspace/chartplot.h"
 #include <vector>
 
 using namespace std;
@@ -36,13 +36,14 @@ struct WhiskerBox {
     }
 };
 
-class Boxplot : public Chart {
+class Boxplot : public Chartplot {
 public:
-    vector<string> categories;
     vector<WhiskerBox> boxes;
 
-    Boxplot(QWidget *parent = nullptr);
-    void add(Array &data, string category);
+    Boxplot(Chart *_chart);
+    ~Boxplot();
+    double median(vector<double> &lst, int begin, int end);
+    void add(Array &data, QString category, QColor color = Qt::white);
     void update_chart();
     void clear();
 };

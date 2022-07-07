@@ -70,6 +70,7 @@ HEADERS += \
     lipidspace/statistics.h \
     lipidspace/Tutorial.h \
     lipidspace/Chart.h \
+    lipidspace/chartplot.h \
     lipidspace/Boxplot.h
 
 FORMS += \

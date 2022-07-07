@@ -21,6 +21,7 @@
 #include "lipidspace/filterdialog.h"
 #include "lipidspace/Tutorial.h"
 #include "cppgoslin/cppgoslin.h"
+#include "lipidspace/boxplot.h"
 #include <thread>
 
 #define ALPHABETICALLY_ASC "Alphabetically (Asc)"
@@ -236,6 +237,7 @@ public slots:
     void setPieSize(int);
     void setNormalization(int);
     void selectDendrogramLipidomes();
+    void updateBoxPlot();
 
 
 private:
