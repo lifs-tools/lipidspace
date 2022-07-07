@@ -7,6 +7,9 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    tick_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"]);
+    title_legend_font = QFont("Helvetica", GlobalData::gui_num_var["legend_size"]);
+
     title = new QGraphicsTextItem("");
     xlabel = new QGraphicsTextItem("");
     ylabel = new QGraphicsTextItem("");
@@ -107,6 +110,7 @@ void Chart::update_chart(){
     title_box.setRect(0, 0, width(), 0);
     if (title->toPlainText().size() > 0){
         title_box.setHeight(title_rect.height());
+        title->setFont(title_legend_font);
         title->setPos((title_box.width() - title->boundingRect().width()) / 2., title_box.x());
         title->setVisible(true);
     }
@@ -126,6 +130,7 @@ void Chart::update_chart(){
     if (xlabel->toPlainText().size() > 0){
         xlabel_box.setY(xlabel_box.y() - tick_rect.height());
         xlabel_box.setHeight(tick_rect.height());
+        xlabel->setFont(tick_font);
         xlabel->setPos((xlabel_box.width() - xlabel->boundingRect().width()) / 2., xlabel_box.y());
         xlabel->setVisible(true);
     }
@@ -136,6 +141,7 @@ void Chart::update_chart(){
     ylabel->setRotation(0);
     ylabel_box.setRect(0, title_box.height(), 0, height() - title_box.height() - legend_box.height() - xlabel_box.height());
     if (ylabel->toPlainText().size() > 0){
+        ylabel->setFont(tick_font);
         ylabel_box.setWidth(ylabel_box.y() - tick_rect.height());
         ylabel->setPos((ylabel_box.width() - ylabel->boundingRect().width()) / 2., ylabel_box.y() + (ylabel_box.height() - ylabel->boundingRect().height()) / 2.);
         ylabel->setTransformOriginPoint(ylabel->boundingRect().width() / 2., ylabel->boundingRect().height() / 2.);
@@ -151,11 +157,11 @@ void Chart::update_chart(){
     double max_tick_width = 0;
     double sum_x_tick_width = 0;
     for (int i = 0; i < TICK_NUM; ++i){
-        tick_item.setPlainText(QString("%1").arg(yrange.x() + (double)i / (TICK_NUM - 1.) * (yrange.y() - yrange.x()), 1, 'g'));
+        tick_item.setPlainText(QString("%1").arg(yrange.x() + (double)i / (TICK_NUM - 1.) * (yrange.y() - yrange.x()), 0, 'f', 1));
         QRectF t_rect = tick_item.boundingRect();
         max_tick_width = max(max_tick_width, t_rect.width());
 
-        QGraphicsTextItem x_tick(QString("%1").arg(xrange.y() + (double)i / (TICK_NUM - 1.) * (xrange.y() - xrange.x()), 1, 'g'));
+        QGraphicsTextItem x_tick(QString("%1").arg(xrange.y() + (double)i / (TICK_NUM - 1.) * (xrange.y() - xrange.x()), 0, 'f', 1));
         sum_x_tick_width += x_tick.boundingRect().width();
     }
     max_tick_width += TICK_SIZE;
@@ -181,7 +187,7 @@ void Chart::update_chart(){
         if (tick_rect.height() * TICK_NUM * 0.7 < chart_box.height() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && show_y_axis){
             tick->setVisible(true);
             tick->setFont(tick_font);
-            tick->setPlainText(QString("%1").arg(yrange.x() + (TICK_NUM - 1. - (double)i) / (TICK_NUM - 1) * (yrange.y() - yrange.x()), 1, 'g'));
+            tick->setPlainText(QString("%1").arg(yrange.x() + (TICK_NUM - 1. - (double)i) / (TICK_NUM - 1) * (yrange.y() - yrange.x()), 0, 'f', 1));
             double x = chart_box_inner.x() - tick->boundingRect().width() - TICK_SIZE;
             double y = chart_box_inner.y() + (double)i / (TICK_NUM - 1) * chart_box_inner.height() - tick->boundingRect().height() / 2.;
             tick->setPos(x, y);
@@ -204,7 +210,7 @@ void Chart::update_chart(){
         if (sum_x_tick_width < chart_box.width() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && show_x_axis){
             tick->setVisible(true);
             tick->setFont(tick_font);
-            tick->setPlainText(QString("%1").arg(xrange.x() + (double)i / (TICK_NUM - 1) * (xrange.y() - xrange.x()), 1, 'g'));
+            tick->setPlainText(QString("%1").arg(xrange.x() + (double)i / (TICK_NUM - 1) * (xrange.y() - xrange.x()), 0, 'f', 1));
             double x = chart_box_inner.x() + (double)i / (TICK_NUM - 1)  * (chart_box_inner.width() - TICK_NUM) - tick->boundingRect().width() / 2.;
             double y = chart_box_inner.y() + chart_box_inner.height() + TICK_SIZE;
             tick->setPos(x, y);
@@ -214,20 +220,19 @@ void Chart::update_chart(){
         }
     }
 
+
     double legend_size = GlobalData::gui_num_var["legend_size"];
     double xlegend_width = (GlobalData::gui_num_var["legend_size"] + 5) * legend_categories.size();
     int include_legend = legend_categories.size();
     for (auto category : legend_categories){
-        QGraphicsTextItem t(category.category);
-        xlegend_width += t.boundingRect().width();
+        category.category->setFont(title_legend_font);
+        xlegend_width += category.category->boundingRect().width();
     }
 
     QGraphicsTextItem ppp("...");
     while (include_legend > 0 && xlegend_width > legend_box.width()){
         auto category = legend_categories[--include_legend];
-        QGraphicsTextItem t(category.category);
-        t.setFont(title_legend_font);
-        xlegend_width = ppp.boundingRect().width() - t.boundingRect().width();
+        xlegend_width = ppp.boundingRect().width() - category.category->boundingRect().width();
     }
 
     int included_legends = 0;
@@ -264,5 +269,17 @@ void Chart::setYLabel(QString l){
 }
 
 void Chart::resizeEvent(QResizeEvent*){
+    update_chart();
+}
+
+
+void Chart::set_tick_size(int s){
+    tick_font.setPointSizeF(s);
+    update_chart();
+}
+
+
+void Chart::set_title_size(int s){
+    title_legend_font.setPointSizeF(s);
     update_chart();
 }

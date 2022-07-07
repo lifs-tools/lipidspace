@@ -79,6 +79,10 @@ public:
 
     virtual void update_chart();
     virtual void clear();
+
+public slots:
+    void set_tick_size(int i);
+    void set_title_size(int i);
 };
 
 
