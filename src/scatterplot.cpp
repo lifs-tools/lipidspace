@@ -20,7 +20,7 @@ void Scatterplot::update_chart(){
         pen.setWidthF(1.5);
         p.p->setPen(pen);
         p.p->setRect(x - 7, y - 7, 14, 14);
-        p.p->setBrush(QBrush(color));
+        p.p->setBrush(QBrush(p.color));
         p.p->setVisible(visible);
     }
 }
@@ -35,8 +35,7 @@ void Scatterplot::clear(){
 
 
 
-void Scatterplot::add(vector< pair<double, double> > &data, QString category, QColor _color){
-    color = _color;
+void Scatterplot::add(vector< pair<double, double> > &data, QString category, QColor color){
     chart->show_y_axis = true;
     chart->show_x_axis = true;
 
@@ -55,7 +54,7 @@ void Scatterplot::add(vector< pair<double, double> > &data, QString category, QC
             chart->yrange.setY(xy_point.second);
         }
 
-        points.push_back(ScPoint(xy_point.first, xy_point.second));
+        points.push_back(ScPoint(xy_point.first, xy_point.second, color));
         chart->scene.addItem(points.back().p);
     }
 

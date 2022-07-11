@@ -2375,42 +2375,29 @@ void LipidSpaceGUI::updateBoxPlot(){
         Array S;
         S.mult(statistics_matrix, coefficiants);
 
+        Scatterplot *scatterplot = new Scatterplot(chart);
         if (!has_secondary){
-            Scatterplot *scatterplot = new Scatterplot(chart);
             vector< pair<double, double> > data;
             for (uint i = 0; i < S.size(); ++i){
                 data.push_back({S[i], target_values[i]});
             }
-            /*
-            string color_key = target_variable + "_" + nominal_values[0];
-            cout << "huhu2 " << color_key << endl;
-            QColor color = contains_val(GlobalData::colorMapFeatures, color_key) ? GlobalData::colorMapFeatures[color_key] : Qt::white;
-            */
-            scatterplot->add(data, target_variable.c_str(), QColor("#209fdf"));
-            chart->add(scatterplot);
+            scatterplot->add(data, target_variable.c_str());
 
-
-            /*
-            QScatterSeries* series_model = new QScatterSeries();
-            series_model->setName(target_variable.c_str());
-            for (uint i = 0; i < S.size(); ++i){
-                series_model->append(S[i], target_values[i]);
-                min_x = min(min_x, S[i]);
-                max_x = max(max_x, S[i]);
-            }
-            chart->addSeries(series_model);
-            */
         }
-        /*
         else {
+            vector< vector< pair<double, double> > > data(S.size());
             for (uint i = 0; i < S.size(); ++i){
-                scatter_series[target_indexes[i]]->append(S[i], target_values[i]);
-                min_x = min(min_x, S[i]);
-                max_x = max(max_x, S[i]);
+                data[target_indexes[i]].push_back({S[i], target_values[i]});
             }
-            for (auto s_series : scatter_series) chart->addSeries(s_series);
+
+            for (auto nominal_value : nominal_values){
+                string color_key = secondary_target_variable + "_" + nominal_value;
+                QColor c = contains_val(GlobalData::colorMapFeatures, color_key) ? GlobalData::colorMapFeatures[color_key] : QColor("209fdf");
+                scatterplot->add(data[nominal_target_values[nominal_value]], nominal_value.c_str(), c);
+            }
+
         }
-        */
+        chart->add(scatterplot);
 
 
 
