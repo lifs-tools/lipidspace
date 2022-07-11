@@ -4,7 +4,7 @@
 #include "lipidspace/chart.h"
 #include <vector>
 
-enum PlotType {BOX_PLOT, NO_PLOT};
+enum PlotType {BOX_PLOT, SCATTER_PLOT, NO_PLOT};
 
 using namespace std;
 

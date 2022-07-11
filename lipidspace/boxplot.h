@@ -4,6 +4,8 @@
 #include "lipidspace/chartplot.h"
 #include <vector>
 
+class Chartplot;
+
 using namespace std;
 
 struct WhiskerBox {

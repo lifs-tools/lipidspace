@@ -69,14 +69,7 @@ void Chart::clear(){
 
     for (auto plot : chart_plots){
         plot->clear();
-        switch(plot->plot_type){
-            case BOX_PLOT:
-                delete ((Boxplot*)plot);
-                break;
-
-            default:
-                break;
-        }
+        delete plot;
     }
     chart_plots.clear();
     update_chart();

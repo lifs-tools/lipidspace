@@ -14,7 +14,8 @@
 #include "lipidspace/AssistanceFunctions.h"
 #include "lipidspace/globaldata.h"
 #include "lipidspace/chartplot.h"
-#include "lipidspace/boxplot.h"
+//#include "lipidspace/boxplot.h"
+//#include "lipidspace/scatterplot.h"
 
 #define TICK_NUM 5
 #define TICK_SIZE 5

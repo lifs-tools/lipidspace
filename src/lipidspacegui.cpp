@@ -2280,7 +2280,6 @@ void LipidSpaceGUI::updateBoxPlot(){
 
         }
     }
-    /*
     else {
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->features[target_variable].missing) continue;
@@ -2292,6 +2291,8 @@ void LipidSpaceGUI::updateBoxPlot(){
                 string nominal_value = lipidome->features[secondary_target_variable].nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
+                    nominal_values.push_back(nominal_value);
+                    /*
                     scatter_series.push_back(new QScatterSeries());
                     scatter_series.back()->setName(nominal_value.c_str());
                     series_titles.push_back(nominal_value);
@@ -2300,12 +2301,12 @@ void LipidSpaceGUI::updateBoxPlot(){
                         QBrush brush(GlobalData::colorMapFeatures[color_key]);
                         scatter_series.back()->setBrush(brush);
                     }
+                    */
                 }
                 target_indexes.push_back(nominal_target_values[nominal_value]);
             }
         }
     }
-    */
 
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
@@ -2363,13 +2364,11 @@ void LipidSpaceGUI::updateBoxPlot(){
             stat_results.insert({"p_value(ANOVA)", p_anova});
             chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
         }
-    }/*
+    }
     else {
         Array constants(statistics_matrix.rows, 1);
         statistics_matrix.add_column(constants);
 
-        double min_x = 1e100;
-        double max_x = 0;
         Array coefficiants;
 
         coefficiants.compute_coefficiants(statistics_matrix, target_values);    // estimating coefficiants
@@ -2377,6 +2376,21 @@ void LipidSpaceGUI::updateBoxPlot(){
         S.mult(statistics_matrix, coefficiants);
 
         if (!has_secondary){
+            Scatterplot *scatterplot = new Scatterplot(chart);
+            vector< pair<double, double> > data;
+            for (uint i = 0; i < S.size(); ++i){
+                data.push_back({S[i], target_values[i]});
+            }
+            /*
+            string color_key = target_variable + "_" + nominal_values[0];
+            cout << "huhu2 " << color_key << endl;
+            QColor color = contains_val(GlobalData::colorMapFeatures, color_key) ? GlobalData::colorMapFeatures[color_key] : Qt::white;
+            */
+            scatterplot->add(data, target_variable.c_str(), QColor("#209fdf"));
+            chart->add(scatterplot);
+
+
+            /*
             QScatterSeries* series_model = new QScatterSeries();
             series_model->setName(target_variable.c_str());
             for (uint i = 0; i < S.size(); ++i){
@@ -2385,7 +2399,9 @@ void LipidSpaceGUI::updateBoxPlot(){
                 max_x = max(max_x, S[i]);
             }
             chart->addSeries(series_model);
+            */
         }
+        /*
         else {
             for (uint i = 0; i < S.size(); ++i){
                 scatter_series[target_indexes[i]]->append(S[i], target_values[i]);
@@ -2394,10 +2410,11 @@ void LipidSpaceGUI::updateBoxPlot(){
             }
             for (auto s_series : scatter_series) chart->addSeries(s_series);
         }
+        */
 
 
 
-
+        /*
         double mx = 0, my = 0, ny = 0;
         // computing the study variable mean based on missing values of lipids
         for (uint r = 0; r < S.size(); ++r){
@@ -2432,9 +2449,9 @@ void LipidSpaceGUI::updateBoxPlot(){
         series_regression->setName(QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2));
         series_regression->append(min_x, slope * min_x + intercept);
         series_regression->append(max_x, slope * max_x + intercept);
-        chart->addSeries(series_regression);
+        chart->add(series_regression);
         QString sign = intercept >= 0 ? "+" : "-";
+        */
         chart->setTitle(QString("Linear regression model"));
     }
-    */
 }

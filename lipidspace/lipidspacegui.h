@@ -22,6 +22,7 @@
 #include "lipidspace/Tutorial.h"
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/boxplot.h"
+#include "lipidspace/scatterplot.h"
 #include <thread>
 
 #define ALPHABETICALLY_ASC "Alphabetically (Asc)"

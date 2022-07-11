@@ -5,7 +5,6 @@ Boxplot::Boxplot(Chart *_chart) : Chartplot(_chart) {
 }
 
 Boxplot::~Boxplot(){
-
 }
 
 void Boxplot::update_chart(){
