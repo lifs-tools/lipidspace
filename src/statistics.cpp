@@ -435,6 +435,8 @@ void Statistics::updateBarPlot(){
 
 
 void Statistics::updateHistogram(){
+    setVisible(false);
+    return;
 
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
@@ -549,6 +551,8 @@ void Statistics::updateHistogram(){
 
 
 void Statistics::updateROCCurve(){
+    setVisible(false);
+    return;
 
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
