@@ -44,7 +44,7 @@ public:
 
     Boxplot(Chart *_chart);
     ~Boxplot();
-    double median(vector<double> &lst, int begin, int end);
+    static double median(vector<double> &lst, int begin, int end);
     void add(Array &data, QString category, QColor color = Qt::white);
     void update_chart();
     void clear();

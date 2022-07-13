@@ -54,6 +54,7 @@ public:
     QRect chart_box;
     QRectF chart_box_inner;
     QFont tick_font;
+    QFont label_font;
     QFont title_legend_font;
     QGraphicsScene scene;
     bool loaded;

@@ -64,5 +64,5 @@ void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > 
     chart->yrange.setX(ymin);
     chart->yrange.setY(ymax);
 
-    chart->legend_categories.push_back(LegendCategory(category, _color, &chart->scene));
+    if (category.length() > 0) chart->legend_categories.push_back(LegendCategory(category, _color, &chart->scene));
 }

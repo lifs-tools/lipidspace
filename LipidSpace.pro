@@ -48,7 +48,8 @@ SOURCES += \
     src/Chart.cpp \
     src/boxplot.cpp \
     src/scatterplot.cpp \
-    src/lineplot.cpp
+    src/lineplot.cpp \
+    src/histogramplot.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -75,7 +76,8 @@ HEADERS += \
     lipidspace/chartplot.h \
     lipidspace/boxplot.h \
     lipidspace/scatterplot.h \
-    lipidspace/lineplot.h
+    lipidspace/lineplot.h \
+    lipidspace/histogramplot.h
 
 FORMS += \
     ui/about.ui \

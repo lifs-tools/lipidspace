@@ -8,6 +8,7 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     tick_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"]);
+    label_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"], QFont::Bold);
     title_legend_font = QFont("Helvetica", GlobalData::gui_num_var["legend_size"]);
 
     title = new QGraphicsTextItem("");
@@ -102,6 +103,12 @@ void Chart::update_chart(){
     tick_item.setFont(tick_font);
     QRectF tick_rect = tick_item.boundingRect();
 
+    QGraphicsTextItem label_item("test");
+    label_item.setFont(label_font);
+    QRectF label_rect = label_item.boundingRect();
+
+
+
     title_box.setRect(0, 0, width(), 0);
     if (title->toPlainText().size() > 0){
         title_box.setHeight(title_rect.height());
@@ -123,9 +130,9 @@ void Chart::update_chart(){
 
     xlabel_box.setRect(0, height() - legend_box.height(), width(), 0);
     if (xlabel->toPlainText().size() > 0){
-        xlabel_box.setY(xlabel_box.y() - tick_rect.height());
-        xlabel_box.setHeight(tick_rect.height());
-        xlabel->setFont(tick_font);
+        xlabel_box.setY(xlabel_box.y() - label_rect.height());
+        xlabel_box.setHeight(label_rect.height());
+        xlabel->setFont(label_font);
         xlabel->setPos((xlabel_box.width() - xlabel->boundingRect().width()) / 2., xlabel_box.y());
         xlabel->setVisible(true);
     }
@@ -136,8 +143,8 @@ void Chart::update_chart(){
     ylabel->setRotation(0);
     ylabel_box.setRect(0, title_box.height(), 0, height() - title_box.height() - legend_box.height() - xlabel_box.height());
     if (ylabel->toPlainText().size() > 0){
-        ylabel->setFont(tick_font);
-        ylabel_box.setWidth(ylabel_box.y() - tick_rect.height());
+        ylabel->setFont(label_font);
+        ylabel_box.setWidth(label_rect.height());
         ylabel->setPos((ylabel_box.width() - ylabel->boundingRect().width()) / 2., ylabel_box.y() + (ylabel_box.height() - ylabel->boundingRect().height()) / 2.);
         ylabel->setTransformOriginPoint(ylabel->boundingRect().width() / 2., ylabel->boundingRect().height() / 2.);
         ylabel->setRotation(-90);
@@ -271,6 +278,7 @@ void Chart::resizeEvent(QResizeEvent*){
 
 void Chart::set_tick_size(int s){
     tick_font.setPointSizeF(s);
+    label_font.setPointSizeF(s);
     update_chart();
 }
 

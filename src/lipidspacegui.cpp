@@ -287,6 +287,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->statisticsROCCurve, &Statistics::setLegendSizeROCCurve);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->statBoxPlot, &Chart::set_title_size);
     connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->statisticsHistogram, &Statistics::setBarNumber);
+    connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setBarNumber);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->statisticsBoxPlot, &Statistics::setTickSizeBoxPlot);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->statisticsBarPlot, &Statistics::setTickSizeBarPlot);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->statisticsHistogram, &Statistics::setTickSizeHistogram);
@@ -411,6 +412,8 @@ void LipidSpaceGUI::setFeatureStat(int c){
     GlobalData::gui_string_var["study_var_stat"] = ui->featureComboBoxStat->currentText().toStdString();
     ui->statisticsBoxPlot->updateBoxPlot();
     updateBoxPlot();
+    updateHistogram();
+    updateROCCurve();
     ui->statisticsBarPlot->updateBarPlot();
     ui->statisticsHistogram->updateHistogram();
     ui->statisticsROCCurve->updateROCCurve();
@@ -451,6 +454,8 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
     ui->statisticsBoxPlot->updateBoxPlot();
     updateBoxPlot();
+    updateHistogram();
+    updateROCCurve();
     ui->statisticsBarPlot->updateBarPlot();
     ui->statisticsHistogram->updateHistogram();
     ui->statisticsROCCurve->updateROCCurve();
@@ -882,6 +887,8 @@ void LipidSpaceGUI::runAnalysis(){
 
     ui->statisticsBoxPlot->updateBoxPlot();
     updateBoxPlot();
+    updateHistogram();
+    updateROCCurve();
     ui->statisticsBarPlot->updateBarPlot();
     ui->statisticsHistogram->updateHistogram();
     ui->statisticsROCCurve->updateROCCurve();
@@ -2229,7 +2236,16 @@ void LipidSpaceGUI::fill_table(){
 
 
 
+void LipidSpaceGUI::setBarNumber(int num){
+    GlobalData::gui_num_var["bar_number"] = num;
+    updateHistogram();
+}
+
+
+
 void LipidSpaceGUI::updateBoxPlot(){
+    return;
+
     Chart *chart = ui->statBoxPlot;
     chart->clear();
     chart->setTitle("");
@@ -2292,16 +2308,6 @@ void LipidSpaceGUI::updateBoxPlot(){
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                     nominal_values.push_back(nominal_value);
-                    /*
-                    scatter_series.push_back(new QScatterSeries());
-                    scatter_series.back()->setName(nominal_value.c_str());
-                    series_titles.push_back(nominal_value);
-                    string color_key = secondary_target_variable + "_" + nominal_value;
-                    if (contains_val(GlobalData::colorMapFeatures, color_key)){
-                        QBrush brush(GlobalData::colorMapFeatures[color_key]);
-                        scatter_series.back()->setBrush(brush);
-                    }
-                    */
                 }
                 target_indexes.push_back(nominal_target_values[nominal_value]);
             }
@@ -2445,3 +2451,241 @@ void LipidSpaceGUI::updateBoxPlot(){
         chart->setTitle(QString("Linear regression model"));
     }
 }
+
+
+
+
+
+
+
+
+
+void LipidSpaceGUI::updateHistogram(){
+    return;
+
+    Chart *chart = ui->statBoxPlot;
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->feature_values, target_variable) && lipid_space->analysis_finished && (lipid_space->feature_values[target_variable].feature_type == NominalFeature) && (lipid_space->selected_lipidomes.size() > 1);
+
+    chart->setVisible(do_continue);
+    if (!do_continue) return;
+
+    vector<Array> series;
+    map<string, double> stat_results;
+
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
+
+
+
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Indexes target_indexes;
+    Array target_values;
+    int nom_counter = 0;
+    vector<string> nominal_values;
+    vector<QBoxPlotSeries*> plot_series;
+    vector<QScatterSeries*> scatter_series;
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    bool has_secondary = contains_val(lipid_space->feature_values, secondary_target_variable);
+
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        if (lipidome->features[target_variable].missing) continue;
+        if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
+        string nominal_value = lipidome->features[target_variable].nominal_value;
+        if (uncontains_val(nominal_target_values, nominal_value)){
+            nominal_target_values.insert({nominal_value, nom_counter++});
+            nominal_values.push_back(nominal_value);
+        }
+        target_indexes.push_back(nominal_target_values[nominal_value]);
+        if (has_secondary) target_values.push_back(lipidome->features[secondary_target_variable].numerical_value);
+
+
+    }
+
+
+    // if any lipidome has a missing study variable, discard the lipidome from the statistic
+    Indexes lipidomes_to_keep;
+    for (int r = 0; r < statistics_matrix.rows; ++r){
+        if (!lipid_space->selected_lipidomes[r]->features[target_variable].missing) lipidomes_to_keep.push_back(r);
+    }
+    Matrix tmp;
+    tmp.rewrite(statistics_matrix, lipidomes_to_keep);
+    statistics_matrix.rewrite(tmp);
+
+
+    series.resize(nom_counter);
+    if (has_secondary){
+        for (uint r = 0; r < target_indexes.size(); ++r){
+            series[target_indexes[r]].push_back(target_values[r]);
+        }
+    }
+    else {
+        if (statistics_matrix.cols > 1) statistics_matrix.scale();
+        for (int r = 0; r < statistics_matrix.rows; ++r){
+            double sum = 0;
+            for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+            if (statistics_matrix.cols > 1 || sum > 1e-15){
+                series[target_indexes[r]].push_back(sum);
+            }
+        }
+    }
+
+    Histogramplot* histogramplot = new Histogramplot(chart);
+    vector<QString> categories;
+    vector<QColor> colors;
+    for (uint i = 0; i < nominal_values.size(); ++i){
+        categories.push_back(QString(nominal_values[i].c_str()) + QString(" (%1)").arg(series[i].size()));
+        string color_key = target_variable + "_" + nominal_values[i];
+        QColor color = contains_val(GlobalData::colorMapFeatures, color_key) ? GlobalData::colorMapFeatures[color_key] : Qt::white;
+        colors.push_back(color);
+    }
+
+    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
+    histogramplot->add(series, categories, &colors, num_bars);
+    chart->add(histogramplot);
+}
+
+
+
+
+void LipidSpaceGUI::updateROCCurve(){
+
+    Chart *chart = ui->statBoxPlot;
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->feature_values, target_variable) && lipid_space->analysis_finished && (lipid_space->feature_values[target_variable].feature_type == NominalFeature) && (lipid_space->selected_lipidomes.size() > 1);
+
+    chart->setVisible(do_continue);
+    if (!do_continue) return;
+
+    vector<Array> series;
+    map<string, double> stat_results;
+
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Indexes target_indexes;
+    Array target_values;
+    int nom_counter = 0;
+    vector<string> nominal_values;
+    vector<QBoxPlotSeries*> plot_series;
+    vector<QScatterSeries*> scatter_series;
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    bool has_secondary = contains_val(lipid_space->feature_values, secondary_target_variable);
+
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        if (lipidome->features[target_variable].missing) continue;
+        if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
+        string nominal_value = lipidome->features[target_variable].nominal_value;
+        if (uncontains_val(nominal_target_values, nominal_value)){
+            nominal_target_values.insert({nominal_value, nom_counter++});
+            nominal_values.push_back(nominal_value);
+        }
+        target_indexes.push_back(nominal_target_values[nominal_value]);
+        if (has_secondary) target_values.push_back(lipidome->features[secondary_target_variable].numerical_value);
+
+
+    }
+
+    if (nom_counter != 2){
+        chart->setVisible(false);
+        return;
+    }
+
+
+
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
+
+    if (statistics_matrix.cols > 1) statistics_matrix.scale();
+
+    series.resize(nom_counter);
+    if (has_secondary){
+        for (uint r = 0; r < target_indexes.size(); ++r){
+            series[target_indexes[r]].push_back(target_values[r]);
+        }
+    }
+    else {
+        if (statistics_matrix.cols > 1) statistics_matrix.scale();
+        for (int r = 0; r < statistics_matrix.rows; ++r){
+            double sum = 0;
+            for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+            if (statistics_matrix.cols > 1 || sum > 1e-15){
+                series[target_indexes[r]].push_back(sum);
+            }
+        }
+    }
+
+    pair<vector<double>, vector<double>> ROC;
+    double dist = 0;
+    double pos_max = 0;
+    double sep_score = 0;
+
+    ks_separation_value(series[0], series[1], dist, pos_max, sep_score, &ROC);
+
+    Lineplot *lineplot = new Lineplot(chart);
+    Lineplot *diagonalplot = new Lineplot(chart);
+
+
+    double auc = 0, fp = 0;
+
+    bool flip = Boxplot::median(series[0], 0, series[0].size()) > Boxplot::median(series[1], 0, series[1].size());
+    if (flip) swap(ROC.first, ROC.second);
+
+
+
+    if (ROC.second[0] != 1){
+        ROC.first.insert(ROC.first.begin(), ROC.first[0]);
+        ROC.second.insert(ROC.second.begin(), 1);
+    }
+    if (ROC.first[0] != 1){
+        ROC.first.insert(ROC.first.begin(), 1);
+        ROC.second.insert(ROC.second.begin(), 1);
+    }
+    if (ROC.first[ROC.first.size() - 1] != 0){
+        ROC.first.push_back(0);
+        ROC.second.push_back(ROC.second.back());
+    }
+    if (ROC.second[ROC.second.size() - 1] != 0){
+        ROC.first.push_back(0);
+        ROC.second.push_back(0);
+    }
+
+    vector< pair< pair<double, double>, pair<double, double> > > lines;
+    vector< pair< pair<double, double>, pair<double, double> > > diagonal;
+    diagonal.push_back({{0, 0}, {1, 1}});
+    diagonalplot->add(diagonal, "");
+
+
+    for (uint i = 0; i < ROC.first.size() - 1; ++i){
+        lines.push_back({{ROC.first[i], ROC.second[i]}, {ROC.first[i + 1], ROC.second[i + 1]}});
+        auc += (ROC.second[i] - fp) * ROC.first[i];
+        fp = ROC.second[i];
+    }
+    lineplot->add(lines, "", QColor("#209fdf"));
+
+    chart->add(lineplot);
+    chart->add(diagonalplot);
+
+    stat_results.insert({"AUC", auc});
+    chart->setXLabel("False positive Rate");
+    chart->setYLabel("Sensetivity");
+    chart->setTitle(QString("ROC Curve, AUC = %1 %").arg(QString::number(auc * 100., 'g', 4)));
+}
+
+
+
+
