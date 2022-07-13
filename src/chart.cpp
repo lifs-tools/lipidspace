@@ -225,7 +225,7 @@ void Chart::update_chart(){
     QGraphicsTextItem ppp("...");
     while (include_legend > 0 && xlegend_width > legend_box.width()){
         auto category = legend_categories[--include_legend];
-        xlegend_width = ppp.boundingRect().width() - category.category->boundingRect().width();
+        xlegend_width += ppp.boundingRect().width() - category.category->boundingRect().width();
     }
 
     int included_legends = 0;
@@ -237,7 +237,7 @@ void Chart::update_chart(){
         category.rect->setBrush(QColor(category.color));
         category.rect->setRect(x, y_box, legend_size, legend_size);
         x += legend_size + 5;
-        category.category->setPlainText(included_legends++ < include_legend ? category.category_string : "...");
+        category.category->setHtml(included_legends++ < include_legend ? category.category_string : "...");
         category.category->setFont(title_legend_font);
         category.category->setPos(x, y_text);
         x += category.category->boundingRect().width() + 10;

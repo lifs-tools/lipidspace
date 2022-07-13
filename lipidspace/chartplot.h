@@ -4,8 +4,6 @@
 #include "lipidspace/chart.h"
 #include <vector>
 
-enum PlotType {BOX_PLOT, SCATTER_PLOT, NO_PLOT};
-
 using namespace std;
 
 class Chart;
@@ -13,11 +11,8 @@ class Chart;
 class Chartplot {
 public:
     Chart *chart;
-    PlotType plot_type;
 
-    Chartplot(Chart *_chart) : chart(_chart) {
-        plot_type = NO_PLOT;
-    }
+    Chartplot(Chart *_chart) : chart(_chart) {}
     virtual ~Chartplot(){}
     virtual void update_chart(){};
     virtual void clear(){};

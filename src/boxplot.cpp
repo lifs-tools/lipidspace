@@ -1,7 +1,6 @@
 #include "lipidspace/boxplot.h"
 
 Boxplot::Boxplot(Chart *_chart) : Chartplot(_chart) {
-    plot_type = BOX_PLOT;
 }
 
 Boxplot::~Boxplot(){

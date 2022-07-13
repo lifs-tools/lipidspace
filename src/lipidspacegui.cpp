@@ -2401,7 +2401,6 @@ void LipidSpaceGUI::updateBoxPlot(){
 
 
 
-        /*
         double mx = 0, my = 0, ny = 0;
         // computing the study variable mean based on missing values of lipids
         for (uint r = 0; r < S.size(); ++r){
@@ -2432,13 +2431,17 @@ void LipidSpaceGUI::updateBoxPlot(){
         double R2 = 1. - SQR / SQT;
         stat_results.insert({"R^2", R2});
 
-        QLineSeries* series_regression = new QLineSeries();
-        series_regression->setName(QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2));
-        series_regression->append(min_x, slope * min_x + intercept);
-        series_regression->append(max_x, slope * max_x + intercept);
-        chart->add(series_regression);
+        Lineplot *regression_line = new Lineplot(chart);
+        QString rg_name = QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2);
+        vector< pair<pair<double, double>, pair<double, double> > > data;
+
+        double min_x = chart->xrange.x();
+        double max_x = chart->xrange.y();
+
+        data.push_back({{min_x, slope * min_x + intercept}, {max_x, slope * max_x + intercept}});
+        regression_line->add(data, rg_name, QColor("#99ca53"));
+        chart->add(regression_line);
         QString sign = intercept >= 0 ? "+" : "-";
-        */
         chart->setTitle(QString("Linear regression model"));
     }
 }

@@ -1,7 +1,6 @@
 #include "lipidspace/scatterplot.h"
 
 Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
-    plot_type = SCATTER_PLOT;
 }
 
 Scatterplot::~Scatterplot(){
