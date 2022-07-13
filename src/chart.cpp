@@ -14,8 +14,8 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     xlabel = new QGraphicsTextItem("");
     ylabel = new QGraphicsTextItem("");
 
-    xrange = QPointF(0, 0);
-    yrange = QPointF(0, 0);
+    xrange = QPointF(1e100, -1e100);
+    yrange = QPointF(1e100, -1e100);
 
     show_x_axis = false;
     show_y_axis = false;
@@ -57,6 +57,8 @@ void Chart::clear(){
     xlabel->setPlainText("");
     ylabel->setPlainText("");
 
+    xrange = QPointF(1e100, -1e100);
+    yrange = QPointF(1e100, -1e100);
 
     show_x_axis = false;
     show_y_axis = false;
@@ -218,6 +220,7 @@ void Chart::update_chart(){
     double xlegend_width = (GlobalData::gui_num_var["legend_size"] + 5) * legend_categories.size();
     int include_legend = legend_categories.size();
     for (auto category : legend_categories){
+        category.category->setHtml(category.category_string);
         category.category->setFont(title_legend_font);
         xlegend_width += category.category->boundingRect().width();
     }

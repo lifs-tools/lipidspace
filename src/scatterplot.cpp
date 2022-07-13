@@ -1,6 +1,9 @@
 #include "lipidspace/scatterplot.h"
 
 Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
+    base = new QGraphicsRectItem();
+    base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    chart->scene.addItem(base);
 }
 
 Scatterplot::~Scatterplot(){
@@ -9,6 +12,9 @@ Scatterplot::~Scatterplot(){
 
 void Scatterplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
+    base->setRect(chart->chart_box_inner.x(), chart->chart_box_inner.y(), chart->chart_box_inner.width(), chart->chart_box_inner.height());
+    base->setPen(Qt::NoPen);
+    base->setBrush(Qt::NoBrush);
 
     for (auto &p : points){
         double x = p.x;
@@ -39,31 +45,34 @@ void Scatterplot::add(vector< pair<double, double> > &data, QString category, QC
     chart->show_x_axis = true;
 
 
+    double xmin = chart->xrange.x();
+    double xmax = chart->xrange.y();
+    double ymin = chart->yrange.x();
+    double ymax = chart->yrange.y();
     for (auto xy_point : data){
-        if (points.size()){
-            chart->xrange.setX(min(chart->xrange.x(), xy_point.first));
-            chart->xrange.setY(max(chart->xrange.y(), xy_point.first));
-            chart->yrange.setX(min(chart->yrange.x(), xy_point.second));
-            chart->yrange.setY(max(chart->yrange.y(), xy_point.second));
-        }
-        else {
-            chart->xrange.setX(xy_point.first);
-            chart->xrange.setY(xy_point.first);
-            chart->yrange.setX(xy_point.second);
-            chart->yrange.setY(xy_point.second);
-        }
+        xmin = min(xmin, xy_point.first);
+        xmax = max(xmax, xy_point.first);
+        ymin = min(ymin, xy_point.second);
+        ymax = max(ymax, xy_point.second);
 
         points.push_back(ScPoint(xy_point.first, xy_point.second, color));
         chart->scene.addItem(points.back().p);
+        points.back().p->setParentItem(base);
     }
+    chart->xrange.setX(xmin);
+    chart->xrange.setY(xmax);
+    chart->yrange.setX(ymin);
+    chart->yrange.setY(ymax);
 
-    double x_offset = (chart->xrange.y() - chart->xrange.x()) * 0.05;
-    double y_offset = (chart->yrange.y() - chart->yrange.x()) * 0.05;
+    /*
+    double x_offset = (chart->xrange.y() - chart->xrange.x()) * 0.025;
+    double y_offset = (chart->yrange.y() - chart->yrange.x()) * 0.025;
 
     chart->xrange.setX(chart->xrange.x() - x_offset);
     chart->xrange.setY(chart->xrange.y() + x_offset);
     chart->yrange.setX(chart->yrange.x() - y_offset);
     chart->yrange.setY(chart->yrange.y() + y_offset);
+    */
 
     chart->legend_categories.push_back(LegendCategory(category, color, &chart->scene));
 }

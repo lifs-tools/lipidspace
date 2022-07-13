@@ -2437,10 +2437,10 @@ void LipidSpaceGUI::updateBoxPlot(){
 
         double min_x = chart->xrange.x();
         double max_x = chart->xrange.y();
-
         data.push_back({{min_x, slope * min_x + intercept}, {max_x, slope * max_x + intercept}});
         regression_line->add(data, rg_name, QColor("#99ca53"));
         chart->add(regression_line);
+
         QString sign = intercept >= 0 ? "+" : "-";
         chart->setTitle(QString("Linear regression model"));
     }

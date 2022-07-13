@@ -41,28 +41,28 @@ void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > 
     chart->show_x_axis = true;
 
 
+    double xmin = chart->xrange.x();
+    double xmax = chart->xrange.y();
+    double ymin = chart->yrange.x();
+    double ymax = chart->yrange.y();
     for (auto line : _lines){
         double x1 = line.first.first;
         double y1 = line.first.second;
         double x2 = line.second.first;
         double y2 = line.second.second;
 
-        if (lines.size()){
-            chart->xrange.setX(min(chart->xrange.x(), min(x1, x2)));
-            chart->xrange.setY(max(chart->xrange.y(), max(x1, x2)));
-            chart->yrange.setX(min(chart->yrange.x(), min(y1, y2)));
-            chart->yrange.setY(max(chart->yrange.y(), max(y1, y2)));
-        }
-        else {
-            chart->xrange.setX(min(x1, x2));
-            chart->xrange.setY(max(x1, x2));
-            chart->yrange.setX(min(y1, y2));
-            chart->yrange.setY(max(y1, y2));
-        }
+        xmin = min(xmin, min(x1, x2));
+        xmax = max(xmax, max(x1, x2));
+        ymin = min(ymin, min(y1, y2));
+        ymax = max(ymax, max(y1, y2));
 
         lines.push_back(Line(x1, y1, x2, y2, _color));
         chart->scene.addItem(lines.back().line);
     }
+    chart->xrange.setX(xmin);
+    chart->xrange.setY(xmax);
+    chart->yrange.setX(ymin);
+    chart->yrange.setY(ymax);
 
     chart->legend_categories.push_back(LegendCategory(category, _color, &chart->scene));
 }

@@ -5,6 +5,7 @@ class Chartplot;
 
 #include "lipidspace/chartplot.h"
 #include <QGraphicsEllipseItem>
+#include <QGraphicsRectItem>
 #include <vector>
 #include <map>
 
@@ -29,6 +30,7 @@ struct ScPoint {
 class Scatterplot : public Chartplot {
 public:
     vector<ScPoint> points;
+    QGraphicsRectItem *base;
 
     Scatterplot(Chart *_chart);
     ~Scatterplot();
