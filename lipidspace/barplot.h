@@ -1,5 +1,5 @@
-#ifndef BOXPLOT_H
-#define BOXPLOT_H
+#ifndef BARPLOT_H
+#define BARPLOT_H
 
 #include "lipidspace/chartplot.h"
 #include <vector>
@@ -8,44 +8,40 @@ class Chartplot;
 
 using namespace std;
 
-struct WhiskerBox {
-    double lower_extreme;
-    double lower_quartile;
-    double median;
-    double upper_quartile;
-    double upper_extreme;
+struct BarBox {
+    double value;
+    double error;
 
-    QGraphicsLineItem *upper_extreme_line;
-    QGraphicsLineItem *lower_extreme_line;
-    QGraphicsLineItem *median_line;
+    QGraphicsLineItem *upper_error_line;
+    QGraphicsLineItem *lower_error_line;
     QGraphicsLineItem *base_line;
     QGraphicsRectItem *rect;
     QColor color;
 
-    WhiskerBox(QGraphicsScene *scene){
-        upper_extreme_line = new QGraphicsLineItem();
-        lower_extreme_line = new QGraphicsLineItem();
-        median_line = new QGraphicsLineItem();
+    BarBox(QGraphicsScene *scene, double _value, double _error, QColor _color = Qt::white){
+        value = _value;
+        error = _error;
+        color = _color;
+
+        upper_error_line = new QGraphicsLineItem();
+        lower_error_line = new QGraphicsLineItem();
         base_line = new QGraphicsLineItem();
         rect = new QGraphicsRectItem();
 
-        scene->addItem(upper_extreme_line);
-        scene->addItem(lower_extreme_line);
-        scene->addItem(median_line);
+        scene->addItem(upper_error_line);
+        scene->addItem(lower_error_line);
         scene->addItem(base_line);
         scene->addItem(rect);
-        color = Qt::white;
     }
 };
 
-class Boxplot : public Chartplot {
+class Barplot : public Chartplot {
 public:
-    vector<WhiskerBox> boxes;
+    vector< vector<BarBox> > bars;
 
-    Boxplot(Chart *_chart);
-    ~Boxplot();
-    static double median(vector<double> &lst, int begin, int end);
-    void add(Array &data, QString category, QColor color = Qt::white);
+    Barplot(Chart *_chart);
+    ~Barplot();
+    void add(vector< vector< pair<double, double> > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors = 0);
     void update_chart();
     void clear();
 };

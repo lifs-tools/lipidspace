@@ -61,6 +61,7 @@ public:
     bool show_x_axis;
     bool show_y_axis;
     vector<LegendCategory> legend_categories;
+    vector<QString> xlabels;
     QPointF xrange;
     QPointF yrange;
     vector<Chartplot*> chart_plots;

@@ -69,6 +69,7 @@ void Chart::clear(){
         scene.removeItem(legend_category.category);
     }
     legend_categories.clear();
+    xlabels.clear();
 
     for (auto plot : chart_plots){
         plot->clear();
