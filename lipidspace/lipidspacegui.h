@@ -25,6 +25,7 @@
 #include "lipidspace/scatterplot.h"
 #include "lipidspace/lineplot.h"
 #include "lipidspace/histogramplot.h"
+#include "lipidspace/barplot.h"
 #include <thread>
 
 #define ALPHABETICALLY_ASC "Alphabetically (Asc)"
@@ -241,6 +242,7 @@ public slots:
     void setNormalization(int);
     void selectDendrogramLipidomes();
     void updateBoxPlot();
+    void updateBarPlot();
     void updateHistogram();
     void updateROCCurve();
     void setBarNumber(int num);

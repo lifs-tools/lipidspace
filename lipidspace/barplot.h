@@ -2,11 +2,22 @@
 #define BARPLOT_H
 
 #include "lipidspace/chartplot.h"
+#include <QToolTip>
+#include <QCursor>
 #include <vector>
 
 class Chartplot;
 
 using namespace std;
+
+class HoverRectItem : public QGraphicsRectItem {
+public:
+    QString label;
+
+    HoverRectItem(QString _label, QGraphicsItem *parent = nullptr);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+};
 
 struct BarBox {
     double value;
@@ -15,10 +26,10 @@ struct BarBox {
     QGraphicsLineItem *upper_error_line;
     QGraphicsLineItem *lower_error_line;
     QGraphicsLineItem *base_line;
-    QGraphicsRectItem *rect;
+    HoverRectItem *rect;
     QColor color;
 
-    BarBox(QGraphicsScene *scene, double _value, double _error, QColor _color = Qt::white){
+    BarBox(QGraphicsScene *scene, double _value, double _error, QString _label, QColor _color = Qt::white){
         value = _value;
         error = _error;
         color = _color;
@@ -26,7 +37,8 @@ struct BarBox {
         upper_error_line = new QGraphicsLineItem();
         lower_error_line = new QGraphicsLineItem();
         base_line = new QGraphicsLineItem();
-        rect = new QGraphicsRectItem();
+        rect = new HoverRectItem(_label);
+        rect->setAcceptHoverEvents(true);
 
         scene->addItem(upper_error_line);
         scene->addItem(lower_error_line);
