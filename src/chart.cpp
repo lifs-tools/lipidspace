@@ -256,7 +256,7 @@ void Chart::update_chart(){
     if (show_y_axis){
         for (uint i = 0; i < h_grid.size(); ++i){
             auto line = h_grid[i];
-            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && show_y_axis){
+            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                 line->setVisible(true);
                 double h = chart_box_inner.y() + (double)i / (TICK_NUM - 1) * chart_box_inner.height();
                 line->setLine(chart_box_inner.x() - TICK_SIZE, h, chart_box_inner.x() + chart_box_inner.width(), h);
@@ -266,7 +266,7 @@ void Chart::update_chart(){
             }
 
             auto tick = y_ticks[i];
-            if (tick_rect.height() * TICK_NUM * 0.7 < chart_box.height() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && show_y_axis){
+            if (tick_rect.height() * TICK_NUM * 0.7 < chart_box.height() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                 tick->setVisible(true);
                 tick->setFont(tick_font);
                 tick->setPlainText(QString("%1").arg(yrange.x() + (TICK_NUM - 1. - (double)i) / (TICK_NUM - 1) * (yrange.y() - yrange.x()), 0, 'f', 1));
@@ -279,12 +279,11 @@ void Chart::update_chart(){
             }
         }
     }
-    cout << "here" << endl;
 
     if (show_x_axis && !is_x_category_axis){
         for (uint i = 0; i < v_grid.size(); ++i){
             auto line = v_grid[i];
-            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && show_x_axis){
+            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                 line->setVisible(true);
                 double w = chart_box_inner.x() + (double)i / (TICK_NUM - 1)  * chart_box_inner.width();
                 line->setLine(w, chart_box_inner.y(), w, chart_box_inner.y() + chart_box_inner.height() + 5);
@@ -294,7 +293,7 @@ void Chart::update_chart(){
             }
 
             auto tick = x_ticks[i];
-            if (sum_x_tick_width < chart_box.width() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && show_x_axis){
+            if (sum_x_tick_width < chart_box.width() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                 tick->setVisible(true);
                 tick->setFont(tick_font);
                 tick->setPlainText(QString("%1").arg(xrange.x() + (double)i / (TICK_NUM - 1) * (xrange.y() - xrange.x()), 0, 'f', 1));
@@ -332,6 +331,25 @@ void Chart::update_chart(){
             else {
                 x_tick->setVisible(false);
             }
+
+            auto line = v_grid[i];
+            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
+                line->setVisible(true);
+                double w = chart_box_inner.x() + (double)i * single_group_width;
+                line->setLine(w, chart_box_inner.y(), w, chart_box_inner.y() + chart_box_inner.height() + 5);
+            }
+            else {
+                line->setVisible(false);
+            }
+        }
+        auto line = v_grid[x_categories.size()];
+        if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
+            line->setVisible(true);
+            double w = chart_box_inner.x() + chart_box_inner.width();
+            line->setLine(w, chart_box_inner.y(), w, chart_box_inner.y() + chart_box_inner.height() + 5);
+        }
+        else {
+            line->setVisible(false);
         }
     }
 
