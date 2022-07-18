@@ -100,7 +100,8 @@ void Barplot::add(vector< vector< pair<double, double> > > &data, vector<QString
         if (category_data.size() != categories.size()) return;
     }
 
-    chart->show_y_axis = true;
+    chart->create_y_numerical_axis();
+    chart->create_x_nominal_axis();
 
 
     double ymax = chart->yrange.y();
@@ -122,7 +123,7 @@ void Barplot::add(vector< vector< pair<double, double> > > &data, vector<QString
 
             bar_set.push_back(BarBox(&(chart->scene), value, error, labels[s], color));
         }
-        chart->xlabels.push_back(labels[s]);
+        chart->add_category(labels[s]);
     }
 
     chart->xrange = QPointF(0, bars.size());

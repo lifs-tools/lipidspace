@@ -60,12 +60,12 @@ public:
     bool loaded;
     bool show_x_axis;
     bool show_y_axis;
+    bool is_x_category_axis;
     vector<LegendCategory> legend_categories;
-    vector<QString> xlabels;
+    vector<QString> x_categories;
     QPointF xrange;
     QPointF yrange;
     vector<Chartplot*> chart_plots;
-
 
     vector<QGraphicsLineItem*> v_grid;
     vector<QGraphicsLineItem*> h_grid;
@@ -79,6 +79,10 @@ public:
     void setYLabel(QString l);
     void translate(double &x, double &y);
     void add(Chartplot* plot);
+    void add_category(QString);
+    void create_x_numerical_axis();
+    void create_x_nominal_axis();
+    void create_y_numerical_axis();
 
     virtual void update_chart();
     virtual void clear();
