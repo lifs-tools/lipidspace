@@ -242,13 +242,6 @@ public slots:
     void setPieSize(int);
     void setNormalization(int);
     void selectDendrogramLipidomes();
-    /*
-    void updateBoxPlot();
-    void updateBarPlot();
-    void updateHistogram();
-    void updateROCCurve();
-    void setBarNumber(int num);
-    */
 
 
 private:
