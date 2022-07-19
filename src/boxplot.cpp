@@ -91,7 +91,7 @@ double Boxplot::median(vector<double> &lst, int begin, int end){
 
 
 void Boxplot::add(Array &array, QString category, QColor color){
-    chart->show_y_axis = true;
+    chart->create_y_numerical_axis();
 
     sort(array.begin(), array.end());
     int count = array.size();

@@ -3,26 +3,17 @@
 
 
 
-Statistics::Statistics(QWidget *parent) : QChartView(parent) {
+Statistics::Statistics() {
+    chart = 0;
     lipid_space = 0;
-    chart = new QChart();
-    chart->setAnimationOptions(QChart::SeriesAnimations);
-	setRenderHint(QPainter::Antialiasing);
-    chart->createDefaultAxes();
-    chart->legend()->setVisible(true);
-    chart->legend()->setAlignment(Qt::AlignBottom);
-    setChart(chart);
-    chart->legend()->setFont(QFont("Helvetica", GlobalData::gui_num_var["legend_size"]));
-    chart->setTitleFont(QFont("Helvetica", GlobalData::gui_num_var["legend_size"]));
-
-    chart->layout()->setContentsMargins(0,0,0,0);
-    chart->setBackgroundRoundness(0);
     log_scale = false;
 }
 
 
-void Statistics::set_lipid_space(LipidSpace *_lipid_space){
+void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
     lipid_space = _lipid_space;
+    chart = _chart;
+	chart->setRenderHint(QPainter::Antialiasing);
 }
 
 
@@ -35,8 +26,6 @@ void Statistics::set_log_scale(){
 
 void Statistics::setLegendSizeBoxPlot(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
-    chart->legend()->setFont(QFont("Helvetica", font_size));
-    chart->setTitleFont(QFont("Helvetica", font_size));
     updateBoxPlot();
 }
 
@@ -44,8 +33,6 @@ void Statistics::setLegendSizeBoxPlot(int font_size){
 
 void Statistics::setLegendSizeBarPlot(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
-    chart->legend()->setFont(QFont("Helvetica", font_size));
-    chart->setTitleFont(QFont("Helvetica", font_size));
     updateBarPlot();
 }
 
@@ -53,8 +40,6 @@ void Statistics::setLegendSizeBarPlot(int font_size){
 
 void Statistics::setLegendSizeHistogram(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
-    chart->legend()->setFont(QFont("Helvetica", font_size));
-    chart->setTitleFont(QFont("Helvetica", font_size));
     updateHistogram();
 }
 
@@ -62,8 +47,6 @@ void Statistics::setLegendSizeHistogram(int font_size){
 
 void Statistics::setLegendSizeROCCurve(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
-    chart->legend()->setFont(QFont("Helvetica", font_size));
-    chart->setTitleFont(QFont("Helvetica", font_size));
     updateROCCurve();
 }
 
@@ -104,14 +87,9 @@ void Statistics::setBarNumber(int bar_number){
 
 
 
-void Statistics::bar_plot_hovered(bool is_over, QBoxSet *boxset) {
-    if (is_over) QToolTip::showText(QCursor::pos(), boxset->label());
-}
-
-
 void Statistics::exportData(){
-    if (chart->series().size() == 0) return;
-    QString file_name = QFileDialog::getSaveFileName(this, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
+    if (chart->chart_plots.size() == 0) return;
+    QString file_name = QFileDialog::getSaveFileName(chart, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
     if (!file_name.length()) return;
 
     try {
@@ -168,21 +146,21 @@ void Statistics::exportData(){
             doc.save();
         }
         else {
-            QMessageBox::information(this, "Export error", "Unknown export format for file '" + file_name + "'.");
+            QMessageBox::information(chart, "Export error", "Unknown export format for file '" + file_name + "'.");
             return;
         }
-        QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+        QMessageBox::information(chart, "Export completed", "The export is completed into the file '" + file_name + "'.");
     }
     catch(exception &){
-        QMessageBox::critical(this, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
+        QMessageBox::critical(chart, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
     }
 }
 
 
 
 void Statistics::exportAsPdf(){
-    if (chart->series().size() == 0) return;
-    QString file_name = QFileDialog::getSaveFileName(this, "Export as pdf", GlobalData::last_folder, "*.pdf (*.pdf)");
+    if (chart->chart_plots.size() == 0) return;
+    QString file_name = QFileDialog::getSaveFileName(chart, "Export as pdf", GlobalData::last_folder, "*.pdf (*.pdf)");
     if (!file_name.length()) return;
 
     try {
@@ -192,7 +170,7 @@ void Statistics::exportAsPdf(){
         QPrinter printer(QPrinter::ScreenResolution);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setFontEmbeddingEnabled(true);
-        QPageSize pageSize(QSizeF(viewport()->width(), viewport()->height()) , QPageSize::Point);
+        QPageSize pageSize(QSizeF(chart->viewport()->width(), chart->viewport()->height()) , QPageSize::Point);
         printer.setPageSize(pageSize);
 
         printer.setOutputFileName(file_name);
@@ -216,31 +194,21 @@ void Statistics::exportAsPdf(){
 
 
         QPainter p(&printer);
-        render(&p);
+        chart->render(&p);
         p.end();
 
-        QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+        QMessageBox::information(chart, "Export completed", "The export is completed into the file '" + file_name + "'.");
     }
     catch(exception &){
-        QMessageBox::critical(this, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
+        QMessageBox::critical(chart, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
     }
 }
 
 
-double Statistics::median(vector<double> &lst, int begin, int end){
-    int count = end - begin;
-    if (count & 1) {
-        return lst[(count >> 1) + begin];
-    } else {
-        double right = lst[(count >> 1) + begin];
-        double left = lst[(count >> 1) - 1 + begin];
-        return (right + left) / 2.0;
-    }
-}
 
 
 void Statistics::updateBarPlot(){
-
+    /*
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
         chart->removeAxis(axis);
@@ -426,6 +394,7 @@ void Statistics::updateBarPlot(){
     for (auto axis : chart->axes()){
         axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
     }
+    */
 }
 
 
@@ -435,8 +404,7 @@ void Statistics::updateBarPlot(){
 
 
 void Statistics::updateHistogram(){
-    setVisible(false);
-    return;
+    /*
 
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
@@ -541,6 +509,7 @@ void Statistics::updateHistogram(){
     for (auto axis : chart->axes()){
         axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
     }
+    */
 }
 
 
@@ -551,8 +520,7 @@ void Statistics::updateHistogram(){
 
 
 void Statistics::updateROCCurve(){
-    setVisible(false);
-    return;
+    /*
 
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
@@ -667,6 +635,7 @@ void Statistics::updateROCCurve(){
     chart->addSeries(random_series);
     chart->setTitle(QString("ROC Curve, AUC = %1 %").arg(QString::number(auc * 100., 'g', 4)));
     chart->legend()->hide();
+    */
 }
 
 
@@ -679,8 +648,211 @@ void Statistics::updateROCCurve(){
 
 
 void Statistics::updateBoxPlot(){
-    setVisible(false);
-    return;
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+    series_titles.clear();
+    series.clear();
+    stat_results.clear();
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
+
+    bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
+
+    if (lipid_space->selected_lipidomes.size() <= 1){
+        chart->setVisible(false);
+        return;
+    }
+
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
+
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Indexes target_indexes;
+    Array target_values;
+    int nom_counter = 0;
+    vector<string> nominal_values;
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    bool has_secondary = contains_val(lipid_space->feature_values, secondary_target_variable);
+
+    if (is_nominal){
+        for (auto lipidome : lipid_space->selected_lipidomes){
+            if (lipidome->features[target_variable].missing) continue;
+            if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
+            string nominal_value = lipidome->features[target_variable].nominal_value;
+            if (uncontains_val(nominal_target_values, nominal_value)){
+                nominal_target_values.insert({nominal_value, nom_counter++});
+                nominal_values.push_back(nominal_value);
+                series_titles.push_back(nominal_value);
+            }
+            target_indexes.push_back(nominal_target_values[nominal_value]);
+            if (has_secondary) target_values.push_back(lipidome->features[secondary_target_variable].numerical_value);
+
+
+        }
+    }
+    else {
+        for (auto lipidome : lipid_space->selected_lipidomes){
+            if (lipidome->features[target_variable].missing) continue;
+            if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
+            target_values.push_back(lipidome->features[target_variable].numerical_value);
+
+            if (has_secondary){
+                string nominal_value = lipidome->features[secondary_target_variable].nominal_value;
+                if (uncontains_val(nominal_target_values, nominal_value)){
+                    nominal_target_values.insert({nominal_value, nom_counter++});
+                    nominal_values.push_back(nominal_value);
+                    series_titles.push_back(nominal_value);
+                }
+                target_indexes.push_back(nominal_target_values[nominal_value]);
+            }
+        }
+    }
+
+    // if any lipidome has a missing study variable, discard the lipidome from the statistic
+    Indexes lipidomes_to_keep;
+    for (int r = 0; r < statistics_matrix.rows; ++r){
+        if (!lipid_space->selected_lipidomes[r]->features[target_variable].missing) lipidomes_to_keep.push_back(r);
+    }
+    Matrix tmp;
+    tmp.rewrite(statistics_matrix, lipidomes_to_keep);
+    statistics_matrix.rewrite(tmp);
+
+
+    if (is_nominal){
+
+        series.resize(nom_counter);
+        if (has_secondary){
+            for (uint r = 0; r < target_indexes.size(); ++r){
+                series[target_indexes[r]].push_back(target_values[r]);
+            }
+        }
+        else {
+            if (statistics_matrix.cols > 1) statistics_matrix.scale();
+            for (int r = 0; r < statistics_matrix.rows; ++r){
+                double sum = 0;
+                for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+                if (statistics_matrix.cols > 1 || sum > 1e-15){
+                    series[target_indexes[r]].push_back(sum);
+                }
+            }
+        }
+        Boxplot* boxplot = new Boxplot(chart);
+        for (uint i = 0; i < nominal_values.size(); ++i){
+            Array &single_series = series[i];
+            QString category = QString(nominal_values[i].c_str()) + QString(" (%1)").arg(series[i].size());
+            string color_key = target_variable + "_" + nominal_values[i];
+            QColor color = contains_val(GlobalData::colorMapFeatures, color_key) ? GlobalData::colorMapFeatures[color_key] : Qt::white;
+
+            boxplot->add(single_series, category, color);
+        }
+        chart->add(boxplot);
+
+        double accuracy = compute_accuracy(series);
+        stat_results.insert({"accuracy", accuracy});
+        if (nom_counter == 2){
+            double p_student = p_value_student(series[0], series[1]);
+            double p_welch = p_value_welch(series[0], series[1]);
+            double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
+            double accuracy = compute_accuracy(series);
+            stat_results.insert({"p_value(Student)", p_student});
+            stat_results.insert({"p_value(Welch)", p_welch});
+            stat_results.insert({"p_value(KS)", p_ks});
+            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>Student</sub> = %2,   <i>p</i>-value<sub>Welch</sub> = %3,   <i>p</i>-value<sub>KS</sub> = %4").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
+        }
+        else if (nom_counter > 2){
+            double p_anova = p_value_anova(series);
+            stat_results.insert({"p_value(ANOVA)", p_anova});
+            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
+        }
+    }
+    else {
+        Array constants(statistics_matrix.rows, 1);
+        statistics_matrix.add_column(constants);
+
+        Array coefficiants;
+
+        coefficiants.compute_coefficiants(statistics_matrix, target_values);    // estimating coefficiants
+        Array S;
+        S.mult(statistics_matrix, coefficiants);
+
+        Scatterplot *scatterplot = new Scatterplot(chart);
+        if (!has_secondary){
+            vector< pair<double, double> > data;
+            for (uint i = 0; i < S.size(); ++i){
+                data.push_back({S[i], target_values[i]});
+            }
+            scatterplot->add(data, target_variable.c_str());
+
+        }
+        else {
+            vector< vector< pair<double, double> > > data(S.size());
+            for (uint i = 0; i < S.size(); ++i){
+                data[target_indexes[i]].push_back({S[i], target_values[i]});
+            }
+
+            for (auto nominal_value : nominal_values){
+                string color_key = secondary_target_variable + "_" + nominal_value;
+                QColor c = contains_val(GlobalData::colorMapFeatures, color_key) ? GlobalData::colorMapFeatures[color_key] : QColor("209fdf");
+                scatterplot->add(data[nominal_target_values[nominal_value]], nominal_value.c_str(), c);
+            }
+
+        }
+        chart->add(scatterplot);
+
+
+
+        double mx = 0, my = 0, ny = 0;
+        // computing the study variable mean based on missing values of lipids
+        for (uint r = 0; r < S.size(); ++r){
+            if (S[r] <= 1e-15) continue;
+            mx += S[r];
+            my += target_values[r];
+            ny += 1;
+        }
+        mx /= ny;
+        my /= ny;
+
+        // estimate slope and intercept factors for linear regression
+        double slope_num = 0, slope_denom = 0;
+        for (uint r = 0; r < S.size(); ++r){
+            if (S[r] <= 1e-15) continue;
+            slope_num += (S[r] - mx) * (target_values[r] - my);
+            slope_denom += sq(S[r] - mx);
+        }
+        double slope = slope_num / slope_denom;
+        double intercept = my - slope * mx;
+
+        double SQR = 0, SQT = 0;
+        for (uint r = 0; r < S.size(); ++r){
+            if (S[r] <= 1e-15) continue;
+            SQR += sq(target_values[r] - (slope * S[r] + intercept));
+            SQT += sq(target_values[r] - my);
+        }
+        double R2 = 1. - SQR / SQT;
+        stat_results.insert({"R^2", R2});
+
+        Lineplot *regression_line = new Lineplot(chart);
+        QString rg_name = QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2);
+        vector< pair<pair<double, double>, pair<double, double> > > data;
+
+        double min_x = chart->xrange.x();
+        double max_x = chart->xrange.y();
+        data.push_back({{min_x, slope * min_x + intercept}, {max_x, slope * max_x + intercept}});
+        regression_line->add(data, rg_name, QColor("#99ca53"));
+        chart->add(regression_line);
+
+        QString sign = intercept >= 0 ? "+" : "-";
+        chart->setTitle(QString("Linear regression model"));
+    }
+
+
+    /*
 
     chart->removeAllSeries();
     for (auto axis : chart->axes()){
@@ -911,4 +1083,5 @@ void Statistics::updateBoxPlot(){
             axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
         }
     }
+    */
 }

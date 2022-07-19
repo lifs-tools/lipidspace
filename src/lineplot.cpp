@@ -37,8 +37,8 @@ void Lineplot::clear(){
 
 
 void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > &_lines, QString category, QColor _color){
-    chart->show_y_axis = true;
-    chart->show_x_axis = true;
+    chart->create_x_numerical_axis();
+    chart->create_y_numerical_axis();
 
 
     double xmin = chart->xrange.x();

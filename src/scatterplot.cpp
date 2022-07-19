@@ -41,8 +41,8 @@ void Scatterplot::clear(){
 
 
 void Scatterplot::add(vector< pair<double, double> > &data, QString category, QColor color){
-    chart->show_y_axis = true;
-    chart->show_x_axis = true;
+    chart->create_x_numerical_axis();
+    chart->create_y_numerical_axis();
 
 
     double xmin = chart->xrange.x();

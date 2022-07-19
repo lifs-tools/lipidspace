@@ -33,8 +33,8 @@ void Histogramplot::clear(){
 
 
 void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors, uint num_bars){
-    chart->show_x_axis = true;
-    chart->show_y_axis = true;
+    chart->create_x_numerical_axis();
+    chart->create_y_numerical_axis();
 
     double all_min = 1e100;
     double all_max = -1e100;

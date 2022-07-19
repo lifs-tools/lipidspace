@@ -21,11 +21,7 @@
 #include "lipidspace/filterdialog.h"
 #include "lipidspace/Tutorial.h"
 #include "cppgoslin/cppgoslin.h"
-#include "lipidspace/boxplot.h"
-#include "lipidspace/scatterplot.h"
-#include "lipidspace/lineplot.h"
-#include "lipidspace/histogramplot.h"
-#include "lipidspace/barplot.h"
+#include "lipidspace/statistics.h"
 #include <thread>
 
 #define ALPHABETICALLY_ASC "Alphabetically (Asc)"
@@ -147,6 +143,10 @@ public:
     ImportTable import_table;
     bool ctrl_pressed;
     bool set_feature_semaphore;
+    Statistics statisticsBoxPlot;
+    Statistics statisticsHistogram;
+    Statistics statisticsROCCurve;
+    Statistics statisticsBarPlot;
 
     enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;
@@ -163,6 +163,7 @@ signals:
     void featureChanged(string);
     void updateHighlightedPoints(vector<QString> *);
     void analysisCompleted();
+
 
 
 public slots:
@@ -241,11 +242,13 @@ public slots:
     void setPieSize(int);
     void setNormalization(int);
     void selectDendrogramLipidomes();
+    /*
     void updateBoxPlot();
     void updateBarPlot();
     void updateHistogram();
     void updateROCCurve();
     void setBarNumber(int num);
+    */
 
 
 private:

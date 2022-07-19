@@ -574,9 +574,8 @@
             <property name="handleWidth">
              <number>8</number>
             </property>
-            <widget class="Statistics" name="statisticsBoxPlot" native="true"/>
-            <widget class="Chart" name="statBoxPlot"/>
-            <widget class="Statistics" name="statisticsHistogram" native="true"/>
+            <widget class="Chart" name="statisticsBoxPlot" native="true"/>
+            <widget class="Chart" name="statisticsHistogram" native="true"/>
            </widget>
            <widget class="QSplitter" name="splitterStatV2">
             <property name="orientation">
@@ -585,8 +584,8 @@
             <property name="handleWidth">
              <number>10</number>
             </property>
-            <widget class="Statistics" name="statisticsROCCurve" native="true"/>
-            <widget class="Statistics" name="statisticsBarPlot" native="true"/>
+            <widget class="Chart" name="statisticsROCCurve" native="true"/>
+            <widget class="Chart" name="statisticsBarPlot" native="true"/>
            </widget>
           </widget>
          </item>
@@ -1101,11 +1100,6 @@
   </action>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>Statistics</class>
-   <extends>QWidget</extends>
-   <header>lipidspace/statistics.h</header>
-  </customwidget>
   <customwidget>
    <class>CBTableWidget</class>
    <extends>QTableWidget</extends>

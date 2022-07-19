@@ -7,57 +7,38 @@
 #include <map>
 #include <math.h>
 
+#include <QPrinter>
 #include <QFileDialog>
-#include <QChartView>
-#include <QToolTip>
-#include <QChart>
 #include <QMessageBox>
 #include <QGraphicsLayout>
-#include <QPrinter>
-#include <QBrush>
-#include <QLogValueAxis>
-#include <QBarCategoryAxis>
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    #include <QMarginsF>
-	#include <QtCharts/QChartView>
-#endif
-#include <QtCharts/QBoxPlotSeries>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QScatterSeries>
-#include <QtCharts/QLineSeries>
-#include <QtCharts/QBoxSet>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QLegend>
-#include <QtCharts/QBarCategoryAxis>
-#include <QtCharts/QValueAxis>
 
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/chart.h"
+#include "lipidspace/boxplot.h"
+#include "lipidspace/scatterplot.h"
+#include "lipidspace/lineplot.h"
+#include "lipidspace/histogramplot.h"
+#include "lipidspace/barplot.h"
 
 using namespace std;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-	using namespace QtCharts;
-#endif
-
-
 using namespace OpenXLSX;
 
 
 
-class Statistics : public QChartView {
+class Statistics : public QObject {
     Q_OBJECT
 
 public:
     LipidSpace *lipid_space;
-    QChart *chart;
+    Chart *chart;
     vector<Array> series;
     vector<string> series_titles;
     map<string, double> stat_results;
     bool log_scale;
 
-    Statistics(QWidget *parent = nullptr);
-    void set_lipid_space(LipidSpace *_lipid_space);
-    double median(vector<double> &lst, int begin, int end);
+    Statistics();
+    void load_data(LipidSpace *_lipid_space, Chart *_chart);
+
 
 public slots:
     void updateBoxPlot();
@@ -76,7 +57,6 @@ public slots:
     void setTickSizeROCCurve(int);
     void setBarNumber(int);
     void set_log_scale();
-    void bar_plot_hovered(bool, QBoxSet*);
 };
 
 
