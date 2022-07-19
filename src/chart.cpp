@@ -37,7 +37,10 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
 
 void Chart::create_x_numerical_axis(){
     if (show_x_axis) return;
-    for (int i = 0; i < (TICK_NUM << 1); ++i){
+
+    show_x_axis = true;
+    is_x_category_axis = false;
+    for (int i = 0; i < TICK_NUM; ++i){
         QGraphicsLineItem* l = new QGraphicsLineItem(QLineF(0, 0, 0, 0));
         QGraphicsTextItem* t = new QGraphicsTextItem();
 
@@ -52,8 +55,6 @@ void Chart::create_x_numerical_axis(){
         scene.addItem(l);
         scene.addItem(t);
     }
-    show_x_axis = true;
-    is_x_category_axis = false;
 }
 
 
@@ -61,6 +62,8 @@ void Chart::create_x_numerical_axis(){
 void Chart::create_x_nominal_axis(){
     if (show_x_axis) return;
 
+    is_x_category_axis = true;
+    show_x_axis = true;
     QGraphicsLineItem* l = new QGraphicsLineItem(QLineF(0, 0, 0, 0));
     v_grid.push_back(l);
     QPen pen;
@@ -68,15 +71,15 @@ void Chart::create_x_nominal_axis(){
     pen.setColor(QColor("#DDDDDD"));
     l->setPen(pen);
     scene.addItem(l);
-    is_x_category_axis = true;
-    show_x_axis = true;
 }
 
 
 
 void Chart::create_y_numerical_axis(){
     if (show_y_axis) return;
-    for (int i = 0; i < (TICK_NUM << 1); ++i){
+
+    show_y_axis = true;
+    for (int i = 0; i < TICK_NUM; ++i){
         QGraphicsLineItem* l = new QGraphicsLineItem(QLineF(0, 0, 0, 0));
         QGraphicsTextItem* t = new QGraphicsTextItem();
 
@@ -91,7 +94,6 @@ void Chart::create_y_numerical_axis(){
         scene.addItem(l);
         scene.addItem(t);
     }
-    show_y_axis = true;
 }
 
 
@@ -107,6 +109,7 @@ void Chart::clear(){
 
     show_x_axis = false;
     show_y_axis = false;
+    is_x_category_axis = false;
 
     for (auto legend_category : legend_categories){
         scene.removeItem(legend_category.rect);
@@ -115,21 +118,16 @@ void Chart::clear(){
     legend_categories.clear();
 
 
-    if (x_categories.size() == 0){
-        for (auto v_line : v_grid){
-            scene.removeItem(v_line);
-            delete v_line;
-        }
-        v_grid.clear();
+    for (auto x_tick : x_ticks) scene.removeItem(x_tick);
+    for (auto y_tick : y_ticks) scene.removeItem(y_tick);
+    for (auto h_line : h_grid) scene.removeItem(h_line);
+    for (auto v_line : v_grid) scene.removeItem(v_line);
 
-        for (auto x_tick : x_ticks){
-            scene.removeItem(x_tick);
-            delete x_tick;
-        }
-        x_ticks.clear();
-    }
+    x_ticks.clear();
+    y_ticks.clear();
+    h_grid.clear();
+    v_grid.clear();
     x_categories.clear();
-
 
     for (auto plot : chart_plots){
         plot->clear();

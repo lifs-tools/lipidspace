@@ -14,6 +14,9 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
     lipid_space = _lipid_space;
     chart = _chart;
 	chart->setRenderHint(QPainter::Antialiasing);
+    chart->set_tick_size(GlobalData::gui_num_var["tick_size"]);
+    chart->set_title_size(GlobalData::gui_num_var["legend_size"]);
+
 }
 
 
@@ -26,6 +29,7 @@ void Statistics::set_log_scale(){
 
 void Statistics::setLegendSizeBoxPlot(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
+    chart->set_title_size(font_size);
     updateBoxPlot();
 }
 
@@ -33,6 +37,7 @@ void Statistics::setLegendSizeBoxPlot(int font_size){
 
 void Statistics::setLegendSizeBarPlot(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
+    chart->set_title_size(font_size);
     updateBarPlot();
 }
 
@@ -40,6 +45,7 @@ void Statistics::setLegendSizeBarPlot(int font_size){
 
 void Statistics::setLegendSizeHistogram(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
+    chart->set_title_size(font_size);
     updateHistogram();
 }
 
@@ -47,6 +53,7 @@ void Statistics::setLegendSizeHistogram(int font_size){
 
 void Statistics::setLegendSizeROCCurve(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
+    chart->set_title_size(font_size);
     updateROCCurve();
 }
 
@@ -54,6 +61,7 @@ void Statistics::setLegendSizeROCCurve(int font_size){
 
 void Statistics::setTickSizeROCCurve(int font_size){
     GlobalData::gui_num_var["tick_size"] = font_size;
+    chart->set_tick_size(font_size);
     updateROCCurve();
 }
 
@@ -61,6 +69,7 @@ void Statistics::setTickSizeROCCurve(int font_size){
 
 void Statistics::setTickSizeBoxPlot(int font_size){
     GlobalData::gui_num_var["tick_size"] = font_size;
+    chart->set_tick_size(font_size);
     updateBoxPlot();
 }
 
@@ -68,6 +77,7 @@ void Statistics::setTickSizeBoxPlot(int font_size){
 
 void Statistics::setTickSizeBarPlot(int font_size){
     GlobalData::gui_num_var["tick_size"] = font_size;
+    chart->set_tick_size(font_size);
     updateBarPlot();
 }
 
@@ -75,6 +85,7 @@ void Statistics::setTickSizeBarPlot(int font_size){
 
 void Statistics::setTickSizeHistogram(int font_size){
     GlobalData::gui_num_var["tick_size"] = font_size;
+    chart->set_tick_size(font_size);
     updateHistogram();
 }
 
@@ -850,238 +861,4 @@ void Statistics::updateBoxPlot(){
         QString sign = intercept >= 0 ? "+" : "-";
         chart->setTitle(QString("Linear regression model"));
     }
-
-
-    /*
-
-    chart->removeAllSeries();
-    for (auto axis : chart->axes()){
-        chart->removeAxis(axis);
-    }
-    series_titles.clear();
-    series.clear();
-    chart->setTitle("");
-    stat_results.clear();
-
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
-    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
-
-    bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
-
-    if (lipid_space->selected_lipidomes.size() <= 1){
-        setVisible(false);
-        return;
-    }
-
-
-    Matrix statistics_matrix(lipid_space->statistics_matrix);
-
-
-    // setup array for target variable values, if nominal then each with incrementing number
-    map<string, double> nominal_target_values;
-    Indexes target_indexes;
-    Array target_values;
-    int nom_counter = 0;
-    vector<QBoxPlotSeries*> plot_series;
-    vector<QScatterSeries*> scatter_series;
-
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
-    bool has_secondary = contains_val(lipid_space->feature_values, secondary_target_variable);
-
-    if (is_nominal){
-        for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->features[target_variable].missing) continue;
-            if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
-
-            string nominal_value = lipidome->features[target_variable].nominal_value;
-            if (uncontains_val(nominal_target_values, nominal_value)){
-                nominal_target_values.insert({nominal_value, nom_counter++});
-                plot_series.push_back(new QBoxPlotSeries());
-                plot_series.back()->setName(nominal_value.c_str());
-                series_titles.push_back(nominal_value);
-                plot_series.back()->append(new QBoxSet());
-                string color_key = target_variable + "_" + nominal_value;
-                if (contains_val(GlobalData::colorMapFeatures, color_key)){
-                    QBrush brush(GlobalData::colorMapFeatures[color_key]);
-                    plot_series.back()->setBrush(brush);
-                }
-            }
-            target_indexes.push_back(nominal_target_values[nominal_value]);
-            if (has_secondary) target_values.push_back(lipidome->features[secondary_target_variable].numerical_value);
-
-
-        }
-    }
-    else {
-        for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->features[target_variable].missing) continue;
-            if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
-
-            target_values.push_back(lipidome->features[target_variable].numerical_value);
-
-            if (has_secondary){
-                string nominal_value = lipidome->features[secondary_target_variable].nominal_value;
-                if (uncontains_val(nominal_target_values, nominal_value)){
-                    nominal_target_values.insert({nominal_value, nom_counter++});
-                    scatter_series.push_back(new QScatterSeries());
-                    scatter_series.back()->setName(nominal_value.c_str());
-                    series_titles.push_back(nominal_value);
-                    string color_key = secondary_target_variable + "_" + nominal_value;
-                    if (contains_val(GlobalData::colorMapFeatures, color_key)){
-                        QBrush brush(GlobalData::colorMapFeatures[color_key]);
-                        scatter_series.back()->setBrush(brush);
-                    }
-                }
-                target_indexes.push_back(nominal_target_values[nominal_value]);
-            }
-        }
-    }
-
-    // if any lipidome has a missing study variable, discard the lipidome from the statistic
-    Indexes lipidomes_to_keep;
-    for (int r = 0; r < statistics_matrix.rows; ++r){
-        if (!lipid_space->selected_lipidomes[r]->features[target_variable].missing) lipidomes_to_keep.push_back(r);
-    }
-    Matrix tmp;
-    tmp.rewrite(statistics_matrix, lipidomes_to_keep);
-    statistics_matrix.rewrite(tmp);
-
-
-    if (is_nominal){
-
-        series.resize(nom_counter);
-        if (has_secondary){
-            for (uint r = 0; r < target_indexes.size(); ++r){
-                series[target_indexes[r]].push_back(target_values[r]);
-            }
-        }
-        else {
-            if (statistics_matrix.cols > 1) statistics_matrix.scale();
-            for (int r = 0; r < statistics_matrix.rows; ++r){
-                double sum = 0;
-                for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
-                if (statistics_matrix.cols > 1 || sum > 1e-15){
-                    series[target_indexes[r]].push_back(sum);
-                }
-            }
-        }
-        for (uint i = 0; i < plot_series.size(); ++i){
-            plot_series[i]->setName((plot_series[i]->name() + " (%1)").arg(series[i].size()));
-            auto single_plot_series = plot_series[i];
-            QBoxSet *box = single_plot_series->boxSets()[0];
-
-            Array &single_series = series[i];
-            if (single_series.size() < 2) continue;
-
-            sort(single_series.begin(), single_series.end());
-            int count = single_series.size();
-            box->setValue(QBoxSet::LowerExtreme, single_series.front());
-            box->setValue(QBoxSet::UpperExtreme, single_series.back());
-            box->setValue(QBoxSet::Median, median(single_series, 0, count));
-            box->setValue(QBoxSet::LowerQuartile, median(single_series, 0, count >> 1));
-            box->setValue(QBoxSet::UpperQuartile, median(single_series, (count >> 1) + (count & 1), count));
-
-            chart->addSeries(single_plot_series);
-        }
-        double accuracy = compute_accuracy(series);
-        stat_results.insert({"accuracy", accuracy});
-        if (nom_counter == 2){
-            double p_student = p_value_student(series[0], series[1]);
-            double p_welch = p_value_welch(series[0], series[1]);
-            double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
-            double accuracy = compute_accuracy(series);
-            stat_results.insert({"p_value(Student)", p_student});
-            stat_results.insert({"p_value(Welch)", p_welch});
-            stat_results.insert({"p_value(KS)", p_ks});
-            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>Student</sub> = %2,   <i>p</i>-value<sub>Welch</sub> = %3,   <i>p</i>-value<sub>KS</sub> = %4").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
-        }
-        else if (nom_counter > 2){
-            double p_anova = p_value_anova(series);
-            stat_results.insert({"p_value(ANOVA)", p_anova});
-            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
-        }
-    }
-    else {
-        Array constants(statistics_matrix.rows, 1);
-        statistics_matrix.add_column(constants);
-
-        double min_x = 1e100;
-        double max_x = 0;
-        Array coefficiants;
-
-        coefficiants.compute_coefficiants(statistics_matrix, target_values);    // estimating coefficiants
-        Array S;
-        S.mult(statistics_matrix, coefficiants);
-
-        if (!has_secondary){
-            QScatterSeries* series_model = new QScatterSeries();
-            series_model->setName(target_variable.c_str());
-            for (uint i = 0; i < S.size(); ++i){
-                series_model->append(S[i], target_values[i]);
-                min_x = min(min_x, S[i]);
-                max_x = max(max_x, S[i]);
-            }
-            chart->addSeries(series_model);
-        }
-        else {
-            for (uint i = 0; i < S.size(); ++i){
-                scatter_series[target_indexes[i]]->append(S[i], target_values[i]);
-                min_x = min(min_x, S[i]);
-                max_x = max(max_x, S[i]);
-            }
-            for (auto s_series : scatter_series) chart->addSeries(s_series);
-        }
-
-
-
-
-        double mx = 0, my = 0, ny = 0;
-        // computing the study variable mean based on missing values of lipids
-        for (uint r = 0; r < S.size(); ++r){
-            if (S[r] <= 1e-15) continue;
-            mx += S[r];
-            my += target_values[r];
-            ny += 1;
-        }
-        mx /= ny;
-        my /= ny;
-
-        // estimate slope and intercept factors for linear regression
-        double slope_num = 0, slope_denom = 0;
-        for (uint r = 0; r < S.size(); ++r){
-            if (S[r] <= 1e-15) continue;
-            slope_num += (S[r] - mx) * (target_values[r] - my);
-            slope_denom += sq(S[r] - mx);
-        }
-        double slope = slope_num / slope_denom;
-        double intercept = my - slope * mx;
-
-        double SQR = 0, SQT = 0;
-        for (uint r = 0; r < S.size(); ++r){
-            if (S[r] <= 1e-15) continue;
-            SQR += sq(target_values[r] - (slope * S[r] + intercept));
-            SQT += sq(target_values[r] - my);
-        }
-        double R2 = 1. - SQR / SQT;
-        stat_results.insert({"R^2", R2});
-
-        QLineSeries* series_regression = new QLineSeries();
-        series_regression->setName(QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2));
-        series_regression->append(min_x, slope * min_x + intercept);
-        series_regression->append(max_x, slope * max_x + intercept);
-        chart->addSeries(series_regression);
-        QString sign = intercept >= 0 ? "+" : "-";
-        chart->setTitle(QString("Linear regression model"));
-    }
-    chart->createDefaultAxes();
-
-    for (auto axis : chart->axes()){
-        if (is_nominal && axis->orientation() == Qt::Horizontal){
-            chart->removeAxis(axis);
-        }
-        else {
-            axis->setLabelsFont(QFont("Helvetica", GlobalData::gui_num_var["tick_size"]));
-        }
-    }
-    */
 }
