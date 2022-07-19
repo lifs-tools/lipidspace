@@ -1,5 +1,5 @@
-!win32:QT       += core gui printsupport widgets charts svg
-win32:QT       += core gui printsupport widgets charts svg svgwidgets
+!win32:QT       += core gui printsupport widgets svg
+win32:QT       += core gui printsupport widgets svg svgwidgets
 
 CONFIG += c++17 debug_and_release
 QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
