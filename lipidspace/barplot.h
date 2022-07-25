@@ -37,7 +37,7 @@ struct BarBox {
         upper_error_line = new QGraphicsLineItem();
         lower_error_line = new QGraphicsLineItem();
         base_line = new QGraphicsLineItem();
-        rect = new HoverRectItem(_label);
+        rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1));
         rect->setAcceptHoverEvents(true);
 
         scene->addItem(upper_error_line);
@@ -50,8 +50,9 @@ struct BarBox {
 class Barplot : public Chartplot {
 public:
     vector< vector<BarBox> > bars;
+    bool log_scale;
 
-    Barplot(Chart *_chart);
+    Barplot(Chart *_chart, bool _log_scale);
     ~Barplot();
     void add(vector< vector< pair<double, double> > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors = 0);
     void update_chart();

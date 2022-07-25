@@ -273,7 +273,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->tableWidget, SIGNAL(cornerButtonClick()), this, SLOT(transposeTable()));
     connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowTableContextMenu);
     connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
-    connect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeatureStat(int)));
+    connect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
     connect(this, SIGNAL(featureChanged(string)), ui->dendrogramView, SLOT(setFeature(string)));
     connect(ui->speciesList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->classList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
@@ -387,33 +387,23 @@ LipidSpaceGUI::~LipidSpaceGUI(){
 
 
 void LipidSpaceGUI::setFeature(int c){
+    disconnect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
     disconnect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), 0, 0);
     disconnect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
 
+    ui->featureComboBox->setCurrentIndex(c);
     ui->featureComboBoxStat->setCurrentIndex(c);
     GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
-    featureChanged(ui->featureComboBox->currentText().toStdString());
-    setSecondarySorting();
-
-    connect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeatureStat(int)));
-    connect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSecondarySorting(int)));
-}
-
-
-
-void LipidSpaceGUI::setFeatureStat(int c){
-    disconnect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
-    disconnect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
-
-    ui->featureComboBox->setCurrentIndex(c);
     GlobalData::gui_string_var["study_var_stat"] = ui->featureComboBoxStat->currentText().toStdString();
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
     statisticsHistogram.updateHistogram();
     statisticsROCCurve.updateROCCurve();
+    featureChanged(ui->featureComboBox->currentText().toStdString());
     setSecondarySorting();
 
     connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
+    connect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
     connect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSecondarySorting(int)));
 }
 

@@ -18,6 +18,9 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     xrange = QPointF(1e100, -1e100);
     yrange = QPointF(1e100, -1e100);
 
+    log_x_axis = false;
+    log_y_axis = false;
+
     show_x_axis = false;
     show_y_axis = false;
     is_x_category_axis = false;
@@ -35,10 +38,11 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
 
 
 
-void Chart::create_x_numerical_axis(){
+void Chart::create_x_numerical_axis(bool _log_x){
     if (show_x_axis) return;
 
     show_x_axis = true;
+    log_x_axis = _log_x;
     is_x_category_axis = false;
     for (int i = 0; i < TICK_NUM; ++i){
         QGraphicsLineItem* l = new QGraphicsLineItem(QLineF(0, 0, 0, 0));
@@ -75,24 +79,47 @@ void Chart::create_x_nominal_axis(){
 
 
 
-void Chart::create_y_numerical_axis(){
+void Chart::create_y_numerical_axis(bool _log_y){
     if (show_y_axis) return;
 
     show_y_axis = true;
-    for (int i = 0; i < TICK_NUM; ++i){
-        QGraphicsLineItem* l = new QGraphicsLineItem(QLineF(0, 0, 0, 0));
-        QGraphicsTextItem* t = new QGraphicsTextItem();
+    log_y_axis = _log_y;
+    if (log_y_axis){
+        int l = yrange.x() > 0 ? ceil(log(yrange.x()) / log(10.)) : 0;
+        int u = floor(log(yrange.y()) / log(10.));
 
-        y_ticks.push_back(t);
-        h_grid.push_back(l);
+        for (int i = l; i <= u; ++i){
+            QGraphicsLineItem* l = new QGraphicsLineItem(QLineF(0, 0, 0, 0));
+            QGraphicsTextItem* t = new QGraphicsTextItem();
 
-        QPen pen;
-        pen.setWidthF(1);
-        pen.setColor(QColor("#DDDDDD"));
-        l->setPen(pen);
+            y_ticks.push_back(t);
+            h_grid.push_back(l);
 
-        scene.addItem(l);
-        scene.addItem(t);
+            QPen pen;
+            pen.setWidthF(1);
+            pen.setColor(QColor("#DDDDDD"));
+            l->setPen(pen);
+
+            scene.addItem(l);
+            scene.addItem(t);
+        }
+    }
+    else {
+        for (int i = 0; i < TICK_NUM; ++i){
+            QGraphicsLineItem* l = new QGraphicsLineItem(QLineF(0, 0, 0, 0));
+            QGraphicsTextItem* t = new QGraphicsTextItem();
+
+            y_ticks.push_back(t);
+            h_grid.push_back(l);
+
+            QPen pen;
+            pen.setWidthF(1);
+            pen.setColor(QColor("#DDDDDD"));
+            l->setPen(pen);
+
+            scene.addItem(l);
+            scene.addItem(t);
+        }
     }
 }
 
@@ -106,7 +133,8 @@ void Chart::clear(){
 
     xrange = QPointF(1e100, -1e100);
     yrange = QPointF(1e100, -1e100);
-
+    log_x_axis = false;
+    log_y_axis = false;
 
     show_x_axis = false;
     show_y_axis = false;
@@ -138,8 +166,30 @@ void Chart::clear(){
 }
 
 void Chart::translate(double &x, double &y){
-    x = chart_box_inner.x() + chart_box_inner.width() / (xrange.y() - xrange.x()) * (x - xrange.x());
-    y = chart_box_inner.y() + chart_box_inner.height() - chart_box_inner.height() / (yrange.y() - yrange.x()) * (y - yrange.x());
+    if (log_x_axis){
+        if (x > xrange.x()){
+            x = chart_box_inner.x() + chart_box_inner.width() / (log(xrange.y() / xrange.x()) / log(10)) * (log(x / xrange.x())) / log(10);
+        }
+        else {
+            x = chart_box_inner.x();
+        }
+    }
+    else {
+        x = chart_box_inner.x() + chart_box_inner.width() / (xrange.y() - xrange.x()) * (x - xrange.x());
+    }
+
+
+    if (log_y_axis){
+        if (y > yrange.x()){
+            y = chart_box_inner.y() + chart_box_inner.height() - chart_box_inner.height() / (log(yrange.y() / yrange.x()) / log(10)) * (log(y / yrange.x())) / log(10);
+        }
+        else {
+            y = chart_box_inner.y() + chart_box_inner.height();
+        }
+    }
+    else {
+        y = chart_box_inner.y() + chart_box_inner.height() - chart_box_inner.height() / (yrange.y() - yrange.x()) * (y - yrange.x());
+    }
 }
 
 
@@ -251,29 +301,71 @@ void Chart::update_chart(){
     chart_box_inner.setRect(chart_box.x() + max_tick_width, chart_box.y() + tick_rect.height() / 2, chart_box.width() - max_tick_width - max_x_tick_width, chart_box.height() - 1.5 * tick_rect.height());
 
 
-    if (show_y_axis){
-        for (uint i = 0; i < h_grid.size(); ++i){
-            auto line = h_grid[i];
-            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
-                line->setVisible(true);
-                double h = chart_box_inner.y() + (double)i / (TICK_NUM - 1) * chart_box_inner.height();
-                line->setLine(chart_box_inner.x() - TICK_SIZE, h, chart_box_inner.x() + chart_box_inner.width(), h);
-            }
-            else {
-                line->setVisible(false);
-            }
 
-            auto tick = y_ticks[i];
-            if (tick_rect.height() * TICK_NUM * 0.7 < chart_box.height() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
-                tick->setVisible(true);
-                tick->setFont(tick_font);
-                tick->setPlainText(QString("%1").arg(yrange.x() + (TICK_NUM - 1. - (double)i) / (TICK_NUM - 1) * (yrange.y() - yrange.x()), 0, 'f', 1));
-                double x = chart_box_inner.x() - tick->boundingRect().width() - TICK_SIZE;
-                double y = chart_box_inner.y() + (double)i / (TICK_NUM - 1) * chart_box_inner.height() - tick->boundingRect().height() / 2.;
-                tick->setPos(x, y);
+
+
+    if (show_y_axis){
+        if (!log_y_axis){
+
+            for (uint i = 0; i < h_grid.size(); ++i){
+                auto line = h_grid[i];
+                if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
+                    line->setVisible(true);
+                    double h = chart_box_inner.y() + (double)i / (h_grid.size() - 1) * chart_box_inner.height();
+                    line->setLine(chart_box_inner.x() - TICK_SIZE, h, chart_box_inner.x() + chart_box_inner.width(), h);
+                }
+                else {
+                    line->setVisible(false);
+                }
+
+                auto tick = y_ticks[i];
+                if (tick_rect.height() * h_grid.size() * 0.7 < chart_box.height() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
+                    tick->setVisible(true);
+                    tick->setFont(tick_font);
+
+                    double tick_value = yrange.x() + (TICK_NUM - 1. - (double)i) / (TICK_NUM - 1) * (yrange.y() - yrange.x());
+
+                    tick->setPlainText(QString("%1").arg(tick_value, 0, 'f', 1));
+                    double x = chart_box_inner.x() - tick->boundingRect().width() - TICK_SIZE;
+                    double y = chart_box_inner.y() + (double)i / (h_grid.size() - 1) * chart_box_inner.height() - tick->boundingRect().height() / 2.;
+                    tick->setPos(x, y);
+                }
+                else {
+                    tick->setVisible(false);
+                }
             }
-            else {
-                tick->setVisible(false);
+        }
+        else {
+            int u = floor(log(yrange.y()) / log(10.));
+            double tick_value = log_y_axis ? pow(10., u) : 0;
+            for (uint i = 0; i < h_grid.size(); ++i){
+                auto line = h_grid[i];
+                if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
+                    line->setVisible(true);
+
+                    double h = chart_box_inner.y() + chart_box_inner.height() - chart_box_inner.height() / (log(yrange.y() / yrange.x()) / log(10)) * (log(tick_value / yrange.x())) / log(10);
+
+                    line->setLine(chart_box_inner.x() - TICK_SIZE, h, chart_box_inner.x() + chart_box_inner.width(), h);
+                }
+                else {
+                    line->setVisible(false);
+                }
+
+                auto tick = y_ticks[i];
+                if (tick_rect.height() * h_grid.size() * 0.7 < chart_box.height() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
+                    tick->setVisible(true);
+                    tick->setFont(tick_font);
+
+                    tick->setPlainText(QString("%1").arg(tick_value, 0, 'f', 1));
+                    double x = chart_box_inner.x() - tick->boundingRect().width() - TICK_SIZE;
+                    double y = chart_box_inner.y() + chart_box_inner.height() - chart_box_inner.height() / (log(yrange.y() / yrange.x()) / log(10)) * (log(tick_value / yrange.x())) / log(10) - tick->boundingRect().height() / 2.;
+                    tick->setPos(x, y);
+                }
+                else {
+                    tick->setVisible(false);
+                }
+
+                tick_value /= 10.;
             }
         }
     }

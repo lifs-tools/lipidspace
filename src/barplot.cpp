@@ -17,7 +17,8 @@ void HoverRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 }
 
 
-Barplot::Barplot(Chart *_chart) : Chartplot(_chart) {
+Barplot::Barplot(Chart *_chart, bool _log_scale) : Chartplot(_chart) {
+    log_scale = _log_scale;
 }
 
 Barplot::~Barplot(){
@@ -31,51 +32,59 @@ void Barplot::update_chart(){
         vector< BarBox > &barset = bars[b];
 
         for (uint s = 0; s < barset.size(); ++s){
-            double xs = b + (double)s / (double)barset.size();
-            double xe = b + (double)(s + 1) / (double)barset.size();
-
             BarBox &bar = barset[s];
-            double x1 = xs + (xe - xs) / 4.;
-            double y1 = bar.value + bar.error;
-            double x2 = xe - (xe - xs) / 4.;
-            double y2 = bar.value + bar.error;
-            chart->translate(x1, y1);
-            chart->translate(x2, y2);
-            bool reasonable = (x2 - x1) > 3;
-            bar.upper_error_line->setLine(x1, y1, x2, y2);
-            bar.upper_error_line->setZValue(100);
-            bar.upper_error_line->setVisible(visible & reasonable);
+            if (visible && (bar.value > 0)){
+                double xs = b + (double)s / (double)barset.size();
+                double xe = b + (double)(s + 1) / (double)barset.size();
 
-            x1 = xs + (xe - xs) / 4.;
-            y1 = bar.value - bar.error;
-            x2 = xe - (xe - xs) / 4.;
-            y2 = bar.value - bar.error;
-            chart->translate(x1, y1);
-            chart->translate(x2, y2);
-            bar.lower_error_line->setLine(x1, y1, x2, y2);
-            bar.lower_error_line->setZValue(100);
-            bar.lower_error_line->setVisible(visible & reasonable);
+                double x1 = xs + (xe - xs) / 4.;
+                double y1 = bar.value + bar.error;
+                double x2 = xe - (xe - xs) / 4.;
+                double y2 = bar.value + bar.error;
+                chart->translate(x1, y1);
+                chart->translate(x2, y2);
+                bool lines_visible = (x2 - x1) > 3;
+                bar.upper_error_line->setLine(x1, y1, x2, y2);
+                bar.upper_error_line->setZValue(100);
+                bar.upper_error_line->setVisible(visible & lines_visible);
 
-            x1 = (xs + xe) / 2.0;
-            y1 = bar.value - bar.error;
-            x2 = (xs + xe) / 2.0;
-            y2 = bar.value + bar.error;
-            chart->translate(x1, y1);
-            chart->translate(x2, y2);
-            bar.base_line->setLine(x1, y1, x2, y2);
-            bar.base_line->setZValue(90);
-            bar.base_line->setVisible(visible & reasonable);
+                x1 = xs + (xe - xs) / 4.;
+                y1 = bar.value - bar.error;
+                x2 = xe - (xe - xs) / 4.;
+                y2 = bar.value - bar.error;
+                chart->translate(x1, y1);
+                chart->translate(x2, y2);
+                bar.lower_error_line->setLine(x1, y1, x2, y2);
+                bar.lower_error_line->setZValue(100);
+                bar.lower_error_line->setVisible(visible & lines_visible);
 
-            x1 = xs;
-            y1 = bar.value;
-            x2 = xe;
-            y2 = 0;
-            chart->translate(x1, y1);
-            chart->translate(x2, y2);
-            bar.rect->setBrush(QBrush(bar.color));
-            bar.rect->setRect(x1, y1, x2 - x1, y2 - y1);
-            bar.rect->setZValue(50);
-            bar.rect->setVisible(visible);
+                x1 = (xs + xe) / 2.0;
+                y1 = bar.value - bar.error;
+                x2 = (xs + xe) / 2.0;
+                y2 = bar.value + bar.error;
+                chart->translate(x1, y1);
+                chart->translate(x2, y2);
+                bar.base_line->setLine(x1, y1, x2, y2);
+                bar.base_line->setZValue(90);
+                bar.base_line->setVisible(visible & lines_visible);
+
+                x1 = xs;
+                y1 = bar.value;
+                x2 = xe;
+                y2 = 0;
+                chart->translate(x1, y1);
+                chart->translate(x2, y2);
+                bar.rect->setBrush(QBrush(bar.color));
+                bar.rect->setRect(x1, y1, x2 - x1, y2 - y1);
+                bar.rect->setZValue(50);
+                bar.rect->setVisible(visible);
+            }
+            else {
+                bar.upper_error_line->setVisible(false);
+                bar.lower_error_line->setVisible(false);
+                bar.base_line->setVisible(false);
+                bar.rect->setVisible(false);
+            }
         }
     }
 }
@@ -86,6 +95,7 @@ void Barplot::clear(){
 }
 
 
+
 void Barplot::add(vector< vector< pair<double, double> > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors){
     if (bars.size() > 0 || data.size() == 0 || data.size() != labels.size() || (colors != 0 && categories.size() != colors->size())) return;
 
@@ -93,10 +103,8 @@ void Barplot::add(vector< vector< pair<double, double> > > &data, vector<QString
         if (category_data.size() != categories.size()) return;
     }
 
-    chart->create_y_numerical_axis();
-    chart->create_x_nominal_axis();
 
-
+    double ymin = chart->yrange.x();
     double ymax = chart->yrange.y();
     for (uint s = 0; s < data.size(); ++s){
         auto data_set = data[s];
@@ -112,6 +120,7 @@ void Barplot::add(vector< vector< pair<double, double> > > &data, vector<QString
             double error = values.second;
             if (isnan(value) || isinf(value)) value = 0;
             if (isnan(error) || isinf(error)) error = 0;
+            if (value > 0) ymin = min(ymin, values.first);
             ymax = max(ymax, values.first + values.second);
 
             bar_set.push_back(BarBox(&(chart->scene), value, error, labels[s], color));
@@ -120,10 +129,14 @@ void Barplot::add(vector< vector< pair<double, double> > > &data, vector<QString
     }
 
     chart->xrange = QPointF(0, bars.size());
-    chart->yrange = QPointF(0, ymax);
+    if (log_scale && ymin > 0) ymin = pow(10, floor(log(ymin) / log(10)));
+    chart->yrange = QPointF(log_scale ? ymin : 0, ymax);
 
     for (uint i = 0; i < categories.size(); ++i){
         QColor color = ((colors != 0) && (colors->size() > i)) ? colors->at(i) : Qt::white;
         chart->legend_categories.push_back(LegendCategory(categories[i], color, &chart->scene));
     }
+
+    chart->create_y_numerical_axis(log_scale);
+    chart->create_x_nominal_axis();
 }

@@ -408,7 +408,7 @@ void Statistics::updateBarPlot(){
         }
 
     }
-    Barplot *barplot = new Barplot(chart);
+    Barplot *barplot = new Barplot(chart, log_scale);
     barplot->add(barplot_data, categories, lipid_names, &colors);
     chart->add(barplot);
 }

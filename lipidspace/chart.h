@@ -14,8 +14,6 @@
 #include "lipidspace/AssistanceFunctions.h"
 #include "lipidspace/globaldata.h"
 #include "lipidspace/chartplot.h"
-//#include "lipidspace/boxplot.h"
-//#include "lipidspace/scatterplot.h"
 
 #define TICK_NUM 5
 #define TICK_SIZE 5
@@ -61,6 +59,8 @@ public:
     bool show_x_axis;
     bool show_y_axis;
     bool is_x_category_axis;
+    bool log_x_axis;
+    bool log_y_axis;
     vector<LegendCategory> legend_categories;
     vector<QString> x_categories;
     QPointF xrange;
@@ -80,9 +80,9 @@ public:
     void translate(double &x, double &y);
     void add(Chartplot* plot);
     void add_category(QString);
-    void create_x_numerical_axis();
+    void create_x_numerical_axis(bool _log_x = false);
     void create_x_nominal_axis();
-    void create_y_numerical_axis();
+    void create_y_numerical_axis(bool _log_y = false);
 
     virtual void update_chart();
     virtual void clear();
