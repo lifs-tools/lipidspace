@@ -1720,10 +1720,15 @@ void LipidSpaceGUI::export_list(){
 void LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot(const QPoint pos){
     if (statisticsBoxPlot.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
+    QAction *actionShowData = new QAction("Show data", this);
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
+    actionShowData->setCheckable(true);
+    actionShowData->setChecked(statisticsBoxPlot.show_data);
+    menu->addAction(actionShowData);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
+    connect(actionShowData, &QAction::triggered, &statisticsBoxPlot, &Statistics::set_show_data);
     connect(actionData, &QAction::triggered, &statisticsBoxPlot, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, &statisticsBoxPlot, &Statistics::exportAsPdf);
     menu->popup(ui->statisticsBoxPlot->viewport()->mapToGlobal(pos));

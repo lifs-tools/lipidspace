@@ -1,6 +1,7 @@
 #include "lipidspace/boxplot.h"
 
-Boxplot::Boxplot(Chart *_chart) : Chartplot(_chart) {
+Boxplot::Boxplot(Chart *_chart, bool _show_data) : Chartplot(_chart) {
+    show_data = _show_data;
 }
 
 Boxplot::~Boxplot(){
@@ -62,18 +63,28 @@ void Boxplot::update_chart(){
         box.median_line->setLine(x1, y1, x2, y2);
         box.median_line->setZValue(100);
         box.median_line->setVisible(visible);
+
+        if (show_data){
+            for (uint i = 0; i < box.data.size(); ++i){
+                auto ellipse = box.dots[i];
+                x1 = b - 0.25 + box.data[i].second;
+                y1 = box.data[i].first;
+                chart->translate(x1, y1);
+                ellipse->setBrush(QBrush(Qt::black));
+                ellipse->setPen(QPen(Qt::black));
+                ellipse->setRect(x1 - 2, y1 - 2, 4, 4);
+                ellipse->setZValue(110);
+                ellipse->setVisible(visible);
+            }
+        }
+        else {
+            for (auto ellipse : box.dots) ellipse->setVisible(false);
+        }
     }
 }
 
 
 void Boxplot::clear(){
-    for (auto &box : boxes){
-        chart->scene.removeItem(box.upper_extreme_line);
-        chart->scene.removeItem(box.lower_extreme_line);
-        chart->scene.removeItem(box.base_line);
-        chart->scene.removeItem(box.median_line);
-        chart->scene.removeItem(box.rect);
-    }
     boxes.clear();
 }
 
@@ -91,7 +102,6 @@ double Boxplot::median(vector<double> &lst, int begin, int end){
 
 
 void Boxplot::add(Array &array, QString category, QColor color){
-    chart->create_y_numerical_axis();
 
     sort(array.begin(), array.end());
     int count = array.size();
@@ -105,8 +115,18 @@ void Boxplot::add(Array &array, QString category, QColor color){
     box.lower_quartile = median(array, 0, count >> 1);
     box.upper_quartile = median(array, (count >> 1) + (count & 1), count);
 
+    if (show_data){
+        for (auto value : array){
+            box.data.push_back({value, randnum() * .5});
+            QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem();
+            box.dots.push_back(ellipse);
+            chart->scene.addItem(ellipse);
+        }
+    }
+
     chart->xrange = QPointF(-0.5, boxes.size() - 0.5);
     chart->yrange = QPointF(boxes.size() > 1 ? min(chart->yrange.x(), array.front()) : array.front(), boxes.size() > 1 ? max(chart->yrange.y(), array.back()) : array.back());
 
     chart->legend_categories.push_back(LegendCategory(category, box.color, &chart->scene));
+    chart->create_y_numerical_axis();
 }

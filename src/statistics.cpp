@@ -7,6 +7,7 @@ Statistics::Statistics() {
     chart = 0;
     lipid_space = 0;
     log_scale = false;
+    show_data = false;
 }
 
 
@@ -24,6 +25,13 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
 void Statistics::set_log_scale(){
     log_scale = !log_scale;
     updateBarPlot();
+}
+
+
+
+void Statistics::set_show_data(){
+    show_data = !show_data;
+    updateBoxPlot();
 }
 
 
@@ -739,7 +747,7 @@ void Statistics::updateBoxPlot(){
                 }
             }
         }
-        Boxplot* boxplot = new Boxplot(chart);
+        Boxplot* boxplot = new Boxplot(chart, show_data);
         for (uint i = 0; i < nominal_values.size(); ++i){
             Array &single_series = series[i];
             QString category = QString(nominal_values[i].c_str()) + QString(" (%1)").arg(series[i].size());

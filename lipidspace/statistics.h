@@ -35,6 +35,7 @@ public:
     vector<string> series_titles;
     map<string, double> stat_results;
     bool log_scale;
+    bool show_data;
 
     Statistics();
     void load_data(LipidSpace *_lipid_space, Chart *_chart);
@@ -57,6 +58,7 @@ public slots:
     void setTickSizeROCCurve(int);
     void setBarNumber(int);
     void set_log_scale();
+    void set_show_data();
 };
 
 

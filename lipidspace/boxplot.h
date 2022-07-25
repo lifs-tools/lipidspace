@@ -14,12 +14,14 @@ struct WhiskerBox {
     double median;
     double upper_quartile;
     double upper_extreme;
+    vector<pair<double, double>> data;
 
     QGraphicsLineItem *upper_extreme_line;
     QGraphicsLineItem *lower_extreme_line;
     QGraphicsLineItem *median_line;
     QGraphicsLineItem *base_line;
     QGraphicsRectItem *rect;
+    vector<QGraphicsEllipseItem*> dots;
     QColor color;
 
     WhiskerBox(QGraphicsScene *scene){
@@ -40,9 +42,10 @@ struct WhiskerBox {
 
 class Boxplot : public Chartplot {
 public:
+    bool show_data;
     vector<WhiskerBox> boxes;
 
-    Boxplot(Chart *_chart);
+    Boxplot(Chart *_chart, bool _show_data = false);
     ~Boxplot();
     static double median(vector<double> &lst, int begin, int end);
     void add(Array &data, QString category, QColor color = Qt::white);
