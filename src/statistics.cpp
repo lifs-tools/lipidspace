@@ -228,6 +228,7 @@ void Statistics::exportAsPdf(){
 
 
 void Statistics::updateBarPlot(){
+
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);
@@ -291,10 +292,8 @@ void Statistics::updateBarPlot(){
                 target_indexes.push_back(nominal_target_values[nominal_value]);
             }
         }
+        if (!has_secondary) nom_counter += 1;
     }
-
-
-
 
     Matrix stat_matrix;
     map<LipidAdduct*, int> lipid_map;
@@ -324,17 +323,17 @@ void Statistics::updateBarPlot(){
 
     vector<QString> lipid_names(lipid_map.size(), "");
     for (auto kv : lipid_name_map) lipid_names[kv.second] = kv.first.c_str();
-    vector< vector<Array> > data_series(nom_counter + (!is_nominal));
+    vector< vector<Array> > data_series(nom_counter);
 
-    for (int t = 0; t < nom_counter + (!is_nominal); ++t){
+    for (int t = 0; t < nom_counter; ++t){
         for (int c = 0; c < stat_matrix.cols; c++){
-            series_titles.push_back(lipid_names[c].toStdString() + (nom_counter > 0 ? " / " + nominal_values[t] : ""));
+            series_titles.push_back(lipid_names[c].toStdString() + (nom_counter > 1 ? " / " + nominal_values[t] : ""));
             data_series[t].push_back(Array());
         }
     }
 
 
-    if (is_nominal){
+    if (is_nominal || has_secondary){
         for (int r = 0; r < stat_matrix.rows; ++r){ // for all values of a study variable
             for (int c = 0; c < stat_matrix.cols; c++){
                 if (stat_matrix(r, c) > 1e-15){
@@ -356,32 +355,14 @@ void Statistics::updateBarPlot(){
         }
     }
 
-
-
-
     series.resize(series_titles.size());
-
-    //if (log_scale){
-    //    axisY = new QLogValueAxis();
-    //    axisY->setLabelFormat("%g");
-    //    axisY->setBase(10.0);
-    //    chart->addAxis(axisY, Qt::AlignLeft);
-
-    //    axisX = new QBarCategoryAxis();
-    //    for (auto lipid_name : lipid_names){
-    //        QString category = lipid_name.c_str();
-    //        axisX->append(category);
-    //    }
-    //    chart->addAxis(axisX, Qt::AlignBottom);
-    //}
-
 
     vector<QString> categories;
     vector<QColor> colors;
     for (auto nominal_value : nominal_values) categories.push_back(nominal_value.c_str());
-    if (is_nominal){
+    if (is_nominal | has_secondary){
         for (auto nominal_value : nominal_values){
-            string color_key = target_variable + "_" + nominal_value;
+            string color_key = ((is_nominal || !has_secondary) ? target_variable : secondary_target_variable) + "_" + nominal_value;
             colors.push_back(contains_val(GlobalData::colorMapFeatures, color_key) ? GlobalData::colorMapFeatures[color_key] : QColor("#F6A611"));
         }
     }

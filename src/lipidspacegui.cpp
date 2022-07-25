@@ -395,12 +395,14 @@ void LipidSpaceGUI::setFeature(int c){
     ui->featureComboBoxStat->setCurrentIndex(c);
     GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
     GlobalData::gui_string_var["study_var_stat"] = ui->featureComboBoxStat->currentText().toStdString();
+    setSecondarySorting();
+    GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
+
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
     statisticsHistogram.updateHistogram();
     statisticsROCCurve.updateROCCurve();
     featureChanged(ui->featureComboBox->currentText().toStdString());
-    setSecondarySorting();
 
     connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
     connect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
@@ -443,6 +445,8 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsHistogram.updateHistogram();
     statisticsROCCurve.updateROCCurve();
 }
+
+
 
 
 void LipidSpaceGUI::setSecondarySorting(){

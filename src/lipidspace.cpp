@@ -2783,7 +2783,6 @@ void LipidSpace::run(){
 
     else if (process_id == 2 && target_variable != ""){
 
-
         Array target_values;
         map<string, double> nominal_target_values;
         int nom_counter = 0;
