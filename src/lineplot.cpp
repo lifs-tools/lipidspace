@@ -28,9 +28,6 @@ void Lineplot::update_chart(){
 
 
 void Lineplot::clear(){
-    for (auto &line : lines){
-        chart->scene.removeItem(line.line);
-    }
     lines.clear();
 }
 

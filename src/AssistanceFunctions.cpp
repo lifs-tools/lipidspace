@@ -366,6 +366,7 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
     double cdf1 = 0, cdf2 = 0;
     double overlap1 = 0, overlap2 = 0;
     double min1 = 1, max1 = num1 - 1, min2 = 1, max2 = num2 - 1;
+    /*
     if (num1 >= 15 && ROC == 0){
         min1 = floor(num1 * 0.05);
         max1 = ceil(num1 * 0.95);
@@ -374,6 +375,7 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
         min2 = floor(num2 * 0.05);
         max2 = ceil(num2 * 0.95);
     }
+    */
     while ((ptr1 < num1) && (ptr2 < num2)){
         if (ROC){
             ROC->first.push_back((num1 - ptr1) * inv_m);

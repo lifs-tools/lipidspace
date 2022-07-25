@@ -25,9 +25,6 @@ void Histogramplot::update_chart(){
 
 
 void Histogramplot::clear(){
-    for (auto &box : boxes){
-        chart->scene.removeItem(box.rect);
-    }
     boxes.clear();
 }
 

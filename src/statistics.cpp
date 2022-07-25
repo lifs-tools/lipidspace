@@ -420,6 +420,7 @@ void Statistics::updateBarPlot(){
 
 
 void Statistics::updateHistogram(){
+
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);

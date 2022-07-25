@@ -107,21 +107,12 @@ void Chart::clear(){
     xrange = QPointF(1e100, -1e100);
     yrange = QPointF(1e100, -1e100);
 
+
     show_x_axis = false;
     show_y_axis = false;
     is_x_category_axis = false;
 
-    for (auto legend_category : legend_categories){
-        scene.removeItem(legend_category.rect);
-        scene.removeItem(legend_category.category);
-    }
     legend_categories.clear();
-
-
-    for (auto x_tick : x_ticks) scene.removeItem(x_tick);
-    for (auto y_tick : y_ticks) scene.removeItem(y_tick);
-    for (auto h_line : h_grid) scene.removeItem(h_line);
-    for (auto v_line : v_grid) scene.removeItem(v_line);
 
     x_ticks.clear();
     y_ticks.clear();
@@ -134,6 +125,15 @@ void Chart::clear(){
         delete plot;
     }
     chart_plots.clear();
+
+    scene.removeItem(title);
+    scene.removeItem(xlabel);
+    scene.removeItem(ylabel);
+    scene.clear();
+    scene.addItem(title);
+    scene.addItem(xlabel);
+    scene.addItem(ylabel);
+
     update_chart();
 }
 
@@ -331,7 +331,7 @@ void Chart::update_chart(){
             }
 
             auto line = v_grid[i];
-            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
+            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && (single_group_width > 5 || i == 0)){
                 line->setVisible(true);
                 double w = chart_box_inner.x() + (double)i * single_group_width;
                 line->setLine(w, chart_box_inner.y(), w, chart_box_inner.y() + chart_box_inner.height() + 5);

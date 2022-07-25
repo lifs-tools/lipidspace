@@ -142,7 +142,6 @@ public:
     Tutorial *tutorial;
     ImportTable import_table;
     bool ctrl_pressed;
-    bool set_feature_semaphore;
     Statistics statisticsBoxPlot;
     Statistics statisticsHistogram;
     Statistics statisticsROCCurve;

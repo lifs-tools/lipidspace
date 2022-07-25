@@ -41,9 +41,10 @@ void Barplot::update_chart(){
             double y2 = bar.value + bar.error;
             chart->translate(x1, y1);
             chart->translate(x2, y2);
+            bool reasonable = (x2 - x1) > 3;
             bar.upper_error_line->setLine(x1, y1, x2, y2);
             bar.upper_error_line->setZValue(100);
-            bar.upper_error_line->setVisible(visible);
+            bar.upper_error_line->setVisible(visible & reasonable);
 
             x1 = xs + (xe - xs) / 4.;
             y1 = bar.value - bar.error;
@@ -53,7 +54,7 @@ void Barplot::update_chart(){
             chart->translate(x2, y2);
             bar.lower_error_line->setLine(x1, y1, x2, y2);
             bar.lower_error_line->setZValue(100);
-            bar.lower_error_line->setVisible(visible);
+            bar.lower_error_line->setVisible(visible & reasonable);
 
             x1 = (xs + xe) / 2.0;
             y1 = bar.value - bar.error;
@@ -63,7 +64,7 @@ void Barplot::update_chart(){
             chart->translate(x2, y2);
             bar.base_line->setLine(x1, y1, x2, y2);
             bar.base_line->setZValue(90);
-            bar.base_line->setVisible(visible);
+            bar.base_line->setVisible(visible & reasonable);
 
             x1 = xs;
             y1 = bar.value;
@@ -81,14 +82,6 @@ void Barplot::update_chart(){
 
 
 void Barplot::clear(){
-    for (auto &barset : bars){
-        for (auto &bar : barset){
-            chart->scene.removeItem(bar.upper_error_line);
-            chart->scene.removeItem(bar.lower_error_line);
-            chart->scene.removeItem(bar.base_line);
-            chart->scene.removeItem(bar.rect);
-        }
-    }
     bars.clear();
 }
 

@@ -213,7 +213,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     selected_d_lipidomes = 0;
     knubbel = false;
     ctrl_pressed = false;
-    set_feature_semaphore = false;
     tutorial = new Tutorial(this, ui->centralwidget);
     ui->tableWidget->set_ctrl(&ctrl_pressed);
 
@@ -388,31 +387,34 @@ LipidSpaceGUI::~LipidSpaceGUI(){
 
 
 void LipidSpaceGUI::setFeature(int c){
-    if (!set_feature_semaphore){
-        set_feature_semaphore = true;
-        ui->featureComboBoxStat->setCurrentIndex(c);
-    }
+    disconnect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), 0, 0);
+    disconnect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
+
+    ui->featureComboBoxStat->setCurrentIndex(c);
     GlobalData::gui_string_var["study_var"] = ui->featureComboBox->currentText().toStdString();
     featureChanged(ui->featureComboBox->currentText().toStdString());
-    set_feature_semaphore = false;
     setSecondarySorting();
+
+    connect(ui->featureComboBoxStat, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeatureStat(int)));
+    connect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSecondarySorting(int)));
 }
 
 
 
 void LipidSpaceGUI::setFeatureStat(int c){
-    if (!set_feature_semaphore){
-        set_feature_semaphore = true;
-        ui->featureComboBox->setCurrentIndex(c);
-    }
+    disconnect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
+    disconnect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
 
+    ui->featureComboBox->setCurrentIndex(c);
     GlobalData::gui_string_var["study_var_stat"] = ui->featureComboBoxStat->currentText().toStdString();
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
     statisticsHistogram.updateHistogram();
     statisticsROCCurve.updateROCCurve();
-    set_feature_semaphore = false;
     setSecondarySorting();
+
+    connect(ui->featureComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFeature(int)));
+    connect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSecondarySorting(int)));
 }
 
 
@@ -875,6 +877,7 @@ void LipidSpaceGUI::runAnalysis(){
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
+
 
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();

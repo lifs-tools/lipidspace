@@ -32,9 +32,6 @@ void Scatterplot::update_chart(){
 
 
 void Scatterplot::clear(){
-    for (auto &p : points){
-        chart->scene.removeItem(p.p);
-    }
     points.clear();
 }
 
