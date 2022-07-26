@@ -375,7 +375,7 @@ void Statistics::updateBarPlot(){
         }
     }
     else {
-        categories.push_back("Selected lipids");
+        categories.push_back(QString("Selected lipids (%1)").arg(lipid_names.size()));
         colors.push_back(QColor("#F6A611"));
     }
 
@@ -634,7 +634,7 @@ void Statistics::updateROCCurve(){
 
     stat_results.insert({"AUC", auc});
     chart->setXLabel("False positive Rate");
-    chart->setYLabel("Sensetivity");
+    chart->setYLabel("Sensitivity");
     chart->setTitle(QString("ROC Curve, AUC = %1 %").arg(QString::number(auc * 100., 'g', 4)));
 }
 

@@ -12,9 +12,9 @@ void Boxplot::update_chart(){
 
     for (uint b = 0; b < boxes.size(); ++b){
         auto &box = boxes[b];
-        double x1 = b - 0.25;
+        double x1 = b - 0.125;
         double y1 = box.upper_extreme;
-        double x2 = b + 0.25;
+        double x2 = b + 0.125;
         double y2 = box.upper_extreme;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
@@ -22,9 +22,9 @@ void Boxplot::update_chart(){
         box.upper_extreme_line->setZValue(0);
         box.upper_extreme_line->setVisible(visible);
 
-        x1 = b - 0.25;
+        x1 = b - 0.125;
         y1 = box.lower_extreme;
-        x2 = b + 0.25;
+        x2 = b + 0.125;
         y2 = box.lower_extreme;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
@@ -67,12 +67,12 @@ void Boxplot::update_chart(){
         if (show_data){
             for (uint i = 0; i < box.data.size(); ++i){
                 auto ellipse = box.dots[i];
-                x1 = b - 0.25 + box.data[i].second;
+                x1 = b + box.data[i].second;
                 y1 = box.data[i].first;
                 chart->translate(x1, y1);
-                ellipse->setBrush(QBrush(Qt::black));
-                ellipse->setPen(QPen(Qt::black));
-                ellipse->setRect(x1 - 2, y1 - 2, 4, 4);
+                ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
+                ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
+                ellipse->setRect(x1 - 3, y1 - 3, 6, 6);
                 ellipse->setZValue(110);
                 ellipse->setVisible(visible);
             }
@@ -116,8 +116,40 @@ void Boxplot::add(Array &array, QString category, QColor color){
     box.upper_quartile = median(array, (count >> 1) + (count & 1), count);
 
     if (show_data){
-        for (auto value : array){
-            box.data.push_back({value, randnum() * .5});
+        // distribute the data around the center
+        int n = array.size();
+        Array X(n, 0);
+        Array Y;
+        for (auto value : array) Y.push_back(value);
+
+        double mue = Y.mean();
+        double sigma = Y.sample_stdev();
+
+        for (int i = 0; i < n; ++i){
+            X[i] = randnum() * 0.002 - 0.001;
+            Y[i] = (Y[i] - mue) / sigma;
+        }
+        double max_x = 0;
+        Array xx(n, 0);
+        for (int i = 0; i < n; ++i){
+            double fx = 0;
+            for (int j = 0; j < n; ++j){
+                if (i == j) continue;
+
+                double d = sq(X[i] - X[j]) + sq(Y[i] - Y[j]);
+                fx += (X[j] - X[i]) * exp(-d);
+            }
+            xx[i] = X[i] - fx * exp(-sq(fx));
+        }
+        for (int i = 0; i < n; ++i){
+            X[i] = xx[i];
+            max_x = max(max_x, abs(X[i]));
+        }
+
+
+
+        for (int i = 0; i < n; ++i){
+            box.data.push_back({array[i], X[i] / max_x * 0.2});
             QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem();
             box.dots.push_back(ellipse);
             chart->scene.addItem(ellipse);

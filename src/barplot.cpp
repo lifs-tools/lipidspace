@@ -75,6 +75,7 @@ void Barplot::update_chart(){
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
                 bar.rect->setBrush(QBrush(bar.color));
+                bar.rect->setPen(lines_visible ? QPen(Qt::black) : Qt::NoPen);
                 bar.rect->setRect(x1, y1, x2 - x1, y2 - y1);
                 bar.rect->setZValue(50);
                 bar.rect->setVisible(visible);
