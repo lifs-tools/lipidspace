@@ -255,8 +255,6 @@ void Statistics::updateBarPlot(){
         return;
     }
 
-    Matrix statistics_matrix(lipid_space->statistics_matrix);
-
 
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
@@ -457,6 +455,7 @@ void Statistics::updateHistogram(){
     }
 
 
+
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
     for (int r = 0; r < statistics_matrix.rows; ++r){
@@ -477,7 +476,10 @@ void Statistics::updateHistogram(){
         if (statistics_matrix.cols > 1) statistics_matrix.scale();
         for (int r = 0; r < statistics_matrix.rows; ++r){
             double sum = 0;
-            for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+            for (int c = 0; c < statistics_matrix.cols; c++){
+                double val = statistics_matrix(r, c);
+                if (!isnan(val) && !isinf(val)) sum += val;
+            }
             if (statistics_matrix.cols > 1 || sum > 1e-15){
                 series[target_indexes[r]].push_back(sum);
             }
@@ -497,7 +499,6 @@ void Statistics::updateHistogram(){
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
     histogramplot->add(series, categories, &colors, num_bars);
     chart->add(histogramplot);
-
 }
 
 
@@ -574,7 +575,10 @@ void Statistics::updateROCCurve(){
         if (statistics_matrix.cols > 1) statistics_matrix.scale();
         for (int r = 0; r < statistics_matrix.rows; ++r){
             double sum = 0;
-            for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+            for (int c = 0; c < statistics_matrix.cols; c++){
+                double val = statistics_matrix(r, c);
+                if (!isnan(val) && !isinf(val)) sum += val;
+            }
             if (statistics_matrix.cols > 1 || sum > 1e-15){
                 series[target_indexes[r]].push_back(sum);
             }
@@ -741,12 +745,16 @@ void Statistics::updateBoxPlot(){
             if (statistics_matrix.cols > 1) statistics_matrix.scale();
             for (int r = 0; r < statistics_matrix.rows; ++r){
                 double sum = 0;
-                for (int c = 0; c < statistics_matrix.cols; c++) sum += statistics_matrix(r, c);
+                for (int c = 0; c < statistics_matrix.cols; c++){
+                    double val = statistics_matrix(r, c);
+                    if (!isnan(val) && !isinf(val)) sum += val;
+                }
                 if (statistics_matrix.cols > 1 || sum > 1e-15){
                     series[target_indexes[r]].push_back(sum);
                 }
             }
         }
+
         Boxplot* boxplot = new Boxplot(chart, show_data);
         for (uint i = 0; i < nominal_values.size(); ++i){
             Array &single_series = series[i];
@@ -758,19 +766,22 @@ void Statistics::updateBoxPlot(){
         }
         chart->add(boxplot);
 
-        double accuracy = compute_accuracy(series);
-        stat_results.insert({"accuracy", accuracy});
+
+
         if (nom_counter == 2){
+            double accuracy = compute_accuracy(series);
+            stat_results.insert({"accuracy", accuracy});
             double p_student = p_value_student(series[0], series[1]);
             double p_welch = p_value_welch(series[0], series[1]);
             double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
-            double accuracy = compute_accuracy(series);
             stat_results.insert({"p_value(Student)", p_student});
             stat_results.insert({"p_value(Welch)", p_welch});
             stat_results.insert({"p_value(KS)", p_ks});
             chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>Student</sub> = %2,   <i>p</i>-value<sub>Welch</sub> = %3,   <i>p</i>-value<sub>KS</sub> = %4").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
         }
         else if (nom_counter > 2){
+            double accuracy = compute_accuracy(series);
+            stat_results.insert({"accuracy", accuracy});
             double p_anova = p_value_anova(series);
             stat_results.insert({"p_value(ANOVA)", p_anova});
             chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
