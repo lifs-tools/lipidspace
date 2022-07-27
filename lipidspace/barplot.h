@@ -28,8 +28,10 @@ struct BarBox {
     QGraphicsLineItem *base_line;
     HoverRectItem *rect;
     QColor color;
+    vector<pair<double, double>> data;
+    vector<QGraphicsEllipseItem*> dots;
 
-    BarBox(QGraphicsScene *scene, double _value, double _error, QString _label, QColor _color = Qt::white){
+    BarBox(QGraphicsScene *scene, double _value, double _error, QString _label, QColor _color = Qt::white, vector< pair<double, double> > *_data = 0){
         value = _value;
         error = _error;
         color = _color;
@@ -44,6 +46,15 @@ struct BarBox {
         scene->addItem(lower_error_line);
         scene->addItem(base_line);
         scene->addItem(rect);
+
+        if (_data){
+            for (uint i = 0; i < _data->size(); ++i){
+                QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem();
+                scene->addItem(ellipse);
+                dots.push_back(ellipse);
+                data.push_back({_data->at(i).first, _data->at(i).second});
+            }
+        }
     }
 };
 
@@ -51,10 +62,11 @@ class Barplot : public Chartplot {
 public:
     vector< vector<BarBox> > bars;
     bool log_scale;
+    bool show_data;
 
-    Barplot(Chart *_chart, bool _log_scale);
+    Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);
     ~Barplot();
-    void add(vector< vector< pair<double, double> > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors = 0);
+    void add(vector< vector< Array > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors = 0);
     void update_chart();
     void clear();
 };

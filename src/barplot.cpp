@@ -17,8 +17,9 @@ void HoverRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 }
 
 
-Barplot::Barplot(Chart *_chart, bool _log_scale) : Chartplot(_chart) {
+Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_chart) {
     log_scale = _log_scale;
+    show_data = _show_data;
 }
 
 Barplot::~Barplot(){
@@ -79,12 +80,27 @@ void Barplot::update_chart(){
                 bar.rect->setRect(x1, y1, x2 - x1, y2 - y1);
                 bar.rect->setZValue(50);
                 bar.rect->setVisible(visible);
+
+                if (bar.data.size()){
+                    for (uint d = 0; d < bar.data.size(); ++d){
+                        auto ellipse = bar.dots[d];
+                        x1 = (xs + xe) / 2.0 + bar.data[d].second * (xe - xs) / 2.0 * 0.8;
+                        y1 = bar.data[d].first;
+                        chart->translate(x1, y1);
+                        ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
+                        ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
+                        ellipse->setRect(x1 - 3, y1 - 3, 6, 6);
+                        ellipse->setZValue(110);
+                        ellipse->setVisible(visible & lines_visible);
+                    }
+                }
             }
             else {
                 bar.upper_error_line->setVisible(false);
                 bar.lower_error_line->setVisible(false);
                 bar.base_line->setVisible(false);
                 bar.rect->setVisible(false);
+                for (auto ellipse : bar.dots) ellipse->setVisible(false);
             }
         }
     }
@@ -97,7 +113,7 @@ void Barplot::clear(){
 
 
 
-void Barplot::add(vector< vector< pair<double, double> > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors){
+void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors){
     if (bars.size() > 0 || data.size() == 0 || data.size() != labels.size() || (colors != 0 && categories.size() != colors->size())) return;
 
     for (auto category_data : data){
@@ -117,14 +133,56 @@ void Barplot::add(vector< vector< pair<double, double> > > &data, vector<QString
             QColor color = (colors != 0) ? colors->at(c) : Qt::white;
             auto values = data_set[c];
 
-            double value = values.first;
-            double error = values.second;
-            if (isnan(value) || isinf(value)) value = 0;
+            double mean = values.mean();
+            double error = values.stdev();
+            if (isnan(mean) || isinf(mean)) mean = 0;
             if (isnan(error) || isinf(error)) error = 0;
-            if (value > 0) ymin = min(ymin, values.first);
-            ymax = max(ymax, values.first + values.second);
+            if (mean > 0) ymin = min(ymin, mean);
+            ymax = max(ymax, mean + error);
 
-            bar_set.push_back(BarBox(&(chart->scene), value, error, labels[s], color));
+            vector< pair<double, double> > *orig_data = 0;
+
+            if (show_data){
+                orig_data = new vector< pair<double, double> >();
+                // distribute the data around the center
+                int n = values.size();
+                Array X(n, 0);
+                Array Y;
+                for (auto value : values) Y.push_back(value);
+
+                double mue = Y.mean();
+                double sigma = Y.sample_stdev();
+
+                for (int i = 0; i < n; ++i){
+                    X[i] = randnum() * 0.002 - 0.001;
+                    Y[i] = (Y[i] - mue) / sigma;
+                }
+                double max_x = 0;
+                Array xx(n, 0);
+                for (int i = 0; i < n; ++i){
+                    double fx = 0;
+                    for (int j = 0; j < n; ++j){
+                        if (i == j) continue;
+
+                        double d = sq(X[i] - X[j]) + sq(Y[i] - Y[j]);
+                        fx += (X[j] - X[i]) * exp(-d);
+                    }
+                    xx[i] = X[i] - fx * exp(-sq(fx));
+                }
+                for (int i = 0; i < n; ++i){
+                    X[i] = xx[i];
+                    max_x = max(max_x, abs(X[i]));
+                }
+
+                for (int i = 0; i < n; ++i){
+                    orig_data->push_back({values[i], X[i] / max_x});
+                    ymax = max(ymax, values[i]);
+                }
+            }
+
+            bar_set.push_back(BarBox(&(chart->scene), mean, error, labels[s], color, orig_data));
+
+            if (show_data) delete orig_data;
         }
         chart->add_category(labels[s]);
     }

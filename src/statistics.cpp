@@ -22,16 +22,23 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
 
 
 
-void Statistics::set_log_scale(){
+void Statistics::setLogScaleBarPlot(){
     log_scale = !log_scale;
     updateBarPlot();
 }
 
 
 
-void Statistics::set_show_data(){
+void Statistics::setShowDataBoxPlot(){
     show_data = !show_data;
     updateBoxPlot();
+}
+
+
+
+void Statistics::setShowDataBarPlot(){
+    show_data = !show_data;
+    updateBarPlot();
 }
 
 
@@ -377,25 +384,24 @@ void Statistics::updateBarPlot(){
         colors.push_back(QColor("#F6A611"));
     }
 
-    vector< vector< pair<double, double> > > barplot_data(lipid_names.size());
+    vector< vector< Array > > barplot_data(lipid_names.size());
 
     int series_iter = 0;
     for (uint cat_it = 0; cat_it < data_series.size(); ++cat_it){
         auto category_data_series = data_series[cat_it];
         for (uint lipid_it = 0; lipid_it < category_data_series.size(); ++lipid_it){
             auto single_series = category_data_series[lipid_it];
+            barplot_data[lipid_it].push_back(Array());
 
-            for (auto value : single_series) series[series_iter].push_back(value);
+            for (auto value : single_series){
+                series[series_iter].push_back(value);
+                barplot_data[lipid_it].back().push_back(value);
+            }
             ++series_iter;
-
-            double mean = single_series.mean();
-            double std = single_series.stdev();
-
-            barplot_data[lipid_it].push_back({mean, std});
         }
 
     }
-    Barplot *barplot = new Barplot(chart, log_scale);
+    Barplot *barplot = new Barplot(chart, log_scale, show_data);
     barplot->add(barplot_data, categories, lipid_names, &colors);
     chart->add(barplot);
 }

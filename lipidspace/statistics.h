@@ -57,8 +57,9 @@ public slots:
     void setTickSizeHistogram(int);
     void setTickSizeROCCurve(int);
     void setBarNumber(int);
-    void set_log_scale();
-    void set_show_data();
+    void setLogScaleBarPlot();
+    void setShowDataBoxPlot();
+    void setShowDataBarPlot();
 };
 
 
