@@ -253,7 +253,9 @@ void Statistics::updateBarPlot(){
     stat_results.clear();
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
-    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished) return;
+    if (!lipid_space || uncontains_val(lipid_space->feature_values, target_variable) || !lipid_space->analysis_finished){
+        return;
+    }
 
     bool is_nominal = lipid_space->feature_values[target_variable].feature_type == NominalFeature;
 
@@ -413,7 +415,6 @@ void Statistics::updateBarPlot(){
 
 
 void Statistics::updateHistogram(){
-
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);

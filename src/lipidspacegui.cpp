@@ -371,8 +371,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     scene->addItem(new HomeItem(ui->homeGraphicsView));
 
     updateGUI();
-
-
 }
 
 
