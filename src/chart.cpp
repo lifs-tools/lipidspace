@@ -8,7 +8,6 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     connect(&timer, &QTimer::timeout, this, &Chart::animation_step);
-    timer.start(10);
 
     tick_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"]);
     label_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"], QFont::Bold);
@@ -52,14 +51,19 @@ void Chart::resizeEvent(QResizeEvent *event){
 void Chart::reset_animation(){
     animation = 0;
     animation_start = chrono::steady_clock::now();
+    timer.start(10);
 }
 
 
 void Chart::animation_step(){
-    if (animation <= 1){
+    if (animation < 1){
         update_chart();
         auto animation_now = chrono::steady_clock::now();
-        animation = min(1., ((double)chrono::duration_cast<chrono::microseconds>(animation_now - animation_start).count()) / 700000.);
+        animation = min(1., ((double)chrono::duration_cast<chrono::microseconds>(animation_now - animation_start).count()) / TIMER_DURATION);
+    }
+    else {
+        update_chart();
+        timer.stop();
     }
 }
 

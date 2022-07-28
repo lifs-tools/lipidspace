@@ -20,6 +20,7 @@
 
 #define TICK_NUM 5
 #define TICK_SIZE 5
+#define TIMER_DURATION 700000.0  // micro seconds
 
 using namespace std;
 
