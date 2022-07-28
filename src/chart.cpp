@@ -7,6 +7,9 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    connect(&timer, &QTimer::timeout, this, &Chart::animation_step);
+    timer.start(10);
+
     tick_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"]);
     label_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"], QFont::Bold);
     title_legend_font = QFont("Helvetica", GlobalData::gui_num_var["legend_size"]);
@@ -33,9 +36,32 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
 
     setScene(&scene);
     loaded = true;
+
+    animation = 0;
 }
 
 
+
+void Chart::resizeEvent(QResizeEvent *event){
+    reset_animation();
+    update_chart();
+    QGraphicsView::resizeEvent(event);
+}
+
+
+void Chart::reset_animation(){
+    animation = 0;
+    animation_start = chrono::steady_clock::now();
+}
+
+
+void Chart::animation_step(){
+    if (animation <= 1){
+        update_chart();
+        auto animation_now = chrono::steady_clock::now();
+        animation = min(1., ((double)chrono::duration_cast<chrono::microseconds>(animation_now - animation_start).count()) / 700000.);
+    }
+}
 
 
 void Chart::create_x_numerical_axis(bool _log_x){
@@ -492,10 +518,6 @@ void Chart::setXLabel(QString l){
 
 void Chart::setYLabel(QString l){
     ylabel->setHtml(l);
-    update_chart();
-}
-
-void Chart::resizeEvent(QResizeEvent*){
     update_chart();
 }
 

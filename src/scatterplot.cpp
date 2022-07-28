@@ -16,7 +16,10 @@ void Scatterplot::update_chart(){
     base->setPen(Qt::NoPen);
     base->setBrush(Qt::NoBrush);
 
-    for (auto &p : points){
+    double animation_length = chart->animation * points.size();
+
+    for (uint i = 0; i < points.size(); ++i){
+        auto &p = points[i];
         double x = p.x;
         double y = p.y;
         chart->translate(x, y);
@@ -26,7 +29,7 @@ void Scatterplot::update_chart(){
         p.p->setPen(pen);
         p.p->setRect(x - 7, y - 7, 14, 14);
         p.p->setBrush(QBrush(p.color));
-        p.p->setVisible(visible);
+        p.p->setVisible(visible && (i <= animation_length));
     }
 }
 
@@ -38,8 +41,6 @@ void Scatterplot::clear(){
 
 
 void Scatterplot::add(vector< pair<double, double> > &data, QString category, QColor color){
-    chart->create_x_numerical_axis();
-    chart->create_y_numerical_axis();
 
 
     double xmin = chart->xrange.x();
@@ -61,15 +62,8 @@ void Scatterplot::add(vector< pair<double, double> > &data, QString category, QC
     chart->yrange.setX(ymin);
     chart->yrange.setY(ymax);
 
-    /*
-    double x_offset = (chart->xrange.y() - chart->xrange.x()) * 0.025;
-    double y_offset = (chart->yrange.y() - chart->yrange.x()) * 0.025;
-
-    chart->xrange.setX(chart->xrange.x() - x_offset);
-    chart->xrange.setY(chart->xrange.y() + x_offset);
-    chart->yrange.setX(chart->yrange.x() - y_offset);
-    chart->yrange.setY(chart->yrange.y() + y_offset);
-    */
-
     chart->legend_categories.push_back(LegendCategory(category, color, &chart->scene));
+    chart->create_x_numerical_axis();
+    chart->create_y_numerical_axis();
+    chart->reset_animation();
 }

@@ -8,12 +8,13 @@ Histogramplot::~Histogramplot(){
 
 void Histogramplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
+    double animation_length = pow(chart->animation, 0.25);
 
     for (auto &box : boxes){
         double x1 = box.x - box.x_width / 2.;
         double y1 = 0;
         double x2 = box.x + box.x_width / 2.;
-        double y2 = box.y;
+        double y2 = box.y * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.rect->setRect(x1, y1, x2 - x1, y2 - y1);
@@ -30,8 +31,6 @@ void Histogramplot::clear(){
 
 
 void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors, uint num_bars){
-    chart->create_x_numerical_axis();
-    chart->create_y_numerical_axis();
 
     double all_min = 1e100;
     double all_max = -1e100;
@@ -65,5 +64,7 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
     chart->yrange.setX(0);
     chart->yrange.setY(max(max_hist * 1.025, chart->yrange.y()));
 
-
+    chart->create_x_numerical_axis();
+    chart->create_y_numerical_axis();
+    chart->reset_animation();
 }

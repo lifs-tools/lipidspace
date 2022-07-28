@@ -9,13 +9,14 @@ Boxplot::~Boxplot(){
 
 void Boxplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
+    double animation_length = pow(chart->animation, 0.25);
 
     for (uint b = 0; b < boxes.size(); ++b){
         auto &box = boxes[b];
         double x1 = b - 0.125;
-        double y1 = box.upper_extreme;
+        double y1 = box.median + (box.upper_extreme - box.median) * animation_length;
         double x2 = b + 0.125;
-        double y2 = box.upper_extreme;
+        double y2 = box.median + (box.upper_extreme - box.median) * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.upper_extreme_line->setLine(x1, y1, x2, y2);
@@ -23,9 +24,9 @@ void Boxplot::update_chart(){
         box.upper_extreme_line->setVisible(visible);
 
         x1 = b - 0.125;
-        y1 = box.lower_extreme;
+        y1 = box.median + (box.lower_extreme - box.median) * animation_length;
         x2 = b + 0.125;
-        y2 = box.lower_extreme;
+        y2 = box.median + (box.lower_extreme - box.median) * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.lower_extreme_line->setLine(x1, y1, x2, y2);
@@ -33,9 +34,9 @@ void Boxplot::update_chart(){
         box.lower_extreme_line->setVisible(visible);
 
         x1 = b;
-        y1 = box.upper_extreme;
+        y1 = box.median + (box.upper_extreme - box.median) * animation_length;
         x2 = b;
-        y2 = box.lower_extreme;
+        y2 = box.median + (box.lower_extreme - box.median) * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.base_line->setLine(x1, y1, x2, y2);
@@ -43,9 +44,9 @@ void Boxplot::update_chart(){
         box.base_line->setVisible(visible);
 
         x1 = b - 0.25;
-        y1 = box.lower_quartile;
+        y1 = box.median + (box.lower_quartile - box.median) * animation_length;
         x2 = b + 0.25;
-        y2 = box.upper_quartile;
+        y2 = box.median + (box.upper_quartile - box.median) * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.rect->setBrush(QBrush(box.color));
@@ -68,7 +69,7 @@ void Boxplot::update_chart(){
             for (uint i = 0; i < box.data.size(); ++i){
                 auto ellipse = box.dots[i];
                 x1 = b + box.data[i].second;
-                y1 = box.data[i].first;
+                y1 = box.median + (box.data[i].first - box.median) * animation_length;
                 chart->translate(x1, y1);
                 ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
                 ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
@@ -161,4 +162,5 @@ void Boxplot::add(Array &array, QString category, QColor color){
 
     chart->legend_categories.push_back(LegendCategory(category, box.color, &chart->scene));
     chart->create_y_numerical_axis();
+    chart->reset_animation();
 }

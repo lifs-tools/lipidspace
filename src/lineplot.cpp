@@ -9,8 +9,10 @@ Lineplot::~Lineplot(){
 
 void Lineplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
+    double animation_length = chart->animation * lines.size();
 
-    for (auto &line : lines){
+    for (uint i = 0; i < lines.size(); ++i){
+        auto &line = lines[i];
         double x1 = line.x1;
         double y1 = line.y1;
         double x2 = line.x2;
@@ -22,7 +24,7 @@ void Lineplot::update_chart(){
         pen.setWidthF(2);
         line.line->setPen(pen);
         line.line->setLine(x1, y1, x2, y2);
-        line.line->setVisible(visible);
+        line.line->setVisible(visible && (i <= animation_length));
     }
 }
 
@@ -34,8 +36,6 @@ void Lineplot::clear(){
 
 
 void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > &_lines, QString category, QColor _color){
-    chart->create_x_numerical_axis();
-    chart->create_y_numerical_axis();
 
 
     double xmin = chart->xrange.x();
@@ -62,4 +62,7 @@ void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > 
     chart->yrange.setY(ymax);
 
     if (category.length() > 0) chart->legend_categories.push_back(LegendCategory(category, _color, &chart->scene));
+    chart->create_x_numerical_axis();
+    chart->create_y_numerical_axis();
+    chart->reset_animation();
 }

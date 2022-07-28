@@ -3,11 +3,14 @@
 
 #include <QGraphicsView>
 #include <QGraphicsScene>
+#include <QResizeEvent>
 #include <QGraphicsLineItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsRectItem>
 #include <QPen>
 #include <QBrush>
+#include <QTimer>
+#include <chrono>
 #include <QRect>
 #include <QString>
 #include <QColor>
@@ -55,6 +58,7 @@ public:
     QFont label_font;
     QFont title_legend_font;
     QGraphicsScene scene;
+    QTimer timer;
     bool loaded;
     bool show_x_axis;
     bool show_y_axis;
@@ -66,6 +70,8 @@ public:
     QPointF xrange;
     QPointF yrange;
     vector<Chartplot*> chart_plots;
+    double animation;
+    chrono::steady_clock::time_point animation_start;
 
     vector<QGraphicsLineItem*> v_grid;
     vector<QGraphicsLineItem*> h_grid;
@@ -73,7 +79,6 @@ public:
     vector<QGraphicsTextItem*> y_ticks;
 
     Chart(QWidget *parent = nullptr);
-    void resizeEvent(QResizeEvent *);
     void setTitle(QString t);
     void setXLabel(QString l);
     void setYLabel(QString l);
@@ -83,9 +88,12 @@ public:
     void create_x_numerical_axis(bool _log_x = false);
     void create_x_nominal_axis();
     void create_y_numerical_axis(bool _log_y = false);
+    void resizeEvent(QResizeEvent *event) override;
 
-    virtual void update_chart();
-    virtual void clear();
+    void update_chart();
+    void clear();
+    void reset_animation();
+    void animation_step();
 
 public slots:
     void set_tick_size(int i);

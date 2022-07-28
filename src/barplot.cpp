@@ -28,6 +28,7 @@ Barplot::~Barplot(){
 
 void Barplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
+    double animation_length = pow(chart->animation, 0.25);
 
     for (uint b = 0; b < bars.size(); ++b){
         vector< BarBox > &barset = bars[b];
@@ -39,9 +40,9 @@ void Barplot::update_chart(){
                 double xe = b + (double)(s + 1) / (double)barset.size();
 
                 double x1 = xs + (xe - xs) / 4.;
-                double y1 = bar.value + bar.error;
+                double y1 = (bar.value + bar.error) * animation_length;
                 double x2 = xe - (xe - xs) / 4.;
-                double y2 = bar.value + bar.error;
+                double y2 = (bar.value + bar.error) * animation_length;
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
                 bool lines_visible = (x2 - x1) > 3;
@@ -50,9 +51,9 @@ void Barplot::update_chart(){
                 bar.upper_error_line->setVisible(visible & lines_visible);
 
                 x1 = xs + (xe - xs) / 4.;
-                y1 = bar.value - bar.error;
+                y1 = (bar.value - bar.error) * animation_length;
                 x2 = xe - (xe - xs) / 4.;
-                y2 = bar.value - bar.error;
+                y2 = (bar.value - bar.error) * animation_length;
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
                 bar.lower_error_line->setLine(x1, y1, x2, y2);
@@ -60,9 +61,9 @@ void Barplot::update_chart(){
                 bar.lower_error_line->setVisible(visible & lines_visible);
 
                 x1 = (xs + xe) / 2.0;
-                y1 = bar.value - bar.error;
+                y1 = (bar.value - bar.error) * animation_length;
                 x2 = (xs + xe) / 2.0;
-                y2 = bar.value + bar.error;
+                y2 = (bar.value + bar.error) * animation_length;
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
                 bar.base_line->setLine(x1, y1, x2, y2);
@@ -70,7 +71,7 @@ void Barplot::update_chart(){
                 bar.base_line->setVisible(visible & lines_visible);
 
                 x1 = xs;
-                y1 = bar.value;
+                y1 = bar.value * animation_length;
                 x2 = xe;
                 y2 = 0;
                 chart->translate(x1, y1);
@@ -85,7 +86,7 @@ void Barplot::update_chart(){
                     for (uint d = 0; d < bar.data.size(); ++d){
                         auto ellipse = bar.dots[d];
                         x1 = (xs + xe) / 2.0 + bar.data[d].second * (xe - xs) / 2.0 * 0.8;
-                        y1 = bar.data[d].first;
+                        y1 = bar.data[d].first * animation_length;
                         chart->translate(x1, y1);
                         ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
                         ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
@@ -198,4 +199,5 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
 
     chart->create_y_numerical_axis(log_scale);
     chart->create_x_nominal_axis();
+    chart->reset_animation();
 }

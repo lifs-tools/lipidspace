@@ -708,29 +708,41 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     union_num = class_matrix.at(key)[0];
     inter_num = class_matrix.at(key)[1];
 
-    if (lipid1->lipid->info->level <= CLASS || lipid1->lipid->info->level <= CLASS) return;
+    if (lipid1->lipid->info->level <= CLASS || lipid2->lipid->info->level <= CLASS) return;
 
     vector<FattyAcid*>* orig_fa_list_1 = new vector<FattyAcid*>();
-    if (lipid1->lipid->info->level >= MOLECULAR_SPECIES){
-        for (auto fa : lipid1->lipid->fa_list){
-            if (fa->num_carbon > 0)
-                orig_fa_list_1->push_back(fa);
-        }
-    }
-    else {
-        orig_fa_list_1->push_back(lipid1->lipid->info);
-    }
     vector<FattyAcid*>* orig_fa_list_2 = new vector<FattyAcid*>();
-    if (lipid2->lipid->info->level >= MOLECULAR_SPECIES){
-        for (auto fa : lipid2->lipid->fa_list){
-            if (fa->num_carbon > 0)
-                orig_fa_list_2->push_back(fa);
 
-        }
-    }
-    else {
+
+    // if two lipids have different level, take information on species level
+    if ((lipid1->lipid->info->level == SPECIES && lipid2->lipid->info->level > SPECIES) | (lipid1->lipid->info->level > SPECIES && lipid2->lipid->info->level == SPECIES)){
+        orig_fa_list_1->push_back(lipid1->lipid->info);
         orig_fa_list_2->push_back(lipid2->lipid->info);
     }
+    else {
+        if (lipid1->lipid->info->level >= MOLECULAR_SPECIES){
+            for (auto fa : lipid1->lipid->fa_list){
+                if (fa->num_carbon > 0)
+                    orig_fa_list_1->push_back(fa);
+            }
+        }
+        else {
+            orig_fa_list_1->push_back(lipid1->lipid->info);
+        }
+
+        if (lipid2->lipid->info->level >= MOLECULAR_SPECIES){
+            for (auto fa : lipid2->lipid->fa_list){
+                if (fa->num_carbon > 0)
+                    orig_fa_list_2->push_back(fa);
+
+            }
+        }
+        else {
+            orig_fa_list_2->push_back(lipid2->lipid->info);
+        }
+    }
+
+
 
     if (orig_fa_list_1->size() < orig_fa_list_2->size()){
         vector<FattyAcid*>* tmp = orig_fa_list_1;
