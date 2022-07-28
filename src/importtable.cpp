@@ -1,6 +1,7 @@
 #include "lipidspace/importtable.h"
 
 ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTable) {
+    lipid_space = 0;
     ui->setupUi(this);
     setWindowTitle("Data table import");
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
@@ -78,7 +79,7 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     ui->quantListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
     ui->quantListWidgetFlat->addFieldName("quant");
 
-
+    mapping_of_study_variables = false;
 
     connect(ui->okButtonRow, SIGNAL(clicked()), this, SLOT(okRow()));
     connect(ui->okButtonCol, SIGNAL(clicked()), this, SLOT(okCol()));
@@ -94,10 +95,31 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     connect(ui->lipidListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
     connect(ui->quantListWidgetFlat, SIGNAL(oneItemViolation(string, int)), this, SLOT(oneItemViolated(string, int)));
 
+    connect(ui->checkBoxMappingCol, &QCheckBox::stateChanged, this, &ImportTable::checkBoxCol);
+    connect(ui->checkBoxMappingFlat, &QCheckBox::stateChanged, this, &ImportTable::checkBoxFlat);
+
     file_name = "";
 }
 
-void ImportTable::show(){
+
+void ImportTable::checkBoxCol(int state){
+    mapping_of_study_variables = (state == Qt::Checked);
+    ui->checkBoxMappingFlat->setCheckState((Qt::CheckState)state);
+}
+
+
+void ImportTable::checkBoxFlat(int state){
+    mapping_of_study_variables = (state == Qt::Checked);
+    ui->checkBoxMappingCol->setCheckState((Qt::CheckState)state);
+}
+
+
+void ImportTable::show(LipidSpace *_lipid_space){
+    lipid_space = _lipid_space;
+    mapping_of_study_variables = false;
+    ui->checkBoxMappingFlat->setCheckState(Qt::Unchecked);
+    ui->checkBoxMappingCol->setCheckState(Qt::Unchecked);
+
     ui->sampleListWidgetRow->clear();
     ui->sampleListWidgetCol->clear();
     ui->sampleListWidgetFlat->clear();
@@ -256,20 +278,112 @@ void ImportTable::cancel(){
 
 
 
+bool ImportTable::checkStudyVariables(){
+    if (lipid_space == 0 || lipid_space->lipidomes.size() == 0) return true;
+
+    if (lipid_space->feature_values.size() > 0 && ui->tabWidget->currentIndex() == 0){
+        QMessageBox::warning(this, "Mismatch with study variables", "Your table type does not support study varibles but you already have registered study variables. Therefore, an import is not possible.");
+        return false;
+    }
+
+    QListWidget *numerical_list = 0;
+    QListWidget *nominal_list = 0;
+
+    if (ui->tabWidget->currentIndex() == 1){
+        numerical_list = ui->numericalFeatureListWidgetCol;
+        nominal_list = ui->nominalFeatureListWidgetCol;
+    }
+    else if (ui->tabWidget->currentIndex() == 2){
+        numerical_list = ui->numericalFeatureListWidgetFlat;
+        nominal_list = ui->nominalFeatureListWidgetFlat;
+    }
+
+    int num_numerical = 0;
+    int num_nominal = 0;
+
+    for (auto kv : lipid_space->feature_values){
+        if (kv.second.feature_type == NominalFeature) num_nominal++;
+        else num_numerical++;
+    }
+    num_nominal = max(0, num_nominal - 1); // -1 because of internal 'Origin' variable
+
+
+    if (num_numerical != numerical_list->count()){
+        QMessageBox::warning(this, "Mismatch with study variables", QString("Your number of numerical study varibles (%1) does not match with the number of numerical study variables already registered in LipidSpace (%2).").arg(numerical_list->count()).arg(num_numerical));
+        return false;
+    }
+
+    if (num_nominal != nominal_list->count()){
+        QMessageBox::warning(this, "Mismatch with study variables", QString("Your number of nominal study varibles (%1) does not match with the number of nominal study variables already registered in LipidSpace (%2).").arg(nominal_list->count()).arg(num_nominal));
+        return false;
+    }
+
+    if (!mapping_of_study_variables){
+        set<string> numerical_registered;
+        set<string> nominal_registered;
+        set<string> numerical_import;
+        set<string> nominal_import;
+
+        for (auto kv : lipid_space->feature_values){
+            if (kv.second.feature_type == NominalFeature) nominal_registered.insert(kv.first);
+            else numerical_registered.insert(kv.first);
+        }
+        if (contains_val(nominal_registered, FILE_FEATURE_NAME)) nominal_registered.erase(FILE_FEATURE_NAME);
+
+        for (int i = 0; i < numerical_list->count(); ++i) numerical_import.insert(numerical_list->item(i)->text().toStdString());
+        for (int i = 0; i < nominal_list->count(); ++i) nominal_import.insert(nominal_list->item(i)->text().toStdString());
+
+        for (auto num_val : nominal_registered){
+            if (uncontains_val(nominal_import, num_val)){
+                QMessageBox::warning(this, "Mismatch with study variables", QString("Registered nominal study variable \"%1\" is not selected. Maybe you might turn on the 'Mapping of study variables'!").arg(num_val.c_str()));
+                return false;
+            }
+        }
+
+        for (auto num_val : nominal_import){
+            if (uncontains_val(nominal_registered, num_val)){
+                QMessageBox::warning(this, "Mismatch with study variables", QString("No nominal study variable \"%1\" is not registered already. Maybe you might turn on the 'Mapping of study variables'!").arg(num_val.c_str()));
+                return false;
+            }
+        }
+
+        for (auto num_val : numerical_registered){
+            if (uncontains_val(numerical_import, num_val)){
+                QMessageBox::warning(this, "Mismatch with study variables", QString("Registered numerical study variable \"%1\" is not selected. Maybe you might turn on the 'Mapping of study variables'!").arg(num_val.c_str()));
+                return false;
+            }
+        }
+
+        for (auto num_val : numerical_import){
+            if (uncontains_val(numerical_registered, num_val)){
+                QMessageBox::warning(this, "Mismatch with study variables", QString("No numerical study variable \"%1\" is not registered already. May you might turn on the 'Mapping of study variables'!").arg(num_val.c_str()));
+                return false;
+            }
+        }
+
+    }
+
+    return true;
+}
+
+
+
 
 
 void ImportTable::okRow(){
     if (ui->lipidListWidgetRow->count() == 1 && ui->sampleListWidgetRow->count() >= 1) {
-        vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
+        if (checkStudyVariables()){
+            vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
-        for (int i = 0; i < (int)ui->sampleListWidgetRow->count(); ++i){
-            column_types->at(original_column_index[ui->sampleListWidgetRow->item(i)->text()]) = SampleColumn;
+            for (int i = 0; i < (int)ui->sampleListWidgetRow->count(); ++i){
+                column_types->at(original_column_index[ui->sampleListWidgetRow->item(i)->text()]) = SampleColumn;
+            }
+
+            column_types->at(original_column_index[ui->lipidListWidgetRow->item(0)->text()]) = LipidColumn;
+
+            importTable(data_table_file, column_types, ROW_PIVOT_TABLE, sheet);
+            accept();
         }
-
-        column_types->at(original_column_index[ui->lipidListWidgetRow->item(0)->text()]) = LipidColumn;
-
-        importTable(data_table_file, column_types, ROW_PIVOT_TABLE, sheet);
-        accept();
     }
     else if (!ui->sampleListWidgetRow->count()) {
         QMessageBox::warning(this, "No sample column selected", "Please select at least one column as sample column.");
@@ -283,24 +397,27 @@ void ImportTable::okRow(){
 
 void ImportTable::okCol(){
     if (ui->lipidListWidgetCol->count() >= 2 && ui->sampleListWidgetCol->count() == 1) {
-        vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
-        column_types->at(original_column_index[ui->sampleListWidgetCol->item(0)->text()]) = SampleColumn;
+        if (checkStudyVariables()){
+            vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
-        for (int i = 0; i < (int)ui->lipidListWidgetCol->count(); ++i){
-            column_types->at(original_column_index[ui->lipidListWidgetCol->item(i)->text()]) = LipidColumn;
+            column_types->at(original_column_index[ui->sampleListWidgetCol->item(0)->text()]) = SampleColumn;
+
+            for (int i = 0; i < (int)ui->lipidListWidgetCol->count(); ++i){
+                column_types->at(original_column_index[ui->lipidListWidgetCol->item(i)->text()]) = LipidColumn;
+            }
+
+            for (int i = 0; i < (int)ui->numericalFeatureListWidgetCol->count(); ++i){
+                column_types->at(original_column_index[ui->numericalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNumerical;
+            }
+
+            for (int i = 0; i < (int)ui->nominalFeatureListWidgetCol->count(); ++i){
+                column_types->at(original_column_index[ui->nominalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNominal;
+            }
+
+            importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
+            accept();
         }
-
-        for (int i = 0; i < (int)ui->numericalFeatureListWidgetCol->count(); ++i){
-            column_types->at(original_column_index[ui->numericalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNumerical;
-        }
-
-        for (int i = 0; i < (int)ui->nominalFeatureListWidgetCol->count(); ++i){
-            column_types->at(original_column_index[ui->nominalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNominal;
-        }
-
-        importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
-        accept();
     }
     else if (!ui->sampleListWidgetCol->count()) {
         QMessageBox::warning(this, "No sample column selected", "Please select one column as sample column.");
@@ -315,26 +432,29 @@ void ImportTable::okCol(){
 
 void ImportTable::okFlat(){
     if (ui->lipidListWidgetFlat->count() == 1 && ui->sampleListWidgetFlat->count() >= 1 && ui->quantListWidgetFlat->count() == 1) {
-        vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
-        for (int i = 0; i < (int)ui->sampleListWidgetFlat->count(); ++i){
-            column_types->at(original_column_index[ui->sampleListWidgetFlat->item(i)->text()]) = SampleColumn;
+        if (checkStudyVariables()){
+            vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
+
+            for (int i = 0; i < (int)ui->sampleListWidgetFlat->count(); ++i){
+                column_types->at(original_column_index[ui->sampleListWidgetFlat->item(i)->text()]) = SampleColumn;
+            }
+
+            column_types->at(original_column_index[ui->lipidListWidgetFlat->item(0)->text()]) = LipidColumn;
+
+            column_types->at(original_column_index[ui->quantListWidgetFlat->item(0)->text()]) = QuantColumn;
+
+            for (int i = 0; i < (int)ui->numericalFeatureListWidgetFlat->count(); ++i){
+                column_types->at(original_column_index[ui->numericalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNumerical;
+            }
+
+            for (int i = 0; i < (int)ui->nominalFeatureListWidgetFlat->count(); ++i){
+                column_types->at(original_column_index[ui->nominalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNominal;
+            }
+
+            importTable(data_table_file, column_types, FLAT_TABLE, sheet);
+            accept();
         }
-
-        column_types->at(original_column_index[ui->lipidListWidgetFlat->item(0)->text()]) = LipidColumn;
-
-        column_types->at(original_column_index[ui->quantListWidgetFlat->item(0)->text()]) = QuantColumn;
-
-        for (int i = 0; i < (int)ui->numericalFeatureListWidgetFlat->count(); ++i){
-            column_types->at(original_column_index[ui->numericalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNumerical;
-        }
-
-        for (int i = 0; i < (int)ui->nominalFeatureListWidgetFlat->count(); ++i){
-            column_types->at(original_column_index[ui->nominalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNominal;
-        }
-
-        importTable(data_table_file, column_types, FLAT_TABLE, sheet);
-        accept();
     }
     else if (!ui->sampleListWidgetFlat->count()) {
         QMessageBox::warning(this, "No sample column selected", "Please select one column as sample column.");

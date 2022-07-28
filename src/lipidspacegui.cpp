@@ -418,7 +418,7 @@ void LipidSpaceGUI::quitProgram(){
 
 
 void LipidSpaceGUI::openTable(){
-    import_table.show();
+    import_table.show(lipid_space);
 }
 
 

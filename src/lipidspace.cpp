@@ -2645,13 +2645,6 @@ void LipidSpace::run_analysis(){
         compute_hausdorff_matrix();
     }
 
-    /*
-    if (selected_lipidomes.size() > 1){
-        create_dendrogram();
-
-    }
-    */
-
     analysis_finished = true;
 }
 

@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="rowTab">
     <attribute name="title">
@@ -270,6 +270,19 @@
       </rect>
      </property>
     </widget>
+    <widget class="QCheckBox" name="checkBoxMappingCol">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>410</y>
+       <width>191</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Mapping of study variables</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="flatTab">
     <attribute name="title">
@@ -437,6 +450,19 @@
        <width>221</width>
        <height>171</height>
       </rect>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxMappingFlat">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>410</y>
+       <width>191</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Mapping of study variables</string>
      </property>
     </widget>
    </widget>

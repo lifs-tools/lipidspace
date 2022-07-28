@@ -13,6 +13,7 @@
 #include <map>
 #include <vector>
 #include "ui_importtable.h"
+#include "lipidspace/lipidspace.h"
 
 using namespace std;
 
@@ -29,23 +30,28 @@ public:
     Ui::ImportTable *ui;
     string data_table_file;
     QString file_name;
+    LipidSpace *lipid_space;
     map<QString, int> original_column_index;
-    
+    bool mapping_of_study_variables;
+
     explicit ImportTable(QWidget *parent = nullptr);
     ~ImportTable();
-    void show();
-    
+    void show(LipidSpace *_lipid_space);
+    bool checkStudyVariables();
+
 signals:
     void importTable(string file_name, vector<TableColumnType>* column_types, TableType table_type, string sheet);
     void importOpened();
-    
+
 public slots:
     void okRow();
     void okCol();
     void okFlat();
     void cancel();
     void oneItemViolated(string field_name, int num);
-    
+    void checkBoxCol(int state);
+    void checkBoxFlat(int state);
+
 };
 
 #endif // IMPORTTABLE_H
