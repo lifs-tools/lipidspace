@@ -140,7 +140,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
 
-    main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_dendrogram, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->homeGraphicsView->firstTutorialPushButton, ui->homeGraphicsView->secondTutorialPushButton, ui->homeGraphicsView->thirdTutorialPushButton, ui->dendrogramView, ui->featureComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statisticsBoxPlot, ui->statisticsHistogram, ui->featureComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->barNumberSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget, ui_it->tabWidget, ui_it->label_15, ui_it->sampleListWidgetRow, ui_it->okButtonRow, ui_it->cancelButtonRow, ui_it->ignoreListWidgetRow, ui_it->lipidListWidgetRow, ui_it->sampleListWidgetCol, ui_it->cancelButtonCol, ui_it->lipidListWidgetCol, ui_it->ignoreListWidgetCol, ui_it->numericalFeatureListWidgetCol, ui_it->nominalFeatureListWidgetCol, ui_it->flatTab, ui_it->lipidListWidgetFlat, ui_it->ignoreListWidgetFlat, ui_it->quantListWidgetFlat, ui_it->okButtonFlat, ui_it->numericalFeatureListWidgetFlat, ui_it->cancelButtonFlat, ui_it->sampleListWidgetFlat, ui_it->nominalFeatureListWidgetFlat, ui_it->tableWidget};
+    main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_dendrogram, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->homeGraphicsView->firstTutorialPushButton, ui->homeGraphicsView->secondTutorialPushButton, ui->homeGraphicsView->thirdTutorialPushButton, ui->dendrogramView, ui->featureComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statisticsBoxPlot, ui->statisticsHistogram, ui->featureComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->barNumberSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget, ui_it->tabWidget, ui_it->label_15, ui_it->sampleListWidgetRow, ui_it->okButtonRow, ui_it->cancelButtonRow, ui_it->ignoreListWidgetRow, ui_it->lipidListWidgetRow, ui_it->sampleListWidgetCol, ui_it->cancelButtonCol, ui_it->lipidListWidgetCol, ui_it->ignoreListWidgetCol, ui_it->numericalFeatureListWidgetCol, ui_it->nominalFeatureListWidgetCol, ui_it->flatTab, ui_it->lipidListWidgetFlat, ui_it->ignoreListWidgetFlat, ui_it->quantListWidgetFlat, ui_it->okButtonFlat, ui_it->numericalFeatureListWidgetFlat, ui_it->cancelButtonFlat, ui_it->sampleListWidgetFlat, ui_it->nominalFeatureListWidgetFlat, ui_it->tableWidget, ui_it->checkBoxMappingFlat, ui_it->checkBoxMappingCol};
 
 
     // tutorial starts
@@ -463,7 +463,7 @@ void Tutorial::changeSize(int w, int h){
 
 void Tutorial::first_tutorial_steps(){
     disable();
-    pagesLabel->setText((std::to_string(step + 1) + " / 19").c_str());
+    pagesLabel->setText((std::to_string(step + 1) + " / 20").c_str());
     setVisible(true);
     titleLabel->setText("");
     informationLabel->setText("");
@@ -673,6 +673,19 @@ void Tutorial::first_tutorial_steps(){
             lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->lipidListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
+            break;
+
+
+        case FStudyVarMapping: {
+                move(20, 20);
+                changeSize(650, 260);
+                QWidget *widget = lipidSpaceGUI->import_table.ui->checkBoxMappingCol;
+                QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
+                show_arrow(ATR, &lipidSpaceGUI->import_table, p.x(), p.y() + widget->height() / 2.);
+                titleLabel->setText("Mapping of Study Variables");
+                informationLabel->setText("You have the possibility to load multiple tables into LipidSpace at once. However, it is probable that study variables may have different names or values in different tables. In that case, you can activate the 'Mapping of study variables' function where you can map the names and values of study variables to already registered ones.");
+                continuePushButton->setEnabled(true);
+            }
             break;
 
 
