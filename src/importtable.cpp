@@ -2,6 +2,7 @@
 
 ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTable) {
     lipid_space = 0;
+    file_table_handler = 0;
     ui->setupUi(this);
     setWindowTitle("Data table import");
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
@@ -185,12 +186,18 @@ void ImportTable::show(LipidSpace *_lipid_space){
     t->setRowCount(0);
     int num_columns = 0;
 
-    FileTableHandler *fth = 0;
     try{
-        fth = new FileTableHandler(data_table_file, sheet);
+        if (file_table_handler != 0){
+            delete file_table_handler;
+            file_table_handler = 0;
+        }
+        file_table_handler = new FileTableHandler(data_table_file, sheet);
     }
     catch (exception &e){
-        if (fth) delete fth;
+        if (file_table_handler){
+            delete file_table_handler;
+            file_table_handler = 0;
+        }
         Logging::write_log("Error: file '" + data_table_file + "' cannot be opened.");
         QMessageBox::critical(this, "Error", "Error: file '" + file_name + "' cannot be opened.");
         QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
@@ -198,12 +205,12 @@ void ImportTable::show(LipidSpace *_lipid_space){
     }
 
     // read the headers
-    num_columns = fth->headers.size();
+    num_columns = file_table_handler->headers.size();
     t->setColumnCount(num_columns);
 
     int c = 0;
     map<QString, int> doublettes;
-    for (string header : fth->headers){
+    for (string header : file_table_handler->headers){
         QString qheader = header.length() ? header.c_str() : "empty_field";
 
         if (uncontains_val(doublettes, qheader)){
@@ -236,7 +243,7 @@ void ImportTable::show(LipidSpace *_lipid_space){
     }
 
     // put all the other rows into the table
-    for (auto tokens : fth->rows){
+    for (auto tokens : file_table_handler->rows){
         t->setRowCount(line_count);
 
         c = 0;
@@ -254,7 +261,6 @@ void ImportTable::show(LipidSpace *_lipid_space){
         }
         if (++line_count == 11) break;
     }
-    delete fth;
 
     QDialog::show();
     importOpened();
@@ -262,6 +268,7 @@ void ImportTable::show(LipidSpace *_lipid_space){
 
 ImportTable::~ImportTable() {
     delete ui;
+    delete file_table_handler;
 }
 
 
@@ -381,8 +388,8 @@ void ImportTable::okRow(){
 
             column_types->at(original_column_index[ui->lipidListWidgetRow->item(0)->text()]) = LipidColumn;
 
-            importTable(data_table_file, column_types, ROW_PIVOT_TABLE, sheet);
             accept();
+            importTable(data_table_file, column_types, ROW_PIVOT_TABLE, sheet);
         }
     }
     else if (!ui->sampleListWidgetRow->count()) {
@@ -415,8 +422,19 @@ void ImportTable::okCol(){
                 column_types->at(original_column_index[ui->nominalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNominal;
             }
 
-            importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
-            accept();
+            if (mapping_of_study_variables){
+                StudyVariableMapping study_variable_mapping(file_table_handler, column_types, lipid_space, this);
+                study_variable_mapping.setModal(true);
+                study_variable_mapping.exec();
+                if (study_variable_mapping.result() == QDialog::Accepted){
+                    accept();
+                    importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
+                }
+            }
+            else {
+                accept();
+                importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
+            }
         }
     }
     else if (!ui->sampleListWidgetCol->count()) {
@@ -452,8 +470,19 @@ void ImportTable::okFlat(){
                 column_types->at(original_column_index[ui->nominalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNominal;
             }
 
-            importTable(data_table_file, column_types, FLAT_TABLE, sheet);
-            accept();
+            if (mapping_of_study_variables){
+                StudyVariableMapping study_variable_mapping(file_table_handler, column_types, lipid_space, this);
+                study_variable_mapping.setModal(true);
+                study_variable_mapping.exec();
+                if (study_variable_mapping.result() == QDialog::Accepted){
+                    accept();
+                    importTable(data_table_file, column_types, FLAT_TABLE, sheet);
+                }
+            }
+            else {
+                accept();
+                importTable(data_table_file, column_types, FLAT_TABLE, sheet);
+            }
         }
     }
     else if (!ui->sampleListWidgetFlat->count()) {

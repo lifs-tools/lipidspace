@@ -9,6 +9,7 @@
 #include "lipidspace/logging.h"
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/select_worksheet.h"
+#include "lipidspace/studyvariablemapping.h"
 #include <string>
 #include <map>
 #include <vector>
@@ -33,6 +34,7 @@ public:
     LipidSpace *lipid_space;
     map<QString, int> original_column_index;
     bool mapping_of_study_variables;
+    FileTableHandler *file_table_handler;
 
     explicit ImportTable(QWidget *parent = nullptr);
     ~ImportTable();

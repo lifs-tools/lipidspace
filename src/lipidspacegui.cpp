@@ -371,6 +371,31 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     scene->addItem(new HomeItem(ui->homeGraphicsView));
 
     updateGUI();
+
+
+
+    vector<TableColumnType> *ct = new vector<TableColumnType>();
+    for (int i = 0; i < 296; ++i) ct->push_back(LipidColumn);
+    ct->at(0) = SampleColumn;
+    ct->at(3) = FeatureColumnNominal;
+    ct->at(4) = FeatureColumnNominal;
+    ct->at(13) = FeatureColumnNominal;
+
+    ct->at(1) = FeatureColumnNumerical;
+    ct->at(2) = FeatureColumnNumerical;
+    ct->at(5) = FeatureColumnNumerical;
+    ct->at(6) = FeatureColumnNumerical;
+    ct->at(7) = FeatureColumnNumerical;
+    ct->at(8) = FeatureColumnNumerical;
+    ct->at(9) = FeatureColumnNumerical;
+    ct->at(10) = FeatureColumnNumerical;
+    ct->at(11) = FeatureColumnNumerical;
+    ct->at(12) = FeatureColumnNumerical;
+
+    FileTableHandler fth("examples/Tablesets/Plasma-Singapore.csv", "");
+    StudyVariableMapping svm(&fth, ct, lipid_space, this);
+    svm.setModal(true);
+    svm.exec();
 }
 
 

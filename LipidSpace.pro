@@ -51,7 +51,7 @@ SOURCES += \
     src/lineplot.cpp \
     src/histogramplot.cpp \
     src/barplot.cpp \
-    ui/src/studyvariablemapping.cpp
+    src/studyvariablemapping.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -81,7 +81,7 @@ HEADERS += \
     lipidspace/lineplot.h \
     lipidspace/histogramplot.h \
     lipidspace/barplot.h \
-    ui/lipidspace/studyvariablemapping.h
+    lipidspace/studyvariablemapping.h
 
 FORMS += \
     ui/about.ui \
@@ -94,7 +94,7 @@ FORMS += \
     ui/setalpha.ui \
     ui/setPCnum.ui \
     ui/select_worksheet.ui \
-    ui/ui/studyvariablemapping.ui
+    ui/studyvariablemapping.ui
 
 # Default rules for deployment.
 #qnx: target.path = /tmp/$${TARGET}/bin

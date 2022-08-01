@@ -41,12 +41,33 @@ enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadab
 enum FeatureFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, EqualFilter = 3, WithinRange = 4, OutsideRange = 5};
 enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
-
+enum MappingAction {NoAction, RenameAction, MappingTo};
 
 static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_TABLE}, {"COLUMN_PIVOT_TABLE", COLUMN_PIVOT_TABLE}, {"FLAT_TABLE", FLAT_TABLE}};
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"FeatureColumnNumerical", FeatureColumnNumerical}, {"FeatureColumnNominal", FeatureColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
 
 
+
+struct Mapping {
+    string name;
+    MappingAction action;
+    string rename;
+    string mapping;
+
+    Mapping(){
+        name = "";
+        action = NoAction;
+        rename = "";
+        mapping = "";
+    }
+
+    Mapping(string _name){
+        name = _name;
+        action = NoAction;
+        rename = "";
+        mapping = "";
+    }
+};
 
 
 class FeatureSet {
