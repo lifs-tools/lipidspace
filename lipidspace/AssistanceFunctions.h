@@ -6,6 +6,8 @@
 #include <QTreeWidget>
 #include <QPen>
 #include <QBrush>
+#include <QComboBox>
+#include <QLineEdit>
 #include <QPainter>
 #include <QLabel>
 #include <QItemDelegate>
@@ -34,7 +36,7 @@ using namespace OpenXLSX;
 using namespace std;
 
 enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
-enum FeatureType {NumericalFeature, NominalFeature};
+enum FeatureType {NumericalFeature, NominalFeature, NominalValue};
 enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
 enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumerical, FeatureColumnNominal, IgnoreColumn};
 enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered, FeatureNotRegistered, CorruptedFileFormat};
@@ -47,27 +49,93 @@ static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_T
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"FeatureColumnNumerical", FeatureColumnNumerical}, {"FeatureColumnNominal", FeatureColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
 
 
-
 struct Mapping {
     string name;
+    string parent;
     MappingAction action;
     string rename;
     string mapping;
+    FeatureType feature_type;
 
     Mapping(){
         name = "";
+        parent = "";
         action = NoAction;
+        feature_type = NominalFeature;
         rename = "";
         mapping = "";
     }
 
-    Mapping(string _name){
+    Mapping(string _name, FeatureType _feature_type){
         name = _name;
+        parent = "";
+        feature_type = _feature_type;
         action = NoAction;
         rename = "";
         mapping = "";
     }
 };
+
+
+typedef map< FeatureType, map<string, Mapping> > MappingData;
+
+
+
+
+
+
+class SignalLineEdit : public QLineEdit {
+    Q_OBJECT
+
+public:
+    int row;
+    FeatureType feature_type;
+
+    SignalLineEdit(int _row, FeatureType ft, QWidget *parent = nullptr) : QLineEdit(parent){
+        row = _row;
+        feature_type = ft;
+        connect(this, (void (SignalLineEdit::*)(const QString &))&SignalLineEdit::textChanged, this, &SignalLineEdit::changedText);
+    }
+
+    SignalLineEdit(QWidget *parent = nullptr) : QLineEdit(parent){
+        row = 0;
+        connect(this, (void (SignalLineEdit::*)(const QString &))&SignalLineEdit::textChanged, this, &SignalLineEdit::changedText);
+    }
+
+signals:
+    void lineEditChanged(SignalLineEdit *, QString);
+
+private slots:
+    void changedText(const QString &txt){
+        emit lineEditChanged(this, txt);
+    }
+};
+
+
+
+
+
+
+class SignalCombobox : public QComboBox {
+    Q_OBJECT
+
+public:
+    SignalCombobox(QWidget *parent = nullptr) : QComboBox(parent){
+        connect(this, (void (SignalCombobox::*)(int))&SignalCombobox::currentIndexChanged, this, &SignalCombobox::changedIndex);
+    }
+
+signals:
+    void comboChanged(SignalCombobox *);
+
+private slots:
+    void changedIndex(int ){
+        emit comboChanged(this);
+    }
+};
+
+
+
+
 
 
 class FeatureSet {

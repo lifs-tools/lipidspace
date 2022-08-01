@@ -423,7 +423,8 @@ void ImportTable::okCol(){
             }
 
             if (mapping_of_study_variables){
-                StudyVariableMapping study_variable_mapping(file_table_handler, column_types, lipid_space, this);
+                MappingData *mapping_data = new MappingData();
+                StudyVariableMapping study_variable_mapping(file_table_handler, mapping_data, column_types, lipid_space, this);
                 study_variable_mapping.setModal(true);
                 study_variable_mapping.exec();
                 if (study_variable_mapping.result() == QDialog::Accepted){
@@ -471,7 +472,8 @@ void ImportTable::okFlat(){
             }
 
             if (mapping_of_study_variables){
-                StudyVariableMapping study_variable_mapping(file_table_handler, column_types, lipid_space, this);
+                MappingData *mapping_data = new MappingData();
+                StudyVariableMapping study_variable_mapping(file_table_handler, mapping_data, column_types, lipid_space, this);
                 study_variable_mapping.setModal(true);
                 study_variable_mapping.exec();
                 if (study_variable_mapping.result() == QDialog::Accepted){

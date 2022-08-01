@@ -68,11 +68,12 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 284; ++i) ct->push_back(LipidColumn);
+        for (int i = 0; i < 324; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
-        ct->at(1) = FeatureColumnNominal;
-        ct->at(2) = FeatureColumnNominal;
-        loadTable("Plasma_Sales.csv", ct, COLUMN_PIVOT_TABLE, "");
+        for (int i = 1; i <= 40; ++i) ct->push_back(FeatureColumnNumerical);
+        ct->at(41) = FeatureColumnNominal;
+        ct->at(42) = FeatureColumnNominal;
+        loadTable("examples/Sales-Extended.csv", ct, COLUMN_PIVOT_TABLE, "");
 
     }
     else if (event->key() == Qt::Key_2){
@@ -94,19 +95,6 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(10) = FeatureColumnNumerical;
         ct->at(11) = FeatureColumnNumerical;
         ct->at(12) = FeatureColumnNumerical;
-
-        /*
-        ct->at(12) = IgnoreColumn;
-        ct->at(1) = IgnoreColumn;
-        ct->at(2) = IgnoreColumn;
-        ct->at(5) = IgnoreColumn;
-        ct->at(6) = IgnoreColumn;
-        ct->at(7) = IgnoreColumn;
-        ct->at(8) = IgnoreColumn;
-        ct->at(9) = IgnoreColumn;
-        ct->at(10) = IgnoreColumn;
-        ct->at(11) = IgnoreColumn;
-        */
         loadTable("examples/Tablesets/Plasma-Singapore.csv", ct, COLUMN_PIVOT_TABLE, "");
     }
     else if (event->key() == Qt::Key_3){
@@ -374,6 +362,22 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
 
+
+
+    vector<TableColumnType> *cct = new vector<TableColumnType>(324);
+    cct->at(0) = SampleColumn;
+    for (int i = 1; i <= 40; ++i) cct->at(i) = FeatureColumnNumerical;
+    cct->at(41) = FeatureColumnNominal;
+    cct->at(42) = FeatureColumnNominal;
+    for (int i = 43; i < 324; ++i) cct->at(i) = LipidColumn;
+    loadTable("examples/Sales-Extended.xlsx", cct, COLUMN_PIVOT_TABLE, "Data");
+
+
+
+
+
+
+
     vector<TableColumnType> *ct = new vector<TableColumnType>();
     for (int i = 0; i < 296; ++i) ct->push_back(LipidColumn);
     ct->at(0) = SampleColumn;
@@ -392,8 +396,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(11) = FeatureColumnNumerical;
     ct->at(12) = FeatureColumnNumerical;
 
+    MappingData *mapping_data = new MappingData();
     FileTableHandler fth("examples/Tablesets/Plasma-Singapore.csv", "");
-    StudyVariableMapping svm(&fth, ct, lipid_space, this);
+    StudyVariableMapping svm(&fth, mapping_data, ct, lipid_space, this);
     svm.setModal(true);
     svm.exec();
 }
