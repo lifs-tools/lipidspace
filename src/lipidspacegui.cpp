@@ -362,12 +362,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
 
-    /*
-
     vector<TableColumnType> *cct = new vector<TableColumnType>();
     for (int i = 0; i < 285; ++i) cct->push_back(LipidColumn);
     cct->at(0) = SampleColumn;
-    cct->at(1) = FeatureColumnNominal;
+    cct->at(1) = IgnoreColumn; // FeatureColumnNominal;
     cct->at(2) = FeatureColumnNominal;
     cct->at(3) = FeatureColumnNominal;
     loadTable("examples/normalized/Plasma_Sales.csv", cct, COLUMN_PIVOT_TABLE, "");
@@ -392,7 +390,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     if (svm.result() == QDialog::Accepted){
         loadTable("examples/normalized/Maekawa_Plasma-Japanese_2018.xlsx", ct, COLUMN_PIVOT_TABLE, "Data", mapping_data);
     }
-    */
 }
 
 

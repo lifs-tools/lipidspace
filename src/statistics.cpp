@@ -243,7 +243,6 @@ void Statistics::exportAsPdf(){
 
 
 void Statistics::updateBarPlot(){
-
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);
@@ -265,6 +264,7 @@ void Statistics::updateBarPlot(){
     }
 
 
+
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
     Indexes target_indexes;
@@ -275,10 +275,14 @@ void Statistics::updateBarPlot(){
     string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
     bool has_secondary = contains_val(lipid_space->feature_values, secondary_target_variable);
 
+    int valid_lipidomes = 0;
+
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->features[target_variable].missing) continue;
             if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
+            valid_lipidomes++;
 
             string nominal_value = lipidome->features[target_variable].nominal_value;
             if (uncontains_val(nominal_target_values, nominal_value)){
@@ -295,6 +299,8 @@ void Statistics::updateBarPlot(){
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->features[target_variable].missing) continue;
             if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
+            valid_lipidomes++;
 
             target_values.push_back(lipidome->features[target_variable].numerical_value);
 
@@ -325,15 +331,21 @@ void Statistics::updateBarPlot(){
     }
 
     // set up matrix for multiple linear regression
-    stat_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
-    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
+    stat_matrix.reset(valid_lipidomes, lipid_map.size());
+    for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+
+        if (lipidome->features[target_variable].missing) continue;
+        if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
+
         for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
             int index = lipidome->selected_lipid_indexes[i];
             if (contains_val(lipid_map, lipidome->lipids[index])){
-                stat_matrix(r, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[index];
+                stat_matrix(rr, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[index];
             }
         }
+        rr++;
     }
 
     vector<QString> lipid_names(lipid_map.size(), "");
@@ -358,15 +370,21 @@ void Statistics::updateBarPlot(){
         }
     }
     else {
-        for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
+        for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
             Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+
+            if (lipidome->features[target_variable].missing) continue;
+            if (has_secondary && lipidome->features[secondary_target_variable].missing) continue;
+
+
             for (int index : lipidome->selected_lipid_indexes){
                 if (contains_val(lipid_map, lipidome->lipids[index])){
                     string lipid_category = lipidome->lipids[index]->get_lipid_string(CATEGORY);
                     int c = lipid_map[lipidome->lipids[index]];
-                    data_series[0][c].push_back(stat_matrix(r, c));
+                    data_series[0][c].push_back(stat_matrix(rr, c));
                 }
             }
+            rr++;
         }
     }
 
@@ -406,6 +424,7 @@ void Statistics::updateBarPlot(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data);
     barplot->add(barplot_data, categories, lipid_names, &colors);
     chart->add(barplot);
+
 }
 
 
@@ -415,6 +434,7 @@ void Statistics::updateBarPlot(){
 
 
 void Statistics::updateHistogram(){
+
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);

@@ -1853,7 +1853,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
 
             if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature)){
                 Mapping &m = mapping_data->at(NominalFeature)[feature];
-                if (m.action != NoAction) feature = m.mapping;
+                if (m.action == RenameAction || m.action == MappingTo) feature = m.mapping;
             }
             registered_features.insert(feature);
         }
@@ -1862,7 +1862,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             feature_names_numerical.push_back(feature);
             if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature)){
                 Mapping &m = mapping_data->at(NumericalFeature)[feature];
-                if (m.action != NoAction) feature = m.mapping;
+                if (m.action == RenameAction || m.action == MappingTo) feature = m.mapping;
             }
             registered_features.insert(feature);
         }
@@ -1914,12 +1914,15 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             for (int i = 0; i < (int)feature_columns_nominal.size(); ++i){
                 string feature_name = feature_names_nominal[i];
                 string feature_value = tokens.at(feature_columns_nominal[i]);
+
+                if (contains_val(NA_VALUES, feature_value)) feature_value = "N/A";
+
                 if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature_name) && contains_val(mapping_data->at(NominalValue), feature_name + "/" + feature_value)){
                     Mapping &mn = mapping_data->at(NominalFeature)[feature_name];
-                    if (mn.action != NoAction) feature_name = mn.mapping;
+                    if (mn.action == RenameAction || mn.action == MappingTo) feature_name = mn.mapping;
 
                     Mapping &mv = mapping_data->at(NominalValue)[feature_name + "/" + feature_value];
-                    if (mv.action != NoAction) feature_value = mv.mapping;
+                    if (mv.action == RenameAction || mv.action == MappingTo) feature_value = mv.mapping;
                 }
                 lipidome->features.insert({feature_name, Feature(feature_name, feature_value, contains_val(NA_VALUES, feature_value))});
 
@@ -1931,7 +1934,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
 
                 if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature_name)){
                     Mapping &m = mapping_data->at(NumericalFeature)[feature_name];
-                    if (m.action != NoAction) feature_name = m.mapping;
+                    if (m.action == RenameAction || m.action == MappingTo) feature_name = m.mapping;
                 }
 
                 lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
@@ -2039,6 +2042,48 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             }
         }
 
+
+
+
+        // check if new study variables must be registered to existing lipidomes
+        if (mapping_data){
+            for (auto kv : mapping_data->at(NumericalFeature)){
+                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NumericalFeature){
+                    string feature_name = kv.second.name;
+                    double feature_value = (kv.second.action == RegisterNewDefault) ? atof(kv.second.mapping.c_str()) : 0.;
+                    bool is_not_missing = (kv.second.action == RegisterNewDefault);
+
+                    feature_values.insert({feature_name, FeatureSet(feature_name, NumericalFeature)});
+                    if (is_not_missing) feature_values[feature_name].numerical_values.insert(feature_value);
+
+                    for (auto lipidome : lipidomes){
+                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                    }
+
+                    registered_features.insert(feature_name);
+                }
+            }
+
+            for (auto kv : mapping_data->at(NominalFeature)){
+                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NominalFeature){
+                    string feature_name = kv.second.name;
+                    string feature_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : "N/A";
+                    bool is_not_missing = (kv.second.action == RegisterNewDefault);
+
+                    feature_values.insert({feature_name, FeatureSet(feature_name, NominalFeature)});
+                    feature_values[feature_name].nominal_values.insert({feature_value, true});
+
+                    for (auto lipidome : lipidomes){
+                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                    }
+
+                    registered_features.insert(feature_name);
+                }
+            }
+        }
+
+
+
         if (feature_values.size() > 1){
             for (auto feature : registered_features){
                 if (uncontains_val(feature_values, feature)){
@@ -2055,6 +2100,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             // add new values into existing features
             for (auto lipidome : loaded_lipidomes){
                 for (auto kv : lipidome->features){
+
                     FeatureSet &fs = feature_values[kv.first];
                     if (kv.second.feature_type == NumericalFeature){
                         fs.numerical_values.insert(kv.second.numerical_value);
@@ -2069,9 +2115,11 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
         else {
             for (auto lipidome : loaded_lipidomes){
                 for (auto kv : lipidome->features){
+
                     if (uncontains_val(feature_values, kv.first)){
                         feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
                     }
+
                     FeatureSet &fs = feature_values[kv.first];
                     if (kv.second.feature_type == NumericalFeature){
                         fs.numerical_values.insert(kv.second.numerical_value);
@@ -2208,12 +2256,14 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                             string feature_value = tokens.at(i);
                             string feature_key = feature_name + "/" + feature_value;
 
+                            if (contains_val(NA_VALUES, feature_value)) feature_value = "N/A";
+
                             if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature_name) && contains_val(mapping_data->at(NominalValue), feature_key)){
                                 Mapping &mn = mapping_data->at(NominalFeature)[feature_name];
-                                if (mn.action != NoAction) feature_name = mn.mapping;
+                                if (mn.action == RenameAction || mn.action == MappingTo) feature_name = mn.mapping;
 
                                 Mapping &mv = mapping_data->at(NominalValue)[feature_key];
-                                if (mv.action == RenameAction) feature_value = mv.mapping;
+                                if (mv.action == RenameAction || mv.action == MappingTo) feature_value = mv.mapping;
                             }
 
                             features.insert({feature_name, Feature(feature_name, feature_value, contains_val(NA_VALUES, feature_value))});
@@ -2231,7 +2281,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
 
                             if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature_name)){
                                 Mapping &m = mapping_data->at(NumericalFeature)[feature_name];
-                                if (m.action != NoAction) feature_name = m.mapping;
+                                if (m.action == RenameAction || m.action == MappingTo) feature_name = m.mapping;
                             }
                             features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
                         }
@@ -2264,14 +2314,16 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         for (auto feature : features_names_numerical){
             if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature)){
                 Mapping &m = mapping_data->at(NumericalFeature)[feature];
-                if (m.action != NoAction) feature = m.mapping;
+                if (m.action == RenameAction || m.action == MappingTo) feature = m.mapping;
+                else if (m.action == RegisterNewNaN || m.action  == RegisterNewDefault) continue;
             }
             registered_features.insert(feature);
         }
         for (auto feature : features_names_nominal){
             if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature)){
                 Mapping &m = mapping_data->at(NominalFeature)[feature];
-                if (m.action != NoAction) feature = m.mapping;
+                if (m.action == RenameAction || m.action == MappingTo) feature = m.mapping;
+                else if (m.action == RegisterNewNaN || m.action  == RegisterNewDefault) continue;
             }
             registered_features.insert(feature);
         }
@@ -2287,6 +2339,44 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                 }
             }
         }
+
+        // check if new study variables must be registered to existing lipidomes
+        if (mapping_data){
+            for (auto kv : mapping_data->at(NumericalFeature)){
+                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NumericalFeature){
+                    string feature_name = kv.second.name;
+                    double feature_value = (kv.second.action == RegisterNewDefault) ? atof(kv.second.mapping.c_str()) : 0.;
+                    bool is_not_missing = (kv.second.action == RegisterNewDefault);
+
+                    feature_values.insert({feature_name, FeatureSet(feature_name, NumericalFeature)});
+                    if (is_not_missing) feature_values[feature_name].numerical_values.insert(feature_value);
+
+                    for (auto lipidome : lipidomes){
+                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                    }
+
+                    registered_features.insert(feature_name);
+                }
+            }
+
+            for (auto kv : mapping_data->at(NominalFeature)){
+                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NominalFeature){
+                    string feature_name = kv.second.name;
+                    string feature_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : "N/A";
+                    bool is_not_missing = (kv.second.action == RegisterNewDefault);
+
+                    feature_values.insert({feature_name, FeatureSet(feature_name, NominalFeature)});
+                    feature_values[feature_name].nominal_values.insert({feature_value, true});
+
+                    for (auto lipidome : lipidomes){
+                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                    }
+
+                    registered_features.insert(feature_name);
+                }
+            }
+        }
+
 
         if (feature_values.size() > 1){
             for (auto feature : registered_features){
@@ -2314,13 +2404,18 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                 }
             }
         }
+
+
+
         // register features
         else {
             for (auto lipidome : loaded_lipidomes){
                 for (auto kv : lipidome->features){
+
                     if (uncontains_val(feature_values, kv.first)){
                         feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
                     }
+
                     FeatureSet &fs = feature_values[kv.first];
                     if (kv.second.feature_type == NumericalFeature){
                         fs.numerical_values.insert(kv.second.numerical_value);
