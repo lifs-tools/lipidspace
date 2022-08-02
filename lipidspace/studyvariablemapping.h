@@ -10,6 +10,7 @@
 #include <set>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QMessageBox>
 
 using namespace std;
 

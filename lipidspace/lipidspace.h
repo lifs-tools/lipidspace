@@ -79,8 +79,8 @@ public:
 
     void load_list(string lipid_list_file);
     void load_row_table(string table_file, vector<TableColumnType> *column_types = 0, string sheet = "");
-    void load_column_table(string table_file, vector<TableColumnType> *column_types, string sheet = "");
-    void load_flat_table(string table_file, vector<TableColumnType> *column_types, string sheet = "");
+    void load_column_table(string table_file, vector<TableColumnType> *column_types, string sheet = "", MappingData *mapping_data = 0);
+    void load_flat_table(string table_file, vector<TableColumnType> *column_types, string sheet = "", MappingData *mapping_data = 0);
     void load_mzTabM(string mzTabM_file);
     int extract_number(string line, int line_number = -1);
 

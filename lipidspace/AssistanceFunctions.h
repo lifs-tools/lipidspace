@@ -7,9 +7,11 @@
 #include <QPen>
 #include <QBrush>
 #include <QComboBox>
+#include <QCursor>
 #include <QLineEdit>
 #include <QPainter>
 #include <QLabel>
+#include <QToolTip>
 #include <QItemDelegate>
 #include <OpenXLSX.hpp>
 #include <QDropEvent>
@@ -53,7 +55,6 @@ struct Mapping {
     string name;
     string parent;
     MappingAction action;
-    string rename;
     string mapping;
     FeatureType feature_type;
 
@@ -62,7 +63,6 @@ struct Mapping {
         parent = "";
         action = NoAction;
         feature_type = NominalFeature;
-        rename = "";
         mapping = "";
     }
 
@@ -71,7 +71,6 @@ struct Mapping {
         parent = "";
         feature_type = _feature_type;
         action = NoAction;
-        rename = "";
         mapping = "";
     }
 };
@@ -91,26 +90,15 @@ public:
     int row;
     FeatureType feature_type;
 
-    SignalLineEdit(int _row, FeatureType ft, QWidget *parent = nullptr) : QLineEdit(parent){
-        row = _row;
-        feature_type = ft;
-        connect(this, (void (SignalLineEdit::*)(const QString &))&SignalLineEdit::textChanged, this, &SignalLineEdit::changedText);
-    }
-
-    SignalLineEdit(QWidget *parent = nullptr) : QLineEdit(parent){
-        row = 0;
-        connect(this, (void (SignalLineEdit::*)(const QString &))&SignalLineEdit::textChanged, this, &SignalLineEdit::changedText);
-    }
+    SignalLineEdit(int _row, FeatureType ft, QWidget *parent = nullptr);
+    SignalLineEdit(QWidget *parent = nullptr);
 
 signals:
     void lineEditChanged(SignalLineEdit *, QString);
 
 private slots:
-    void changedText(const QString &txt){
-        emit lineEditChanged(this, txt);
-    }
+    void changedText(const QString &txt);
 };
-
 
 
 
@@ -120,17 +108,19 @@ class SignalCombobox : public QComboBox {
     Q_OBJECT
 
 public:
-    SignalCombobox(QWidget *parent = nullptr) : QComboBox(parent){
-        connect(this, (void (SignalCombobox::*)(int))&SignalCombobox::currentIndexChanged, this, &SignalCombobox::changedIndex);
-    }
+    QString tool_tip;
+
+    SignalCombobox(QWidget *parent = nullptr);
+
+protected:
+    void enterEvent(QEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 signals:
     void comboChanged(SignalCombobox *);
 
 private slots:
-    void changedIndex(int ){
-        emit comboChanged(this);
-    }
+    void changedIndex(int );
 };
 
 

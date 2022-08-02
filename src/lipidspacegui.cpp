@@ -343,7 +343,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->startAnalysisPushButton->setEnabled(false);
 
 
-    connect(&import_table, SIGNAL(importTable(string, vector<TableColumnType>*, TableType, string)), this, SLOT(loadTable(string, vector<TableColumnType>*, TableType, string)));
+    connect(&import_table, &ImportTable::importTable, this, &LipidSpaceGUI::loadTable);
     import_table.setModal(true);
 
 
@@ -362,16 +362,15 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
 
+    /*
 
-
-    vector<TableColumnType> *cct = new vector<TableColumnType>(324);
+    vector<TableColumnType> *cct = new vector<TableColumnType>();
+    for (int i = 0; i < 285; ++i) cct->push_back(LipidColumn);
     cct->at(0) = SampleColumn;
-    for (int i = 1; i <= 40; ++i) cct->at(i) = FeatureColumnNumerical;
-    cct->at(41) = FeatureColumnNominal;
-    cct->at(42) = FeatureColumnNominal;
-    for (int i = 43; i < 324; ++i) cct->at(i) = LipidColumn;
-    loadTable("examples/Sales-Extended.xlsx", cct, COLUMN_PIVOT_TABLE, "Data");
-
+    cct->at(1) = FeatureColumnNominal;
+    cct->at(2) = FeatureColumnNominal;
+    cct->at(3) = FeatureColumnNominal;
+    loadTable("examples/normalized/Plasma_Sales.csv", cct, COLUMN_PIVOT_TABLE, "");
 
 
 
@@ -379,28 +378,21 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
     vector<TableColumnType> *ct = new vector<TableColumnType>();
-    for (int i = 0; i < 296; ++i) ct->push_back(LipidColumn);
+    for (int i = 0; i < 324; ++i) ct->push_back(LipidColumn);
     ct->at(0) = SampleColumn;
+    ct->at(1) = FeatureColumnNominal;
+    ct->at(2) = FeatureColumnNominal;
     ct->at(3) = FeatureColumnNominal;
-    ct->at(4) = FeatureColumnNominal;
-    ct->at(13) = FeatureColumnNominal;
-
-    ct->at(1) = FeatureColumnNumerical;
-    ct->at(2) = FeatureColumnNumerical;
-    ct->at(5) = FeatureColumnNumerical;
-    ct->at(6) = FeatureColumnNumerical;
-    ct->at(7) = FeatureColumnNumerical;
-    ct->at(8) = FeatureColumnNumerical;
-    ct->at(9) = FeatureColumnNumerical;
-    ct->at(10) = FeatureColumnNumerical;
-    ct->at(11) = FeatureColumnNumerical;
-    ct->at(12) = FeatureColumnNumerical;
 
     MappingData *mapping_data = new MappingData();
-    FileTableHandler fth("examples/Tablesets/Plasma-Singapore.csv", "");
+    FileTableHandler fth("examples/normalized/Maekawa_Plasma-Japanese_2018.xlsx", "Data");
     StudyVariableMapping svm(&fth, mapping_data, ct, lipid_space, this);
     svm.setModal(true);
     svm.exec();
+    if (svm.result() == QDialog::Accepted){
+        loadTable("examples/normalized/Maekawa_Plasma-Japanese_2018.xlsx", ct, COLUMN_PIVOT_TABLE, "Data", mapping_data);
+    }
+    */
 }
 
 
@@ -644,7 +636,7 @@ void LipidSpaceGUI::updateView(int){
 
 
 
-void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_types, TableType table_type, string sheet){
+void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_types, TableType table_type, string sheet, MappingData *mapping_data){
     bool repeat_loading = true;
     ui->normalizationComboBox->clear();
     ui->normalizationComboBox->addItem("Absolute normalization", "absolute");
@@ -658,11 +650,11 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
                     break;
 
                 case COLUMN_PIVOT_TABLE:
-                    lipid_space->load_column_table(file_name, column_types, sheet);
+                    lipid_space->load_column_table(file_name, column_types, sheet, mapping_data);
                     break;
 
                 case FLAT_TABLE:
-                    lipid_space->load_flat_table(file_name, column_types, sheet);
+                    lipid_space->load_flat_table(file_name, column_types, sheet, mapping_data);
                     break;
             }
             runAnalysis();

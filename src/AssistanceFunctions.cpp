@@ -23,6 +23,53 @@ void SingleListWidget::dropEvent(QDropEvent *event){
     }
 }
 
+
+
+SignalCombobox::SignalCombobox(QWidget *parent) : QComboBox(parent) {
+    tool_tip = "";
+    connect(this, (void (SignalCombobox::*)(int))&SignalCombobox::currentIndexChanged, this, &SignalCombobox::changedIndex);
+}
+
+void SignalCombobox::enterEvent(QEvent *event) {
+    QComboBox::enterEvent(event);
+    QToolTip::showText(QCursor::pos(), tool_tip);
+}
+
+
+void SignalCombobox::leaveEvent(QEvent *event){
+    QComboBox::enterEvent(event);
+    QToolTip::hideText();
+}
+
+void SignalCombobox::changedIndex(int ){
+    emit comboChanged(this);
+}
+
+
+
+
+
+SignalLineEdit::SignalLineEdit(int _row, FeatureType ft, QWidget *parent) : QLineEdit(parent){
+    row = _row;
+    feature_type = ft;
+    connect(this, (void (SignalLineEdit::*)(const QString &))&SignalLineEdit::textChanged, this, &SignalLineEdit::changedText);
+}
+
+
+SignalLineEdit::SignalLineEdit(QWidget *parent) : QLineEdit(parent){
+    row = 0;
+    connect(this, (void (SignalLineEdit::*)(const QString &))&SignalLineEdit::textChanged, this, &SignalLineEdit::changedText);
+}
+
+
+void SignalLineEdit::changedText(const QString &txt){
+    emit lineEditChanged(this, txt);
+}
+
+
+
+
+
 FileTableHandler::FileTableHandler(string file_name, string sheet_name){
     // csv import
     if (sheet_name.length() == 0){

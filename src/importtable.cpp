@@ -429,7 +429,7 @@ void ImportTable::okCol(){
                 study_variable_mapping.exec();
                 if (study_variable_mapping.result() == QDialog::Accepted){
                     accept();
-                    importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
+                    importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet, mapping_data);
                 }
             }
             else {
@@ -478,7 +478,7 @@ void ImportTable::okFlat(){
                 study_variable_mapping.exec();
                 if (study_variable_mapping.result() == QDialog::Accepted){
                     accept();
-                    importTable(data_table_file, column_types, FLAT_TABLE, sheet);
+                    importTable(data_table_file, column_types, FLAT_TABLE, sheet, mapping_data);
                 }
             }
             else {
