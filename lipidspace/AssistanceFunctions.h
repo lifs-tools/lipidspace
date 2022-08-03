@@ -5,6 +5,7 @@
 #include <QListWidget>
 #include <QTreeWidget>
 #include <QPen>
+#include <QTableWidget>
 #include <QBrush>
 #include <QComboBox>
 #include <QCursor>
@@ -46,7 +47,7 @@ enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadab
 enum FeatureFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, EqualFilter = 3, WithinRange = 4, OutsideRange = 5};
 enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
-enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, MappingTo};
+enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, MappingTo, InsertNaN, InsertDefault};
 
 static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_TABLE}, {"COLUMN_PIVOT_TABLE", COLUMN_PIVOT_TABLE}, {"FLAT_TABLE", FLAT_TABLE}};
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"FeatureColumnNumerical", FeatureColumnNumerical}, {"FeatureColumnNominal", FeatureColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
@@ -81,6 +82,20 @@ typedef map< FeatureType, map<string, Mapping> > MappingData;
 
 
 
+class KeyTableWidget : public QTableWidget {
+    Q_OBJECT
+
+public:
+    KeyTableWidget(QWidget *parent = nullptr);
+
+signals:
+    void keyPressed(QKeyEvent *event);
+
+public slots:
+    void keyPressEvent(QKeyEvent *event) override;
+
+};
+
 
 
 
@@ -110,8 +125,9 @@ class SignalCombobox : public QComboBox {
 
 public:
     QString tool_tip;
+    int row;
 
-    SignalCombobox(QWidget *parent = nullptr);
+    SignalCombobox(QWidget *parent = nullptr, int _row = -1);
 
 protected:
     void enterEvent(QEvent *event) override;

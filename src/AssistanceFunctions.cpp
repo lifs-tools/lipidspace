@@ -25,8 +25,23 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 
 
 
-SignalCombobox::SignalCombobox(QWidget *parent) : QComboBox(parent) {
+
+KeyTableWidget::KeyTableWidget(QWidget *parent) : QTableWidget(parent){
+}
+
+
+void KeyTableWidget::keyPressEvent(QKeyEvent *event) {
+    QTableWidget::keyPressEvent(event);
+    emit keyPressed(event);
+}
+
+
+
+
+
+SignalCombobox::SignalCombobox(QWidget *parent, int _row) : QComboBox(parent) {
     tool_tip = "";
+    row = _row;
     connect(this, (void (SignalCombobox::*)(int))&SignalCombobox::currentIndexChanged, this, &SignalCombobox::changedIndex);
 }
 

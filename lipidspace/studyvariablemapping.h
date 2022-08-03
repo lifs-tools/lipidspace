@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QKeyEvent>
 
 using namespace std;
 
@@ -33,6 +34,10 @@ public:
     map<int, set<int>> variable_to_values;
     map<int, int> value_to_variable;
     vector<string> names_for_registration;
+    int original_import_variables;
+    int inserted_variables;
+    int registered_numerical_variables;
+    int registered_nominal_variables;
 
     explicit StudyVariableMapping(FileTableHandler *fth, MappingData *md, vector<TableColumnType> *ct, LipidSpace *ls, QWidget *parent = nullptr);
     ~StudyVariableMapping();
@@ -44,7 +49,11 @@ public slots:
     void doContinue();
     void cancel();
     void comboChanged(SignalCombobox *sc);
+    void comboInsertedChanged(SignalCombobox *sc);
+    void comboVariableChanged(SignalCombobox *sc);
     void lineEditChanged(SignalLineEdit *edit, QString txt);
+    void insertVariable();
+    void tableKeyEvent(QKeyEvent *event);
 };
 
 #endif // STUDYVARIABLEMAPPING_H

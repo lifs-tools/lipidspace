@@ -362,18 +362,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
 
-    vector<TableColumnType> *cct = new vector<TableColumnType>();
-    for (int i = 0; i < 285; ++i) cct->push_back(LipidColumn);
-    cct->at(0) = SampleColumn;
-    cct->at(1) = IgnoreColumn; // FeatureColumnNominal;
-    cct->at(2) = FeatureColumnNominal;
-    cct->at(3) = FeatureColumnNominal;
-    loadTable("examples/normalized/Plasma_Sales.csv", cct, COLUMN_PIVOT_TABLE, "");
-
-
-
-
-
 
     vector<TableColumnType> *ct = new vector<TableColumnType>();
     for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
@@ -382,14 +370,24 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(2) = FeatureColumnNominal;
     ct->at(3) = FeatureColumnNominal;
     ct->at(4) = FeatureColumnNumerical;
+    loadTable("examples/normalized/Maekawa_Plasma-Japanese_2018.xlsx", ct, COLUMN_PIVOT_TABLE, "Data");
+
+
+
+    vector<TableColumnType> *cct = new vector<TableColumnType>();
+    for (int i = 0; i < 285; ++i) cct->push_back(LipidColumn);
+    cct->at(0) = SampleColumn;
+    cct->at(1) = IgnoreColumn; // FeatureColumnNominal;
+    cct->at(2) = FeatureColumnNominal;
+    cct->at(3) = FeatureColumnNominal;
 
     MappingData *mapping_data = new MappingData();
-    FileTableHandler fth("examples/normalized/Maekawa_Plasma-Japanese_2018.xlsx", "Data");
-    StudyVariableMapping svm(&fth, mapping_data, ct, lipid_space, this);
+    FileTableHandler fth("examples/normalized/Plasma_Sales.csv", "");
+    StudyVariableMapping svm(&fth, mapping_data, cct, lipid_space, this);
     svm.setModal(true);
     svm.exec();
     if (svm.result() == QDialog::Accepted){
-        loadTable("examples/normalized/Maekawa_Plasma-Japanese_2018.xlsx", ct, COLUMN_PIVOT_TABLE, "Data", mapping_data);
+        loadTable("examples/normalized/Plasma_Sales.csv", cct, COLUMN_PIVOT_TABLE, "", mapping_data);
     }
 }
 
