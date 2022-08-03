@@ -258,7 +258,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -574,8 +574,8 @@
             <property name="handleWidth">
              <number>8</number>
             </property>
-            <widget class="Chart" name="statisticsBoxPlot" native="true"/>
-            <widget class="Chart" name="statisticsHistogram" native="true"/>
+            <widget class="Chart" name="statisticsBoxPlot"/>
+            <widget class="Chart" name="statisticsHistogram"/>
            </widget>
            <widget class="QSplitter" name="splitterStatV2">
             <property name="orientation">
@@ -584,8 +584,8 @@
             <property name="handleWidth">
              <number>10</number>
             </property>
-            <widget class="Chart" name="statisticsROCCurve" native="true"/>
-            <widget class="Chart" name="statisticsBarPlot" native="true"/>
+            <widget class="Chart" name="statisticsROCCurve"/>
+            <widget class="Chart" name="statisticsBarPlot"/>
            </widget>
           </widget>
          </item>

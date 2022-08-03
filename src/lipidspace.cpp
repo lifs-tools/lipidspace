@@ -37,7 +37,7 @@ void LipidSpace::create_dendrogram(){
     for (int i = 0; i < n; ++i) nodes.push_back(new DendrogramNode(i, &feature_values, selected_lipidomes[i]));
 
     while (nodes.size() > 1){
-        double min_val = 1e9;
+        double min_val = 1e100;
         int ii = 0, jj = 0;
         for (int i = 0; i < (int)nodes.size() - 1; ++i){
             for (int j = i + 1; j < (int)nodes.size(); ++j){
@@ -2062,6 +2062,17 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
 
                     registered_features.insert(feature_name);
                 }
+                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.feature_type == NumericalFeature){
+                    string feature_name = kv.second.name;
+                    double feature_value = (kv.second.action == InsertDefault) ? atof(kv.second.mapping.c_str()) : 0.;
+                    bool is_not_missing = (kv.second.action == InsertDefault);
+
+                    for (auto lipidome : loaded_lipidomes){
+                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                    }
+
+                    registered_features.insert(feature_name);
+                }
             }
 
             for (auto kv : mapping_data->at(NominalFeature)){
@@ -2074,6 +2085,17 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
                     feature_values[feature_name].nominal_values.insert({feature_value, true});
 
                     for (auto lipidome : lipidomes){
+                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                    }
+
+                    registered_features.insert(feature_name);
+                }
+                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.feature_type == NominalFeature){
+                    string feature_name = kv.second.name;
+                    string feature_value = (kv.second.action == InsertDefault) ? kv.second.mapping : NO_VALUE_CHAR;
+                    bool is_not_missing = (kv.second.action == InsertDefault);
+
+                    for (auto lipidome : loaded_lipidomes){
                         lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
                     }
 
@@ -2357,6 +2379,17 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
 
                     registered_features.insert(feature_name);
                 }
+                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.feature_type == NumericalFeature){
+                    string feature_name = kv.second.name;
+                    double feature_value = (kv.second.action == InsertDefault) ? atof(kv.second.mapping.c_str()) : 0.;
+                    bool is_not_missing = (kv.second.action == InsertDefault);
+
+                    for (auto lipidome : loaded_lipidomes){
+                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                    }
+
+                    registered_features.insert(feature_name);
+                }
             }
 
             for (auto kv : mapping_data->at(NominalFeature)){
@@ -2369,6 +2402,17 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                     feature_values[feature_name].nominal_values.insert({feature_value, true});
 
                     for (auto lipidome : lipidomes){
+                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                    }
+
+                    registered_features.insert(feature_name);
+                }
+                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.feature_type == NominalFeature){
+                    string feature_name = kv.second.name;
+                    string feature_value = (kv.second.action == InsertDefault) ? kv.second.mapping : NO_VALUE_CHAR;
+                    bool is_not_missing = (kv.second.action == InsertDefault);
+
+                    for (auto lipidome : loaded_lipidomes){
                         lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
                     }
 

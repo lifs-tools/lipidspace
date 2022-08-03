@@ -362,7 +362,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
 
-
+    /*
     vector<TableColumnType> *ct = new vector<TableColumnType>();
     for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
     ct->at(0) = SampleColumn;
@@ -389,6 +389,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     if (svm.result() == QDialog::Accepted){
         loadTable("examples/normalized/Plasma_Sales.csv", cct, COLUMN_PIVOT_TABLE, "", mapping_data);
     }
+    */
 }
 
 
@@ -902,9 +903,12 @@ void LipidSpaceGUI::runAnalysis(){
     if (pos >= 0) ui->featureComboBoxStat->setCurrentIndex(pos);
     if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
 
+    // reset splitters for statistics tile view
+    ui->splitterStatV1->setSizes(QList<int>{ui->splitterStat->height() >> 1, ui->splitterStat->height() >> 1});
+    ui->splitterStatV2->setSizes(QList<int>{ui->splitterStat->height() >> 1, ui->splitterStat->height() >> 1});
+    ui->splitterStat->setSizes(QList<int>{ui->splitterStat->width() >> 1, ui->splitterStat->width() >> 1});
+
     emit analysisCompleted();
-
-
 
 }
 

@@ -459,7 +459,7 @@ void StudyVariableMapping::doContinue() {
     for (int r = 0; r < t->rowCount(); ++r){
 
         int combo_index = ((SignalCombobox*)t->cellWidget(r, 2))->currentIndex();
-        if (!((r < original_import_variables && combo_index == 3) || (r >= original_import_variables && (combo_index & 1)))) continue;
+        if (!(((r < original_import_variables) && (combo_index == 3)) || ((r >= original_import_variables) && ((combo_index & 1) == 1)))) continue;
 
         SignalLineEdit *le = (SignalLineEdit*)t->cellWidget(r, 3);
         if (le->feature_type != NumericalFeature) continue;
@@ -485,7 +485,7 @@ void StudyVariableMapping::doContinue() {
 
         SignalLineEdit* edit = (SignalLineEdit*)t->cellWidget(row, 3);
 
-        if (edit->text() == ""){
+        if (edit->text() == "" && edit->isEnabled()){
             QMessageBox::warning(this, "Mismatch with study variables", QString("To register the nominal study variable '%1', it needs to get a default value. This default value must not be empty.").arg(t->item(row, 1)->text()));
             return;
         }
@@ -626,6 +626,23 @@ void StudyVariableMapping::doContinue() {
             QMessageBox::warning(this, "Mismatch with study variables", QString("No numerical study variable \"%1\" is registered in LipidSpace. Registered numerical study variables are: %2").arg(num_val.c_str()).arg(sl.join(", ")));
             return;
         }
+    }
+
+    // after everything is accepted, lets add the inserted study variables
+    for (int i = 0; i < inserted_variables; ++i){
+        int row = original_import_variables + i;
+
+        SignalCombobox* c = (SignalCombobox*)t->cellWidget(row, 0);
+        FeatureType ft = (FeatureType)c->itemData(c->currentIndex()).toInt();
+
+        SignalCombobox* cb = (SignalCombobox*)t->cellWidget(row, 2);
+        string name = cb->itemData(cb->currentIndex()).toString().toStdString();
+
+        MappingAction action = (cb->currentIndex() & 1) ? InsertDefault : InsertNaN;
+
+        mapping_data->at(ft).insert({name, Mapping(name, ft)});
+        mapping_data->at(ft)[name].action = action;
+        if (action == InsertDefault) mapping_data->at(ft)[name].mapping = ((SignalLineEdit*)t->cellWidget(row, 3))->text().toStdString();
     }
 
     accept();
