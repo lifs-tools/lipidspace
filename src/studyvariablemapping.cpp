@@ -326,6 +326,28 @@ void StudyVariableMapping::doContinue() {
     set<string> numerical_import;
     set<string> nominal_import;
 
+
+    // check if any default value for numerical study variable is not a number
+    for (int r = 0; r < ui->tableWidget->rowCount(); ++r){
+        SignalCombobox *combo = (SignalCombobox*)ui->tableWidget->cellWidget(r, 2);
+        FeatureType ft = (FeatureType)combo->itemData(0).toInt();
+        int combo_index = combo->currentIndex();
+        if (ft != NumericalFeature || combo_index != 3) continue;
+
+        SignalLineEdit *le = (SignalLineEdit*)ui->tableWidget->cellWidget(r, 3);
+        QString le_text = le->text();
+
+        bool is_number = false;
+        le_text.toDouble(&is_number);
+        if (!is_number){
+            QString numerical_study_variable = ui->tableWidget->item(r, 1)->text();
+
+            QMessageBox::warning(this, "Mismatch with study variables", QString("To register the numerical study variable '%1', all lipidomes in LipidSpace must get a default value for this variable. This default value must be a number.").arg(numerical_study_variable));
+            return;
+        }
+    }
+
+
     // adding registered study variables for match check
     for (auto kv : lipid_space->feature_values){
         if (kv.second.feature_type == NominalFeature) nominal_registered.insert(kv.first);

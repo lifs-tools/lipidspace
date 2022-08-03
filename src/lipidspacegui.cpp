@@ -376,11 +376,12 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
     vector<TableColumnType> *ct = new vector<TableColumnType>();
-    for (int i = 0; i < 324; ++i) ct->push_back(LipidColumn);
+    for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
     ct->at(0) = SampleColumn;
     ct->at(1) = FeatureColumnNominal;
     ct->at(2) = FeatureColumnNominal;
     ct->at(3) = FeatureColumnNominal;
+    ct->at(4) = FeatureColumnNumerical;
 
     MappingData *mapping_data = new MappingData();
     FileTableHandler fth("examples/normalized/Maekawa_Plasma-Japanese_2018.xlsx", "Data");

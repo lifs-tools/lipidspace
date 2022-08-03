@@ -53,7 +53,6 @@ public:
     string target_variable;
     set<string> registered_lipid_classes;
     Matrix statistics_matrix;
-    inline static const set<string> NA_VALUES = {"NA", "nan", "N/A", "", "n/a", "NaN"};
 
 
     LipidSpace();

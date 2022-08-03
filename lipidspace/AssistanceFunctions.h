@@ -33,6 +33,7 @@
 
 #define UNDEFINED_LIPID "UNDEFINED"
 #define FILE_FEATURE_NAME "Origin"
+#define NO_VALUE_CHAR "Ø"
 
 using namespace OpenXLSX;
 using namespace std;
@@ -49,7 +50,7 @@ enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, 
 
 static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_TABLE}, {"COLUMN_PIVOT_TABLE", COLUMN_PIVOT_TABLE}, {"FLAT_TABLE", FLAT_TABLE}};
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"FeatureColumnNumerical", FeatureColumnNumerical}, {"FeatureColumnNominal", FeatureColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
-
+static const set<string> NA_VALUES{"NA", "nan", "N/A", "", "n/a", "NaN", NO_VALUE_CHAR};
 
 struct Mapping {
     string name;

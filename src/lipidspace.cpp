@@ -1915,7 +1915,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
                 string feature_name = feature_names_nominal[i];
                 string feature_value = tokens.at(feature_columns_nominal[i]);
 
-                if (contains_val(NA_VALUES, feature_value)) feature_value = "N/A";
+                if (contains_val(NA_VALUES, feature_value)) feature_value = NO_VALUE_CHAR;
 
                 if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature_name) && contains_val(mapping_data->at(NominalValue), feature_name + "/" + feature_value)){
                     Mapping &mn = mapping_data->at(NominalFeature)[feature_name];
@@ -2067,7 +2067,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             for (auto kv : mapping_data->at(NominalFeature)){
                 if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NominalFeature){
                     string feature_name = kv.second.name;
-                    string feature_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : "N/A";
+                    string feature_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : NO_VALUE_CHAR;
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
                     feature_values.insert({feature_name, FeatureSet(feature_name, NominalFeature)});
@@ -2256,7 +2256,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
                             string feature_value = tokens.at(i);
                             string feature_key = feature_name + "/" + feature_value;
 
-                            if (contains_val(NA_VALUES, feature_value)) feature_value = "N/A";
+                            if (contains_val(NA_VALUES, feature_value)) feature_value = NO_VALUE_CHAR;
 
                             if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature_name) && contains_val(mapping_data->at(NominalValue), feature_key)){
                                 Mapping &mn = mapping_data->at(NominalFeature)[feature_name];
@@ -2362,7 +2362,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
             for (auto kv : mapping_data->at(NominalFeature)){
                 if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NominalFeature){
                     string feature_name = kv.second.name;
-                    string feature_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : "N/A";
+                    string feature_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : NO_VALUE_CHAR;
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
                     feature_values.insert({feature_name, FeatureSet(feature_name, NominalFeature)});
