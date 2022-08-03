@@ -243,6 +243,7 @@ void Statistics::exportAsPdf(){
 
 
 void Statistics::updateBarPlot(){
+
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);
@@ -316,7 +317,6 @@ void Statistics::updateBarPlot(){
         if (!has_secondary) nom_counter += 1;
     }
 
-    Matrix stat_matrix;
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
@@ -331,6 +331,7 @@ void Statistics::updateBarPlot(){
     }
 
     // set up matrix for multiple linear regression
+    Matrix stat_matrix;
     stat_matrix.reset(valid_lipidomes, lipid_map.size());
     for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
@@ -424,7 +425,6 @@ void Statistics::updateBarPlot(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data);
     barplot->add(barplot_data, categories, lipid_names, &colors);
     chart->add(barplot);
-
 }
 
 
@@ -449,11 +449,6 @@ void Statistics::updateHistogram(){
 
     chart->setVisible(do_continue);
     if (!do_continue) return;
-
-
-    Matrix statistics_matrix(lipid_space->statistics_matrix);
-
-
 
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
@@ -481,7 +476,7 @@ void Statistics::updateHistogram(){
 
     }
 
-
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
 
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
@@ -553,7 +548,9 @@ void Statistics::updateROCCurve(){
     bool do_continue = (lipid_space != 0) && contains_val(lipid_space->feature_values, target_variable) && lipid_space->analysis_finished && (lipid_space->feature_values[target_variable].feature_type == NominalFeature) && (lipid_space->selected_lipidomes.size() > 1);
 
     chart->setVisible(do_continue);
-    if (!do_continue) return;
+    if (!do_continue){
+        return;
+    }
 
 
     // setup array for target variable values, if nominal then each with incrementing number
@@ -590,9 +587,18 @@ void Statistics::updateROCCurve(){
 
     Matrix statistics_matrix(lipid_space->statistics_matrix);
 
-    if (statistics_matrix.cols > 1) statistics_matrix.scale();
+    // if any lipidome has a missing study variable, discard the lipidome from the statistic
+    Indexes lipidomes_to_keep;
+    for (int r = 0; r < statistics_matrix.rows; ++r){
+        if (!lipid_space->selected_lipidomes[r]->features[target_variable].missing) lipidomes_to_keep.push_back(r);
+    }
+    Matrix tmp;
+    tmp.rewrite(statistics_matrix, lipidomes_to_keep);
+    statistics_matrix.rewrite(tmp);
 
+    if (statistics_matrix.cols > 1) statistics_matrix.scale();
     series.resize(nom_counter);
+
     if (has_secondary){
         for (uint r = 0; r < target_indexes.size(); ++r){
             series[target_indexes[r]].push_back(target_values[r]);
@@ -601,6 +607,7 @@ void Statistics::updateROCCurve(){
     else {
         if (statistics_matrix.cols > 1) statistics_matrix.scale();
         for (int r = 0; r < statistics_matrix.rows; ++r){
+
             double sum = 0;
             for (int c = 0; c < statistics_matrix.cols; c++){
                 double val = statistics_matrix(r, c);
@@ -702,7 +709,6 @@ void Statistics::updateBoxPlot(){
         return;
     }
 
-    Matrix statistics_matrix(lipid_space->statistics_matrix);
 
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, double> nominal_target_values;
@@ -749,6 +755,8 @@ void Statistics::updateBoxPlot(){
             }
         }
     }
+
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
 
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
