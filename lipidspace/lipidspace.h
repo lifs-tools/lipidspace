@@ -53,6 +53,7 @@ public:
     string target_variable;
     set<string> registered_lipid_classes;
     Matrix statistics_matrix;
+    vector<string> statistics_lipids;
 
 
     LipidSpace();

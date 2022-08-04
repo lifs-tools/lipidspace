@@ -74,7 +74,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 324; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
-        for (int i = 1; i <= 40; ++i) ct->push_back(FeatureColumnNumerical);
+        for (int i = 1; i <= 40; ++i) ct->at(i) = FeatureColumnNumerical;
         ct->at(41) = FeatureColumnNominal;
         ct->at(42) = FeatureColumnNominal;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));

@@ -26,6 +26,24 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 
 
 
+Mapping::Mapping(){
+    name = "";
+    parent = "";
+    action = NoAction;
+    feature_type = NominalFeature;
+    mapping = "";
+}
+
+Mapping::Mapping(string _name, FeatureType _feature_type){
+    name = _name;
+    parent = "";
+    feature_type = _feature_type;
+    action = NoAction;
+    mapping = "";
+}
+
+
+
 
 ImportData::ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types){
     table_file = _table_file;
@@ -81,6 +99,82 @@ KeyTableWidget::KeyTableWidget(QWidget *parent) : QTableWidget(parent){
 void KeyTableWidget::keyPressEvent(QKeyEvent *event) {
     QTableWidget::keyPressEvent(event);
     emit keyPressed(event);
+}
+
+
+
+
+FeatureSet::FeatureSet(string _name, FeatureType f_type){
+    name = _name;
+    feature_type = f_type;
+}
+
+
+FeatureSet::FeatureSet(){
+    name = "";
+    feature_type = NominalFeature;
+    numerical_filter = {NoFilter, vector<double>()};
+}
+
+
+
+
+
+Feature::Feature(){
+    name = "";
+    feature_type = NominalFeature;
+    numerical_value = 0;
+    nominal_value = "";
+    missing = false;
+}
+
+
+Feature::Feature (string _name, string nom_val, bool _missing){
+    name = _name;
+    feature_type = NominalFeature;
+    nominal_value = nom_val;
+    numerical_value = 0;
+    missing = _missing;
+}
+
+
+Feature::Feature (string _name, double num_val, bool _missing){
+    name = _name;
+    feature_type = NumericalFeature;
+    numerical_value = num_val;
+    nominal_value = "";
+    missing = _missing;
+}
+
+
+Feature::Feature (Feature *f){
+    name = f->name;
+    feature_type = f->feature_type;
+    numerical_value = f->numerical_value;
+    nominal_value = f->nominal_value;
+    missing = f->missing;
+}
+
+
+
+
+ClickableLabel::ClickableLabel(QWidget* parent, Qt::WindowFlags) : QLabel(parent){
+
+}
+
+
+ClickableLabel::~ClickableLabel(){
+
+}
+
+
+void ClickableLabel::mouseDoubleClickEvent(QMouseEvent*) {
+    emit doubleClicked();
+}
+
+
+void ClickableLabel::mousePressEvent(QMouseEvent*) {
+    emit clicked();
 }
 
 

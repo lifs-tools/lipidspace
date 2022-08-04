@@ -670,7 +670,7 @@ void Statistics::updateROCCurve(){
     chart->add(lineplot);
     chart->add(diagonalplot);
 
-    stat_results.insert({"AUC", auc});
+    stat_results.push_back({"AUC", auc});
     chart->setXLabel("False positive Rate");
     chart->setYLabel("Sensitivity");
     chart->setTitle(QString("ROC Curve, AUC = %1 %").arg(QString::number(auc * 100., 'g', 4)));
@@ -749,7 +749,6 @@ void Statistics::updateBoxPlot(){
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                     nominal_values.push_back(nominal_value);
-                    series_titles.push_back(nominal_value);
                 }
                 target_indexes.push_back(nominal_target_values[nominal_value]);
             }
@@ -805,20 +804,20 @@ void Statistics::updateBoxPlot(){
 
         if (nom_counter == 2){
             double accuracy = compute_accuracy(series);
-            stat_results.insert({"accuracy", accuracy});
+            stat_results.push_back({"accuracy", accuracy});
             double p_student = p_value_student(series[0], series[1]);
             double p_welch = p_value_welch(series[0], series[1]);
             double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
-            stat_results.insert({"p_value(Student)", p_student});
-            stat_results.insert({"p_value(Welch)", p_welch});
-            stat_results.insert({"p_value(KS)", p_ks});
+            stat_results.push_back({"p_value(Student)", p_student});
+            stat_results.push_back({"p_value(Welch)", p_welch});
+            stat_results.push_back({"p_value(KS)", p_ks});
             chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>Student</sub> = %2,   <i>p</i>-value<sub>Welch</sub> = %3,   <i>p</i>-value<sub>KS</sub> = %4").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
         }
         else if (nom_counter > 2){
             double accuracy = compute_accuracy(series);
-            stat_results.insert({"accuracy", accuracy});
+            stat_results.push_back({"accuracy", accuracy});
             double p_anova = p_value_anova(series);
-            stat_results.insert({"p_value(ANOVA)", p_anova});
+            stat_results.push_back({"p_value(ANOVA)", p_anova});
             chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
         }
     }
@@ -834,20 +833,34 @@ void Statistics::updateBoxPlot(){
 
         Scatterplot *scatterplot = new Scatterplot(chart);
         if (!has_secondary){
+
+            series_titles.push_back(target_variable + " (model)");
+            series_titles.push_back(target_variable + " (measured)");
+            series.resize(2);
+
             vector< pair<double, double> > data;
             for (uint i = 0; i < S.size(); ++i){
                 data.push_back({S[i], target_values[i]});
+                series[0].push_back(S[i]);
+                series[1].push_back(target_values[i]);
             }
             scatterplot->add(data, target_variable.c_str());
 
         }
         else {
             vector< vector< pair<double, double> > > data(S.size());
+            series.resize(S.size() * 2);
+
             for (uint i = 0; i < S.size(); ++i){
                 data[target_indexes[i]].push_back({S[i], target_values[i]});
+                series[target_indexes[i] * 2].push_back(S[i]);
+                series[target_indexes[i] * 2 + 1].push_back(target_values[i]);
             }
 
             for (auto nominal_value : nominal_values){
+                series_titles.push_back(secondary_target_variable + " / " + nominal_value + " (model)");
+                series_titles.push_back(secondary_target_variable + " / " + nominal_value + " (measured)");
+
                 string color_key = secondary_target_variable + "_" + nominal_value;
                 QColor c = contains_val(GlobalData::colorMapFeatures, color_key) ? GlobalData::colorMapFeatures[color_key] : QColor("209fdf");
                 scatterplot->add(data[nominal_target_values[nominal_value]], nominal_value.c_str(), c);
@@ -886,7 +899,14 @@ void Statistics::updateBoxPlot(){
             SQT += sq(target_values[r] - my);
         }
         double R2 = 1. - SQR / SQT;
-        stat_results.insert({"R^2", R2});
+        stat_results.push_back({"R^2", R2});
+        // store the weights of the linear regression for export
+        if (coefficiants.size() == lipid_space->statistics_lipids.size() + 1){
+            for (uint i = 0; i < lipid_space->statistics_lipids.size(); ++i){
+                stat_results.push_back({QString("weight %1").arg(lipid_space->statistics_lipids[i].c_str()).toStdString(), coefficiants[i]});
+            }
+            stat_results.push_back({"weight constant", coefficiants[coefficiants.size() - 1]});
+        }
 
         Lineplot *regression_line = new Lineplot(chart);
         QString rg_name = QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2);

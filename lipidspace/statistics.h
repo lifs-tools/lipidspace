@@ -33,7 +33,7 @@ public:
     Chart *chart;
     vector<Array> series;
     vector<string> series_titles;
-    map<string, double> stat_results;
+    vector< pair<string, double> > stat_results;
     bool log_scale;
     bool show_data;
 

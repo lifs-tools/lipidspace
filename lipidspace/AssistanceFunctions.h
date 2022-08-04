@@ -55,28 +55,16 @@ static const set<string> NA_VALUES{"NA", "nan", "N/A", "", "n/a", "NaN", NO_VALU
 
 
 
-struct Mapping {
+class Mapping {
+public:
     string name;
     string parent;
     MappingAction action;
     string mapping;
     FeatureType feature_type;
 
-    Mapping(){
-        name = "";
-        parent = "";
-        action = NoAction;
-        feature_type = NominalFeature;
-        mapping = "";
-    }
-
-    Mapping(string _name, FeatureType _feature_type){
-        name = _name;
-        parent = "";
-        feature_type = _feature_type;
-        action = NoAction;
-        mapping = "";
-    }
+    Mapping();
+    Mapping(string _name, FeatureType _feature_type);
 };
 
 
@@ -181,16 +169,8 @@ public:
     set<double> numerical_values;
     pair<FeatureFilter, vector<double>> numerical_filter;
 
-    FeatureSet(string _name, FeatureType f_type){
-        name = _name;
-        feature_type = f_type;
-    }
-
-    FeatureSet(){
-        name = "";
-        feature_type = NominalFeature;
-        numerical_filter = {NoFilter, vector<double>()};
-    }
+    FeatureSet(string _name, FeatureType f_type);
+    FeatureSet();
 };
 
 
@@ -198,63 +178,32 @@ class ClickableLabel : public QLabel {
     Q_OBJECT
 
 public:
-    explicit ClickableLabel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags = Qt::WindowFlags()) : QLabel(parent){}
-    ~ClickableLabel(){}
+    explicit ClickableLabel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags = Qt::WindowFlags());
+    ~ClickableLabel();
 
 signals:
     void clicked();
     void doubleClicked();
 
 protected:
-    void mouseDoubleClickEvent(QMouseEvent*) {
-        emit doubleClicked();
-    }
-
-    void mousePressEvent(QMouseEvent*) {
-        emit clicked();
-    }
+    void mouseDoubleClickEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*);
 
 };
 
 
-struct Feature {
+class Feature {
+public:
     string name;
     FeatureType feature_type;
     double numerical_value;
     string nominal_value;
     bool missing;
 
-    Feature(){
-        name = "";
-        feature_type = NominalFeature;
-        numerical_value = 0;
-        nominal_value = "";
-        missing = false;
-    }
-
-    Feature (string _name, string nom_val, bool _missing = false){
-        name = _name;
-        feature_type = NominalFeature;
-        nominal_value = nom_val;
-        numerical_value = 0;
-        missing = _missing;
-    }
-
-    Feature (string _name, double num_val, bool _missing = false){
-        name = _name;
-        feature_type = NumericalFeature;
-        numerical_value = num_val;
-        nominal_value = "";
-        missing = _missing;
-    }
-
-    Feature (Feature *f){
-        name = f->name;
-        feature_type = f->feature_type;
-        numerical_value = f->numerical_value;
-        nominal_value = f->nominal_value;
-        missing = f->missing;
-    }
+    Feature();
+    Feature (string _name, string nom_val, bool _missing = false);
+    Feature (string _name, double num_val, bool _missing = false);
+    Feature (Feature *f);
 };
 
 

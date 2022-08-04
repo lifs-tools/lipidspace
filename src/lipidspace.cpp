@@ -2845,6 +2845,7 @@ void LipidSpace::run(){
         selected_lipidomes.clear();
         dendrogram_sorting.clear();
         dendrogram_points.clear();
+        statistics_lipids.clear();
 
         if (progress){
             progress->prepare(9);
@@ -2949,6 +2950,9 @@ void LipidSpace::run(){
                     }
                 }
             }
+
+            statistics_lipids.resize(lipid_name_map.size());
+            for (auto kv : lipid_name_map) statistics_lipids[kv.second] = kv.first;
         }
 
 
