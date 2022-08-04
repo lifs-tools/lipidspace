@@ -42,7 +42,7 @@ public:
     bool checkStudyVariables();
 
 signals:
-    void importTable(string file_name, vector<TableColumnType>* column_types, TableType table_type, string sheet, MappingData *mapping_data = 0);
+    void importTable(ImportData *import_data);
     void importOpened();
 
 public slots:

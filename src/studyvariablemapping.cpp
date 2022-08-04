@@ -315,7 +315,7 @@ void StudyVariableMapping::comboInsertedChanged(SignalCombobox *combo){
     SignalCombobox *cb = (SignalCombobox*)t->cellWidget(combo_row, 2);
     cb->clear();
     for (auto kv : lipid_space->feature_values){
-        if (kv.second.feature_type == ft){
+        if (kv.second.feature_type == ft && kv.first != FILE_FEATURE_NAME){
             cb->addItem(QString("Map to '%1' with no default value").arg(kv.first.c_str()));
             cb->setItemData(cb->count() - 1, QString(kv.first.c_str()));
             cb->addItem(QString("Map to '%1' with default value").arg(kv.first.c_str()));
@@ -578,53 +578,55 @@ void StudyVariableMapping::doContinue() {
         }
     }
 
-
-    for (auto name : numerical_import){
-        if (contains_val(nominal_import, name)){
-            QMessageBox::warning(this, "Mismatch with study variables", QString("It is not allowed to map two different study variables into one, here '%1'.").arg(name.c_str()));
-            return;
+    // match only study variables when LipidSpace has already registered study variables
+    if (nominal_registered.size() > 0 || numerical_registered.size() > 0){
+        for (auto name : numerical_import){
+            if (contains_val(nominal_import, name)){
+                QMessageBox::warning(this, "Mismatch with study variables", QString("It is not allowed to map two different study variables into one, here '%1'.").arg(name.c_str()));
+                return;
+            }
         }
-    }
 
 
-    for (auto kv : mapping_data->at(NominalValue)){
-        if (kv.second.action != NoAction && kv.second.mapping == ""){
-            QMessageBox::warning(this, "Mismatch with study variables", QString("For the nominal study variable '%1', the new value for '%2' must not be empty.").arg(kv.second.parent.c_str(), kv.second.name.c_str()));
-            return;
+        for (auto kv : mapping_data->at(NominalValue)){
+            if (kv.second.action != NoAction && kv.second.mapping == ""){
+                QMessageBox::warning(this, "Mismatch with study variables", QString("For the nominal study variable '%1', the new value for '%2' must not be empty.").arg(kv.second.parent.c_str(), kv.second.name.c_str()));
+                return;
+            }
         }
-    }
 
 
-    // checking match between registered and study variables for import
-    for (auto nom_val : nominal_registered){
-        if (uncontains_val(nominal_import, nom_val)){
-            QMessageBox::warning(this, "Mismatch with study variables", QString("No nominal study variable is yet mapped to '%1' registered in LipidSpace. Maybe insert a new study variable and map to '%1'.").arg(nom_val.c_str()));
-            return;
+        // checking match between registered and study variables for import
+        for (auto nom_val : nominal_registered){
+            if (uncontains_val(nominal_import, nom_val)){
+                QMessageBox::warning(this, "Mismatch with study variables", QString("No nominal study variable is yet mapped to '%1' registered in LipidSpace. Maybe insert a new study variable and map to '%1'.").arg(nom_val.c_str()));
+                return;
+            }
         }
-    }
 
-    for (auto nom_val : nominal_import){
-        if (uncontains_val(nominal_registered, nom_val)){
-            QStringList sl;
-            for (auto value : nominal_registered) sl << value.c_str();
-            QMessageBox::warning(this, "Mismatch with study variables", QString("No nominal study variable \"%1\" is registered in LipidSpace. Registered nominal study variables are: %2").arg(nom_val.c_str()).arg(sl.join(", ")));
-            return;
+        for (auto nom_val : nominal_import){
+            if (uncontains_val(nominal_registered, nom_val)){
+                QStringList sl;
+                for (auto value : nominal_registered) sl << value.c_str();
+                QMessageBox::warning(this, "Mismatch with study variables", QString("No nominal study variable \"%1\" is registered in LipidSpace. Registered nominal study variables are: %2").arg(nom_val.c_str()).arg(sl.join(", ")));
+                return;
+            }
         }
-    }
 
-    for (auto num_val : numerical_registered){
-        if (uncontains_val(numerical_import, num_val)){
-            QMessageBox::warning(this, "Mismatch with study variables", QString("No numerical study variable is yet mapped to '%1' registered in LipidSpace. Maybe insert a new study variable and map to '%1'.").arg(num_val.c_str()));
-            return;
+        for (auto num_val : numerical_registered){
+            if (uncontains_val(numerical_import, num_val)){
+                QMessageBox::warning(this, "Mismatch with study variables", QString("No numerical study variable is yet mapped to '%1' registered in LipidSpace. Maybe insert a new study variable and map to '%1'.").arg(num_val.c_str()));
+                return;
+            }
         }
-    }
 
-    for (auto num_val : numerical_import){
-        if (uncontains_val(numerical_registered, num_val)){
-            QStringList sl;
-            for (auto value : numerical_registered) sl << value.c_str();
-            QMessageBox::warning(this, "Mismatch with study variables", QString("No numerical study variable \"%1\" is registered in LipidSpace. Registered numerical study variables are: %2").arg(num_val.c_str()).arg(sl.join(", ")));
-            return;
+        for (auto num_val : numerical_import){
+            if (uncontains_val(numerical_registered, num_val)){
+                QStringList sl;
+                for (auto value : numerical_registered) sl << value.c_str();
+                QMessageBox::warning(this, "Mismatch with study variables", QString("No numerical study variable \"%1\" is registered in LipidSpace. Registered numerical study variables are: %2").arg(num_val.c_str()).arg(sl.join(", ")));
+                return;
+            }
         }
     }
 

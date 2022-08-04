@@ -172,7 +172,7 @@ public slots:
     void openMzTabM();
     void fill_table();
     void export_list();
-    void loadTable(string file_name, vector<TableColumnType> *column_types, TableType table_type, string sheet, MappingData *mapping_data = 0);
+    void loadTable(ImportData *import_data);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();

@@ -57,11 +57,15 @@ void LipidSpaceGUI::closeEvent(QCloseEvent *event){
 
 
 
+
+
 void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_Control){
         ctrl_pressed = false;
     }
 }
+
+
 
 
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
@@ -73,7 +77,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         for (int i = 1; i <= 40; ++i) ct->push_back(FeatureColumnNumerical);
         ct->at(41) = FeatureColumnNominal;
         ct->at(42) = FeatureColumnNominal;
-        loadTable("examples/Sales-Extended.csv", ct, COLUMN_PIVOT_TABLE, "");
+        loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
     }
     else if (event->key() == Qt::Key_2){
@@ -95,7 +99,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(10) = FeatureColumnNumerical;
         ct->at(11) = FeatureColumnNumerical;
         ct->at(12) = FeatureColumnNumerical;
-        loadTable("examples/Tablesets/Plasma-Singapore.csv", ct, COLUMN_PIVOT_TABLE, "");
+        loadTable(new ImportData("examples/Tablesets/Plasma-Singapore.csv", "", COLUMN_PIVOT_TABLE, ct));
     }
     else if (event->key() == Qt::Key_3){
         resetAnalysis();
@@ -107,7 +111,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(5) = FeatureColumnNominal;
         ct->at(0) = SampleColumn;
 
-        loadTable("Platelets_Peng.csv", ct, FLAT_TABLE, "");
+        loadTable(new ImportData("Platelets_Peng.csv", "", FLAT_TABLE, ct));
     }
     else if (event->key() == Qt::Key_4){
         resetAnalysis();
@@ -118,7 +122,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(2) = FeatureColumnNominal;
         ct->at(3) = FeatureColumnNominal;
 
-        loadTable("Platelets_Peng_WT-vs-KO.csv", ct, COLUMN_PIVOT_TABLE, "");
+        loadTable(new ImportData("Platelets_Peng_WT-vs-KO.csv", "", COLUMN_PIVOT_TABLE, ct));
     }
     else if (event->key() == Qt::Key_5){
         resetAnalysis();
@@ -129,7 +133,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(3) = SampleColumn;
         ct->at(2) = FeatureColumnNominal;
 
-        loadTable("Heart_GPL.csv", ct, FLAT_TABLE, "");
+        loadTable(new ImportData("Heart_GPL.csv", "", FLAT_TABLE, ct));
     }
     else if (event->key() == Qt::Key_6){
         resetAnalysis();
@@ -141,7 +145,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(13) = FeatureColumnNominal;
         ct->at(15) = FeatureColumnNominal;
 
-        loadTable("Data_Thrombocytes_UKR_04042022.csv", ct, FLAT_TABLE, "");
+        loadTable(new ImportData("Data_Thrombocytes_UKR_04042022.csv", "", FLAT_TABLE, ct));
     }
     else if (event->key() == Qt::Key_7){
         resetAnalysis();
@@ -155,7 +159,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(5) = FeatureColumnNominal;
         ct->at(6) = FeatureColumnNominal;
 
-        loadTable("examples/000.csv", ct, FLAT_TABLE, "");
+        loadTable(new ImportData("examples/000.csv", "", FLAT_TABLE, ct));
     }
     else if (event->key() == Qt::Key_8){
         resetAnalysis();
@@ -170,7 +174,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(6) = FeatureColumnNumerical;
         ct->at(7) = FeatureColumnNominal;
 
-        loadTable("Bakerpanel.csv", ct, COLUMN_PIVOT_TABLE, "");
+        loadTable(new ImportData("Bakerpanel.csv", "", COLUMN_PIVOT_TABLE, ct));
     }
 
     else if (event->key() == Qt::Key_Control){
@@ -633,7 +637,9 @@ void LipidSpaceGUI::updateView(int){
 
 
 
-void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_types, TableType table_type, string sheet, MappingData *mapping_data){
+void LipidSpaceGUI::loadTable(ImportData *import_data){
+    TableType table_type = import_data->table_type;
+
     bool repeat_loading = true;
     ui->normalizationComboBox->clear();
     ui->normalizationComboBox->addItem("Absolute normalization", "absolute");
@@ -643,15 +649,15 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
         try {
             switch(table_type){
                 case ROW_PIVOT_TABLE:
-                    lipid_space->load_row_table(file_name, column_types, sheet);
+                    lipid_space->load_row_table(import_data);
                     break;
 
                 case COLUMN_PIVOT_TABLE:
-                    lipid_space->load_column_table(file_name, column_types, sheet, mapping_data);
+                    lipid_space->load_column_table(import_data);
                     break;
 
                 case FLAT_TABLE:
-                    lipid_space->load_flat_table(file_name, column_types, sheet, mapping_data);
+                    lipid_space->load_flat_table(import_data);
                     break;
             }
             runAnalysis();
@@ -745,6 +751,7 @@ void LipidSpaceGUI::loadTable(string file_name, vector<TableColumnType>* column_
             break;
         }
     }
+    delete import_data;
 }
 
 

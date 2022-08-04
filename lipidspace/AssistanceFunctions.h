@@ -53,6 +53,8 @@ static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_T
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"FeatureColumnNumerical", FeatureColumnNumerical}, {"FeatureColumnNominal", FeatureColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
 static const set<string> NA_VALUES{"NA", "nan", "N/A", "", "n/a", "NaN", NO_VALUE_CHAR};
 
+
+
 struct Mapping {
     string name;
     string parent;
@@ -97,6 +99,32 @@ public slots:
 };
 
 
+
+
+class FileTableHandler {
+public:
+    vector<string> headers;
+    vector<vector<string>> rows;
+    FileTableHandler(string, string = "");
+};
+
+
+
+
+class ImportData {
+public:
+    string table_file;
+    vector<TableColumnType> *column_types;
+    string sheet;
+    TableType table_type;
+    MappingData *mapping_data;
+    FileTableHandler *file_table_handler;
+
+    ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types);
+    ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types, FileTableHandler *_file_table_handler);
+    ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types, FileTableHandler *_file_table_handler, MappingData *_mapping_data);
+    ~ImportData();
+};
 
 
 class SignalLineEdit : public QLineEdit {
@@ -302,13 +330,6 @@ private:
 
 
 
-
-class FileTableHandler {
-public:
-    vector<string> headers;
-    vector<vector<string>> rows;
-    FileTableHandler(string, string = "");
-};
 
 
 

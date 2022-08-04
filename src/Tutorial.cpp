@@ -280,7 +280,7 @@ void Tutorial::start_second_tutorial(){
     ct->at(2) = FeatureColumnNominal;
     ct->at(3) = FeatureColumnNominal;
     string path_to_example = QCoreApplication::applicationDirPath().toStdString();
-    lipidSpaceGUI->loadTable(path_to_example + "/examples/Example-Dataset.xlsx", ct, COLUMN_PIVOT_TABLE, "Data");
+    lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
 
 
@@ -747,7 +747,7 @@ void Tutorial::second_tutorial_steps(){
                 ct->at(2) = FeatureColumnNominal;
                 ct->at(3) = FeatureColumnNominal;
                 string path_to_example = QCoreApplication::applicationDirPath().toStdString();
-                lipidSpaceGUI->loadTable(path_to_example + "/examples/Example-Dataset.xlsx", ct, COLUMN_PIVOT_TABLE, "Data");
+                lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("UI sections of LipidSpace");
                 informationLabel->setText("Here we go. As you can see now, LipidSpace is split after data import into two major section. On the left hand side, you find the selection section and on the right hand side the visualization section.");

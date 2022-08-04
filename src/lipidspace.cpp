@@ -1803,14 +1803,13 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
 
 
 
-void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType> *column_types, string sheet, MappingData *mapping_data){
+void LipidSpace::load_flat_table(ImportData *import_data){
+    vector<TableColumnType> *column_types = import_data->column_types;
+    FileTableHandler *fth = import_data->file_table_handler;
+    MappingData *mapping_data = import_data->mapping_data;
+    string flat_table_file = import_data->table_file;
+    string sheet = import_data->sheet;
     Logging::write_log("Importing table '" + flat_table_file + "' as flat table.");
-
-    // load and parse lipid table, lipids and features per column, measurements per row
-    ifstream infile(flat_table_file);
-    if (!infile.good()){
-        throw LipidSpaceException("Error: file '" + flat_table_file + "' could not be found.", FileUnreadable);
-    }
 
     vector<Lipidome*> loaded_lipidomes;
     set<string> registered_features;
@@ -1844,11 +1843,8 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
         vector<string> feature_names_numerical;
         map<string, LipidAdduct*> load_lipids;
 
-
-        FileTableHandler fth(flat_table_file, sheet);
-
         for (auto fi : feature_columns_nominal){
-            string feature = fth.headers.at(fi);
+            string feature = fth->headers.at(fi);
             feature_names_nominal.push_back(feature);
 
             if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature)){
@@ -1858,7 +1854,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
             registered_features.insert(feature);
         }
         for (auto fi : feature_columns_numerical){
-            string feature = fth.headers.at(fi);
+            string feature = fth->headers.at(fi);
             feature_names_numerical.push_back(feature);
             if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature)){
                 Mapping &m = mapping_data->at(NumericalFeature)[feature];
@@ -1868,7 +1864,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
         }
 
 
-        for (auto tokens : fth.rows){
+        for (auto tokens : fth->rows){
 
             // check if quant information is valid
             string quant_val = tokens.at(quant_column);
@@ -2184,7 +2180,7 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
         }
         throw e;
     }
-    delete column_types;
+
     fileLoaded();
 }
 
@@ -2192,14 +2188,14 @@ void LipidSpace::load_flat_table(string flat_table_file, vector<TableColumnType>
 
 
 
-void LipidSpace::load_column_table(string data_table_file, vector<TableColumnType> *column_types, string sheet, MappingData *mapping_data){
-    Logging::write_log("Importing table '" + data_table_file + "' as lipid column table.");
+void LipidSpace::load_column_table(ImportData *import_data){
 
-    // load and parse lipid table, lipids and features per column, measurements per row
-    ifstream infile(data_table_file);
-    if (!infile.good()){
-        throw LipidSpaceException("Error: file '" + data_table_file + "' could not be found.", FileUnreadable);
-    }
+    vector<TableColumnType> *column_types = import_data->column_types;
+    FileTableHandler *fth = import_data->file_table_handler;
+    MappingData *mapping_data = import_data->mapping_data;
+    string data_table_file = import_data->table_file;
+    string sheet = import_data->sheet;
+    Logging::write_log("Importing table '" + data_table_file + "' as lipid column table.");
 
     bool has_sample_col = false;
     for (auto column_type : *column_types){
@@ -2210,31 +2206,28 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         throw LipidSpaceException("No sample column was defined", NoColumnFound);
     }
 
-
     vector<string> features_names_numerical;
     vector<string> features_names_nominal;
     vector<LipidAdduct*> lipids;
     map<string, LipidAdduct*> lipid_set;
     vector<Lipidome*> loaded_lipidomes;
 
-    FileTableHandler fth(data_table_file, sheet);
-
     try {
         // go through the column and handle them according to their column type
-        for (int i = 0; i < (int)fth.headers.size(); ++i){
+        for (int i = 0; i < (int)fth->headers.size(); ++i){
             TableColumnType column_type = column_types->at(i);
             switch(column_type){
                 case FeatureColumnNominal:
-                    features_names_nominal.push_back(fth.headers.at(i));
+                    features_names_nominal.push_back(fth->headers.at(i));
                     break;
 
                 case FeatureColumnNumerical:
-                    features_names_numerical.push_back(fth.headers.at(i));
+                    features_names_numerical.push_back(fth->headers.at(i));
                     break;
 
                 case LipidColumn:
                     {
-                        LipidAdduct* l = load_lipid(fth.headers.at(i), lipid_set);
+                        LipidAdduct* l = load_lipid(fth->headers.at(i), lipid_set);
                         lipids.push_back(l);
                         break;
                     }
@@ -2245,7 +2238,7 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         }
 
 
-        for (auto tokens : fth.rows){
+        for (auto tokens : fth->rows){
             map<string, Feature> features;
             vector<LipidAdduct*> measurement_lipids;
             Array intensities;
@@ -2500,22 +2493,19 @@ void LipidSpace::load_column_table(string data_table_file, vector<TableColumnTyp
         throw e;
     }
 
-    delete column_types;
     fileLoaded();
 }
 
 
 
 
-
-void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *column_types, string sheet){
-    // load and parse lipid table, lipids per row, measurements per column
+// load and parse lipid table, lipids per row, measurements per column
+void LipidSpace::load_row_table(ImportData *import_data){
+    vector<TableColumnType> *column_types = import_data->column_types;
+    FileTableHandler *fth = import_data->file_table_handler;
+    string table_file = import_data->table_file;
+    string sheet = import_data->sheet;
     Logging::write_log("Reading table '" + table_file + "' lipid row table.");
-    ifstream infile(table_file);
-    if (!infile.good()){
-        throw LipidSpaceException("Error: file '" + table_file + "' not found.");
-        exit(-1);
-    }
 
     vector<Array> intensities;
     map<string, LipidAdduct*> lipid_set;
@@ -2524,19 +2514,17 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
     try {
 
 
-        FileTableHandler fth(table_file, sheet);
-
         // no specific column order is provided, we assume that first column contains
         // lipid species names and all remaining columns correspond to a sample containing
         // intensity / quant values
         if (column_types == 0){
 
-            for (auto header : fth.headers){
+            for (auto header : fth->headers){
                 loaded_lipidomes.push_back(new Lipidome(header, table_file, sheet));
                 intensities.push_back(Array());
             }
 
-            for (auto tokens : fth.rows){
+            for (auto tokens : fth->rows){
                 LipidAdduct* l = load_lipid(tokens.at(0), lipid_set);
 
                 if (l){
@@ -2570,7 +2558,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
             map<string, int> doublettes;
             for (int i = 0; i < (int)column_types->size(); ++i){
                 if (column_types->at(i) == SampleColumn){
-                    string header = fth.headers.at(i);
+                    string header = fth->headers.at(i);
                     if (uncontains_val(doublettes, header)){
                         doublettes.insert({header, 1});
                     }
@@ -2584,7 +2572,7 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                 }
             }
 
-            for (auto tokens : fth.rows){
+            for (auto tokens : fth->rows){
 
                 LipidAdduct* l = 0;
                 vector<string> quant_data;
@@ -2621,8 +2609,6 @@ void LipidSpace::load_row_table(string table_file, vector<TableColumnType> *colu
                     }
                 }
             }
-
-            delete column_types;
         }
         if (feature_values.size() > 1){
             throw LipidSpaceException("Error, study variables are already registered, table does not contain any variables and thus cannot be imported.", FeatureNotRegistered);

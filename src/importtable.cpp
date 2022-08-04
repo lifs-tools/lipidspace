@@ -120,6 +120,7 @@ void ImportTable::show(LipidSpace *_lipid_space){
     mapping_of_study_variables = false;
     ui->checkBoxMappingFlat->setCheckState(Qt::Unchecked);
     ui->checkBoxMappingCol->setCheckState(Qt::Unchecked);
+    original_column_index.clear();
 
     ui->sampleListWidgetRow->clear();
     ui->sampleListWidgetCol->clear();
@@ -389,7 +390,8 @@ void ImportTable::okRow(){
             column_types->at(original_column_index[ui->lipidListWidgetRow->item(0)->text()]) = LipidColumn;
 
             accept();
-            importTable(data_table_file, column_types, ROW_PIVOT_TABLE, sheet);
+            importTable(new ImportData(data_table_file, sheet, ROW_PIVOT_TABLE, column_types, file_table_handler));
+            file_table_handler = 0;
         }
     }
     else if (!ui->sampleListWidgetRow->count()) {
@@ -405,7 +407,7 @@ void ImportTable::okRow(){
 void ImportTable::okCol(){
     if (ui->lipidListWidgetCol->count() >= 2 && ui->sampleListWidgetCol->count() == 1) {
 
-        if (checkStudyVariables()){
+        if (mapping_of_study_variables || checkStudyVariables()){
             vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
             column_types->at(original_column_index[ui->sampleListWidgetCol->item(0)->text()]) = SampleColumn;
@@ -429,12 +431,14 @@ void ImportTable::okCol(){
                 study_variable_mapping.exec();
                 if (study_variable_mapping.result() == QDialog::Accepted){
                     accept();
-                    importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet, mapping_data);
+                    importTable(new ImportData(data_table_file, sheet, COLUMN_PIVOT_TABLE, column_types, file_table_handler, mapping_data));
+                    file_table_handler = 0;
                 }
             }
             else {
                 accept();
-                importTable(data_table_file, column_types, COLUMN_PIVOT_TABLE, sheet);
+                importTable(new ImportData(data_table_file, sheet, COLUMN_PIVOT_TABLE, column_types, file_table_handler));
+                file_table_handler = 0;
             }
         }
     }
@@ -452,7 +456,7 @@ void ImportTable::okCol(){
 void ImportTable::okFlat(){
     if (ui->lipidListWidgetFlat->count() == 1 && ui->sampleListWidgetFlat->count() >= 1 && ui->quantListWidgetFlat->count() == 1) {
 
-        if (checkStudyVariables()){
+        if (mapping_of_study_variables || checkStudyVariables()){
             vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
             for (int i = 0; i < (int)ui->sampleListWidgetFlat->count(); ++i){
@@ -478,12 +482,14 @@ void ImportTable::okFlat(){
                 study_variable_mapping.exec();
                 if (study_variable_mapping.result() == QDialog::Accepted){
                     accept();
-                    importTable(data_table_file, column_types, FLAT_TABLE, sheet, mapping_data);
+                    importTable(new ImportData(data_table_file, sheet, FLAT_TABLE, column_types, file_table_handler, mapping_data));
+                    file_table_handler = 0;
                 }
             }
             else {
                 accept();
-                importTable(data_table_file, column_types, FLAT_TABLE, sheet);
+                importTable(new ImportData(data_table_file, sheet, FLAT_TABLE, column_types, file_table_handler));
+                file_table_handler = 0;
             }
         }
     }

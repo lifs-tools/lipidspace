@@ -26,6 +26,54 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 
 
 
+
+ImportData::ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types){
+    table_file = _table_file;
+    sheet = _sheet;
+    table_type = _table_type;
+    column_types = _column_types;
+    mapping_data = 0;
+
+    ifstream infile(table_file);
+    if (!infile.good()){
+        throw LipidSpaceException("Error: file '" + table_file + "' could not be found.", FileUnreadable);
+    }
+    file_table_handler = new FileTableHandler(table_file, sheet);
+}
+
+
+
+ImportData::ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types, FileTableHandler *_file_table_handler){
+    table_file = _table_file;
+    sheet = _sheet;
+    table_type = _table_type;
+    column_types = _column_types;
+    file_table_handler = _file_table_handler;
+    mapping_data = 0;
+}
+
+
+
+ImportData::ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types, FileTableHandler *_file_table_handler, MappingData *_mapping_data){
+    table_file = _table_file;
+    sheet = _sheet;
+    table_type = _table_type;
+    column_types = _column_types;
+    file_table_handler = _file_table_handler;
+    mapping_data = _mapping_data;
+}
+
+
+ImportData::~ImportData(){
+    delete column_types;
+    delete mapping_data;
+    delete file_table_handler;
+}
+
+
+
+
+
 KeyTableWidget::KeyTableWidget(QWidget *parent) : QTableWidget(parent){
 }
 
