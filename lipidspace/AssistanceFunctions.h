@@ -241,11 +241,7 @@ bool sort_double_double_asc (pair<double, double> i, pair<double, double>);
 class LipidSpaceException : public std::exception {
 public:
     string message;
-    LipidSpaceException(string _message, LipidSpaceExceptionType _type = UnspecificException){
-        Logging::write_log(message);
-        message = _message;
-        type = _type;
-    }
+    LipidSpaceException(string _message, LipidSpaceExceptionType _type = UnspecificException);
 
     const char * what() const throw(){
         return message.c_str();
@@ -261,9 +257,9 @@ class SingleListWidget : public QListWidget {
     Q_OBJECT
 
 public:
-    SingleListWidget(QWidget *parent = nullptr);
     string field_name;
 
+    SingleListWidget(QWidget *parent = nullptr);
     void addFieldName(string _field_name);
     void setNum(int _num);
 
@@ -319,7 +315,7 @@ public:
 class ItemDelegate : public QItemDelegate
 {
 public:
-    explicit ItemDelegate(QObject *parent = 0) : QItemDelegate(parent) {}
+    explicit ItemDelegate(QObject *parent = 0);
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 };
 

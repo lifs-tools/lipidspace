@@ -1,5 +1,11 @@
 #include "lipidspace/AssistanceFunctions.h"
 
+LipidSpaceException::LipidSpaceException(string _message, LipidSpaceExceptionType _type){
+    Logging::write_log(message);
+    message = _message;
+    type = _type;
+}
+
 
 SingleListWidget::SingleListWidget(QWidget *parent) : QListWidget(parent) {
     field_name = "";
@@ -907,6 +913,12 @@ ListItem::ListItem(string show_name, ListItemType t, QListWidget* parent, string
     length = 0;
 }
 
+
+
+
+ItemDelegate::ItemDelegate(QObject *parent) : QItemDelegate(parent) {
+
+}
 
 
 

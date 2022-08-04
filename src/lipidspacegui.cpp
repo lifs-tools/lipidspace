@@ -2256,3 +2256,62 @@ void LipidSpaceGUI::fill_table(){
     t->resizeRowsToContents();
 }
 
+
+HomeItem::HomeItem(QGraphicsView *v) : view(v) {
+}
+
+HomeItem::~HomeItem(){
+}
+
+
+void HomeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+    QLinearGradient gradient;
+    double factor = min((double)view->width() / 1207., (double)view->height() / 483.);
+
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+
+    gradient.setStart(0, 0);
+    gradient.setFinalStop(0, 1);
+    gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+    gradient.setColorAt(0.0, Qt::white);
+    gradient.setColorAt(0.04, Qt::white);
+    gradient.setColorAt(0.08, QColor("#e4eff7")); // e4eff7 / f7f0e4
+    gradient.setColorAt(0.6, QColor("#6babce")); // 6babce / ceab6b
+    painter->setBrush(gradient);
+    painter->setPen(Qt::NoPen);
+    painter->drawRect(0, 0, view->width(), 400 * factor);
+
+
+
+    double l_banner = 502.5 * factor;
+
+    QBrush bottom(QColor("#6babce")); // 6babce / ceab6b
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(bottom);
+    painter->drawRect(0., 399. * factor, view->width(), view->height());
+
+
+    QBrush banner(QColor("#71a9cc")); // 71a9cc / ce956b
+    painter->setBrush(banner);
+    painter->drawRect(QRectF(0., 90. * factor, 50. * factor, 70. * factor));
+    painter->drawRect(QRectF(l_banner + 70. * factor, 90. * factor, view->width(), 70. * factor));
+
+
+    painter->save();
+    painter->translate(QPointF(60. * factor, 190 * factor));
+    painter->scale(factor, factor);
+    QFont f = painter->font();
+    painter->setPen(QPen(Qt::white));
+    f.setPointSizeF(11.);
+    painter->setFont(f);
+    painter->drawText(QRectF(0., 0., 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "Accessing the chemical space of individual lipidomes:\n  • Comprehensive study of multiple lipidomes\n  • Providing mechanism for quality control\n  • Feature analysis and lipid selection\n  • Integration of study variables");
+
+    painter->drawText(QRectF(0, 120., 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "LipidSpace offers several interactive tutorials for an easy introduction\ninto its functionality:");
+    painter->restore();
+}
+
+QRectF HomeItem::boundingRect() const {
+    return QRectF(0, 0, view->width(), view->height());
+}
+

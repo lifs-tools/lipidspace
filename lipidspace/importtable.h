@@ -19,7 +19,7 @@
 using namespace std;
 
 namespace Ui {
-class ImportTable;
+    class ImportTable;
 }
 
 class ImportTable : public QDialog
