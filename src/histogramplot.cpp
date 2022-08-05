@@ -1,5 +1,19 @@
 #include "lipidspace/histogramplot.h"
 
+
+HistogramBox::HistogramBox(QGraphicsScene *scene, double _x, double _x_width, double _y, QColor _color, bool transparent){
+    x = _x;
+    x_width = _x_width;
+    y = _y;
+    color = _color;
+    if (transparent) color.setAlpha(128);
+
+    rect = new QGraphicsRectItem();
+    scene->addItem(rect);
+}
+
+
+
 Histogramplot::Histogramplot(Chart *_chart) : Chartplot(_chart) {
 }
 

@@ -1,6 +1,18 @@
 #include "lipidspace/chart.h"
 
 
+
+
+LegendCategory::LegendCategory(QString _category, QColor _color, QGraphicsScene *scene){
+    color = _color;
+    category_string = _category;
+    rect = new QGraphicsRectItem();
+    category = new QGraphicsTextItem(_category);
+    scene->addItem(rect);
+    scene->addItem(category);
+}
+
+
 Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setFrameStyle(QFrame::NoFrame);
     setRenderHints(QPainter::Antialiasing);

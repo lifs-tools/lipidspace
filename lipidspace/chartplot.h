@@ -12,8 +12,8 @@ class Chartplot {
 public:
     Chart *chart;
 
-    Chartplot(Chart *_chart) : chart(_chart) {}
-    virtual ~Chartplot(){};
+    Chartplot(Chart *_chart);
+    virtual ~Chartplot();
     virtual void update_chart() = 0;
     virtual void clear() = 0;
 };

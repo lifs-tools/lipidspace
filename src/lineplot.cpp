@@ -1,5 +1,17 @@
 #include "lipidspace/lineplot.h"
 
+
+LPLine::LPLine(double _x1, double _y1, double _x2, double _y2, QColor _color){
+    x1 = _x1;
+    y1 = _y1;
+    x2 = _x2;
+    y2 = _y2;
+    color = _color;
+    line = new QGraphicsLineItem();
+}
+
+
+
 Lineplot::Lineplot(Chart *_chart) : Chartplot(_chart) {
 }
 
@@ -53,7 +65,7 @@ void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > 
         ymin = min(ymin, min(y1, y2));
         ymax = max(ymax, max(y1, y2));
 
-        lines.push_back(Line(x1, y1, x2, y2, _color));
+        lines.push_back(LPLine(x1, y1, x2, y2, _color));
         chart->scene.addItem(lines.back().line);
     }
     chart->xrange.setX(xmin);

@@ -1,5 +1,15 @@
 #include "lipidspace/scatterplot.h"
 
+
+ScPoint::ScPoint(double _x, double _y, QColor _color){
+    x = _x;
+    y = _y;
+    color = _color;
+    p = new QGraphicsEllipseItem();
+}
+
+
+
 Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
     base = new QGraphicsRectItem();
     base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);

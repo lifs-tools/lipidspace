@@ -45,13 +45,14 @@ SOURCES += \
     src/logging.cpp \
     src/statistics.cpp \
     src/Tutorial.cpp \
-    src/Chart.cpp \
+    src/chart.cpp \
     src/boxplot.cpp \
     src/scatterplot.cpp \
     src/lineplot.cpp \
     src/histogramplot.cpp \
     src/barplot.cpp \
-    src/studyvariablemapping.cpp
+    src/studyvariablemapping.cpp \
+    src/chartplot.cpp
 
 HEADERS += \
     lipidspace/about.h \

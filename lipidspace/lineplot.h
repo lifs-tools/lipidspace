@@ -10,7 +10,8 @@ class Chartplot;
 using namespace std;
 
 
-struct Line {
+class LPLine {
+public:
     double x1;
     double y1;
     double x2;
@@ -18,20 +19,13 @@ struct Line {
     QGraphicsLineItem* line;
     QColor color;
 
-    Line(double _x1, double _y1, double _x2, double _y2, QColor _color = QColor("#99ca53")){
-        x1 = _x1;
-        y1 = _y1;
-        x2 = _x2;
-        y2 = _y2;
-        color = _color;
-        line = new QGraphicsLineItem();
-    }
+    LPLine(double _x1, double _y1, double _x2, double _y2, QColor _color = QColor("#99ca53"));
 };
 
 
 class Lineplot : public Chartplot {
 public:
-    vector<Line> lines;
+    vector<LPLine> lines;
 
     Lineplot(Chart *_chart);
     ~Lineplot();

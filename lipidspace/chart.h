@@ -26,21 +26,14 @@ using namespace std;
 
 class Chartplot;
 
-struct LegendCategory {
+class LegendCategory {
+public:
     QColor color;
     QString category_string;
-
     QGraphicsRectItem *rect;
     QGraphicsTextItem *category;
 
-    LegendCategory(QString _category, QColor _color, QGraphicsScene *scene){
-        color = _color;
-        category_string = _category;
-        rect = new QGraphicsRectItem();
-        category = new QGraphicsTextItem(_category);
-        scene->addItem(rect);
-        scene->addItem(category);
-    }
+    LegendCategory(QString _category, QColor _color, QGraphicsScene *scene);
 };
 
 

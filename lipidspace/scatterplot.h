@@ -12,18 +12,14 @@ class Chartplot;
 using namespace std;
 
 
-struct ScPoint {
+class ScPoint {
+public:
     double x;
     double y;
     QColor color;
     QGraphicsEllipseItem* p;
 
-    ScPoint(double _x, double _y, QColor _color = QColor("#209fdf")){
-        x = _x;
-        y = _y;
-        color = _color;
-        p = new QGraphicsEllipseItem();
-    }
+    ScPoint(double _x, double _y, QColor _color = QColor("#209fdf"));
 };
 
 

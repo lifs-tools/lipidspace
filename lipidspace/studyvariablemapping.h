@@ -20,9 +20,6 @@ namespace Ui {
 }
 
 
-
-
-
 class StudyVariableMapping : public QDialog {
     Q_OBJECT
 

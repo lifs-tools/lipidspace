@@ -1,5 +1,23 @@
 #include "lipidspace/boxplot.h"
 
+
+WhiskerBox::WhiskerBox(QGraphicsScene *scene){
+    upper_extreme_line = new QGraphicsLineItem();
+    lower_extreme_line = new QGraphicsLineItem();
+    median_line = new QGraphicsLineItem();
+    base_line = new QGraphicsLineItem();
+    rect = new QGraphicsRectItem();
+
+    scene->addItem(upper_extreme_line);
+    scene->addItem(lower_extreme_line);
+    scene->addItem(median_line);
+    scene->addItem(base_line);
+    scene->addItem(rect);
+    color = Qt::white;
+}
+
+
+
 Boxplot::Boxplot(Chart *_chart, bool _show_data) : Chartplot(_chart) {
     show_data = _show_data;
 }

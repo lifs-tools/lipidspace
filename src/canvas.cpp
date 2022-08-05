@@ -1,6 +1,98 @@
 #include "lipidspace/canvas.h"
 
 
+
+Citation::Citation(const QString &text, QGraphicsItem *parent) : QGraphicsTextItem(text, parent){
+
+}
+
+
+void Citation::mousePressEvent(QGraphicsSceneMouseEvent *) {
+    QString link = "https://lifs-tools.org";
+    QDesktopServices::openUrl(QUrl(link));
+}
+
+
+
+HomeView::HomeView(QWidget *parent) : QGraphicsView(parent){
+    firstTutorialPushButton = new QPushButton(this);
+    firstTutorialPushButton->setObjectName(QString::fromUtf8("firstTutorialPushButton"));
+    firstTutorialPushButton->setGeometry(QRect(60, 360, 221, 31));
+    firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "1. Tutorial - Load tables", nullptr));
+    secondTutorialPushButton = new QPushButton(this);
+    secondTutorialPushButton->setObjectName(QString::fromUtf8("secondTutorialPushButton"));
+    secondTutorialPushButton->setGeometry(QRect(320, 360, 221, 31));
+    secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "2. Tutorial - UI introduction", nullptr));
+    thirdTutorialPushButton = new QPushButton(this);
+    thirdTutorialPushButton->setObjectName(QString::fromUtf8("thirdTutorialPushButton"));
+    thirdTutorialPushButton->setGeometry(QRect(60, 400, 221, 31));
+    thirdTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "3. Tutorial - Feature Selection", nullptr));
+    fourthTutorialPushButton = new QPushButton(this);
+    fourthTutorialPushButton->setObjectName(QString::fromUtf8("fourthTutorialPushButton"));
+    fourthTutorialPushButton->setGeometry(QRect(320, 400, 221, 31));
+    fourthTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "4. Tutorial - Quality control", nullptr));
+    banner = 0;
+}
+
+
+
+void HomeView::resizeEvent(QResizeEvent *) {
+    if (!banner) {
+        banner = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LipidSpace-banner.svg");
+        scene()->addItem(banner);
+        LIFS = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS.svg");
+        scene()->addItem(LIFS);
+        citation = new Citation("Citation: Kopczynski, Dominik et al. The Journal 47(11):08-15, 2022.");
+        citation->setDefaultTextColor(Qt::white);
+        scene()->addItem(citation);
+        LIFS_monitor = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS-monitor.svg");
+        scene()->addItem(LIFS_monitor);
+    }
+
+    double factor = min((double)width() / 1207., (double)height() / 483.);
+    QFont font = firstTutorialPushButton->font();
+    font.setPointSizeF(10 * factor);
+
+    firstTutorialPushButton->setGeometry(QRect(60. * factor, 360. * factor, 221. * factor, 31. * factor));
+    secondTutorialPushButton->setGeometry(QRect(320. * factor, 360. * factor, 221. * factor, 31. * factor));
+    thirdTutorialPushButton->setGeometry(QRect(60. * factor, 400. * factor, 221. * factor, 31. * factor));
+    fourthTutorialPushButton->setGeometry(QRect(320. * factor, 400. * factor, 221. * factor, 31. * factor));
+
+    firstTutorialPushButton->setFont(font);
+    secondTutorialPushButton->setFont(font);
+    thirdTutorialPushButton->setFont(font);
+    fourthTutorialPushButton->setFont(font);
+
+    double banner_factor = 92. / (double)banner->boundingRect().height() * factor;
+    banner->setPos(60. * factor, 85. * factor);
+    banner->setScale(banner_factor);
+
+    double LIFS_factor = 18. / (double)LIFS->boundingRect().height() * factor;
+    LIFS->setPos(60. * factor, 50. * factor);
+    LIFS->setScale(LIFS_factor);
+
+    QFont f = citation->font();
+    f.setPointSizeF(11.);
+    citation->setFont(f);
+    citation->setPos(60. * factor, 440. * factor);
+    citation->setCursor(Qt::PointingHandCursor);
+    citation->setScale(factor);
+
+
+    double monitor_factor = 0.75;
+    LIFS_monitor->setPos(width() - (564 * monitor_factor + 120) * factor, 1. * factor);
+    LIFS_monitor->setScale(monitor_factor * factor);
+}
+
+
+
+
+DendrogramTitle::DendrogramTitle(QString t) : title(t), highlighted(false), permanent(false) {
+
+}
+
+
+
 DendrogramLine::DendrogramLine(QLineF line, QPen p, Dendrogram *d) : QGraphicsLineItem(line){
     setPen(p);
     next_line = 0;

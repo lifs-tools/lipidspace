@@ -8,24 +8,15 @@ class Chartplot;
 
 using namespace std;
 
-struct HistogramBox {
+class HistogramBox {
+public:
     double x;
     double x_width;
     double y;
-
     QGraphicsRectItem *rect;
     QColor color;
 
-    HistogramBox(QGraphicsScene *scene, double _x, double _x_width, double _y, QColor _color = Qt::red, bool transparent = true){
-        x = _x;
-        x_width = _x_width;
-        y = _y;
-        color = _color;
-        if (transparent) color.setAlpha(128);
-
-        rect = new QGraphicsRectItem();
-        scene->addItem(rect);
-    }
+    HistogramBox(QGraphicsScene *scene, double _x, double _x_width, double _y, QColor _color = Qt::red, bool transparent = true);
 };
 
 class Histogramplot : public Chartplot {
