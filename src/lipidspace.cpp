@@ -2613,7 +2613,6 @@ void LipidSpace::load_row_table(ImportData *import_data){
             throw LipidSpaceException("Error, study variables are already registered, table does not contain any variables and thus cannot be imported.", FeatureNotRegistered);
         }
 
-
         set<string> lipidome_names;
         for (auto lipidome : loaded_lipidomes){
 

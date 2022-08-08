@@ -55,7 +55,7 @@ public:
                  QJsonDocument pcaRequest = QJsonDocument::fromJson(qbytes);
                  if (pcaRequest.isNull())
                  {
-                   qWarning("Malformed JSON: '%s'", req.body.c_str());
+                   qWarning() << "Malformed JSON: '" << req.body.c_str() << "'";
                    res.status = 400;
                    res.reason = "Malformed JSON";
                  }
@@ -66,7 +66,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, not a dictionary";
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
 
@@ -77,7 +77,7 @@ public:
                      {
                        res.status = 400;
                        res.reason = "Malformed JSON, key '" + key + "' not a dictionary";
-                       qWarning(res.reason.c_str());
+                       qWarning() << res.reason.c_str();
                        return;
                      }
                    }
@@ -87,7 +87,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, 'TableType' value is not a string";
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
 
@@ -96,7 +96,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, '" + pcaRequest["TableType"].toString().toStdString() + "'is not a valid table type";
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
 
@@ -105,7 +105,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, 'TableColumnTypes' value is not an array";
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
                    for (auto value : pcaRequest["TableColumnTypes"].toArray())
@@ -114,7 +114,7 @@ public:
                      {
                        res.status = 400;
                        res.reason = "Malformed JSON, 'TableColumnTypes' array contains a non string";
-                       qWarning(res.reason.c_str());
+                       qWarning() << res.reason.c_str();
                        return;
                      }
 
@@ -122,7 +122,7 @@ public:
                      {
                        res.status = 400;
                        res.reason = "Malformed JSON, '" + value.toString().toStdString() + "' is not a valid table column type";
-                       qWarning(res.reason.c_str());
+                       qWarning() << res.reason.c_str();
                        return;
                      }
                    }
@@ -132,7 +132,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, 'Table' value is not a string";
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
 
@@ -155,24 +155,59 @@ public:
                    stringstream sstream;
 
                    // load the provided table (which is stored on disk)
+                   ImportData *import_data = 0;
+
                    try
                    {
-                     lipid_space.load_row_table(new ImportData(table_file_name.toStdString(), "", table_type, column_types));
+                     import_data = new ImportData(table_file_name.toStdString(), "", table_type, column_types);
+                   }
+                   catch (LipidSpaceException &e)
+                   {
+                     res.status = 400;
+                     res.reason = string("An error occurred during LipidSpace ImportData, '") + e.what() + string("'");
+                     qWarning() << res.reason.c_str();
+                     return;
+                   }
+                   catch (std::exception &e)
+                   {
+                     res.status = 500;
+                     res.reason = string("A server error occurred during LipidSpace ImportData, '") + e.what() + string("'");
+                     qWarning() << res.reason.c_str();
+                     return;
+                   }
+
+
+                   try
+                   {
+                       if (table_type == ROW_PIVOT_TABLE){
+                         lipid_space.load_row_table(import_data);
+                       }
+                       else if (table_type == COLUMN_PIVOT_TABLE){
+                         lipid_space.load_column_table(import_data);
+                       }
+                       else if (table_type == FLAT_TABLE){
+                         lipid_space.load_flat_table(import_data);
+                       }
+                       else {
+                           throw std::invalid_argument("Table type not defined");
+                       }
                    }
                    catch (LipidSpaceException &e)
                    {
                      res.status = 400;
                      res.reason = string("An error occurred during LipidSpace load_row_table, '") + e.what() + string("'");
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
                    catch (std::exception &e)
                    {
                      res.status = 500;
                      res.reason = string("A server error occurred during LipidSpace load_row_table, '") + e.what() + string("'");
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
+                   if (import_data) delete import_data;
+
 
                    try{
                      lipid_space.run_analysis();
@@ -181,14 +216,14 @@ public:
                    {
                      res.status = 400;
                      res.reason = string("An error occurred during LipidSpace analysis, '") + e.what() + string("'");
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
                    catch (std::exception &e)
                    {
                      res.status = 500;
                      res.reason = string("A server error occurred during LipidSpace analysis, '") + e.what() + string("'");
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
 
@@ -197,14 +232,14 @@ public:
                    {
                      res.status = 400;
                      res.reason = string("An error occurred during LipidSpace analysis, no lipidome was provided");
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
                    if (lipid_space.global_lipidome->lipids.size() < 3)
                    {
                      res.status = 400;
                      res.reason = string("An error occurred during LipidSpace analysis, less than 3 lipids in total were provided");
-                     qWarning(res.reason.c_str());
+                     qWarning() << res.reason.c_str();
                      return;
                    }
 
@@ -219,6 +254,7 @@ public:
 
                    // add the lipidome distance matrix
                    sstream << "], \"LipidomeDistanceMatrix\": [";
+
 
                    Matrix &m = lipid_space.hausdorff_distances;
                    for (int r = 0; r < m.rows; ++r)
@@ -249,7 +285,7 @@ public:
                }
                else
                {
-                 qWarning("Unsupported content type: '%s'", req.get_header_value("Content-Type").c_str());
+                 qWarning() << "Unsupported content type: '" << req.get_header_value("Content-Type").c_str() << "'";
                  res.status = 415;
                  res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
                } });
@@ -262,27 +298,27 @@ public:
 
         t = thread([&]()
                    { svr.listen(host.c_str(), port); });
-        qInfo("Started server! SIGINT (CTRL+c) will stop the server.");
+        qInfo() << "Started server! SIGINT (CTRL + c) will stop the server.";
         return 0;
     }
 
     inline int stop(int signal)
     {
-        qInfo("Server received signal: %d", signal);
+        qInfo() << "Server received signal: " << signal;
         if (signal == SIGINT)
         { // only handle SIG INTERRUPT for now
             if (svr.is_running())
             {
-                qInfo("Stopping server...");
+                qInfo() << "Stopping server...";
                 svr.stop();
                 t.join();
-                qInfo("Stopped server!");
+                qInfo() << "Stopped server!";
                 return 0; // server and thread have terminated
             }
-            qInfo("Server is not running!");
+            qInfo() << "Server is not running!";
             return 1; // server is not running
         }
-        qInfo("Server does not handle signal.");
+        qInfo() << "Server does not handle signal.";
         return 0;
     }
 };
@@ -328,13 +364,13 @@ int main(int argc, char *argv[])
     if (parser.isSet(hostOption))
     {
         host = parser.value(hostOption);
-        qInfo("Host set to: %s", host.toStdString().c_str());
+        qInfo() << "Host set to: " << host.toStdString().c_str();
     }
 
     if (parser.isSet(tmpOption))
     {
         tmp_folder = parser.value(tmpOption);
-        qInfo("Tmp folder set to: '%s'", host.toStdString().c_str());
+        qInfo() << "Tmp folder set to: '" << host.toStdString().c_str() << "'";
     }
 
     if (parser.isSet(debugOption))
