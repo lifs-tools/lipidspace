@@ -181,6 +181,41 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ctrl_pressed = true;
     }
 
+    else if (event->key() == Qt::Key_Space){
+        ofstream regression("regression.csv");
+        QComboBox *c = ui->featureComboBox;
+
+        for (int i = 0; i < c->count(); ++i){
+            if (c->itemText(i) == FILE_FEATURE_NAME) continue;
+            regression << "\t" << c->itemText(i).toStdString();
+        }
+        regression << endl;
+
+        for (int outer = 0; outer < c->count(); ++outer){
+            if (c->itemText(outer) == FILE_FEATURE_NAME) continue;
+            cout << "analysis for " << c->itemText(outer).toStdString() << endl;
+            emit c->currentIndexChanged(outer);
+            usleep(1000);
+            emit ui->startAnalysisPushButton->click();
+            usleep(1000);
+            emit ui->applyChangesPushButton->click();
+            usleep(1000);
+            regression << c->itemText(outer).toStdString();
+
+            for (int inner = 0; inner < c->count(); ++inner){
+            if (c->itemText(inner) == FILE_FEATURE_NAME) continue;
+                emit c->currentIndexChanged(inner);
+                usleep(1000);
+                cout << " - check " << c->itemText(inner).toStdString() << endl;
+
+                if (statisticsBoxPlot.stat_results.size() > 0){
+                    regression << "\t" << statisticsBoxPlot.stat_results[0].second;
+                }
+            }
+            regression << endl;
+        }
+    }
+
     else {
         if (Qt::Key_A <= event->key() && event->key() <= Qt::Key_Z){
             keystrokes += string(1, (char)event->key());
@@ -214,7 +249,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     statisticsROCCurve.load_data(lipid_space, ui->statisticsROCCurve);
 
     qRegisterMetaType<string>("string");
-    this->setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
+    setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
 
 
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
@@ -361,39 +396,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     QRectF r(0, 0, ui->homeGraphicsView->width(), ui->homeGraphicsView->height());
     ui->homeGraphicsView->setSceneRect(r);
     scene->addItem(new HomeItem(ui->homeGraphicsView));
+    ui->startAnalysisPushButton->setToolTip("This function searches for the subset of lipids with the highest impact on the selected study variable.");
 
     updateGUI();
-
-
-
-    /*
-    vector<TableColumnType> *ct = new vector<TableColumnType>();
-    for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
-    ct->at(0) = SampleColumn;
-    ct->at(1) = FeatureColumnNominal;
-    ct->at(2) = FeatureColumnNominal;
-    ct->at(3) = FeatureColumnNominal;
-    ct->at(4) = FeatureColumnNumerical;
-    loadTable("examples/normalized/Maekawa_Plasma-Japanese_2018.xlsx", ct, COLUMN_PIVOT_TABLE, "Data");
-
-
-
-    vector<TableColumnType> *cct = new vector<TableColumnType>();
-    for (int i = 0; i < 285; ++i) cct->push_back(LipidColumn);
-    cct->at(0) = SampleColumn;
-    cct->at(1) = IgnoreColumn; // FeatureColumnNominal;
-    cct->at(2) = FeatureColumnNominal;
-    cct->at(3) = FeatureColumnNominal;
-
-    MappingData *mapping_data = new MappingData();
-    FileTableHandler fth("examples/normalized/Plasma_Sales.csv", "");
-    StudyVariableMapping svm(&fth, mapping_data, cct, lipid_space, this);
-    svm.setModal(true);
-    svm.exec();
-    if (svm.result() == QDialog::Accepted){
-        loadTable("examples/normalized/Plasma_Sales.csv", cct, COLUMN_PIVOT_TABLE, "", mapping_data);
-    }
-    */
 }
 
 
@@ -1271,6 +1276,9 @@ void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
 
 void LipidSpaceGUI::updateGUI(){
     updating = true;
+
+    QTabBar *bar = ui->viewsTabWidget->tabBar();
+    for (int t = 1; t <= 4; ++t) bar->setTabEnabled(t, lipid_space->lipidomes.size() > 0);
 
     ui->featureComboBox->clear();
     ui->featureComboBoxStat->clear();

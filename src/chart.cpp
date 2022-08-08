@@ -18,8 +18,9 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setRenderHints(QPainter::Antialiasing);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    timer_id = -1;
 
-    connect(&timer, &QTimer::timeout, this, &Chart::animation_step);
+    //connect(&timer, &QTimer::timeout, this, &Chart::animation_step);
 
     tick_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"]);
     label_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"], QFont::Bold);
@@ -52,6 +53,11 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
 }
 
 
+void Chart::timerEvent(QTimerEvent *){
+    animation_step();
+}
+
+
 
 void Chart::resizeEvent(QResizeEvent *event){
     reset_animation();
@@ -61,21 +67,29 @@ void Chart::resizeEvent(QResizeEvent *event){
 
 
 void Chart::reset_animation(){
+    if (timer_id != -1){
+        killTimer(timer_id);
+        timer_id = -1;
+    }
     animation = 0;
-    animation_start = chrono::steady_clock::now();
-    timer.start(10);
+    animation_start = steady_clock::now();
+    timer_id = startTimer(10);
 }
 
 
 void Chart::animation_step(){
     if (animation < 1){
         update_chart();
-        auto animation_now = chrono::steady_clock::now();
-        animation = min(1., ((double)chrono::duration_cast<chrono::microseconds>(animation_now - animation_start).count()) / TIMER_DURATION);
+        auto animation_now = steady_clock::now();
+        animation = min(1., ((double)duration_cast<microseconds>(animation_now - animation_start).count()) / TIMER_DURATION);
     }
     else {
         update_chart();
-        timer.stop();
+        //timer.stop();
+        if (timer_id != -1){
+            killTimer(timer_id);
+            timer_id = -1;
+        }
     }
 }
 

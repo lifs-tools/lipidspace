@@ -9,7 +9,6 @@
 #include <QGraphicsRectItem>
 #include <QPen>
 #include <QBrush>
-#include <QTimer>
 #include <chrono>
 #include <QRect>
 #include <QString>
@@ -23,6 +22,7 @@
 #define TIMER_DURATION 700000.0  // micro seconds
 
 using namespace std;
+using namespace chrono;
 
 class Chartplot;
 
@@ -52,7 +52,9 @@ public:
     QFont label_font;
     QFont title_legend_font;
     QGraphicsScene scene;
-    QTimer timer;
+    QPointF xrange;
+    QPointF yrange;
+    int timer_id;
     bool loaded;
     bool show_x_axis;
     bool show_y_axis;
@@ -61,11 +63,9 @@ public:
     bool log_y_axis;
     vector<LegendCategory> legend_categories;
     vector<QString> x_categories;
-    QPointF xrange;
-    QPointF yrange;
     vector<Chartplot*> chart_plots;
     double animation;
-    chrono::steady_clock::time_point animation_start;
+    steady_clock::time_point animation_start;
 
     vector<QGraphicsLineItem*> v_grid;
     vector<QGraphicsLineItem*> h_grid;
@@ -88,6 +88,9 @@ public:
     void clear();
     void reset_animation();
     void animation_step();
+
+protected:
+    void timerEvent(QTimerEvent *event) override;
 
 public slots:
     void set_tick_size(int i);
