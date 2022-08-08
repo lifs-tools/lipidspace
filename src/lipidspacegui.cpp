@@ -182,6 +182,11 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     }
 
     else if (event->key() == Qt::Key_Space){
+
+
+
+
+        /*
         ofstream regression("regression.csv");
         QComboBox *c = ui->featureComboBox;
 
@@ -214,6 +219,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
             }
             regression << endl;
         }
+        */
     }
 
     else {
@@ -408,6 +414,91 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete progress;
     delete progressbar;
     delete dragLayer;
+}
+
+
+
+
+void LipidSpaceGUI::completeFeatureAnalysis(){
+    QString file_name = QFileDialog::getSaveFileName(chart, "Export analysis table", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
+    if (!file_name.length()) return;
+
+    runAnalysisPID(3);
+    for (int i = 0; i < ui->featureComboBox->count(); ++i){
+        if(ui->featureComboBox->itemText(i).toStdString() == lipid_space->target_variable){
+            emit ui->featureComboBox->currentIndexChanged(i);
+            break;
+        }
+    }
+
+    /*
+    QString file_name = QFileDialog::getSaveFileName(chart, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
+    if (!file_name.length()) return;
+
+    try {
+        if (QFile::exists(file_name)){
+            QFile::remove(file_name);
+        }
+
+        if (file_name.toLower().endsWith("csv") || file_name.toLower().endsWith("tsv")){
+            string sep = file_name.toLower().endsWith("csv") ? "," : "\t";
+
+            ofstream off(file_name.toStdString().c_str());
+            for (uint i = 0; i < series_titles.size(); ++i){
+                off << series_titles[i];
+                if (i < series_titles.size() - 1) off << sep;
+            }
+            off << endl;
+
+            uint num_rows = 0;
+            for (auto s : series) num_rows = max(num_rows, (uint)s.size());
+            for (uint i = 0; i < num_rows; ++i){
+                for (uint j = 0; j < series.size(); ++j){
+                    if (i < series[j].size()){
+                        off << series[j][i];
+                        if (j < series.size() - 1) off << sep;
+                    }
+                    else if (j < series.size() - 1) off << sep;
+                }
+                off << endl;
+            }
+        }
+        else if (file_name.toLower().endsWith("xlsx")) {
+            XLDocument doc;
+            doc.create(file_name.toStdString());
+            auto wbk = doc.workbook();
+            wbk.addWorksheet("Data");
+            wbk.addWorksheet("Statistics");
+            wbk.deleteSheet("Sheet1");
+            auto wks_data = doc.workbook().worksheet("Data");
+            uint col = 1;
+            for (auto t : series_titles) wks_data.cell(1, col++).value() = t;
+
+            for (col = 0; col < series.size(); ++col){
+                int row = 2;
+                for (auto s : series[col]) wks_data.cell(row++, col + 1).value() = s;
+            }
+
+            auto wks_stat = doc.workbook().worksheet("Statistics");
+            int row = 1;
+            for (auto kv : stat_results){
+                wks_stat.cell(row, 1).value() = kv.first;
+                wks_stat.cell(row++, 2).value() = kv.second;
+            }
+
+            doc.save();
+        }
+        else {
+            QMessageBox::information(chart, "Export error", "Unknown export format for file '" + file_name + "'.");
+            return;
+        }
+        QMessageBox::information(chart, "Export completed", "The export is completed into the file '" + file_name + "'.");
+    }
+    catch(exception &){
+        QMessageBox::critical(chart, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
+    }
+    */
+
 }
 
 
@@ -771,7 +862,15 @@ void LipidSpaceGUI::startFeatureAnalysis(){
 }
 
 
+
 void LipidSpaceGUI::runAnalysis(){
+    runAnalysisPID(1);
+}
+
+
+void LipidSpaceGUI::runAnalysisPID(int p_id){
+    if (p_id != 1 && p_id != 3) return;
+
     string species_selection = GlobalData::gui_string_var["species_selection"];
     string study_var = GlobalData::gui_string_var["study_var"];
     string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
@@ -779,7 +878,7 @@ void LipidSpaceGUI::runAnalysis(){
     // clear all windows with canvases
     ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
-    lipid_space->process_id = 1;
+    lipid_space->process_id = p_id;
     single_window = -1;
     ui->startAnalysisPushButton->setEnabled(false);
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
@@ -805,8 +904,6 @@ void LipidSpaceGUI::runAnalysis(){
     progressbar->exec(); // waiting for the progress bar to finish
 
     if (!lipid_space->analysis_finished) return;
-
-
 
     if (lipid_space->feature_values.size() > 1 || lipid_space->feature_values[FILE_FEATURE_NAME].nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
 

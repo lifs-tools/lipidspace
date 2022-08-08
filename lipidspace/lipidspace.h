@@ -76,6 +76,9 @@ public:
     void reassembleSelection();
     void reset_analysis();
     LipidAdduct* load_lipid(string lipid_name, map<string, LipidAdduct*> &lipid_set);
+    void lipid_analysis(bool report_progress = true);
+    void feature_analysis(bool report_progress = true);
+    void complete_feature_analysis();
 
     void load_list(string lipid_list_file);
     void load_row_table(ImportData *import_data);

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1229</width>
+    <width>1432</width>
     <height>615</height>
    </rect>
   </property>
@@ -258,7 +258,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -392,7 +392,7 @@
              </rect>
             </property>
             <property name="text">
-             <string>Pie tree depth</string>
+             <string>Pie depth</string>
             </property>
            </widget>
            <widget class="QSpinBox" name="pieTreeSpinBox">
@@ -802,7 +802,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1229</width>
+     <width>1432</width>
      <height>23</height>
     </rect>
    </property>
@@ -837,6 +837,7 @@
     <addaction name="actionIgnore_quantitative_information"/>
     <addaction name="actionUnbound_lipid_distance_metric"/>
     <addaction name="menuClustering_strategy"/>
+    <addaction name="actionComplete_feature_analysis"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1096,6 +1097,11 @@
    </property>
    <property name="text">
     <string>Translate lipid names into new nomenclature</string>
+   </property>
+  </action>
+  <action name="actionComplete_feature_analysis">
+   <property name="text">
+    <string>Complete feature analysis</string>
    </property>
   </action>
  </widget>

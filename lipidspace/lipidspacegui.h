@@ -146,6 +146,8 @@ public slots:
     void setSecondarySorting();
     void updateSecondarySorting(int);
     void runAnalysis();
+    void runAnalysisPID(int p_id);
+    void completeFeatureAnalysis();
     void setTransforming(QRectF f);
     void setDoubleClick(int _num);
     void setExport();
