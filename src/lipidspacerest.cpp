@@ -66,6 +66,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, not a dictionary";
+                     qWarning(res.reason.c_str());
                      return;
                    }
 
@@ -76,6 +77,7 @@ public:
                      {
                        res.status = 400;
                        res.reason = "Malformed JSON, key '" + key + "' not a dictionary";
+                       qWarning(res.reason.c_str());
                        return;
                      }
                    }
@@ -85,6 +87,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, 'TableType' value is not a string";
+                     qWarning(res.reason.c_str());
                      return;
                    }
 
@@ -93,6 +96,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, '" + pcaRequest["TableType"].toString().toStdString() + "'is not a valid table type";
+                     qWarning(res.reason.c_str());
                      return;
                    }
 
@@ -101,6 +105,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, 'TableColumnTypes' value is not an array";
+                     qWarning(res.reason.c_str());
                      return;
                    }
                    for (auto value : pcaRequest["TableColumnTypes"].toArray())
@@ -109,6 +114,7 @@ public:
                      {
                        res.status = 400;
                        res.reason = "Malformed JSON, 'TableColumnTypes' array contains a non string";
+                       qWarning(res.reason.c_str());
                        return;
                      }
 
@@ -116,6 +122,7 @@ public:
                      {
                        res.status = 400;
                        res.reason = "Malformed JSON, '" + value.toString().toStdString() + "' is not a valid table column type";
+                       qWarning(res.reason.c_str());
                        return;
                      }
                    }
@@ -125,6 +132,7 @@ public:
                    {
                      res.status = 400;
                      res.reason = "Malformed JSON, 'Table' value is not a string";
+                     qWarning(res.reason.c_str());
                      return;
                    }
 
@@ -149,26 +157,38 @@ public:
                    // load the provided table (which is stored on disk)
                    try
                    {
-                     switch (table_type)
-                     {
-                     case ROW_PIVOT_TABLE:
-                       lipid_space.load_row_table(table_file_name.toStdString(), column_types, "");
-                       break;
+                     lipid_space.load_row_table(new ImportData(table_file_name.toStdString(), "", table_type, column_types));
+                   }
+                   catch (LipidSpaceException &e)
+                   {
+                     res.status = 400;
+                     res.reason = string("An error occurred during LipidSpace load_row_table, '") + e.what() + string("'");
+                     qWarning(res.reason.c_str());
+                     return;
+                   }
+                   catch (std::exception &e)
+                   {
+                     res.status = 500;
+                     res.reason = string("A server error occurred during LipidSpace load_row_table, '") + e.what() + string("'");
+                     qWarning(res.reason.c_str());
+                     return;
+                   }
 
-                     case COLUMN_PIVOT_TABLE:
-                       lipid_space.load_column_table(table_file_name.toStdString(), column_types, "");
-                       break;
-
-                     case FLAT_TABLE:
-                       lipid_space.load_flat_table(table_file_name.toStdString(), column_types, "");
-                       break;
-                     }
+                   try{
                      lipid_space.run_analysis();
                    }
                    catch (LipidSpaceException &e)
                    {
                      res.status = 400;
                      res.reason = string("An error occurred during LipidSpace analysis, '") + e.what() + string("'");
+                     qWarning(res.reason.c_str());
+                     return;
+                   }
+                   catch (std::exception &e)
+                   {
+                     res.status = 500;
+                     res.reason = string("A server error occurred during LipidSpace analysis, '") + e.what() + string("'");
+                     qWarning(res.reason.c_str());
                      return;
                    }
 
@@ -177,12 +197,14 @@ public:
                    {
                      res.status = 400;
                      res.reason = string("An error occurred during LipidSpace analysis, no lipidome was provided");
+                     qWarning(res.reason.c_str());
                      return;
                    }
                    if (lipid_space.global_lipidome->lipids.size() < 3)
                    {
                      res.status = 400;
                      res.reason = string("An error occurred during LipidSpace analysis, less than 3 lipids in total were provided");
+                     qWarning(res.reason.c_str());
                      return;
                    }
 
