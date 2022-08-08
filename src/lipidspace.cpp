@@ -3286,6 +3286,7 @@ void LipidSpace::feature_analysis(bool report_progress){
 
 
 void LipidSpace::complete_feature_analysis(){
+    complete_feature_analysis_table.clear();
     if (progress){
         progress->prepare(max(0, (int)feature_values.size() - 1));
     }
@@ -3293,10 +3294,126 @@ void LipidSpace::complete_feature_analysis(){
         if (progress && progress->stop_progress) break;
         if (kv.first == FILE_FEATURE_NAME) continue;
 
+        complete_feature_analysis_table.push_back(vector<double>());
+
         target_variable = kv.first;
         feature_analysis(false);
         lipid_analysis(false);
-        usleep(1000000);
+
+
+        for (auto kv2 : feature_values){
+            if (kv2.first == FILE_FEATURE_NAME) continue;
+            target_variable = kv2.first;
+
+            // setup array for target variable values, if nominal then each with incrementing number
+            map<string, double> nominal_target_values;
+            Indexes target_indexes;
+            vector<Array> series;
+            Array target_values;
+            int nom_counter = 0;
+            vector<string> nominal_values;
+
+            bool is_nominal = feature_values[target_variable].feature_type == NominalFeature;
+            if (is_nominal){
+                for (auto lipidome : selected_lipidomes){
+                    if (lipidome->features[target_variable].missing) continue;
+
+                    string nominal_value = lipidome->features[target_variable].nominal_value;
+                    if (uncontains_val(nominal_target_values, nominal_value)){
+                        nominal_target_values.insert({nominal_value, nom_counter++});
+                        nominal_values.push_back(nominal_value);
+                    }
+                    target_indexes.push_back(nominal_target_values[nominal_value]);
+                }
+            }
+            else {
+                for (auto lipidome : selected_lipidomes){
+                    if (lipidome->features[target_variable].missing) continue;
+
+                    target_values.push_back(lipidome->features[target_variable].numerical_value);
+                }
+            }
+
+            Matrix stat_matrix(statistics_matrix);
+
+            // if any lipidome has a missing study variable, discard the lipidome from the statistic
+            Indexes lipidomes_to_keep;
+            for (int r = 0; r < stat_matrix.rows; ++r){
+                if (!selected_lipidomes[r]->features[target_variable].missing) lipidomes_to_keep.push_back(r);
+            }
+            Matrix tmp;
+            tmp.rewrite(stat_matrix, lipidomes_to_keep);
+            stat_matrix.rewrite(tmp);
+
+
+            if (is_nominal){
+                series.resize(nom_counter);
+
+                if (stat_matrix.cols > 1) stat_matrix.scale();
+                for (int r = 0; r < stat_matrix.rows; ++r){
+                    double sum = 0;
+                    for (int c = 0; c < stat_matrix.cols; c++){
+                        double val = stat_matrix(r, c);
+                        if (!isnan(val) && !isinf(val)) sum += val;
+                    }
+                    if (stat_matrix.cols > 1 || sum > 1e-15){
+                        series[target_indexes[r]].push_back(sum);
+                    }
+                }
+
+                if (nom_counter >= 2){
+                    complete_feature_analysis_table.back().push_back(compute_accuracy(series));
+                }
+                else {
+                    complete_feature_analysis_table.back().push_back(-1);
+                }
+            }
+            else {
+                Array constants(stat_matrix.rows, 1);
+                stat_matrix.add_column(constants);
+
+                Array coefficiants;
+
+                coefficiants.compute_coefficiants(stat_matrix, target_values);    // estimating coefficiants
+                Array S;
+                S.mult(stat_matrix, coefficiants);
+
+
+                double mx = 0, my = 0, ny = 0;
+                // computing the study variable mean based on missing values of lipids
+                for (uint r = 0; r < S.size(); ++r){
+                    if (S[r] <= 1e-15) continue;
+                    mx += S[r];
+                    my += target_values[r];
+                    ny += 1;
+                }
+                mx /= ny;
+                my /= ny;
+
+                // estimate slope and intercept factors for linear regression
+                double slope_num = 0, slope_denom = 0;
+                for (uint r = 0; r < S.size(); ++r){
+                    if (S[r] <= 1e-15) continue;
+                    slope_num += (S[r] - mx) * (target_values[r] - my);
+                    slope_denom += sq(S[r] - mx);
+                }
+                double slope = slope_num / slope_denom;
+                double intercept = my - slope * mx;
+
+                double SQR = 0, SQT = 0;
+                for (uint r = 0; r < S.size(); ++r){
+                    if (S[r] <= 1e-15) continue;
+                    SQR += sq(target_values[r] - (slope * S[r] + intercept));
+                    SQT += sq(target_values[r] - my);
+                }
+                complete_feature_analysis_table.back().push_back(1. - SQR / SQT);
+
+            }
+
+
+
+
+        }
 
         if (progress){
             progress->increment();

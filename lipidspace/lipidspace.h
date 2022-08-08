@@ -54,6 +54,7 @@ public:
     set<string> registered_lipid_classes;
     Matrix statistics_matrix;
     vector<string> statistics_lipids;
+    vector< vector<double> > complete_feature_analysis_table;
 
 
     LipidSpace();

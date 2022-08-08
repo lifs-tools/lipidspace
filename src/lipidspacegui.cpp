@@ -293,6 +293,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->action4_columns, &QAction::triggered, this, &LipidSpaceGUI::set4ColumnLayout);
     connect(ui->action5_columns, &QAction::triggered, this, &LipidSpaceGUI::set5ColumnLayout);
     connect(ui->action6_columns, &QAction::triggered, this, &LipidSpaceGUI::set6ColumnLayout);
+    connect(ui->actionComplete_feature_analysis, &QAction::triggered, this, &LipidSpaceGUI::completeFeatureAnalysis);
     connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
     connect(ui->actionManage_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::openManageLipidomesWindow);
     connect(ui->actionSet_transparency, &QAction::triggered, this, &LipidSpaceGUI::openSetAlpha);
@@ -420,7 +421,7 @@ LipidSpaceGUI::~LipidSpaceGUI(){
 
 
 void LipidSpaceGUI::completeFeatureAnalysis(){
-    QString file_name = QFileDialog::getSaveFileName(chart, "Export analysis table", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
+    QString file_name = QFileDialog::getSaveFileName(this, "Export feature analysis table", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
     if (!file_name.length()) return;
 
     runAnalysisPID(3);
@@ -431,10 +432,6 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
         }
     }
 
-    /*
-    QString file_name = QFileDialog::getSaveFileName(chart, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
-    if (!file_name.length()) return;
-
     try {
         if (QFile::exists(file_name)){
             QFile::remove(file_name);
@@ -444,61 +441,57 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
             string sep = file_name.toLower().endsWith("csv") ? "," : "\t";
 
             ofstream off(file_name.toStdString().c_str());
-            for (uint i = 0; i < series_titles.size(); ++i){
-                off << series_titles[i];
-                if (i < series_titles.size() - 1) off << sep;
-            }
-            off << endl;
 
-            uint num_rows = 0;
-            for (auto s : series) num_rows = max(num_rows, (uint)s.size());
-            for (uint i = 0; i < num_rows; ++i){
-                for (uint j = 0; j < series.size(); ++j){
-                    if (i < series[j].size()){
-                        off << series[j][i];
-                        if (j < series.size() - 1) off << sep;
-                    }
-                    else if (j < series.size() - 1) off << sep;
-                }
+            // export study variables in first column
+            vector<string> fv;
+            for (auto kv : lipid_space->feature_values){
+                if (kv.first == FILE_FEATURE_NAME) continue;
+                fv.push_back(kv.first);
+                off << sep << kv.first;
+            } off << endl;
+
+            for (uint r = 0; r < lipid_space->complete_feature_analysis_table.size(); ++r){
+                off << fv[r];
+                for (auto val : lipid_space->complete_feature_analysis_table[r]) off << sep << val;
                 off << endl;
             }
+
         }
         else if (file_name.toLower().endsWith("xlsx")) {
             XLDocument doc;
             doc.create(file_name.toStdString());
             auto wbk = doc.workbook();
-            wbk.addWorksheet("Data");
+            wbk.addWorksheet("StudyVariableCorrelations");
             wbk.addWorksheet("Statistics");
             wbk.deleteSheet("Sheet1");
-            auto wks_data = doc.workbook().worksheet("Data");
-            uint col = 1;
-            for (auto t : series_titles) wks_data.cell(1, col++).value() = t;
+            auto wks = doc.workbook().worksheet("StudyVariableCorrelations");
 
-            for (col = 0; col < series.size(); ++col){
-                int row = 2;
-                for (auto s : series[col]) wks_data.cell(row++, col + 1).value() = s;
+            vector<string> fv;
+            uint col = 2;
+            for (auto kv : lipid_space->feature_values){
+                if (kv.first == FILE_FEATURE_NAME) continue;
+                fv.push_back(kv.first);
+                wks.cell(1, col++).value() = kv.first;
             }
 
-            auto wks_stat = doc.workbook().worksheet("Statistics");
-            int row = 1;
-            for (auto kv : stat_results){
-                wks_stat.cell(row, 1).value() = kv.first;
-                wks_stat.cell(row++, 2).value() = kv.second;
+            for (uint r = 0; r < lipid_space->complete_feature_analysis_table.size(); ++r){
+                uint col = 1;
+                uint row = r + 2;
+                wks.cell(row, col++).value() = fv[r];
+                for (auto val : lipid_space->complete_feature_analysis_table[r]) wks.cell(row, col++).value() = val;
             }
-
             doc.save();
+
         }
         else {
-            QMessageBox::information(chart, "Export error", "Unknown export format for file '" + file_name + "'.");
+            QMessageBox::information(this, "Export error", "Unknown export format for file '" + file_name + "'.");
             return;
         }
-        QMessageBox::information(chart, "Export completed", "The export is completed into the file '" + file_name + "'.");
+        QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
     }
     catch(exception &){
-        QMessageBox::critical(chart, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
+        QMessageBox::critical(this, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
     }
-    */
-
 }
 
 
