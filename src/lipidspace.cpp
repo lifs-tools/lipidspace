@@ -3298,10 +3298,15 @@ void LipidSpace::complete_feature_analysis(){
 
         target_variable = kv.first;
         feature_analysis(false);
+
+        if (progress && progress->stop_progress) break;
         lipid_analysis(false);
+
+        if (progress && progress->stop_progress) break;
 
 
         for (auto kv2 : feature_values){
+            if (progress && progress->stop_progress) break;
             if (kv2.first == FILE_FEATURE_NAME) continue;
             target_variable = kv2.first;
 
@@ -3334,6 +3339,7 @@ void LipidSpace::complete_feature_analysis(){
                 }
             }
 
+            if (progress && progress->stop_progress) break;
             Matrix stat_matrix(statistics_matrix);
 
             // if any lipidome has a missing study variable, discard the lipidome from the statistic
@@ -3346,11 +3352,13 @@ void LipidSpace::complete_feature_analysis(){
             stat_matrix.rewrite(tmp);
 
 
+            if (progress && progress->stop_progress) break;
             if (is_nominal){
                 series.resize(nom_counter);
 
                 if (stat_matrix.cols > 1) stat_matrix.scale();
                 for (int r = 0; r < stat_matrix.rows; ++r){
+                    if (progress && progress->stop_progress) break;
                     double sum = 0;
                     for (int c = 0; c < stat_matrix.cols; c++){
                         double val = stat_matrix(r, c);
@@ -3360,6 +3368,7 @@ void LipidSpace::complete_feature_analysis(){
                         series[target_indexes[r]].push_back(sum);
                     }
                 }
+                if (progress && progress->stop_progress) break;
 
                 if (nom_counter >= 2){
                     complete_feature_analysis_table.back().push_back(compute_accuracy(series));
@@ -3373,9 +3382,11 @@ void LipidSpace::complete_feature_analysis(){
                 stat_matrix.add_column(constants);
 
                 Array coefficiants;
+                if (progress && progress->stop_progress) break;
 
                 coefficiants.compute_coefficiants(stat_matrix, target_values);    // estimating coefficiants
                 Array S;
+                if (progress && progress->stop_progress) break;
                 S.mult(stat_matrix, coefficiants);
 
 
@@ -3389,6 +3400,7 @@ void LipidSpace::complete_feature_analysis(){
                 }
                 mx /= ny;
                 my /= ny;
+                if (progress && progress->stop_progress) break;
 
                 // estimate slope and intercept factors for linear regression
                 double slope_num = 0, slope_denom = 0;

@@ -462,7 +462,6 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
             doc.create(file_name.toStdString());
             auto wbk = doc.workbook();
             wbk.addWorksheet("StudyVariableCorrelations");
-            wbk.addWorksheet("Statistics");
             wbk.deleteSheet("Sheet1");
             auto wks = doc.workbook().worksheet("StudyVariableCorrelations");
 
