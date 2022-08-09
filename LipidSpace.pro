@@ -2,7 +2,7 @@
 win32:QT       += core gui printsupport widgets svg svgwidgets
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
+QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas -O3
 
 
 # The following define makes your compiler emit warnings if you use
@@ -45,13 +45,9 @@ SOURCES += \
     src/statistics.cpp \
     src/Tutorial.cpp \
     src/chart.cpp \
-    src/boxplot.cpp \
-    src/scatterplot.cpp \
-    src/lineplot.cpp \
-    src/histogramplot.cpp \
-    src/barplot.cpp \
-    src/studyvariablemapping.cpp \
-    src/chartplot.cpp
+    src/chartplot.cpp \
+    src/plots.cpp \
+    src/studyvariablemapping.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -73,13 +69,9 @@ HEADERS += \
     lipidspace/logging.h \
     lipidspace/statistics.h \
     lipidspace/Tutorial.h \
-    lipidspace/Chart.h \
+    lipidspace/chart.h \
     lipidspace/chartplot.h \
-    lipidspace/boxplot.h \
-    lipidspace/scatterplot.h \
-    lipidspace/lineplot.h \
-    lipidspace/histogramplot.h \
-    lipidspace/barplot.h \
+    lipidspace/plots.h \
     lipidspace/studyvariablemapping.h
 
 FORMS += \

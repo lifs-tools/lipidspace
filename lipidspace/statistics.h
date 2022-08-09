@@ -14,11 +14,7 @@
 
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/chart.h"
-#include "lipidspace/boxplot.h"
-#include "lipidspace/scatterplot.h"
-#include "lipidspace/lineplot.h"
-#include "lipidspace/histogramplot.h"
-#include "lipidspace/barplot.h"
+#include "lipidspace/plots.h"
 
 using namespace std;
 using namespace OpenXLSX;

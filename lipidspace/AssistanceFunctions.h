@@ -17,6 +17,7 @@
 #include <OpenXLSX.hpp>
 #include <QDropEvent>
 #include <QCheckBox>
+#include <QVBoxLayout>
 #include <set>
 #include <vector>
 #include <map>

@@ -17,7 +17,7 @@
 #include "lipidspace/importtable.h"
 #include "lipidspace/about.h"
 #include "lipidspace/globaldata.h"
-#include "lipidspace/CBTableWidget.h"
+#include "lipidspace/AssistanceFunctions.h"
 #include "lipidspace/filterdialog.h"
 #include "lipidspace/Tutorial.h"
 #include "cppgoslin/cppgoslin.h"

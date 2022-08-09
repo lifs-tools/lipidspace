@@ -1,4 +1,5 @@
 #include "lipidspace/AssistanceFunctions.h"
+#include "lipidspace/globaldata.h"
 
 LipidSpaceException::LipidSpaceException(string _message, LipidSpaceExceptionType _type){
     Logging::write_log(message);
