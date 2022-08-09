@@ -82,9 +82,7 @@ public:
     void complete_feature_analysis();
 
     void load_list(string lipid_list_file);
-    void load_row_table(ImportData *import_data);
-    void load_column_table(ImportData *import_data);
-    void load_flat_table(ImportData *import_data);
+    void load_table(ImportData *import_data);
     void load_mzTabM(string mzTabM_file);
     int extract_number(string line, int line_number = -1);
 
@@ -94,6 +92,11 @@ signals:
 
 public slots:
     void store_results(string);
+
+private:
+    void load_row_table(ImportData *import_data);
+    void load_column_table(ImportData *import_data);
+    void load_flat_table(ImportData *import_data);
 
 };
 

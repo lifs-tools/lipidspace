@@ -179,18 +179,7 @@ public:
 
                    try
                    {
-                       if (table_type == ROW_PIVOT_TABLE){
-                         lipid_space.load_row_table(import_data);
-                       }
-                       else if (table_type == COLUMN_PIVOT_TABLE){
-                         lipid_space.load_column_table(import_data);
-                       }
-                       else if (table_type == FLAT_TABLE){
-                         lipid_space.load_flat_table(import_data);
-                       }
-                       else {
-                           throw std::invalid_argument("Table type not defined");
-                       }
+                       lipid_space.load_table(import_data);
                    }
                    catch (LipidSpaceException &e)
                    {

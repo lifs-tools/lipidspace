@@ -2498,6 +2498,17 @@ void LipidSpace::load_column_table(ImportData *import_data){
 
 
 
+void LipidSpace::load_table(ImportData *import_data){
+    switch (import_data->table_type){
+        case ROW_PIVOT_TABLE: load_row_table(import_data); break;
+        case COLUMN_PIVOT_TABLE: load_column_table(import_data); break;
+        case FLAT_TABLE: load_flat_table(import_data); break;
+    }
+}
+
+
+
+
 // load and parse lipid table, lipids per row, measurements per column
 void LipidSpace::load_row_table(ImportData *import_data){
     vector<TableColumnType> *column_types = import_data->column_types;
