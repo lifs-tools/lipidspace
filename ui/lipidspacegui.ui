@@ -258,7 +258,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -833,11 +833,12 @@
     <addaction name="actionManage_lipidomes"/>
     <addaction name="actionSet_number_of_principal_components"/>
     <addaction name="separator"/>
+    <addaction name="actionComplete_feature_analysis"/>
+    <addaction name="separator"/>
     <addaction name="actionIgnoring_lipid_sn_positions"/>
     <addaction name="actionIgnore_quantitative_information"/>
     <addaction name="actionUnbound_lipid_distance_metric"/>
     <addaction name="menuClustering_strategy"/>
-    <addaction name="actionComplete_feature_analysis"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1109,7 +1110,7 @@
   <customwidget>
    <class>CBTableWidget</class>
    <extends>QTableWidget</extends>
-   <header>lipidspace/CBTableWidget.h</header>
+   <header>lipidspace/AssistanceFunctions.h</header>
   </customwidget>
   <customwidget>
    <class>Canvas</class>

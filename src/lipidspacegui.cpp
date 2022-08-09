@@ -1,12 +1,13 @@
 #include "lipidspace/lipidspacegui.h"
 
 
-DragLayer::DragLayer(QWidget *parent) : QWidget(parent) {
+DragLayer::DragLayer(LipidSpaceGUI *_lipid_space_gui, QWidget *parent) : QWidget(parent) {
+    lipid_space_gui = _lipid_space_gui;
 
 }
 
 void DragLayer::mousePressEvent(QMouseEvent*, Canvas *canvas){
-    if (!isVisible() && canvas->num >= 0){
+    if (!isVisible() && canvas->num >= 0 && GlobalData::ctrl_pressed){
         source_tile = canvas->num;
         QWidget *current_widget = canvas;
         start_position = QPoint(0, 0);
@@ -61,7 +62,7 @@ void LipidSpaceGUI::closeEvent(QCloseEvent *event){
 
 void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_Control){
-        ctrl_pressed = false;
+        GlobalData::ctrl_pressed = false;
     }
 }
 
@@ -178,7 +179,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     }
 
     else if (event->key() == Qt::Key_Control){
-        ctrl_pressed = true;
+        GlobalData::ctrl_pressed = true;
     }
 
     else if (event->key() == Qt::Key_Space){
@@ -245,9 +246,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     keystrokes = "";
     selected_d_lipidomes = 0;
     knubbel = false;
-    ctrl_pressed = false;
+    GlobalData::ctrl_pressed = false;
     tutorial = new Tutorial(this, ui->centralwidget);
-    ui->tableWidget->set_ctrl(&ctrl_pressed);
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
@@ -261,7 +261,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
     connect(lipid_space, SIGNAL(reassembled()), this, SLOT(updateSelectionView()));
 
-    dragLayer = new DragLayer(ui->centralwidget);
+    dragLayer = new DragLayer(this, ui->centralwidget);
     dragLayer->move(0, 0);
     dragLayer->setVisible(false);
     dragLayer->setWindowFlags(Qt::FramelessWindowHint);
@@ -726,8 +726,6 @@ void LipidSpaceGUI::updateView(int){
 
 
 void LipidSpaceGUI::loadTable(ImportData *import_data){
-    TableType table_type = import_data->table_type;
-
     bool repeat_loading = true;
     ui->normalizationComboBox->clear();
     ui->normalizationComboBox->addItem("Absolute normalization", "absolute");

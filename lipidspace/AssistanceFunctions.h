@@ -89,6 +89,29 @@ public slots:
 
 
 
+
+class CBTableWidget : public QTableWidget {
+    Q_OBJECT
+
+public:
+    QLabel *transpose_label;
+
+    explicit CBTableWidget(QWidget *parent = 0);
+    void wheelEvent(QWheelEvent*) override;
+
+signals:
+    void cornerButtonClick();
+    void zooming();
+
+
+private slots:
+    void cornerButtonClicked();
+};
+
+
+
+
+
 class FileTableHandler {
 public:
     vector<string> headers;

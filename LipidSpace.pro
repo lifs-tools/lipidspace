@@ -32,7 +32,6 @@ SOURCES += \
     src/select_worksheet.cpp \
     src/globaldata.cpp \
     src/setalpha.cpp \
-    src/CBTableWidget.cpp \
     src/setPCnum.cpp \
     src/progressbar.cpp \
     src/managelipidomes.cpp \
@@ -60,7 +59,6 @@ HEADERS += \
     lipidspace/globaldata.h \
     lipidspace/importtable.h \
     lipidspace/lipidspacegui.h \
-    lipidspace/CBTableWidget.h \
     lipidspace/canvas.h \
     lipidspace/Matrix.h \
     lipidspace/lipidspace.h \

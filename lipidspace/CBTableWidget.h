@@ -11,20 +11,18 @@
 
 class CBTableWidget : public QTableWidget {
     Q_OBJECT
-    
+
 public:
-    bool *ctrl_pressed;
     QLabel *transpose_label;
-    
+
     explicit CBTableWidget(QWidget *parent = 0);
     void wheelEvent(QWheelEvent*) override;
-    void set_ctrl(bool *_ctrl_pressed);
-    
+
 signals:
     void cornerButtonClick();
     void zooming();
-    
-    
+
+
 private slots:
     void cornerButtonClicked();
 };

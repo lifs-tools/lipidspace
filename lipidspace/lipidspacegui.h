@@ -33,7 +33,7 @@ QT_END_NAMESPACE
 
 class Canvas;
 class Tutorial;
-
+class LipidSpaceGUI;
 
 
 class HomeItem : public QGraphicsItem {
@@ -59,8 +59,9 @@ public:
     QPoint start_position;
     QPoint delta;
     int source_tile;
+    LipidSpaceGUI *lipid_space_gui;
 
-    explicit DragLayer(QWidget *parent = 0);
+    explicit DragLayer(LipidSpaceGUI *_lipid_space_gui, QWidget *parent = 0);
 
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
@@ -89,7 +90,6 @@ public:
     QPixmap *arrow_bl;
     Tutorial *tutorial;
     ImportTable import_table;
-    bool ctrl_pressed;
     Statistics statisticsBoxPlot;
     Statistics statisticsHistogram;
     Statistics statisticsROCCurve;

@@ -1131,7 +1131,6 @@ void Canvas::highlightPoints(){
 }
 
 
-
 void Canvas::hoverOver(){
     if (dendrogram || num < 0) return;
     QRectF widgetRect = QRectF(0, 0, width(), height());
@@ -1165,12 +1164,18 @@ void Canvas::mousePressEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
     if (event->button() == Qt::LeftButton){
-        leftMousePressed = true;
-        QGraphicsView::mousePressEvent(event);
-    }
+        if (GlobalData::ctrl_pressed){
+            mouse(event, this);
+        }
+        else {
+            leftMousePressed = true;
+            QGraphicsView::mousePressEvent(event);
+        }
+    }/*
     else if (lipid_space->selected_lipidomes.size() > 1 && event->button() == Qt::MiddleButton){
         mouse(event, this);
     }
+    */
     else if (event->button() == Qt::RightButton){
         QGraphicsView::mousePressEvent(event);
         if (dendrogram){
@@ -1263,15 +1268,17 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
     if (leftMousePressed){
-        setBackgroundBrush(QBrush());
-        viewport()->setCursor(Qt::DragMoveCursor);
-        QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
-        QRectF v = mapToScene(viewportRect).boundingRect();
-        transforming(v);
-        if (pointSet) pointSet->updateView(v);
+        if (!GlobalData::ctrl_pressed){
+            setBackgroundBrush(QBrush());
+            viewport()->setCursor(Qt::DragMoveCursor);
+            QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+            QRectF v = mapToScene(viewportRect).boundingRect();
+            transforming(v);
+            if (pointSet) pointSet->updateView(v);
 
-        oldCenter.setX(v.x() + v.width() * 0.5);
-        oldCenter.setY(v.y() + v.height() * 0.5);
+            oldCenter.setX(v.x() + v.width() * 0.5);
+            oldCenter.setY(v.y() + v.height() * 0.5);
+        }
     }
 
     // check if mouse over lipid bubble
