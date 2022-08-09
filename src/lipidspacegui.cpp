@@ -735,19 +735,7 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
     ui->normalizationComboBox->addItem("Relative normalization", "relative");
     while (repeat_loading){
         try {
-            switch(table_type){
-                case ROW_PIVOT_TABLE:
-                    lipid_space->load_row_table(import_data);
-                    break;
-
-                case COLUMN_PIVOT_TABLE:
-                    lipid_space->load_column_table(import_data);
-                    break;
-
-                case FLAT_TABLE:
-                    lipid_space->load_flat_table(import_data);
-                    break;
-            }
+            lipid_space->load_table(import_data);
             runAnalysis();
             for (auto feature : lipid_space->feature_values){
                 if (feature.second.feature_type == NumericalFeature) continue;
@@ -769,10 +757,8 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
                         msgBox.exec();
                         if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
                             lipid_space->ignore_unknown_lipids = true;
-                            //resetAnalysis();
                         }
                         else {
-                            //resetAnalysis();
                             repeat_loading = false;
                         }
                     }
@@ -782,7 +768,6 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
                     {
                         msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
                         msgBox.exec();
-                        //resetAnalysis();
                         repeat_loading = false;
                     }
                     break;
@@ -795,10 +780,8 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
                         msgBox.exec();
                         if (msgBox.clickedButton() == (QAbstractButton*)continueButton){
                             lipid_space->ignore_doublette_lipids = true;
-                            //resetAnalysis();
                         }
                         else {
-                            //resetAnalysis();
                             repeat_loading = false;
                         }
                     }
@@ -808,7 +791,6 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
                     {
                         msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
                         msgBox.exec();
-                        //resetAnalysis();
                         repeat_loading = false;
                     }
                     break;
@@ -817,7 +799,6 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
                     {
                         msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
                         msgBox.exec();
-                        //resetAnalysis();
                         repeat_loading = false;
                     }
                     break;
@@ -826,7 +807,6 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
                     {
                         msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
                         msgBox.exec();
-                        //resetAnalysis();
                         repeat_loading = false;
                     }
                     break;
