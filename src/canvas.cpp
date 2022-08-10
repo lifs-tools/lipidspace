@@ -80,7 +80,7 @@ void HomeView::resizeEvent(QResizeEvent *) {
 
 
     double monitor_factor = 0.75;
-    LIFS_monitor->setPos(width() - (564 * monitor_factor + 120) * factor, 1. * factor);
+    LIFS_monitor->setPos(width() - (564 * monitor_factor + 120) * factor, 0);
     LIFS_monitor->setScale(monitor_factor * factor);
 }
 
