@@ -75,9 +75,17 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 324; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
+
+
+        //for (int i = 1; i <= 40; ++i) ct->at(i) = IgnoreColumn;
         for (int i = 1; i <= 40; ++i) ct->at(i) = FeatureColumnNumerical;
+
+
+
         ct->at(41) = FeatureColumnNominal;
         ct->at(42) = FeatureColumnNominal;
+        //ct->at(41) = IgnoreColumn;
+        //ct->at(42) = IgnoreColumn;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
     }
@@ -180,47 +188,6 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
     else if (event->key() == Qt::Key_Control){
         GlobalData::ctrl_pressed = true;
-    }
-
-    else if (event->key() == Qt::Key_Space){
-
-
-
-
-        /*
-        ofstream regression("regression.csv");
-        QComboBox *c = ui->featureComboBox;
-
-        for (int i = 0; i < c->count(); ++i){
-            if (c->itemText(i) == FILE_FEATURE_NAME) continue;
-            regression << "\t" << c->itemText(i).toStdString();
-        }
-        regression << endl;
-
-        for (int outer = 0; outer < c->count(); ++outer){
-            if (c->itemText(outer) == FILE_FEATURE_NAME) continue;
-            cout << "analysis for " << c->itemText(outer).toStdString() << endl;
-            emit c->currentIndexChanged(outer);
-            usleep(1000);
-            emit ui->startAnalysisPushButton->click();
-            usleep(1000);
-            emit ui->applyChangesPushButton->click();
-            usleep(1000);
-            regression << c->itemText(outer).toStdString();
-
-            for (int inner = 0; inner < c->count(); ++inner){
-            if (c->itemText(inner) == FILE_FEATURE_NAME) continue;
-                emit c->currentIndexChanged(inner);
-                usleep(1000);
-                cout << " - check " << c->itemText(inner).toStdString() << endl;
-
-                if (statisticsBoxPlot.stat_results.size() > 0){
-                    regression << "\t" << statisticsBoxPlot.stat_results[0].second;
-                }
-            }
-            regression << endl;
-        }
-        */
     }
 
     else {
@@ -499,6 +466,7 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
                 }
             }
             doc.save();
+            doc.close();
 
         }
         else {

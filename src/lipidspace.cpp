@@ -3170,17 +3170,19 @@ void LipidSpace::feature_analysis(bool report_progress){
     if (is_nominal){
         global_matrix.scale();
     }
+    /*
     else {
         Array constants;
         constants.resize(global_matrix.rows, 1);
         global_matrix.add_column(constants);
 
 
-    }
+    }*/
+
 
 
     // determining the upper number of features to consider
-    int n = global_matrix.cols - !is_nominal; // -1 because we added a column of constant values 1, 1, 1, 1, ...
+    int n = global_matrix.cols;// - !is_nominal; // -1 because we added a column of constant values 1, 1, 1, 1, ...
     int n_features = n;
     if (n > 1) n = min(n_features - 2, (int)sqrt(n) * 2);
 
@@ -3193,7 +3195,7 @@ void LipidSpace::feature_analysis(bool report_progress){
 
         genes.resize(n + 1, 0);
         genes[0] = new Gene(n_features + 1);
-        if (!is_nominal) genes[0]->gene_code[n_features] = true; // add constant value column
+        //if (!is_nominal) genes[0]->gene_code[n_features] = true; // add constant value column
         genes[0]->score = is_nominal ? 0 : 1e100;
 
 
@@ -3211,8 +3213,8 @@ void LipidSpace::feature_analysis(bool report_progress){
         Gene* last = genes[i - 1];
         while (pos < n_features && (!progress || !progress->stop_progress)){
             if (progress->stop_progress) break;
-            Indexes feature_i;
-            last->get_indexes(feature_i);
+            //Indexes feature_i;
+            //last->get_indexes(feature_i);
             if (!last->gene_code[pos]){
                 Gene* new_gene = new Gene(last);
                 new_gene->gene_code[pos] = true;
@@ -3264,6 +3266,9 @@ void LipidSpace::feature_analysis(bool report_progress){
 
 
                 else {
+                    Array constants(sub_lipids.rows, 1);
+                    sub_lipids.add_column(constants);
+
                     Array coefficiants;
                     coefficiants.compute_coefficiants(sub_lipids, target_values);    // estimating coefficiants
                     new_gene->score = compute_aic(sub_lipids, coefficiants, target_values);  // computing aic
@@ -3358,8 +3363,8 @@ void LipidSpace::complete_feature_analysis(){
         if (progress && progress->stop_progress) break;
 
 
-        for (auto &kv : selection[0]){
-            if (kv.second) complete_feature_analysis_lipids.back().insert(kv.first);
+        for (auto &kv_s : selection[0]){
+            if (kv_s.second) complete_feature_analysis_lipids.back().insert(kv_s.first);
         }
 
 
@@ -3509,6 +3514,12 @@ void LipidSpace::run(){
     else if (process_id == 3){
         //complete_feature_analysis();
 
+        complete_feature_analysis_table.clear();
+        complete_feature_analysis_lipids.clear();
+
+        if (progress){
+            progress->prepare(1);
+        }
 
         LipidSpace lipid_space_clone(this);
         lipid_space_clone.complete_feature_analysis();

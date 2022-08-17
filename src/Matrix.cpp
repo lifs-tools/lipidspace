@@ -401,8 +401,6 @@ void Matrix::transpose(){
 
 
 void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int top_n){
-    assert(rows == cols);
-
     Matrix trans(*this, true);
 
     // Prepare matrix-vector multiplication routine used in Lanczos algorithm
@@ -421,7 +419,7 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
 
 
 void Matrix::inverse(Matrix &X, bool symmetric){
-    assert(rows == cols);
+    assert(X.rows == X.cols);
     rewrite(X);
     if (!symmetric) transpose();
 
