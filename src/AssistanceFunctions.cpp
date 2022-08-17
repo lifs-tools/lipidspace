@@ -179,6 +179,18 @@ FeatureSet::FeatureSet(){
 
 
 
+FeatureSet::FeatureSet(FeatureSet *feature_set){
+    name = feature_set->name;
+    feature_type = feature_set->feature_type;
+    for (auto kv : feature_set->nominal_values) nominal_values.insert({kv.first, kv.second});
+    for (auto value : feature_set->numerical_values) numerical_values.insert(value);
+    numerical_filter = {feature_set->numerical_filter.first, vector<double>()};
+    for (auto value : feature_set->numerical_filter.second) numerical_filter.second.push_back(value);
+}
+
+
+
+
 
 Feature::Feature(){
     name = "";
@@ -205,7 +217,6 @@ Feature::Feature (string _name, double num_val, bool _missing){
     nominal_value = "";
     missing = _missing;
 }
-
 
 Feature::Feature (Feature *f){
     name = f->name;
@@ -398,6 +409,25 @@ Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name
 
 
 
+Lipidome::Lipidome(Lipidome *lipidome){
+    file_name = lipidome->file_name;
+    cleaned_name = lipidome->cleaned_name;
+    for (auto value : lipidome->species) species.push_back(value);
+    for (auto value : lipidome->classes) classes.push_back(value);
+    for (auto value : lipidome->categories) categories.push_back(value);
+    for (auto value : lipidome->lipids) lipids.push_back(value);
+    for (auto value : lipidome->visualization_intensities) visualization_intensities.push_back(value);
+    for (auto value : lipidome->selected_lipid_indexes) selected_lipid_indexes.push_back(value);
+    for (auto value : lipidome->normalized_intensities) normalized_intensities.push_back(value);
+    for (auto value : lipidome->PCA_intensities) PCA_intensities.push_back(value);
+    for (auto value : lipidome->original_intensities) original_intensities.push_back(value);
+    for (auto kv : lipidome->features) features.insert({kv.first, Feature(&kv.second)});
+    m.rewrite(lipidome->m);
+}
+
+
+
+
 string Lipidome::to_json(){
     stringstream s;
 
@@ -472,6 +502,30 @@ DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_value
         }
     }
 }
+
+
+DendrogramNode::DendrogramNode(DendrogramNode* n){
+    for (auto value : n->indexes) indexes.insert(value);
+    order = n->order;
+    left_child = new DendrogramNode(n->left_child);
+    right_child = new DendrogramNode(n->right_child);
+    distance = n->distance;
+    x_left = n->x_left;
+    x_right = n->x_right;
+    y = n->y;
+    for (auto kv : n->feature_count_nominal){
+        feature_count_nominal.insert({kv.first, map<string, int>()});
+        map<string, int> &m = feature_count_nominal[kv.first];
+        for (auto kv2 : kv.second) m.insert({kv2.first, kv2.second});
+    }
+    for (auto kv : n->feature_numerical){
+        feature_numerical.insert({kv.first, vector<double>()});
+        vector<double> &v = feature_numerical[kv.first];
+        for (auto value : kv.second) v.push_back(value);
+    }
+    for (auto kv : n->feature_numerical_thresholds) feature_numerical_thresholds.insert({kv.first, kv.second});
+}
+
 
 
 

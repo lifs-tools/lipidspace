@@ -49,6 +49,7 @@ enum FeatureFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, EqualFilter
 enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
 enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, MappingTo, InsertNaN, InsertDefault};
+enum NormalizationType {AbsoluteNormalization, RelativeNormalization, GroupNormalization, UndefinedNormalization};
 
 static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_TABLE}, {"COLUMN_PIVOT_TABLE", COLUMN_PIVOT_TABLE}, {"FLAT_TABLE", FLAT_TABLE}};
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"FeatureColumnNumerical", FeatureColumnNumerical}, {"FeatureColumnNominal", FeatureColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
@@ -195,6 +196,7 @@ public:
 
     FeatureSet(string _name, FeatureType f_type);
     FeatureSet();
+    FeatureSet(FeatureSet *feature_set);
 };
 
 
@@ -319,6 +321,7 @@ public:
     Matrix m;
 
     Lipidome(string lipidome_name, string lipidome_file, string sheet_name = "", bool is_file_name = false);
+    Lipidome(Lipidome *lipidome);
     string to_json();
 };
 
@@ -401,6 +404,7 @@ public:
 
     DendrogramNode(int index, map<string, FeatureSet> *feature_values, Lipidome *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
+    DendrogramNode(DendrogramNode* n);
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);
 };

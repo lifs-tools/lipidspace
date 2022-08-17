@@ -424,7 +424,15 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
     QString file_name = QFileDialog::getSaveFileName(this, "Export feature analysis table", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
     if (!file_name.length()) return;
 
-    runAnalysisPID(3);
+    //runAnalysisPID(3);
+    lipid_space->process_id = 3;
+    progress->reset();
+    lipid_space->start();
+    progressbar->exec();
+
+    if (lipid_space->complete_feature_analysis_table.size() == 0 || lipid_space->complete_feature_analysis_lipids.size() == 0) return;
+
+
     for (int i = 0; i < ui->featureComboBox->count(); ++i){
         if(ui->featureComboBox->itemText(i).toStdString() == lipid_space->target_variable){
             emit ui->featureComboBox->currentIndexChanged(i);
@@ -478,6 +486,17 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
                 uint row = r + 2;
                 wks.cell(row, col++).value() = fv[r];
                 for (auto val : lipid_space->complete_feature_analysis_table[r]) wks.cell(row, col++).value() = val;
+            }
+
+            // all selected lipids for each study variable
+            for (uint i = 0; i < fv.size(); ++i){
+                wbk.addWorksheet(fv[i]);
+                auto wks_sv = doc.workbook().worksheet(fv[i]);
+                auto &selected_lipids = lipid_space->complete_feature_analysis_lipids[i];
+                int lip = 1;
+                for (auto lipid_name : selected_lipids){
+                    wks_sv.cell(lip++, 1).value() = lipid_name;
+                }
             }
             doc.save();
 

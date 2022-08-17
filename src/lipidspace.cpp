@@ -337,6 +337,46 @@ LipidSpace::LipidSpace() {
     }
 }
 
+
+LipidSpace::LipidSpace(LipidSpace *ls){
+    progress = ls->progress;
+    dendrogram_root = 0;
+
+    for (auto kv : ls->class_matrix) class_matrix.insert({kv.first, new int[2]{kv.second[0], kv.second[1]}});
+    for (auto kv : ls->all_lipids) all_lipids.insert({kv.first, kv.second});
+    keep_sn_position = ls->keep_sn_position;
+    ignore_unknown_lipids = ls->ignore_unknown_lipids;
+    ignore_doublette_lipids = ls->ignore_doublette_lipids;
+    unboundend_distance = ls->unboundend_distance;
+    without_quant = ls->without_quant;
+    map<Lipidome*, Lipidome*> lipidome_map;
+    for (auto lipidome : ls->lipidomes){
+        Lipidome *new_lipidome = new Lipidome(lipidome);
+        lipidomes.push_back(new_lipidome);
+        lipidome_map.insert({lipidome, new_lipidome});
+    }
+    for (auto translation : ls->lipid_name_translations){
+        lipid_name_translations.push_back(map<string, string>());
+        for (auto kv : translation) lipid_name_translations.back().insert({kv.first, kv.second});
+    }
+    global_lipidome = (ls->global_lipidome != 0) ? new Lipidome(ls->global_lipidome) : 0;
+    hausdorff_distances.rewrite(ls->hausdorff_distances);
+    analysis_finished = false;
+    for (auto kv : ls->feature_values) feature_values.insert({kv.first, FeatureSet(&kv.second)});
+    for (int i = 0; i < 4; ++i){
+        for (auto kv : ls->selection[i]) selection[i].insert({kv.first, kv.second});
+    }
+    for (auto lipidome : ls->selected_lipidomes) selected_lipidomes.push_back(lipidome_map[lipidome]);
+    global_distances.rewrite(ls->global_distances);
+    process_id = ls->process_id;
+    target_variable = ls->target_variable;
+    for (auto value : ls->registered_lipid_classes) registered_lipid_classes.insert(value);
+}
+
+
+
+
+
 const int LipidSpace::cols_for_pca_init = 7;
 int LipidSpace::cols_for_pca = 7;
 
@@ -1181,6 +1221,7 @@ int LipidSpace::compute_global_distance_matrix(){
     for (auto lipidome : lipidomes){
         // check if lipidome was (de)selected for analysis
         if (!selection[SAMPLE_ITEM][lipidome->cleaned_name]) continue;
+
         // check if lipidome is being excluded by deselected feature(s)
         bool filtered_out = false;
         for (auto kv : lipidome->features){
@@ -3297,6 +3338,7 @@ void LipidSpace::feature_analysis(bool report_progress){
 
 void LipidSpace::complete_feature_analysis(){
     complete_feature_analysis_table.clear();
+    complete_feature_analysis_lipids.clear();
     if (progress){
         progress->prepare(max(0, (int)feature_values.size() - 1));
     }
@@ -3305,6 +3347,7 @@ void LipidSpace::complete_feature_analysis(){
         if (kv.first == FILE_FEATURE_NAME) continue;
 
         complete_feature_analysis_table.push_back(vector<double>());
+        complete_feature_analysis_lipids.push_back(set<string>());
 
         target_variable = kv.first;
         feature_analysis(false);
@@ -3313,6 +3356,11 @@ void LipidSpace::complete_feature_analysis(){
         lipid_analysis(false);
 
         if (progress && progress->stop_progress) break;
+
+
+        for (auto &kv : selection[0]){
+            if (kv.second) complete_feature_analysis_lipids.back().insert(kv.first);
+        }
 
 
         for (auto kv2 : feature_values){
@@ -3429,7 +3477,6 @@ void LipidSpace::complete_feature_analysis(){
                     SQT += sq(target_values[r] - my);
                 }
                 complete_feature_analysis_table.back().push_back(1. - SQR / SQT);
-
             }
 
 
@@ -3460,7 +3507,28 @@ void LipidSpace::run(){
     }
 
     else if (process_id == 3){
-        complete_feature_analysis();
+        //complete_feature_analysis();
+
+
+        LipidSpace lipid_space_clone(this);
+        lipid_space_clone.complete_feature_analysis();
+
+        // copy results
+        for (auto vd : lipid_space_clone.complete_feature_analysis_table){
+            complete_feature_analysis_table.push_back(vector<double>());
+            for (auto value : vd) complete_feature_analysis_table.back().push_back(value);
+        }
+        for (auto ss : lipid_space_clone.complete_feature_analysis_lipids){
+            complete_feature_analysis_lipids.push_back(set<string>());
+            for (auto value : ss) complete_feature_analysis_lipids.back().insert(value);
+        }
+
+        // clear lipids from clone
+        for (auto l : lipid_space_clone.lipidomes) l->lipids.clear();
+        lipid_space_clone.global_lipidome->lipids.clear();
+        lipid_space_clone.all_lipids.clear();
+        for (auto l : lipid_space_clone.selected_lipidomes) l->lipids.clear();
+        lipid_space_clone.progress = 0;
     }
 
     process_id = 0;

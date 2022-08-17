@@ -23,6 +23,7 @@ public:
     static int PC1;
     static int PC2;
     static int feature_counter;
+    static NormalizationType normalization_type;
     static string rest_temp_folder;
     static map<string, QColor> colorMapFeatures;
     static map<string, QColor> colorMapCategories;

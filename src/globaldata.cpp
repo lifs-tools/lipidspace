@@ -14,6 +14,7 @@ int GlobalData::feature_counter = 0;
 string GlobalData::LipidSpace_version = "v0.x.x";
 string GlobalData::rest_temp_folder = ".";
 string GlobalData::normalization = "absolute";
+NormalizationType GlobalData::normalization_type = AbsoluteNormalization;
 QString GlobalData::last_folder = "";
 map<string, QColor> GlobalData::colorMapFeatures;
 map<string, string> GlobalData::gui_string_var{{"species_selection", ""}, {"study_var", ""}, {"study_var_stat", ""}, {"secondary_var", ""}};

@@ -55,10 +55,12 @@ public:
     Matrix statistics_matrix;
     vector<string> statistics_lipids;
     vector< vector<double> > complete_feature_analysis_table;
+    vector< set<string> > complete_feature_analysis_lipids;
 
 
     LipidSpace();
     ~LipidSpace();
+    LipidSpace(LipidSpace *ls);
     void run_analysis();
     static void compute_PCA_variances(Matrix &m, Array &a);
     void cut_cycle(FattyAcid* fa);
