@@ -343,7 +343,7 @@ LipidSpace::LipidSpace(LipidSpace *ls){
     dendrogram_root = 0;
 
     for (auto kv : ls->class_matrix) class_matrix.insert({kv.first, new int[2]{kv.second[0], kv.second[1]}});
-    for (auto kv : ls->all_lipids) all_lipids.insert({kv.first, kv.second});
+    for (auto kv : ls->all_lipids) all_lipids.insert({kv.first, new LipidAdduct(kv.second)});
     keep_sn_position = ls->keep_sn_position;
     ignore_unknown_lipids = ls->ignore_unknown_lipids;
     ignore_doublette_lipids = ls->ignore_doublette_lipids;
@@ -352,6 +352,7 @@ LipidSpace::LipidSpace(LipidSpace *ls){
     map<Lipidome*, Lipidome*> lipidome_map;
     for (auto lipidome : ls->lipidomes){
         Lipidome *new_lipidome = new Lipidome(lipidome);
+        for (auto species : new_lipidome->species) new_lipidome->lipids.push_back(all_lipids[species]);
         lipidomes.push_back(new_lipidome);
         lipidome_map.insert({lipidome, new_lipidome});
     }
@@ -3534,11 +3535,6 @@ void LipidSpace::run(){
             for (auto value : ss) complete_feature_analysis_lipids.back().insert(value);
         }
 
-        // clear lipids from clone
-        for (auto l : lipid_space_clone.lipidomes) l->lipids.clear();
-        lipid_space_clone.global_lipidome->lipids.clear();
-        lipid_space_clone.all_lipids.clear();
-        for (auto l : lipid_space_clone.selected_lipidomes) l->lipids.clear();
         lipid_space_clone.progress = 0;
     }
 

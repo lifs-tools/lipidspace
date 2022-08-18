@@ -415,7 +415,6 @@ Lipidome::Lipidome(Lipidome *lipidome){
     for (auto value : lipidome->species) species.push_back(value);
     for (auto value : lipidome->classes) classes.push_back(value);
     for (auto value : lipidome->categories) categories.push_back(value);
-    for (auto value : lipidome->lipids) lipids.push_back(value);
     for (auto value : lipidome->visualization_intensities) visualization_intensities.push_back(value);
     for (auto value : lipidome->selected_lipid_indexes) selected_lipid_indexes.push_back(value);
     for (auto value : lipidome->normalized_intensities) normalized_intensities.push_back(value);
