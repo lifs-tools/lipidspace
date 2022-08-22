@@ -39,6 +39,7 @@ public:
     vector<Lipidome*> lipidomes;
     vector< map<string, string> > lipid_name_translations;
     Lipidome* global_lipidome;
+    vector<Lipidome*> study_lipidomes;
     Array dendrogram_points;
     vector<int> dendrogram_sorting;
     Matrix hausdorff_distances;
@@ -56,6 +57,7 @@ public:
     vector<string> statistics_lipids;
     vector< vector<double> > complete_feature_analysis_table;
     vector< set<string> > complete_feature_analysis_lipids;
+
 
 
     LipidSpace();

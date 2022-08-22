@@ -9,6 +9,7 @@ int GlobalData::color_counter = 0;
 map<string, QColor> GlobalData::colorMap;
 int GlobalData::PC1 = 0;
 int GlobalData::PC2 = 1;
+bool GlobalData::selected_view = false;
 Linkage GlobalData::linkage = AverageLinkage;
 int GlobalData::feature_counter = 0;
 string GlobalData::LipidSpace_version = "v0.x.x";

@@ -192,6 +192,19 @@ void DendrogramLine::update_height_factor(double update_factor, QPointF *max_val
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // Canvas methods
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -585,6 +598,22 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // Canvas methods
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -607,10 +636,10 @@ void PointSet::loadPoints(){
     points.clear();
     labels.clear();
 
-    double x_min = 0;
-    double x_max = 0;
-    double y_min = 0;
-    double y_max = 0;
+    double x_min = 1e100;
+    double x_max = -1e100;
+    double y_min = 1e100;
+    double y_max = -1e100;
 
     // we need at least three lipids to span a lipid space
     if (view->lipid_space->global_lipidome->lipids.size() <= 2) return;
@@ -672,7 +701,6 @@ void PointSet::loadPoints(){
     bound.setY(y_min - y_margin);
     bound.setWidth(x_max - x_min + 2 * x_margin);
     bound.setHeight(y_max - y_min + 2 * y_margin);
-
 }
 
 PointSet::~PointSet(){
@@ -680,7 +708,7 @@ PointSet::~PointSet(){
 
 
 QRectF PointSet::boundingRect() const {
-    return view->graphics_scene.sceneRect();
+    return bound;
 }
 
 
@@ -806,6 +834,17 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     painter->drawText(QRectF(2, 0, 200, 60), Qt::AlignTop | Qt::AlignLeft, title);
     painter->drawText(QRectF(2, view->viewport()->geometry().height() - 60, 200, 60), Qt::AlignBottom | Qt::AlignLeft, variances);
     painter->restore();
+
+
+    // Draw marking rect
+    if (view->marked_for_selected_view && !GlobalData::selected_view){
+        painter->save();
+        painter->translate(QPointF(v.x(), v.y()));
+        painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+        painter->setPen(Qt::black);
+        painter->drawRect(0, 0, view->width() - 1, view->height() -1);
+        painter->restore();
+    }
 }
 
 
@@ -993,6 +1032,18 @@ void PointSet::resize(){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // Canvas methods
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -1001,7 +1052,10 @@ void PointSet::resize(){
 Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     pointSet = 0;
     dendrogram = 0;
+    canvas_id = -1;
+    canvas_type = UndefinedCanvasType;
     hovered_for_swap = false;
+    marked_for_selected_view = false;
 
     setDragMode(QGraphicsView::ScrollHandDrag);
     setFrameStyle(QFrame::NoFrame);
@@ -1055,14 +1109,16 @@ void Canvas::setLabelSize(int font_size){
 }
 
 
-Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species, QWidget *) : num(_num) {
+Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *) : num(_num) {
     lipid_space = _lipid_space;
     listed_species = _listed_species;
-
+    canvas_type = _canvas_type;
+    canvas_id = _canvas_id;
 
     pointSet = 0;
     dendrogram = 0;
     hovered_for_swap = false;
+    marked_for_selected_view = false;
 
     setDragMode(QGraphicsView::ScrollHandDrag);
     setFrameStyle(QFrame::NoFrame);
@@ -1076,15 +1132,14 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
 
 
 
-    leftMousePressed = false;
     showQuant = true;
     // set the graphics item within this graphics view
-    if (num == -2){ // dendrogram
+    if (canvas_type == DendrogramCanvas){ // dendrogram
         dendrogram = new Dendrogram(lipid_space, this);
         graphics_scene.addItem(dendrogram);
         dendrogram->load();
     }
-    else if (num == -1){ // global lipidome
+    else if (canvas_type == GlobalSpaceCanvas){ // global lipidome
         pointSet = new PointSet(lipid_space->global_lipidome, this);
         graphics_scene.addItem(pointSet);
         pointSet->title = "Global lipidome";
@@ -1092,6 +1147,16 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species,
 
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
+        pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+    }
+    else if (canvas_type == StudySpaceCanvas){ // global lipidome
+        pointSet = new PointSet(lipid_space->study_lipidomes[num], this);
+        graphics_scene.addItem(pointSet);
+        pointSet->title = QString(lipid_space->study_lipidomes[num]->cleaned_name.c_str());
+        pointSet->loadPoints();
+
+        Array vars;
+        LipidSpace::compute_PCA_variances(lipid_space->study_lipidomes[num]->m, vars);
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
     }
     else { // regular lipidome
@@ -1132,25 +1197,26 @@ void Canvas::highlightPoints(){
 
 
 void Canvas::hoverOver(){
-    if (dendrogram || num < 0) return;
+    if (dendrogram || canvas_type != SampleSpaceCanvas) return;
     QRectF widgetRect = QRectF(0, 0, width(), height());
     QPoint mousePos = mapFromGlobal(QCursor::pos());
     if (widgetRect.contains(mousePos)) {
-        setFrameStyle(QFrame::Panel);
         hovered_for_swap = true;
     }
     else {
-        setFrameStyle(QFrame::NoFrame);
         hovered_for_swap = false;
     }
 }
 
 
 void Canvas::setSwap(int source){
-    if (dendrogram || num < 0 || !hovered_for_swap) return;
-    setFrameStyle(QFrame::NoFrame);
+    if (dendrogram || !hovered_for_swap) return;
     hovered_for_swap = false;
-    swappingLipidomes(source, num);
+    QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+    QRectF v = mapToScene(viewportRect).boundingRect();
+    swappingLipidomes(source, canvas_id);
+    transforming(v);
+
 }
 
 
@@ -1163,19 +1229,15 @@ void Canvas::contextMenu(QPoint pos){
 void Canvas::mousePressEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
+
     if (event->button() == Qt::LeftButton){
         if (GlobalData::ctrl_pressed){
             mouse(event, this);
         }
         else {
-            leftMousePressed = true;
             QGraphicsView::mousePressEvent(event);
         }
-    }/*
-    else if (lipid_space->selected_lipidomes.size() > 1 && event->button() == Qt::MiddleButton){
-        mouse(event, this);
     }
-    */
     else if (event->button() == Qt::RightButton){
         QGraphicsView::mousePressEvent(event);
         if (dendrogram){
@@ -1235,18 +1297,8 @@ void Canvas::exportAsPdf(){
 
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent *){
-    if (!dendrogram && !pointSet) return;
-
-    doubleClicked(num);
-
-    QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
-    QRectF v = mapToScene(viewportRect).boundingRect();
-    transforming(v);
-    if (pointSet) pointSet->updateView(v);
-    if (dendrogram && num == -3 && dendrogram->top_line){
-        dendrogram->top_line->make_permanent(false);
-        setBackgroundBrush(QBrush());
-    }
+    if ((!dendrogram && !pointSet) || GlobalData::selected_view) return;
+    marked_for_selected_view = !marked_for_selected_view;
 }
 
 
@@ -1254,7 +1306,17 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent *){
 void Canvas::mouseReleaseEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
-    leftMousePressed = false;
+    if (!GlobalData::ctrl_pressed){
+        setBackgroundBrush(QBrush());
+        viewport()->setCursor(Qt::DragMoveCursor);
+        QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
+        QRectF v = mapToScene(viewportRect).boundingRect();
+        transforming(v);
+        if (pointSet) pointSet->updateView(v);
+
+        oldCenter.setX(v.x() + v.width() * 0.5);
+        oldCenter.setY(v.y() + v.height() * 0.5);
+    }
     QGraphicsView::mouseReleaseEvent(event);
     viewport()->setCursor(Qt::ArrowCursor);
 }
@@ -1267,7 +1329,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event){
 void Canvas::mouseMoveEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
-    if (leftMousePressed){
+    if (event->buttons() & Qt::LeftButton){
         if (!GlobalData::ctrl_pressed){
             setBackgroundBrush(QBrush());
             viewport()->setCursor(Qt::DragMoveCursor);
@@ -1278,8 +1340,13 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
 
             oldCenter.setX(v.x() + v.width() * 0.5);
             oldCenter.setY(v.y() + v.height() * 0.5);
+            QGraphicsView::mouseMoveEvent(event);
+        }
+        else {
+            event->ignore();
         }
     }
+
 
     // check if mouse over lipid bubble
     if (pointSet){
@@ -1304,7 +1371,6 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
         QPointF relative_mouse = mapToScene(origin_mouse);
         QList<QGraphicsItem *> over = graphics_scene.items(QRectF(relative_mouse.x() - 5, relative_mouse.y() - 5, 10, 10), Qt::IntersectsItemShape);
     }
-    QGraphicsView::mouseMoveEvent(event);
 }
 
 
@@ -1335,16 +1401,18 @@ void Canvas::setFeature(string _feature){
 }
 
 
+
+
 void Canvas::resizeEvent(QResizeEvent *event) {
     if (!dendrogram && !pointSet) return;
 
-    QRectF bounds = dendrogram ? dendrogram->bound : pointSet->bound;
-    fitInView(bounds, Qt::KeepAspectRatio);
+    QRectF bound = pointSet ? pointSet->boundingRect() : dendrogram->boundingRect();
+    fitInView(bound, Qt::KeepAspectRatio);
     QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
     QRectF v = mapToScene(viewportRect).boundingRect();
-    transforming(v);
     if (dendrogram && dendrogram->top_line) dendrogram->top_line->update_width(DENDROGRAM_LINE_SIZE / (double)transform().m11());
 
+    transforming(v);
     QGraphicsView::resizeEvent(event);
 }
 
@@ -1422,10 +1490,13 @@ void Canvas::reloadPoints(){
         pointSet->loadPoints();
 
         Array vars;
-        if (num == -1){
+        if (canvas_type == GlobalSpaceCanvas){
             LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
         }
-        else if (num >= 0){
+        else if (canvas_type == StudySpaceCanvas){
+            LipidSpace::compute_PCA_variances(lipid_space->study_lipidomes[num]->m, vars);
+        }
+        else if (canvas_type == SampleSpaceCanvas){
             LipidSpace::compute_PCA_variances(lipid_space->selected_lipidomes[num]->m, vars);
         }
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);

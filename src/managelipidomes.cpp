@@ -6,18 +6,18 @@ ManageLipidomes::ManageLipidomes(LipidSpace *_lipid_space, QWidget *parent) : QD
     lipid_space = _lipid_space;
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     setFixedSize(this->width(), this->height());
-    
+
     connect(ui->removeSelectedButton, SIGNAL(clicked()), this, SLOT(removeSelected()));
     connect(ui->removeAllButton, SIGNAL(clicked()), this, SLOT(removeAll()));
     connect(ui->okButton, SIGNAL(clicked()), this, SLOT(ok()));
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
-    
+
     int i = 0;
     for (auto lipidome : lipid_space->lipidomes){
-        QString title = lipidome->cleaned_name.c_str();
+        QString title = QString("%1 (%2)").arg(lipidome->cleaned_name.c_str()).arg(lipidome->features[FILE_FEATURE_NAME].nominal_value.c_str());
         ui->listView->addItem(title);
         itemIndex.insert({title, i++});
-        
+
     }
     ui->listView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 }
@@ -31,7 +31,7 @@ void ManageLipidomes::cancel(){
 }
 
 void ManageLipidomes::ok(){
-    if (removeItems.size()){
+    if (removeItems.size() > 0){
         if (removeItems.size() == lipid_space->lipidomes.size()){
             emit resetAnalysis();
         }
@@ -47,7 +47,9 @@ void ManageLipidomes::ok(){
     close();
 }
 
+
 void ManageLipidomes::removeSelected(){
+    removeItems.clear();
     for (auto qitem : ui->listView->selectedItems()){
         QString title = qitem->text();
         removeItems.push_back(itemIndex[title]);
@@ -57,6 +59,7 @@ void ManageLipidomes::removeSelected(){
 
 
 void ManageLipidomes::removeAll(){
+    removeItems.clear();
     while (ui->listView->count()){
         QString title = ui->listView->takeItem(0)->text();
         removeItems.push_back(itemIndex[title]);

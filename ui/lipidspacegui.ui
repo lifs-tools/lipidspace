@@ -863,8 +863,10 @@
     <addaction name="separator"/>
     <addaction name="actionTranslate"/>
     <addaction name="actionShow_global_lipidome"/>
-    <addaction name="actionShow_dendrogram"/>
+    <addaction name="actionShow_study_lipidomes"/>
     <addaction name="actionShow_quantitative_information"/>
+    <addaction name="separator"/>
+    <addaction name="actionSelected_tiles_mode"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -958,7 +960,7 @@
     <string>Show global lipidome</string>
    </property>
   </action>
-  <action name="actionShow_dendrogram">
+  <action name="actionShow_study_lipidomes">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -966,7 +968,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show dendrogram</string>
+    <string>Show study lipidomes</string>
    </property>
   </action>
   <action name="action1_column">
@@ -1103,6 +1105,14 @@
   <action name="actionComplete_feature_analysis">
    <property name="text">
     <string>Complete feature analysis</string>
+   </property>
+  </action>
+  <action name="actionSelected_tiles_mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Selected tile(s) mode</string>
    </property>
   </action>
  </widget>

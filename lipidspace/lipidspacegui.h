@@ -124,7 +124,7 @@ public slots:
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();
-    void showHideDendrogram();
+    void showHideStudyLipidomes();
     void showHideGlobalLipidome();
     void toggleLipidNameTranslation();
     void showHideQuant();
@@ -149,7 +149,6 @@ public slots:
     void runAnalysisPID(int p_id);
     void completeFeatureAnalysis();
     void setTransforming(QRectF f);
-    void setDoubleClick(int _num);
     void setExport();
     void openSetAlpha();
     void openSetPCnum();
@@ -190,18 +189,19 @@ public slots:
     void setPieSize(int);
     void setNormalization(int);
     void selectDendrogramLipidomes();
+    void setSelectedTilesMode();
 
 
 private:
     set<int> *selected_d_lipidomes;
-    bool showDendrogram;
+    bool showStudyLipidomes;
     bool showGlobalLipidome;
     TileLayout tileLayout;
     bool updating;
+    bool selected_tiles_mode;
     Progressbar *progressbar;
     string keystrokes;
     Progress *progress;
-    int single_window;
     DragLayer *dragLayer;
     vector<Canvas*> canvases;
     bool knubbel;

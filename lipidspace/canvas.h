@@ -193,18 +193,19 @@ public:
     QGraphicsScene graphics_scene;
     LipidSpace *lipid_space;
     QMainWindow *mainWindow;
+    int canvas_id;
     int num;
+    CanvasType canvas_type;
     bool hovered_for_swap;
+    bool marked_for_selected_view;
 
     Canvas(QWidget *parent = nullptr);
-    Canvas(LipidSpace *_lipid_space, int _num, QListWidget* _listed_species, QWidget *parent = nullptr);
+    Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *parent = nullptr);
     ~Canvas();
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    //void keyPressEvent(QKeyEvent *event) override;
-    //void keyReleaseEvent(QKeyEvent *event) override;
     void resizeEvent(QResizeEvent *);
     void wheelEvent(QWheelEvent *event);
     void setDendrogramData(LipidSpace *_lipid_space);
@@ -232,7 +233,6 @@ public slots:
 signals:
     void showMessage(QString message);
     void transforming(QRectF f);
-    void doubleClicked(int);
     void mouse(QMouseEvent* event, Canvas *_canvas);
     void swappingLipidomes(int source, int target);
     void context(Canvas *canvas, QPoint pos);
@@ -242,8 +242,8 @@ signals:
 private:
     bool showQuant;
     QPoint m_lastMousePos;
-    bool leftMousePressed;
     QPoint oldCenter;
+    QRectF oldView;
     PointSet *pointSet;
     Dendrogram *dendrogram;
     QListWidget *listed_species;

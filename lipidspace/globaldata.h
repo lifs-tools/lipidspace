@@ -18,6 +18,7 @@ public:
     static bool showQuant;
     static bool ctrl_pressed;
     static bool debug;
+    static bool selected_view;
     static int alpha;
     static map<string, QColor> colorMap;
     static int PC1;

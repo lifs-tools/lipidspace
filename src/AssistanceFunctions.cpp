@@ -64,16 +64,15 @@ void CBTableWidget::cornerButtonClicked(){
 void CBTableWidget::wheelEvent(QWheelEvent* event){
     if (GlobalData::ctrl_pressed){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    bool zoom_in = event->angleDelta().y() > 0;
+        bool zoom_in = event->angleDelta().y() > 0;
 #else
-    bool zoom_in = event->delta() > 0;
+        bool zoom_in = event->delta() > 0;
 #endif
-
-    int zoom_value = max(1, (int)GlobalData::gui_num_var["table_zoom"] + (2 * zoom_in - 1));
-    GlobalData::gui_num_var["table_zoom"] = zoom_value;
-    QFont item_font("Helvetica", zoom_value);
-    transpose_label->setFont(item_font);
-    emit zooming();
+        int zoom_value = max(1, (int)GlobalData::gui_num_var["table_zoom"] + (2 * zoom_in - 1));
+        GlobalData::gui_num_var["table_zoom"] = zoom_value;
+        QFont item_font("Helvetica", zoom_value);
+        transpose_label->setFont(item_font);
+        emit zooming();
     }
     else {
         QTableWidget::wheelEvent(event);

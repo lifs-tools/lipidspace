@@ -7,8 +7,8 @@ DragLayer::DragLayer(LipidSpaceGUI *_lipid_space_gui, QWidget *parent) : QWidget
 }
 
 void DragLayer::mousePressEvent(QMouseEvent*, Canvas *canvas){
-    if (!isVisible() && canvas->num >= 0 && GlobalData::ctrl_pressed){
-        source_tile = canvas->num;
+    if (!isVisible() && GlobalData::ctrl_pressed){
+        source_tile = canvas->canvas_id;
         QWidget *current_widget = canvas;
         start_position = QPoint(0, 0);
         while (current_widget != parentWidget()){
@@ -151,10 +151,17 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(0) = LipidColumn;
         ct->at(18) = QuantColumn;
         ct->at(19) = SampleColumn;
-        ct->at(13) = FeatureColumnNominal;
-        ct->at(15) = FeatureColumnNominal;
-
+        //ct->at(13) = FeatureColumnNominal;
+        //ct->at(15) = FeatureColumnNominal;
         loadTable(new ImportData("Data_Thrombocytes_UKR_04042022.csv", "", FLAT_TABLE, ct));
+
+
+        vector<TableColumnType> *cct = new vector<TableColumnType>();
+        for (int i = 0; i < 324; ++i) cct->push_back(LipidColumn);
+        cct->at(0) = SampleColumn;
+        for (int i = 1; i <= 42; ++i) cct->at(i) = IgnoreColumn;
+        loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, cct));
+
     }
     else if (event->key() == Qt::Key_7){
         resetAnalysis();
@@ -215,6 +222,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     knubbel = false;
     GlobalData::ctrl_pressed = false;
     tutorial = new Tutorial(this, ui->centralwidget);
+    selected_tiles_mode = false;
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
@@ -252,7 +260,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionAutomatically, &QAction::triggered, this, &LipidSpaceGUI::setAutomaticLayout);
     connect(ui->actionShow_quantitative_information, &QAction::triggered, this, &LipidSpaceGUI::showHideQuant);
     connect(ui->actionShow_global_lipidome, &QAction::triggered, this, &LipidSpaceGUI::showHideGlobalLipidome);
-    connect(ui->actionShow_dendrogram, &QAction::triggered, this, &LipidSpaceGUI::showHideDendrogram);
+    connect(ui->actionShow_study_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::showHideStudyLipidomes);
+    connect(ui->actionSelected_tiles_mode, &QAction::triggered, this, &LipidSpaceGUI::setSelectedTilesMode);
     connect(ui->actionTranslate, &QAction::triggered, this, &LipidSpaceGUI::toggleLipidNameTranslation);
     connect(ui->action1_column, &QAction::triggered, this, &LipidSpaceGUI::set1ColumnLayout);
     connect(ui->action2_columns, &QAction::triggered, this, &LipidSpaceGUI::set2ColumnLayout);
@@ -324,11 +333,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     tileLayout = AUTOMATIC;
     GlobalData::showQuant = true;
-    showDendrogram = true;
+    showStudyLipidomes = true;
     showGlobalLipidome = true;
     updating = false;
     GlobalData::color_counter = 0;
-    single_window = -1;
     ui->frame->setVisible(false);
     table_transposed = false;
 
@@ -836,7 +844,6 @@ void LipidSpaceGUI::runAnalysisPID(int p_id){
     ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
     lipid_space->process_id = p_id;
-    single_window = -1;
     ui->startAnalysisPushButton->setEnabled(false);
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
@@ -844,7 +851,6 @@ void LipidSpaceGUI::runAnalysisPID(int p_id){
     for (auto canvas : canvases){
         disconnect(canvas, SIGNAL(transforming(QRectF)), 0, 0);
         disconnect(canvas, SIGNAL(showMessage(QString)), 0, 0);
-        disconnect(canvas, SIGNAL(doubleClicked(int)), 0, 0);
         disconnect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), 0, 0);
         disconnect(canvas, SIGNAL(swappingLipidomes(int, int)), 0, 0);
         disconnect(canvas, &QGraphicsView::customContextMenuRequested, 0, 0);
@@ -887,43 +893,71 @@ void LipidSpaceGUI::runAnalysisPID(int p_id){
             GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[GlobalData::color_counter++ % GlobalData::COLORS.size()]});
         }
     }
-    int numTiles = 2 * (lipid_space->selected_lipidomes.size() > 1) + lipid_space->selected_lipidomes.size();
+
+    int num_studies = lipid_space->study_lipidomes.size();
+    num_studies *= (num_studies > 1);
     ui->dendrogramView->resetDendrogram();
+    int n = 0;
 
-    auto start = high_resolution_clock::now();
-    canvases.resize(numTiles, 0);
-    for (int n = 0; n < numTiles; ++n){
-        int num = 0;
-        if ((lipid_space->selected_lipidomes.size() > 1) && (n == 0)) num = -2;
-        else if ((lipid_space->selected_lipidomes.size() > 1) && (n == 1)) num = -1;
-        else num = max(0, n - 2 * (lipid_space->selected_lipidomes.size() > 1));
+    // insert global lipidome canvases
+    Canvas* canvas = new Canvas(lipid_space, n++, -1, ui->speciesList, GlobalSpaceCanvas, ui->centralwidget);
+    connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
+    connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
+    connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
+    connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+    connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
+    connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
+    connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
+    connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
+    connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
+    connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
+    connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+    canvas->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
+    connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
+    connect(ui->speciesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), canvas, SLOT(moveToPoint(QListWidgetItem*)));
+    canvases.push_back(canvas);
 
-        Canvas* canvas = new Canvas(lipid_space, num, ui->speciesList, ui->centralwidget);
-        connect(canvas, SIGNAL(doubleClicked(int)), this, SLOT(setDoubleClick(int)));
-        if (num != -2){
-            connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
-            connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
-            connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
-            connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
-            connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
-            connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
-            connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
-            connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
-            connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
-            connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
-            connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
-            canvas->setContextMenuPolicy(Qt::CustomContextMenu);
-            connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
-            connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
-        }
-        if (num == -1){
-            connect(ui->speciesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), canvas, SLOT(moveToPoint(QListWidgetItem*)));
-        }
-        canvases[n] = canvas;
+
+    // insert study lipidomes
+    for (int i = 0; i < num_studies; ++i){
+        Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, StudySpaceCanvas, ui->centralwidget);
+        connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
+        connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
+        connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
+        connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+        connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
+        connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
+        connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
+        connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
+        connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
+        connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
+        connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+        canvas->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
+        connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
+        canvases.push_back(canvas);
     }
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    cout << "GUI: " << duration.count() << endl;
+
+    // insert single lipidomes
+    for (uint i = 0; i < lipid_space->selected_lipidomes.size(); ++i){
+        Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, SampleSpaceCanvas, ui->centralwidget);
+        connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
+        connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
+        connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
+        connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+        connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
+        connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
+        connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
+        connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
+        connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
+        connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
+        connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+        canvas->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
+        connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
+        canvases.push_back(canvas);
+    }
 
 
 
@@ -1063,25 +1097,14 @@ void LipidSpaceGUI::setTransforming(QRectF f){
 }
 
 
-void LipidSpaceGUI::setDoubleClick(int _num){
-    _num += 2 * (lipid_space->selected_lipidomes.size() > 1);
-    if (single_window >= 0) {
-        single_window = -1;
-    }
-    else {
-        single_window = _num;
-    }
-    updateGUI();
-}
-
-
 
 void LipidSpaceGUI::swapLipidomes(int source, int target){
     if (source == target) return;
+    if (target < source) swap(source, target);
 
-    swap(lipid_space->lipidomes[source], lipid_space->lipidomes[target]);
-    swap(canvases[2 + source]->num, canvases[2 + target]->num);  // offset of 2 due to dendrogram and global lipidome
-    swap(canvases[2 + source], canvases[2 + target]);
+    swap(canvases[source]->canvas_id, canvases[target]->canvas_id);
+    swap(canvases[source], canvases[target]);
+
     updateGUI();
 }
 
@@ -1123,9 +1146,36 @@ void LipidSpaceGUI::toggleBoundMetric(){
 }
 
 
-void LipidSpaceGUI::showHideDendrogram(){
-    showDendrogram = ui->actionShow_dendrogram->isChecked();
+void LipidSpaceGUI::showHideStudyLipidomes(){
+    showStudyLipidomes = ui->actionShow_study_lipidomes->isChecked();
     updateGUI();
+}
+
+void LipidSpaceGUI::setSelectedTilesMode(){
+    selected_tiles_mode = ui->actionSelected_tiles_mode->isChecked();
+
+    bool any_marked = false;
+    if (selected_tiles_mode){
+        for (auto canvas : canvases){
+            if (canvas->marked_for_selected_view){
+                any_marked = true;
+                break;
+            }
+        }
+        if (!any_marked){
+            selected_tiles_mode = false;
+            ui->actionSelected_tiles_mode->setChecked(false);
+            QMessageBox::warning(this, "No tile selected", "No lipid space tile is selected. Select at least one tile by double clicking on it.");
+        }
+        else {
+            updateGUI();
+        }
+    }
+    else {
+        updateGUI();
+    }
+    GlobalData::selected_view = selected_tiles_mode;
+
 }
 
 void LipidSpaceGUI::toggleLipidNameTranslation(){
@@ -1361,57 +1411,44 @@ void LipidSpaceGUI::updateGUI(){
     }
 
     QLayoutItem *wItem;
-    while ((wItem = ui->gridLayout->layout()->takeAt(0)) != 0) {};
+    while ((wItem = ui->gridLayout->layout()->takeAt(0)) != 0) {
+        delete wItem;
+    };
 
     if (!lipid_space->analysis_finished || !canvases.size()) return;
 
 
-    if (single_window < 0){
-        for (auto canvas : canvases) canvas->setVisible(false);
-        int numTiles = 2 * (lipid_space->selected_lipidomes.size() > 1) + lipid_space->selected_lipidomes.size();
-        int tileColumns = tileLayout == AUTOMATIC ? ceil(sqrt((double)numTiles)) : (int)tileLayout;
-        set<int> show_canvas;
+    for (auto canvas : canvases) canvas->setVisible(false);
+    int numTiles = 0;
 
-        int c = 0, r = 0;
-        // show dendrogram if enabled
-        if (lipid_space->selected_lipidomes.size() > 1){
-            if (showDendrogram){
-                ui->gridLayout->addWidget(canvases[0], r, c);
-                if (++c == tileColumns){
-                    c = 0;
-                    ++r;
-                }
-				show_canvas.insert(0);
-            }
-        }
+    if (selected_tiles_mode){
+        for (auto canvas : canvases) numTiles += canvas->marked_for_selected_view;
+    }
+    else {
 
-        // show global lipidome if enabled
-        if (lipid_space->selected_lipidomes.size() > 1){
-            if (showGlobalLipidome){
-                ui->gridLayout->addWidget(canvases[1], r, c);
-                if (++c == tileColumns){
-                    c = 0;
-                    ++r;
-                }
-				show_canvas.insert(1);
-            }
-        }
+        int num_studies = lipid_space->study_lipidomes.size();
+        num_studies *= (num_studies > 1);
+        numTiles = (lipid_space->selected_lipidomes.size() > 1 && showGlobalLipidome) + showStudyLipidomes * num_studies + lipid_space->selected_lipidomes.size();
+    }
 
-        // show all remaining lipidomes
-        for(int n = 2 * (lipid_space->selected_lipidomes.size() > 1); n < numTiles; ++n){
-            ui->gridLayout->addWidget(canvases[n], r, c);
+    int tileColumns = tileLayout == AUTOMATIC ? ceil(sqrt((double)numTiles)) : (int)tileLayout;
+    int c = 0, r = 0, n = 0;
+
+    // show global lipidome if enabled
+    for (auto canvas : canvases) {
+        if (selected_tiles_mode && (!selected_tiles_mode || !canvas->marked_for_selected_view)) continue;
+
+        if ((canvas->canvas_type == GlobalSpaceCanvas && showGlobalLipidome) ||
+            (canvas->canvas_type == StudySpaceCanvas && showStudyLipidomes) ||
+            canvas->canvas_type == SampleSpaceCanvas){
+            ui->gridLayout->addWidget(canvas, r, c);
             if (++c == tileColumns){
                 c = 0;
                 ++r;
             }
-			show_canvas.insert(n);
+            canvas->setVisible(true);
         }
-        for (auto i : show_canvas) canvases[i]->setVisible(true);
-    }
-    else {
-        for (auto canvas : canvases) canvas->setVisible(false);
-        canvases[single_window]->setVisible(true);
-        ui->gridLayout->addWidget(canvases[single_window], 0, 0);
+        ++n;
     }
 
 
@@ -1423,7 +1460,6 @@ void LipidSpaceGUI::updateGUI(){
 
     updating = false;
     dragLayer->raise();
-
 }
 
 
