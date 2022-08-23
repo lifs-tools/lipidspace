@@ -34,18 +34,18 @@
 
 
 #define UNDEFINED_LIPID "UNDEFINED"
-#define FILE_FEATURE_NAME "Origin"
+#define FILE_STUDY_VARIABLE_NAME "Origin"
 #define NO_VALUE_CHAR "Ø"
 
 using namespace OpenXLSX;
 using namespace std;
 
 enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
-enum FeatureType {NumericalFeature, NominalFeature, NominalValue};
+enum StudyVariableType {NumericalStudyVariable, NominalStudyVariable, NominalValue};
 enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
-enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, FeatureColumnNumerical, FeatureColumnNominal, IgnoreColumn};
-enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered, FeatureNotRegistered, CorruptedFileFormat};
-enum FeatureFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, EqualFilter = 3, WithinRange = 4, OutsideRange = 5};
+enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, StudyVariableColumnNumerical, StudyVariableColumnNominal, IgnoreColumn};
+enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered, StudyVariableNotRegistered, CorruptedFileFormat};
+enum StudyVariableFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, EqualFilter = 3, WithinRange = 4, OutsideRange = 5};
 enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
 enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, MappingTo, InsertNaN, InsertDefault};
@@ -53,7 +53,7 @@ enum NormalizationType {AbsoluteNormalization, RelativeNormalization, GroupNorma
 enum CanvasType {UndefinedCanvasType, DendrogramCanvas, GlobalSpaceCanvas, StudySpaceCanvas, SampleSpaceCanvas};
 
 static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_TABLE}, {"COLUMN_PIVOT_TABLE", COLUMN_PIVOT_TABLE}, {"FLAT_TABLE", FLAT_TABLE}};
-static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"FeatureColumnNumerical", FeatureColumnNumerical}, {"FeatureColumnNominal", FeatureColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
+static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"StudyVariableColumnNumerical", StudyVariableColumnNumerical}, {"StudyVariableColumnNominal", StudyVariableColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
 static const set<string> NA_VALUES{"NA", "nan", "N/A", "", "n/a", "NaN", NO_VALUE_CHAR};
 
 
@@ -64,14 +64,14 @@ public:
     string parent;
     MappingAction action;
     string mapping;
-    FeatureType feature_type;
+    StudyVariableType variable_type;
 
     Mapping();
-    Mapping(string _name, FeatureType _feature_type);
+    Mapping(string _name, StudyVariableType v_type);
 };
 
 
-typedef map< FeatureType, map<string, Mapping> > MappingData;
+typedef map< StudyVariableType, map<string, Mapping> > MappingData;
 
 
 
@@ -146,9 +146,9 @@ class SignalLineEdit : public QLineEdit {
 
 public:
     int row;
-    FeatureType feature_type;
+    StudyVariableType variable_type;
 
-    SignalLineEdit(int _row, FeatureType ft, QWidget *parent = nullptr);
+    SignalLineEdit(int _row, StudyVariableType ft, QWidget *parent = nullptr);
     SignalLineEdit(QWidget *parent = nullptr);
 
 signals:
@@ -187,17 +187,17 @@ private slots:
 
 
 
-class FeatureSet {
+class StudyVariableSet {
 public:
     string name;
-    FeatureType feature_type;
+    StudyVariableType variable_type;
     map<string, bool> nominal_values;
     set<double> numerical_values;
-    pair<FeatureFilter, vector<double>> numerical_filter;
+    pair<StudyVariableFilter, vector<double>> numerical_filter;
 
-    FeatureSet(string _name, FeatureType f_type);
-    FeatureSet();
-    FeatureSet(FeatureSet *feature_set);
+    StudyVariableSet(string _name, StudyVariableType f_type);
+    StudyVariableSet();
+    StudyVariableSet(StudyVariableSet *study_varable_set);
 };
 
 
@@ -219,18 +219,18 @@ protected:
 };
 
 
-class Feature {
+class StudyVariable {
 public:
     string name;
-    FeatureType feature_type;
+    StudyVariableType variable_type;
     double numerical_value;
     string nominal_value;
     bool missing;
 
-    Feature();
-    Feature (string _name, string nom_val, bool _missing = false);
-    Feature (string _name, double num_val, bool _missing = false);
-    Feature (Feature *f);
+    StudyVariable();
+    StudyVariable(string _name, string nom_val, bool _missing = false);
+    StudyVariable(string _name, double num_val, bool _missing = false);
+    StudyVariable(StudyVariable *f);
 };
 
 
@@ -318,7 +318,7 @@ public:
     Array normalized_intensities;
     Array PCA_intensities;
     Array original_intensities;
-    map<string, Feature> features;
+    map<string, StudyVariable> study_variables;
     Matrix m;
 
     Lipidome(string lipidome_name, string lipidome_file, string sheet_name = "", bool is_file_name = false);
@@ -352,7 +352,7 @@ public:
 
 class TreeItem : public QTreeWidgetItem {
 public:
-    string feature;
+    string study_variable;
     TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent);
     TreeItem(int pos, QString name, QTreeWidget* parent);
 };
@@ -399,11 +399,11 @@ public:
     double x_left;
     double x_right;
     double y;
-    map<string, map<string, int>> feature_count_nominal;
-    map<string, vector<double>> feature_numerical;
-    map<string, double> feature_numerical_thresholds;
+    map<string, map<string, int>> study_variable_count_nominal;
+    map<string, vector<double>> study_variable_numerical;
+    map<string, double> study_variable_numerical_thresholds;
 
-    DendrogramNode(int index, map<string, FeatureSet> *feature_values, Lipidome *lipidome);
+    DendrogramNode(int index, map<string, StudyVariableSet> *study_variable_values, Lipidome *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
     DendrogramNode(DendrogramNode* n);
     ~DendrogramNode();

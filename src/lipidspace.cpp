@@ -34,7 +34,7 @@ void LipidSpace::create_dendrogram(){
     int n = hausdorff_distances.rows;
 
     vector<DendrogramNode*> nodes;
-    for (int i = 0; i < n; ++i) nodes.push_back(new DendrogramNode(i, &feature_values, selected_lipidomes[i]));
+    for (int i = 0; i < n; ++i) nodes.push_back(new DendrogramNode(i, &study_variable_values, selected_lipidomes[i]));
 
     while (nodes.size() > 1){
         double min_val = 1e100;
@@ -76,19 +76,19 @@ void LipidSpace::create_dendrogram(){
         bool select_lipidome = true;
         string lipidome_name = lipidome->cleaned_name;
 
-        for (auto kv : lipidome->features){
-            string feature_name = kv.first;
-            Feature &feature = kv.second;
-            if (feature.feature_type == NominalFeature){
-                if (!feature_values[feature_name].nominal_values[feature.nominal_value]){
+        for (auto kv : lipidome->study_variables){
+            string variable_name = kv.first;
+            StudyVariable &study_variable = kv.second;
+            if (study_variable.variable_type == NominalStudyVariable){
+                if (!study_variable_values[variable_name].nominal_values[study_variable.nominal_value]){
                     select_lipidome = false;
                     break;
                 }
             }
             else {
-                double numerical_value = feature.numerical_value;
-                auto filter = feature_values[feature_name].numerical_filter.first;
-                auto filter_values = feature_values[feature_name].numerical_filter.second;
+                double numerical_value = study_variable.numerical_value;
+                auto filter = study_variable_values[variable_name].numerical_filter.first;
+                auto filter_values = study_variable_values[variable_name].numerical_filter.second;
                 switch (filter){
 
                     case LessFilter: // inverse logic, Less tells us, what to keep, greater we filter out
@@ -194,23 +194,23 @@ void LipidSpace::create_dendrogram(){
 
 
     // going through all study variables
-    for (auto kv : feature_values){
+    for (auto kv : study_variable_values){
         string target_variable = kv.first;
 
         Array target_values;
         vector<pair<double, string>> regression_result;
         map<string, double> nominal_target_values;
         int nom_counter = 0;
-        bool is_nominal = feature_values[target_variable].feature_type == NominalFeature;
+        bool is_nominal = study_variable_values[target_variable].variable_type == NominalStudyVariable;
 
-        if (uncontains_val(feature_values, target_variable)){
+        if (uncontains_val(study_variable_values, target_variable)){
             return;
         }
 
         // setup array for target variable values, if nominal then each with incrementing number
         if (is_nominal){
             for (auto lipidome : lipidomes_for_feature_selection){
-                string nominal_value = lipidome->features[target_variable].nominal_value;
+                string nominal_value = lipidome->study_variables[target_variable].nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                 }
@@ -219,7 +219,7 @@ void LipidSpace::create_dendrogram(){
         }
         else {
             for (auto lipidome : lipidomes_for_feature_selection){
-                target_values.push_back(lipidome->features[target_variable].numerical_value);
+                target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
             }
         }
 
@@ -307,7 +307,7 @@ LipidSpace::LipidSpace() {
     dendrogram_root = 0;
     process_id = 0;
     target_variable = "";
-    feature_values.insert({FILE_FEATURE_NAME, FeatureSet(FILE_FEATURE_NAME, NominalFeature)});
+    study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
     lipid_name_translations.resize(2);
 
     // load precomputed class distance matrix
@@ -363,7 +363,7 @@ LipidSpace::LipidSpace(LipidSpace *ls){
     global_lipidome = (ls->global_lipidome != 0) ? new Lipidome(ls->global_lipidome) : 0;
     hausdorff_distances.rewrite(ls->hausdorff_distances);
     analysis_finished = false;
-    for (auto kv : ls->feature_values) feature_values.insert({kv.first, FeatureSet(&kv.second)});
+    for (auto kv : ls->study_variable_values) study_variable_values.insert({kv.first, StudyVariableSet(&kv.second)});
     for (int i = 0; i < 4; ++i){
         for (auto kv : ls->selection[i]) selection[i].insert({kv.first, kv.second});
     }
@@ -910,34 +910,34 @@ void LipidSpace::reassembleSelection(){
     }
 
 
-    // setup a complete list of all nominal features and their values
-    map<string, set<string>> delete_nominal_features;
-    for (auto kv : feature_values){
-        if (kv.second.feature_type == NominalFeature){
-            if (uncontains_val(delete_nominal_features, kv.first)) delete_nominal_features.insert({kv.first, set<string>()});
+    // setup a complete list of all nominal study variables and their values
+    map<string, set<string>> delete_nominal_study_variables;
+    for (auto kv : study_variable_values){
+        if (kv.second.variable_type == NominalStudyVariable){
+            if (uncontains_val(delete_nominal_study_variables, kv.first)) delete_nominal_study_variables.insert({kv.first, set<string>()});
             for (auto kv_nom : kv.second.nominal_values){
-                delete_nominal_features[kv.first].insert(kv_nom.first);
+                delete_nominal_study_variables[kv.first].insert(kv_nom.first);
             }
         }
     }
 
-    // remove all features and values that remain in the analysis
+    // remove all study variables and values that remain in the analysis
     for (auto lipidome : lipidomes){
-        for (auto kv : lipidome->features){
-            if (contains_val(delete_nominal_features, kv.first) && kv.second.feature_type == NominalFeature){
-                delete_nominal_features[kv.first].erase(kv.second.nominal_value);
+        for (auto kv : lipidome->study_variables){
+            if (contains_val(delete_nominal_study_variables, kv.first) && kv.second.variable_type == NominalStudyVariable){
+                delete_nominal_study_variables[kv.first].erase(kv.second.nominal_value);
             }
         }
     }
 
-    // delete remaining feature values or even whole features
-    for (auto kv : delete_nominal_features){
-        if (kv.second.size() == feature_values[kv.first].nominal_values.size()){ // delete whole feature
-            feature_values.erase(kv.first);
+    // delete remaining study_variable values or even whole study_variables
+    for (auto kv : delete_nominal_study_variables){
+        if (kv.second.size() == study_variable_values[kv.first].nominal_values.size()){ // delete whole study_variable
+            study_variable_values.erase(kv.first);
         }
         else { // delete just the values
-            for (auto feature_value : delete_nominal_features[kv.first]){
-                feature_values[kv.first].nominal_values.erase(feature_value);
+            for (auto study_variable_value : delete_nominal_study_variables[kv.first]){
+                study_variable_values[kv.first].nominal_values.erase(study_variable_value);
             }
         }
     }
@@ -1026,10 +1026,10 @@ void LipidSpace::load_list(string lipid_list_file){
             }
         }
 
-        if (feature_values.size() > 1){
-            throw LipidSpaceException("Study variables have been loaded. Lists do not supported any study variable import routine. Please reset LipidSpace.", FeatureNotRegistered);
+        if (study_variable_values.size() > 1){
+            throw LipidSpaceException("Study variables have been loaded. Lists do not supported any study variable import routine. Please reset LipidSpace.", StudyVariableNotRegistered);
         }
-        feature_values[FILE_FEATURE_NAME].nominal_values.insert({lipidome->features[FILE_FEATURE_NAME].nominal_value, true});
+        study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values.insert({lipidome->study_variables[FILE_STUDY_VARIABLE_NAME].nominal_value, true});
 
 
         lipidomes.push_back(lipidome);
@@ -1226,20 +1226,20 @@ int LipidSpace::compute_global_distance_matrix(){
         // check if lipidome was (de)selected for analysis
         if (!selection[SAMPLE_ITEM][lipidome->cleaned_name]) continue;
 
-        // check if lipidome is being excluded by deselected feature(s)
+        // check if lipidome is being excluded by deselected study variable(s)
         bool filtered_out = false;
-        for (auto kv : lipidome->features){
-            if (kv.second.feature_type == NominalFeature){
-                if (uncontains_val(feature_values, kv.first) || uncontains_val(feature_values[kv.first].nominal_values, kv.second.nominal_value) || !feature_values[kv.first].nominal_values[kv.second.nominal_value]) {
+        for (auto kv : lipidome->study_variables){
+            if (kv.second.variable_type == NominalStudyVariable){
+                if (uncontains_val(study_variable_values, kv.first) || uncontains_val(study_variable_values[kv.first].nominal_values, kv.second.nominal_value) || !study_variable_values[kv.first].nominal_values[kv.second.nominal_value]) {
                     filtered_out = true;
                     break;
                 }
             }
             else {
-                if (uncontains_val(feature_values, kv.first)) continue;
-                vector<double> &filter_values = feature_values[kv.first].numerical_filter.second;
+                if (uncontains_val(study_variable_values, kv.first)) continue;
+                vector<double> &filter_values = study_variable_values[kv.first].numerical_filter.second;
                 double numerical_value = kv.second.numerical_value;
-                switch (feature_values[kv.first].numerical_filter.first){
+                switch (study_variable_values[kv.first].numerical_filter.first){
 
                     case LessFilter: // inverse logic, Less tells us, what to keep, greater we filter out
                         if (filter_values.size() < 1) continue;
@@ -1404,15 +1404,15 @@ void LipidSpace::separate_matrixes(){
 
 
 
-    if (contains_val(feature_values, FILE_FEATURE_NAME)){
-        for (auto kv : feature_values[FILE_FEATURE_NAME].nominal_values){
+    if (contains_val(study_variable_values, FILE_STUDY_VARIABLE_NAME)){
+        for (auto kv : study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values){
             if (!kv.second) continue;
 
             string study = kv.first;
             Lipidome* study_lipidome = new Lipidome(study + " lipidome", "");
             set<int> selected_lipid_indexes_set;
             for (auto lipidome : selected_lipidomes){
-                if (lipidome->features[FILE_FEATURE_NAME].nominal_value != study) continue;
+                if (lipidome->study_variables[FILE_STUDY_VARIABLE_NAME].nominal_value != study) continue;
 
                 for (int i = 0; i < (int)lipidome->species.size(); ++i){
                     string lipid_species = lipidome->species[i];
@@ -1512,12 +1512,12 @@ void LipidSpace::normalize_intensities(){
 
     else {
         string fv = GlobalData::normalization;
-        if (uncontains_val(feature_values, fv)) return;
-        FeatureSet &fs = feature_values.at(fv);
+        if (uncontains_val(study_variable_values, fv)) return;
+        StudyVariableSet &fs = study_variable_values.at(fv);
         for (auto kv : fs.nominal_values){
             Array data;
             for (auto lipidome : selected_lipidomes){
-                if (uncontains_val(lipidome->features, fv) || lipidome->features.at(fv).nominal_value != kv.first) continue;
+                if (uncontains_val(lipidome->study_variables, fv) || lipidome->study_variables.at(fv).nominal_value != kv.first) continue;
                 for (auto val : lipidome->original_intensities) {
                     if (val > 0) data.push_back(val);
                 }
@@ -1528,7 +1528,7 @@ void LipidSpace::normalize_intensities(){
             if (values_std < 1e-19) continue;
 
             for (auto lipidome : selected_lipidomes){
-                if (uncontains_val(lipidome->features, fv) || lipidome->features.at(fv).nominal_value != kv.first) continue;
+                if (uncontains_val(lipidome->study_variables, fv) || lipidome->study_variables.at(fv).nominal_value != kv.first) continue;
 
                 for (int i = 0; i < (int)lipidome->normalized_intensities.size(); ++i){
                     lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
@@ -1565,15 +1565,15 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
         throw LipidSpaceException("Error: file '" + mzTabM_file + "' could not be found.", FileUnreadable);
     }
     vector<Lipidome*> loaded_lipidomes;
-    map<int, string> feature_names;
+    map<int, string> study_variable_names;
 
-    vector<Feature> headers;
+    vector<StudyVariable> headers;
     map<string, LipidAdduct*> lipid_set;
 
     vector<string> *tokens = 0;
     vector<string> *sample_data = 0;
     vector<string> *content_tokens = 0;
-    map<string, FeatureType> feature_types;
+    map<string, StudyVariableType> study_variable_types;
 
     try {
         // go through file
@@ -1656,30 +1656,30 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         }
                         string key = strip(content_tokens->at(2), '"');
                         string value = strip(content_tokens->at(3), '"');
-                        if (uncontains_val(feature_names, content_number)){
-                            feature_names.insert({content_number, key});
+                        if (uncontains_val(study_variable_names, content_number)){
+                            study_variable_names.insert({content_number, key});
                         }
-                        else if (feature_names[content_number] != key){
-                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", different study variable key than already used, '" + feature_names[content_number] + "' vs. '" + key + "'", CorruptedFileFormat);
+                        else if (study_variable_names[content_number] != key){
+                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", different study variable key than already used, '" + study_variable_names[content_number] + "' vs. '" + key + "'", CorruptedFileFormat);
                         }
 
                         // is custom value a number?
-                        FeatureType ft = NominalFeature;
+                        StudyVariableType ft = NominalStudyVariable;
                         if (is_double(value)){
                             bool is_not_missing = false;
                             double val = QString(value.c_str()).toDouble(&is_not_missing);
-                            loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, val, !is_not_missing)});
-                            ft = NumericalFeature;
+                            loaded_lipidomes[sample_number - 1]->study_variables.insert({key, StudyVariable(key, val, !is_not_missing)});
+                            ft = NumericalStudyVariable;
                         }
                         else {
-                            loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, value, contains_val(NA_VALUES, value))});
+                            loaded_lipidomes[sample_number - 1]->study_variables.insert({key, StudyVariable(key, value, contains_val(NA_VALUES, value))});
                         }
 
-                        if (uncontains_val(feature_types, key)){
-                            feature_types.insert({key, ft});
+                        if (uncontains_val(study_variable_types, key)){
+                            study_variable_types.insert({key, ft});
                         }
                         else {
-                            if (feature_types[key] != ft){
+                            if (study_variable_types[key] != ft){
                                 throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", key of study variable '" + key + "' is already registered with different data type (string, number).", CorruptedFileFormat);
                             }
                         }
@@ -1689,22 +1689,22 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                             throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", line is corrupted.", CorruptedFileFormat);
                         }
                         string key = "Taxonomic species";
-                        if (uncontains_val(feature_names, -1)){
-                            feature_names.insert({-1, key});
+                        if (uncontains_val(study_variable_names, -1)){
+                            study_variable_names.insert({-1, key});
                         }
                         string value = content_tokens->at(2);
-                        loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, strip(value, '"'))});
+                        loaded_lipidomes[sample_number - 1]->study_variables.insert({key, StudyVariable(key, strip(value, '"'))});
                     }
                     else if (content_name == "tissue"){
                         if (content_tokens->size() < 3 || content_tokens->at(2).size() == 0){
                             throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", line is corrupted.", CorruptedFileFormat);
                         }
                         string key = "Tissue";
-                        if (uncontains_val(feature_names, -2)){
-                            feature_names.insert({-2, key});
+                        if (uncontains_val(study_variable_names, -2)){
+                            study_variable_names.insert({-2, key});
                         }
                         string value = content_tokens->at(2);
-                        loaded_lipidomes[sample_number - 1]->features.insert({key, Feature(key, strip(value, '"'))});
+                        loaded_lipidomes[sample_number - 1]->study_variables.insert({key, StudyVariable(key, strip(value, '"'))});
                     }
 
                     delete content_tokens;
@@ -1728,10 +1728,10 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         if (sample_number < 0 || sample_number >= (int)loaded_lipidomes.size()){
                             throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", assay number '" + std::to_string(sample_number) + "' not registered.", CorruptedFileFormat);
                         }
-                        headers.push_back(Feature("[s]", sample_number));
+                        headers.push_back(StudyVariable("[s]", sample_number));
                     }
                     else {
-                        headers.push_back(Feature(header, ""));
+                        headers.push_back(StudyVariable(header, ""));
                     }
                 }
             }
@@ -1744,7 +1744,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                 LipidAdduct *l = 0;
 
                 for (uint i = 0; i < tokens->size(); ++i){
-                    Feature &f = headers[i];
+                    StudyVariable &f = headers[i];
                     string value = tokens->at(i);
 
                     // found abundance
@@ -1793,40 +1793,40 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
             }
         }
 
-        // checking consistancy of features
-        set<string> registered_features;
-        registered_features.insert(FILE_FEATURE_NAME);
-        for (auto kv : feature_names) registered_features.insert(kv.second);
+        // checking consistancy of study variables
+        set<string> registered_study_variables;
+        registered_study_variables.insert(FILE_STUDY_VARIABLE_NAME);
+        for (auto kv : study_variable_names) registered_study_variables.insert(kv.second);
         for (auto lipidome : loaded_lipidomes){
             if (lipidome->cleaned_name == "-"){
                 throw LipidSpaceException("Error, sample has no sample name.", CorruptedFileFormat);
             }
 
-            for (auto feature : registered_features){
-                if (uncontains_val(lipidome->features, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
+            for (auto study_variable : registered_study_variables){
+                if (uncontains_val(lipidome->study_variables, study_variable)){
+                    throw LipidSpaceException("Error, study variable '" + study_variable + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
                 }
             }
         }
 
-        if (feature_values.size() > 1){
-            for (auto feature : registered_features){
-                if (uncontains_val(feature_values, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registered, yet.", FeatureNotRegistered);
+        if (study_variable_values.size() > 1){
+            for (auto study_variable : registered_study_variables){
+                if (uncontains_val(study_variable_values, study_variable)){
+                    throw LipidSpaceException("Error, study variable '" + study_variable + "' is not registered, yet.", StudyVariableNotRegistered);
                 }
             }
 
-            for (auto kv : feature_values){
-                if (uncontains_val(registered_features, kv.first)){
-                    throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", FeatureNotRegistered);
+            for (auto kv : study_variable_values){
+                if (uncontains_val(registered_study_variables, kv.first)){
+                    throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", StudyVariableNotRegistered);
                 }
             }
 
-            // add new values into existing features
+            // add new values into existing study variables
             for (auto lipidome : loaded_lipidomes){
-                for (auto kv : lipidome->features){
-                    FeatureSet &fs = feature_values[kv.first];
-                    if (kv.second.feature_type == NumericalFeature){
+                for (auto kv : lipidome->study_variables){
+                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    if (kv.second.variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
                     else {
@@ -1835,15 +1835,15 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                 }
             }
         }
-        // register features
+        // register study variables
         else {
             for (auto lipidome : loaded_lipidomes){
-                for (auto kv : lipidome->features){
-                    if (uncontains_val(feature_values, kv.first)){
-                        feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
+                for (auto kv : lipidome->study_variables){
+                    if (uncontains_val(study_variable_values, kv.first)){
+                        study_variable_values.insert({kv.first, StudyVariableSet(kv.first, kv.second.variable_type)});
                     }
-                    FeatureSet &fs = feature_values[kv.first];
-                    if (kv.second.feature_type == NumericalFeature){
+                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    if (kv.second.variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
                     else {
@@ -1903,20 +1903,20 @@ void LipidSpace::load_flat_table(ImportData *import_data){
     Logging::write_log("Importing table '" + flat_table_file + "' as flat table.");
 
     vector<Lipidome*> loaded_lipidomes;
-    set<string> registered_features;
+    set<string> registered_study_variables;
 
     try {
         vector<int> sample_columns;
         int lipid_species_column = -1;
         int quant_column = -1;
         set<string> index_key_pairs;
-        vector<int> feature_columns_numerical;
-        vector<int> feature_columns_nominal;
+        vector<int> study_variable_columns_numerical;
+        vector<int> study_variable_columns_nominal;
 
         for (int i = 0; i < (int)column_types->size(); ++i) {
             switch(column_types->at(i)){
-                case FeatureColumnNominal: feature_columns_nominal.push_back(i); break;
-                case FeatureColumnNumerical: feature_columns_numerical.push_back(i); break;
+                case StudyVariableColumnNominal: study_variable_columns_nominal.push_back(i); break;
+                case StudyVariableColumnNumerical: study_variable_columns_numerical.push_back(i); break;
                 case SampleColumn: sample_columns.push_back(i); break;
                 case LipidColumn: lipid_species_column = i; break;
                 case QuantColumn: quant_column = i; break;
@@ -1930,28 +1930,28 @@ void LipidSpace::load_flat_table(ImportData *import_data){
 
         map<string, LipidAdduct*> lipid_map;
         map<string, Lipidome*> lipidome_map;
-        vector<string> feature_names_nominal;
-        vector<string> feature_names_numerical;
+        vector<string> study_variable_names_nominal;
+        vector<string> study_variable_names_numerical;
         map<string, LipidAdduct*> load_lipids;
 
-        for (auto fi : feature_columns_nominal){
-            string feature = fth->headers.at(fi);
-            feature_names_nominal.push_back(feature);
+        for (auto fi : study_variable_columns_nominal){
+            string study_variable = fth->headers.at(fi);
+            study_variable_names_nominal.push_back(study_variable);
 
-            if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature)){
-                Mapping &m = mapping_data->at(NominalFeature)[feature];
-                if (m.action == RenameAction || m.action == MappingTo) feature = m.mapping;
+            if (mapping_data != 0 && contains_val(mapping_data->at(NominalStudyVariable), study_variable)){
+                Mapping &m = mapping_data->at(NominalStudyVariable)[study_variable];
+                if (m.action == RenameAction || m.action == MappingTo) study_variable = m.mapping;
             }
-            registered_features.insert(feature);
+            registered_study_variables.insert(study_variable);
         }
-        for (auto fi : feature_columns_numerical){
-            string feature = fth->headers.at(fi);
-            feature_names_numerical.push_back(feature);
-            if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature)){
-                Mapping &m = mapping_data->at(NumericalFeature)[feature];
-                if (m.action == RenameAction || m.action == MappingTo) feature = m.mapping;
+        for (auto fi : study_variable_columns_numerical){
+            string study_variable = fth->headers.at(fi);
+            study_variable_names_numerical.push_back(study_variable);
+            if (mapping_data != 0 && contains_val(mapping_data->at(NumericalStudyVariable), study_variable)){
+                Mapping &m = mapping_data->at(NumericalStudyVariable)[study_variable];
+                if (m.action == RenameAction || m.action == MappingTo) study_variable = m.mapping;
             }
-            registered_features.insert(feature);
+            registered_study_variables.insert(study_variable);
         }
 
 
@@ -1997,34 +1997,34 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                 lipidome = lipidome_map[sample_name];
             }
 
-            // handle features
-            for (int i = 0; i < (int)feature_columns_nominal.size(); ++i){
-                string feature_name = feature_names_nominal[i];
-                string feature_value = tokens.at(feature_columns_nominal[i]);
+            // handle study variables
+            for (int i = 0; i < (int)study_variable_columns_nominal.size(); ++i){
+                string study_variable_name = study_variable_names_nominal[i];
+                string study_variable_value = tokens.at(study_variable_columns_nominal[i]);
 
-                if (contains_val(NA_VALUES, feature_value)) feature_value = NO_VALUE_CHAR;
+                if (contains_val(NA_VALUES, study_variable_value)) study_variable_value = NO_VALUE_CHAR;
 
-                if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature_name) && contains_val(mapping_data->at(NominalValue), feature_name + "/" + feature_value)){
-                    Mapping &mn = mapping_data->at(NominalFeature)[feature_name];
-                    if (mn.action == RenameAction || mn.action == MappingTo) feature_name = mn.mapping;
+                if (mapping_data != 0 && contains_val(mapping_data->at(NominalStudyVariable), study_variable_name) && contains_val(mapping_data->at(NominalValue), study_variable_name + "/" + study_variable_value)){
+                    Mapping &mn = mapping_data->at(NominalStudyVariable)[study_variable_name];
+                    if (mn.action == RenameAction || mn.action == MappingTo) study_variable_name = mn.mapping;
 
-                    Mapping &mv = mapping_data->at(NominalValue)[feature_name + "/" + feature_value];
-                    if (mv.action == RenameAction || mv.action == MappingTo) feature_value = mv.mapping;
+                    Mapping &mv = mapping_data->at(NominalValue)[study_variable_name + "/" + study_variable_value];
+                    if (mv.action == RenameAction || mv.action == MappingTo) study_variable_value = mv.mapping;
                 }
-                lipidome->features.insert({feature_name, Feature(feature_name, feature_value, contains_val(NA_VALUES, feature_value))});
+                lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, contains_val(NA_VALUES, study_variable_value))});
 
             }
-            for (int i = 0; i < (int)feature_columns_numerical.size(); ++i){
+            for (int i = 0; i < (int)study_variable_columns_numerical.size(); ++i){
                 bool is_not_missing = false;
-                string feature_name = feature_names_numerical[i];
-                double feature_value = QString(tokens.at(feature_columns_numerical[i]).c_str()).toDouble(&is_not_missing);
+                string study_variable_name = study_variable_names_numerical[i];
+                double study_variable_value = QString(tokens.at(study_variable_columns_numerical[i]).c_str()).toDouble(&is_not_missing);
 
-                if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature_name)){
-                    Mapping &m = mapping_data->at(NumericalFeature)[feature_name];
-                    if (m.action == RenameAction || m.action == MappingTo) feature_name = m.mapping;
+                if (mapping_data != 0 && contains_val(mapping_data->at(NumericalStudyVariable), study_variable_name)){
+                    Mapping &m = mapping_data->at(NumericalStudyVariable)[study_variable_name];
+                    if (m.action == RenameAction || m.action == MappingTo) study_variable_name = m.mapping;
                 }
 
-                lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
             }
 
             // handle lipid
@@ -2115,16 +2115,16 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             }
         }
 
-        // checking consistancy of features
-        registered_features.insert(FILE_FEATURE_NAME);
+        // checking consistancy of study variables
+        registered_study_variables.insert(FILE_STUDY_VARIABLE_NAME);
         for (auto lipidome : loaded_lipidomes){
             if (lipidome->cleaned_name == "-"){
                 throw LipidSpaceException("Error, sample has no sample name.", CorruptedFileFormat);
             }
 
-            for (auto feature : registered_features){
-                if (uncontains_val(lipidome->features, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
+            for (auto study_variable : registered_study_variables){
+                if (uncontains_val(lipidome->study_variables, study_variable)){
+                    throw LipidSpaceException("Error, study variable '" + study_variable + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
                 }
             }
         }
@@ -2134,84 +2134,84 @@ void LipidSpace::load_flat_table(ImportData *import_data){
 
         // check if new study variables must be registered to existing lipidomes
         if (mapping_data){
-            for (auto kv : mapping_data->at(NumericalFeature)){
-                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NumericalFeature){
-                    string feature_name = kv.second.name;
-                    double feature_value = (kv.second.action == RegisterNewDefault) ? atof(kv.second.mapping.c_str()) : 0.;
+            for (auto kv : mapping_data->at(NumericalStudyVariable)){
+                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.variable_type == NumericalStudyVariable){
+                    string study_variable_name = kv.second.name;
+                    double study_variable_value = (kv.second.action == RegisterNewDefault) ? atof(kv.second.mapping.c_str()) : 0.;
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
-                    feature_values.insert({feature_name, FeatureSet(feature_name, NumericalFeature)});
-                    if (is_not_missing) feature_values[feature_name].numerical_values.insert(feature_value);
+                    study_variable_values.insert({study_variable_name, StudyVariableSet(study_variable_name, NumericalStudyVariable)});
+                    if (is_not_missing) study_variable_values[study_variable_name].numerical_values.insert(study_variable_value);
 
                     for (auto lipidome : lipidomes){
-                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                        lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                     }
 
-                    registered_features.insert(feature_name);
+                    registered_study_variables.insert(study_variable_name);
                 }
-                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.feature_type == NumericalFeature){
-                    string feature_name = kv.second.name;
-                    double feature_value = (kv.second.action == InsertDefault) ? atof(kv.second.mapping.c_str()) : 0.;
+                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.variable_type == NumericalStudyVariable){
+                    string study_variable_name = kv.second.name;
+                    double study_variable_value = (kv.second.action == InsertDefault) ? atof(kv.second.mapping.c_str()) : 0.;
                     bool is_not_missing = (kv.second.action == InsertDefault);
 
                     for (auto lipidome : loaded_lipidomes){
-                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                        lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                     }
 
-                    registered_features.insert(feature_name);
+                    registered_study_variables.insert(study_variable_name);
                 }
             }
 
-            for (auto kv : mapping_data->at(NominalFeature)){
-                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NominalFeature){
-                    string feature_name = kv.second.name;
-                    string feature_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : NO_VALUE_CHAR;
+            for (auto kv : mapping_data->at(NominalStudyVariable)){
+                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.variable_type == NominalStudyVariable){
+                    string study_variable_name = kv.second.name;
+                    string study_variable_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : NO_VALUE_CHAR;
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
-                    feature_values.insert({feature_name, FeatureSet(feature_name, NominalFeature)});
-                    feature_values[feature_name].nominal_values.insert({feature_value, true});
+                    study_variable_values.insert({study_variable_name, StudyVariableSet(study_variable_name, NominalStudyVariable)});
+                    study_variable_values[study_variable_name].nominal_values.insert({study_variable_value, true});
 
                     for (auto lipidome : lipidomes){
-                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                        lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                     }
 
-                    registered_features.insert(feature_name);
+                    registered_study_variables.insert(study_variable_name);
                 }
-                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.feature_type == NominalFeature){
-                    string feature_name = kv.second.name;
-                    string feature_value = (kv.second.action == InsertDefault) ? kv.second.mapping : NO_VALUE_CHAR;
+                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.variable_type == NominalStudyVariable){
+                    string study_variable_name = kv.second.name;
+                    string study_variable_value = (kv.second.action == InsertDefault) ? kv.second.mapping : NO_VALUE_CHAR;
                     bool is_not_missing = (kv.second.action == InsertDefault);
 
                     for (auto lipidome : loaded_lipidomes){
-                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                        lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                     }
 
-                    registered_features.insert(feature_name);
+                    registered_study_variables.insert(study_variable_name);
                 }
             }
         }
 
 
 
-        if (feature_values.size() > 1){
-            for (auto feature : registered_features){
-                if (uncontains_val(feature_values, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registered, yet.", FeatureNotRegistered);
+        if (study_variable_values.size() > 1){
+            for (auto study_variable : registered_study_variables){
+                if (uncontains_val(study_variable_values, study_variable)){
+                    throw LipidSpaceException("Error, study variable '" + study_variable + "' is not registered, yet.", StudyVariableNotRegistered);
                 }
             }
 
-            for (auto kv : feature_values){
-                if (uncontains_val(registered_features, kv.first)){
-                    throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", FeatureNotRegistered);
+            for (auto kv : study_variable_values){
+                if (uncontains_val(registered_study_variables, kv.first)){
+                    throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", StudyVariableNotRegistered);
                 }
             }
 
-            // add new values into existing features
+            // add new values into existing study variables
             for (auto lipidome : loaded_lipidomes){
-                for (auto kv : lipidome->features){
+                for (auto kv : lipidome->study_variables){
 
-                    FeatureSet &fs = feature_values[kv.first];
-                    if (kv.second.feature_type == NumericalFeature){
+                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    if (kv.second.variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
                     else {
@@ -2220,17 +2220,17 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                 }
             }
         }
-        // register features
+        // register study variables
         else {
             for (auto lipidome : loaded_lipidomes){
-                for (auto kv : lipidome->features){
+                for (auto kv : lipidome->study_variables){
 
-                    if (uncontains_val(feature_values, kv.first)){
-                        feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
+                    if (uncontains_val(study_variable_values, kv.first)){
+                        study_variable_values.insert({kv.first, StudyVariableSet(kv.first, kv.second.variable_type)});
                     }
 
-                    FeatureSet &fs = feature_values[kv.first];
-                    if (kv.second.feature_type == NumericalFeature){
+                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    if (kv.second.variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
                     else {
@@ -2297,8 +2297,8 @@ void LipidSpace::load_column_table(ImportData *import_data){
         throw LipidSpaceException("No sample column was defined", NoColumnFound);
     }
 
-    vector<string> features_names_numerical;
-    vector<string> features_names_nominal;
+    vector<string> study_variables_names_numerical;
+    vector<string> study_variables_names_nominal;
     vector<LipidAdduct*> lipids;
     map<string, LipidAdduct*> lipid_set;
     vector<Lipidome*> loaded_lipidomes;
@@ -2308,12 +2308,12 @@ void LipidSpace::load_column_table(ImportData *import_data){
         for (int i = 0; i < (int)fth->headers.size(); ++i){
             TableColumnType column_type = column_types->at(i);
             switch(column_type){
-                case FeatureColumnNominal:
-                    features_names_nominal.push_back(fth->headers.at(i));
+                case StudyVariableColumnNominal:
+                    study_variables_names_nominal.push_back(fth->headers.at(i));
                     break;
 
-                case FeatureColumnNumerical:
-                    features_names_numerical.push_back(fth->headers.at(i));
+                case StudyVariableColumnNumerical:
+                    study_variables_names_numerical.push_back(fth->headers.at(i));
                     break;
 
                 case LipidColumn:
@@ -2330,12 +2330,12 @@ void LipidSpace::load_column_table(ImportData *import_data){
 
 
         for (auto tokens : fth->rows){
-            map<string, Feature> features;
+            map<string, StudyVariable> study_variables;
             vector<LipidAdduct*> measurement_lipids;
             Array intensities;
             string measurement = "";
-            int feature_counter_nominal = 0;
-            int feature_counter_numerical = 0;
+            int study_variable_counter_nominal = 0;
+            int study_variable_counter_numerical = 0;
             int lipid_counter = 0;
 
             // handle all other rows
@@ -2356,42 +2356,42 @@ void LipidSpace::load_column_table(ImportData *import_data){
                         lipid_counter++;
                         break;
 
-                    case FeatureColumnNominal:
+                    case StudyVariableColumnNominal:
                         {
-                            string feature_name = features_names_nominal[feature_counter_nominal];
-                            string feature_value = tokens.at(i);
-                            string feature_key = feature_name + "/" + feature_value;
+                            string study_variable_name = study_variables_names_nominal[study_variable_counter_nominal];
+                            string study_variable_value = tokens.at(i);
+                            string study_variable_key = study_variable_name + "/" + study_variable_value;
 
-                            if (contains_val(NA_VALUES, feature_value)) feature_value = NO_VALUE_CHAR;
+                            if (contains_val(NA_VALUES, study_variable_value)) study_variable_value = NO_VALUE_CHAR;
 
-                            if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature_name) && contains_val(mapping_data->at(NominalValue), feature_key)){
-                                Mapping &mn = mapping_data->at(NominalFeature)[feature_name];
-                                if (mn.action == RenameAction || mn.action == MappingTo) feature_name = mn.mapping;
+                            if (mapping_data != 0 && contains_val(mapping_data->at(NominalStudyVariable), study_variable_name) && contains_val(mapping_data->at(NominalValue), study_variable_key)){
+                                Mapping &mn = mapping_data->at(NominalStudyVariable)[study_variable_name];
+                                if (mn.action == RenameAction || mn.action == MappingTo) study_variable_name = mn.mapping;
 
-                                Mapping &mv = mapping_data->at(NominalValue)[feature_key];
-                                if (mv.action == RenameAction || mv.action == MappingTo) feature_value = mv.mapping;
+                                Mapping &mv = mapping_data->at(NominalValue)[study_variable_key];
+                                if (mv.action == RenameAction || mv.action == MappingTo) study_variable_value = mv.mapping;
                             }
 
-                            features.insert({feature_name, Feature(feature_name, feature_value, contains_val(NA_VALUES, feature_value))});
+                            study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, contains_val(NA_VALUES, study_variable_value))});
                         }
-                        feature_counter_nominal++;
+                        study_variable_counter_nominal++;
                         break;
 
 
 
-                    case FeatureColumnNumerical:
+                    case StudyVariableColumnNumerical:
                         {
-                            string feature_name = features_names_numerical[feature_counter_numerical];
+                            string study_variable_name = study_variables_names_numerical[study_variable_counter_numerical];
                             bool is_not_missing = false;
-                            double feature_value = QString(tokens.at(i).c_str()).toDouble(&is_not_missing);
+                            double study_variable_value = QString(tokens.at(i).c_str()).toDouble(&is_not_missing);
 
-                            if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature_name)){
-                                Mapping &m = mapping_data->at(NumericalFeature)[feature_name];
-                                if (m.action == RenameAction || m.action == MappingTo) feature_name = m.mapping;
+                            if (mapping_data != 0 && contains_val(mapping_data->at(NumericalStudyVariable), study_variable_name)){
+                                Mapping &m = mapping_data->at(NumericalStudyVariable)[study_variable_name];
+                                if (m.action == RenameAction || m.action == MappingTo) study_variable_name = m.mapping;
                             }
-                            features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                            study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                         }
-                        feature_counter_numerical++;
+                        study_variable_counter_numerical++;
                         break;
 
                     default:
@@ -2401,8 +2401,8 @@ void LipidSpace::load_column_table(ImportData *import_data){
 
             loaded_lipidomes.push_back(new Lipidome(measurement, data_table_file, sheet));
             Lipidome *lipidome = loaded_lipidomes.back();
-            for (auto kv : features){
-                lipidome->features.insert({kv.first, Feature(&kv.second)});
+            for (auto kv : study_variables){
+                lipidome->study_variables.insert({kv.first, StudyVariable(&kv.second)});
             }
 
             for (auto l : measurement_lipids){
@@ -2414,24 +2414,24 @@ void LipidSpace::load_column_table(ImportData *import_data){
             lipidome->original_intensities.reset(intensities);
         }
 
-        // checking consistancy of features
-        set<string> registered_features;
-        registered_features.insert(FILE_FEATURE_NAME);
-        for (auto feature : features_names_numerical){
-            if (mapping_data != 0 && contains_val(mapping_data->at(NumericalFeature), feature)){
-                Mapping &m = mapping_data->at(NumericalFeature)[feature];
-                if (m.action == RenameAction || m.action == MappingTo) feature = m.mapping;
+        // checking consistancy of study variables
+        set<string> registered_study_variables;
+        registered_study_variables.insert(FILE_STUDY_VARIABLE_NAME);
+        for (auto study_variable : study_variables_names_numerical){
+            if (mapping_data != 0 && contains_val(mapping_data->at(NumericalStudyVariable), study_variable)){
+                Mapping &m = mapping_data->at(NumericalStudyVariable)[study_variable];
+                if (m.action == RenameAction || m.action == MappingTo) study_variable = m.mapping;
                 else if (m.action == RegisterNewNaN || m.action  == RegisterNewDefault) continue;
             }
-            registered_features.insert(feature);
+            registered_study_variables.insert(study_variable);
         }
-        for (auto feature : features_names_nominal){
-            if (mapping_data != 0 && contains_val(mapping_data->at(NominalFeature), feature)){
-                Mapping &m = mapping_data->at(NominalFeature)[feature];
-                if (m.action == RenameAction || m.action == MappingTo) feature = m.mapping;
+        for (auto study_variable : study_variables_names_nominal){
+            if (mapping_data != 0 && contains_val(mapping_data->at(NominalStudyVariable), study_variable)){
+                Mapping &m = mapping_data->at(NominalStudyVariable)[study_variable];
+                if (m.action == RenameAction || m.action == MappingTo) study_variable = m.mapping;
                 else if (m.action == RegisterNewNaN || m.action  == RegisterNewDefault) continue;
             }
-            registered_features.insert(feature);
+            registered_study_variables.insert(study_variable);
         }
 
         for (auto lipidome : loaded_lipidomes){
@@ -2439,91 +2439,91 @@ void LipidSpace::load_column_table(ImportData *import_data){
                 throw LipidSpaceException("Error, sample has no sample name.", CorruptedFileFormat);
             }
 
-            for (auto feature : registered_features){
-                if (uncontains_val(lipidome->features, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
+            for (auto study_variable : registered_study_variables){
+                if (uncontains_val(lipidome->study_variables, study_variable)){
+                    throw LipidSpaceException("Error, study variable '" + study_variable + "' not defined for sample '" + lipidome->cleaned_name + "'.", CorruptedFileFormat);
                 }
             }
         }
 
         // check if new study variables must be registered to existing lipidomes
         if (mapping_data){
-            for (auto kv : mapping_data->at(NumericalFeature)){
-                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NumericalFeature){
-                    string feature_name = kv.second.name;
-                    double feature_value = (kv.second.action == RegisterNewDefault) ? atof(kv.second.mapping.c_str()) : 0.;
+            for (auto kv : mapping_data->at(NumericalStudyVariable)){
+                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.variable_type == NumericalStudyVariable){
+                    string study_variable_name = kv.second.name;
+                    double study_variable_value = (kv.second.action == RegisterNewDefault) ? atof(kv.second.mapping.c_str()) : 0.;
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
-                    feature_values.insert({feature_name, FeatureSet(feature_name, NumericalFeature)});
-                    if (is_not_missing) feature_values[feature_name].numerical_values.insert(feature_value);
+                    study_variable_values.insert({study_variable_name, StudyVariableSet(study_variable_name, NumericalStudyVariable)});
+                    if (is_not_missing) study_variable_values[study_variable_name].numerical_values.insert(study_variable_value);
 
                     for (auto lipidome : lipidomes){
-                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                        lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                     }
 
-                    registered_features.insert(feature_name);
+                    registered_study_variables.insert(study_variable_name);
                 }
-                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.feature_type == NumericalFeature){
-                    string feature_name = kv.second.name;
-                    double feature_value = (kv.second.action == InsertDefault) ? atof(kv.second.mapping.c_str()) : 0.;
+                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.variable_type == NumericalStudyVariable){
+                    string study_variable_name = kv.second.name;
+                    double study_variable_value = (kv.second.action == InsertDefault) ? atof(kv.second.mapping.c_str()) : 0.;
                     bool is_not_missing = (kv.second.action == InsertDefault);
 
                     for (auto lipidome : loaded_lipidomes){
-                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                        lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                     }
 
-                    registered_features.insert(feature_name);
+                    registered_study_variables.insert(study_variable_name);
                 }
             }
 
-            for (auto kv : mapping_data->at(NominalFeature)){
-                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.feature_type == NominalFeature){
-                    string feature_name = kv.second.name;
-                    string feature_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : NO_VALUE_CHAR;
+            for (auto kv : mapping_data->at(NominalStudyVariable)){
+                if ((kv.second.action == RegisterNewDefault || kv.second.action == RegisterNewNaN) && kv.second.variable_type == NominalStudyVariable){
+                    string study_variable_name = kv.second.name;
+                    string study_variable_value = (kv.second.action == RegisterNewDefault) ? kv.second.mapping : NO_VALUE_CHAR;
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
-                    feature_values.insert({feature_name, FeatureSet(feature_name, NominalFeature)});
-                    feature_values[feature_name].nominal_values.insert({feature_value, true});
+                    study_variable_values.insert({study_variable_name, StudyVariableSet(study_variable_name, NominalStudyVariable)});
+                    study_variable_values[study_variable_name].nominal_values.insert({study_variable_value, true});
 
                     for (auto lipidome : lipidomes){
-                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                        lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                     }
 
-                    registered_features.insert(feature_name);
+                    registered_study_variables.insert(study_variable_name);
                 }
-                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.feature_type == NominalFeature){
-                    string feature_name = kv.second.name;
-                    string feature_value = (kv.second.action == InsertDefault) ? kv.second.mapping : NO_VALUE_CHAR;
+                else if ((kv.second.action == InsertDefault || kv.second.action == InsertNaN) && kv.second.variable_type == NominalStudyVariable){
+                    string study_variable_name = kv.second.name;
+                    string study_variable_value = (kv.second.action == InsertDefault) ? kv.second.mapping : NO_VALUE_CHAR;
                     bool is_not_missing = (kv.second.action == InsertDefault);
 
                     for (auto lipidome : loaded_lipidomes){
-                        lipidome->features.insert({feature_name, Feature(feature_name, feature_value, !is_not_missing)});
+                        lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
                     }
 
-                    registered_features.insert(feature_name);
+                    registered_study_variables.insert(study_variable_name);
                 }
             }
         }
 
 
-        if (feature_values.size() > 1){
-            for (auto feature : registered_features){
-                if (uncontains_val(feature_values, feature)){
-                    throw LipidSpaceException("Error, study variable '" + feature + "' is not registered, yet.", FeatureNotRegistered);
+        if (study_variable_values.size() > 1){
+            for (auto study_variable : registered_study_variables){
+                if (uncontains_val(study_variable_values, study_variable)){
+                    throw LipidSpaceException("Error, study variable '" + study_variable + "' is not registered, yet.", StudyVariableNotRegistered);
                 }
             }
 
-            for (auto kv : feature_values){
-                if (uncontains_val(registered_features, kv.first)){
-                    throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", FeatureNotRegistered);
+            for (auto kv : study_variable_values){
+                if (uncontains_val(registered_study_variables, kv.first)){
+                    throw LipidSpaceException("Error, study variable '" + kv.first + "' is not present in imported file.", StudyVariableNotRegistered);
                 }
             }
 
-            // add new values into existing features
+            // add new values into existing study variables
             for (auto lipidome : loaded_lipidomes){
-                for (auto kv : lipidome->features){
-                    FeatureSet &fs = feature_values[kv.first];
-                    if (kv.second.feature_type == NumericalFeature){
+                for (auto kv : lipidome->study_variables){
+                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    if (kv.second.variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
                     else {
@@ -2535,17 +2535,17 @@ void LipidSpace::load_column_table(ImportData *import_data){
 
 
 
-        // register features
+        // register study variables
         else {
             for (auto lipidome : loaded_lipidomes){
-                for (auto kv : lipidome->features){
+                for (auto kv : lipidome->study_variables){
 
-                    if (uncontains_val(feature_values, kv.first)){
-                        feature_values.insert({kv.first, FeatureSet(kv.first, kv.second.feature_type)});
+                    if (uncontains_val(study_variable_values, kv.first)){
+                        study_variable_values.insert({kv.first, StudyVariableSet(kv.first, kv.second.variable_type)});
                     }
 
-                    FeatureSet &fs = feature_values[kv.first];
-                    if (kv.second.feature_type == NumericalFeature){
+                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    if (kv.second.variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
                     else {
@@ -2712,8 +2712,8 @@ void LipidSpace::load_row_table(ImportData *import_data){
                 }
             }
         }
-        if (feature_values.size() > 1){
-            throw LipidSpaceException("Error, study variables are already registered, table does not contain any variables and thus cannot be imported.", FeatureNotRegistered);
+        if (study_variable_values.size() > 1){
+            throw LipidSpaceException("Error, study variables are already registered, table does not contain any variables and thus cannot be imported.", StudyVariableNotRegistered);
         }
 
         set<string> lipidome_names;
@@ -2744,7 +2744,7 @@ void LipidSpace::load_row_table(ImportData *import_data){
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
         for (auto lipidome : loaded_lipidomes){
-            feature_values[FILE_FEATURE_NAME].nominal_values.insert({lipidome->features[FILE_FEATURE_NAME].nominal_value, true});
+            study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values.insert({lipidome->study_variables[FILE_STUDY_VARIABLE_NAME].nominal_value, true});
 
             lipidomes.push_back(lipidome);
             selection[3].insert({lipidome->cleaned_name, true});
@@ -3081,9 +3081,9 @@ void LipidSpace::feature_analysis(bool report_progress){
     Matrix global_matrix;
     vector< Gene* >genes;
     Array missing_values;
-    bool is_nominal = feature_values[target_variable].feature_type == NominalFeature;
+    bool is_nominal = study_variable_values[target_variable].variable_type == NominalStudyVariable;
 
-    if (uncontains_val(feature_values, target_variable)){
+    if (uncontains_val(study_variable_values, target_variable)){
         if (progress && !progress->stop_progress && report_progress){
             progress->finish();
         }
@@ -3099,19 +3099,19 @@ void LipidSpace::feature_analysis(bool report_progress){
         bool select_lipidome = true;
         string lipidome_name = lipidome->cleaned_name;
 
-        for (auto kv : lipidome->features){
-            string feature_name = kv.first;
-            Feature &feature = kv.second;
-            if (feature.feature_type == NominalFeature){
-                if (!feature_values[feature_name].nominal_values[feature.nominal_value]){
+        for (auto kv : lipidome->study_variables){
+            string study_variable_name = kv.first;
+            StudyVariable &study_variable = kv.second;
+            if (study_variable.variable_type == NominalStudyVariable){
+                if (!study_variable_values[study_variable_name].nominal_values[study_variable.nominal_value]){
                     select_lipidome = false;
                     break;
                 }
             }
             else {
-                double numerical_value = feature.numerical_value;
-                auto filter = feature_values[feature_name].numerical_filter.first;
-                auto filter_values = feature_values[feature_name].numerical_filter.second;
+                double numerical_value = study_variable.numerical_value;
+                auto filter = study_variable_values[study_variable_name].numerical_filter.first;
+                auto filter_values = study_variable_values[study_variable_name].numerical_filter.second;
                 switch (filter){
 
                     case LessFilter: // inverse logic, Less tells us, what to keep, greater we filter out
@@ -3163,7 +3163,7 @@ void LipidSpace::feature_analysis(bool report_progress){
         // setup array for target variable values, if nominal then each with incrementing number
         if (is_nominal){
             for (auto lipidome : lipidomes_for_feature_selection){
-                string nominal_value = lipidome->features[target_variable].nominal_value;
+                string nominal_value = lipidome->study_variables[target_variable].nominal_value;
 
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
@@ -3173,7 +3173,7 @@ void LipidSpace::feature_analysis(bool report_progress){
         }
         else {
             for (auto lipidome : lipidomes_for_feature_selection){
-                target_values.push_back(lipidome->features[target_variable].numerical_value);
+                target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
             }
         }
 
@@ -3181,7 +3181,7 @@ void LipidSpace::feature_analysis(bool report_progress){
         for (auto lipidome : lipidomes_for_feature_selection){
             for (uint i = 0; i < lipidome->lipids.size(); ++i){
                 LipidAdduct* lipid = lipidome->lipids[i];
-                if (uncontains_val(lipid_map, lipid) && contains_val(lipidome->features, target_variable) && !lipidome->features[target_variable].missing){
+                if (uncontains_val(lipid_map, lipid) && contains_val(lipidome->study_variables, target_variable) && !lipidome->study_variables[target_variable].missing){
                     lipid_map.insert({lipid, lipid_map.size()});
                     lipid_name_map.insert({lipidome->species[i], lipid_name_map.size()});
                 }
@@ -3396,11 +3396,11 @@ void LipidSpace::complete_feature_analysis(){
     complete_feature_analysis_table.clear();
     complete_feature_analysis_lipids.clear();
     if (progress){
-        progress->prepare(max(0, (int)feature_values.size() - 1));
+        progress->prepare(max(0, (int)study_variable_values.size() - 1));
     }
-    for (auto kv : feature_values){
+    for (auto kv : study_variable_values){
         if (progress && progress->stop_progress) break;
-        if (kv.first == FILE_FEATURE_NAME) continue;
+        if (kv.first == FILE_STUDY_VARIABLE_NAME) continue;
 
         complete_feature_analysis_table.push_back(vector<double>());
         complete_feature_analysis_lipids.push_back(set<string>());
@@ -3419,9 +3419,9 @@ void LipidSpace::complete_feature_analysis(){
         }
 
 
-        for (auto kv2 : feature_values){
+        for (auto kv2 : study_variable_values){
             if (progress && progress->stop_progress) break;
-            if (kv2.first == FILE_FEATURE_NAME) continue;
+            if (kv2.first == FILE_STUDY_VARIABLE_NAME) continue;
             target_variable = kv2.first;
 
             // setup array for target variable values, if nominal then each with incrementing number
@@ -3432,12 +3432,12 @@ void LipidSpace::complete_feature_analysis(){
             int nom_counter = 0;
             vector<string> nominal_values;
 
-            bool is_nominal = feature_values[target_variable].feature_type == NominalFeature;
+            bool is_nominal = study_variable_values[target_variable].variable_type == NominalStudyVariable;
             if (is_nominal){
                 for (auto lipidome : selected_lipidomes){
-                    if (lipidome->features[target_variable].missing) continue;
+                    if (lipidome->study_variables[target_variable].missing) continue;
 
-                    string nominal_value = lipidome->features[target_variable].nominal_value;
+                    string nominal_value = lipidome->study_variables[target_variable].nominal_value;
                     if (uncontains_val(nominal_target_values, nominal_value)){
                         nominal_target_values.insert({nominal_value, nom_counter++});
                         nominal_values.push_back(nominal_value);
@@ -3447,9 +3447,9 @@ void LipidSpace::complete_feature_analysis(){
             }
             else {
                 for (auto lipidome : selected_lipidomes){
-                    if (lipidome->features[target_variable].missing) continue;
+                    if (lipidome->study_variables[target_variable].missing) continue;
 
-                    target_values.push_back(lipidome->features[target_variable].numerical_value);
+                    target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
                 }
             }
 
@@ -3459,7 +3459,7 @@ void LipidSpace::complete_feature_analysis(){
             // if any lipidome has a missing study variable, discard the lipidome from the statistic
             Indexes lipidomes_to_keep;
             for (int r = 0; r < stat_matrix.rows; ++r){
-                if (!selected_lipidomes[r]->features[target_variable].missing) lipidomes_to_keep.push_back(r);
+                if (!selected_lipidomes[r]->study_variables[target_variable].missing) lipidomes_to_keep.push_back(r);
             }
             Matrix tmp;
             tmp.rewrite(stat_matrix, lipidomes_to_keep);
@@ -3595,8 +3595,8 @@ void LipidSpace::run(){
 
 void LipidSpace::reset_analysis(){
     analysis_finished = false;
-    feature_values.clear();
-    feature_values.insert({FILE_FEATURE_NAME, FeatureSet(FILE_FEATURE_NAME, NominalFeature)});
+    study_variable_values.clear();
+    study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
     if (dendrogram_root){
         delete dendrogram_root;
         dendrogram_root = 0;

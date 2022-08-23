@@ -23,8 +23,8 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
 
 
     mapping_data->clear();
-    mapping_data->insert({NumericalFeature, map<string, Mapping>()});
-    mapping_data->insert({NominalFeature, map<string, Mapping>()});
+    mapping_data->insert({NumericalStudyVariable, map<string, Mapping>()});
+    mapping_data->insert({NominalStudyVariable, map<string, Mapping>()});
     mapping_data->insert({NominalValue, map<string, Mapping>()});
 
     map<string, set<string>> nom_values;
@@ -33,11 +33,11 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
 
     // checking the study variables
     for (uint i = 0; i < ct->size(); ++i){
-        if (ct->at(i) != FeatureColumnNumerical && ct->at(i) != FeatureColumnNominal) continue;
+        if (ct->at(i) != StudyVariableColumnNumerical && ct->at(i) != StudyVariableColumnNominal) continue;
 
         string header = file_table_handler->headers[i];
-        if (ct->at(i) == FeatureColumnNumerical){
-            mapping_data->at(NumericalFeature).insert({header, Mapping(header, NumericalFeature)});
+        if (ct->at(i) == StudyVariableColumnNumerical){
+            mapping_data->at(NumericalStudyVariable).insert({header, Mapping(header, NumericalStudyVariable)});
             continue;
         }
 
@@ -52,7 +52,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
     }
 
     for (auto kv : nom_values){
-        mapping_data->at(NominalFeature).insert({kv.first, Mapping(kv.first, NominalFeature)});
+        mapping_data->at(NominalStudyVariable).insert({kv.first, Mapping(kv.first, NominalStudyVariable)});
         for (auto value : kv.second){
             string key = kv.first + "/" + value;
             mapping_data->at(NominalValue).insert({key, Mapping(value, NominalValue)});
@@ -62,7 +62,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
 
     // setting up the mapping table
     QTableWidget *t = ui->tableWidget;
-    t->setRowCount(mapping_data->at(NumericalFeature).size() + mapping_data->at(NominalFeature).size() + mapping_data->at(NominalValue).size());
+    t->setRowCount(mapping_data->at(NumericalStudyVariable).size() + mapping_data->at(NominalStudyVariable).size() + mapping_data->at(NominalValue).size());
     t->setColumnCount(4);
     t->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     t->setSelectionBehavior( QAbstractItemView::SelectItems );
@@ -84,15 +84,15 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     t->setHorizontalHeaderItem(3, item);
 
-    for (auto kv : lipid_space->feature_values){
-        if (kv.second.feature_type == NumericalFeature) registered_numerical_variables++;
+    for (auto kv : lipid_space->study_variable_values){
+        if (kv.second.variable_type == NumericalStudyVariable) registered_numerical_variables++;
         else registered_nominal_variables++;
     }
 
     // initial filling of the mapping table
     int row_cnt = 0;
-    for (auto kv : mapping_data->at(NumericalFeature)){
-        item = new QTableWidgetItem("Numerical feature");
+    for (auto kv : mapping_data->at(NumericalStudyVariable)){
+        item = new QTableWidgetItem("Numerical study_variable");
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         t->setItem(row_cnt, 0, item);
 
@@ -105,15 +105,15 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
         c->addItem("Rename");
         c->addItem("Register new with no default value");
         c->addItem("Register new with default value");
-        c->setItemData(0, NumericalFeature);
+        c->setItemData(0, NumericalStudyVariable);
         c->setItemData(1, row_cnt);
         c->setItemData(2, 0);
         c->setItemData(3, 0);
 
         int var_cnt = 4;
         int match = -1;
-        for (auto kv_f : lipid_space->feature_values){
-            if (kv_f.second.feature_type != NumericalFeature) continue;
+        for (auto kv_f : lipid_space->study_variable_values){
+            if (kv_f.second.variable_type != NumericalStudyVariable) continue;
             QString s = kv_f.second.name.c_str();
             if (QString(kv_f.second.name.c_str()).toLower() == QString(kv.first.c_str()).toLower()) match = var_cnt;
 
@@ -124,7 +124,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
         t->setCellWidget(row_cnt, 2, c);
         connect(c, &SignalCombobox::comboChanged, this, &StudyVariableMapping::comboChanged);
 
-        SignalLineEdit *le = new SignalLineEdit(row_cnt, NumericalFeature, t);
+        SignalLineEdit *le = new SignalLineEdit(row_cnt, NumericalStudyVariable, t);
         le->setEnabled(false);
         connect(le, &SignalLineEdit::lineEditChanged, this, &StudyVariableMapping::lineEditChanged);
         t->setCellWidget(row_cnt++, 3, le);
@@ -132,8 +132,8 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
         if (match > -1) c->setCurrentIndex(match);
     }
     // initial filling of the mapping table
-    for (auto kv : mapping_data->at(NominalFeature)){
-        string type_name = "Nominal feature";
+    for (auto kv : mapping_data->at(NominalStudyVariable)){
+        string type_name = "Nominal study_variable";
 
         item = new QTableWidgetItem(type_name.c_str());
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
@@ -148,15 +148,15 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
         c->addItem("Rename to");
         c->addItem("Register new with no default value");
         c->addItem("Register new with default value");
-        c->setItemData(0, NominalFeature);
+        c->setItemData(0, NominalStudyVariable);
         c->setItemData(1, row_cnt);
         c->setItemData(2, 0);
         c->setItemData(3, 0);
 
         int var_cnt = 4;
         int match = -1;
-        for (auto kv_f : lipid_space->feature_values){
-            if (kv_f.second.feature_type != NominalFeature || kv_f.first == FILE_FEATURE_NAME) continue;
+        for (auto kv_f : lipid_space->study_variable_values){
+            if (kv_f.second.variable_type != NominalStudyVariable || kv_f.first == FILE_STUDY_VARIABLE_NAME) continue;
 
             QString s = kv_f.second.name.c_str();
             if (QString(kv_f.second.name.c_str()).toLower() == QString(kv.first.c_str()).toLower()) match = var_cnt;
@@ -168,7 +168,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
         t->setCellWidget(row_cnt, 2, c);
         connect(c, &SignalCombobox::comboChanged, this, &StudyVariableMapping::comboChanged);
 
-        SignalLineEdit *le = new SignalLineEdit(row_cnt, NominalFeature, t);
+        SignalLineEdit *le = new SignalLineEdit(row_cnt, NominalStudyVariable, t);
         le->setEnabled(false);
         connect(le, &SignalLineEdit::lineEditChanged, this, &StudyVariableMapping::lineEditChanged);
         t->setCellWidget(row_cnt, 3, le);
@@ -224,7 +224,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
 void StudyVariableMapping::lineEditChanged(SignalLineEdit *edit, QString txt){
     int line_index = edit->row;
     string line_name = names_for_registration[line_index];
-    FeatureType ft = edit->feature_type;
+    StudyVariableType ft = edit->variable_type;
     mapping_data->at(ft)[line_name].mapping = txt.toStdString();
 }
 
@@ -273,12 +273,12 @@ void StudyVariableMapping::insertVariable(){
     c->row = row;
     if (registered_nominal_variables > 0){
         c->addItem("Nominal study variable");
-        c->setItemData(c->count() - 1, NominalFeature);
+        c->setItemData(c->count() - 1, NominalStudyVariable);
 
     }
     if (registered_numerical_variables > 0){
         c->addItem("Numerical study variable");
-        c->setItemData(c->count() - 1, NumericalFeature);
+        c->setItemData(c->count() - 1, NumericalStudyVariable);
     }
     t->setCellWidget(row, 0, c);
 
@@ -310,12 +310,12 @@ void StudyVariableMapping::comboInsertedChanged(SignalCombobox *combo){
     KeyTableWidget *t = ui->tableWidget;
     int combo_index = combo->currentIndex();
     int combo_row = combo->row;
-    FeatureType ft = (FeatureType)combo->itemData(combo_index).toInt();
+    StudyVariableType ft = (StudyVariableType)combo->itemData(combo_index).toInt();
 
     SignalCombobox *cb = (SignalCombobox*)t->cellWidget(combo_row, 2);
     cb->clear();
-    for (auto kv : lipid_space->feature_values){
-        if (kv.second.feature_type == ft && kv.first != FILE_FEATURE_NAME){
+    for (auto kv : lipid_space->study_variable_values){
+        if (kv.second.variable_type == ft && kv.first != FILE_STUDY_VARIABLE_NAME){
             cb->addItem(QString("Map to '%1' with no default value").arg(kv.first.c_str()));
             cb->setItemData(cb->count() - 1, QString(kv.first.c_str()));
             cb->addItem(QString("Map to '%1' with default value").arg(kv.first.c_str()));
@@ -323,7 +323,7 @@ void StudyVariableMapping::comboInsertedChanged(SignalCombobox *combo){
         }
     }
 
-    ((SignalLineEdit*)t->cellWidget(combo_row, 3))->feature_type = ft;
+    ((SignalLineEdit*)t->cellWidget(combo_row, 3))->variable_type = ft;
 }
 
 
@@ -345,16 +345,16 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
     int combo_index = combo->currentIndex();
     int row = combo->itemData(1).toInt();
     string combo_name = names_for_registration[row];
-    FeatureType ft = (FeatureType)combo->itemData(0).toInt();
+    StudyVariableType ft = (StudyVariableType)combo->itemData(0).toInt();
     SignalLineEdit *le = (SignalLineEdit*)ui->tableWidget->cellWidget(row, 3);
-    le->feature_type = ft;
+    le->variable_type = ft;
     le->setEnabled(combo_index == 1);
     le->setText("");
     combo->tool_tip = "";
 
     MappingAction action = NoAction;
 
-    if (ft == NumericalFeature){
+    if (ft == NumericalStudyVariable){
         switch (combo_index){
             case 1: action = RenameAction; break;
             case 2: action = RegisterNewNaN; break;
@@ -362,15 +362,15 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
             default: action = MappingTo; break;
         }
 
-        mapping_data->at(NumericalFeature)[combo_name].mapping = "";
-        mapping_data->at(NumericalFeature)[combo_name].action = action;
-        if (action == MappingTo) mapping_data->at(NumericalFeature)[combo_name].mapping = combo->itemData(combo_index).toString().toStdString();
+        mapping_data->at(NumericalStudyVariable)[combo_name].mapping = "";
+        mapping_data->at(NumericalStudyVariable)[combo_name].action = action;
+        if (action == MappingTo) mapping_data->at(NumericalStudyVariable)[combo_name].mapping = combo->itemData(combo_index).toString().toStdString();
 
         le->setEnabled(combo_index == 1 || combo_index == 3);
         le->setText("");
     }
 
-    else if (ft == NominalFeature){
+    else if (ft == NominalStudyVariable){
         switch (combo_index){
             case 1: action = RenameAction; break;
             case 2: action = RegisterNewNaN; break;
@@ -378,15 +378,15 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
             default: action = MappingTo; break;
         }
 
-        mapping_data->at(NominalFeature)[combo_name].mapping = "";
-        mapping_data->at(NominalFeature)[combo_name].action = action;
+        mapping_data->at(NominalStudyVariable)[combo_name].mapping = "";
+        mapping_data->at(NominalStudyVariable)[combo_name].action = action;
         if (action == MappingTo){
             string study_variable = combo->itemData(combo_index).toString().toStdString();
-            mapping_data->at(NominalFeature)[combo_name].mapping = study_variable;
+            mapping_data->at(NominalStudyVariable)[combo_name].mapping = study_variable;
 
             QStringList sl;
-            if (contains_val(lipid_space->feature_values, study_variable)){
-                for (auto value : lipid_space->feature_values[study_variable].nominal_values){
+            if (contains_val(lipid_space->study_variable_values, study_variable)){
+                for (auto value : lipid_space->study_variable_values[study_variable].nominal_values){
                     QString s = value.first.c_str();
                     sl << s;
                 }
@@ -412,8 +412,8 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
             if (combo_index >= 4){
                 int var_cnt = 2;
                 string study_variable = combo->itemData(combo_index).toString().toStdString();
-                if (contains_val(lipid_space->feature_values, study_variable)){
-                    for (auto kv2 : lipid_space->feature_values[study_variable].nominal_values){
+                if (contains_val(lipid_space->study_variable_values, study_variable)){
+                    for (auto kv2 : lipid_space->study_variable_values[study_variable].nominal_values){
                         QString s = kv2.first.c_str();
                         sc->addItem(QString("Rename to %1").arg(s));
                         sc->setItemData(var_cnt++, s);
@@ -462,7 +462,7 @@ void StudyVariableMapping::doContinue() {
         if (!(((r < original_import_variables) && (combo_index == 3)) || ((r >= original_import_variables) && ((combo_index & 1) == 1)))) continue;
 
         SignalLineEdit *le = (SignalLineEdit*)t->cellWidget(r, 3);
-        if (le->feature_type != NumericalFeature) continue;
+        if (le->variable_type != NumericalStudyVariable) continue;
         QString le_text = le->text();
 
         bool is_number = false;
@@ -493,15 +493,15 @@ void StudyVariableMapping::doContinue() {
 
 
     // adding registered study variables for match check
-    for (auto kv : lipid_space->feature_values){
-        if (kv.second.feature_type == NominalFeature) nominal_registered.insert(kv.first);
+    for (auto kv : lipid_space->study_variable_values){
+        if (kv.second.variable_type == NominalStudyVariable) nominal_registered.insert(kv.first);
         else numerical_registered.insert(kv.first);
     }
-    if (contains_val(nominal_registered, FILE_FEATURE_NAME)) nominal_registered.erase(FILE_FEATURE_NAME);
+    if (contains_val(nominal_registered, FILE_STUDY_VARIABLE_NAME)) nominal_registered.erase(FILE_STUDY_VARIABLE_NAME);
 
 
     // adding numerical study variables to import for match check
-    for (auto kv : mapping_data->at(NumericalFeature)){
+    for (auto kv : mapping_data->at(NumericalStudyVariable)){
         if (kv.second.action == RegisterNewNaN) {
             continue;
         }
@@ -527,7 +527,7 @@ void StudyVariableMapping::doContinue() {
     }
 
     // adding nominal study variables to import for match check
-    for (auto kv : mapping_data->at(NominalFeature)){
+    for (auto kv : mapping_data->at(NominalStudyVariable)){
         if (kv.second.action == RegisterNewNaN) {
             continue;
         }
@@ -557,19 +557,19 @@ void StudyVariableMapping::doContinue() {
         int row = original_import_variables + i;
 
         SignalCombobox* c = (SignalCombobox*)t->cellWidget(row, 0);
-        FeatureType ft = (FeatureType)c->itemData(c->currentIndex()).toInt();
+        StudyVariableType ft = (StudyVariableType)c->itemData(c->currentIndex()).toInt();
 
         SignalCombobox* cb = (SignalCombobox*)t->cellWidget(row, 2);
         string name = cb->itemData(cb->currentIndex()).toString().toStdString();
 
-        if (ft == NumericalFeature){
+        if (ft == NumericalStudyVariable){
             if (contains_val(numerical_import, name)){
                 QMessageBox::warning(this, "Mismatch with study variables", QString("It is not allowed to map two different study variables into one, here '%1'.").arg(name.c_str()));
                 return;
             }
             numerical_import.insert(name);
         }
-        else if (ft == NominalFeature){
+        else if (ft == NominalStudyVariable){
             if (contains_val(nominal_import, name)){
                 QMessageBox::warning(this, "Mismatch with study variables", QString("It is not allowed to map two different study variables into one, here '%1'.").arg(name.c_str()));
                 return;
@@ -635,7 +635,7 @@ void StudyVariableMapping::doContinue() {
         int row = original_import_variables + i;
 
         SignalCombobox* c = (SignalCombobox*)t->cellWidget(row, 0);
-        FeatureType ft = (FeatureType)c->itemData(c->currentIndex()).toInt();
+        StudyVariableType ft = (StudyVariableType)c->itemData(c->currentIndex()).toInt();
 
         SignalCombobox* cb = (SignalCombobox*)t->cellWidget(row, 2);
         string name = cb->itemData(cb->currentIndex()).toString().toStdString();

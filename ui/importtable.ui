@@ -237,7 +237,7 @@
       <string>Lipid columns*</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="numericalFeatureListWidgetCol">
+    <widget class="QListWidget" name="numericalStudyVariableListWidgetCol">
      <property name="geometry">
       <rect>
        <x>510</x>
@@ -260,7 +260,7 @@
       <string>Nominal study variables</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="nominalFeatureListWidgetCol">
+    <widget class="QListWidget" name="nominalStudyVariableListWidgetCol">
      <property name="geometry">
       <rect>
        <x>510</x>
@@ -370,7 +370,7 @@
       <string>Ok</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="numericalFeatureListWidgetFlat">
+    <widget class="QListWidget" name="numericalStudyVariableListWidgetFlat">
      <property name="geometry">
       <rect>
        <x>510</x>
@@ -442,7 +442,7 @@
       <string>Nominal study variables</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="nominalFeatureListWidgetFlat">
+    <widget class="QListWidget" name="nominalStudyVariableListWidgetFlat">
      <property name="geometry">
       <rect>
        <x>510</x>

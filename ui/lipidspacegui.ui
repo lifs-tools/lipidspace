@@ -359,7 +359,7 @@
            <property name="title">
             <string>Feature analysis</string>
            </property>
-           <widget class="QComboBox" name="featureComboBox">
+           <widget class="QComboBox" name="studyVariableComboBox">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -606,7 +606,7 @@
            <property name="title">
             <string>Statistic controls</string>
            </property>
-           <widget class="QComboBox" name="featureComboBoxStat">
+           <widget class="QComboBox" name="studyVariableComboBoxStat">
             <property name="geometry">
              <rect>
               <x>10</x>

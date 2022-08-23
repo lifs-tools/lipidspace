@@ -89,14 +89,14 @@ Mapping::Mapping(){
     name = "";
     parent = "";
     action = NoAction;
-    feature_type = NominalFeature;
+    variable_type = NominalStudyVariable;
     mapping = "";
 }
 
-Mapping::Mapping(string _name, FeatureType _feature_type){
+Mapping::Mapping(string _name, StudyVariableType v_type){
     name = _name;
     parent = "";
-    feature_type = _feature_type;
+    variable_type = v_type;
     action = NoAction;
     mapping = "";
 }
@@ -163,63 +163,63 @@ void KeyTableWidget::keyPressEvent(QKeyEvent *event) {
 
 
 
-FeatureSet::FeatureSet(string _name, FeatureType f_type){
+StudyVariableSet::StudyVariableSet(string _name, StudyVariableType v_type){
     name = _name;
-    feature_type = f_type;
+    variable_type = v_type;
 }
 
 
-FeatureSet::FeatureSet(){
+StudyVariableSet::StudyVariableSet(){
     name = "";
-    feature_type = NominalFeature;
+    variable_type = NominalStudyVariable;
     numerical_filter = {NoFilter, vector<double>()};
 }
 
 
 
 
-FeatureSet::FeatureSet(FeatureSet *feature_set){
-    name = feature_set->name;
-    feature_type = feature_set->feature_type;
-    for (auto kv : feature_set->nominal_values) nominal_values.insert({kv.first, kv.second});
-    for (auto value : feature_set->numerical_values) numerical_values.insert(value);
-    numerical_filter = {feature_set->numerical_filter.first, vector<double>()};
-    for (auto value : feature_set->numerical_filter.second) numerical_filter.second.push_back(value);
+StudyVariableSet::StudyVariableSet(StudyVariableSet *study_variable_set){
+    name = study_variable_set->name;
+    variable_type = study_variable_set->variable_type;
+    for (auto kv : study_variable_set->nominal_values) nominal_values.insert({kv.first, kv.second});
+    for (auto value : study_variable_set->numerical_values) numerical_values.insert(value);
+    numerical_filter = {study_variable_set->numerical_filter.first, vector<double>()};
+    for (auto value : study_variable_set->numerical_filter.second) numerical_filter.second.push_back(value);
 }
 
 
 
 
 
-Feature::Feature(){
+StudyVariable::StudyVariable(){
     name = "";
-    feature_type = NominalFeature;
+    variable_type = NominalStudyVariable;
     numerical_value = 0;
     nominal_value = "";
     missing = false;
 }
 
 
-Feature::Feature (string _name, string nom_val, bool _missing){
+StudyVariable::StudyVariable (string _name, string nom_val, bool _missing){
     name = _name;
-    feature_type = NominalFeature;
+    variable_type = NominalStudyVariable;
     nominal_value = nom_val;
     numerical_value = 0;
     missing = _missing;
 }
 
 
-Feature::Feature (string _name, double num_val, bool _missing){
+StudyVariable::StudyVariable (string _name, double num_val, bool _missing){
     name = _name;
-    feature_type = NumericalFeature;
+    variable_type = NumericalStudyVariable;
     numerical_value = num_val;
     nominal_value = "";
     missing = _missing;
 }
 
-Feature::Feature (Feature *f){
+StudyVariable::StudyVariable (StudyVariable *f){
     name = f->name;
-    feature_type = f->feature_type;
+    variable_type = f->variable_type;
     numerical_value = f->numerical_value;
     nominal_value = f->nominal_value;
     missing = f->missing;
@@ -276,9 +276,9 @@ void SignalCombobox::changedIndex(int ){
 
 
 
-SignalLineEdit::SignalLineEdit(int _row, FeatureType ft, QWidget *parent) : QLineEdit(parent){
+SignalLineEdit::SignalLineEdit(int _row, StudyVariableType ft, QWidget *parent) : QLineEdit(parent){
     row = _row;
-    feature_type = ft;
+    variable_type = ft;
     connect(this, (void (SignalLineEdit::*)(const QString &))&SignalLineEdit::textChanged, this, &SignalLineEdit::changedText);
 }
 
@@ -402,7 +402,7 @@ Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name
     else {
         cleaned_name = lipidome_name;
     }
-    features.insert({FILE_FEATURE_NAME, Feature(FILE_FEATURE_NAME, cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
+    study_variables.insert({FILE_STUDY_VARIABLE_NAME, StudyVariable(FILE_STUDY_VARIABLE_NAME, cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
 }
 
 
@@ -419,7 +419,7 @@ Lipidome::Lipidome(Lipidome *lipidome){
     for (auto value : lipidome->normalized_intensities) normalized_intensities.push_back(value);
     for (auto value : lipidome->PCA_intensities) PCA_intensities.push_back(value);
     for (auto value : lipidome->original_intensities) original_intensities.push_back(value);
-    for (auto kv : lipidome->features) features.insert({kv.first, Feature(&kv.second)});
+    for (auto kv : lipidome->study_variables) study_variables.insert({kv.first, StudyVariable(&kv.second)});
     m.rewrite(lipidome->m);
 }
 
@@ -467,7 +467,7 @@ string Lipidome::to_json(){
 
 
 
-DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_values, Lipidome *lipidome){
+DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_variable_values, Lipidome *lipidome){
     indexes.insert(index);
     order = -1;
     left_child = 0;
@@ -478,25 +478,25 @@ DendrogramNode::DendrogramNode(int index, map<string, FeatureSet> *feature_value
     y = 0;
 
 
-    // initialize empty feature count table
-    for (auto kv : *feature_values){
-        if (kv.second.feature_type == NominalFeature){
-            feature_count_nominal.insert({kv.first, map<string, int>()});
+    // initialize empty study variable count table
+    for (auto kv : *study_variable_values){
+        if (kv.second.variable_type == NominalStudyVariable){
+            study_variable_count_nominal.insert({kv.first, map<string, int>()});
             for (auto kv_nom : kv.second.nominal_values){
-                feature_count_nominal[kv.first].insert({kv_nom.first, 0});
+                study_variable_count_nominal[kv.first].insert({kv_nom.first, 0});
             }
         }
         else {
-            feature_numerical.insert({kv.first, vector<double>()});
+            study_variable_numerical.insert({kv.first, vector<double>()});
         }
     }
 
-    for (auto kv : lipidome->features){
-        if (kv.second.feature_type == NominalFeature){
-            feature_count_nominal[kv.first][kv.second.nominal_value] = 1;
+    for (auto kv : lipidome->study_variables){
+        if (kv.second.variable_type == NominalStudyVariable){
+            study_variable_count_nominal[kv.first][kv.second.nominal_value] = 1;
         }
         else {
-            feature_numerical[kv.first].push_back(kv.second.numerical_value);
+            study_variable_numerical[kv.first].push_back(kv.second.numerical_value);
         }
     }
 }
@@ -511,17 +511,17 @@ DendrogramNode::DendrogramNode(DendrogramNode* n){
     x_left = n->x_left;
     x_right = n->x_right;
     y = n->y;
-    for (auto kv : n->feature_count_nominal){
-        feature_count_nominal.insert({kv.first, map<string, int>()});
-        map<string, int> &m = feature_count_nominal[kv.first];
+    for (auto kv : n->study_variable_count_nominal){
+        study_variable_count_nominal.insert({kv.first, map<string, int>()});
+        map<string, int> &m = study_variable_count_nominal[kv.first];
         for (auto kv2 : kv.second) m.insert({kv2.first, kv2.second});
     }
-    for (auto kv : n->feature_numerical){
-        feature_numerical.insert({kv.first, vector<double>()});
-        vector<double> &v = feature_numerical[kv.first];
+    for (auto kv : n->study_variable_numerical){
+        study_variable_numerical.insert({kv.first, vector<double>()});
+        vector<double> &v = study_variable_numerical[kv.first];
         for (auto value : kv.second) v.push_back(value);
     }
-    for (auto kv : n->feature_numerical_thresholds) feature_numerical_thresholds.insert({kv.first, kv.second});
+    for (auto kv : n->study_variable_numerical_thresholds) study_variable_numerical_thresholds.insert({kv.first, kv.second});
 }
 
 
@@ -580,29 +580,29 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     points->push_back(x_right);
     points->push_back(y);
 
-    // count features
-    for (auto kv : left_child->feature_count_nominal){
-        feature_count_nominal.insert({kv.first, map<string, int>()});
+    // count study variables
+    for (auto kv : left_child->study_variable_count_nominal){
+        study_variable_count_nominal.insert({kv.first, map<string, int>()});
         for (auto kv2 : kv.second){
-            feature_count_nominal[kv.first].insert({kv2.first, kv2.second + right_child->feature_count_nominal[kv.first][kv2.first]});
+            study_variable_count_nominal[kv.first].insert({kv2.first, kv2.second + right_child->study_variable_count_nominal[kv.first][kv2.first]});
         }
     }
 
-    for (auto kv : left_child->feature_numerical){
-        // find intersection points for numerical features
+    for (auto kv : left_child->study_variable_numerical){
+        // find intersection points for numerical study variables
         vector<double> &set1 = kv.second;
-        vector<double> &set2 = right_child->feature_numerical[kv.first];
+        vector<double> &set2 = right_child->study_variable_numerical[kv.first];
 
         double pos_max = 0, d = 0, sep = 0;
         ks_separation_value(set1, set2, d, pos_max, sep);
-        feature_numerical_thresholds.insert({kv.first, pos_max});
+        study_variable_numerical_thresholds.insert({kv.first, pos_max});
 
-        feature_numerical.insert({kv.first, vector<double>()});
+        study_variable_numerical.insert({kv.first, vector<double>()});
         for(double val : kv.second){
-            feature_numerical[kv.first].push_back(val);
+            study_variable_numerical[kv.first].push_back(val);
         }
-        for(double val : right_child->feature_numerical[kv.first]){
-            feature_numerical[kv.first].push_back(val);
+        for(double val : right_child->study_variable_numerical[kv.first]){
+            study_variable_numerical[kv.first].push_back(val);
         }
     }
     return new double[3]{(x_left + x_right) / 2, y, (double)cnt};
@@ -1045,16 +1045,16 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 }
 
 
-TreeItem::TreeItem(int pos, QString name, string f, QTreeWidgetItem* parent) : QTreeWidgetItem(parent){
+TreeItem::TreeItem(int pos, QString name, string var, QTreeWidgetItem* parent) : QTreeWidgetItem(parent){
     setText(pos, name);
-    feature = f;
+    study_variable = var;
 }
 
 
 
 TreeItem::TreeItem(int pos, QString name, QTreeWidget* parent) : QTreeWidgetItem(parent){
     setText(pos, name);
-    feature = "";
+    study_variable = "";
 }
 
 

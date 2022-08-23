@@ -23,10 +23,10 @@ public:
     static map<string, QColor> colorMap;
     static int PC1;
     static int PC2;
-    static int feature_counter;
+    static int study_variable_counter;
     static NormalizationType normalization_type;
     static string rest_temp_folder;
-    static map<string, QColor> colorMapFeatures;
+    static map<string, QColor> colorMapStudyVariables;
     static map<string, QColor> colorMapCategories;
     static string normalization;
     static Linkage linkage;

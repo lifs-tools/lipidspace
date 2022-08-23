@@ -17,9 +17,9 @@ class FilterDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit FilterDialog(pair<FeatureFilter, vector<double>>& _filter, QWidget *parent = nullptr);
+    explicit FilterDialog(pair<StudyVariableFilter, vector<double>>& _filter, QWidget *parent = nullptr);
     ~FilterDialog();
-    
+
 public slots:
     void changeUI(int i);
     void ok();
@@ -27,7 +27,7 @@ public slots:
 
 private:
     Ui::FilterDialog *ui;
-    pair<FeatureFilter, vector<double>> &filter;
+    pair<StudyVariableFilter, vector<double>> &filter;
 };
 
 #endif // FILTERDIALOG_H

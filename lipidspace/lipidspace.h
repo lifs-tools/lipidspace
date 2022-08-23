@@ -44,7 +44,7 @@ public:
     vector<int> dendrogram_sorting;
     Matrix hausdorff_distances;
     bool analysis_finished;
-    map<string, FeatureSet> feature_values;
+    map<string, StudyVariableSet> study_variable_values;
     DendrogramNode *dendrogram_root;
     map<string, bool> selection[4];
     vector<Lipidome*> selected_lipidomes;

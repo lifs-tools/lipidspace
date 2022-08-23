@@ -56,22 +56,22 @@ ImportTable::ImportTable(QWidget *parent) : QDialog(parent), ui(new Ui::ImportTa
     ui->lipidListWidgetFlat->addFieldName("lipid");
 
 
-    // set feature lists
-    ui->numericalFeatureListWidgetCol->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->numericalFeatureListWidgetCol->setDefaultDropAction(Qt::MoveAction);
-    ui->numericalFeatureListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
+    // set study variable lists
+    ui->numericalStudyVariableListWidgetCol->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->numericalStudyVariableListWidgetCol->setDefaultDropAction(Qt::MoveAction);
+    ui->numericalStudyVariableListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
 
-    ui->nominalFeatureListWidgetCol->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->nominalFeatureListWidgetCol->setDefaultDropAction(Qt::MoveAction);
-    ui->nominalFeatureListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->nominalStudyVariableListWidgetCol->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->nominalStudyVariableListWidgetCol->setDefaultDropAction(Qt::MoveAction);
+    ui->nominalStudyVariableListWidgetCol->setSelectionMode(QListWidget::ExtendedSelection);
 
-    ui->numericalFeatureListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->numericalFeatureListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
-    ui->numericalFeatureListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->numericalStudyVariableListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->numericalStudyVariableListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
+    ui->numericalStudyVariableListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
 
-    ui->nominalFeatureListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->nominalFeatureListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
-    ui->nominalFeatureListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
+    ui->nominalStudyVariableListWidgetFlat->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->nominalStudyVariableListWidgetFlat->setDefaultDropAction(Qt::MoveAction);
+    ui->nominalStudyVariableListWidgetFlat->setSelectionMode(QListWidget::ExtendedSelection);
 
 
     // set quant list
@@ -131,10 +131,10 @@ void ImportTable::show(LipidSpace *_lipid_space){
     ui->lipidListWidgetRow->clear();
     ui->lipidListWidgetCol->clear();
     ui->lipidListWidgetFlat->clear();
-    ui->numericalFeatureListWidgetCol->clear();
-    ui->nominalFeatureListWidgetCol->clear();
-    ui->numericalFeatureListWidgetFlat->clear();
-    ui->nominalFeatureListWidgetFlat->clear();
+    ui->numericalStudyVariableListWidgetCol->clear();
+    ui->nominalStudyVariableListWidgetCol->clear();
+    ui->numericalStudyVariableListWidgetFlat->clear();
+    ui->nominalStudyVariableListWidgetFlat->clear();
     ui->quantListWidgetFlat->clear();
     ui->tableWidget->setColumnCount(0);
     ui->tabWidget->setCurrentIndex(0);
@@ -289,7 +289,7 @@ void ImportTable::cancel(){
 bool ImportTable::checkStudyVariables(){
     if (lipid_space == 0 || lipid_space->lipidomes.size() == 0) return true;
 
-    if (lipid_space->feature_values.size() > 0 && ui->tabWidget->currentIndex() == 0){
+    if (lipid_space->study_variable_values.size() > 0 && ui->tabWidget->currentIndex() == 0){
         QMessageBox::warning(this, "Mismatch with study variables", "Your table type does not support study varibles but you already have registered study variables. Therefore, an import is not possible.");
         return false;
     }
@@ -298,19 +298,19 @@ bool ImportTable::checkStudyVariables(){
     QListWidget *nominal_list = 0;
 
     if (ui->tabWidget->currentIndex() == 1){
-        numerical_list = ui->numericalFeatureListWidgetCol;
-        nominal_list = ui->nominalFeatureListWidgetCol;
+        numerical_list = ui->numericalStudyVariableListWidgetCol;
+        nominal_list = ui->nominalStudyVariableListWidgetCol;
     }
     else if (ui->tabWidget->currentIndex() == 2){
-        numerical_list = ui->numericalFeatureListWidgetFlat;
-        nominal_list = ui->nominalFeatureListWidgetFlat;
+        numerical_list = ui->numericalStudyVariableListWidgetFlat;
+        nominal_list = ui->nominalStudyVariableListWidgetFlat;
     }
 
     int num_numerical = 0;
     int num_nominal = 0;
 
-    for (auto kv : lipid_space->feature_values){
-        if (kv.second.feature_type == NominalFeature) num_nominal++;
+    for (auto kv : lipid_space->study_variable_values){
+        if (kv.second.variable_type == NominalStudyVariable) num_nominal++;
         else num_numerical++;
     }
     num_nominal = max(0, num_nominal - 1); // -1 because of internal 'Origin' variable
@@ -332,11 +332,11 @@ bool ImportTable::checkStudyVariables(){
         set<string> numerical_import;
         set<string> nominal_import;
 
-        for (auto kv : lipid_space->feature_values){
-            if (kv.second.feature_type == NominalFeature) nominal_registered.insert(kv.first);
+        for (auto kv : lipid_space->study_variable_values){
+            if (kv.second.variable_type == NominalStudyVariable) nominal_registered.insert(kv.first);
             else numerical_registered.insert(kv.first);
         }
-        if (contains_val(nominal_registered, FILE_FEATURE_NAME)) nominal_registered.erase(FILE_FEATURE_NAME);
+        if (contains_val(nominal_registered, FILE_STUDY_VARIABLE_NAME)) nominal_registered.erase(FILE_STUDY_VARIABLE_NAME);
 
         for (int i = 0; i < numerical_list->count(); ++i) numerical_import.insert(numerical_list->item(i)->text().toStdString());
         for (int i = 0; i < nominal_list->count(); ++i) nominal_import.insert(nominal_list->item(i)->text().toStdString());
@@ -416,12 +416,12 @@ void ImportTable::okCol(){
                 column_types->at(original_column_index[ui->lipidListWidgetCol->item(i)->text()]) = LipidColumn;
             }
 
-            for (int i = 0; i < (int)ui->numericalFeatureListWidgetCol->count(); ++i){
-                column_types->at(original_column_index[ui->numericalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNumerical;
+            for (int i = 0; i < (int)ui->numericalStudyVariableListWidgetCol->count(); ++i){
+                column_types->at(original_column_index[ui->numericalStudyVariableListWidgetCol->item(i)->text()]) = StudyVariableColumnNumerical;
             }
 
-            for (int i = 0; i < (int)ui->nominalFeatureListWidgetCol->count(); ++i){
-                column_types->at(original_column_index[ui->nominalFeatureListWidgetCol->item(i)->text()]) = FeatureColumnNominal;
+            for (int i = 0; i < (int)ui->nominalStudyVariableListWidgetCol->count(); ++i){
+                column_types->at(original_column_index[ui->nominalStudyVariableListWidgetCol->item(i)->text()]) = StudyVariableColumnNominal;
             }
 
             if (mapping_of_study_variables){
@@ -467,12 +467,12 @@ void ImportTable::okFlat(){
 
             column_types->at(original_column_index[ui->quantListWidgetFlat->item(0)->text()]) = QuantColumn;
 
-            for (int i = 0; i < (int)ui->numericalFeatureListWidgetFlat->count(); ++i){
-                column_types->at(original_column_index[ui->numericalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNumerical;
+            for (int i = 0; i < (int)ui->numericalStudyVariableListWidgetFlat->count(); ++i){
+                column_types->at(original_column_index[ui->numericalStudyVariableListWidgetFlat->item(i)->text()]) = StudyVariableColumnNumerical;
             }
 
-            for (int i = 0; i < (int)ui->nominalFeatureListWidgetFlat->count(); ++i){
-                column_types->at(original_column_index[ui->nominalFeatureListWidgetFlat->item(i)->text()]) = FeatureColumnNominal;
+            for (int i = 0; i < (int)ui->nominalStudyVariableListWidgetFlat->count(); ++i){
+                column_types->at(original_column_index[ui->nominalStudyVariableListWidgetFlat->item(i)->text()]) = StudyVariableColumnNominal;
             }
 
             if (mapping_of_study_variables){

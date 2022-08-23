@@ -212,7 +212,7 @@ void DendrogramLine::update_height_factor(double update_factor, QPointF *max_val
 
 Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     lipid_space = _lipid_space;
-    feature = "";
+    study_variable = "";
     setZValue(100);
     top_line = 0;
     highlighted_for_selection = 0;
@@ -366,16 +366,16 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
     int angle_start = 16 * 90;
     QFont pie_font("Helvetica");
     pie_font.setPointSizeF(10. * resize_factor);
-    if (lipid_space->feature_values[feature].feature_type == NominalFeature){
+    if (lipid_space->study_variable_values[study_variable].variable_type == NominalStudyVariable){
         double sum = 0;
-        for (auto kv : node->feature_count_nominal[feature]){
+        for (auto kv : node->study_variable_count_nominal[study_variable]){
             sum += kv.second;
         }
 
-        for (auto kv : node->feature_count_nominal[feature]){
+        for (auto kv : node->study_variable_count_nominal[study_variable]){
             if (kv.second == 0) continue;
             int span = 16. * 360. * (double)kv.second / sum;
-            QBrush brush(GlobalData::colorMapFeatures[feature + "_" + kv.first]);
+            QBrush brush(GlobalData::colorMapStudyVariables[study_variable + "_" + kv.first]);
             QPen piePen(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
@@ -384,17 +384,17 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
         }
     }
     else {
-        string feature_le = feature + "_le";
-        string feature_gr = feature + "_gr";
+        string study_variable_le = study_variable + "_le";
+        string study_variable_gr = study_variable + "_gr";
 
         int num = 0;
-        if (uncontains_val(node->feature_numerical, feature) || node->feature_numerical[feature].size() == 0) return;
-        for (double val : node->feature_numerical[feature]){
+        if (uncontains_val(node->study_variable_numerical, study_variable) || node->study_variable_numerical[study_variable].size() == 0) return;
+        for (double val : node->study_variable_numerical[study_variable]){
             num += val <= threshold;
         }
 
-        int span = 16. * 360. * (double)num / (double)node->feature_numerical[feature].size();
-        QBrush brush(GlobalData::colorMapFeatures[feature_le]);
+        int span = 16. * 360. * (double)num / (double)node->study_variable_numerical[study_variable].size();
+        QBrush brush(GlobalData::colorMapStudyVariables[study_variable_le]);
         QPen piePen(brush.color());
         painter->setPen(piePen);
         painter->setBrush(brush);
@@ -403,7 +403,7 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
 
         angle_start = (angle_start + span) % 5760;
         span = 5760 - span;
-        brush.setColor(GlobalData::colorMapFeatures[feature_gr]);
+        brush.setColor(GlobalData::colorMapStudyVariables[study_variable_gr]);
         piePen.setColor(brush.color());
         painter->setPen(piePen);
         painter->setBrush(brush);
@@ -415,13 +415,13 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
             double y = pie_y;
 
             // drawing the legend squares
-            QBrush brush(GlobalData::colorMapFeatures[feature_le]);
+            QBrush brush(GlobalData::colorMapStudyVariables[study_variable_le]);
             QPen piePen(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
             painter->drawRect(x - 15 * resize_factor, y - 20 * resize_factor, 15 * resize_factor, 15 * resize_factor);
 
-            brush.setColor(GlobalData::colorMapFeatures[feature_gr]);
+            brush.setColor(GlobalData::colorMapStudyVariables[study_variable_gr]);
             piePen.setBrush(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
@@ -440,13 +440,13 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
             double y = pie_y;
 
             // drawing the legend squares
-            QBrush brush(GlobalData::colorMapFeatures[feature_le]);
+            QBrush brush(GlobalData::colorMapStudyVariables[study_variable_le]);
             QPen piePen(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
             painter->drawRect(x, y - 20 * resize_factor, 15 * resize_factor, 15 * resize_factor);
 
-            brush.setColor(GlobalData::colorMapFeatures[feature_gr]);
+            brush.setColor(GlobalData::colorMapStudyVariables[study_variable_gr]);
             piePen.setBrush(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
@@ -495,15 +495,15 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 
 
     if (lipid_space && lipid_space->dendrogram_root){
-        if (feature != ""){
+        if (study_variable != ""){
             recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::gui_num_var["pie_tree_depth"]);
 
                 // Draw global pie chart
-            if (contains_val(lipid_space->feature_values, feature) && lipid_space->feature_values[feature].feature_type == NominalFeature){
+            if (contains_val(lipid_space->study_variable_values, study_variable) && lipid_space->study_variable_values[study_variable].variable_type == NominalStudyVariable){
                 int angle_start = 16 * 90;
                 double sum = 0;
                 DendrogramNode* node = lipid_space->dendrogram_root;
-                for (auto kv : node->feature_count_nominal[feature]){
+                for (auto kv : node->study_variable_count_nominal[study_variable]){
                     sum += kv.second;
                 }
 
@@ -515,10 +515,10 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
                 painter->save();
                 painter->translate(QPointF(v.x(), v.y()));
                 painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
-                for (auto kv : node->feature_count_nominal[feature]){
+                for (auto kv : node->study_variable_count_nominal[study_variable]){
                     if (kv.second == 0) continue;
                     int span = 16. * 360. * (double)kv.second / sum;
-                    QBrush brush(GlobalData::colorMapFeatures[feature + "_" + kv.first]);
+                    QBrush brush(GlobalData::colorMapStudyVariables[study_variable + "_" + kv.first]);
                     QPen piePen(brush.color());
                     painter->setPen(piePen);
                     painter->setBrush(brush);
@@ -530,24 +530,24 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
             }
 
 
-            // print the feature legend
+            // print the study variable legend
             QFont legend_font("Helvetica", 8);
-            int num_feature = 0;
-            for (auto feature_value_kv : lipid_space->feature_values.at(feature).nominal_values){
+            int num_study_variable = 0;
+            for (auto study_variable_value_kv : lipid_space->study_variable_values.at(study_variable).nominal_values){
                 QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
                 QTransform qtrans = view->transform();
                 painter->save();
                 painter->translate(QPointF(v.x(), v.y()));
                 painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
-                if (contains_val(GlobalData::colorMapFeatures, feature + "_" + feature_value_kv.first)){
-                    painter->fillRect(QRectF(view->viewport()->geometry().width() - 20, 40 + 20 * num_feature, 15, 15), GlobalData::colorMapFeatures[feature + "_" + feature_value_kv.first]);
+                if (contains_val(GlobalData::colorMapStudyVariables, study_variable + "_" + study_variable_value_kv.first)){
+                    painter->fillRect(QRectF(view->viewport()->geometry().width() - 20, 40 + 20 * num_study_variable, 15, 15), GlobalData::colorMapStudyVariables[study_variable + "_" + study_variable_value_kv.first]);
                 }
                 painter->setFont(legend_font);
-                string label_text = feature_value_kv.first + " (" + std::to_string(lipid_space->dendrogram_root->feature_count_nominal[feature][feature_value_kv.first]) + ")";
-                painter->drawText(QRectF(view->viewport()->geometry().width() - 525, 40 + 20 * num_feature, 500, 30), Qt::AlignTop | Qt::AlignRight, label_text.c_str());
+                string label_text = study_variable_value_kv.first + " (" + std::to_string(lipid_space->dendrogram_root->study_variable_count_nominal[study_variable][study_variable_value_kv.first]) + ")";
+                painter->drawText(QRectF(view->viewport()->geometry().width() - 525, 40 + 20 * num_study_variable, 500, 30), Qt::AlignTop | Qt::AlignRight, label_text.c_str());
 
                 painter->restore();
-                ++num_feature;
+                ++num_study_variable;
             }
         }
 
@@ -574,7 +574,7 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
         double pie_x = node->x_left * dendrogram_x_factor;
         double pie_y = (-node->y + dendrogram_y_offset) * dendrogram_height * dendrogram_y_factor / 100.;
 
-        draw_pie(painter, node->left_child, node->feature_numerical_thresholds[feature], pie_x, pie_y, LabelLeft);
+        draw_pie(painter, node->left_child, node->study_variable_numerical_thresholds[study_variable], pie_x, pie_y, LabelLeft);
         recursive_paint(painter, node->left_child, max_recursions, recursion + 1);
     }
 
@@ -583,7 +583,7 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
         double pie_x = node->x_right * dendrogram_x_factor;
         double pie_y = (-node->y + dendrogram_y_offset) * dendrogram_height * dendrogram_y_factor / 100.;
 
-        draw_pie(painter, node->right_child, node->feature_numerical_thresholds[feature], pie_x, pie_y, LabelRight);
+        draw_pie(painter, node->right_child, node->study_variable_numerical_thresholds[study_variable], pie_x, pie_y, LabelRight);
         recursive_paint(painter, node->right_child, max_recursions, recursion + 1);
     }
 }
@@ -1380,10 +1380,10 @@ void Canvas::setUpdate(){
 }
 
 
-void Canvas::setFeature(string _feature){
+void Canvas::setStudyVariable(string _study_variable){
 
     if (dendrogram){
-        dendrogram->feature = _feature;
+        dendrogram->study_variable = _study_variable;
         double tmp_factor = dendrogram->dendrogram_y_factor;
         dendrogram->dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
         QPointF max_vals(1e9, -1e9);

@@ -107,7 +107,7 @@ signals:
     void transforming(QRectF f);
     void updateCanvas();
     void exporting(string);
-    void featureChanged(string);
+    void studyVariableChanged(string);
     void updateHighlightedPoints(vector<QString> *);
     void analysisCompleted();
 
@@ -167,10 +167,10 @@ public slots:
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);
     void transposeTable();
     void reassembleSelection();
-    void setFeature(int pos);
+    void setStudyVariable(int pos);
     void itemChanged(QListWidgetItem *item);
-    void featureItemChanged(QTreeWidgetItem *item, int col);
-    void featureItemDoubleClicked(QTreeWidgetItem *item, int col);
+    void studyVariableItemChanged(QTreeWidgetItem *item, int col);
+    void studyVariableItemDoubleClicked(QTreeWidgetItem *item, int col);
     void updateSelectionView();
     void updateView(int);
     void updateTable();
@@ -180,9 +180,9 @@ public slots:
     void uncheck_selected_entities();
     void toggle_all_entities();
     void toggle_selected_entities();
-    void select_all_features();
-    void deselect_all_features();
-    void reset_all_features();
+    void select_all_study_variables();
+    void deselect_all_study_variables();
+    void reset_all_study_variables();
     void setPieTree(int);
     void setKnubbel();
     void setDendrogramHeight(int);
