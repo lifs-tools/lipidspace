@@ -198,6 +198,13 @@ public:
     CanvasType canvas_type;
     bool hovered_for_swap;
     bool marked_for_selected_view;
+    bool showQuant;
+    QPoint m_lastMousePos;
+    QPoint oldCenter;
+    QRectF oldView;
+    PointSet *pointSet;
+    Dendrogram *dendrogram;
+    QListWidget *listed_species;
 
     Canvas(QWidget *parent = nullptr);
     Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *parent = nullptr);
@@ -238,15 +245,6 @@ signals:
     void context(Canvas *canvas, QPoint pos);
     void rightClick(QPoint pos, set<int> *selected_d_lipidomes = 0);
 
-
-private:
-    bool showQuant;
-    QPoint m_lastMousePos;
-    QPoint oldCenter;
-    QRectF oldView;
-    PointSet *pointSet;
-    Dendrogram *dendrogram;
-    QListWidget *listed_species;
 };
 
 #endif /* CANVAS_H */

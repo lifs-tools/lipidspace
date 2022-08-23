@@ -257,7 +257,7 @@ void Statistics::updateBarPlot(){
         return;
     }
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
     if (lipid_space->selected_lipidomes.size() <= 1){
         chart->setVisible(false);
@@ -445,7 +445,7 @@ void Statistics::updateHistogram(){
 
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1);
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1);
 
     chart->setVisible(do_continue);
     if (!do_continue) return;
@@ -545,7 +545,7 @@ void Statistics::updateROCCurve(){
     stat_results.clear();
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1);
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1);
 
     chart->setVisible(do_continue);
     if (!do_continue){
@@ -702,7 +702,7 @@ void Statistics::updateBoxPlot(){
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
     if (lipid_space->selected_lipidomes.size() <= 1){
         chart->setVisible(false);

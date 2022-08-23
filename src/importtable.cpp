@@ -310,7 +310,7 @@ bool ImportTable::checkStudyVariables(){
     int num_nominal = 0;
 
     for (auto kv : lipid_space->study_variable_values){
-        if (kv.second.variable_type == NominalStudyVariable) num_nominal++;
+        if (kv.second.study_variable_type == NominalStudyVariable) num_nominal++;
         else num_numerical++;
     }
     num_nominal = max(0, num_nominal - 1); // -1 because of internal 'Origin' variable
@@ -333,7 +333,7 @@ bool ImportTable::checkStudyVariables(){
         set<string> nominal_import;
 
         for (auto kv : lipid_space->study_variable_values){
-            if (kv.second.variable_type == NominalStudyVariable) nominal_registered.insert(kv.first);
+            if (kv.second.study_variable_type == NominalStudyVariable) nominal_registered.insert(kv.first);
             else numerical_registered.insert(kv.first);
         }
         if (contains_val(nominal_registered, FILE_STUDY_VARIABLE_NAME)) nominal_registered.erase(FILE_STUDY_VARIABLE_NAME);

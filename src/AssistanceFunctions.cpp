@@ -89,14 +89,14 @@ Mapping::Mapping(){
     name = "";
     parent = "";
     action = NoAction;
-    variable_type = NominalStudyVariable;
+    study_variable_type = NominalStudyVariable;
     mapping = "";
 }
 
 Mapping::Mapping(string _name, StudyVariableType v_type){
     name = _name;
     parent = "";
-    variable_type = v_type;
+    study_variable_type = v_type;
     action = NoAction;
     mapping = "";
 }
@@ -165,13 +165,13 @@ void KeyTableWidget::keyPressEvent(QKeyEvent *event) {
 
 StudyVariableSet::StudyVariableSet(string _name, StudyVariableType v_type){
     name = _name;
-    variable_type = v_type;
+    study_variable_type = v_type;
 }
 
 
 StudyVariableSet::StudyVariableSet(){
     name = "";
-    variable_type = NominalStudyVariable;
+    study_variable_type = NominalStudyVariable;
     numerical_filter = {NoFilter, vector<double>()};
 }
 
@@ -180,7 +180,7 @@ StudyVariableSet::StudyVariableSet(){
 
 StudyVariableSet::StudyVariableSet(StudyVariableSet *study_variable_set){
     name = study_variable_set->name;
-    variable_type = study_variable_set->variable_type;
+    study_variable_type = study_variable_set->study_variable_type;
     for (auto kv : study_variable_set->nominal_values) nominal_values.insert({kv.first, kv.second});
     for (auto value : study_variable_set->numerical_values) numerical_values.insert(value);
     numerical_filter = {study_variable_set->numerical_filter.first, vector<double>()};
@@ -193,7 +193,7 @@ StudyVariableSet::StudyVariableSet(StudyVariableSet *study_variable_set){
 
 StudyVariable::StudyVariable(){
     name = "";
-    variable_type = NominalStudyVariable;
+    study_variable_type = NominalStudyVariable;
     numerical_value = 0;
     nominal_value = "";
     missing = false;
@@ -202,7 +202,7 @@ StudyVariable::StudyVariable(){
 
 StudyVariable::StudyVariable (string _name, string nom_val, bool _missing){
     name = _name;
-    variable_type = NominalStudyVariable;
+    study_variable_type = NominalStudyVariable;
     nominal_value = nom_val;
     numerical_value = 0;
     missing = _missing;
@@ -211,7 +211,7 @@ StudyVariable::StudyVariable (string _name, string nom_val, bool _missing){
 
 StudyVariable::StudyVariable (string _name, double num_val, bool _missing){
     name = _name;
-    variable_type = NumericalStudyVariable;
+    study_variable_type = NumericalStudyVariable;
     numerical_value = num_val;
     nominal_value = "";
     missing = _missing;
@@ -219,7 +219,7 @@ StudyVariable::StudyVariable (string _name, double num_val, bool _missing){
 
 StudyVariable::StudyVariable (StudyVariable *f){
     name = f->name;
-    variable_type = f->variable_type;
+    study_variable_type = f->study_variable_type;
     numerical_value = f->numerical_value;
     nominal_value = f->nominal_value;
     missing = f->missing;
@@ -278,7 +278,7 @@ void SignalCombobox::changedIndex(int ){
 
 SignalLineEdit::SignalLineEdit(int _row, StudyVariableType ft, QWidget *parent) : QLineEdit(parent){
     row = _row;
-    variable_type = ft;
+    study_variable_type = ft;
     connect(this, (void (SignalLineEdit::*)(const QString &))&SignalLineEdit::textChanged, this, &SignalLineEdit::changedText);
 }
 
@@ -480,7 +480,7 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
 
     // initialize empty study variable count table
     for (auto kv : *study_variable_values){
-        if (kv.second.variable_type == NominalStudyVariable){
+        if (kv.second.study_variable_type == NominalStudyVariable){
             study_variable_count_nominal.insert({kv.first, map<string, int>()});
             for (auto kv_nom : kv.second.nominal_values){
                 study_variable_count_nominal[kv.first].insert({kv_nom.first, 0});
@@ -492,7 +492,7 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
     }
 
     for (auto kv : lipidome->study_variables){
-        if (kv.second.variable_type == NominalStudyVariable){
+        if (kv.second.study_variable_type == NominalStudyVariable){
             study_variable_count_nominal[kv.first][kv.second.nominal_value] = 1;
         }
         else {

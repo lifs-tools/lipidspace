@@ -28,6 +28,7 @@ SOURCES += \
     src/about.cpp \
     src/filterdialog.cpp \
     src/importtable.cpp \
+    src/selectlipidomes.cpp \
     src/selectpc.cpp \
     src/select_worksheet.cpp \
     src/globaldata.cpp \
@@ -62,6 +63,7 @@ HEADERS += \
     lipidspace/matplotlibcpp.h \
     lipidspace/managelipidomes.h \
     lipidspace/progressbar.h \
+    lipidspace/selectlipidomes.h \
     lipidspace/selectpc.h \
     lipidspace/select_worksheet.h \
     lipidspace/setalpha.h \
@@ -81,6 +83,7 @@ FORMS += \
     ui/lipidspacegui.ui \
     ui/managelipidomes.ui \
     ui/progressbar.ui \
+    ui/selectlipidomes.ui \
     ui/selectpc.ui \
     ui/setalpha.ui \
     ui/setPCnum.ui \

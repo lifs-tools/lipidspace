@@ -366,7 +366,7 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
     int angle_start = 16 * 90;
     QFont pie_font("Helvetica");
     pie_font.setPointSizeF(10. * resize_factor);
-    if (lipid_space->study_variable_values[study_variable].variable_type == NominalStudyVariable){
+    if (lipid_space->study_variable_values[study_variable].study_variable_type == NominalStudyVariable){
         double sum = 0;
         for (auto kv : node->study_variable_count_nominal[study_variable]){
             sum += kv.second;
@@ -499,7 +499,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
             recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::gui_num_var["pie_tree_depth"]);
 
                 // Draw global pie chart
-            if (contains_val(lipid_space->study_variable_values, study_variable) && lipid_space->study_variable_values[study_variable].variable_type == NominalStudyVariable){
+            if (contains_val(lipid_space->study_variable_values, study_variable) && lipid_space->study_variable_values[study_variable].study_variable_type == NominalStudyVariable){
                 int angle_start = 16 * 90;
                 double sum = 0;
                 DendrogramNode* node = lipid_space->dendrogram_root;

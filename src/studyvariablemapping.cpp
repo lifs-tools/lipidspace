@@ -85,7 +85,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
     t->setHorizontalHeaderItem(3, item);
 
     for (auto kv : lipid_space->study_variable_values){
-        if (kv.second.variable_type == NumericalStudyVariable) registered_numerical_variables++;
+        if (kv.second.study_variable_type == NumericalStudyVariable) registered_numerical_variables++;
         else registered_nominal_variables++;
     }
 
@@ -113,7 +113,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
         int var_cnt = 4;
         int match = -1;
         for (auto kv_f : lipid_space->study_variable_values){
-            if (kv_f.second.variable_type != NumericalStudyVariable) continue;
+            if (kv_f.second.study_variable_type != NumericalStudyVariable) continue;
             QString s = kv_f.second.name.c_str();
             if (QString(kv_f.second.name.c_str()).toLower() == QString(kv.first.c_str()).toLower()) match = var_cnt;
 
@@ -156,7 +156,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
         int var_cnt = 4;
         int match = -1;
         for (auto kv_f : lipid_space->study_variable_values){
-            if (kv_f.second.variable_type != NominalStudyVariable || kv_f.first == FILE_STUDY_VARIABLE_NAME) continue;
+            if (kv_f.second.study_variable_type != NominalStudyVariable || kv_f.first == FILE_STUDY_VARIABLE_NAME) continue;
 
             QString s = kv_f.second.name.c_str();
             if (QString(kv_f.second.name.c_str()).toLower() == QString(kv.first.c_str()).toLower()) match = var_cnt;
@@ -224,7 +224,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
 void StudyVariableMapping::lineEditChanged(SignalLineEdit *edit, QString txt){
     int line_index = edit->row;
     string line_name = names_for_registration[line_index];
-    StudyVariableType ft = edit->variable_type;
+    StudyVariableType ft = edit->study_variable_type;
     mapping_data->at(ft)[line_name].mapping = txt.toStdString();
 }
 
@@ -315,7 +315,7 @@ void StudyVariableMapping::comboInsertedChanged(SignalCombobox *combo){
     SignalCombobox *cb = (SignalCombobox*)t->cellWidget(combo_row, 2);
     cb->clear();
     for (auto kv : lipid_space->study_variable_values){
-        if (kv.second.variable_type == ft && kv.first != FILE_STUDY_VARIABLE_NAME){
+        if (kv.second.study_variable_type == ft && kv.first != FILE_STUDY_VARIABLE_NAME){
             cb->addItem(QString("Map to '%1' with no default value").arg(kv.first.c_str()));
             cb->setItemData(cb->count() - 1, QString(kv.first.c_str()));
             cb->addItem(QString("Map to '%1' with default value").arg(kv.first.c_str()));
@@ -323,7 +323,7 @@ void StudyVariableMapping::comboInsertedChanged(SignalCombobox *combo){
         }
     }
 
-    ((SignalLineEdit*)t->cellWidget(combo_row, 3))->variable_type = ft;
+    ((SignalLineEdit*)t->cellWidget(combo_row, 3))->study_variable_type = ft;
 }
 
 
@@ -347,7 +347,7 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
     string combo_name = names_for_registration[row];
     StudyVariableType ft = (StudyVariableType)combo->itemData(0).toInt();
     SignalLineEdit *le = (SignalLineEdit*)ui->tableWidget->cellWidget(row, 3);
-    le->variable_type = ft;
+    le->study_variable_type = ft;
     le->setEnabled(combo_index == 1);
     le->setText("");
     combo->tool_tip = "";
@@ -462,7 +462,7 @@ void StudyVariableMapping::doContinue() {
         if (!(((r < original_import_variables) && (combo_index == 3)) || ((r >= original_import_variables) && ((combo_index & 1) == 1)))) continue;
 
         SignalLineEdit *le = (SignalLineEdit*)t->cellWidget(r, 3);
-        if (le->variable_type != NumericalStudyVariable) continue;
+        if (le->study_variable_type != NumericalStudyVariable) continue;
         QString le_text = le->text();
 
         bool is_number = false;
@@ -494,7 +494,7 @@ void StudyVariableMapping::doContinue() {
 
     // adding registered study variables for match check
     for (auto kv : lipid_space->study_variable_values){
-        if (kv.second.variable_type == NominalStudyVariable) nominal_registered.insert(kv.first);
+        if (kv.second.study_variable_type == NominalStudyVariable) nominal_registered.insert(kv.first);
         else numerical_registered.insert(kv.first);
     }
     if (contains_val(nominal_registered, FILE_STUDY_VARIABLE_NAME)) nominal_registered.erase(FILE_STUDY_VARIABLE_NAME);

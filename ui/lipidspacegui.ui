@@ -857,6 +857,16 @@
      <addaction name="action5_columns"/>
      <addaction name="action6_columns"/>
     </widget>
+    <widget class="QMenu" name="menuSelected_tiles_mode">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="title">
+      <string>Selected tile(s) mode</string>
+     </property>
+     <addaction name="actionSelection_mode_activated"/>
+     <addaction name="actionSelect_tiles"/>
+    </widget>
     <addaction name="actionSet_transparency"/>
     <addaction name="actionSelect_principal_components"/>
     <addaction name="menuTile_layout"/>
@@ -866,7 +876,7 @@
     <addaction name="actionShow_study_lipidomes"/>
     <addaction name="actionShow_quantitative_information"/>
     <addaction name="separator"/>
-    <addaction name="actionSelected_tiles_mode"/>
+    <addaction name="menuSelected_tiles_mode"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1107,12 +1117,17 @@
     <string>Complete feature analysis</string>
    </property>
   </action>
-  <action name="actionSelected_tiles_mode">
+  <action name="actionSelection_mode_activated">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Selected tile(s) mode</string>
+    <string>Activated</string>
+   </property>
+  </action>
+  <action name="actionSelect_tiles">
+   <property name="text">
+    <string>Select tile(s)</string>
    </property>
   </action>
  </widget>

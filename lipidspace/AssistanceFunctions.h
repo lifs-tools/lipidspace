@@ -64,7 +64,7 @@ public:
     string parent;
     MappingAction action;
     string mapping;
-    StudyVariableType variable_type;
+    StudyVariableType study_variable_type;
 
     Mapping();
     Mapping(string _name, StudyVariableType v_type);
@@ -146,7 +146,7 @@ class SignalLineEdit : public QLineEdit {
 
 public:
     int row;
-    StudyVariableType variable_type;
+    StudyVariableType study_variable_type;
 
     SignalLineEdit(int _row, StudyVariableType ft, QWidget *parent = nullptr);
     SignalLineEdit(QWidget *parent = nullptr);
@@ -190,7 +190,7 @@ private slots:
 class StudyVariableSet {
 public:
     string name;
-    StudyVariableType variable_type;
+    StudyVariableType study_variable_type;
     map<string, bool> nominal_values;
     set<double> numerical_values;
     pair<StudyVariableFilter, vector<double>> numerical_filter;
@@ -222,7 +222,7 @@ protected:
 class StudyVariable {
 public:
     string name;
-    StudyVariableType variable_type;
+    StudyVariableType study_variable_type;
     double numerical_value;
     string nominal_value;
     bool missing;

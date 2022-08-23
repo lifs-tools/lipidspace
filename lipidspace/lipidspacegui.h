@@ -14,6 +14,7 @@
 #include "lipidspace/setalpha.h"
 #include "lipidspace/setPCnum.h"
 #include "lipidspace/selectpc.h"
+#include "lipidspace/selectlipidomes.h"
 #include "lipidspace/importtable.h"
 #include "lipidspace/about.h"
 #include "lipidspace/globaldata.h"
@@ -78,11 +79,12 @@ signals:
 };
 
 
-class LipidSpaceGUI : public QMainWindow
-{
+class LipidSpaceGUI : public QMainWindow {
     Q_OBJECT
 
 public:
+    enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
+
     Ui::LipidSpaceGUI *ui;
     LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent = nullptr);
     ~LipidSpaceGUI();
@@ -94,8 +96,23 @@ public:
     Statistics statisticsHistogram;
     Statistics statisticsROCCurve;
     Statistics statisticsBarPlot;
+    QLabel *select_tiles_information;
+    set<int> *selected_d_lipidomes;
+    bool showStudyLipidomes;
+    bool showGlobalLipidome;
+    TileLayout tileLayout;
+    bool updating;
+    bool selected_tiles_mode;
+    Progressbar *progressbar;
+    string keystrokes;
+    Progress *progress;
+    DragLayer *dragLayer;
+    vector<Canvas*> canvases;
+    bool knubbel;
+    bool table_transposed;
+    map<string, vector<pair<string, double>>> sortings[4];
+    vector<QComboBox*> sorting_boxes;
 
-    enum TileLayout {AUTOMATIC = 0, ONE_COLULMN = 1, TWO_COLUMNS = 2, THREE_COLUMNS = 3, FOUR_COLUMNS = 4, FIVE_COLUMNS = 5, SIX_COLUMNS = 6};
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
@@ -146,11 +163,11 @@ public slots:
     void setSecondarySorting();
     void updateSecondarySorting(int);
     void runAnalysis();
-    void runAnalysisPID(int p_id);
     void completeFeatureAnalysis();
     void setTransforming(QRectF f);
     void setExport();
     void openSetAlpha();
+    void openSelectLipidomes();
     void openSetPCnum();
     void openSelectPC();
     void openAbout();
@@ -190,24 +207,6 @@ public slots:
     void setNormalization(int);
     void selectDendrogramLipidomes();
     void setSelectedTilesMode();
-
-
-private:
-    set<int> *selected_d_lipidomes;
-    bool showStudyLipidomes;
-    bool showGlobalLipidome;
-    TileLayout tileLayout;
-    bool updating;
-    bool selected_tiles_mode;
-    Progressbar *progressbar;
-    string keystrokes;
-    Progress *progress;
-    DragLayer *dragLayer;
-    vector<Canvas*> canvases;
-    bool knubbel;
-    bool table_transposed;
-    map<string, vector<pair<string, double>>> sortings[4];
-    vector<QComboBox*> sorting_boxes;
 
 };
 #endif // LIPIDSPACEGUI_H
