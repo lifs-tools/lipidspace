@@ -397,10 +397,10 @@ Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name
     QFileInfo qFileInfo(file_name.c_str());
     string cleaned_file = qFileInfo.baseName().toStdString();
     if (is_file_name){
-        cleaned_name = cleaned_file;
+        cleaned_name = cleaned_file + (sheet_name.length() > 0 ? "/" + sheet_name : "");
     }
     else {
-        cleaned_name = lipidome_name;
+        cleaned_name = lipidome_name + " - " + cleaned_file + (sheet_name.length() > 0 ? "/" + sheet_name : "");
     }
     study_variables.insert({FILE_STUDY_VARIABLE_NAME, StudyVariable(FILE_STUDY_VARIABLE_NAME, cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
 }
@@ -612,7 +612,12 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
 
 
 bool sort_double_string_desc (pair<double, string> i, pair<double, string> j) { return (i.first > j.first); }
+
 bool sort_double_double_asc (pair<double, double> i, pair<double, double> j) { return (i.first < j.first); }
+
+bool sort_string_string_asc (pair<string, string> i, pair<string, string> j) { return (i.first < j.first); }
+
+bool sort_string_string_desc (pair<string, string> i, pair<string, string> j) { return (i.first > j.first); }
 
 
 

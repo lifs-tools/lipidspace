@@ -138,8 +138,14 @@ void DendrogramLine::hoverLeaveEvent(QGraphicsSceneHoverEvent *){
 
 void DendrogramLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
     if (event->buttons() == Qt::LeftButton){
-        if (dendrogram->top_line) dendrogram->top_line->make_permanent(false);
-        make_permanent(true);
+        if (permanent && dendrogram->top_line){
+            dendrogram->top_line->make_permanent(false);
+            highlight(true);
+        }
+        else {
+            if (dendrogram->top_line) dendrogram->top_line->make_permanent(false);
+            make_permanent(true);
+        }
         dendrogram->update();
     }
     else if (event->buttons() == Qt::RightButton){
@@ -1198,6 +1204,7 @@ void Canvas::highlightPoints(){
 
 void Canvas::hoverOver(){
     if (dendrogram || canvas_type != SampleSpaceCanvas) return;
+
     QRectF widgetRect = QRectF(0, 0, width(), height());
     QPoint mousePos = mapFromGlobal(QCursor::pos());
     if (widgetRect.contains(mousePos)) {
@@ -1346,30 +1353,32 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
             event->ignore();
         }
     }
+    else {
+
+        // check if mouse over lipid bubble
+        if (pointSet){
+            QPoint origin_mouse = mapFromGlobal(QCursor::pos());
+            QPointF relative_mouse = mapToScene(origin_mouse);
 
 
-    // check if mouse over lipid bubble
-    if (pointSet){
-        QPoint origin_mouse = mapFromGlobal(QCursor::pos());
-        QPointF relative_mouse = mapToScene(origin_mouse);
-
-
-        QStringList lipid_names;
-        for (int i = 0; i < (int)pointSet->points.size(); ++i){
-            double intens = GlobalData::showQuant ? pointSet->points[i].intensity : POINT_BASE_SIZE;
-            double margin = sq(0.5 * intens);
-            if (sq(relative_mouse.x() - pointSet->points[i].point.x()) + sq(relative_mouse.y() - pointSet->points[i].point.y()) <= margin){
-                lipid_names.push_back(QString(pointSet->points[i].label));
+            QStringList lipid_names;
+            for (int i = 0; i < (int)pointSet->points.size(); ++i){
+                double intens = GlobalData::showQuant ? pointSet->points[i].intensity : POINT_BASE_SIZE;
+                double margin = sq(0.5 * intens);
+                if (sq(relative_mouse.x() - pointSet->points[i].point.x()) + sq(relative_mouse.y() - pointSet->points[i].point.y()) <= margin){
+                    lipid_names.push_back(QString(pointSet->points[i].label));
+                }
             }
-        }
 
-        if (!lipid_names.size()) showMessage("");
-        else showMessage(lipid_names.join(", "));
-    }
-    else if (dendrogram){
-        QPoint origin_mouse = mapFromGlobal(QCursor::pos());
-        QPointF relative_mouse = mapToScene(origin_mouse);
-        QList<QGraphicsItem *> over = graphics_scene.items(QRectF(relative_mouse.x() - 5, relative_mouse.y() - 5, 10, 10), Qt::IntersectsItemShape);
+            if (!lipid_names.size()) showMessage("");
+            else showMessage(lipid_names.join(", "));
+        }
+        else if (dendrogram){
+            QPoint origin_mouse = mapFromGlobal(QCursor::pos());
+            QPointF relative_mouse = mapToScene(origin_mouse);
+            QList<QGraphicsItem *> over = graphics_scene.items(QRectF(relative_mouse.x() - 5, relative_mouse.y() - 5, 10, 10), Qt::IntersectsItemShape);
+        }
+        QGraphicsView::mouseMoveEvent(event);
     }
 }
 

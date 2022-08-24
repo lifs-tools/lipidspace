@@ -153,14 +153,26 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(19) = SampleColumn;
         //ct->at(13) = StudyVariableColumnNominal;
         //ct->at(15) = StudyVariableColumnNominal;
-        loadTable(new ImportData("Data_Thrombocytes_UKR_04042022.csv", "", FLAT_TABLE, ct));
+        loadTable(new ImportData("Data_Thrombocytes_UKR.csv", "", FLAT_TABLE, ct));
+
+        vector<TableColumnType> *vct = new vector<TableColumnType>();
+        for (int i = 0; i < 20; ++i) vct->push_back(IgnoreColumn);
+        vct->at(0) = LipidColumn;
+        vct->at(18) = QuantColumn;
+        vct->at(19) = SampleColumn;
+        //ct->at(13) = StudyVariableColumnNominal;
+        //ct->at(15) = StudyVariableColumnNominal;
+        loadTable(new ImportData("Data_Thrombocytes_UKR_04042022.csv", "", FLAT_TABLE, vct));
 
 
+
+        /*
         vector<TableColumnType> *cct = new vector<TableColumnType>();
         for (int i = 0; i < 324; ++i) cct->push_back(LipidColumn);
         cct->at(0) = SampleColumn;
         for (int i = 1; i <= 42; ++i) cct->at(i) = IgnoreColumn;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, cct));
+        */
 
     }
     else if (event->key() == Qt::Key_7){
@@ -244,6 +256,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->tableWidget->setSelectionMode(QAbstractItemView::ContiguousSelection);
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->speciesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->classList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->categoryList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->sampleList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->statisticsBoxPlot->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsBarPlot->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsHistogram->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -614,6 +629,22 @@ void LipidSpaceGUI::updateSelectionView(){
         sort(sorting_desc.begin(), sorting_desc.end(), compare_string_desc);
     }
 
+
+    // sorting lipidomes according to origin
+    {
+        sortings[3].insert({"Origin (ASC)", vector<pair<string, double>>()});
+        sortings[3].insert({"Origin (DESC)", vector<pair<string, double>>()});
+
+        vector<pair<string, string>> sorting;
+        sorting.reserve(lipid_space->lipidomes.size());
+        for (auto lipidome : lipid_space->lipidomes) sorting.push_back({lipidome->file_name, lipidome->cleaned_name});
+        sort(sorting.begin(), sorting.end(), sort_string_string_asc);
+        for (auto p : sorting) sortings[3]["Origin (ASC)"].push_back({p.second, 0});
+        sort(sorting.begin(), sorting.end(), sort_string_string_desc);
+        for (auto p : sorting) sortings[3]["Origin (DESC)"].push_back({p.second, 0});
+
+
+    }
     sortings[0].insert(lipid_space->lipid_sortings.begin(), lipid_space->lipid_sortings.end());
     for (int i = 0; i < 4; ++i){
         sorting_boxes[i]->clear();

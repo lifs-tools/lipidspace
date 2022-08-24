@@ -14,7 +14,7 @@ ManageLipidomes::ManageLipidomes(LipidSpace *_lipid_space, QWidget *parent) : QD
 
     int i = 0;
     for (auto lipidome : lipid_space->lipidomes){
-        QString title = QString("%1 (%2)").arg(lipidome->cleaned_name.c_str()).arg(lipidome->study_variables[FILE_STUDY_VARIABLE_NAME].nominal_value.c_str());
+        QString title = lipidome->cleaned_name.c_str();
         ui->listView->addItem(title);
         itemIndex.insert({title, i++});
 
