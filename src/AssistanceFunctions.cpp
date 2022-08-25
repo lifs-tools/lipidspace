@@ -400,7 +400,9 @@ Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name
         cleaned_name = cleaned_file + (sheet_name.length() > 0 ? "/" + sheet_name : "");
     }
     else {
-        cleaned_name = lipidome_name + " - " + cleaned_file + (sheet_name.length() > 0 ? "/" + sheet_name : "");
+        string suffix = (cleaned_file.length() > 0) ? " - " + cleaned_file : "";
+        if (suffix.length() > 0 && sheet_name.length() > 0) suffix += "/" + sheet_name;
+        cleaned_name = lipidome_name + suffix;
     }
     study_variables.insert({FILE_STUDY_VARIABLE_NAME, StudyVariable(FILE_STUDY_VARIABLE_NAME, cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
 }

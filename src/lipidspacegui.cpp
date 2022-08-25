@@ -145,34 +145,34 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         loadTable(new ImportData("Heart_GPL.csv", "", FLAT_TABLE, ct));
     }
     else if (event->key() == Qt::Key_6){
+
+
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 20; ++i) ct->push_back(IgnoreColumn);
-        ct->at(0) = LipidColumn;
-        ct->at(18) = QuantColumn;
-        ct->at(19) = SampleColumn;
-        //ct->at(13) = StudyVariableColumnNominal;
-        //ct->at(15) = StudyVariableColumnNominal;
-        loadTable(new ImportData("Data_Thrombocytes_UKR.csv", "", FLAT_TABLE, ct));
-
-        vector<TableColumnType> *vct = new vector<TableColumnType>();
-        for (int i = 0; i < 20; ++i) vct->push_back(IgnoreColumn);
-        vct->at(0) = LipidColumn;
-        vct->at(18) = QuantColumn;
-        vct->at(19) = SampleColumn;
-        //ct->at(13) = StudyVariableColumnNominal;
-        //ct->at(15) = StudyVariableColumnNominal;
-        loadTable(new ImportData("Data_Thrombocytes_UKR_04042022.csv", "", FLAT_TABLE, vct));
+        for (int i = 0; i < 297; ++i) ct->push_back(LipidColumn);
+        ct->at(0) = SampleColumn;
+        ct->at(1) = StudyVariableColumnNominal;
+        ct->at(2) = StudyVariableColumnNominal;
+        ct->at(3) = StudyVariableColumnNominal;
+        loadTable(new ImportData("experiment/Ishikawa-et-al_2014.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
 
+        vector<TableColumnType> *ct2 = new vector<TableColumnType>();
+        for (int i = 0; i < 286; ++i) ct2->push_back(LipidColumn);
+        ct2->at(0) = SampleColumn;
+        ct2->at(1) = StudyVariableColumnNominal;
+        ct2->at(2) = StudyVariableColumnNominal;
+        ct2->at(3) = StudyVariableColumnNominal;
+        loadTable(new ImportData("experiment/Saw-et-al_2017.csv", "", COLUMN_PIVOT_TABLE, ct2));
 
-        /*
-        vector<TableColumnType> *cct = new vector<TableColumnType>();
-        for (int i = 0; i < 324; ++i) cct->push_back(LipidColumn);
-        cct->at(0) = SampleColumn;
-        for (int i = 1; i <= 42; ++i) cct->at(i) = IgnoreColumn;
-        loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, cct));
-        */
+
+        vector<TableColumnType> *ct3 = new vector<TableColumnType>();
+        for (int i = 0; i < 285; ++i) ct3->push_back(LipidColumn);
+        ct3->at(0) = SampleColumn;
+        ct3->at(1) = StudyVariableColumnNominal;
+        ct3->at(2) = StudyVariableColumnNominal;
+        ct3->at(3) = StudyVariableColumnNominal;
+        loadTable(new ImportData("experiment/Sales-et-al_2016.csv", "", COLUMN_PIVOT_TABLE, ct3));
 
     }
     else if (event->key() == Qt::Key_7){
@@ -242,6 +242,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     statisticsROCCurve.load_data(lipid_space, ui->statisticsROCCurve);
 
     qRegisterMetaType<string>("string");
+    qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
 
 
@@ -768,7 +769,7 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
             runAnalysis();
             for (auto study_variable : lipid_space->study_variable_values){
                 if (study_variable.second.study_variable_type == NumericalStudyVariable) continue;
-                ui->normalizationComboBox->addItem(("Study variable-grouped normalization: " + study_variable.first).c_str(), QVariant(study_variable.first.c_str()));
+                ui->normalizationComboBox->addItem(QString("%1 grouped normalization").arg(study_variable.first.c_str()), QVariant(study_variable.first.c_str()));
             }
             repeat_loading = false;
         }
@@ -1019,7 +1020,7 @@ void LipidSpaceGUI::runAnalysis(){
         }
     }
 
-    fill_table();
+    QTimer::singleShot(1, this, SLOT(fill_table()));
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
@@ -1157,7 +1158,7 @@ void LipidSpaceGUI::resetAnalysis(){
 
     ui->dendrogramView->resetDendrogram();
     ui->frame->setVisible(false);
-    fill_table();
+    QTimer::singleShot(1, this, SLOT(fill_table()));
     updateGUI();
 }
 
@@ -1189,7 +1190,7 @@ void LipidSpaceGUI::setSelectedTilesMode(){
     selected_tiles_mode = ui->actionSelection_mode_activated->isChecked();
     if (!selected_tiles_mode && canvases.size() > 100){
         if (QMessageBox::question(this, "Warning", QString("Currently %1 lipidome spaces are available. Showing all will reduce performance significantly. Do you want to continue?").arg(canvases.size())) != QMessageBox::Yes){
-            selected_tiles_mode = false;
+            selected_tiles_mode = true;
             GlobalData::selected_view = selected_tiles_mode;
             ui->actionSelection_mode_activated->setChecked(true);
         }
@@ -1207,7 +1208,7 @@ void LipidSpaceGUI::setSelectedTilesMode(){
 
 void LipidSpaceGUI::toggleLipidNameTranslation(){
     GlobalData::gui_num_var["translate"] = ui->actionTranslate->isChecked() ? TRANSLATED_NAME : IMPORT_NAME;
-    fill_table();
+    QTimer::singleShot(1, this, SLOT(fill_table()));
     updateView(0);
     updateGUI();
 }
@@ -1821,6 +1822,7 @@ void LipidSpaceGUI::export_table(){
         int cols = t->columnCount();
         int rows = t->rowCount();
 
+        wks_data.cell(1, 1).value() = "Sample";
         for (int col = 0; col < cols; ++col) wks_data.cell(1, 2 + col).value() = t->horizontalHeaderItem(col)->text().toStdString();
         for (int row = 0; row < rows; ++row) wks_data.cell(2 + row, 1).value() = t->verticalHeaderItem(row)->text().toStdString();
 
@@ -2141,7 +2143,7 @@ void LipidSpaceGUI::reset_all_study_variables(){
 
 void LipidSpaceGUI::transposeTable(){
     table_transposed = !table_transposed;
-    fill_table();
+    QTimer::singleShot(1, this, SLOT(fill_table()));
 }
 
 

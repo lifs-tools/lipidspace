@@ -670,6 +670,7 @@ void PointSet::loadPoints(){
         points.push_back(PCPoint());
         PCPoint &pc_point = points.back();
         pc_point.point = QPointF(xval, yval);
+        pc_point.normalized_intensity = lipidome->normalized_intensities[r];
         pc_point.intensity = intens;
         pc_point.color = GlobalData::colorMap[lipidome->classes[r]];
         pc_point.label = translations[lipidome->species[r]].c_str();
@@ -1366,7 +1367,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
                 double intens = GlobalData::showQuant ? pointSet->points[i].intensity : POINT_BASE_SIZE;
                 double margin = sq(0.5 * intens);
                 if (sq(relative_mouse.x() - pointSet->points[i].point.x()) + sq(relative_mouse.y() - pointSet->points[i].point.y()) <= margin){
-                    lipid_names.push_back(QString(pointSet->points[i].label));
+                    lipid_names.push_back(QString("%1 (%2)").arg(pointSet->points[i].label).arg(pointSet->points[i].normalized_intensity));
                 }
             }
 

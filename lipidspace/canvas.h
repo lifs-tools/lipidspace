@@ -143,6 +143,7 @@ public:
 
 struct PCPoint {
     QPointF point;
+    double normalized_intensity;
     double intensity;
     QColor color;
     QString label;
