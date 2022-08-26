@@ -56,6 +56,12 @@ public slots:
     void setLogScaleBarPlot();
     void setShowDataBoxPlot();
     void setShowDataBarPlot();
+    void lipidEntered(string lipid_name);
+    void lipidExited();
+
+signals:
+    void enterLipid(string lipid_name);
+    void exitLipid();
 };
 
 

@@ -5,24 +5,43 @@
 #include <QToolTip>
 #include <QCursor>
 #include <vector>
+#include <QObject>
 
 class Chartplot;
 
 using namespace std;
 
 
+class HoverRectSignal : public QObject {
+    Q_OBJECT
+
+public:
+    void sendSignalEnter(string lipid_name);
+    void sendSignalExit();
+
+signals:
+    void enterLipid(string lipid_name);
+    void exitLipid();
+};
 
 
 class HoverRectItem : public QGraphicsRectItem {
+
 public:
     QString label;
+    string lipid_name;
+    HoverRectSignal hover_rect_signal;
 
-    HoverRectItem(QString _label, QGraphicsItem *parent = nullptr);
+    HoverRectItem(QString _label, string _lipid_name, QGraphicsItem *parent = nullptr);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+
 };
 
-class BarBox {
+
+class BarBox : public QObject {
+    Q_OBJECT
+
 public:
     double value;
     double error;
@@ -36,11 +55,23 @@ public:
     vector<QGraphicsEllipseItem*> dots;
 
     BarBox(QGraphicsScene *scene, double _value, double _error, QString _label, QColor _color = Qt::white, vector< pair<double, double> > *_data = 0);
+
+
+signals:
+    void enterLipid(string lipid_name);
+    void exitLipid();
+
+public slots:
+    void lipidEntered(string lipid_name);
+    void lipidExited();
 };
 
+
 class Barplot : public Chartplot {
+    Q_OBJECT
+
 public:
-    vector< vector<BarBox> > bars;
+    vector< vector<BarBox*> > bars;
     bool log_scale;
     bool show_data;
 
@@ -49,6 +80,15 @@ public:
     void add(vector< vector< Array > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors = 0);
     void update_chart();
     void clear();
+
+
+signals:
+    void enterLipid(string lipid_name);
+    void exitLipid();
+
+public slots:
+    void lipidEntered(string lipid_name);
+    void lipidExited();
 };
 
 

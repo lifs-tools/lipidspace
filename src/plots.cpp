@@ -1,6 +1,19 @@
 #include "lipidspace/plots.h"
 
-BarBox::BarBox(QGraphicsScene *scene, double _value, double _error, QString _label, QColor _color, vector< pair<double, double> > *_data){
+
+void HoverRectSignal::sendSignalEnter(string lipid_name){
+    emit enterLipid(lipid_name);
+}
+
+
+
+void HoverRectSignal::sendSignalExit(){
+    emit exitLipid();
+}
+
+
+
+BarBox::BarBox(QGraphicsScene *scene, double _value, double _error, QString _label, QColor _color, vector< pair<double, double> > *_data) {
     value = _value;
     error = _error;
     color = _color;
@@ -8,8 +21,10 @@ BarBox::BarBox(QGraphicsScene *scene, double _value, double _error, QString _lab
     upper_error_line = new QGraphicsLineItem();
     lower_error_line = new QGraphicsLineItem();
     base_line = new QGraphicsLineItem();
-    rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1));
+    rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
     rect->setAcceptHoverEvents(true);
+    connect(&(rect->hover_rect_signal), &HoverRectSignal::enterLipid, this, &BarBox::lipidEntered);
+    connect(&(rect->hover_rect_signal), &HoverRectSignal::exitLipid, this, &BarBox::lipidExited);
 
     scene->addItem(upper_error_line);
     scene->addItem(lower_error_line);
@@ -27,19 +42,31 @@ BarBox::BarBox(QGraphicsScene *scene, double _value, double _error, QString _lab
 }
 
 
-HoverRectItem::HoverRectItem(QString _label, QGraphicsItem *parent) : QGraphicsRectItem(parent), label(_label){
+
+void BarBox::lipidEntered(string lipid_name){
+    emit enterLipid(lipid_name);
+}
+
+void BarBox::lipidExited(){
+    emit exitLipid();
+}
+
+
+HoverRectItem::HoverRectItem(QString _label, string _lipid_name, QGraphicsItem *parent) : QGraphicsRectItem(parent), label(_label), lipid_name(_lipid_name) {
 
 }
 
 void HoverRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event){
     QGraphicsRectItem::hoverEnterEvent(event);
     QToolTip::showText(QCursor::pos(), label);
+    hover_rect_signal.sendSignalEnter(lipid_name);
 }
 
 
 void HoverRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
     QGraphicsRectItem::hoverLeaveEvent(event);
     QToolTip::hideText();
+    hover_rect_signal.sendSignalExit();
 }
 
 
@@ -49,6 +76,7 @@ Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_c
 }
 
 Barplot::~Barplot(){
+    clear();
 }
 
 
@@ -57,62 +85,62 @@ void Barplot::update_chart(){
     double animation_length = pow(chart->animation, 0.25);
 
     for (uint b = 0; b < bars.size(); ++b){
-        vector< BarBox > &barset = bars[b];
+        vector< BarBox* > &barset = bars[b];
 
         for (uint s = 0; s < barset.size(); ++s){
-            BarBox &bar = barset[s];
-            if (visible && (bar.value > 0)){
+            BarBox *bar = barset[s];
+            if (visible && (bar->value > 0)){
                 double xs = b + (double)s / (double)barset.size();
                 double xe = b + (double)(s + 1) / (double)barset.size();
 
                 double x1 = xs + (xe - xs) / 4.;
-                double y1 = (bar.value + bar.error) * animation_length;
+                double y1 = (bar->value + bar->error) * animation_length;
                 double x2 = xe - (xe - xs) / 4.;
-                double y2 = (bar.value + bar.error) * animation_length;
+                double y2 = (bar->value + bar->error) * animation_length;
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
                 bool lines_visible = (x2 - x1) > 3;
-                bar.upper_error_line->setLine(x1, y1, x2, y2);
-                bar.upper_error_line->setZValue(100);
-                bar.upper_error_line->setVisible(visible & lines_visible);
+                bar->upper_error_line->setLine(x1, y1, x2, y2);
+                bar->upper_error_line->setZValue(100);
+                bar->upper_error_line->setVisible(visible & lines_visible);
 
                 x1 = xs + (xe - xs) / 4.;
-                y1 = (bar.value - bar.error) * animation_length;
+                y1 = (bar->value - bar->error) * animation_length;
                 x2 = xe - (xe - xs) / 4.;
-                y2 = (bar.value - bar.error) * animation_length;
+                y2 = (bar->value - bar->error) * animation_length;
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
-                bar.lower_error_line->setLine(x1, y1, x2, y2);
-                bar.lower_error_line->setZValue(100);
-                bar.lower_error_line->setVisible(visible & lines_visible);
+                bar->lower_error_line->setLine(x1, y1, x2, y2);
+                bar->lower_error_line->setZValue(100);
+                bar->lower_error_line->setVisible(visible & lines_visible);
 
                 x1 = (xs + xe) / 2.0;
-                y1 = (bar.value - bar.error) * animation_length;
+                y1 = (bar->value - bar->error) * animation_length;
                 x2 = (xs + xe) / 2.0;
-                y2 = (bar.value + bar.error) * animation_length;
+                y2 = (bar->value + bar->error) * animation_length;
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
-                bar.base_line->setLine(x1, y1, x2, y2);
-                bar.base_line->setZValue(90);
-                bar.base_line->setVisible(visible & lines_visible);
+                bar->base_line->setLine(x1, y1, x2, y2);
+                bar->base_line->setZValue(90);
+                bar->base_line->setVisible(visible & lines_visible);
 
                 x1 = xs;
-                y1 = bar.value * animation_length;
+                y1 = bar->value * animation_length;
                 x2 = xe;
                 y2 = 0;
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
-                bar.rect->setBrush(QBrush(bar.color));
-                bar.rect->setPen(lines_visible ? QPen(Qt::black) : Qt::NoPen);
-                bar.rect->setRect(x1, y1, x2 - x1, y2 - y1);
-                bar.rect->setZValue(50);
-                bar.rect->setVisible(visible);
+                bar->rect->setBrush(QBrush(bar->color));
+                bar->rect->setPen(lines_visible ? QPen(Qt::black) : Qt::NoPen);
+                bar->rect->setRect(x1, y1, x2 - x1, y2 - y1);
+                bar->rect->setZValue(50);
+                bar->rect->setVisible(visible);
 
-                if (bar.data.size()){
-                    for (uint d = 0; d < bar.data.size(); ++d){
-                        auto ellipse = bar.dots[d];
-                        x1 = (xs + xe) / 2.0 + bar.data[d].second * (xe - xs) / 2.0 * 0.8;
-                        y1 = bar.data[d].first * animation_length;
+                if (bar->data.size()){
+                    for (uint d = 0; d < bar->data.size(); ++d){
+                        auto ellipse = bar->dots[d];
+                        x1 = (xs + xe) / 2.0 + bar->data[d].second * (xe - xs) / 2.0 * 0.8;
+                        y1 = bar->data[d].first * animation_length;
                         chart->translate(x1, y1);
                         ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
                         ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
@@ -123,11 +151,11 @@ void Barplot::update_chart(){
                 }
             }
             else {
-                bar.upper_error_line->setVisible(false);
-                bar.lower_error_line->setVisible(false);
-                bar.base_line->setVisible(false);
-                bar.rect->setVisible(false);
-                for (auto ellipse : bar.dots) ellipse->setVisible(false);
+                bar->upper_error_line->setVisible(false);
+                bar->lower_error_line->setVisible(false);
+                bar->base_line->setVisible(false);
+                bar->rect->setVisible(false);
+                for (auto ellipse : bar->dots) ellipse->setVisible(false);
             }
         }
     }
@@ -135,9 +163,20 @@ void Barplot::update_chart(){
 
 
 void Barplot::clear(){
+    for (auto bar_set : bars){
+        for (auto bar : bar_set) delete bar;
+    }
     bars.clear();
 }
 
+
+void Barplot::lipidEntered(string lipid_name){
+    emit enterLipid(lipid_name);
+}
+
+void Barplot::lipidExited(){
+    emit exitLipid();
+}
 
 
 void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors){
@@ -152,8 +191,8 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
     double ymax = chart->yrange.y();
     for (uint s = 0; s < data.size(); ++s){
         auto data_set = data[s];
-        bars.push_back(vector< BarBox >());
-        vector< BarBox > &bar_set = bars.back();
+        bars.push_back(vector< BarBox* >());
+        vector< BarBox* > &bar_set = bars.back();
 
 
         for (uint c = 0; c < data_set.size(); c++){
@@ -207,7 +246,9 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
                 }
             }
 
-            bar_set.push_back(BarBox(&(chart->scene), mean, error, labels[s], color, orig_data));
+            bar_set.push_back(new BarBox(&(chart->scene), mean, error, labels[s], color, orig_data));
+            connect(bar_set.back(), &BarBox::enterLipid, this, &Barplot::lipidEntered);
+            connect(bar_set.back(), &BarBox::exitLipid, this, &Barplot::lipidExited);
 
             if (show_data) delete orig_data;
         }

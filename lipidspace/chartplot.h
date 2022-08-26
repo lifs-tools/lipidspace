@@ -8,7 +8,8 @@ using namespace std;
 
 class Chart;
 
-class Chartplot {
+class Chartplot : public QObject {
+
 public:
     Chart *chart;
 

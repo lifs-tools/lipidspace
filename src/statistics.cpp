@@ -425,11 +425,19 @@ void Statistics::updateBarPlot(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data);
     barplot->add(barplot_data, categories, lipid_names, &colors);
     chart->add(barplot);
+    connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
+    connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);
 }
 
 
+void Statistics::lipidEntered(string lipid_name){
+    emit enterLipid(lipid_name);
+}
 
 
+void Statistics::lipidExited(){
+    emit exitLipid();
+}
 
 
 

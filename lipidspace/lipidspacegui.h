@@ -112,6 +112,8 @@ public:
     bool table_transposed;
     map<string, vector<pair<string, double>>> sortings[4];
     vector<QComboBox*> sorting_boxes;
+    string hovered_box_plot_lipid;
+    string lipid_for_deselect;
 
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -207,6 +209,9 @@ public slots:
     void setNormalization(int);
     void selectDendrogramLipidomes();
     void setSelectedTilesMode();
+    void lipidEntered(string _lipid_name);
+    void lipidExited();
+    void deselectHoveredLipid();
 
 };
 #endif // LIPIDSPACEGUI_H

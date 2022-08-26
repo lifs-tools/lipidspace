@@ -235,19 +235,24 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     GlobalData::ctrl_pressed = false;
     tutorial = new Tutorial(this, ui->centralwidget);
     selected_tiles_mode = false;
+    hovered_box_plot_lipid = "";
+    lipid_for_deselect = "";
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);
     statisticsROCCurve.load_data(lipid_space, ui->statisticsROCCurve);
 
+    connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
+    connect(&statisticsBarPlot, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
+
     qRegisterMetaType<string>("string");
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     setWindowTitle(QApplication::translate("LipidSpaceGUI", ("LipidSpace - " + GlobalData::LipidSpace_version).c_str(), nullptr));
 
 
-    connect(lipid_space, SIGNAL(fileLoaded()), this, SLOT(updateSelectionView()));
-    connect(lipid_space, SIGNAL(reassembled()), this, SLOT(updateSelectionView()));
+    connect(lipid_space, &LipidSpace::fileLoaded, this, &LipidSpaceGUI::updateSelectionView);
+    connect(lipid_space, &LipidSpace::reassembled, this, &LipidSpaceGUI::updateSelectionView);
 
     dragLayer = new DragLayer(this, ui->centralwidget);
     dragLayer->move(0, 0);
@@ -1776,6 +1781,18 @@ void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos, set<int> *select
 
 
 
+
+void LipidSpaceGUI::lipidEntered(string _lipid_name){
+    hovered_box_plot_lipid = _lipid_name;
+}
+
+
+void LipidSpaceGUI::lipidExited(){
+    hovered_box_plot_lipid = "";
+}
+
+
+
 void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
     QMenu *menu = new QMenu(this);
     QAction *exportAsPdf = new QAction("Export as pdf", this);
@@ -1921,6 +1938,15 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
     if (statisticsBarPlot.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
     QAction *actionLogScale = new QAction("Y-axis in log scale", this);
+    QAction *actionSelectLipid = 0;
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+    bool hover_over_lipid = hovered_box_plot_lipid.length() > 0 && contains_val(translations, hovered_box_plot_lipid) && contains_val(lipid_space->selection[0], translations[hovered_box_plot_lipid]);
+
+    if (hover_over_lipid){
+        lipid_for_deselect = translations[hovered_box_plot_lipid];
+        bool deselect = lipid_space->selection[0][lipid_for_deselect];
+        actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(lipid_for_deselect.c_str()), this);
+    }
     QAction *actionShowData = new QAction("Show data", this);
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
@@ -1928,19 +1954,28 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
     actionLogScale->setChecked(statisticsBarPlot.log_scale);
     actionShowData->setCheckable(true);
     actionShowData->setChecked(statisticsBarPlot.show_data);
+    if (actionSelectLipid) menu->addAction(actionSelectLipid);
     menu->addAction(actionLogScale);
     menu->addAction(actionShowData);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
+    if (actionSelectLipid) connect(actionSelectLipid, &QAction::triggered, this, &LipidSpaceGUI::deselectHoveredLipid);
     connect(actionLogScale, &QAction::triggered, &statisticsBarPlot, &Statistics::setLogScaleBarPlot);
     connect(actionShowData, &QAction::triggered, &statisticsBarPlot, &Statistics::setShowDataBarPlot);
     connect(actionData, &QAction::triggered, &statisticsBarPlot, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, &statisticsBarPlot, &Statistics::exportAsPdf);
     menu->popup(ui->statisticsBarPlot->viewport()->mapToGlobal(pos));
-
-
 }
 
+
+
+void LipidSpaceGUI::deselectHoveredLipid(){
+    if (lipid_for_deselect.length() > 0 && contains_val(lipid_space->selection[0], lipid_for_deselect)){
+        lipid_space->selection[0][lipid_for_deselect] = !lipid_space->selection[0][lipid_for_deselect];
+        updateSelectionView();
+        lipid_for_deselect = "";
+    }
+}
 
 void LipidSpaceGUI::ShowContextMenuStatisticsHistogram(const QPoint pos){
     if (statisticsHistogram.chart->chart_plots.size() == 0) return;

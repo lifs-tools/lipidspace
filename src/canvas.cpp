@@ -212,7 +212,7 @@ void DendrogramLine::update_height_factor(double update_factor, QPointF *max_val
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
-// Canvas methods
+// Dendrogram methods
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -621,10 +621,14 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
-// Canvas methods
+// Pointset methods
 ///////////////////////////////////////////////////////////////////////////////////////
 
-
+double compute_scale(Lipidome *lipidome, int i){
+    double f = sqrt(sq(lipidome->m(i, GlobalData::PC1)) + sq(lipidome->m(i, GlobalData::PC2)));
+    //return 1. / log(f + 1.);
+    return 1. / sqrt(f);
+}
 
 PointSet::PointSet(Lipidome *_lipidome, Canvas *_view) : view(_view) {
     lipidome = _lipidome;
@@ -653,13 +657,12 @@ void PointSet::loadPoints(){
 
     for (uint rr = 0; rr < lipidome->selected_lipid_indexes.size(); ++rr){
         int r = lipidome->selected_lipid_indexes[rr];
-
-        double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
-        f = 1. / log(f + 1.);
+        double f = compute_scale(lipidome, rr);
 
         double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
         double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
-        double intens = GlobalData::showQuant ? log(exp(POINT_BASE_SIZE) + lipidome->visualization_intensities[rr]) : POINT_BASE_SIZE;
+        //double intens = GlobalData::showQuant ? log(exp(POINT_BASE_SIZE) + lipidome->visualization_intensities[rr]) : POINT_BASE_SIZE;
+        double intens = GlobalData::showQuant ? lipidome->visualization_intensities[rr] : POINT_BASE_SIZE;
         double intens_boundery = intens * 0.5;
 
         x_min = min(x_min, xval - intens_boundery);
@@ -671,6 +674,7 @@ void PointSet::loadPoints(){
         PCPoint &pc_point = points.back();
         pc_point.point = QPointF(xval, yval);
         pc_point.normalized_intensity = lipidome->normalized_intensities[r];
+        //pc_point.normalized_intensity = lipidome->visualization_intensities[r];
         pc_point.intensity = intens;
         pc_point.color = GlobalData::colorMap[lipidome->classes[r]];
         pc_point.label = translations[lipidome->species[r]].c_str();
@@ -811,7 +815,6 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
 
 
         // draw the arrow
-
         QPointF rotate_point = new_start.x() < pc_label.class_mean.x() ? new_start : pc_label.class_mean;
         double sign = 1. - 2. * (new_start.x() < pc_label.class_mean.x());
 
@@ -858,8 +861,8 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
 void PointSet::set_point_size(){
     for (auto pc_point : points){
         int rr = pc_point.ref_lipid_species;
-        double f = sqrt(sq(lipidome->m(rr, GlobalData::PC1)) + sq(lipidome->m(rr, GlobalData::PC2)));
-        f = 1. / log(f + 1.);
+        double f = compute_scale(lipidome, rr);
+
         double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
         double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
         double intens = GlobalData::showQuant ? pc_point.intensity : POINT_BASE_SIZE;
@@ -908,8 +911,7 @@ void PointSet::set_labels(){
     for (auto kv : indexes){
         double mx = 0, my = 0;
         for (auto i : kv.second){
-            double f = sqrt(sq(lipidome->m(i, GlobalData::PC1)) + sq(lipidome->m(i, GlobalData::PC2)));
-            f = 1. / log(f + 1.);
+            double f = compute_scale(lipidome, i);
             //mx += sign_log(lipidome->m(i, GlobalData::PC1)) * POINT_BASE_FACTOR;
             //my += sign_log(lipidome->m(i, GlobalData::PC2)) * POINT_BASE_FACTOR;
             mx += lipidome->m(i, GlobalData::PC1) * f * POINT_BASE_FACTOR;
@@ -926,8 +928,7 @@ void PointSet::set_labels(){
     }
 
     for (int i = 0; i < lipidome->m.rows; ++i){
-        double f = sqrt(sq(lipidome->m(i, 0)) + sq(lipidome->m(i, 1)));
-        f = 1. / log(f + 1.);
+        double f = compute_scale(lipidome, i);
         //mean_x.push_back(sign_log(lipidome->m(i, 0)) * POINT_BASE_FACTOR);
         //mean_y.push_back(sign_log(lipidome->m(i, 1)) * POINT_BASE_FACTOR);
         mean_x.push_back(lipidome->m(i, 0) * f * POINT_BASE_FACTOR);
@@ -1072,7 +1073,7 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     viewport()->setCursor(Qt::ArrowCursor);
     setMouseTracking(true);
 
-    graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
+    graphics_scene.setSceneRect(-5000000, -3000000, 10000000, 6000000);
     setScene(&graphics_scene);
     num = -3;
 }
@@ -1099,7 +1100,7 @@ void Canvas::setDendrogramData(LipidSpace *_lipid_space){
     graphics_scene.clear();
     dendrogram = new Dendrogram(lipid_space, this);
     graphics_scene.addItem(dendrogram);
-    graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
+    graphics_scene.setSceneRect(-5000000, -3000000, 10000000, 6000000);
 }
 
 
@@ -1134,7 +1135,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* 
     viewport()->setCursor(Qt::ArrowCursor);
     setMouseTracking(true);
 
-    graphics_scene.setSceneRect(-5000, -3000, 10000, 6000);
+    graphics_scene.setSceneRect(-5000000, -3000000, 10000000, 6000000);
     setScene(&graphics_scene);
 
 
