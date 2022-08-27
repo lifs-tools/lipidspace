@@ -1080,55 +1080,55 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
 
 
 
-
-
-
-
+// Efficient and Accurate Hausdorff Distance Computation Based on Diffusion Search
 double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
-    assert(m1.rows == m2.rows);
-    double max_h = 0;
+    double cmax = 0;
+    int rows = m1.rows;
 
-    for (int m1c = 0; m1c < m1.cols; ++m1c){
-        double min_h = 1e100;
-        double* m1col = m1.data() + (m1c * m1.rows);
-        for (int m2c = 0; m2c < m2.cols; m2c++){
-            __m256d dist = {0, 0, 0, 0};
-            double* m2col = m2.data() + (m2c * m2.rows);
-            for (int r = 0; r < m1.rows; r += 4){
-                __m256d val1 = _mm256_loadu_pd(&m1col[r]);
-                __m256d val2 = _mm256_loadu_pd(&m2col[r]);
-                __m256d sub = _mm256_sub_pd(val1, val2);
-                dist = _mm256_fmadd_pd(sub, sub, dist);
+
+    double isp = m2.cols >> 1;
+    for (int x = 0; x <  m1.cols; ++x){
+        double cmin = INFINITY;
+        double dist1 = INFINITY;
+        double dist2 = INFINITY;
+        double* m1col = m1.data() + (x * rows);
+
+        for (int y = isp - 1, z = isp; y > 0 || z < m2.cols; y--, z++){
+            if (y >= 0){
+                double* m2col = m2.data() + (y * rows);
+                __m256d dist = {0, 0, 0, 0};
+                for (int r = 0; r < rows; r += 4){
+                    __m256d val1 = _mm256_loadu_pd(&m1col[r]);
+                    __m256d val2 = _mm256_loadu_pd(&m2col[r]);
+                    __m256d sub = _mm256_sub_pd(val1, val2);
+                    dist = _mm256_fmadd_pd(sub, sub, dist);
+                }
+                dist1 = dist[0] + dist[1] + dist[2] + dist[3];
             }
-            double distance = dist[0] + dist[1] + dist[2] + dist[3];
-            min_h = min(min_h, distance);
-            if (min_h <= max_h || min_h == 0) break;
+
+            if (z < m2.cols){
+                double* m2col = m2.data() + (z * rows);
+                __m256d dist = {0, 0, 0, 0};
+                for (int r = 0; r < rows; r += 4){
+                    __m256d val1 = _mm256_loadu_pd(&m1col[r]);
+                    __m256d val2 = _mm256_loadu_pd(&m2col[r]);
+                    __m256d sub = _mm256_sub_pd(val1, val2);
+                    dist = _mm256_fmadd_pd(sub, sub, dist);
+                }
+                dist2 = dist[0] + dist[1] + dist[2] + dist[3];
+            }
+            cmin = min(min(dist1, dist2), cmin);
+            if (cmin <= cmax || cmin == 0){
+                isp = dist1 < dist2 ? y : z;
+                break;
+            }
         }
-        max_h = max(max_h, min_h);
+        if (cmin > cmax) cmax = cmin;
     }
 
-
-    for (int m2c = 0; m2c < m2.cols; m2c++){
-        double min_h = 1e100;
-        double* m2col = m2.data() + (m2c * m2.rows);
-        for (int m1c = 0; m1c < m1.cols; ++m1c){
-            __m256d dist = {0, 0, 0, 0};
-            double* m1col = m1.data() + (m1c * m1.rows);
-            for (int r = 0; r < m1.rows; r += 4){
-                __m256d val1 = _mm256_loadu_pd(&m1col[r]);
-                __m256d val2 = _mm256_loadu_pd(&m2col[r]);
-                __m256d sub = _mm256_sub_pd(val1, val2);
-                dist = _mm256_fmadd_pd(sub, sub, dist);
-            }
-            double distance = dist[0] + dist[1] + dist[2] + dist[3];
-            min_h = min(min_h, distance);
-            if (min_h <= max_h || min_h == 0) break;
-        }
-        max_h = max(max_h, min_h);
-    }
-
-    return sqrt(max_h);
+    return cmax;
 }
+
 
 
 
@@ -1167,7 +1167,9 @@ void LipidSpace::compute_hausdorff_matrix(){
         int i = pairs.at(ii).first;
         int j = pairs.at(ii).second;
 
-        double hd = compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j));
+        double hd1 = compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j));
+        double hd2 = compute_hausdorff_distance(*matrixes.at(j), *matrixes.at(i));
+        double hd = sqrt(max(hd1, hd2));
         hausdorff_distances(i, j) = hd;
         hausdorff_distances(j, i) = hd;
     }

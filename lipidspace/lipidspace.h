@@ -60,6 +60,94 @@ public:
 
 
 
+
+
+
+
+/*
+// An efficient computational algorithm for Hausdorff distance based on points-ruling-out and systematic random sampling
+double LipidSpace::HD(Matrix &m1, Matrix &m2){
+    double cmax = 0;
+    Array U(m1.cols, INFINITY);
+    Array V(m2.cols, INFINITY);
+    int isp = m1.cols / 2;
+    int rows = m1.rows;
+
+    // TMDC computes U, V, and cmax
+    int delta = m2.cols / 4;
+    int osp = 0;  // TODO random
+    for (int x = osp; x < m2.cols; x += delta){
+        double cmin = INFINITY;
+        double dist1 = INFINITY;
+        double dist2 = INFINITY;
+        double* m2col = m2.data() + (x * m2.rows);
+
+        for (int y = isp - 1, z = isp; y > 0 || z < m1.cols; y--, z++){
+            if (y >= 0){
+                double* m1col = m1.data() + (y * m1.rows);
+                dist1 = distance_norm(m2col, m1col, rows);
+                if (dist1 < U[y]) U[y] = dist1;
+            }
+            if (z < m1.cols){
+                double* m1col = m1.data() + (z * m1.rows);
+                dist2 = distance_norm(m2col, m1col, rows);
+                if (dist2 < U[z]) U[z] = dist2;
+            }
+            double dist = min(dist1, dist2);
+            if (dist < V[x]) V[x] = dist;
+            cmin = min(dist, cmin);
+
+            if (cmin <= cmax){
+                isp = dist1 < dist2 ? y : z;
+                break;
+            }
+        }
+        if (cmin > cmax) cmax = cmin;
+    }
+
+    // RULINGOUT rules out non-contributing points.
+    Indexes m1_cols;
+    for (int c = 0; c < m1.cols; c++){
+        if (U[c] > cmax) m1_cols.push_back(c);
+    }
+    Matrix m1_r;
+    m1_r.rewrite(m1, {}, m1_cols);
+
+
+    isp = m2.cols / 2;
+    for (int x = 0; x < m1_r.cols; ++x){
+        double cmin = INFINITY;
+        double dist1 = INFINITY;
+        double dist2 = INFINITY;
+        double* m1col = m1_r.data() + (x * m1_r.rows);
+
+        for (int y = isp - 1, z = isp; y > 0 || z < m2.rows; y--, z++){
+            if (y >= 0){
+                double* m2col = m2.data() + (y * m2.rows);
+                dist1 = distance_norm(m1col, m2col, rows);
+                if (dist1 < V[y]) V[y] = dist1;
+            }
+
+            if (z < m2.cols){
+                double* m2col = m2.data() + (z * m2.rows);
+                dist2 = distance_norm(m1col, m2col, rows);
+                if (dist2 < V[z]) V[z] = dist2;
+            }
+            cmin = min(min(dist1, dist2), cmin);
+            if (cmin <= cmax){
+                isp = dist1 < dist2 ? y : z;
+                break;
+            }
+        }
+        if (cmin > cmax) cmax = cmin;
+    }
+
+    return cmax;
+}
+*/
+
+
+
     LipidSpace();
     ~LipidSpace();
     LipidSpace(LipidSpace *ls);

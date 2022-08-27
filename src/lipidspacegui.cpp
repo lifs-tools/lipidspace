@@ -176,18 +176,14 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
     }
     else if (event->key() == Qt::Key_7){
+
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 13; ++i) ct->push_back(IgnoreColumn);
-        ct->at(9) = LipidColumn;
-        ct->at(10) = QuantColumn;
-        ct->at(1) = SampleColumn;
+        for (int i = 0; i < 740; ++i) ct->push_back(LipidColumn);
+        ct->at(0) = SampleColumn;
+        ct->at(1) = StudyVariableColumnNominal;
         ct->at(2) = StudyVariableColumnNominal;
-        ct->at(4) = StudyVariableColumnNominal;
-        ct->at(5) = StudyVariableColumnNominal;
-        ct->at(6) = StudyVariableColumnNominal;
-
-        loadTable(new ImportData("examples/000.csv", "", FLAT_TABLE, ct));
+        loadTable(new ImportData("experiment/complete.xlsx", "LipidomicsData", COLUMN_PIVOT_TABLE, ct));
     }
     else if (event->key() == Qt::Key_8){
         resetAnalysis();
@@ -1025,7 +1021,7 @@ void LipidSpaceGUI::runAnalysis(){
         }
     }
 
-    QTimer::singleShot(1, this, SLOT(fill_table()));
+    fill_table();
     ui->frame->setVisible(true);
     updateSelectionView();
     updateGUI();
@@ -1163,7 +1159,7 @@ void LipidSpaceGUI::resetAnalysis(){
 
     ui->dendrogramView->resetDendrogram();
     ui->frame->setVisible(false);
-    QTimer::singleShot(1, this, SLOT(fill_table()));
+    fill_table();
     updateGUI();
 }
 
@@ -1213,7 +1209,7 @@ void LipidSpaceGUI::setSelectedTilesMode(){
 
 void LipidSpaceGUI::toggleLipidNameTranslation(){
     GlobalData::gui_num_var["translate"] = ui->actionTranslate->isChecked() ? TRANSLATED_NAME : IMPORT_NAME;
-    QTimer::singleShot(1, this, SLOT(fill_table()));
+    fill_table();
     updateView(0);
     updateGUI();
 }
@@ -2178,7 +2174,7 @@ void LipidSpaceGUI::reset_all_study_variables(){
 
 void LipidSpaceGUI::transposeTable(){
     table_transposed = !table_transposed;
-    QTimer::singleShot(1, this, SLOT(fill_table()));
+    fill_table();
 }
 
 
