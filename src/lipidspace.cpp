@@ -3,11 +3,11 @@
 
 
 double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkage = CompleteLinkage){
-    double v = 1e100 * (linkage == SingleLinkage);
+    double v = (linkage == SingleLinkage) ? INFINITY : 0;
     if (linkage == SingleLinkage || linkage == CompleteLinkage){
         for (auto index1 : n1->indexes){
             for (auto index2 : n2->indexes){
-                if ((linkage == CompleteLinkage && v < m(index1, index2)) || (linkage == SingleLinkage && v > m(index1, index2))){
+                if ((linkage == CompleteLinkage && v < m(index1, index2)) || (linkage == SingleLinkage && (v == INFINITY || v > m(index1, index2)))){
                     v = m(index1, index2);
                 }
             }
@@ -37,12 +37,12 @@ void LipidSpace::create_dendrogram(){
     for (int i = 0; i < n; ++i) nodes.push_back(new DendrogramNode(i, &study_variable_values, selected_lipidomes[i]));
 
     while (nodes.size() > 1){
-        double min_val = 1e100;
+        double min_val = INFINITY;
         int ii = 0, jj = 0;
         for (int i = 0; i < (int)nodes.size() - 1; ++i){
             for (int j = i + 1; j < (int)nodes.size(); ++j){
                 double val = linkage(nodes.at(i), nodes.at(j), hausdorff_distances, GlobalData::linkage);
-                if (min_val > val){
+                if (min_val == INFINITY || min_val > val){
                     min_val = val;
                     ii = i;
                     jj = j;
@@ -3339,7 +3339,7 @@ void LipidSpace::feature_analysis(bool report_progress){
         genes.resize(n + 1, 0);
         genes[0] = new Gene(n_features + 1);
         //if (!is_nominal) genes[0]->gene_code[n_features] = true; // add constant value column
-        genes[0]->score = is_nominal ? 0 : 1e100;
+        genes[0]->score = is_nominal ? 0 : INFINITY;
 
 
         if (progress && report_progress){
@@ -3352,7 +3352,7 @@ void LipidSpace::feature_analysis(bool report_progress){
         if (progress->stop_progress) break;
         Gene* best = 0;
         int pos = 0;
-        double best_score = is_nominal ? 0 : 1e100;
+        double best_score = is_nominal ? 0 : INFINITY;
         Gene* last = genes[i - 1];
         while (pos < n_features && (!progress || !progress->stop_progress)){
             if (progress->stop_progress) break;
@@ -3398,7 +3398,7 @@ void LipidSpace::feature_analysis(bool report_progress){
                     new_gene->score = pow(new_gene->score, ll) * (cnt_lipids - missing_lipids) / cnt_lipids;
 
                     // search for maximal nominal score
-                    if (!best || best_score < new_gene->score){
+                    if (!best || best_score < new_gene->score || best_score == INFINITY){
                         best = new_gene;
                         best_score = new_gene->score;
                     }
@@ -3452,9 +3452,9 @@ void LipidSpace::feature_analysis(bool report_progress){
             }
         }
         else {
-            double best_score = 1e100;
+            double best_score = INFINITY;
             for (uint i = 1; i < genes.size(); ++i){
-                if (best_score > genes[i]->score){
+                if (best_score == INFINITY || best_score > genes[i]->score){
                     best_score = genes[i]->score;
                     best_pos = i;
                 }
