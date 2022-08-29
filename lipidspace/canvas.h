@@ -41,6 +41,7 @@ using namespace std;
 #define MARGIN 0.01
 #define POINT_BASE_FACTOR 5
 #define POINT_BASE_SIZE 1.0
+#define PIE_BASE_RADIUS 30.0
 #define LABEL_COLOR 200, 200, 200, 255
 #define sign_log(x) (x >= 0 ? log(x + 1) - 1 : -(log(-x + 1) - 1))
 #define DENDROGRAM_LINE_SIZE 2.
@@ -126,6 +127,8 @@ public:
     double y_max_d;
     double dwidth;
     double dheight;
+    double ratio;
+    double max_title_width;
     DendrogramLine *top_line;
     set<int> *highlighted_for_selection;
 
@@ -138,6 +141,7 @@ public:
     void recursive_paint(QPainter *painter, DendrogramNode *_node, int max_recursions, int recursion = 0);
     QRectF boundingRect() const override;
     void draw_pie(QPainter *painter, DendrogramNode *node, double threshold_leq, double pie_x, double pie_y, LabelDirection direction = NoLabel);
+    void update_bounds(bool complete = true);
 };
 
 
@@ -237,6 +241,7 @@ public slots:
     void moveToPoint(QListWidgetItem*);
     void contextMenu(QPoint pos);
     void setLabelSize(int);
+    void updateDendrogram();
 
 
 signals:

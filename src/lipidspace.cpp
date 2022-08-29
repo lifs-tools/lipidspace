@@ -12,10 +12,12 @@ void LipidSpace::create_dendrogram(){
 
     while (nodes.size() > 1){
         DendrogramNode* min_node = 0;
+        double min_depth = INFINITY;
 
         for (auto node : nodes){
-            if (min_node == 0 || min_node->min_distance.first > node->min_distance.first){
+            if (min_node == 0 || min_node->min_distance.first > node->min_distance.first || (min_node->min_distance.first == node->min_distance.first && (min_depth == INFINITY || (1 + max(node->depth, node->min_distance.second->depth)) < min_depth))){
                 min_node = node;
+                min_depth = 1 + max(node->depth, node->min_distance.second->depth);
             }
         }
 

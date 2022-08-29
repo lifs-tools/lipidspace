@@ -165,7 +165,6 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct2->at(3) = StudyVariableColumnNominal;
         loadTable(new ImportData("experiment/Saw-et-al_2017.csv", "", COLUMN_PIVOT_TABLE, ct2));
 
-
         vector<TableColumnType> *ct3 = new vector<TableColumnType>();
         for (int i = 0; i < 285; ++i) ct3->push_back(LipidColumn);
         ct3->at(0) = SampleColumn;
@@ -1368,7 +1367,7 @@ void LipidSpaceGUI::openSetPCnum(){
 
 void LipidSpaceGUI::setPieTree(int depth){
     GlobalData::gui_num_var["pie_tree_depth"] = depth;
-    ui->dendrogramView->setStudyVariable(ui->studyVariableComboBox->currentText().toStdString());
+    ui->dendrogramView->updateDendrogram();
 }
 
 
@@ -1385,7 +1384,7 @@ void LipidSpaceGUI::setDendrogramHeight(int height){
 
 void LipidSpaceGUI::setPieSize(int size){
     GlobalData::gui_num_var["pie_size"] = size;
-    ui->dendrogramView->setStudyVariable(ui->studyVariableComboBox->currentText().toStdString());
+    ui->dendrogramView->updateDendrogram();
 }
 
 void LipidSpaceGUI::openAbout(){

@@ -222,6 +222,8 @@ Dendrogram::Dendrogram(LipidSpace *_lipid_space, Canvas *_view) : view(_view) {
     setZValue(100);
     top_line = 0;
     highlighted_for_selection = 0;
+    ratio = 1;
+    max_title_width = 0;
 }
 
 
@@ -308,8 +310,11 @@ void Dendrogram::load(){
 
     if (!lipid_space->dendrogram_root) return;
 
+    max_title_width = 0;
+    QFontMetrics fm(QFont("Helvetica", GlobalData::gui_num_var["label_size"]));
     for (int i : lipid_space->dendrogram_sorting){
         dendrogram_titles.push_back(DendrogramTitle(QString(lipid_space->selected_lipidomes[i]->cleaned_name.c_str())));
+        max_title_width = max(max_title_width, (double)fm.horizontalAdvance(dendrogram_titles.back().title));
     }
 
     x_min_d = 1e9;
@@ -324,33 +329,35 @@ void Dendrogram::load(){
         x_max_d = max(x_max_d, lipid_space->dendrogram_points[i]);
         x_min_d = min(x_min_d, lipid_space->dendrogram_points[i + 2]);
         x_max_d = max(x_max_d, lipid_space->dendrogram_points[i + 2]);
+
         y_min_d = min(y_min_d, lipid_space->dendrogram_points[i + 1]);
         y_max_d = max(y_max_d, lipid_space->dendrogram_points[i + 1]);
         y_min_d = min(y_min_d, lipid_space->dendrogram_points[i + 3]);
         y_max_d = max(y_max_d, lipid_space->dendrogram_points[i + 3]);
-
     }
 
     dendrogram_x_factor = 100;
     dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
+    ratio = 1;
 
     dwidth = (lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor;
-    dheight = dwidth / 16 * 9;
-    dendrogram_height = dheight / (y_max_d - y_min_d);
+    dheight = dwidth * ratio;
+    dendrogram_height = dheight * dendrogram_y_factor / 100. / (y_max_d - y_min_d);
     dendrogram_y_offset = y_max_d;
 
-    double w = max(dendrogram_x_factor, 100.);
-    double h = max(dendrogram_y_factor, 100.);
 
-    bound.setX(- 2 * dendrogram_x_factor);
-    bound.setY(- dendrogram_y_factor);
-    bound.setWidth(dwidth + 3 * w);
-    bound.setHeight(dheight + 3 * h);
+    double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var["pie_size"] / 100.;
+    double x_l = max(max_title_width * 0.85, pie_radius);
+    double y_b = max(max_title_width * 0.7, pie_radius);
+    bound.setX(-x_l);
+    bound.setY(-pie_radius);
+    bound.setWidth(dwidth + x_l + pie_radius);
+    bound.setHeight(dheight + y_b + pie_radius);
 
     add_dendrogram_lines(lipid_space->dendrogram_root);
 
-    w = max(bound.width(), (double)view->viewport()->width());
-    h = max(bound.height(), (double)view->viewport()->height());
+    double w = max(bound.width(), (double)view->viewport()->width());
+    double h = max(bound.height(), (double)view->viewport()->height());
     view->graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
 }
 
@@ -368,7 +375,7 @@ QRectF Dendrogram::boundingRect() const {
 
 void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double threshold, double pie_x, double pie_y, LabelDirection direction){
     double resize_factor = GlobalData::gui_num_var["pie_size"] / 100.;
-    double pie_radius = 30. * resize_factor;
+    double pie_radius = PIE_BASE_RADIUS * resize_factor;
     int angle_start = 16 * 90;
     QFont pie_font("Helvetica");
     pie_font.setPointSizeF(10. * resize_factor);
@@ -487,14 +494,14 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     f.setPointSizeF(GlobalData::gui_num_var["label_size"]);
     painter->setFont(f);
     double dx = 0;
-    double dy = 10 + (((lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor) / 16. * 9.) * dendrogram_y_factor / 100;
+    double dy = 10 + (((lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor) * ratio) * dendrogram_y_factor / 100;
     for (auto dtitle : dendrogram_titles){
         painter->save();
         painter->translate(QPointF(dx, dy));
         painter->rotate(-35);
         QPen pen((dtitle.highlighted || dtitle.permanent) ? Qt::red : Qt::black);
         painter->setPen(pen);
-        painter->drawText(QRectF(-1000, -30, 1000, 60), Qt::AlignVCenter | Qt::AlignRight, dtitle.title);
+        painter->drawText(QRectF(-max_title_width, -GlobalData::gui_num_var["label_size"] / 2., max_title_width, GlobalData::gui_num_var["label_size"]), Qt::AlignVCenter | Qt::AlignRight, dtitle.title);
         dx += dendrogram_x_factor;
         painter->restore();
     }
@@ -595,7 +602,65 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
 }
 
 
+void Dendrogram::update_bounds(bool complete){
+    double tmp_factor = dendrogram_y_factor;
+    dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
+    if (isinf(dendrogram_y_factor) || isnan(dendrogram_y_factor) || isinf(tmp_factor) || isnan(tmp_factor) || isinf(dendrogram_y_factor / tmp_factor) || isnan(dendrogram_y_factor / tmp_factor)) return;
 
+    max_title_width = 0;
+    QFontMetrics fm(QFont("Helvetica", GlobalData::gui_num_var["label_size"]));
+    for (auto dendrogram_title : dendrogram_titles){
+        max_title_width = max(max_title_width, (double)fm.horizontalAdvance(dendrogram_title.title));
+    }
+    double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var["pie_size"] / 100.;
+
+    if (complete){
+        double r = (double)view->width() / (double)dwidth;
+        double x_l = max(max_title_width * 0.82 * r, pie_radius);
+        double y_b = max(max_title_width * 0.62 * r, pie_radius);
+        double tmp_ratio = ratio;
+        ratio = ((double)view->height() - pie_radius - y_b) / ((double)view->width() - pie_radius - x_l);
+
+        dheight = dwidth * ratio;
+        dendrogram_height = dheight / (y_max_d - y_min_d);
+        dendrogram_y_offset = y_max_d;
+
+        x_l = max(max_title_width * 0.82, pie_radius);
+        y_b = max(max_title_width * 0.62, pie_radius);
+
+        bound.setX(-x_l);
+        bound.setY(-pie_radius);
+        bound.setWidth(dwidth + x_l + pie_radius);
+        bound.setHeight(dheight * dendrogram_y_factor / 100. + y_b + pie_radius);
+
+
+        if (top_line){
+            QPointF max_vals(1e9, -1e9);
+            if (dendrogram_y_factor != tmp_factor){
+                top_line->update_height_factor(dendrogram_y_factor / tmp_factor, &max_vals);
+            }
+            else {
+                top_line->update_height_factor(ratio / tmp_ratio, &max_vals);
+            }
+        }
+
+
+        double w = max(bound.width(), (double)view->viewport()->width());
+        double h = max(bound.height(), (double)view->viewport()->height());
+        view->graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
+    }
+    else {
+        double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var["pie_size"] / 100.;
+        double x_l = max(max_title_width * 0.82, pie_radius);
+        double y_b = max(max_title_width * 0.62, pie_radius);
+        bound.setX(-x_l);
+        bound.setY(-pie_radius);
+        bound.setWidth(dwidth + x_l + pie_radius);
+        bound.setHeight(dheight * dendrogram_y_factor / 100. + y_b + pie_radius);
+    }
+    view->setBackgroundBrush(QBrush());
+    update();
+}
 
 
 
@@ -1113,7 +1178,7 @@ void Canvas::resetDendrogram(){
 
 void Canvas::setLabelSize(int font_size){
     GlobalData::gui_num_var["label_size"] = font_size;
-    if (dendrogram) dendrogram->update();
+    if (dendrogram) dendrogram->update_bounds(false);
 }
 
 
@@ -1391,23 +1456,18 @@ void Canvas::setUpdate(){
 }
 
 
+void Canvas::updateDendrogram(){
+    if (dendrogram){
+        dendrogram->update_bounds(false);
+    }
+}
+
+
 void Canvas::setStudyVariable(string _study_variable){
 
     if (dendrogram){
         dendrogram->study_variable = _study_variable;
-        double tmp_factor = dendrogram->dendrogram_y_factor;
-        dendrogram->dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
-        QPointF max_vals(1e9, -1e9);
-        if (dendrogram->top_line) dendrogram->top_line->update_height_factor(dendrogram->dendrogram_y_factor / tmp_factor, &max_vals);
-        double ybound = max(dendrogram->dendrogram_y_factor, 100.);
-        dendrogram->bound.setY(max_vals.x() - ybound);
-        dendrogram->bound.setHeight((max_vals.y() - max_vals.x()) + 3 * ybound);
-
-        double w = max(dendrogram->bound.width(), (double)viewport()->width());
-        double h = max(dendrogram->bound.height(), (double)viewport()->height());
-        graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
-        setBackgroundBrush(QBrush());
-        dendrogram->update();
+        dendrogram->update_bounds();
     }
 }
 
@@ -1416,6 +1476,8 @@ void Canvas::setStudyVariable(string _study_variable){
 
 void Canvas::resizeEvent(QResizeEvent *event) {
     if (!dendrogram && !pointSet) return;
+
+    if (dendrogram) dendrogram->update_bounds();
 
     QRectF bound = pointSet ? pointSet->boundingRect() : dendrogram->boundingRect();
     fitInView(bound, Qt::KeepAspectRatio);

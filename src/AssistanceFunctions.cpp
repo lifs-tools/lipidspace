@@ -479,6 +479,7 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
     x_right = 0;
     y = 0;
     min_distance = {INFINITY, 0};
+    depth = 0;
 
 
     // initialize empty study variable count table
@@ -504,32 +505,6 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
     }
 }
 
-/*
-DendrogramNode::DendrogramNode(DendrogramNode* n){
-    for (auto value : n->indexes) indexes.insert(value);
-    order = n->order;
-    left_child = new DendrogramNode(n->left_child);
-    right_child = new DendrogramNode(n->right_child);
-    distance = n->distance;
-    x_left = n->x_left;
-    x_right = n->x_right;
-    y = n->y;
-    min_distance = n->min_distance;
-    for (auto kv : n->distances) distances.insert({kv.first, kv.second});
-
-    for (auto kv : n->study_variable_count_nominal){
-        study_variable_count_nominal.insert({kv.first, map<string, int>()});
-        map<string, int> &m = study_variable_count_nominal[kv.first];
-        for (auto kv2 : kv.second) m.insert({kv2.first, kv2.second});
-    }
-    for (auto kv : n->study_variable_numerical){
-        study_variable_numerical.insert({kv.first, vector<double>()});
-        vector<double> &v = study_variable_numerical[kv.first];
-        for (auto value : kv.second) v.push_back(value);
-    }
-    for (auto kv : n->study_variable_numerical_thresholds) study_variable_numerical_thresholds.insert({kv.first, kv.second});
-}
-*/
 
 
 
@@ -547,6 +522,7 @@ DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d)
     for (auto i : n1->indexes) indexes.insert(i);
     for (auto i : n2->indexes) indexes.insert(i);
     distance = d;
+    depth = 1 + max(n1->depth, n2->depth);
 }
 
 
@@ -651,7 +627,7 @@ void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
             if (uncontains_val(node->distances, this)) node->distances.insert({this, dist});
         }
 
-        if (min_distance.first == INFINITY || dist < min_distance.first){
+        if (min_distance.first == INFINITY || dist < min_distance.first || (dist == min_distance.first && node->depth < min_distance.second->depth)){
             min_distance = {dist, node};
         }
     }

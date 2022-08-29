@@ -403,6 +403,7 @@ public:
     double x_right;
     double y;
     pair<double, DendrogramNode*> min_distance;
+    int depth = 0;
 
     map<string, map<string, int>> study_variable_count_nominal;
     map<string, vector<double>> study_variable_numerical;
@@ -411,7 +412,6 @@ public:
 
     DendrogramNode(int index, map<string, StudyVariableSet> *study_variable_values, Lipidome *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
-    //DendrogramNode(DendrogramNode* n);
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);
     void update_distances(set<DendrogramNode*> &nodes, Matrix &m);
