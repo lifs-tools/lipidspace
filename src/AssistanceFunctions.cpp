@@ -478,6 +478,7 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
     x_left = 0;
     x_right = 0;
     y = 0;
+    min_distance = {INFINITY, 0};
 
 
     // initialize empty study variable count table
@@ -503,7 +504,7 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
     }
 }
 
-
+/*
 DendrogramNode::DendrogramNode(DendrogramNode* n){
     for (auto value : n->indexes) indexes.insert(value);
     order = n->order;
@@ -513,6 +514,9 @@ DendrogramNode::DendrogramNode(DendrogramNode* n){
     x_left = n->x_left;
     x_right = n->x_right;
     y = n->y;
+    min_distance = n->min_distance;
+    for (auto kv : n->distances) distances.insert({kv.first, kv.second});
+
     for (auto kv : n->study_variable_count_nominal){
         study_variable_count_nominal.insert({kv.first, map<string, int>()});
         map<string, int> &m = study_variable_count_nominal[kv.first];
@@ -525,7 +529,7 @@ DendrogramNode::DendrogramNode(DendrogramNode* n){
     }
     for (auto kv : n->study_variable_numerical_thresholds) study_variable_numerical_thresholds.insert({kv.first, kv.second});
 }
-
+*/
 
 
 
@@ -539,6 +543,7 @@ DendrogramNode::~DendrogramNode(){
 DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d){
     left_child = n1;
     right_child = n2;
+    min_distance = {INFINITY, 0};
     for (auto i : n1->indexes) indexes.insert(i);
     for (auto i : n2->indexes) indexes.insert(i);
     distance = d;
@@ -610,6 +615,47 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     return new double[3]{(x_left + x_right) / 2, y, (double)cnt};
 }
 
+
+
+void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
+    min_distance = {INFINITY, 0};
+    for (auto node : nodes){
+        if (node == this) continue;
+
+        double dist = INFINITY;
+        if (contains_val(distances, node)){
+            dist = distances[node];
+        }
+        else {
+            Linkage lnk = GlobalData::linkage;
+            dist = (lnk == SingleLinkage) ? INFINITY : 0;
+            if (lnk == AverageLinkage) {
+                for (auto index1 : indexes){
+                    for (auto index2 : node->indexes){
+                        dist += m(index1, index2);
+                    }
+                }
+                dist /= (double)(indexes.size() * node->indexes.size());
+            }
+            else {
+                for (auto index1 : indexes){
+                    for (auto index2 : node->indexes){
+                        double hd = m(index1, index2);
+                        if ((lnk == CompleteLinkage && dist < hd) || (lnk == SingleLinkage && (dist == INFINITY || dist > hd))){
+                            dist = hd;
+                        }
+                    }
+                }
+            }
+            distances.insert({node, dist});
+            if (uncontains_val(node->distances, this)) node->distances.insert({this, dist});
+        }
+
+        if (min_distance.first == INFINITY || dist < min_distance.first){
+            min_distance = {dist, node};
+        }
+    }
+}
 
 
 

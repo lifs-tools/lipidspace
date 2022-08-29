@@ -36,6 +36,7 @@
 #define UNDEFINED_LIPID "UNDEFINED"
 #define FILE_STUDY_VARIABLE_NAME "Origin"
 #define NO_VALUE_CHAR "Ø"
+#define MASK32 4294967295ull
 
 using namespace OpenXLSX;
 using namespace std;
@@ -401,15 +402,19 @@ public:
     double x_left;
     double x_right;
     double y;
+    pair<double, DendrogramNode*> min_distance;
+
     map<string, map<string, int>> study_variable_count_nominal;
     map<string, vector<double>> study_variable_numerical;
     map<string, double> study_variable_numerical_thresholds;
+    map<DendrogramNode*, double> distances;
 
     DendrogramNode(int index, map<string, StudyVariableSet> *study_variable_values, Lipidome *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
-    DendrogramNode(DendrogramNode* n);
+    //DendrogramNode(DendrogramNode* n);
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);
+    void update_distances(set<DendrogramNode*> &nodes, Matrix &m);
 };
 
 

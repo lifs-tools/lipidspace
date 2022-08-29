@@ -1,67 +1,41 @@
 #include "lipidspace/lipidspace.h"
 
 
-
-double linkage(DendrogramNode* n1, DendrogramNode* n2, Matrix &m, Linkage linkage = CompleteLinkage){
-    double v = (linkage == SingleLinkage) ? INFINITY : 0;
-    if (linkage == SingleLinkage || linkage == CompleteLinkage){
-        for (auto index1 : n1->indexes){
-            for (auto index2 : n2->indexes){
-                if ((linkage == CompleteLinkage && v < m(index1, index2)) || (linkage == SingleLinkage && (v == INFINITY || v > m(index1, index2)))){
-                    v = m(index1, index2);
-                }
-            }
-        }
-    }
-    else {
-        for (auto index1 : n1->indexes){
-            for (auto index2 : n2->indexes){
-                v += m(index1, index2);
-            }
-        }
-        v /= (double)(n1->indexes.size() * n2->indexes.size());
-    }
-    return v;
-}
-
-
-
 void LipidSpace::create_dendrogram(){
     dendrogram_sorting.clear();
     dendrogram_points.clear();
     lipid_sortings.clear();
 
-    int n = hausdorff_distances.rows;
-
-    vector<DendrogramNode*> nodes;
-    for (int i = 0; i < n; ++i) nodes.push_back(new DendrogramNode(i, &study_variable_values, selected_lipidomes[i]));
+    set<DendrogramNode*> nodes;
+    for (int i = 0; i < hausdorff_distances.rows; ++i) nodes.insert(new DendrogramNode(i, &study_variable_values, selected_lipidomes[i]));
+    for (auto node : nodes) node->update_distances(nodes, hausdorff_distances);
 
     while (nodes.size() > 1){
-        double min_val = INFINITY;
-        int ii = 0, jj = 0;
-        for (int i = 0; i < (int)nodes.size() - 1; ++i){
-            for (int j = i + 1; j < (int)nodes.size(); ++j){
-                double val = linkage(nodes.at(i), nodes.at(j), hausdorff_distances, GlobalData::linkage);
-                if (min_val == INFINITY || min_val > val){
-                    min_val = val;
-                    ii = i;
-                    jj = j;
-                }
+        DendrogramNode* min_node = 0;
+
+        for (auto node : nodes){
+            if (min_node == 0 || min_node->min_distance.first > node->min_distance.first){
+                min_node = node;
             }
         }
 
-        DendrogramNode* node1 = nodes.at(ii);
-        DendrogramNode* node2 = nodes.at(jj);
-        nodes.erase(nodes.begin() + jj);
-        nodes.erase(nodes.begin() + ii);
-        nodes.push_back(new DendrogramNode(node1, node2, min_val));
+        DendrogramNode* pair_node = min_node->min_distance.second;
+        nodes.erase(min_node);
+        nodes.erase(pair_node);
+        DendrogramNode* new_node = new DendrogramNode(min_node, pair_node, min_node->min_distance.first);
+        nodes.insert(new_node);
+        new_node->update_distances(nodes, hausdorff_distances);
+
+        for (auto node : nodes){
+            if (node->min_distance.second && (node->min_distance.second == min_node || node->min_distance.second == pair_node)){
+                node->update_distances(nodes, hausdorff_distances);
+            }
+        }
     }
 
-    double* ret = nodes.front()->execute(0, &dendrogram_points, &dendrogram_sorting);
+    dendrogram_root = *nodes.begin();
+    double* ret = dendrogram_root->execute(0, &dendrogram_points, &dendrogram_sorting);
     delete []ret;
-    dendrogram_root = nodes.front();
-
-
 
 
 
@@ -1151,21 +1125,23 @@ void LipidSpace::compute_hausdorff_matrix(){
 
     hausdorff_distances.reset(n, n);
 
+
     // precompute indexes for of symmetric matrix for faster
     // and equally distributed access
-    vector<pair<int, int>> pairs;
-    for (int ii = 0; ii < sq(n); ++ii){
-        int i = ii / n;
-        int j = ii % n;
-        if (i < j){
-            pairs.push_back({i, j});
+    int N = (n * (n - 1)) >> 1;
+    ulong *pairs = new ulong[N];
+    int k = 0;
+    for (ulong i = 0; i < (ulong)n - 1; ++i){
+        ulong ii = i << 32;
+        for (ulong j = i + 1; j < (ulong)n; ++j){
+            pairs[k++] = ii | j;
         }
     }
 
     #pragma omp parallel for
-    for (int ii = 0; ii < (int)pairs.size(); ++ii){
-        int i = pairs.at(ii).first;
-        int j = pairs.at(ii).second;
+    for (int ii = 0; ii < N; ++ii){
+        int i = (int)(pairs[ii] >> 32);
+        int j = (int)(pairs[ii] & MASK32);
 
         double hd1 = compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j));
         double hd2 = compute_hausdorff_distance(*matrixes.at(j), *matrixes.at(i));
@@ -1174,7 +1150,7 @@ void LipidSpace::compute_hausdorff_matrix(){
         hausdorff_distances(j, i) = hd;
     }
 
-
+    delete []pairs;
     for (auto matrix : matrixes) delete matrix;
 }
 
