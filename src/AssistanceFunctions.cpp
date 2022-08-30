@@ -115,7 +115,12 @@ ImportData::ImportData(string _table_file, string _sheet, TableType _table_type,
     if (!infile.good()){
         throw LipidSpaceException("Error: file '" + table_file + "' could not be found.", FileUnreadable);
     }
-    file_table_handler = new FileTableHandler(table_file, sheet);
+    try {
+        file_table_handler = new FileTableHandler(table_file, sheet);
+    }
+    catch (OpenXLSX::XLInputError &e){
+        throw LipidSpaceException("Error: file '" + table_file + "' could not be read.", FileUnreadable);
+    }
 }
 
 

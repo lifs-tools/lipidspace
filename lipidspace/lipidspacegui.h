@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QThread>
 #include <QClipboard>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
@@ -48,6 +49,19 @@ public:
     QRectF boundingRect() const override;
 
 
+};
+
+
+
+class TableWrapper : public QThread {
+    Q_OBJECT
+
+public:
+    LipidSpaceGUI* lipid_space_gui;
+
+    TableWrapper(LipidSpaceGUI* _lipid_space_gui);
+
+    void run() override;
 };
 
 
@@ -114,6 +128,7 @@ public:
     vector<QComboBox*> sorting_boxes;
     string hovered_box_plot_lipid;
     string lipid_for_deselect;
+    TableWrapper table_wrapper;
 
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -137,9 +152,10 @@ public slots:
     void openLists();
     void openTable();
     void openMzTabM();
-    void fill_table();
+    //void fill_table();
     void export_list();
     void loadTable(ImportData *import_data);
+    void loadTable(ImportData *import_data, bool start_analysis);
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();

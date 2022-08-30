@@ -1059,19 +1059,18 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
 // Efficient and Accurate Hausdorff Distance Computation Based on Diffusion Search
 double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
     double cmax = 0;
-    int rows = m1.rows;
-
-
+    const int rows = m1.rows;
     double isp = m2.cols >> 1;
     for (int x = 0; x <  m1.cols; ++x){
         double cmin = INFINITY;
         double dist1 = INFINITY;
         double dist2 = INFINITY;
-        double* m1col = m1.data() + (x * rows);
+        const double* m1col = m1.data() + (x * rows);
 
-        for (int y = isp - 1, z = isp; y > 0 || z < m2.cols; y--, z++){
+        int y = isp - 1, z = isp;
+        for (; y >= 0 || z < m2.cols; y--, z++){
             if (y >= 0){
-                double* m2col = m2.data() + (y * rows);
+                const double* m2col = m2.data() + (y * rows);
                 __m256d dist = {0, 0, 0, 0};
                 for (int r = 0; r < rows; r += 4){
                     __m256d val1 = _mm256_loadu_pd(&m1col[r]);
@@ -1083,7 +1082,7 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
             }
 
             if (z < m2.cols){
-                double* m2col = m2.data() + (z * rows);
+                const double* m2col = m2.data() + (z * rows);
                 __m256d dist = {0, 0, 0, 0};
                 for (int r = 0; r < rows; r += 4){
                     __m256d val1 = _mm256_loadu_pd(&m1col[r]);

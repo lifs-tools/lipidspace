@@ -615,18 +615,15 @@ void Dendrogram::update_bounds(bool complete){
     double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var["pie_size"] / 100.;
 
     if (complete){
-        double r = (double)view->width() / (double)dwidth;
-        double x_l = max(max_title_width * 0.82 * r, pie_radius);
-        double y_b = max(max_title_width * 0.62 * r, pie_radius);
         double tmp_ratio = ratio;
-        ratio = ((double)view->height() - pie_radius - y_b) / ((double)view->width() - pie_radius - x_l);
+        ratio = (double)view->height() / (double)view->width();
 
         dheight = dwidth * ratio;
         dendrogram_height = dheight / (y_max_d - y_min_d);
         dendrogram_y_offset = y_max_d;
 
-        x_l = max(max_title_width * 0.82, pie_radius);
-        y_b = max(max_title_width * 0.62, pie_radius);
+        double x_l = max(max_title_width * 0.82, pie_radius);
+        double y_b = max(max_title_width * 0.62, pie_radius);
 
         bound.setX(-x_l);
         bound.setY(-pie_radius);
@@ -1182,6 +1179,11 @@ void Canvas::setLabelSize(int font_size){
 }
 
 
+void Canvas::setDendrogramHeight(){
+    if (dendrogram) dendrogram->update_bounds();
+}
+
+
 Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *) : num(_num) {
     lipid_space = _lipid_space;
     listed_species = _listed_species;
@@ -1464,10 +1466,9 @@ void Canvas::updateDendrogram(){
 
 
 void Canvas::setStudyVariable(string _study_variable){
-
     if (dendrogram){
         dendrogram->study_variable = _study_variable;
-        dendrogram->update_bounds();
+        dendrogram->update_bounds(false);
     }
 }
 

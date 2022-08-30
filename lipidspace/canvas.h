@@ -241,6 +241,7 @@ public slots:
     void moveToPoint(QListWidgetItem*);
     void contextMenu(QPoint pos);
     void setLabelSize(int);
+    void setDendrogramHeight();
     void updateDendrogram();
 
 
