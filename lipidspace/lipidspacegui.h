@@ -53,18 +53,6 @@ public:
 
 
 
-class TableWrapper : public QThread {
-    Q_OBJECT
-
-public:
-    LipidSpaceGUI* lipid_space_gui;
-
-    TableWrapper(LipidSpaceGUI* _lipid_space_gui);
-
-    void run() override;
-};
-
-
 
 
 class DragLayer : public QWidget {
@@ -128,7 +116,8 @@ public:
     vector<QComboBox*> sorting_boxes;
     string hovered_box_plot_lipid;
     string lipid_for_deselect;
-    TableWrapper table_wrapper;
+    vector<string> lipids_for_selection;
+    vector<string> lipids_for_selection_menu;
 
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -152,7 +141,7 @@ public slots:
     void openLists();
     void openTable();
     void openMzTabM();
-    //void fill_table();
+    void fill_table();
     void export_list();
     void loadTable(ImportData *import_data);
     void loadTable(ImportData *import_data, bool start_analysis);
@@ -228,6 +217,7 @@ public slots:
     void lipidEntered(string _lipid_name);
     void lipidExited();
     void deselectHoveredLipid();
-
+    void setLipidsForSelection(vector<string> &list);
+    void spaceLipidsSelect(int index, bool do_select);
 };
 #endif // LIPIDSPACEGUI_H

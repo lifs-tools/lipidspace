@@ -284,7 +284,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
 
 
-LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent), table_wrapper(this) {
+LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent) {
     lipid_space = _lipid_space;
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
@@ -947,11 +947,12 @@ void LipidSpaceGUI::runAnalysis(){
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
 
     for (auto canvas : canvases){
-        disconnect(canvas, SIGNAL(transforming(QRectF)), 0, 0);
-        disconnect(canvas, SIGNAL(showMessage(QString)), 0, 0);
-        disconnect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), 0, 0);
-        disconnect(canvas, SIGNAL(swappingLipidomes(int, int)), 0, 0);
+        disconnect(canvas, &Canvas::transforming, 0, 0);
+        disconnect(canvas, &Canvas::showMessage, 0, 0);
+        disconnect(canvas, &Canvas::mouse, 0, 0);
+        disconnect(canvas, &Canvas::swappingLipidomes, 0, 0);
         disconnect(canvas, &QGraphicsView::customContextMenuRequested, 0, 0);
+        disconnect(canvas, &Canvas::lipidsForSelection, 0, 0);
         delete canvas;
     }
     canvases.clear();
@@ -1014,6 +1015,7 @@ void LipidSpaceGUI::runAnalysis(){
     connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
     connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
     connect(ui->speciesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), canvas, SLOT(moveToPoint(QListWidgetItem*)));
+    connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
     canvases.push_back(canvas);
 
 
@@ -1034,6 +1036,7 @@ void LipidSpaceGUI::runAnalysis(){
         canvas->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
         connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
+        connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
         canvases.push_back(canvas);
     }
 
@@ -1054,6 +1057,7 @@ void LipidSpaceGUI::runAnalysis(){
         canvas->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
         connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
+        connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
         canvases.push_back(canvas);
     }
 
@@ -1089,9 +1093,7 @@ void LipidSpaceGUI::runAnalysis(){
         }
     }
 
-    cout << "start" << endl;
-    table_wrapper.start();
-    cout << "go on" << endl;
+    fill_table();
 
     ui->frame->setVisible(true);
     updateSelectionView();
@@ -1164,6 +1166,13 @@ void LipidSpaceGUI::studyVariableItemChanged(QTreeWidgetItem *item, int col){
 }
 
 
+
+void LipidSpaceGUI::setLipidsForSelection(vector<string> &list){
+    lipids_for_selection.clear();
+    for (auto s : list) lipids_for_selection.push_back(s);
+}
+
+
 void LipidSpaceGUI::studyVariableItemDoubleClicked(QTreeWidgetItem *item, int){
     if (item == 0) return;
     TreeItem *tree_item = (TreeItem*)item;
@@ -1230,7 +1239,7 @@ void LipidSpaceGUI::resetAnalysis(){
 
     ui->dendrogramView->resetDendrogram();
     ui->frame->setVisible(false);
-    table_wrapper.start();
+    fill_table();
     updateGUI();
 }
 
@@ -1280,7 +1289,7 @@ void LipidSpaceGUI::setSelectedTilesMode(){
 
 void LipidSpaceGUI::toggleLipidNameTranslation(){
     GlobalData::gui_num_var["translate"] = ui->actionTranslate->isChecked() ? TRANSLATED_NAME : IMPORT_NAME;
-    table_wrapper.start();
+    fill_table();
     updateView(0);
     updateGUI();
 }
@@ -1861,13 +1870,66 @@ void LipidSpaceGUI::lipidExited(){
 
 
 void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
+    lipids_for_selection_menu.clear();
+    for (auto l : lipids_for_selection) lipids_for_selection_menu.push_back(l);
+
     QMenu *menu = new QMenu(this);
+    if (lipids_for_selection_menu.size()){
+        QMenu *action_selectLipids = new QMenu(menu);
+        action_selectLipids->setTitle("Select");
+        QMenu *action_deselectLipids = new QMenu(menu);
+        action_deselectLipids->setTitle("Deselect");
+
+        QAction *action_select_all = new QAction("All hovered", this);
+        action_selectLipids->addAction(action_select_all);
+        connect(action_select_all, &QAction::triggered, [=](){ spaceLipidsSelect(-1, true); });
+
+        QAction *action_deselect_all = new QAction("All hovered", this);
+        action_deselectLipids->addAction(action_deselect_all);
+        connect(action_deselect_all, &QAction::triggered, [=](){ spaceLipidsSelect(-1, false); });
+
+
+        for(int i = 0; i < (int)lipids_for_selection_menu.size(); ++i){
+            auto l = lipids_for_selection_menu[i];
+            QAction *action_select = new QAction(l.c_str(), this);
+            action_selectLipids->addAction(action_select);
+            connect(action_select, &QAction::triggered, [=](){ spaceLipidsSelect(i, true); });
+
+            QAction *action_deselect = new QAction(l.c_str(), this);
+            action_deselectLipids->addAction(action_deselect);
+            connect(action_deselect, &QAction::triggered, [=](){ spaceLipidsSelect(i, false); });
+        }
+
+        menu->addAction(action_selectLipids->menuAction());
+        menu->addAction(action_deselectLipids->menuAction());
+    }
     QAction *exportAsPdf = new QAction("Export as pdf", this);
     menu->addAction(exportAsPdf);
-
     menu->popup(canvas->viewport()->mapToGlobal(pos));
     connect(exportAsPdf, &QAction::triggered, canvas, &Canvas::exportAsPdf);
 }
+
+
+
+void LipidSpaceGUI::spaceLipidsSelect(int index, bool do_select){
+    if (index < 0){
+        for (auto l : lipids_for_selection_menu){
+            if (contains_val(lipid_space->selection[0], l)){
+                lipid_space->selection[0][l] = do_select;
+            }
+        }
+    }
+    else if (index < (int)lipids_for_selection_menu.size()) {
+        auto l = lipids_for_selection_menu[index];
+        if (contains_val(lipid_space->selection[0], l)){
+            lipid_space->selection[0][l] = do_select;
+        }
+    }
+
+    updateSelectionView();
+    lipids_for_selection_menu.clear();
+}
+
 
 
 void LipidSpaceGUI::ShowTableContextMenu(const QPoint pos){
@@ -2245,7 +2307,7 @@ void LipidSpaceGUI::reset_all_study_variables(){
 
 void LipidSpaceGUI::transposeTable(){
     table_transposed = !table_transposed;
-    table_wrapper.start();
+    fill_table();
 }
 
 
@@ -2271,19 +2333,9 @@ void LipidSpaceGUI::updateTable(){
 
 
 
-
-TableWrapper::TableWrapper(LipidSpaceGUI* _lipid_space_gui) : lipid_space_gui(_lipid_space_gui) {
-
-}
-
-
-
-
-void TableWrapper::run(){
-    //return; // TODO: remove line
-
-    QTableWidget *t = lipid_space_gui->ui->tableWidget;
-    LipidSpace* lipid_space = lipid_space_gui->lipid_space;
+void LipidSpaceGUI::fill_table(){
+    QTableWidget *t = ui->tableWidget;
+    //LipidSpace* lipid_space = lipid_space_gui->lipid_space;
     QTableWidgetItem *item = 0;
 
     QFont item_font("Helvetica", (int)GlobalData::gui_num_var["table_zoom"]);
@@ -2310,7 +2362,7 @@ void TableWrapper::run(){
     for (auto lipid_species : lipid_space->global_lipidome->species) selected_species.insert(lipid_species);
     for (auto lipidome : lipid_space->selected_lipidomes) selected_lipidomes.insert(lipidome->cleaned_name.c_str());
 
-    if (lipid_space_gui->table_transposed){
+    if (table_transposed){
         t->setColumnCount(lipid_space->lipidomes.size());
         t->setRowCount(sorted_lipid_species.size() + num_study_variables);
 

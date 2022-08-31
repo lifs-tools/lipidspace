@@ -252,7 +252,7 @@ signals:
     void swappingLipidomes(int source, int target);
     void context(Canvas *canvas, QPoint pos);
     void rightClick(QPoint pos, set<int> *selected_d_lipidomes = 0);
-
+    void lipidsForSelection(vector<string> &l);
 };
 
 #endif /* CANVAS_H */

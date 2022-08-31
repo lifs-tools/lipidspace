@@ -187,13 +187,20 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
     }
 
 
+
+    vector< pair<string, int> > sorted_indexes;
+    for (uint i = 0; i < labels.size(); ++i) sorted_indexes.push_back({labels[i].toStdString(), i});
+    sort(sorted_indexes.begin(), sorted_indexes.end(), sort_string_index_asc);
+
+
+
     double ymin = chart->yrange.x();
     double ymax = chart->yrange.y();
-    for (uint s = 0; s < data.size(); ++s){
+    for (uint si = 0; si < data.size(); ++si){
+        uint s = sorted_indexes[si].second;
         auto data_set = data[s];
         bars.push_back(vector< BarBox* >());
         vector< BarBox* > &bar_set = bars.back();
-
 
         for (uint c = 0; c < data_set.size(); c++){
             QColor color = (colors != 0) ? colors->at(c) : Qt::white;

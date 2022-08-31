@@ -261,7 +261,7 @@ double p_value_anova(vector<Array> &v);
 double compute_accuracy(vector<Array> &v);
 
 
-
+bool sort_string_index_asc (pair<string, int> i, pair<string, int> j);
 bool sort_double_string_desc (pair<double, string> i, pair<double, string> j);
 bool sort_double_double_asc (pair<double, double> i, pair<double, double> j);
 bool sort_string_string_asc (pair<string, string> i, pair<string, string> j);

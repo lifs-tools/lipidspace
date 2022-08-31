@@ -1431,14 +1431,17 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
 
 
             QStringList lipid_names;
+            vector<string> lipids_for_selection;
             for (int i = 0; i < (int)pointSet->points.size(); ++i){
                 double intens = GlobalData::showQuant ? pointSet->points[i].intensity : POINT_BASE_SIZE;
                 double margin = sq(0.5 * intens);
                 if (sq(relative_mouse.x() - pointSet->points[i].point.x()) + sq(relative_mouse.y() - pointSet->points[i].point.y()) <= margin){
                     lipid_names.push_back(QString("%1 (%2)").arg(pointSet->points[i].label).arg(pointSet->points[i].normalized_intensity));
+                    lipids_for_selection.push_back(pointSet->points[i].label.toStdString());
                 }
             }
 
+            emit lipidsForSelection(lipids_for_selection);
             if (!lipid_names.size()) showMessage("");
             else showMessage(lipid_names.join(", "));
         }
