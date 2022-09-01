@@ -3290,14 +3290,6 @@ void LipidSpace::feature_analysis(bool report_progress){
     if (is_nominal){
         global_matrix.scale();
     }
-    /*
-    else {
-        Array constants;
-        constants.resize(global_matrix.rows, 1);
-        global_matrix.add_column(constants);
-
-
-    }*/
 
 
 
@@ -3315,7 +3307,6 @@ void LipidSpace::feature_analysis(bool report_progress){
 
         genes.resize(n + 1, 0);
         genes[0] = new Gene(n_features + 1);
-        //if (!is_nominal) genes[0]->gene_code[n_features] = true; // add constant value column
         genes[0]->score = is_nominal ? 0 : INFINITY;
 
 
@@ -3333,8 +3324,6 @@ void LipidSpace::feature_analysis(bool report_progress){
         Gene* last = genes[i - 1];
         while (pos < n_features && (!progress || !progress->stop_progress)){
             if (progress->stop_progress) break;
-            //Indexes feature_i;
-            //last->get_indexes(feature_i);
             if (!last->gene_code[pos]){
                 Gene* new_gene = new Gene(last);
                 new_gene->gene_code[pos] = true;
@@ -3362,7 +3351,7 @@ void LipidSpace::feature_analysis(bool report_progress){
                     vector<Array> arrays(nom_counter);
                     for (int r = 0; r < sub_lipids.rows; ++r) arrays[target_values[r]].push_back(summed_values[r]);
 
-
+                    /*
                     double pos_max = 0, d = 0, sep = 0;
                     new_gene->score = 1;
                     for (uint ii = 0; ii < arrays.size() - 1; ++ii){
@@ -3373,6 +3362,8 @@ void LipidSpace::feature_analysis(bool report_progress){
                     }
                     double ll = 2. / ((double)(arrays.size() - 1) * (double)arrays.size());
                     new_gene->score = pow(new_gene->score, ll) * (cnt_lipids - missing_lipids) / cnt_lipids;
+                    */
+                    new_gene->score = compute_accuracy(arrays) * (cnt_lipids - missing_lipids) / cnt_lipids;
 
                     // search for maximal nominal score
                     if (!best || best_score < new_gene->score || best_score == INFINITY){

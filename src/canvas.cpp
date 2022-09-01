@@ -1009,7 +1009,6 @@ void PointSet::automated_annotation(Array &xx, Array &yy){
     int l = labels.size();
     Array label_xx(xx, l);
     Array label_yy(yy, l);
-    //double max_int = (double)(~0u) * 0.5;
     for (int i = 0; i < l; ++i){
         label_xx(i) += randnum() * 0.5 - 0.25;
         label_yy(i) += randnum() * 0.5 - 0.25;

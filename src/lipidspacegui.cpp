@@ -1536,6 +1536,8 @@ void LipidSpaceGUI::updateGUI(){
 
     for (auto canvas : canvases) canvas->setVisible(false);
     int numTiles = 0;
+    int num_lipidomes = lipid_space->selected_lipidomes.size();
+    int num_studies = lipid_space->study_lipidomes.size();
 
     if (selected_tiles_mode){
         for (auto canvas : canvases) numTiles += canvas->marked_for_selected_view;
@@ -1543,8 +1545,7 @@ void LipidSpaceGUI::updateGUI(){
     else {
 
         int num_studies = lipid_space->study_lipidomes.size();
-        num_studies *= (num_studies > 1);
-        numTiles = (lipid_space->selected_lipidomes.size() > 1 && showGlobalLipidome) + showStudyLipidomes * num_studies + lipid_space->selected_lipidomes.size();
+        numTiles = (lipid_space->selected_lipidomes.size() > 1 && showGlobalLipidome) + showStudyLipidomes * num_studies * (num_studies > 1) + num_lipidomes;
     }
 
     int tileColumns = tileLayout == AUTOMATIC ? ceil(sqrt((double)numTiles)) : (int)tileLayout;
@@ -1554,8 +1555,8 @@ void LipidSpaceGUI::updateGUI(){
     for (auto canvas : canvases) {
         if (selected_tiles_mode && (!selected_tiles_mode || !canvas->marked_for_selected_view)) continue;
 
-        if ((canvas->canvas_type == GlobalSpaceCanvas && showGlobalLipidome) ||
-            (canvas->canvas_type == StudySpaceCanvas && showStudyLipidomes) ||
+        if ((canvas->canvas_type == GlobalSpaceCanvas && showGlobalLipidome && num_lipidomes > 1) ||
+            (canvas->canvas_type == StudySpaceCanvas && showStudyLipidomes && num_studies > 1) ||
             canvas->canvas_type == SampleSpaceCanvas){
             ui->gridLayout->addWidget(canvas, r, c);
             if (++c == tileColumns){

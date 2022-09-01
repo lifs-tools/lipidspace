@@ -529,6 +529,10 @@ void Statistics::updateHistogram(){
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
     histogramplot->add(series, categories, &colors, num_bars);
     chart->add(histogramplot);
+
+    double accuracy = compute_accuracy(series);
+    stat_results.push_back({"accuracy", accuracy});
+    chart->setTitle(QString("accuracy = %1").arg(QString::number(accuracy, 'g', 3)));
 }
 
 
@@ -819,14 +823,15 @@ void Statistics::updateBoxPlot(){
             stat_results.push_back({"p_value(Student)", p_student});
             stat_results.push_back({"p_value(Welch)", p_welch});
             stat_results.push_back({"p_value(KS)", p_ks});
-            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>Student</sub> = %2,   <i>p</i>-value<sub>Welch</sub> = %3,   <i>p</i>-value<sub>KS</sub> = %4").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
+            //chart->setTitle(QString("Statistics: <i>p</i>-value<sub>Student</sub> = %1,   <i>p</i>-value<sub>Welch</sub> = %2,   <i>p</i>-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
+            chart->setTitle(QString("<i>p</i>-value<sub>Welch</sub> = %1").arg(QString::number(p_welch, 'g', 3)));
         }
         else if (nom_counter > 2){
             double accuracy = compute_accuracy(series);
             stat_results.push_back({"accuracy", accuracy});
             double p_anova = p_value_anova(series);
             stat_results.push_back({"p_value(ANOVA)", p_anova});
-            chart->setTitle(QString("Statistics: accuracy = %1,   <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(accuracy, 'g', 3)).arg(QString::number(p_anova, 'g', 3)));
+            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(p_anova, 'g', 3)));
         }
     }
     else {

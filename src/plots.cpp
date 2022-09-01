@@ -271,6 +271,18 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
         chart->legend_categories.push_back(LegendCategory(categories[i], color, &chart->scene));
     }
 
+    uint lc_n = chart->legend_categories.size();
+    for (uint i = 0; i < lc_n; ++i){
+        for (uint j = 0; j < lc_n - 1 - i; ++j){
+            if (chart->legend_categories[j].category_string.toStdString() > chart->legend_categories[j + 1].category_string.toStdString()){
+                swap(chart->legend_categories[j], chart->legend_categories[j + 1]);
+                for (auto &bar_set : bars){
+                    swap(bar_set[j], bar_set[j + 1]);
+                }
+            }
+        }
+    }
+
     chart->create_y_numerical_axis(log_scale);
     chart->create_x_nominal_axis();
     chart->reset_animation();
@@ -310,11 +322,15 @@ void Boxplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
     double animation_length = pow(chart->animation, 0.25);
 
+    const double box_len = 0.375;
+    const double whisker_len = 0.25;
+    const double alpha = 255 >> 2;
+
     for (uint b = 0; b < boxes.size(); ++b){
         auto &box = boxes[b];
-        double x1 = b - 0.125;
+        double x1 = b - whisker_len;
         double y1 = box.median + (box.upper_extreme - box.median) * animation_length;
-        double x2 = b + 0.125;
+        double x2 = b + whisker_len;
         double y2 = box.median + (box.upper_extreme - box.median) * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
@@ -322,9 +338,9 @@ void Boxplot::update_chart(){
         box.upper_extreme_line->setZValue(0);
         box.upper_extreme_line->setVisible(visible);
 
-        x1 = b - 0.125;
+        x1 = b - whisker_len;
         y1 = box.median + (box.lower_extreme - box.median) * animation_length;
-        x2 = b + 0.125;
+        x2 = b + whisker_len;
         y2 = box.median + (box.lower_extreme - box.median) * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
@@ -342,9 +358,9 @@ void Boxplot::update_chart(){
         box.base_line->setZValue(0);
         box.base_line->setVisible(visible);
 
-        x1 = b - 0.25;
+        x1 = b - box_len;
         y1 = box.median + (box.lower_quartile - box.median) * animation_length;
-        x2 = b + 0.25;
+        x2 = b + box_len;
         y2 = box.median + (box.upper_quartile - box.median) * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
@@ -353,9 +369,9 @@ void Boxplot::update_chart(){
         box.rect->setZValue(50);
         box.rect->setVisible(visible);
 
-        x1 = b - 0.25;
+        x1 = b - box_len;
         y1 = box.median;
-        x2 = b + 0.25;
+        x2 = b + box_len;
         y2 = box.median;
         chart->translate(x1, y1);
         chart->translate(x2, y2);
@@ -370,8 +386,8 @@ void Boxplot::update_chart(){
                 x1 = b + box.data[i].second;
                 y1 = box.median + (box.data[i].first - box.median) * animation_length;
                 chart->translate(x1, y1);
-                ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
-                ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
+                ellipse->setBrush(QBrush(QColor(0, 0, 0, alpha)));
+                ellipse->setPen(Qt::NoPen);
                 ellipse->setRect(x1 - 3, y1 - 3, 6, 6);
                 ellipse->setZValue(110);
                 ellipse->setVisible(visible);
@@ -460,6 +476,18 @@ void Boxplot::add(Array &array, QString category, QColor color){
     chart->yrange = QPointF(boxes.size() > 1 ? min(chart->yrange.x(), array.front()) : array.front(), boxes.size() > 1 ? max(chart->yrange.y(), array.back()) : array.back());
 
     chart->legend_categories.push_back(LegendCategory(category, box.color, &chart->scene));
+
+    uint lc_n = chart->legend_categories.size();
+    for (uint i = 0; i < lc_n; ++i){
+        for (uint j = 0; j < lc_n - 1 - i; ++j){
+            if (chart->legend_categories[j].category_string.toStdString() > chart->legend_categories[j + 1].category_string.toStdString()){
+                swap(chart->legend_categories[j], chart->legend_categories[j + 1]);
+                swap(boxes[j], boxes[j + 1]);
+            }
+        }
+    }
+
+
     chart->create_y_numerical_axis();
     chart->reset_animation();
 }
@@ -713,6 +741,15 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
         }
 
         chart->legend_categories.push_back(LegendCategory(category, color, &chart->scene));
+    }
+
+    uint lc_n = chart->legend_categories.size();
+    for (uint i = 0; i < lc_n; ++i){
+        for (uint j = 0; j < lc_n - 1 - i; ++j){
+            if (chart->legend_categories[j].category_string.toStdString() > chart->legend_categories[j + 1].category_string.toStdString()){
+                swap(chart->legend_categories[j], chart->legend_categories[j + 1]);
+            }
+        }
     }
 
     chart->xrange.setX(min(all_min - bar_size / 2., chart->xrange.x()));
