@@ -145,7 +145,7 @@ void LipidSpace::create_dendrogram(){
 
     // computing the coefficient of variation for each lipid
     double max_cv = 0.;
-    vector<pair<double, string>> CVs;
+    SortVector<double, string> CVs;
     for (auto kv : lipid_name_map){
         int c = kv.second;
         Array values;
@@ -161,9 +161,8 @@ void LipidSpace::create_dendrogram(){
     if (max_cv > 0){
         for (auto &val : CVs) val.first /= max_cv;
     }
-
-    sort(CVs.begin(), CVs.end(), sort_double_string_desc);
-    lipid_sortings.insert({"Coefficient of Variation (Desc)", vector<pair<string, double>>()});
+    CVs.sort_desc();
+    lipid_sortings.insert({"Coefficient of Variation (Desc)", SortVector<string, double>()});
     vector<pair<string, double>> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
     for (auto cv : CVs) CVh.push_back({cv.second, cv.first});
 
@@ -174,7 +173,7 @@ void LipidSpace::create_dendrogram(){
         string target_variable = kv.first;
 
         Array target_values;
-        vector<pair<double, string>> regression_result;
+        SortVector<double, string> regression_result;
         map<string, double> nominal_target_values;
         int nom_counter = 0;
         bool is_nominal = study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
@@ -260,9 +259,9 @@ void LipidSpace::create_dendrogram(){
         }
 
         // sorting all lipids according to the performance indicator
-        sort(regression_result.begin(), regression_result.end(), sort_double_string_desc);
-        lipid_sortings.insert({target_variable + " regression (Desc)", vector<pair<string, double>>()});
-        vector<pair<string, double>> &regression_vector = lipid_sortings[target_variable + " regression (Desc)"];
+        regression_result.sort_desc();
+        lipid_sortings.insert({target_variable + " regression (Desc)", SortVector<string, double>()});
+        SortVector<string, double> &regression_vector = lipid_sortings[target_variable + " regression (Desc)"];
         for (auto kv_reg : regression_result) regression_vector.push_back({kv_reg.second, kv_reg.first});
 
     }
@@ -286,9 +285,9 @@ LipidSpace::LipidSpace() {
     study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
     lipid_name_translations.resize(2);
 
+
+
     // load precomputed class distance matrix
-
-
     ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/classes-matrix.csv");
     if (!infile.good()){
         Logging::write_log("Error: file 'data/classes-matrix.csv' not found.");
@@ -300,15 +299,12 @@ LipidSpace::LipidSpace() {
         if (line.length() == 0) continue;
         vector<string>* tokens = goslin::split_string(line, '\t', '"');
 
-        int* values = new int[2];
         registered_lipid_classes.insert(tokens->at(0));
         registered_lipid_classes.insert(tokens->at(1));
         string key = tokens->at(0) + "/" + tokens->at(1);
         string key2 = tokens->at(1) + "/" + tokens->at(0);
-        values[0] = abs(atoi(tokens->at(2).c_str()));
-        values[1] = abs(atoi(tokens->at(3).c_str()));
-        class_matrix.insert({key, values});
-        class_matrix.insert({key2, values});
+        class_matrix.insert({key, pair<int, int>{abs(atoi(tokens->at(2).c_str())), abs(atoi(tokens->at(3).c_str()))}});
+        class_matrix.insert({key2, pair<int, int>{abs(atoi(tokens->at(2).c_str())), abs(atoi(tokens->at(3).c_str()))}});
         delete tokens;
     }
 }
@@ -318,7 +314,7 @@ LipidSpace::LipidSpace(LipidSpace *ls){
     progress = ls->progress;
     dendrogram_root = 0;
 
-    for (auto kv : ls->class_matrix) class_matrix.insert({kv.first, new int[2]{kv.second[0], kv.second[1]}});
+    for (auto kv : ls->class_matrix) class_matrix.insert({kv.first, pair<int, int>{kv.second.first, kv.second.second}});
     for (auto kv : ls->all_lipids) all_lipids.insert({kv.first, new LipidAdduct(kv.second)});
     keep_sn_position = ls->keep_sn_position;
     ignore_unknown_lipids = ls->ignore_unknown_lipids;
@@ -408,6 +404,7 @@ const vector< vector< vector< vector<int> > > > LipidSpace::orders{
 
 LipidSpace::~LipidSpace(){
     reset_analysis();
+    delete global_lipidome;
 }
 
 
@@ -721,8 +718,8 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     if (uncontains_val(class_matrix, key)){
         throw LipidSpaceException("Error: key '" + key + "' not in precomputed class matrix. Please check the log message.", LipidNotRegistered);
     }
-    union_num = class_matrix.at(key)[0];
-    inter_num = class_matrix.at(key)[1];
+    union_num = class_matrix[key].first;
+    inter_num = class_matrix[key].second;
 
     if (lipid1->lipid->info->level <= CLASS || lipid2->lipid->info->level <= CLASS) return;
 
@@ -1038,8 +1035,6 @@ void LipidSpace::load_list(string lipid_list_file){
 
 
 
-
-
 void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
     double total_var = 0;
     for (int c = 0; c < m.cols; c++){
@@ -1056,22 +1051,41 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
 
 
 
+
+
 // Efficient and Accurate Hausdorff Distance Computation Based on Diffusion Search
 double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
     double cmax = 0;
     const int rows = m1.rows;
     double isp = m2.cols >> 1;
-    for (int x = 0; x <  m1.cols; ++x){
+
+    const double* m1col = m1.data();
+    for (int x = 0; x < m1.cols; ++x){
         double cmin = INFINITY;
         double dist1 = INFINITY;
         double dist2 = INFINITY;
-        const double* m1col = m1.data() + (x * rows);
 
-        int y = isp - 1, z = isp;
-        for (; y >= 0 || z < m2.cols; y--, z++){
-            if (y >= 0){
+        for (int y = isp - 1, z = isp; y >= 0 || z < m2.cols; y--, z++){
+            if (y >= 0 && z < m2.cols){
+                const double* m2coly = m2.data() + (y * rows);
+                const double* m2colz = m2.data() + (z * rows);
+                __m256d disty = {0., 0., 0., 0.};
+                __m256d distz = {0., 0., 0., 0.};
+                for (int r = 0; r < rows; r += 4){
+                    __m256d val1 = _mm256_loadu_pd(&m1col[r]);
+                    __m256d valy = _mm256_loadu_pd(&m2coly[r]);
+                    __m256d valz = _mm256_loadu_pd(&m2colz[r]);
+                    __m256d suby = _mm256_sub_pd(val1, valy);
+                    __m256d subz = _mm256_sub_pd(val1, valz);
+                    disty = _mm256_fmadd_pd(suby, suby, disty);
+                    distz = _mm256_fmadd_pd(subz, subz, distz);
+                }
+                dist1 = disty[0] + disty[1] + disty[2] + disty[3];
+                dist2 = distz[0] + distz[1] + distz[2] + distz[3];
+            }
+            else if (y >= 0){
                 const double* m2col = m2.data() + (y * rows);
-                __m256d dist = {0, 0, 0, 0};
+                __m256d dist = {0., 0., 0., 0.};
                 for (int r = 0; r < rows; r += 4){
                     __m256d val1 = _mm256_loadu_pd(&m1col[r]);
                     __m256d val2 = _mm256_loadu_pd(&m2col[r]);
@@ -1081,9 +1095,9 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
                 dist1 = dist[0] + dist[1] + dist[2] + dist[3];
             }
 
-            if (z < m2.cols){
+            else {
                 const double* m2col = m2.data() + (z * rows);
-                __m256d dist = {0, 0, 0, 0};
+                __m256d dist = {0., 0., 0., 0.};
                 for (int r = 0; r < rows; r += 4){
                     __m256d val1 = _mm256_loadu_pd(&m1col[r]);
                     __m256d val2 = _mm256_loadu_pd(&m2col[r]);
@@ -1092,17 +1106,21 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
                 }
                 dist2 = dist[0] + dist[1] + dist[2] + dist[3];
             }
-            cmin = min(min(dist1, dist2), cmin);
+
+            cmin = __min(__min(dist1, dist2), cmin);
             if (cmin <= cmax || cmin == 0){
                 isp = dist1 < dist2 ? y : z;
                 break;
             }
         }
-        if (cmin > cmax) cmax = cmin;
+        cmax = __max(cmax, cmin);
+        m1col += rows;
     }
-
     return cmax;
 }
+
+
+
 
 
 
@@ -1139,13 +1157,14 @@ void LipidSpace::compute_hausdorff_matrix(){
         }
     }
 
+
     #pragma omp parallel for
     for (int ii = 0; ii < N; ++ii){
         int i = (int)(pairs[ii] >> 32);
         int j = (int)(pairs[ii] & MASK32);
 
-        double hd1 = compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j));
-        double hd2 = compute_hausdorff_distance(*matrixes.at(j), *matrixes.at(i));
+        double hd1 = compute_hausdorff_distance(*matrixes[i], *matrixes[j]);
+        double hd2 = compute_hausdorff_distance(*matrixes[j], *matrixes[i]);
         double hd = sqrt(max(hd1, hd2));
         hausdorff_distances(i, j) = hd;
         hausdorff_distances(j, i) = hd;
@@ -2960,8 +2979,6 @@ void LipidSpace::store_distance_table(string output_folder, Lipidome* lipidome){
 }
 
 
-bool mysort(pair<double, int> a, pair<double, int> b){ return a.first < b.first;}
-
 
 void LipidSpace::run_analysis(){
 
@@ -3667,8 +3684,12 @@ void LipidSpace::reset_analysis(){
     lipid_name_translations[0].clear();
     lipid_name_translations[1].clear();
     lipid_sortings.clear();
-    global_distances.reset(0, 0);
-    statistics_matrix.reset(0, 0);
+    global_distances.clear();
+    complete_feature_analysis_table.clear();
+    complete_feature_analysis_lipids.clear();
+    statistics_lipids.clear();
+    statistics_matrix.clear();
+    hausdorff_distances.clear();
 
     for (int i = 0; i < 4; ++i) selection[i].clear();
 

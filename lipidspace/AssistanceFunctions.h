@@ -29,6 +29,7 @@
 #include <iostream>
 #include <algorithm>
 #include <math.h>
+#include "lipidspace/KDTree.h"
 
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 
@@ -261,11 +262,49 @@ double p_value_anova(vector<Array> &v);
 double compute_accuracy(vector<Array> &v);
 
 
-bool sort_string_index_asc (pair<string, int> i, pair<string, int> j);
-bool sort_double_string_desc (pair<double, string> i, pair<double, string> j);
-bool sort_double_double_asc (pair<double, double> i, pair<double, double> j);
-bool sort_string_string_asc (pair<string, string> i, pair<string, string> j);
-bool sort_string_string_desc (pair<string, string> i, pair<string, string> j);
+
+
+
+
+
+template <class T, class U>
+class SortVector : public vector<pair<T, U>> {
+public:
+    SortVector();
+    void sort_asc();
+    void sort_desc();
+
+private:
+    static bool sort_pair_asc (pair<T, U> i, pair<T, U> j);
+    static bool sort_pair_desc (pair<T, U> i, pair<T, U> j);
+};
+
+template<class T, class U>
+SortVector<T, U>::SortVector(){
+
+}
+
+template <class T, class U>
+bool SortVector<T, U>::sort_pair_asc (pair<T, U> i, pair<T, U> j){
+    return (i.first < j.first);
+}
+
+template <class T, class U>
+bool SortVector<T, U>::sort_pair_desc (pair<T, U> i, pair<T, U> j){
+    return (i.first > j.first);
+}
+
+template <class T, class U>
+void SortVector<T, U>::sort_asc (){
+    sort(this->begin(), this->end(), sort_pair_asc);
+}
+
+template <class T, class U>
+void SortVector<T, U>::sort_desc (){
+    sort(this->begin(), this->end(), sort_pair_desc);
+}
+
+
 
 
 class LipidSpaceException : public std::exception {

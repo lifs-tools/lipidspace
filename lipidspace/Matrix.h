@@ -82,6 +82,7 @@ public:
     friend Matrix& operator-=(Matrix &me, const double val);
     friend Matrix& operator*=(Matrix &me, const double val);
     friend Matrix& operator/=(Matrix &me, const double val);
+    void clear();
     void reset(int _rows, int _cols);
     void rewrite_transpose(Matrix &copy);
     void rewrite(vector<vector<double>> &copy);

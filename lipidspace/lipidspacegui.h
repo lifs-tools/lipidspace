@@ -112,7 +112,7 @@ public:
     vector<Canvas*> canvases;
     bool knubbel;
     bool table_transposed;
-    map<string, vector<pair<string, double>>> sortings[4];
+    map<string, SortVector<string, double> > sortings[4];
     vector<QComboBox*> sorting_boxes;
     string hovered_box_plot_lipid;
     string lipid_for_deselect;

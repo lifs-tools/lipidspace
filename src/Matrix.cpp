@@ -206,6 +206,13 @@ Matrix::Matrix(Matrix &mat, bool transpose) : QObject(){
 }
 
 
+void Matrix::clear(){
+    m.clear();
+    cols = 0;
+    rows = 0;
+}
+
+
 void Matrix::rewrite_transpose(Matrix &mat){
     cols = mat.rows;
     rows = mat.cols;

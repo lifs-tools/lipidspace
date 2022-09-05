@@ -639,42 +639,17 @@ void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
 }
 
 
-bool sort_string_index_asc (pair<string, int> i, pair<string, int> j){
-    return (i.first < j.first);
-}
-
-
-bool sort_double_string_desc (pair<double, string> i, pair<double, string> j){
-    return (i.first > j.first);
-}
-
-
-bool sort_double_double_asc (pair<double, double> i, pair<double, double> j){
-    return (i.first < j.first);
-}
-
-
-bool sort_string_string_asc (pair<string, string> i, pair<string, string> j){
-    return (i.first < j.first);
-}
-
-
-bool sort_string_string_desc (pair<string, string> i, pair<string, string> j){
-    return (i.first > j.first);
-}
-
-
 
 
 
 double compute_accuracy(vector<Array> &v){
-    vector<pair<double, double>> medians;
+    SortVector<double, double> medians;
     for (uint i = 0; i < v.size(); ++i){
         auto &a = v[i];
         sort(a.begin(), a.end());
         medians.push_back({a.median(-1, -1, true), i});
     }
-    sort(medians.begin(), medians.end(), sort_double_double_asc);
+    medians.sort_asc();
     double TP = 0, TN = 0, FP = 0, FN = 0;
 
     Array borders;
@@ -1014,7 +989,7 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
     S.mult(data, coefficiants);
     double s = 0;
     for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
-    return s;
+    if (s == 0) return s;
 
     int k = data.cols;
     int n = data.rows;

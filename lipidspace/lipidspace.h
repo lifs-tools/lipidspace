@@ -19,6 +19,9 @@
 using namespace std;
 using namespace std::chrono;
 
+#define __min(a,b) (((a) < (b)) ? (a) : (b))
+#define __max(a,b) (((a) > (b)) ? (a) : (b))
+
 
 class LipidSpace : public QThread {
     Q_OBJECT
@@ -26,7 +29,7 @@ class LipidSpace : public QThread {
 public:
     LipidParser parser;
     Progress *progress;
-    map<string, int*> class_matrix;
+    map<string, pair<int, int>> class_matrix;
     map<string, LipidAdduct*> all_lipids;
     static const int cols_for_pca_init;
     static int cols_for_pca;
@@ -48,7 +51,7 @@ public:
     DendrogramNode *dendrogram_root;
     map<string, bool> selection[4];
     vector<Lipidome*> selected_lipidomes;
-    map<string, vector<pair<string, double>>> lipid_sortings;
+    map<string, SortVector<string, double> > lipid_sortings;
     Matrix global_distances;
     int process_id;
     string target_variable;

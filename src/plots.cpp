@@ -186,11 +186,9 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
         if (category_data.size() != categories.size()) return;
     }
 
-
-
-    vector< pair<string, int> > sorted_indexes;
+    SortVector<string, int> sorted_indexes;
     for (uint i = 0; i < labels.size(); ++i) sorted_indexes.push_back({labels[i].toStdString(), i});
-    sort(sorted_indexes.begin(), sorted_indexes.end(), sort_string_index_asc);
+    sorted_indexes.sort_asc();
 
 
 
@@ -716,8 +714,8 @@ void Histogramplot::clear(){
 
 void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors, uint num_bars){
 
-    double all_min = 1e100;
-    double all_max = -1e100;
+    double all_min = INFINITY;
+    double all_max = -INFINITY;
     for (auto &array : arrays){
         sort(array.begin(), array.end());
         all_min = min(all_min, array.front());

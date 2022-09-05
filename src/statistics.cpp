@@ -123,25 +123,32 @@ void Statistics::exportData(){
             QFile::remove(file_name);
         }
 
+        SortVector<string, Array*> sorted_series;
+        for (uint i = 0; i < series_titles.size(); ++i){
+            sorted_series.push_back({series_titles[i], &(series[i])});
+        }
+        sorted_series.sort_asc();
+
+
         if (file_name.toLower().endsWith("csv") || file_name.toLower().endsWith("tsv")){
             string sep = file_name.toLower().endsWith("csv") ? "," : "\t";
 
             ofstream off(file_name.toStdString().c_str());
-            for (uint i = 0; i < series_titles.size(); ++i){
-                off << series_titles[i];
-                if (i < series_titles.size() - 1) off << sep;
+            for (uint i = 0; i < sorted_series.size(); ++i){
+                off << sorted_series[i].first;
+                if (i < sorted_series.size() - 1) off << sep;
             }
             off << endl;
 
             uint num_rows = 0;
-            for (auto s : series) num_rows = max(num_rows, (uint)s.size());
+            for (auto s : sorted_series) num_rows = max(num_rows, (uint)s.second->size());
             for (uint i = 0; i < num_rows; ++i){
-                for (uint j = 0; j < series.size(); ++j){
-                    if (i < series[j].size()){
-                        off << series[j][i];
-                        if (j < series.size() - 1) off << sep;
+                for (uint j = 0; j < sorted_series.size(); ++j){
+                    if (i < sorted_series[j].second->size()){
+                        off << sorted_series[j].second->at(i);
+                        if (j < sorted_series.size() - 1) off << sep;
                     }
-                    else if (j < series.size() - 1) off << sep;
+                    else if (j < sorted_series.size() - 1) off << sep;
                 }
                 off << endl;
             }
@@ -155,11 +162,11 @@ void Statistics::exportData(){
             wbk.deleteSheet("Sheet1");
             auto wks_data = doc.workbook().worksheet("Data");
             uint col = 1;
-            for (auto t : series_titles) wks_data.cell(1, col++).value() = t;
+            for (auto t : sorted_series) wks_data.cell(1, col++).value() = t.first;
 
-            for (col = 0; col < series.size(); ++col){
+            for (col = 0; col < sorted_series.size(); ++col){
                 int row = 2;
-                for (auto s : series[col]) wks_data.cell(row++, col + 1).value() = s;
+                for (auto s : *(sorted_series[col].second)) wks_data.cell(row++, col + 1).value() = s;
             }
 
             auto wks_stat = doc.workbook().worksheet("Statistics");
