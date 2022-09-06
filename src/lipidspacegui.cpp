@@ -929,6 +929,12 @@ void LipidSpaceGUI::runAnalysis(){
     string study_var = GlobalData::gui_string_var["study_var"];
     string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
 
+
+    //lipidomes_from_previous_analysis.clear();
+    //for (auto lipidome : lipid_space->selected_lipidomes) lipidomes_from_previous_analysis.insert(lipidome->cleaned_name);
+    set<QString> selected_tiles;
+
+
     // clear all windows with canvases
     ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
@@ -938,6 +944,7 @@ void LipidSpaceGUI::runAnalysis(){
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
 
     for (auto canvas : canvases){
+        if (canvas->marked_for_selected_view && canvas->pointSet) selected_tiles.insert(canvas->pointSet->title);
         disconnect(canvas, &Canvas::transforming, 0, 0);
         disconnect(canvas, &Canvas::showMessage, 0, 0);
         disconnect(canvas, &Canvas::mouse, 0, 0);
@@ -991,6 +998,7 @@ void LipidSpaceGUI::runAnalysis(){
 
     // insert global lipidome canvases
     Canvas* canvas = new Canvas(lipid_space, n++, -1, ui->speciesList, GlobalSpaceCanvas, ui->centralwidget);
+    if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
     connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
     connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
     connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
@@ -1013,6 +1021,7 @@ void LipidSpaceGUI::runAnalysis(){
     // insert study lipidomes
     for (int i = 0; i < num_studies; ++i){
         Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, StudySpaceCanvas, ui->centralwidget);
+        if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
         connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
         connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
         connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
@@ -1034,6 +1043,7 @@ void LipidSpaceGUI::runAnalysis(){
     // insert single lipidomes
     for (uint i = 0; i < lipid_space->selected_lipidomes.size(); ++i){
         Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, SampleSpaceCanvas, ui->centralwidget);
+        if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
         connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
         connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
         connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
