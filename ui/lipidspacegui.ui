@@ -788,7 +788,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="CBTableWidget" name="tableWidget"/>
+          <widget class="CBTableView" name="tableView"/>
          </item>
         </layout>
        </widget>
@@ -1133,8 +1133,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CBTableWidget</class>
-   <extends>QTableWidget</extends>
+   <class>CBTableView</class>
+   <extends>QTableView</extends>
    <header>lipidspace/AssistanceFunctions.h</header>
   </customwidget>
   <customwidget>

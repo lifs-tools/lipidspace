@@ -111,11 +111,27 @@ public:
         return os;
     }
 
+    inline double at(int r, int c) const {
+        if (r < 0 || rows <= r || c < 0 || cols <= c){
+            throw "Constrain violation, 0 <= r <=" + std::to_string(rows) + ", 0 <= c <= " + std::to_string(cols);
+        }
+        return m[c * rows + r];
+    }
+
     inline double& operator ()(int r, int c){
         if (r < 0 || rows <= r || c < 0 || cols <= c){
             throw "Constrain violation, 0 <= r <=" + std::to_string(rows) + ", 0 <= c <= " + std::to_string(cols);
         }
         return m[c * rows + r];
+    }
+
+    void random(int r, int c){
+        reset(r, c);
+        for (int i = 0; i < r; ++i){
+            for (int j = 0; j < c; ++j) {
+                (*this)(i, j) = (double)rand() / 10000.;
+            }
+        }
     }
 
 signals:

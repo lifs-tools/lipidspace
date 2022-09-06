@@ -25,6 +25,7 @@
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/statistics.h"
 #include <thread>
+#include <QAbstractTableModel>
 
 #define ALPHABETICALLY_ASC "Alphabetically (Asc)"
 #define ALPHABETICALLY_DESC "Alphabetically (Desc)"
@@ -51,6 +52,41 @@ public:
 
 };
 
+
+
+
+class RawDataModel : public QAbstractTableModel {
+    Q_OBJECT
+
+public:
+    vector<vector<QVariant>> raw_data;
+    LipidSpace *lipid_space;
+    vector<QString> column_headers;
+    vector<QString> row_headers;
+    set<int> present_columns;
+    set<int> present_rows;
+    bool transposed;
+    Array column_sizes;
+    Array row_sizes;
+    int rows;
+    int cols;
+
+
+    RawDataModel(LipidSpace *_lipid_space, QObject *parent = 0);
+
+    void reload();
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    QVariant getData(int row, int col);
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+
+public slots:
+    void transpose();
+    void updateTable();
+};
 
 
 
@@ -99,6 +135,7 @@ public:
     Statistics statisticsROCCurve;
     Statistics statisticsBarPlot;
     QLabel *select_tiles_information;
+    RawDataModel *raw_data_model;
     set<int> *selected_d_lipidomes;
     bool showStudyLipidomes;
     bool showGlobalLipidome;
@@ -189,7 +226,6 @@ public slots:
     void ShowTableContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint, set<int> *selected_d_lipidomes = 0);
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);
-    void transposeTable();
     void reassembleSelection();
     void setStudyVariable(int pos);
     void itemChanged(QListWidgetItem *item);
@@ -197,7 +233,6 @@ public slots:
     void studyVariableItemDoubleClicked(QTreeWidgetItem *item, int col);
     void updateSelectionView();
     void updateView(int);
-    void updateTable();
     void check_all_entities();
     void uncheck_all_entities();
     void check_selected_entities();

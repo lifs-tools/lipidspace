@@ -39,7 +39,7 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 
 
 
-CBTableWidget::CBTableWidget(QWidget *parent) : QTableWidget(parent) {
+CBTableView::CBTableView(QWidget *parent) : QTableView(parent) {
     QAbstractButton *btn = findChild<QAbstractButton *>();
     transpose_label = 0;
 
@@ -56,12 +56,12 @@ CBTableWidget::CBTableWidget(QWidget *parent) : QTableWidget(parent) {
 }
 
 
-void CBTableWidget::cornerButtonClicked(){
+void CBTableView::cornerButtonClicked(){
     cornerButtonClick();
 }
 
 
-void CBTableWidget::wheelEvent(QWheelEvent* event){
+void CBTableView::wheelEvent(QWheelEvent* event){
     if (GlobalData::ctrl_pressed){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         bool zoom_in = event->angleDelta().y() > 0;
@@ -75,7 +75,7 @@ void CBTableWidget::wheelEvent(QWheelEvent* event){
         emit zooming();
     }
     else {
-        QTableWidget::wheelEvent(event);
+        QTableView::wheelEvent(event);
     }
 }
 

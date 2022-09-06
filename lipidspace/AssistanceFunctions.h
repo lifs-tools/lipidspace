@@ -4,6 +4,7 @@
 #include <QtCore>
 #include <QListWidget>
 #include <QTreeWidget>
+#include <QTreeView>
 #include <QPen>
 #include <QTableWidget>
 #include <QBrush>
@@ -95,13 +96,14 @@ public slots:
 
 
 
-class CBTableWidget : public QTableWidget {
+
+class CBTableView : public QTableView {
     Q_OBJECT
 
 public:
     QLabel *transpose_label;
 
-    explicit CBTableWidget(QWidget *parent = 0);
+    explicit CBTableView(QWidget *parent = 0);
     void wheelEvent(QWheelEvent*) override;
 
 signals:

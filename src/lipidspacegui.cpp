@@ -296,6 +296,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     selected_tiles_mode = false;
     hovered_box_plot_lipid = "";
     lipid_for_deselect = "";
+    raw_data_model = new RawDataModel(lipid_space, ui->tableView);
+    ui->tableView->setModel(raw_data_model);
+
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
@@ -317,8 +320,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     dragLayer->move(0, 0);
     dragLayer->setVisible(false);
     dragLayer->setWindowFlags(Qt::FramelessWindowHint);
-    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->tableWidget->setSelectionMode(QAbstractItemView::ContiguousSelection);
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->tableView->setSelectionMode(QAbstractItemView::ContiguousSelection);
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->speciesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->classList->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -333,7 +336,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionLoad_table, &QAction::triggered, this, &LipidSpaceGUI::openTable);
     connect(ui->actionImport_mzTabM, &QAction::triggered, this, &LipidSpaceGUI::openMzTabM);
     connect(ui->actionQuit, &QAction::triggered, this, &LipidSpaceGUI::quitProgram);
-    connect(ui->tableWidget, &CBTableWidget::zooming, this, &LipidSpaceGUI::updateTable);
     connect(ui->actionComplete_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setCompleteLinkage);
     connect(ui->actionAverage_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setAverageLinkage);
     connect(ui->actionSingle_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setSingleLinkage);
@@ -360,8 +362,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionIgnore_quantitative_information, &QAction::triggered, this, &LipidSpaceGUI::toggleQuant);
     connect(ui->actionUnbound_lipid_distance_metric, &QAction::triggered, this, &LipidSpaceGUI::toggleBoundMetric);
     connect(ui->actionExport_Results, &QAction::triggered, this, &LipidSpaceGUI::setExport);
-    connect(ui->tableWidget, &CBTableWidget::cornerButtonClick, this, &LipidSpaceGUI::transposeTable);
-    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowTableContextMenu);
+    connect(ui->tableView, &CBTableView::zooming, raw_data_model, &RawDataModel::updateTable);
+    connect(ui->tableView, &CBTableView::cornerButtonClick, raw_data_model, &RawDataModel::transpose);
+    connect(ui->tableView, &QTableView::customContextMenuRequested, this, &LipidSpaceGUI::ShowTableContextMenu);
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(this, &LipidSpaceGUI::studyVariableChanged, ui->dendrogramView, &Canvas::setStudyVariable);
@@ -476,6 +479,7 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete progressbar;
     delete dragLayer;
     delete select_tiles_information;
+    delete raw_data_model;
 }
 
 
@@ -1802,21 +1806,29 @@ void LipidSpaceGUI::selectDendrogramLipidomes(){
 
 void LipidSpaceGUI::copy_to_clipboard(){
 
-    QList<QTableWidgetSelectionRange> ranges = ui->tableWidget->selectedRanges();
-    if (ranges.size() != 1) return;
-    QTableWidgetSelectionRange range = ranges.first();
-    QTableWidget *t = ui->tableWidget;
+    QTableView *t = ui->tableView;
+    QItemSelectionModel *select = t->selectionModel();
+    if (!select->hasSelection() || select->selectedIndexes().size() == 0) return;
+
+    int top_row = select->selectedIndexes().first().row();
+    int bottom_row = select->selectedIndexes().last().row();
+    int left_column = select->selectedIndexes().first().column();
+    int right_column = select->selectedIndexes().last().column();
+
     QString str;
-    for (int r = range.topRow(); r <= range.bottomRow(); ++r){
-        for (int c = range.leftColumn(); c <= range.rightColumn(); ++c){
-            QTextStream(&str) << t->item(r, c)->text();
-            if (c < range.rightColumn()) QTextStream(&str) << "\t";
+    for (int r = top_row; r <= bottom_row; ++r){
+        for (int c = left_column; c <= right_column; ++c){
+
+            QVariant v = raw_data_model->getData(r, c);
+            if (v.type() == QVariant::Double) QTextStream(&str) << QString::number(v.toDouble());
+            else if (v.type() == QVariant::String) QTextStream(&str) << v.toString();
+
+            if (c < right_column) QTextStream(&str) << "\t";
         }
         QTextStream(&str) << "\n";
     }
 
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(str);
+    QApplication::clipboard()->setText(str);
 }
 
 
@@ -1927,7 +1939,7 @@ void LipidSpaceGUI::ShowTableContextMenu(const QPoint pos){
     menu->addAction(copyToClipboard);
     menu->addAction(exportTable);
 
-    menu->popup(ui->tableWidget->viewport()->mapToGlobal(pos));
+    menu->popup(ui->tableView->viewport()->mapToGlobal(pos));
     connect(copyToClipboard, &QAction::triggered, this, &LipidSpaceGUI::copy_to_clipboard);
     connect(exportTable, &QAction::triggered, this, &LipidSpaceGUI::export_table);
 }
@@ -1952,24 +1964,21 @@ void LipidSpaceGUI::export_table(){
         auto wks_data = doc.workbook().worksheet("LipidomicsData");
 
 
-        QTableWidget *t = ui->tableWidget;
-        int cols = t->columnCount();
-        int rows = t->rowCount();
+        int cols = raw_data_model->cols;
+        int rows = raw_data_model->rows;
 
         wks_data.cell(1, 1).value() = "Sample";
-        for (int col = 0; col < cols; ++col) wks_data.cell(1, 2 + col).value() = t->horizontalHeaderItem(col)->text().toStdString();
-        for (int row = 0; row < rows; ++row) wks_data.cell(2 + row, 1).value() = t->verticalHeaderItem(row)->text().toStdString();
+        for (int col = 0; col < cols; ++col) wks_data.cell(1, 2 + col).value() = raw_data_model->column_headers[col].toStdString();
+        for (int row = 0; row < rows; ++row) wks_data.cell(2 + row, 1).value() = raw_data_model->row_headers[row].toStdString();
 
         for (int col = 0; col < cols; ++col){
             for (int row = 0; row < rows; ++row){
-                bool isnumber = false;
-                QVariant variant = t->item(row, col)->data(1);
-                double value = t->item(row, col)->data(1).toDouble(&isnumber);
-                if (isnumber){
-                    wks_data.cell(2 + row, 2 + col).value() = value;
+                QVariant variant = raw_data_model->getData(row, col);
+                if (variant.type() == QVariant::Double){
+                    wks_data.cell(2 + row, 2 + col).value() = variant.toDouble();
                 }
                 else {
-                    wks_data.cell(2 + row, 2 + col).value() = t->item(row, col)->data(1).toString().toStdString();
+                    wks_data.cell(2 + row, 2 + col).value() = variant.toString().toStdString();
                 }
             }
         }
@@ -2293,262 +2302,9 @@ void LipidSpaceGUI::reset_all_study_variables(){
 
 
 
-void LipidSpaceGUI::transposeTable(){
-    table_transposed = !table_transposed;
-    fill_table();
-}
-
-
-
-
-void LipidSpaceGUI::updateTable(){
-    QTableWidget *t = ui->tableWidget;
-
-    int rows = t->rowCount();
-    int cols = t->columnCount();
-
-    if (rows == 0 || cols == 0) return;
-
-    QFont item_font("Helvetica", (int)GlobalData::gui_num_var["table_zoom"]);
-    for (int c = 0; c < cols; c++) t->horizontalHeaderItem(c)->setFont(item_font);
-    for (int r = 0; r < rows; ++r){
-        t->verticalHeaderItem(r)->setFont(item_font);
-        for (int c = 0; c < cols; c++) t->item(r, c)->setFont(item_font);
-    }
-    t->resizeColumnsToContents();
-    t->resizeRowsToContents();
-}
-
-
-
 void LipidSpaceGUI::fill_table(){
-    return;
-
-    QTableWidget *t = ui->tableWidget;
-    //LipidSpace* lipid_space = lipid_space_gui->lipid_space;
-    QTableWidgetItem *item = 0;
-
-    QFont item_font("Helvetica", (int)GlobalData::gui_num_var["table_zoom"]);
-
-
-    t->setRowCount(0);
-    t->setColumnCount(0);
-
-    if ((int)lipid_space->selected_lipidomes.size() == 0 || (int)lipid_space->global_lipidome->lipids.size() == 0) return;
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
-
-    int num_study_variables = lipid_space->study_variable_values.size();
-    map<string, int> lipid_index;
-    map<string, int> study_variable_index;
-
-    // achieve sorted list of lipid species
-    set< string > sorted_lipid_species;
-    set< string > selected_species;
-    set< string > selected_lipidomes;
-    set< int > unselected_lipidome_indexes;
-    for (auto lipidome : lipid_space->lipidomes){
-        for (auto lipid_species : lipidome->species) sorted_lipid_species.insert(lipid_species);
-    }
-    for (auto lipid_species : lipid_space->global_lipidome->species) selected_species.insert(lipid_species);
-    for (auto lipidome : lipid_space->selected_lipidomes) selected_lipidomes.insert(lipidome->cleaned_name.c_str());
-
-    if (table_transposed){
-        t->setColumnCount(lipid_space->lipidomes.size());
-        t->setRowCount(sorted_lipid_species.size() + num_study_variables);
-
-        for (int c = 0; c < (int)lipid_space->lipidomes.size(); c++){
-            item = new QTableWidgetItem(QString(lipid_space->lipidomes[c]->cleaned_name.c_str()));
-            item->setData(1, lipid_space->lipidomes[c]->cleaned_name.c_str());
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            item->setFont(item_font);
-            t->setHorizontalHeaderItem(c, item);
-            if (uncontains_val(selected_lipidomes, lipid_space->lipidomes[c]->cleaned_name.c_str())) unselected_lipidome_indexes.insert(c);
-        }
-
-        int f = 0;
-        for (auto kv : lipid_space->study_variable_values){
-            item = new QTableWidgetItem(kv.first.c_str());
-            item->setData(1, kv.first.c_str());
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            item->setFont(item_font);
-            study_variable_index.insert({kv.first, f});
-            t->setVerticalHeaderItem(f++, item);
-        }
-
-        int rrr = 0;
-        for (auto header_std : sorted_lipid_species){
-            QString header_name = translations[header_std].c_str();
-
-            // dirty way to make the transpose button completely visible
-            if (f == 0 && header_name.length() < 10) {
-                while (header_name.length() < 14) header_name += " ";
-            }
-            item = new QTableWidgetItem(header_name);
-            item->setData(1, header_name);
-            item->setFont(item_font);
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            t->setVerticalHeaderItem(num_study_variables + rrr, item);
-            lipid_index.insert({header_std, num_study_variables + rrr});
-            rrr++;
-        }
-
-        // fill study variables and content
-        int R = t->rowCount();
-        int C = t->columnCount();
-        int n = R * C;
-        Bitfield free_cells(n, true);
-
-        for (int c = 0; c < C; c++){
-            // add study variables
-            for(auto kv : lipid_space->lipidomes[c]->study_variables){
-                if (kv.second.study_variable_type == NominalStudyVariable){
-                    item = new QTableWidgetItem(kv.second.nominal_value.c_str());
-                    item->setData(1, kv.second.nominal_value.c_str());
-                }
-                else {
-                    item = new QTableWidgetItem(QString::number(kv.second.numerical_value));
-                    item->setData(1, kv.second.numerical_value);
-                }
-                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-
-                if (contains_val(unselected_lipidome_indexes, c)){
-                    item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
-                }
-                item->setFont(item_font);
-                int r = study_variable_index[kv.first];
-                t->setItem(r, c, item);
-                free_cells.remove(r * C + c);
-            }
-            // add lipid quant data
-            for (int r = 0; r < (int)lipid_space->lipidomes[c]->species.size(); r++){
-                QString qn = QString::number(lipid_space->lipidomes[c]->original_intensities[r]);
-                item = new QTableWidgetItem(qn);
-                item->setData(1, lipid_space->lipidomes[c]->original_intensities[r]);
-                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                item->setFont(item_font);
-
-                if (uncontains_val(selected_species, lipid_space->lipidomes[c]->species[r]) || contains_val(unselected_lipidome_indexes, c)){
-                    item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
-                }
-
-                int rr = lipid_index[lipid_space->lipidomes[c]->species[r]];
-                t->setItem(rr, c, item);
-                free_cells.remove(rr * C + c);
-            }
-        }
-        // fill the empty fields with disabled cells
-        for (auto pos : free_cells){
-            item = new QTableWidgetItem("");
-            item->setData(1, "");
-            item->setFont(item_font);
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            int r = pos / C;
-            int c = pos % C;
-            t->setItem(r, c, item);
-        }
-    }
-
-
-
-
-
-    else {
-        // fill headers
-        t->setRowCount(lipid_space->lipidomes.size());
-        t->setColumnCount(sorted_lipid_species.size() + num_study_variables);
-
-        for (int r = 0; r < (int)lipid_space->lipidomes.size(); ++r){
-            int h = 0;
-            QString header_name = lipid_space->lipidomes[r]->cleaned_name.c_str();
-            // dirty way to make the transpose button completely visible
-            if (h++ == 0 && header_name.length() < 10) {
-                while (header_name.length() < 14) header_name += " ";
-            }
-            item = new QTableWidgetItem(header_name);
-            item->setData(1, header_name);
-            item->setFont(item_font);
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            t->setVerticalHeaderItem(r, item);
-            if (uncontains_val(selected_lipidomes, lipid_space->lipidomes[r]->cleaned_name.c_str())) unselected_lipidome_indexes.insert(r);
-        }
-
-        int f = 0;
-        for (auto kv : lipid_space->study_variable_values){
-            item = new QTableWidgetItem(kv.first.c_str());
-            item->setData(1, kv.first.c_str());
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            item->setFont(item_font);
-            study_variable_index.insert({kv.first, f});
-            t->setHorizontalHeaderItem(f++, item);
-        }
-
-        int ccc = 0;
-        for (auto header_std : sorted_lipid_species){
-        //for (int c = 0; c < (int)lipid_space->global_lipidome->species.size(); c++){
-            item = new QTableWidgetItem(translations[header_std].c_str());
-            item->setData(1, translations[header_std].c_str());
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            item->setFont(item_font);
-            t->setHorizontalHeaderItem(num_study_variables + ccc, item);
-            lipid_index.insert({header_std, num_study_variables + ccc});
-            ccc++;
-        }
-
-
-        // fill study variables and content
-        int R = t->rowCount();
-        int C = t->columnCount();
-        int n = R * C;
-        Bitfield free_cells(n, true);
-
-        for (int r = 0; r < R; ++r){
-            // add study variables
-            for(auto kv : lipid_space->lipidomes[r]->study_variables){
-                if (kv.second.study_variable_type == NominalStudyVariable){
-                    item = new QTableWidgetItem(kv.second.nominal_value.c_str());
-                    item->setData(1, kv.second.nominal_value.c_str());
-                }
-                else {
-                    item = new QTableWidgetItem(QString::number(kv.second.numerical_value));
-                    item->setData(1, kv.second.numerical_value);
-                }
-                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                if (contains_val(unselected_lipidome_indexes, r)){
-                    item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
-                }
-                item->setFont(item_font);
-                int c = study_variable_index[kv.first];
-                t->setItem(r, c, item);
-                free_cells.remove(r * C + c);
-            }
-
-            // add lipid quant data
-            for (int c = 0; c < (int)lipid_space->lipidomes[r]->species.size(); c++){
-                item = new QTableWidgetItem(QString::number(lipid_space->lipidomes[r]->original_intensities[c]));
-                    item->setData(1, lipid_space->lipidomes[r]->original_intensities[c]);
-                item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                if (uncontains_val(selected_species, lipid_space->lipidomes[r]->species[c]) || contains_val(unselected_lipidome_indexes, r)){
-                    item->setData(Qt::ForegroundRole, QBrush(QColor(180, 180, 180)));
-                }
-                item->setFont(item_font);
-                int cc = lipid_index[lipid_space->lipidomes[r]->species[c]];
-                t->setItem(r, cc, item);
-                free_cells.remove(r * C + cc);
-            }
-        }
-        // fill the empty fields with disabled cells
-        for (auto pos : free_cells){
-            item = new QTableWidgetItem("");
-            item->setFont(item_font);
-            item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            item->setData(1, "");
-            int r = pos / C;
-            int c = pos % C;
-            t->setItem(r, c, item);
-        }
-    }
-    t->resizeColumnsToContents();
-    t->resizeRowsToContents();
+    raw_data_model->reload();
+    raw_data_model->updateTable();
 }
 
 
@@ -2606,7 +2362,194 @@ void HomeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     painter->restore();
 }
 
+
+
 QRectF HomeItem::boundingRect() const {
     return QRectF(0, 0, view->width(), view->height());
 }
 
+
+
+
+
+
+
+RawDataModel::RawDataModel(LipidSpace *_lipid_space, QObject *parent) : QAbstractTableModel(parent) {
+    lipid_space = _lipid_space;
+    rows = 0;
+    cols = 0;
+    transposed = false;
+}
+
+
+
+void RawDataModel::reload(){
+    raw_data.clear();
+    column_headers.clear();
+    row_headers.clear();
+    present_columns.clear();
+    present_rows.clear();
+    column_sizes.clear();
+    row_sizes.clear();
+    cols = 0;
+    rows = 0;
+    transposed = false;
+
+    if (!lipid_space->analysis_finished) return;
+
+    cols = lipid_space->all_lipids.size() + lipid_space->study_variable_values.size();
+    rows = lipid_space->lipidomes.size();
+    raw_data.resize(rows, vector<QVariant>(cols));
+    column_sizes.resize(cols, 1);
+    row_headers.resize(rows);
+    row_sizes.resize(rows);
+
+
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+    set<string> present_lipids;
+    set<string> present_lipidomes;
+    map<string, int> column_map;
+
+    // getting header data for study variables
+    for (auto kv : lipid_space->study_variable_values){
+        present_columns.insert(column_headers.size());
+        column_headers.push_back(kv.first.c_str());
+        column_map.insert({kv.first, column_map.size()});
+    }
+
+
+    for (auto lipid_name : lipid_space->global_lipidome->species) present_lipids.insert(lipid_name);
+    for (auto lipidome : lipid_space->selected_lipidomes) present_lipidomes.insert(lipidome->cleaned_name);
+
+    // getting header data for lipids
+    for (auto kv : lipid_space->all_lipids){
+        column_map.insert({kv.first, column_map.size()});
+        if (contains_val(present_lipids, kv.first)) present_columns.insert(column_headers.size());
+        column_headers.push_back(translations[kv.first].c_str());
+    }
+
+
+    QFontMetrics fm(QFont("Helvetica", 10));
+
+    // getting header data for lipidomes and data
+    #pragma omp parallel for
+    for (uint r = 0; r < lipid_space->lipidomes.size(); ++r){
+        auto lipidome = lipid_space->lipidomes[r];
+        row_headers[r] = lipidome->cleaned_name.c_str();
+        row_sizes[r] = __max(row_sizes[r], (double)fm.horizontalAdvance(row_headers[r]));
+
+        #pragma omp critical
+        {
+            if (contains_val(present_lipidomes, lipidome->cleaned_name)) present_rows.insert(r);
+        }
+
+        for (auto kv : lipidome->study_variables){
+            if (!kv.second.missing && contains_val(column_map, kv.first)){
+                int c = column_map[kv.first];
+                if (kv.second.study_variable_type == NumericalStudyVariable){
+                    raw_data[r][c] = kv.second.numerical_value;
+                }
+                else if (kv.second.study_variable_type == NominalStudyVariable){
+                    raw_data[r][c] = kv.second.nominal_value.c_str();
+                    column_sizes[c] = __max(column_sizes[c], (double)fm.horizontalAdvance(raw_data[r][c].toString()));
+                }
+            }
+        }
+
+        for (uint i = 0; i < lipidome->species.size(); ++i){
+            int c = column_map[lipidome->species[i]];
+            raw_data[r][c] = lipidome->original_intensities[i];
+        }
+    }
+
+    for (uint c = 0; c < column_headers.size(); c++){
+        column_sizes[c] = __max(column_sizes[c], (double)fm.horizontalAdvance(column_headers[c]));
+    }
+
+    QModelIndex topLeft = index(0, 0);
+    QModelIndex bottomRight = index(rowCount() - 1, columnCount() - 1);
+
+    emit dataChanged(topLeft, bottomRight);
+    emit layoutChanged();
+}
+
+
+int RawDataModel::rowCount(const QModelIndex &) const {
+    return rows;
+}
+
+
+int RawDataModel::columnCount(const QModelIndex &) const {
+    return cols;
+}
+
+
+QVariant RawDataModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid()) return QVariant();
+
+    if (role == Qt::ForegroundRole){
+        return (contains_val(present_rows, index.row()) && contains_val(present_columns, index.column())) ? QColor(Qt::black) : QColor(180, 180, 180);
+    }
+    else if (role == Qt::DisplayRole) {
+        return transposed ? raw_data[index.column()][index.row()] : raw_data[index.row()][index.column()];
+    }
+    else if (role == Qt::FontRole){
+        return QFont("Helvetica", GlobalData::gui_num_var["table_zoom"]);
+    }
+    return QVariant();
+}
+
+
+QVariant RawDataModel::getData(int row, int col){
+    return transposed ? raw_data[col][row] : raw_data[row][col];
+}
+
+
+void RawDataModel::transpose(){
+    swap(column_headers, row_headers);
+    swap(present_columns, present_rows);
+    swap(cols, rows);
+    swap(column_sizes, row_sizes);
+    transposed = !transposed;
+
+    updateTable();
+}
+
+void RawDataModel::updateTable(){
+
+    QModelIndex topLeft = index(0, 0);
+    QModelIndex bottomRight = index(rowCount() - 1, columnCount() - 1);
+
+    emit dataChanged(topLeft, bottomRight);
+    emit layoutChanged();
+
+    QTableView *t = (QTableView *)parent();
+    double font_zoom = (double)GlobalData::gui_num_var["table_zoom"] / 7.5;
+    for (int i = 0; i < rows; ++i) t->setRowHeight(i, GlobalData::gui_num_var["table_zoom"] * 2);
+    for (int i = 0; i < cols; ++i) t->setColumnWidth(i, (double)column_sizes[i] * font_zoom);
+}
+
+
+
+QVariant RawDataModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if (!lipid_space->analysis_finished) return QVariant();
+
+    if (role == Qt::ForegroundRole){
+        if (orientation == Qt::Horizontal && contains_val(present_columns, section)) return QColor(Qt::black);
+        if (orientation == Qt::Vertical && contains_val(present_rows, section)) return QColor(Qt::black);
+        return QColor(128, 128, 128);
+    }
+
+    if (role == Qt::DisplayRole){
+        if (orientation == Qt::Horizontal && (int)column_headers.size() > section) {
+            return column_headers[section];
+        }
+        if (orientation == Qt::Vertical && (int)row_headers.size() > section) {
+            return row_headers[section];
+        }
+    }
+    else if (role == Qt::FontRole){
+        return QFont("Helvetica", GlobalData::gui_num_var["table_zoom"]);
+    }
+    return QVariant();
+}
