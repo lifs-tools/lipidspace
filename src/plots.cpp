@@ -693,9 +693,9 @@ void Histogramplot::update_chart(){
     double animation_length = pow(chart->animation, 0.25);
 
     for (auto &box : boxes){
-        double x1 = box.x - box.x_width / 2.;
+        double x1 = box.x - box.x_width * 0.5;
         double y1 = 0;
-        double x2 = box.x + box.x_width / 2.;
+        double x2 = box.x + box.x_width * 0.5;
         double y2 = box.y * animation_length;
         chart->translate(x1, y1);
         chart->translate(x2, y2);

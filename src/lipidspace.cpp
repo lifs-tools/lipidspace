@@ -283,7 +283,7 @@ LipidSpace::LipidSpace() {
     process_id = 0;
     target_variable = "";
     study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
-    lipid_name_translations.resize(2);
+    lipid_name_translations.resize(3);
 
 
 
@@ -945,6 +945,13 @@ void LipidSpace::reassembleSelection(){
     }
 
     for (auto lipid_name : lipid_names_to_delete){
+        if (contains_val(lipid_name_translations[NORMALIZED_NAME], lipid_name_translations[TRANSLATED_NAME][lipid_name])){
+            lipid_name_translations[NORMALIZED_NAME].erase(lipid_name_translations[TRANSLATED_NAME][lipid_name]);
+        }
+        if (contains_val(lipid_name_translations[NORMALIZED_NAME], lipid_name_translations[IMPORT_NAME][lipid_name])){
+            lipid_name_translations[NORMALIZED_NAME].erase(lipid_name_translations[IMPORT_NAME][lipid_name]);
+        }
+
         lipid_name_translations[TRANSLATED_NAME].erase(lipid_name);
         lipid_name_translations[IMPORT_NAME].erase(lipid_name);
     }
@@ -2170,8 +2177,15 @@ void LipidSpace::load_flat_table(ImportData *import_data){
 
 
             string lipid_string = l->get_lipid_string();
+            if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], translated_name))
+                lipid_name_translations[NORMALIZED_NAME].insert({translated_name, lipid_string});
+
+            if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], lipid_table_name))
+                lipid_name_translations[NORMALIZED_NAME].insert({lipid_table_name, lipid_string});
+
             if (uncontains_val(lipid_name_translations[TRANSLATED_NAME], lipid_string))
                 lipid_name_translations[TRANSLATED_NAME].insert({lipid_string, translated_name});
+
             if (uncontains_val(lipid_name_translations[IMPORT_NAME], lipid_string))
                 lipid_name_translations[IMPORT_NAME].insert({lipid_string, lipid_table_name});
 
@@ -2921,8 +2935,15 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
     for (auto fa : l->lipid->fa_list) cut_cycle(fa);
 
     string lipid_string = l->get_lipid_string();
+    if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], translated_name))
+        lipid_name_translations[NORMALIZED_NAME].insert({translated_name, lipid_string});
+
+    if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], lipid_name))
+        lipid_name_translations[NORMALIZED_NAME].insert({lipid_name, lipid_string});
+
     if (uncontains_val(lipid_name_translations[TRANSLATED_NAME], lipid_string))
         lipid_name_translations[TRANSLATED_NAME].insert({lipid_string, translated_name});
+
     if (uncontains_val(lipid_name_translations[IMPORT_NAME], lipid_string))
         lipid_name_translations[IMPORT_NAME].insert({lipid_string, lipid_name});
 
@@ -3683,6 +3704,7 @@ void LipidSpace::reset_analysis(){
     dendrogram_points.clear();
     lipid_name_translations[0].clear();
     lipid_name_translations[1].clear();
+    lipid_name_translations[2].clear();
     lipid_sortings.clear();
     global_distances.clear();
     complete_feature_analysis_table.clear();

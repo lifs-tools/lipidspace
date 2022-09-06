@@ -2075,14 +2075,16 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
     QMenu *menu = new QMenu(this);
     QAction *actionLogScale = new QAction("Y-axis in log scale", this);
     QAction *actionSelectLipid = 0;
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+
+    map<string, string> &translations = lipid_space->lipid_name_translations[NORMALIZED_NAME];
     bool hover_over_lipid = hovered_box_plot_lipid.length() > 0 && contains_val(translations, hovered_box_plot_lipid) && contains_val(lipid_space->selection[0], translations[hovered_box_plot_lipid]);
 
     if (hover_over_lipid){
         lipid_for_deselect = translations[hovered_box_plot_lipid];
         bool deselect = lipid_space->selection[0][lipid_for_deselect];
-        actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(lipid_for_deselect.c_str()), this);
+        actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(hovered_box_plot_lipid.c_str()), this);
     }
+
     QAction *actionShowData = new QAction("Show data", this);
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);

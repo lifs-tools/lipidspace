@@ -50,7 +50,7 @@ enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, StudyVariableColum
 enum LipidSpaceExceptionType {UnspecificException, LipidUnparsable, FileUnreadable, LipidDoublette, NoColumnFound, ColumnNumMismatch, LipidNotRegistered, StudyVariableNotRegistered, CorruptedFileFormat};
 enum StudyVariableFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, EqualFilter = 3, WithinRange = 4, OutsideRange = 5};
 enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
-enum LipidNameState {TRANSLATED_NAME = 0, IMPORT_NAME = 1};
+enum LipidNameState {NORMALIZED_NAME = 0, TRANSLATED_NAME = 1, IMPORT_NAME = 2};
 enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, MappingTo, InsertNaN, InsertDefault};
 enum NormalizationType {AbsoluteNormalization, RelativeNormalization, GroupNormalization, UndefinedNormalization};
 enum CanvasType {UndefinedCanvasType, DendrogramCanvas, GlobalSpaceCanvas, StudySpaceCanvas, SampleSpaceCanvas};
