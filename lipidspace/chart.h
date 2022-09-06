@@ -38,6 +38,8 @@ public:
 
 
 class Chart : public QGraphicsView {
+    Q_OBJECT
+
 public:
     QGraphicsTextItem *title;
     QGraphicsTextItem *xlabel;
@@ -77,6 +79,7 @@ public:
     void setXLabel(QString l);
     void setYLabel(QString l);
     void translate(double &x, double &y);
+    void back_translate(double &x);
     void add(Chartplot* plot);
     void add_category(QString);
     void create_x_numerical_axis(bool _log_x = false);
@@ -95,6 +98,10 @@ protected:
 public slots:
     void set_tick_size(int i);
     void set_title_size(int i);
+    void wheelEvent(QWheelEvent* event) override;
+
+signals:
+    void wheel(QWheelEvent *event);
 };
 
 

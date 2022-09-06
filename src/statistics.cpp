@@ -266,7 +266,7 @@ void Statistics::updateBarPlot(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() <= 1){
+    if (lipid_space->selected_lipidomes.size() < 1){
         chart->setVisible(false);
         return;
     }

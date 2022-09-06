@@ -30,10 +30,10 @@
 #include <iostream>
 #include <algorithm>
 #include <math.h>
-#include "lipidspace/KDTree.h"
 
 #define randnum() ((double)rand() / (double)(RAND_MAX))
-
+#define __min(a,b) (((a) < (b)) ? (a) : (b))
+#define __max(a,b) (((a) > (b)) ? (a) : (b))
 
 #define UNDEFINED_LIPID "UNDEFINED"
 #define FILE_STUDY_VARIABLE_NAME "Origin"

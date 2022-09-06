@@ -20,8 +20,6 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     timer_id = -1;
 
-    //connect(&timer, &QTimer::timeout, this, &Chart::animation_step);
-
     tick_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"]);
     label_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"], QFont::Bold);
     title_legend_font = QFont("Helvetica", GlobalData::gui_num_var["legend_size"]);
@@ -221,6 +219,13 @@ void Chart::clear(){
     update_chart();
 }
 
+
+
+void Chart::back_translate(double &x){
+    x = (x - chart_box_inner.x()) / (chart_box_inner.width() / (xrange.y() - xrange.x())) + xrange.x();
+}
+
+
 void Chart::translate(double &x, double &y){
     if (log_x_axis){
         if (x > xrange.x()){
@@ -251,7 +256,13 @@ void Chart::translate(double &x, double &y){
 
 void Chart::add(Chartplot *plot){
     chart_plots.push_back(plot);
+    connect(this, &Chart::wheel, plot, &Chartplot::wheelEvent);
     update_chart();
+}
+
+
+void Chart::wheelEvent(QWheelEvent *event){
+    emit wheel(event);
 }
 
 
@@ -454,22 +465,23 @@ void Chart::update_chart(){
     }
 
     if (show_x_axis && is_x_category_axis){
-        double single_group_width = chart_box_inner.width() / (double)x_categories.size();
+        double single_group_width = chart_box_inner.width() / (double)(xrange.y() - xrange.x());
         for (uint i = 0; i < x_categories.size(); ++i){
             auto x_tick = x_ticks[i];
             x_tick->setFont(tick_font);
             x_tick->setHtml(x_categories[i]);
-            if (x_tick->boundingRect().width() <= single_group_width){
+            bool vis = xrange.x() <= i && i <= xrange.y();
+            if (x_tick->boundingRect().width() <= single_group_width && vis){
                 x_tick->setVisible(true);
-                double x = chart_box_inner.x() + i * single_group_width + (single_group_width - x_tick->boundingRect().width()) / 2.;
+                double x = chart_box_inner.x() + (i - xrange.x()) * single_group_width + (single_group_width - x_tick->boundingRect().width()) / 2.;
                 double y = chart_box_inner.y() + chart_box_inner.height() + TICK_SIZE;
                 x_tick->setPos(x, y);
 
             }
-            else if (tick_rect.width() <= single_group_width){
+            else if (tick_rect.width() <= single_group_width && vis){
                 x_tick->setVisible(true);
                 x_tick->setHtml("...");
-                double x = chart_box_inner.x() + i * single_group_width + (single_group_width - x_tick->boundingRect().width()) / 2.;
+                double x = chart_box_inner.x() + (i - xrange.x()) * single_group_width + (single_group_width - x_tick->boundingRect().width()) / 2.;
                 double y = chart_box_inner.y() + chart_box_inner.height() + TICK_SIZE;
                 x_tick->setPos(x, y);
 
@@ -479,7 +491,7 @@ void Chart::update_chart(){
             }
 
             auto line = v_grid[i];
-            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && (single_group_width > 5 || i == 0)){
+            if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && (single_group_width > 5 || i == 0) && i < (xrange.y() - xrange.x())){
                 line->setVisible(true);
                 double w = chart_box_inner.x() + (double)i * single_group_width;
                 line->setLine(w, chart_box_inner.y(), w, chart_box_inner.y() + chart_box_inner.height() + 5);

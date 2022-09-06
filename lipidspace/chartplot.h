@@ -9,6 +9,7 @@ using namespace std;
 class Chart;
 
 class Chartplot : public QObject {
+    Q_OBJECT
 
 public:
     Chart *chart;
@@ -17,6 +18,9 @@ public:
     virtual ~Chartplot();
     virtual void update_chart() = 0;
     virtual void clear() = 0;
+
+public slots:
+    virtual void wheelEvent(QWheelEvent *event);
 };
 
 

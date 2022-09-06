@@ -2,6 +2,7 @@
 #define PLOTS_H
 
 #include "lipidspace/chartplot.h"
+#include "lipidspace/AssistanceFunctions.h"
 #include <QToolTip>
 #include <QCursor>
 #include <vector>
@@ -64,6 +65,7 @@ signals:
 public slots:
     void lipidEntered(string lipid_name);
     void lipidExited();
+
 };
 
 
@@ -74,6 +76,7 @@ public:
     vector< vector<BarBox*> > bars;
     bool log_scale;
     bool show_data;
+    QPointF x_zoom_range;
 
     Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);
     ~Barplot();
@@ -86,9 +89,11 @@ signals:
     void enterLipid(string lipid_name);
     void exitLipid();
 
+
 public slots:
     void lipidEntered(string lipid_name);
     void lipidExited();
+    void wheelEvent(QWheelEvent *event) override;
 };
 
 

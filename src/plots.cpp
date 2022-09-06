@@ -73,6 +73,7 @@ void HoverRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_chart) {
     log_scale = _log_scale;
     show_data = _show_data;
+    x_zoom_range = QPointF(0, -1);
 }
 
 Barplot::~Barplot(){
@@ -89,7 +90,7 @@ void Barplot::update_chart(){
 
         for (uint s = 0; s < barset.size(); ++s){
             BarBox *bar = barset[s];
-            if (visible && (bar->value > 0)){
+            if (visible && (bar->value > 0) && (uint)x_zoom_range.x() <= b && b < (uint)x_zoom_range.y()){
                 double xs = b + (double)s / (double)barset.size();
                 double xe = b + (double)(s + 1) / (double)barset.size();
 
@@ -179,6 +180,40 @@ void Barplot::lipidExited(){
 }
 
 
+void Barplot::wheelEvent(QWheelEvent *event){
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QPointF mouse_pos = chart->mapToScene(QPoint(event->position().x(), event->position().y()));
+    double scale_factor = (event->angleDelta().y() > 0) ? 1.1 : 1. / 1.1;
+#else
+    QPointF mouse_pos = chart->mapToScene(event->pos());
+    double scale_factor = (event->delta() > 0) ? 1.1 : 1. / 1.1;
+#endif
+    double x = mouse_pos.x();
+    chart->back_translate(x);
+
+    double left = __max(0., x + (x_zoom_range.x() - x) * scale_factor);
+    double right = __min(bars.size(), x + (x_zoom_range.y() - x) * scale_factor);
+
+    if (right - left > 1){
+        chart->xrange = QPointF((int)left, (int)right);
+        x_zoom_range = QPointF(left, right);
+
+        double max_top = 0;
+        for (int b = (int)left; b < (int)right; ++b){
+            auto bar_set = bars[b];
+            for (auto bar : bar_set){
+                max_top = __max(max_top, bar->value + bar->error);
+            }
+        }
+        chart->yrange = QPointF(0, max_top);
+
+        chart->update_chart();
+    }
+}
+
+
 void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors){
     if (bars.size() > 0 || data.size() == 0 || data.size() != labels.size() || (colors != 0 && categories.size() != colors->size())) return;
 
@@ -261,6 +296,7 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
     }
 
     chart->xrange = QPointF(0, bars.size());
+    x_zoom_range = QPointF(0, bars.size());
     if (log_scale && ymin > 0) ymin = pow(10, floor(log(ymin) / log(10)));
     chart->yrange = QPointF(log_scale ? ymin : 0, ymax);
 

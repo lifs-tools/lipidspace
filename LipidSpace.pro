@@ -91,6 +91,9 @@ FORMS += \
     ui/select_worksheet.ui \
     ui/studyvariablemapping.ui
 
+release:UI_DIR += objects
+release:MOC_DIR += objects
+
 # Default rules for deployment.
 #qnx: target.path = /tmp/$${TARGET}/bin
 #else: unix:!android: target.path = /opt/$${TARGET}/bin

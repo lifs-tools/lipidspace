@@ -19,9 +19,6 @@
 using namespace std;
 using namespace std::chrono;
 
-#define __min(a,b) (((a) < (b)) ? (a) : (b))
-#define __max(a,b) (((a) > (b)) ? (a) : (b))
-
 
 class LipidSpace : public QThread {
     Q_OBJECT
