@@ -233,17 +233,13 @@ public slots:
     void studyVariableItemDoubleClicked(QTreeWidgetItem *item, int col);
     void updateSelectionView();
     void updateView(int);
-    void check_all_entities();
-    void uncheck_all_entities();
-    void check_selected_entities();
-    void uncheck_selected_entities();
-    void toggle_all_entities();
-    void toggle_selected_entities();
-    void select_all_study_variables();
-    void deselect_all_study_variables();
+    void check_all_entities(bool checked);
+    void check_selected_entities(bool checked);
+    void toggle_entities(bool all_entities);
+    void select_all_study_variables(bool select);
     void reset_all_study_variables();
     void setPieTree(int);
-    void setKnubbel();
+    void setKnubbel(); // if one might ask, this is part of an easter egg
     void setDendrogramHeight(int);
     void setPieSize(int);
     void setNormalization(int);

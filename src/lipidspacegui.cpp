@@ -2159,12 +2159,12 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
             default: return;
         }
         menu->popup(widget->viewport()->mapToGlobal(pos));
-        connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::check_all_entities);
-        connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::uncheck_all_entities);
-        connect(actionToggleAll, &QAction::triggered, this, &LipidSpaceGUI::toggle_all_entities);
-        connect(actionSelectSelected, &QAction::triggered, this, &LipidSpaceGUI::check_selected_entities);
-        connect(actionDeselectSelected, &QAction::triggered, this, &LipidSpaceGUI::uncheck_selected_entities);
-        connect(actionToggleSelected, &QAction::triggered, this, &LipidSpaceGUI::toggle_selected_entities);
+        connect(actionSelectAll, &QAction::triggered, this, [=](){ check_all_entities(true); });
+        connect(actionDeselectAll, &QAction::triggered, this, [=](){ check_all_entities(false); });
+        connect(actionToggleAll, &QAction::triggered, this, [=](){ toggle_entities(true); });
+        connect(actionSelectSelected, &QAction::triggered, this, [=](){ check_selected_entities(true); });
+        connect(actionDeselectSelected, &QAction::triggered, this, [=](){ check_selected_entities(false); });
+        connect(actionToggleSelected, &QAction::triggered, this, [=](){ toggle_entities(false); });
         connect(actionExportList, &QAction::triggered, this, &LipidSpaceGUI::export_list);
     }
     else {
@@ -2175,15 +2175,15 @@ void LipidSpaceGUI::ShowContextMenu(const QPoint pos){
         menu->addAction(actionDeselectAll);
         menu->addAction(actionResetAll);
         menu->popup(ui->treeWidget->viewport()->mapToGlobal(pos));
-        connect(actionSelectAll, &QAction::triggered, this, &LipidSpaceGUI::select_all_study_variables);
-        connect(actionDeselectAll, &QAction::triggered, this, &LipidSpaceGUI::deselect_all_study_variables);
+        connect(actionSelectAll, &QAction::triggered, this, [=](){ select_all_study_variables(true); });
+        connect(actionDeselectAll, &QAction::triggered, this, [=](){ select_all_study_variables(false); });
         connect(actionResetAll, &QAction::triggered, this, &LipidSpaceGUI::reset_all_study_variables);
     }
 }
 
 
 
-void LipidSpaceGUI::check_all_entities(){
+void LipidSpaceGUI::check_all_entities(bool checked){
     QListWidget *widget = nullptr;
     switch(ui->itemsTabWidget->currentIndex()){
         case 0: widget = ui->speciesList; break;
@@ -2193,13 +2193,13 @@ void LipidSpaceGUI::check_all_entities(){
         case 4: widget = ui->sampleList; break;
     }
     for (int i = 0; i < widget->count(); ++i){
-        widget->item(i)->setCheckState(Qt::Checked);
+        widget->item(i)->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
     }
 }
 
 
 
-void LipidSpaceGUI::check_selected_entities(){
+void LipidSpaceGUI::check_selected_entities(bool checked){
     QListWidget *widget = nullptr;
     switch(ui->itemsTabWidget->currentIndex()){
         case 0: widget = ui->speciesList; break;
@@ -2209,13 +2209,13 @@ void LipidSpaceGUI::check_selected_entities(){
         case 4: widget = ui->sampleList; break;
     }
     for (auto item : widget->selectedItems()){
-        item->setCheckState(Qt::Checked);
+        item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
     }
 }
 
 
 
-void LipidSpaceGUI::uncheck_all_entities(){
+void LipidSpaceGUI::toggle_entities(bool all_entities){
     QListWidget *widget = nullptr;
     switch(ui->itemsTabWidget->currentIndex()){
         case 0: widget = ui->speciesList; break;
@@ -2224,81 +2224,27 @@ void LipidSpaceGUI::uncheck_all_entities(){
         case 3: return;
         case 4: widget = ui->sampleList; break;
     }
-    for (int i = 0; i < widget->count(); ++i){
-        widget->item(i)->setCheckState(Qt::Unchecked);
+    if (all_entities){
+        for (int i = 0; i < widget->count(); ++i){
+            widget->item(i)->setCheckState(widget->item(i)->checkState() ? Qt::Unchecked :  Qt::Checked);
+        }
+    }
+    else {
+        for (auto item : widget->selectedItems()){
+            item->setCheckState(item->checkState() ? Qt::Unchecked :  Qt::Checked);
+        }
     }
 }
 
 
 
-void LipidSpaceGUI::uncheck_selected_entities(){
-    QListWidget *widget = nullptr;
-    switch(ui->itemsTabWidget->currentIndex()){
-        case 0: widget = ui->speciesList; break;
-        case 1: widget = ui->classList; break;
-        case 2: widget = ui->categoryList; break;
-        case 3: return;
-        case 4: widget = ui->sampleList; break;
-    }
-    for (auto item : widget->selectedItems()){
-        item->setCheckState(Qt::Unchecked);
-    }
-}
-
-
-
-void LipidSpaceGUI::toggle_all_entities(){
-    QListWidget *widget = nullptr;
-    switch(ui->itemsTabWidget->currentIndex()){
-        case 0: widget = ui->speciesList; break;
-        case 1: widget = ui->classList; break;
-        case 2: widget = ui->categoryList; break;
-        case 3: return;
-        case 4: widget = ui->sampleList; break;
-    }
-    for (int i = 0; i < widget->count(); ++i){
-        widget->item(i)->setCheckState(widget->item(i)->checkState() ? Qt::Unchecked :  Qt::Checked);
-    }
-}
-
-
-
-void LipidSpaceGUI::toggle_selected_entities(){
-    QListWidget *widget = nullptr;
-    switch(ui->itemsTabWidget->currentIndex()){
-        case 0: widget = ui->speciesList; break;
-        case 1: widget = ui->classList; break;
-        case 2: widget = ui->categoryList; break;
-        case 3: return;
-        case 4: widget = ui->sampleList; break;
-    }
-    for (auto item : widget->selectedItems()){
-        item->setCheckState(item->checkState() ? Qt::Unchecked :  Qt::Checked);
-    }
-}
-
-
-
-void LipidSpaceGUI::select_all_study_variables(){
+void LipidSpaceGUI::select_all_study_variables(bool select){
     vector<QTreeWidgetItem*> stack;
     stack.push_back(ui->treeWidget->invisibleRootItem());
     while(stack.size() > 0){
         TreeItem *item = (TreeItem*)stack.back();
         stack.pop_back();
-        if (item->study_variable != "") item->setCheckState(0, Qt::Checked);
-        for (int i = 0; i < (int)item->childCount(); ++i) stack.push_back(item->child(i));
-    }
-}
-
-
-
-void LipidSpaceGUI::deselect_all_study_variables(){
-    vector<QTreeWidgetItem*> stack;
-    stack.push_back(ui->treeWidget->invisibleRootItem());
-    while(stack.size() > 0){
-        TreeItem *item = (TreeItem*)stack.back();
-        stack.pop_back();
-        if (item->study_variable != "") item->setCheckState(0, Qt::Unchecked);
+        if (item->study_variable != "") item->setCheckState(0, select ? Qt::Checked : Qt::Unchecked);
         for (int i = 0; i < (int)item->childCount(); ++i) stack.push_back(item->child(i));
     }
 }
