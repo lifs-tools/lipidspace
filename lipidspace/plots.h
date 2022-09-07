@@ -74,9 +74,10 @@ class Barplot : public Chartplot {
 
 public:
     vector< vector<BarBox*> > bars;
-    bool log_scale;
+    bool y_log_scale;
     bool show_data;
     QPointF x_zoom_range;
+    double min_log_value;
 
     Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);
     ~Barplot();
@@ -94,6 +95,7 @@ public slots:
     void lipidEntered(string lipid_name);
     void lipidExited();
     void wheelEvent(QWheelEvent *event) override;
+    void setYLogScale(bool log_scale);
 };
 
 

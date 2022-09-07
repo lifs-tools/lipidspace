@@ -15,8 +15,8 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
     lipid_space = _lipid_space;
     chart = _chart;
 	chart->setRenderHint(QPainter::Antialiasing);
-    chart->set_tick_size(GlobalData::gui_num_var["tick_size"]);
-    chart->set_title_size(GlobalData::gui_num_var["legend_size"]);
+    chart->setTickSize(GlobalData::gui_num_var["tick_size"]);
+    chart->setTitleSize(GlobalData::gui_num_var["legend_size"]);
 
 }
 
@@ -24,7 +24,7 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
 
 void Statistics::setLogScaleBarPlot(){
     log_scale = !log_scale;
-    updateBarPlot();
+    chart->setYLogScale(log_scale);
 }
 
 
@@ -42,66 +42,16 @@ void Statistics::setShowDataBarPlot(){
 }
 
 
-void Statistics::setLegendSizeBoxPlot(int font_size){
+void Statistics::setLegendSize(int font_size){
     GlobalData::gui_num_var["legend_size"] = font_size;
-    chart->set_title_size(font_size);
-    updateBoxPlot();
+    chart->setTitleSize(font_size);
 }
 
 
 
-void Statistics::setLegendSizeBarPlot(int font_size){
-    GlobalData::gui_num_var["legend_size"] = font_size;
-    chart->set_title_size(font_size);
-    updateBarPlot();
-}
-
-
-
-void Statistics::setLegendSizeHistogram(int font_size){
-    GlobalData::gui_num_var["legend_size"] = font_size;
-    chart->set_title_size(font_size);
-    updateHistogram();
-}
-
-
-
-void Statistics::setLegendSizeROCCurve(int font_size){
-    GlobalData::gui_num_var["legend_size"] = font_size;
-    chart->set_title_size(font_size);
-    updateROCCurve();
-}
-
-
-
-void Statistics::setTickSizeROCCurve(int font_size){
+void Statistics::setTickSize(int font_size){
     GlobalData::gui_num_var["tick_size"] = font_size;
-    chart->set_tick_size(font_size);
-    updateROCCurve();
-}
-
-
-
-void Statistics::setTickSizeBoxPlot(int font_size){
-    GlobalData::gui_num_var["tick_size"] = font_size;
-    chart->set_tick_size(font_size);
-    updateBoxPlot();
-}
-
-
-
-void Statistics::setTickSizeBarPlot(int font_size){
-    GlobalData::gui_num_var["tick_size"] = font_size;
-    chart->set_tick_size(font_size);
-    updateBarPlot();
-}
-
-
-
-void Statistics::setTickSizeHistogram(int font_size){
-    GlobalData::gui_num_var["tick_size"] = font_size;
-    chart->set_tick_size(font_size);
-    updateHistogram();
+    chart->setTickSize(font_size);
 }
 
 

@@ -96,12 +96,14 @@ protected:
     void timerEvent(QTimerEvent *event) override;
 
 public slots:
-    void set_tick_size(int i);
-    void set_title_size(int i);
+    void setTickSize(int i);
+    void setTitleSize(int i);
     void wheelEvent(QWheelEvent* event) override;
+    void setYLogScale(bool log_scale);
 
 signals:
     void wheel(QWheelEvent *event);
+    void yLogScaleChanged(bool log_scale);
 };
 
 

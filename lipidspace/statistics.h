@@ -44,14 +44,8 @@ public slots:
     void updateHistogram();
     void exportAsPdf();
     void exportData();
-    void setLegendSizeBoxPlot(int);
-    void setLegendSizeBarPlot(int);
-    void setLegendSizeHistogram(int);
-    void setLegendSizeROCCurve(int);
-    void setTickSizeBoxPlot(int);
-    void setTickSizeBarPlot(int);
-    void setTickSizeHistogram(int);
-    void setTickSizeROCCurve(int);
+    void setLegendSize(int);
+    void setTickSize(int);
     void setBarNumber(int);
     void setLogScaleBarPlot();
     void setShowDataBoxPlot();

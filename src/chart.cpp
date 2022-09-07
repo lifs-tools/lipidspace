@@ -222,7 +222,12 @@ void Chart::clear(){
 
 
 void Chart::back_translate(double &x){
-    x = (x - chart_box_inner.x()) / (chart_box_inner.width() / (xrange.y() - xrange.x())) + xrange.x();
+    if (log_x_axis){
+        x = (x - chart_box_inner.x()) / (log(x / xrange.x())) / log(10) * (log(xrange.y() / xrange.x()) / log(10)) / chart_box_inner.width();
+    }
+    else {
+        x = (x - chart_box_inner.x()) / (chart_box_inner.width() / (xrange.y() - xrange.x())) + xrange.x();
+    }
 }
 
 
@@ -470,7 +475,7 @@ void Chart::update_chart(){
             auto x_tick = x_ticks[i];
             x_tick->setFont(tick_font);
             x_tick->setHtml(x_categories[i]);
-            bool vis = xrange.x() <= i && i <= xrange.y();
+            bool vis = xrange.x() <= i && i < xrange.y();
             if (x_tick->boundingRect().width() <= single_group_width && vis){
                 x_tick->setVisible(true);
                 double x = chart_box_inner.x() + (i - xrange.x()) * single_group_width + (single_group_width - x_tick->boundingRect().width()) / 2.;
@@ -564,14 +569,21 @@ void Chart::setYLabel(QString l){
 }
 
 
-void Chart::set_tick_size(int s){
+void Chart::setTickSize(int s){
     tick_font.setPointSizeF(s);
     label_font.setPointSizeF(s);
     update_chart();
 }
 
 
-void Chart::set_title_size(int s){
+void Chart::setTitleSize(int s){
     title_legend_font.setPointSizeF(s);
+    update_chart();
+}
+
+
+void Chart::setYLogScale(bool log_scale){
+    log_y_axis = log_scale;
+    emit yLogScaleChanged(log_y_axis);
     update_chart();
 }
