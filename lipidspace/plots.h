@@ -26,6 +26,14 @@ signals:
 };
 
 
+
+
+
+
+
+
+
+
 class HoverRectItem : public QGraphicsRectItem {
 
 public:
@@ -38,6 +46,16 @@ public:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
 };
+
+
+
+
+
+
+
+
+
+
 
 
 class BarBox : public QObject {
@@ -96,7 +114,17 @@ public slots:
     void lipidExited();
     void wheelEvent(QWheelEvent *event) override;
     void setYLogScale(bool log_scale);
+    void setShowDataPoints(bool data_points);
 };
+
+
+
+
+
+
+
+
+
 
 
 
@@ -122,6 +150,8 @@ public:
 
 
 class Boxplot : public Chartplot {
+    Q_OBJECT
+
 public:
     bool show_data;
     vector<WhiskerBox> boxes;
@@ -132,7 +162,19 @@ public:
     void add(Array &data, QString category, QColor color = Qt::white);
     void update_chart();
     void clear();
+
+public slots:
+    void setShowDataPoints(bool data_points);
 };
+
+
+
+
+
+
+
+
+
 
 
 
@@ -167,6 +209,12 @@ public:
 
 
 
+
+
+
+
+
+
 class ScPoint {
 public:
     double x;
@@ -189,6 +237,12 @@ public:
     void update_chart();
     void clear();
 };
+
+
+
+
+
+
 
 
 

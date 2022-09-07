@@ -31,14 +31,14 @@ void Statistics::setLogScaleBarPlot(){
 
 void Statistics::setShowDataBoxPlot(){
     show_data = !show_data;
-    updateBoxPlot();
+    chart->setShowDataPoints(show_data);
 }
 
 
 
 void Statistics::setShowDataBarPlot(){
     show_data = !show_data;
-    updateBarPlot();
+    chart->setShowDataPoints(show_data);
 }
 
 

@@ -587,3 +587,9 @@ void Chart::setYLogScale(bool log_scale){
     emit yLogScaleChanged(log_y_axis);
     update_chart();
 }
+
+
+void Chart::setShowDataPoints(bool data_points){
+    emit showDataPointsChanged(data_points);
+    update_chart();
+}

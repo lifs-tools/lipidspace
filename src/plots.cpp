@@ -76,6 +76,7 @@ Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_c
     x_zoom_range = QPointF(0, -1);
     min_log_value = 0;
     connect(chart, &Chart::yLogScaleChanged, this, &Barplot::setYLogScale);
+    connect(chart, &Chart::showDataPointsChanged, this, &Barplot::setShowDataPoints);
 }
 
 Barplot::~Barplot(){
@@ -140,16 +141,21 @@ void Barplot::update_chart(){
                 bar->rect->setVisible(visible);
 
                 if (bar->data.size()){
-                    for (uint d = 0; d < bar->data.size(); ++d){
-                        auto ellipse = bar->dots[d];
-                        x1 = (xs + xe) / 2.0 + bar->data[d].second * (xe - xs) / 2.0 * 0.8;
-                        y1 = bar->data[d].first * animation_length;
-                        chart->translate(x1, y1);
-                        ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
-                        ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
-                        ellipse->setRect(x1 - 3, y1 - 3, 6, 6);
-                        ellipse->setZValue(110);
-                        ellipse->setVisible(visible & lines_visible);
+                    if (show_data){
+                        for (uint d = 0; d < bar->data.size(); ++d){
+                            auto ellipse = bar->dots[d];
+                            x1 = (xs + xe) / 2.0 + bar->data[d].second * (xe - xs) / 2.0 * 0.8;
+                            y1 = bar->data[d].first * animation_length;
+                            chart->translate(x1, y1);
+                            ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
+                            ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
+                            ellipse->setRect(x1 - 3, y1 - 3, 6, 6);
+                            ellipse->setZValue(110);
+                            ellipse->setVisible(visible & lines_visible);
+                        }
+                    }
+                    else {
+                        for (auto ellipse : bar->dots) ellipse->setVisible(false);
                     }
                 }
             }
@@ -223,6 +229,11 @@ void Barplot::setYLogScale(bool log_scale){
 }
 
 
+void Barplot::setShowDataPoints(bool data_points){
+    show_data = data_points;
+}
+
+
 void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors){
     if (bars.size() > 0 || data.size() == 0 || data.size() != labels.size() || (colors != 0 && categories.size() != colors->size())) return;
 
@@ -257,42 +268,40 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
 
             vector< pair<double, double> > *orig_data = 0;
 
-            if (show_data){
-                orig_data = new vector< pair<double, double> >();
-                // distribute the data around the center
-                int n = values.size();
-                Array X(n, 0);
-                Array Y;
-                for (auto value : values) Y.push_back(value);
+            orig_data = new vector< pair<double, double> >();
+            // distribute the data around the center
+            int n = values.size();
+            Array X(n, 0);
+            Array Y;
+            for (auto value : values) Y.push_back(value);
 
-                double mue = Y.mean();
-                double sigma = Y.sample_stdev();
+            double mue = Y.mean();
+            double sigma = Y.sample_stdev();
 
-                for (int i = 0; i < n; ++i){
-                    X[i] = randnum() * 0.002 - 0.001;
-                    Y[i] = (Y[i] - mue) / sigma;
-                }
-                double max_x = 0;
-                Array xx(n, 0);
-                for (int i = 0; i < n; ++i){
-                    double fx = 0;
-                    for (int j = 0; j < n; ++j){
-                        if (i == j) continue;
+            for (int i = 0; i < n; ++i){
+                X[i] = randnum() * 0.002 - 0.001;
+                Y[i] = (Y[i] - mue) / sigma;
+            }
+            double max_x = 0;
+            Array xx(n, 0);
+            for (int i = 0; i < n; ++i){
+                double fx = 0;
+                for (int j = 0; j < n; ++j){
+                    if (i == j) continue;
 
-                        double d = sq(X[i] - X[j]) + sq(Y[i] - Y[j]);
-                        fx += (X[j] - X[i]) * exp(-d);
-                    }
-                    xx[i] = X[i] - fx * exp(-sq(fx));
+                    double d = sq(X[i] - X[j]) + sq(Y[i] - Y[j]);
+                    fx += (X[j] - X[i]) * exp(-d);
                 }
-                for (int i = 0; i < n; ++i){
-                    X[i] = xx[i];
-                    max_x = max(max_x, abs(X[i]));
-                }
+                xx[i] = X[i] - fx * exp(-sq(fx));
+            }
+            for (int i = 0; i < n; ++i){
+                X[i] = xx[i];
+                max_x = max(max_x, abs(X[i]));
+            }
 
-                for (int i = 0; i < n; ++i){
-                    orig_data->push_back({values[i], X[i] / max_x});
-                    ymax = max(ymax, values[i]);
-                }
+            for (int i = 0; i < n; ++i){
+                orig_data->push_back({values[i], X[i] / max_x});
+                ymax = max(ymax, values[i]);
             }
 
             bar_set.push_back(new BarBox(&(chart->scene), mean, error, labels[s], color, orig_data));
@@ -357,10 +366,18 @@ WhiskerBox::WhiskerBox(QGraphicsScene *scene){
 
 Boxplot::Boxplot(Chart *_chart, bool _show_data) : Chartplot(_chart) {
     show_data = _show_data;
+    connect(chart, &Chart::showDataPointsChanged, this, &Boxplot::setShowDataPoints);
 }
+
 
 Boxplot::~Boxplot(){
 }
+
+
+void Boxplot::setShowDataPoints(bool data_points){
+    show_data = data_points;
+}
+
 
 void Boxplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
@@ -475,45 +492,43 @@ void Boxplot::add(Array &array, QString category, QColor color){
     box.lower_quartile = median(array, 0, count >> 1);
     box.upper_quartile = median(array, (count >> 1) + (count & 1), count);
 
-    if (show_data){
-        // distribute the data around the center
-        int n = array.size();
-        Array X(n, 0);
-        Array Y;
-        for (auto value : array) Y.push_back(value);
+    // distribute the data around the center
+    int n = array.size();
+    Array X(n, 0);
+    Array Y;
+    for (auto value : array) Y.push_back(value);
 
-        double mue = Y.mean();
-        double sigma = Y.sample_stdev();
+    double mue = Y.mean();
+    double sigma = Y.sample_stdev();
 
-        for (int i = 0; i < n; ++i){
-            X[i] = randnum() * 0.002 - 0.001;
-            Y[i] = (Y[i] - mue) / sigma;
+    for (int i = 0; i < n; ++i){
+        X[i] = randnum() * 0.002 - 0.001;
+        Y[i] = (Y[i] - mue) / sigma;
+    }
+    double max_x = 0;
+    Array xx(n, 0);
+    for (int i = 0; i < n; ++i){
+        double fx = 0;
+        for (int j = 0; j < n; ++j){
+            if (i == j) continue;
+
+            double d = sq(X[i] - X[j]) + sq(Y[i] - Y[j]);
+            fx += (X[j] - X[i]) * exp(-d);
         }
-        double max_x = 0;
-        Array xx(n, 0);
-        for (int i = 0; i < n; ++i){
-            double fx = 0;
-            for (int j = 0; j < n; ++j){
-                if (i == j) continue;
-
-                double d = sq(X[i] - X[j]) + sq(Y[i] - Y[j]);
-                fx += (X[j] - X[i]) * exp(-d);
-            }
-            xx[i] = X[i] - fx * exp(-sq(fx));
-        }
-        for (int i = 0; i < n; ++i){
-            X[i] = xx[i];
-            max_x = max(max_x, abs(X[i]));
-        }
+        xx[i] = X[i] - fx * exp(-sq(fx));
+    }
+    for (int i = 0; i < n; ++i){
+        X[i] = xx[i];
+        max_x = max(max_x, abs(X[i]));
+    }
 
 
 
-        for (int i = 0; i < n; ++i){
-            box.data.push_back({array[i], X[i] / max_x * 0.2});
-            QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem();
-            box.dots.push_back(ellipse);
-            chart->scene.addItem(ellipse);
-        }
+    for (int i = 0; i < n; ++i){
+        box.data.push_back({array[i], X[i] / max_x * 0.2});
+        QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem();
+        box.dots.push_back(ellipse);
+        chart->scene.addItem(ellipse);
     }
 
     chart->xrange = QPointF(-0.5, boxes.size() - 0.5);

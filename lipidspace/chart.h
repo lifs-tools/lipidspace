@@ -100,10 +100,12 @@ public slots:
     void setTitleSize(int i);
     void wheelEvent(QWheelEvent* event) override;
     void setYLogScale(bool log_scale);
+    void setShowDataPoints(bool data_points);
 
 signals:
     void wheel(QWheelEvent *event);
     void yLogScaleChanged(bool log_scale);
+    void showDataPointsChanged(bool data_points);
 };
 
 
