@@ -101,11 +101,17 @@ public slots:
     void wheelEvent(QWheelEvent* event) override;
     void setYLogScale(bool log_scale);
     void setShowDataPoints(bool data_points);
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 signals:
     void wheel(QWheelEvent *event);
     void yLogScaleChanged(bool log_scale);
     void showDataPointsChanged(bool data_points);
+    void mousePressed(QMouseEvent *event);
+    void mouseMoved(QMouseEvent *event);
+    void mouseReleased(QMouseEvent *event);
 };
 
 

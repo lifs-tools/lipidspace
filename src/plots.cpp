@@ -75,8 +75,13 @@ Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_c
     show_data = _show_data;
     x_zoom_range = QPointF(0, -1);
     min_log_value = 0;
+    mouse_shift_start = QPointF(-1, -1);
+    shift_start = QPointF(-1, -1);
     connect(chart, &Chart::yLogScaleChanged, this, &Barplot::setYLogScale);
     connect(chart, &Chart::showDataPointsChanged, this, &Barplot::setShowDataPoints);
+    connect(chart, &Chart::mouseMoved, this, &Barplot::mouseMoveEvent);
+    //connect(chart, &Chart::mousePressed, this, &Barplot::mousePressEvent);
+    //connect(chart, &Chart::mouseReleased, this, &Barplot::mouseReleaseEvent);
 }
 
 Barplot::~Barplot(){
@@ -231,6 +236,44 @@ void Barplot::setYLogScale(bool log_scale){
 
 void Barplot::setShowDataPoints(bool data_points){
     show_data = data_points;
+}
+
+
+void Barplot::mouseMoveEvent(QMouseEvent *event){
+    QPointF mouse_pos = chart->mapToScene(event->pos());
+
+    if (event->buttons() & Qt::LeftButton){
+        if (chart->chart_box_inner.contains(mouse_pos)){
+            if (mouse_shift_start.x() < 0){
+                mouse_shift_start = mouse_pos;
+                shift_start = x_zoom_range;
+            }
+            QPointF diff = mouse_pos - mouse_shift_start;
+            double diff_x = (double)diff.x() / (double)chart->chart_box_inner.width() * (double)(x_zoom_range.y() - x_zoom_range.x());
+
+            double left = shift_start.x() - diff_x;
+            double right = shift_start.y() - diff_x;
+
+            if (0 <= left && right <= bars.size()){
+                chart->xrange = QPointF((int)left, __min((uint)right + 1, bars.size()));
+                x_zoom_range = QPointF(left, right);
+
+                double ymax = -INFINITY;
+                for (uint b = (uint)left; b <= (uint)right && b < bars.size(); ++b){
+                    auto bar_set = bars[b];
+                    for (auto bar : bar_set){
+                        ymax = __max(ymax, bar->value + bar->error);
+                    }
+                }
+                chart->yrange = QPointF(chart->yrange.x(), ymax);
+                chart->update_chart();
+            }
+        }
+    }
+    else {
+        mouse_shift_start = QPointF(-1, -1);
+        shift_start = QPointF(-1, -1);
+    }
 }
 
 

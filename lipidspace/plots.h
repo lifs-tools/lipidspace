@@ -96,6 +96,9 @@ public:
     bool show_data;
     QPointF x_zoom_range;
     double min_log_value;
+    QPointF mouse_shift_start;
+    QPointF shift_start;
+    bool shifting;
 
     Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);
     ~Barplot();
@@ -115,6 +118,7 @@ public slots:
     void wheelEvent(QWheelEvent *event) override;
     void setYLogScale(bool log_scale);
     void setShowDataPoints(bool data_points);
+    void mouseMoveEvent(QMouseEvent *event);
 };
 
 

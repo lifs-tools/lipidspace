@@ -593,3 +593,18 @@ void Chart::setShowDataPoints(bool data_points){
     emit showDataPointsChanged(data_points);
     update_chart();
 }
+
+
+void Chart::mousePressEvent(QMouseEvent *event){
+    //emit mousePressed(event);
+}
+
+
+void Chart::mouseMoveEvent(QMouseEvent *event){
+    emit mouseMoved(event);
+}
+
+
+void Chart::mouseReleaseEvent(QMouseEvent *event){
+    //emit mouseReleaseEvent(event);
+}
