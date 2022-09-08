@@ -20,8 +20,9 @@ DataCloud::DataCloud(Chart *_chart, SortVector<double, double> *_data) {
         data.push_back({data_point.first, data_point.second});
     }
     x_pos = 0;
-    offset = 0;
-    animation = 0;
+    x_offset = 0;
+    y_pos = 0;
+    y_offset = 0;
 }
 
 
@@ -36,18 +37,19 @@ void DataCloud::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidg
     painter->setBrush(QColor(60, 60, 60));
     painter->setPen(Qt::NoPen);
     for (auto point : data){
-        double x = x_pos + point.second * offset;
-        double y = point.first * animation;
+        double x = x_pos + point.second * x_offset;
+        double y = y_pos + (point.first - y_pos) * y_offset;
         chart->translate(x, y);
         painter->drawEllipse(x - 2, y - 2, 4, 4);
     }
 }
 
 
-void DataCloud::setNewPosition(double _x, double _offset, double _animation){
-    x_pos = _x;
-    offset = _offset;
-    animation = _animation;
+void DataCloud::setNewPosition(double _x_pos, double _x_offset, double _y_pos, double _y_offset){
+    x_pos = _x_pos;
+    x_offset = _x_offset;
+    y_pos = _y_pos;
+    y_offset = _y_offset;
 }
 
 
@@ -62,7 +64,13 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
     base_line = new QGraphicsLineItem();
     data_cloud = new DataCloud(chart, _data);
 
+    upper_error_line->setZValue(100);
+    lower_error_line->setZValue(100);
+    base_line->setZValue(100);
+    data_cloud->setZValue(100);
+
     rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
+    rect->setZValue(100);
     rect->setAcceptHoverEvents(true);
     connect(&(rect->hover_rect_signal), &HoverRectSignal::enterLipid, this, &BarBox::lipidEntered);
     connect(&(rect->hover_rect_signal), &HoverRectSignal::exitLipid, this, &BarBox::lipidExited);
@@ -153,8 +161,6 @@ void Barplot::update_chart(){
                 }
                 bar->upper_error_line->setPen(line_pen);
 
-
-
                 // draw bar
                 x1 = xs;
                 y1 = bar->value * animation_length;
@@ -190,7 +196,7 @@ void Barplot::update_chart(){
                 bar->base_line->setPen(line_pen);
 
                 // draw data points
-                bar->data_cloud->setNewPosition((xs + xe) / 2.0, (xe - xs) / 2.0 * 0.8, animation_length);
+                bar->data_cloud->setNewPosition((xs + xe) / 2.0, (xe - xs) / 2.0 * 0.8, 0, animation_length);
                 bar->data_cloud->setVisible(show_data && lines_visible);
             }
             else {
@@ -425,18 +431,31 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
 
 
 
-WhiskerBox::WhiskerBox(QGraphicsScene *scene){
+
+
+
+
+WhiskerBox::WhiskerBox(Chart *chart, SortVector<double, double> *data){
     upper_extreme_line = new QGraphicsLineItem();
     lower_extreme_line = new QGraphicsLineItem();
     median_line = new QGraphicsLineItem();
     base_line = new QGraphicsLineItem();
     rect = new QGraphicsRectItem();
+    data_cloud = new DataCloud(chart, data);
 
-    scene->addItem(upper_extreme_line);
-    scene->addItem(lower_extreme_line);
-    scene->addItem(median_line);
-    scene->addItem(base_line);
-    scene->addItem(rect);
+    upper_extreme_line->setZValue(100);
+    lower_extreme_line->setZValue(100);
+    median_line->setZValue(100);
+    base_line->setZValue(100);
+    rect->setZValue(100);
+    data_cloud->setZValue(100);
+
+    chart->scene.addItem(upper_extreme_line);
+    chart->scene.addItem(lower_extreme_line);
+    chart->scene.addItem(base_line);
+    chart->scene.addItem(rect);
+    chart->scene.addItem(median_line);
+    chart->scene.addItem(data_cloud);
     color = Qt::white;
 }
 
@@ -463,7 +482,6 @@ void Boxplot::update_chart(){
 
     const double box_len = 0.375;
     const double whisker_len = 0.25;
-    const double alpha = 255 >> 2;
 
     for (uint b = 0; b < boxes.size(); ++b){
         auto &box = boxes[b];
@@ -474,7 +492,6 @@ void Boxplot::update_chart(){
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.upper_extreme_line->setLine(x1, y1, x2, y2);
-        box.upper_extreme_line->setZValue(0);
         box.upper_extreme_line->setVisible(visible);
 
         x1 = b - whisker_len;
@@ -484,7 +501,6 @@ void Boxplot::update_chart(){
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.lower_extreme_line->setLine(x1, y1, x2, y2);
-        box.lower_extreme_line->setZValue(0);
         box.lower_extreme_line->setVisible(visible);
 
         x1 = b;
@@ -494,7 +510,6 @@ void Boxplot::update_chart(){
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.base_line->setLine(x1, y1, x2, y2);
-        box.base_line->setZValue(0);
         box.base_line->setVisible(visible);
 
         x1 = b - box_len;
@@ -505,7 +520,6 @@ void Boxplot::update_chart(){
         chart->translate(x2, y2);
         box.rect->setBrush(QBrush(box.color));
         box.rect->setRect(x1, y1, x2 - x1, y2 - y1);
-        box.rect->setZValue(50);
         box.rect->setVisible(visible);
 
         x1 = b - box_len;
@@ -516,9 +530,13 @@ void Boxplot::update_chart(){
         chart->translate(x2, y2);
         box.median_line->setPen(QPen());
         box.median_line->setLine(x1, y1, x2, y2);
-        box.median_line->setZValue(100);
         box.median_line->setVisible(visible);
 
+
+        // draw data points
+        box.data_cloud->setNewPosition(b, 1., box.median, animation_length);
+        box.data_cloud->setVisible(visible && show_data);
+        /*
         if (show_data){
             for (uint i = 0; i < box.data.size(); ++i){
                 auto ellipse = box.dots[i];
@@ -535,6 +553,7 @@ void Boxplot::update_chart(){
         else {
             for (auto ellipse : box.dots) ellipse->setVisible(false);
         }
+        */
     }
 }
 
@@ -560,15 +579,6 @@ void Boxplot::add(Array &array, QString category, QColor color){
 
     sort(array.begin(), array.end());
     int count = array.size();
-
-    boxes.push_back(WhiskerBox(&chart->scene));
-    WhiskerBox &box = boxes.back();
-    box.color = color;
-    box.lower_extreme = array.front();
-    box.upper_extreme = array.back();
-    box.median = median(array, 0, count);
-    box.lower_quartile = median(array, 0, count >> 1);
-    box.upper_quartile = median(array, (count >> 1) + (count & 1), count);
 
     // distribute the data around the center
     int n = array.size();
@@ -602,12 +612,21 @@ void Boxplot::add(Array &array, QString category, QColor color){
 
 
 
+    SortVector<double, double> data_points;
     for (int i = 0; i < n; ++i){
-        box.data.push_back({array[i], X[i] / max_x * 0.2});
-        QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem();
-        box.dots.push_back(ellipse);
-        chart->scene.addItem(ellipse);
+        data_points.push_back({array[i], X[i] / max_x * 0.2});
     }
+
+
+    boxes.push_back(WhiskerBox(chart, &data_points));
+    WhiskerBox &box = boxes.back();
+    box.color = color;
+    box.lower_extreme = array.front();
+    box.upper_extreme = array.back();
+    box.median = median(array, 0, count);
+    box.lower_quartile = median(array, 0, count >> 1);
+    box.upper_quartile = median(array, (count >> 1) + (count & 1), count);
+
 
     chart->xrange = QPointF(-0.5, boxes.size() - 0.5);
     chart->yrange = QPointF(boxes.size() > 1 ? min(chart->yrange.x(), array.front()) : array.front(), boxes.size() > 1 ? max(chart->yrange.y(), array.back()) : array.back());

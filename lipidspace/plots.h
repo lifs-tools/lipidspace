@@ -56,13 +56,14 @@ public:
     SortVector<double, double> data;
     Chart *chart;
     double x_pos;
-    double offset;
-    double animation;
+    double x_offset;
+    double y_pos;
+    double y_offset;
 
     DataCloud(Chart *_chart, SortVector<double, double> *_data);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
-    void setNewPosition(double _x, double _offset, double _animation);
+    void setNewPosition(double _x, double _x_offset, double _y_pos, double _y_offset);
 };
 
 
@@ -149,17 +150,16 @@ public:
     double median;
     double upper_quartile;
     double upper_extreme;
-    vector<pair<double, double>> data;
 
     QGraphicsLineItem *upper_extreme_line;
     QGraphicsLineItem *lower_extreme_line;
     QGraphicsLineItem *median_line;
     QGraphicsLineItem *base_line;
     QGraphicsRectItem *rect;
-    vector<QGraphicsEllipseItem*> dots;
+    DataCloud *data_cloud;
     QColor color;
 
-    WhiskerBox(QGraphicsScene *scene);
+    WhiskerBox(Chart *chart, SortVector<double, double> *data);
 };
 
 
