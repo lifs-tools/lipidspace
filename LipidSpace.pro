@@ -1,4 +1,4 @@
-!win32:QT       += core gui printsupport widgets svg opengl
+!win32:QT       += core gui printsupport widgets svg
 win32:QT       += core gui printsupport widgets svg svgwidgets
 
 

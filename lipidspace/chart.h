@@ -4,7 +4,6 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QResizeEvent>
-#include <QGLWidget>
 #include <QGraphicsLineItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsRectItem>

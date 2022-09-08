@@ -19,6 +19,7 @@ DataCloud::DataCloud(Chart *_chart, SortVector<double, double> *_data) {
     for (auto data_point : *_data){
         data.push_back({data_point.first, data_point.second});
     }
+    data.sort_asc();
     x_pos = 0;
     x_offset = 0;
     y_pos = 0;
@@ -115,13 +116,13 @@ void HoverRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_chart) {
     y_log_scale = _log_scale;
     show_data = _show_data;
-    x_zoom_range = QPointF(0, -1);
     min_log_value = 0;
     mouse_shift_start = QPointF(-1, -1);
     shift_start = QPointF(-1, -1);
     connect(chart, &Chart::yLogScaleChanged, this, &Barplot::setYLogScale);
     connect(chart, &Chart::showDataPointsChanged, this, &Barplot::setShowDataPoints);
     connect(chart, &Chart::mouseMoved, this, &Barplot::mouseMoveEvent);
+    zoom = 0;
 }
 
 Barplot::~Barplot(){
@@ -140,7 +141,7 @@ void Barplot::update_chart(){
 
         for (uint s = 0; s < barset.size(); ++s){
             BarBox *bar = barset[s];
-            if (visible && (bar->value > 0) && (uint)x_zoom_range.x() <= b && b <= x_zoom_range.y()){
+            if (visible && (bar->value > 0) && chart->xrange.x() <= b && b < chart->xrange.y()){
                 double xs = b + (double)s / (double)barset.size();
                 double xe = b + (double)(s + 1) / (double)barset.size();
 
@@ -229,38 +230,42 @@ void Barplot::lipidExited(){
 
 
 void Barplot::wheelEvent(QWheelEvent *event){
-
+    if (bars.size() <= 1) return;
+    double max_zoom = __min((int)MAX_ZOOM, bars.size() - 1);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QPointF mouse_pos = chart->mapToScene(QPoint(event->position().x(), event->position().y()));
-    double scale_factor = (event->angleDelta().y() > 0) ? 1. / 1.1 : 1.1;
+    zoom = __max(0, __min((int)max_zoom, zoom + (2 * (event->angleDelta().y() > 0) - 1)));
 #else
     QPointF mouse_pos = chart->mapToScene(event->pos());
-    double scale_factor = (event->delta() > 0) ? 1. / 1.1 : 1.1;
+    zoom = __max(0, __min((int)max_zoom, zoom + (2 * (event->delta() > 0) - 1)));
 #endif
-    double x = mouse_pos.x();
 
     if (!chart->chart_box_inner.contains(mouse_pos)) return;
 
-
-    chart->back_translate(x);
-
-    double left = __max(0., x + (x_zoom_range.x() - x) * scale_factor);
-    double right = __min(bars.size(), x + (x_zoom_range.y() - x) * scale_factor);
-
-    if (right - left > 0){
-        chart->xrange = QPointF((int)left, __min((uint)right + 1, bars.size()));
-        x_zoom_range = QPointF(left, right);
-
-        double ymax = -INFINITY;
-        for (uint b = (uint)left; b <= (uint)right && b < bars.size(); ++b){
-            auto bar_set = bars[b];
-            for (auto bar : bar_set){
-                ymax = __max(ymax, bar->value + bar->error);
-            }
-        }
-        chart->yrange = QPointF(chart->yrange.x(), ymax);
-        chart->update_chart();
+    int num_field = bars.size() - zoom;
+    if (max_zoom >= MAX_ZOOM){
+        double scale = -(max_zoom + 1.) / max_zoom * (1. - (double)bars.size());
+        double offset = scale - (double)bars.size();
+        num_field = __max(1., scale / ((double)zoom + 1) - offset);
     }
+
+    double x = mouse_pos.x();
+    chart->back_translate(x);
+    uint left = __max(0., round(x - (double)num_field * (x - chart->xrange.x()) / (double)(chart->xrange.y() - chart->xrange.x())));
+    uint right = left + num_field;
+
+    chart->xrange = QPointF(left, __min(right, bars.size()));
+
+    double ymax = -INFINITY;
+    for (uint b = left; b < right && b < bars.size(); ++b){
+        auto bar_set = bars[b];
+        for (auto bar : bar_set){
+            ymax = __max(ymax, bar->value + bar->error);
+            if (bar->data_cloud && bar->data_cloud->data.size()) ymax = __max(ymax, bar->data_cloud->data.back().first);
+        }
+    }
+    chart->yrange = QPointF(chart->yrange.x(), ymax);
+    chart->update_chart();
 }
 
 
@@ -281,23 +286,26 @@ void Barplot::mouseMoveEvent(QMouseEvent *event){
         if (chart->chart_box_inner.contains(mouse_pos)){
             if (mouse_shift_start.x() < 0){
                 mouse_shift_start = mouse_pos;
-                shift_start = x_zoom_range;
+                shift_start = chart->xrange;
             }
             QPointF diff = mouse_pos - mouse_shift_start;
-            double diff_x = (double)diff.x() / (double)chart->chart_box_inner.width() * (double)(x_zoom_range.y() - x_zoom_range.x());
+            int len = shift_start.y() - shift_start.x();
+            double diff_x = (double)diff.x() / (double)chart->chart_box_inner.width() * (double)len;
 
-            double left = shift_start.x() - diff_x;
-            double right = shift_start.y() - diff_x;
+            if (shift_start.x() < diff_x) return;
 
-            if (0 <= left && right <= bars.size()){
-                chart->xrange = QPointF((int)left, __min((uint)right + 1, bars.size()));
-                x_zoom_range = QPointF(left, right);
+            uint left = shift_start.x() - diff_x;
+            uint right = left + len;
+
+            if (right <= bars.size()){
+                chart->xrange = QPointF(left, __min(right, bars.size()));
 
                 double ymax = -INFINITY;
-                for (uint b = (uint)left; b <= (uint)right && b < bars.size(); ++b){
+                for (uint b = left; b < right && b < bars.size(); ++b){
                     auto bar_set = bars[b];
                     for (auto bar : bar_set){
                         ymax = __max(ymax, bar->value + bar->error);
+                        if (bar->data_cloud && bar->data_cloud->data.size()) ymax = __max(ymax, bar->data_cloud->data.back().first);
                     }
                 }
                 chart->yrange = QPointF(chart->yrange.x(), ymax);
@@ -392,7 +400,6 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
     }
 
     chart->xrange = QPointF(0, bars.size());
-    x_zoom_range = QPointF(0, bars.size() - 1);
     if (y_log_scale && ymin > 0) ymin = pow(10, floor(log(ymin) / log(10)));
     chart->yrange = QPointF(y_log_scale ? ymin : 0, ymax);
     min_log_value = ymin;

@@ -8,6 +8,8 @@
 #include <vector>
 #include <QObject>
 
+#define MAX_ZOOM 20.
+
 class Chartplot;
 
 using namespace std;
@@ -104,12 +106,12 @@ public:
     vector< vector<BarBox*> > bars;
     bool y_log_scale;
     bool show_data;
-    QPointF x_zoom_range;
     double min_log_value;
     QPointF mouse_shift_start;
     QPointF shift_start;
     bool shifting;
     QThread loadingThread;
+    int zoom;
 
     Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);
     ~Barplot();
