@@ -13,7 +13,46 @@ void HoverRectSignal::sendSignalExit(){
 
 
 
-BarBox::BarBox(QGraphicsScene *scene, double _value, double _error, QString _label, QColor _color, vector< pair<double, double> > *_data) {
+
+DataCloud::DataCloud(Chart *_chart, SortVector<double, double> *_data) {
+    chart = _chart;
+    for (auto data_point : *_data){
+        data.push_back({data_point.first, data_point.second});
+    }
+    x_pos = 0;
+    offset = 0;
+    animation = 0;
+}
+
+
+
+
+QRectF DataCloud::boundingRect() const {
+    return QRectF(0, 0, chart->width(), chart->height());
+}
+
+
+void DataCloud::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+    painter->setBrush(QColor(60, 60, 60));
+    painter->setPen(Qt::NoPen);
+    for (auto point : data){
+        double x = x_pos + point.second * offset;
+        double y = point.first * animation;
+        chart->translate(x, y);
+        painter->drawEllipse(x - 2, y - 2, 4, 4);
+    }
+}
+
+
+void DataCloud::setNewPosition(double _x, double _offset, double _animation){
+    x_pos = _x;
+    offset = _offset;
+    animation = _animation;
+}
+
+
+
+BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColor _color, SortVector<double, double> *_data) {
     value = _value;
     error = _error;
     color = _color;
@@ -21,24 +60,19 @@ BarBox::BarBox(QGraphicsScene *scene, double _value, double _error, QString _lab
     upper_error_line = new QGraphicsLineItem();
     lower_error_line = new QGraphicsLineItem();
     base_line = new QGraphicsLineItem();
+    data_cloud = new DataCloud(chart, _data);
+
     rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
     rect->setAcceptHoverEvents(true);
     connect(&(rect->hover_rect_signal), &HoverRectSignal::enterLipid, this, &BarBox::lipidEntered);
     connect(&(rect->hover_rect_signal), &HoverRectSignal::exitLipid, this, &BarBox::lipidExited);
 
-    scene->addItem(upper_error_line);
-    scene->addItem(lower_error_line);
-    scene->addItem(base_line);
-    scene->addItem(rect);
 
-    if (_data){
-        for (uint i = 0; i < _data->size(); ++i){
-            QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem();
-            scene->addItem(ellipse);
-            dots.push_back(ellipse);
-            data.push_back({_data->at(i).first, _data->at(i).second});
-        }
-    }
+    chart->scene.addItem(rect);
+    chart->scene.addItem(data_cloud);
+    chart->scene.addItem(base_line);
+    chart->scene.addItem(upper_error_line);
+    chart->scene.addItem(lower_error_line);
 }
 
 
@@ -80,12 +114,12 @@ Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_c
     connect(chart, &Chart::yLogScaleChanged, this, &Barplot::setYLogScale);
     connect(chart, &Chart::showDataPointsChanged, this, &Barplot::setShowDataPoints);
     connect(chart, &Chart::mouseMoved, this, &Barplot::mouseMoveEvent);
-    //connect(chart, &Chart::mousePressed, this, &Barplot::mousePressEvent);
-    //connect(chart, &Chart::mouseReleased, this, &Barplot::mouseReleaseEvent);
 }
 
 Barplot::~Barplot(){
     clear();
+    loadingThread.quit();
+    loadingThread.wait();
 }
 
 
@@ -102,6 +136,7 @@ void Barplot::update_chart(){
                 double xs = b + (double)s / (double)barset.size();
                 double xe = b + (double)(s + 1) / (double)barset.size();
 
+                // draw error line
                 double x1 = xs + (xe - xs) / 4.;
                 double y1 = (bar->value + bar->error) * animation_length;
                 double x2 = xe - (xe - xs) / 4.;
@@ -110,29 +145,17 @@ void Barplot::update_chart(){
                 chart->translate(x2, y2);
                 bool lines_visible = (x2 - x1) > 3;
                 bar->upper_error_line->setLine(x1, y1, x2, y2);
-                bar->upper_error_line->setZValue(100);
-                bar->upper_error_line->setVisible(visible & lines_visible);
+                bar->upper_error_line->setVisible(lines_visible);
+                QPen line_pen;
+                if (show_data && lines_visible){
+                    line_pen.setColor(QColor(200, 0, 0));
+                    line_pen.setWidthF(2);
+                }
+                bar->upper_error_line->setPen(line_pen);
 
-                x1 = xs + (xe - xs) / 4.;
-                y1 = (bar->value - bar->error) * animation_length;
-                x2 = xe - (xe - xs) / 4.;
-                y2 = (bar->value - bar->error) * animation_length;
-                chart->translate(x1, y1);
-                chart->translate(x2, y2);
-                bar->lower_error_line->setLine(x1, y1, x2, y2);
-                bar->lower_error_line->setZValue(100);
-                bar->lower_error_line->setVisible(visible & lines_visible);
 
-                x1 = (xs + xe) / 2.0;
-                y1 = (bar->value - bar->error) * animation_length;
-                x2 = (xs + xe) / 2.0;
-                y2 = (bar->value + bar->error) * animation_length;
-                chart->translate(x1, y1);
-                chart->translate(x2, y2);
-                bar->base_line->setLine(x1, y1, x2, y2);
-                bar->base_line->setZValue(90);
-                bar->base_line->setVisible(visible & lines_visible);
 
+                // draw bar
                 x1 = xs;
                 y1 = bar->value * animation_length;
                 x2 = xe;
@@ -142,34 +165,40 @@ void Barplot::update_chart(){
                 bar->rect->setBrush(QBrush(bar->color));
                 bar->rect->setPen(lines_visible ? QPen(Qt::black) : Qt::NoPen);
                 bar->rect->setRect(x1, y1, x2 - x1, y2 - y1);
-                bar->rect->setZValue(50);
-                bar->rect->setVisible(visible);
+                bar->rect->setVisible(true);
 
-                if (bar->data.size()){
-                    if (show_data){
-                        for (uint d = 0; d < bar->data.size(); ++d){
-                            auto ellipse = bar->dots[d];
-                            x1 = (xs + xe) / 2.0 + bar->data[d].second * (xe - xs) / 2.0 * 0.8;
-                            y1 = bar->data[d].first * animation_length;
-                            chart->translate(x1, y1);
-                            ellipse->setBrush(QBrush(QColor(0, 0, 0, 128)));
-                            ellipse->setPen(QPen(QColor(0, 0, 0, 128)));
-                            ellipse->setRect(x1 - 3, y1 - 3, 6, 6);
-                            ellipse->setZValue(110);
-                            ellipse->setVisible(visible & lines_visible);
-                        }
-                    }
-                    else {
-                        for (auto ellipse : bar->dots) ellipse->setVisible(false);
-                    }
-                }
+                // draw lower error line
+                x1 = xs + (xe - xs) / 4.;
+                y1 = (bar->value - bar->error) * animation_length;
+                x2 = xe - (xe - xs) / 4.;
+                y2 = (bar->value - bar->error) * animation_length;
+                chart->translate(x1, y1);
+                chart->translate(x2, y2);
+                bar->lower_error_line->setLine(x1, y1, x2, y2);
+                bar->lower_error_line->setVisible(lines_visible);
+                bar->lower_error_line->setPen(line_pen);
+
+                // draw upper error line
+                x1 = (xs + xe) / 2.0;
+                y1 = (bar->value - bar->error) * animation_length;
+                x2 = (xs + xe) / 2.0;
+                y2 = (bar->value + bar->error) * animation_length;
+                chart->translate(x1, y1);
+                chart->translate(x2, y2);
+                bar->base_line->setLine(x1, y1, x2, y2);
+                bar->base_line->setVisible(lines_visible);
+                bar->base_line->setPen(line_pen);
+
+                // draw data points
+                bar->data_cloud->setNewPosition((xs + xe) / 2.0, (xe - xs) / 2.0 * 0.8, animation_length);
+                bar->data_cloud->setVisible(show_data && lines_visible);
             }
             else {
                 bar->upper_error_line->setVisible(false);
                 bar->lower_error_line->setVisible(false);
                 bar->base_line->setVisible(false);
                 bar->rect->setVisible(false);
-                for (auto ellipse : bar->dots) ellipse->setVisible(false);
+                bar->data_cloud->setVisible(false);
             }
         }
     }
@@ -277,24 +306,29 @@ void Barplot::mouseMoveEvent(QMouseEvent *event){
 }
 
 
-void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors){
-    if (bars.size() > 0 || data.size() == 0 || data.size() != labels.size() || (colors != 0 && categories.size() != colors->size())) return;
 
-    for (auto category_data : data){
-        if (category_data.size() != categories.size()) return;
+void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors){
+    if (bars.size() > 0 || data->size() == 0 || data->size() != labels->size() || (colors != 0 && categories->size() != colors->size())){
+        delete data;
+        delete categories;
+        delete labels;
+        delete colors;
+        return;
+    }
+
+    for (auto category_data : *data){
+        if (category_data.size() != categories->size()) return;
     }
 
     SortVector<string, int> sorted_indexes;
-    for (uint i = 0; i < labels.size(); ++i) sorted_indexes.push_back({labels[i].toStdString(), i});
+    for (uint i = 0; i < labels->size(); ++i) sorted_indexes.push_back({labels->at(i).toStdString(), i});
     sorted_indexes.sort_asc();
-
-
 
     double ymin = chart->yrange.x();
     double ymax = chart->yrange.y();
-    for (uint si = 0; si < data.size(); ++si){
+    for (uint si = 0; si < data->size(); ++si){
         uint s = sorted_indexes[si].second;
-        auto data_set = data[s];
+        auto data_set = data->at(s);
         bars.push_back(vector< BarBox* >());
         vector< BarBox* > &bar_set = bars.back();
 
@@ -309,9 +343,7 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
             if (mean > 0) ymin = min(ymin, mean);
             ymax = max(ymax, mean + error);
 
-            vector< pair<double, double> > *orig_data = 0;
-
-            orig_data = new vector< pair<double, double> >();
+            SortVector<double, double> orig_data;
             // distribute the data around the center
             int n = values.size();
             Array X(n, 0);
@@ -343,17 +375,14 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
             }
 
             for (int i = 0; i < n; ++i){
-                orig_data->push_back({values[i], X[i] / max_x});
+                orig_data.push_back({values[i], X[i] / max_x});
                 ymax = max(ymax, values[i]);
             }
-
-            bar_set.push_back(new BarBox(&(chart->scene), mean, error, labels[s], color, orig_data));
+            bar_set.push_back(new BarBox(chart, mean, error, labels->at(s), color, &orig_data));
             connect(bar_set.back(), &BarBox::enterLipid, this, &Barplot::lipidEntered);
             connect(bar_set.back(), &BarBox::exitLipid, this, &Barplot::lipidExited);
-
-            if (show_data) delete orig_data;
         }
-        chart->add_category(labels[s]);
+        chart->add_category(labels->at(s));
     }
 
     chart->xrange = QPointF(0, bars.size());
@@ -362,10 +391,11 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
     chart->yrange = QPointF(y_log_scale ? ymin : 0, ymax);
     min_log_value = ymin;
 
-    for (uint i = 0; i < categories.size(); ++i){
+    for (uint i = 0; i < categories->size(); ++i){
         QColor color = ((colors != 0) && (colors->size() > i)) ? colors->at(i) : Qt::white;
-        chart->legend_categories.push_back(LegendCategory(categories[i], color, &chart->scene));
+        chart->legend_categories.push_back(LegendCategory(categories->at(i), color, &(chart->scene)));
     }
+
 
     uint lc_n = chart->legend_categories.size();
     for (uint i = 0; i < lc_n; ++i){
@@ -378,6 +408,11 @@ void Barplot::add(vector< vector< Array > > &data, vector<QString> &categories, 
             }
         }
     }
+
+    delete data;
+    delete categories;
+    delete labels;
+    delete colors;
 
     chart->create_y_numerical_axis(y_log_scale);
     chart->create_x_nominal_axis();

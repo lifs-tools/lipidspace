@@ -14,6 +14,7 @@ LegendCategory::LegendCategory(QString _category, QColor _color, QGraphicsScene 
 
 
 Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
+    setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers | QGL::DirectRendering)));
     setFrameStyle(QFrame::NoFrame);
     setRenderHints(QPainter::Antialiasing);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -43,6 +44,7 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     scene.addItem(title);
     scene.addItem(xlabel);
     scene.addItem(ylabel);
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
 
     setScene(&scene);
     loaded = true;
@@ -595,16 +597,7 @@ void Chart::setShowDataPoints(bool data_points){
 }
 
 
-void Chart::mousePressEvent(QMouseEvent *event){
-    //emit mousePressed(event);
-}
-
-
 void Chart::mouseMoveEvent(QMouseEvent *event){
     emit mouseMoved(event);
-}
-
-
-void Chart::mouseReleaseEvent(QMouseEvent *event){
-    //emit mouseReleaseEvent(event);
+    QGraphicsView::mouseMoveEvent(event);
 }

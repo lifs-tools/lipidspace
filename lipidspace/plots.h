@@ -50,10 +50,20 @@ public:
 
 
 
+class DataCloud : public QGraphicsItem {
 
+public:
+    SortVector<double, double> data;
+    Chart *chart;
+    double x_pos;
+    double offset;
+    double animation;
 
-
-
+    DataCloud(Chart *_chart, SortVector<double, double> *_data);
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void setNewPosition(double _x, double _offset, double _animation);
+};
 
 
 
@@ -68,12 +78,11 @@ public:
     QGraphicsLineItem *upper_error_line;
     QGraphicsLineItem *lower_error_line;
     QGraphicsLineItem *base_line;
+    DataCloud *data_cloud;
     HoverRectItem *rect;
     QColor color;
-    vector<pair<double, double>> data;
-    vector<QGraphicsEllipseItem*> dots;
 
-    BarBox(QGraphicsScene *scene, double _value, double _error, QString _label, QColor _color = Qt::white, vector< pair<double, double> > *_data = 0);
+    BarBox(Chart *_chart, double _value, double _error, QString _label, QColor _color, SortVector<double, double> *_data);
 
 
 signals:
@@ -99,10 +108,11 @@ public:
     QPointF mouse_shift_start;
     QPointF shift_start;
     bool shifting;
+    QThread loadingThread;
 
     Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);
     ~Barplot();
-    void add(vector< vector< Array > > &data, vector<QString> &categories, vector<QString> &labels, vector<QColor> *colors = 0);
+    void add(vector< vector< Array > > *_data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors);
     void update_chart();
     void clear();
 
@@ -110,7 +120,7 @@ public:
 signals:
     void enterLipid(string lipid_name);
     void exitLipid();
-
+    void startLoading(Barplot *barplot, vector< vector< Array > > *_data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors);
 
 public slots:
     void lipidEntered(string lipid_name);

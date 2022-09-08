@@ -306,13 +306,13 @@ void Statistics::updateBarPlot(){
         rr++;
     }
 
-    vector<QString> lipid_names(lipid_map.size(), "");
-    for (auto kv : lipid_name_map) lipid_names[kv.second] = kv.first.c_str();
+    vector<QString> *lipid_names = new vector<QString>(lipid_map.size(), "");
+    for (auto kv : lipid_name_map) lipid_names->at(kv.second) = kv.first.c_str();
     vector< vector<Array> > data_series(nom_counter);
 
     for (int t = 0; t < nom_counter; ++t){
         for (int c = 0; c < stat_matrix.cols; c++){
-            series_titles.push_back(lipid_names[c].toStdString() + (nom_counter > 1 ? " / " + nominal_values[t] : ""));
+            series_titles.push_back(lipid_names->at(c).toStdString() + (nom_counter > 1 ? " / " + nominal_values[t] : ""));
             data_series[t].push_back(Array());
         }
     }
@@ -348,39 +348,39 @@ void Statistics::updateBarPlot(){
 
     series.resize(series_titles.size());
 
-    vector<QString> categories;
-    vector<QColor> colors;
-    for (auto nominal_value : nominal_values) categories.push_back(nominal_value.c_str());
+    vector<QString> *categories = new vector<QString>();
+    vector<QColor> *colors = new vector<QColor>();
+    for (auto nominal_value : nominal_values) categories->push_back(nominal_value.c_str());
     if (is_nominal | has_secondary){
         for (auto nominal_value : nominal_values){
             string color_key = ((is_nominal || !has_secondary) ? target_variable : secondary_target_variable) + "_" + nominal_value;
-            colors.push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
+            colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
         }
     }
     else {
-        categories.push_back(QString("Selected lipids (%1)").arg(lipid_names.size()));
-        colors.push_back(QColor("#F6A611"));
+        categories->push_back(QString("Selected lipids (%1)").arg(lipid_names->size()));
+        colors->push_back(QColor("#F6A611"));
     }
 
-    vector< vector< Array > > barplot_data(lipid_names.size());
+    vector< vector< Array > > *barplot_data = new vector< vector<Array> >(lipid_names->size());
 
     int series_iter = 0;
     for (uint cat_it = 0; cat_it < data_series.size(); ++cat_it){
         auto category_data_series = data_series[cat_it];
         for (uint lipid_it = 0; lipid_it < category_data_series.size(); ++lipid_it){
             auto single_series = category_data_series[lipid_it];
-            barplot_data[lipid_it].push_back(Array());
+            barplot_data->at(lipid_it).push_back(Array());
 
             for (auto value : single_series){
                 series[series_iter].push_back(value);
-                barplot_data[lipid_it].back().push_back(value);
+                barplot_data->at(lipid_it).back().push_back(value);
             }
             ++series_iter;
         }
 
     }
     Barplot *barplot = new Barplot(chart, log_scale, show_data);
-    barplot->add(barplot_data, categories, lipid_names, &colors);
+    barplot->add(barplot_data, categories, lipid_names, colors);
     chart->add(barplot);
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
     connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);
