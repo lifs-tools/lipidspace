@@ -7,7 +7,6 @@
 #include <math.h>
 #include <algorithm>
 #include <sys/stat.h>
-#include <immintrin.h>
 #include <QThread>
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/logging.h"

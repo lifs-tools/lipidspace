@@ -127,8 +127,6 @@ Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_c
 
 Barplot::~Barplot(){
     clear();
-    loadingThread.quit();
-    loadingThread.wait();
 }
 
 
@@ -249,12 +247,20 @@ void Barplot::wheelEvent(QWheelEvent *event){
         num_field = __max(1., scale / ((double)zoom + 1) - offset);
     }
 
-    double x = mouse_pos.x();
-    chart->back_translate(x);
-    uint left = __max(0., round(x - (double)num_field * (x - chart->xrange.x()) / (double)(chart->xrange.y() - chart->xrange.x())));
-    uint right = left + num_field;
+    uint left = 0;
+    uint right = bars.size();
+    if (num_field < (int)bars.size()){
+        double x = mouse_pos.x();
+        chart->back_translate(x);
+        left = __max(0., round(x - (double)num_field * (x - chart->xrange.x()) / (double)(chart->xrange.y() - chart->xrange.x())));
+        right = left + num_field;
+        if (right > bars.size()){
+            left -= right - bars.size();
+            right = bars.size();
+        }
+    }
 
-    chart->xrange = QPointF(left, __min(right, bars.size()));
+    chart->xrange = QPointF(left, right);
 
     double ymax = -INFINITY;
     for (uint b = left; b < right && b < bars.size(); ++b){
@@ -360,6 +366,8 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
             SortVector<double, double> orig_data;
             // distribute the data around the center
             int n = values.size();
+
+
             Array X(n, 0);
             Array Y;
             for (auto value : values) Y.push_back(value);
@@ -372,24 +380,50 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
                 Y[i] = (Y[i] - mue) / sigma;
             }
             double max_x = 0;
+
+            int n4 = n;
+            while (n4 & 3){
+                X.push_back(0);
+                Y.push_back(0);
+                n4++;
+            }
+
             Array xx(n, 0);
+            const __m256d one = {1., 1., 1., 1.};
+            const __m256d o_three = {0.30482918, 0.30482918, 0.30482918, 0.30482918};
             for (int i = 0; i < n; ++i){
-                double fx = 0;
-                for (int j = 0; j < n; ++j){
-                    if (i == j) continue;
+                __m256d fx4 = {0., 0., 0., 0., };
+                __m256d xi = {X[i], X[i], X[i], X[i]};
+                __m256d yi = {Y[i], Y[i], Y[i], Y[i]};
+                for (int j = 0; j < n4; j += 4){
 
-                    double d = sq(X[i] - X[j]) + sq(Y[i] - Y[j]);
-                    fx += (X[j] - X[i]) * exp(-d);
+                    __m256d xj = _mm256_loadu_pd(&X[j]);
+                    __m256d yj = _mm256_loadu_pd(&Y[j]);
+
+                    __m256d x_diff = _mm256_sub_pd(xi, xj);
+                    __m256d y_diff = _mm256_sub_pd(yi, yj);
+
+                    __m256d d = {0., 0., 0., 0.};
+                    d = _mm256_fmadd_pd(x_diff, x_diff, d);
+                    d = _mm256_fmadd_pd(y_diff, y_diff, d);
+
+                    x_diff = _mm256_sub_pd(xj, xi);
+
+                    d = _mm256_mul_pd(-d, o_three);
+                    d = _mm256_sub_pd(d, one);
+                    d = _mm256_mul_pd(d, d);
+                    d = _mm256_mul_pd(d, d);
+                    d = _mm256_div_pd(one, d);
+
+                    fx4 = _mm256_fmadd_pd(x_diff, d, fx4);
                 }
-                xx[i] = X[i] - fx * exp(-sq(fx));
-            }
-            for (int i = 0; i < n; ++i){
-                X[i] = xx[i];
-                max_x = max(max_x, abs(X[i]));
+                double fx = fx4[0] + fx4[1] + fx4[2] + fx4[3];
+                xx[i] = X[i] - fx / sq(sq(0.30482918 * (-sq(fx)) - 1.));
+                max_x = max(max_x, abs(xx[i]));
             }
 
             for (int i = 0; i < n; ++i){
-                orig_data.push_back({values[i], X[i] / max_x});
+                orig_data.push_back({values[i], xx[i] / max_x});
                 ymax = max(ymax, values[i]);
             }
             bar_set.push_back(new BarBox(chart, mean, error, labels->at(s), color, &orig_data));
@@ -400,7 +434,7 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
     }
 
     chart->xrange = QPointF(0, bars.size());
-    if (y_log_scale && ymin > 0) ymin = pow(10, floor(log(ymin) / log(10)));
+    ymin = pow(10, floor(log(ymin) / log(10)));
     chart->yrange = QPointF(y_log_scale ? ymin : 0, ymax);
     min_log_value = ymin;
 
@@ -543,24 +577,6 @@ void Boxplot::update_chart(){
         // draw data points
         box.data_cloud->setNewPosition(b, 1., box.median, animation_length);
         box.data_cloud->setVisible(visible && show_data);
-        /*
-        if (show_data){
-            for (uint i = 0; i < box.data.size(); ++i){
-                auto ellipse = box.dots[i];
-                x1 = b + box.data[i].second;
-                y1 = box.median + (box.data[i].first - box.median) * animation_length;
-                chart->translate(x1, y1);
-                ellipse->setBrush(QBrush(QColor(0, 0, 0, alpha)));
-                ellipse->setPen(Qt::NoPen);
-                ellipse->setRect(x1 - 3, y1 - 3, 6, 6);
-                ellipse->setZValue(110);
-                ellipse->setVisible(visible);
-            }
-        }
-        else {
-            for (auto ellipse : box.dots) ellipse->setVisible(false);
-        }
-        */
     }
 }
 

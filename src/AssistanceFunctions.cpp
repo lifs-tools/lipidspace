@@ -738,42 +738,84 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
 
 
 
+//////////////////////////////////////////////////////////////////////////
+// MIT License
+// Copyright (c) 2016 Mengchang Wang
+// libAnova
+// https://github.com/Amuwa/libAnova
+//////////////////////////////////////////////////////////////////////////
 
-/*
-Sources:
-https://www.cplusplus.com/forum/general/255896/
-https://scicomp.stackexchange.com/questions/40536/hypergeometric-function-2f-1z-with-z-1-in-gsl
-*/
-double hyperg_2F1(double a, double b, double c, double d){
-    double e = 1.;
-    if (d > 1. || d < 0){
-        a = c - a;
-        e = 1. / pow(1. - d, b);
-        d = 1. - 1. / (1. - d);
+
+double f_distribution_cdf(double F, double m, double n){
+    double xx = 0.0, p = 0.0;
+
+    if (m <= 0. || n <= 0.) p = -1.;
+    else if (F > 0){
+        xx = F / (F + n / m);
+        p = betainc(xx, m * 0.5, n * 0.5);
     }
-
-    if (b < 0){
-        e *= pow(1 - d, c - a - b);
-        a = c - a;
-        b = c - b;
-    }
-
-    double TOLERANCE = 1.0e-10;
-    double term = a * b * d / c;
-    double p = 1.0 + term;
-    double n = 1.;
-
-    while (abs( term ) > TOLERANCE){
-        a += 1.;
-        b += 1.;
-        c += 1.;
-        n += 1.;
-        term *= a * b * d / c / n;
-        if (isinf(term) or isnan(term)) break;
-        p += term;
-    }
-    return p * e;
+    return (1. - p);
 }
+
+
+
+double betainc(double x,double a, double b) {
+    double y, BT, AAA;
+
+    if(x == 0. || x == 1.){
+        BT = 0.;
+    }
+    else {
+        AAA = lgamma(a + b) - lgamma(a) - lgamma(b);
+        BT = exp(AAA + a * log(x) + b * log(1. - x));
+    }
+    if(x < (a + 1.) / (a + b + 2.)){
+        y = BT * beta_cf(a, b, x) / a;
+    }
+    else {
+        y = 1. - BT * beta_cf(b, a, 1. - x) / b;
+    }
+
+    return y;
+}
+
+double beta_cf(double a,double b,double x) {
+    int count, count_max = 100;
+    const double eps=0.0000001;
+    double AM = 1.;
+    double BM = 1.;
+    double AZ = 1.;
+    double QAB;
+    double QAP;
+    double QAM;
+    double BZ, EM, TEM, D, AP, BP, AAP, BPP, AOLD;
+
+    QAB = a + b;
+    QAP = a + 1.;
+    QAM = a - 1.;
+    BZ = 1. - QAB * x / QAP;
+
+    for(count = 1; count <= count_max; count++){
+        EM = count;
+        TEM = EM + EM;
+        D = EM * (b - count) * x / ((QAM + TEM) * (a + TEM));
+        AP = AZ + D * AM;
+        BP = BZ + D * BM;
+        D = -(a + EM) * (QAB + EM) * x / ((a + TEM) * (QAP + TEM));
+        AAP = AP + D * AZ;
+        BPP = BP + D * BZ;
+        AOLD = AZ;
+        AM = AP / BPP;
+        BM = BP / BPP;
+        AZ = AAP / BPP;
+        BZ = 1.;
+        if(fabs(AZ - AOLD) < eps * fabs(AZ)) return AZ;
+    }
+    return AZ;
+}
+
+
+
 
 
 
@@ -781,8 +823,8 @@ double hyperg_2F1(double a, double b, double c, double d){
 Source: https://en.wikipedia.org/wiki/Student%27s_t-distribution
 */
 double t_distribution_cdf(double t_stat, double free_deg){
-    if (t_stat > 0) t_stat = -t_stat;
-    return (0.5 + t_stat * exp(lgamma((free_deg + 1.) / 2.) - lgamma(free_deg / 2.)) * hyperg_2F1(0.5, (free_deg + 1.) / 2., 1.5, - sq(t_stat) / free_deg) / sqrt(M_PI * free_deg)) * 2.;
+    double tt = free_deg / (sq(t_stat) + free_deg);
+    return betainc(tt, free_deg * 0.5, 0.5);
 }
 
 
@@ -819,25 +861,8 @@ double p_value_student(Array &sample1, Array &sample2){
     double m = sample2.size();
 
     double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
-    double t = sqrt(n * m / (n + m)) * ((m1 - m2) / s);
+    double t = __abs(sqrt(n * m / (n + m)) * ((m1 - m2) / s));
     return t_distribution_cdf(t, n + m - 2);
-}
-
-
-
-/*
-Sources:
-https://en.wikipedia.org/wiki/F-distribution
-https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.betainc.html
-*/
-double f_distribution_cdf(double f_stat, double df1, double df2){
-
-    double x = df1 * f_stat / (df1 * f_stat + df2);
-    double a = df1 / 2.;
-    double b = df2 / 2.;
-    double pval = 1. - pow(x, a) / a * hyperg_2F1(a, 1 - b, a + 1, x) / beta(a, b);
-    return max(0., min(1., pval));
-
 }
 
 
@@ -907,32 +932,37 @@ double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
 Source: https://en.wikipedia.org/wiki/One-way_analysis_of_variance
 */
 double p_value_anova(vector<Array> &arrays){
-    vector<double> mean_y;
-    vector<double> std_y;
-    double total_y = 0;
-    for (auto a : arrays){
-        mean_y.push_back(a.mean());
-        std_y.push_back(a.sample_stdev());
-        total_y += mean_y.back();
-    }
-    total_y /= (double)mean_y.size();
-
+    Array sums;
+    Array means;
+    double I = arrays.size();
+    double N = 0;
+    double total_sum = 0;
     double MSB = 0;
     double MSW = 0;
-    double N = 0;
-    for (uint i = 0; i < mean_y.size(); ++i) {
-        MSB += arrays[i].size() * sq(mean_y[i] - total_y);
-        MSW += (arrays[i].size() - 1.) * sq(std_y[i]);
-        N += arrays[i].size();
+    for (auto a : arrays){
+        sums.push_back(a.sum());
+        total_sum += sums.back();
+
+        means.push_back(a.mean());
+        N += a.size();
+
+        MSB += sums.back() * means.back();
     }
-    double v1 = mean_y.size() - 1.;
-    double v2 = N - arrays.size();
-    MSB /= v1;
-    MSW /= v2;
+    for (uint i = 0; i < arrays.size(); ++i){
+        auto a = arrays[i];
+        double m = means[i];
+        for (auto v : a){
+            MSW += sq(v - m);
+        }
+    }
 
+    MSB -= sq(total_sum) / N;
 
-    double F = MSB / MSW;
-    return f_distribution_cdf(F, v1, v2);
+    N -= I;
+    I -= 1;
+
+    double F = MSB * N / (MSW * I);
+    return f_distribution_cdf(F, I, N);
 }
 
 

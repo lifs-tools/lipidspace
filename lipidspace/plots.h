@@ -109,8 +109,6 @@ public:
     double min_log_value;
     QPointF mouse_shift_start;
     QPointF shift_start;
-    bool shifting;
-    QThread loadingThread;
     int zoom;
 
     Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);

@@ -780,15 +780,19 @@ void Statistics::updateBoxPlot(){
             stat_results.push_back({"p_value(Student)", p_student});
             stat_results.push_back({"p_value(Welch)", p_welch});
             stat_results.push_back({"p_value(KS)", p_ks});
-            //chart->setTitle(QString("Statistics: <i>p</i>-value<sub>Student</sub> = %1,   <i>p</i>-value<sub>Welch</sub> = %2,   <i>p</i>-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
-            chart->setTitle(QString("<i>p</i>-value<sub>Welch</sub> = %1").arg(QString::number(p_welch, 'g', 3)));
+            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>Student</sub> = %1,   <i>p</i>-value<sub>Welch</sub> = %2,   <i>p</i>-value<sub>KS</sub> = %3").arg(QString::number(p_student, 'g', 3)).arg(QString::number(p_welch, 'g', 3)).arg(QString::number(p_ks, 'g', 3)));
         }
         else if (nom_counter > 2){
             double accuracy = compute_accuracy(series);
             stat_results.push_back({"accuracy", accuracy});
             double p_anova = p_value_anova(series);
             stat_results.push_back({"p_value(ANOVA)", p_anova});
-            chart->setTitle(QString("Statistics: <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(p_anova, 'g', 3)));
+            if (p_anova >= 1e-3){
+                chart->setTitle(QString("Statistics: <i>p</i>-value<sub>ANOVA</sub> = %2").arg(p_anova, 0, 'g', 4));
+            }
+            else {
+                chart->setTitle(QString("Statistics: <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(p_anova, 'e', -1)));
+            }
         }
     }
     else {
@@ -855,7 +859,6 @@ void Statistics::updateBoxPlot(){
         // estimate slope and intercept factors for linear regression
         double slope_num = 0, slope_denom = 0;
         for (uint r = 0; r < S.size(); ++r){
-            if (S[r] <= 1e-15) continue;
             slope_num += (S[r] - mx) * (target_values[r] - my);
             slope_denom += sq(S[r] - mx);
         }
@@ -864,7 +867,6 @@ void Statistics::updateBoxPlot(){
 
         double SQR = 0, SQT = 0;
         for (uint r = 0; r < S.size(); ++r){
-            if (S[r] <= 1e-15) continue;
             SQR += sq(target_values[r] - (slope * S[r] + intercept));
             SQT += sq(target_values[r] - my);
         }

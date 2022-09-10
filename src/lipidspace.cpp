@@ -3605,7 +3605,6 @@ void LipidSpace::complete_feature_analysis(){
                 double mx = 0, my = 0, ny = 0;
                 // computing the study variable mean based on missing values of lipids
                 for (uint r = 0; r < S.size(); ++r){
-                    if (S[r] <= 1e-15) continue;
                     mx += S[r];
                     my += target_values[r];
                     ny += 1;
@@ -3617,7 +3616,6 @@ void LipidSpace::complete_feature_analysis(){
                 // estimate slope and intercept factors for linear regression
                 double slope_num = 0, slope_denom = 0;
                 for (uint r = 0; r < S.size(); ++r){
-                    if (S[r] <= 1e-15) continue;
                     slope_num += (S[r] - mx) * (target_values[r] - my);
                     slope_denom += sq(S[r] - mx);
                 }
@@ -3626,7 +3624,6 @@ void LipidSpace::complete_feature_analysis(){
 
                 double SQR = 0, SQT = 0;
                 for (uint r = 0; r < S.size(); ++r){
-                    if (S[r] <= 1e-15) continue;
                     SQR += sq(target_values[r] - (slope * S[r] + intercept));
                     SQT += sq(target_values[r] - my);
                 }
