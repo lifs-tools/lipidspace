@@ -259,7 +259,7 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
 
 double p_value_anova(vector<Array> &v);
 double f_distribution_cdf(double fi_stat, double df1, double df2);
-double betainc(double x,double a, double b);
+double betainc(double x,double a, double b, bool flip_value = false);
 double beta_cf(double a,double b,double x);
 
 double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2);

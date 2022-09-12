@@ -752,14 +752,15 @@ double f_distribution_cdf(double F, double m, double n){
     if (m <= 0. || n <= 0.) p = -1.;
     else if (F > 0){
         xx = F / (F + n / m);
-        p = betainc(xx, m * 0.5, n * 0.5);
+        p = betainc(xx, m * 0.5, n * 0.5, true);
     }
-    return (1. - p);
+
+    return p;
 }
 
 
 
-double betainc(double x,double a, double b) {
+double betainc(double x,double a, double b, bool flip_value) {
     double y, BT, AAA;
 
     if(x == 0. || x == 1.){
@@ -770,10 +771,12 @@ double betainc(double x,double a, double b) {
         BT = exp(AAA + a * log(x) + b * log(1. - x));
     }
     if(x < (a + 1.) / (a + b + 2.)){
-        y = BT * beta_cf(a, b, x) / a;
+        if (flip_value) y = 1. - BT * beta_cf(a, b, x) / a;
+        else y = BT * beta_cf(a, b, x) / a;
     }
     else {
-        y = 1. - BT * beta_cf(b, a, 1. - x) / b;
+        if (flip_value) y = BT * beta_cf(b, a, 1. - x) / b;
+        else y = 1. - BT * beta_cf(b, a, 1. - x) / b;
     }
 
     return y;

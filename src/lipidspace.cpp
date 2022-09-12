@@ -210,17 +210,7 @@ void LipidSpace::create_dendrogram(){
                     num_lipid_in_lipidomes += 1;
                     arrays[target_values[r]].push_back(global_matrix(r, c));
                 }
-
-                double pos_max = 0, d = 0, sep = 0, score = 1;
-                for (uint ii = 0; ii < arrays.size() - 1; ++ii){
-                    for (uint jj = ii + 1; jj < arrays.size(); ++jj){
-                        ks_separation_value(arrays[ii], arrays[jj], d, pos_max, sep);
-                        score *= sqrt(d * sep);
-                    }
-                }
-                double ll = 2. / ((double)(arrays.size() - 1) * (double)arrays.size());
-                score = pow(score, ll) * num_lipid_in_lipidomes / (double)lipidomes_for_feature_selection.size();
-
+                double score = compute_accuracy(arrays) * num_lipid_in_lipidomes / (double)lipidomes_for_feature_selection.size();
                 regression_result.push_back({score, kv.first});
             }
             else {
@@ -3389,18 +3379,6 @@ void LipidSpace::feature_analysis(bool report_progress){
                     vector<Array> arrays(nom_counter);
                     for (int r = 0; r < sub_lipids.rows; ++r) arrays[target_values[r]].push_back(summed_values[r]);
 
-                    /*
-                    double pos_max = 0, d = 0, sep = 0;
-                    new_gene->score = 1;
-                    for (uint ii = 0; ii < arrays.size() - 1; ++ii){
-                        for (uint jj = ii + 1; jj < arrays.size(); ++jj){
-                            ks_separation_value(arrays[ii], arrays[jj], d, pos_max, sep);
-                            new_gene->score *= sqrt(d * sep);
-                        }
-                    }
-                    double ll = 2. / ((double)(arrays.size() - 1) * (double)arrays.size());
-                    new_gene->score = pow(new_gene->score, ll) * (cnt_lipids - missing_lipids) / cnt_lipids;
-                    */
                     new_gene->score = compute_accuracy(arrays) * (cnt_lipids - missing_lipids) / cnt_lipids;
 
                     // search for maximal nominal score
