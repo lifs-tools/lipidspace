@@ -780,22 +780,19 @@ double betainc(double x,double a, double b) {
 }
 
 double beta_cf(double a,double b,double x) {
-    int count, count_max = 100;
-    const double eps=0.0000001;
+    const int count_max = 100;
+    const double eps = 1e-7;
     double AM = 1.;
     double BM = 1.;
     double AZ = 1.;
-    double QAB;
-    double QAP;
-    double QAM;
-    double BZ, EM, TEM, D, AP, BP, AAP, BPP, AOLD;
+    double EM, TEM, D, AP, BP, AAP, BPP, AOLD;
 
-    QAB = a + b;
-    QAP = a + 1.;
-    QAM = a - 1.;
-    BZ = 1. - QAB * x / QAP;
+    double QAB = a + b;
+    double QAP = a + 1.;
+    double QAM = a - 1.;
+    double BZ = 1. - QAB * x / QAP;
 
-    for(count = 1; count <= count_max; count++){
+    for(int count = 1; count <= count_max; count++){
         EM = count;
         TEM = EM + EM;
         D = EM * (b - count) * x / ((QAM + TEM) * (a + TEM));

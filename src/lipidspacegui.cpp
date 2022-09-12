@@ -649,7 +649,7 @@ void LipidSpaceGUI::setSecondarySorting(){
         ui->secondaryLabel->setText("Conditional coloring");
         ui->secondaryComboBox->addItem("no conditional coloring");
         for (auto kv : lipid_space->study_variable_values){
-            if (kv.second.study_variable_type == NominalStudyVariable){
+            if (target_variable != kv.first && kv.first != FILE_STUDY_VARIABLE_NAME){
                 ui->secondaryComboBox->addItem(kv.first.c_str());
             }
         }

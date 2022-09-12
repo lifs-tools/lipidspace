@@ -19,7 +19,7 @@
 using namespace std;
 using namespace OpenXLSX;
 
-
+enum SecondaryType {NoSecondary, NominalSecondary, NumericalSecondary};
 
 class Statistics : public QObject {
     Q_OBJECT
@@ -29,6 +29,7 @@ public:
     Chart *chart;
     vector<Array> series;
     vector<string> series_titles;
+    map<string, vector<QVariant> > flat_data;
     vector< pair<string, double> > stat_results;
     bool log_scale;
     bool show_data;

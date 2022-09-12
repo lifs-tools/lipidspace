@@ -815,8 +815,6 @@ void Scatterplot::clear(){
 
 
 void Scatterplot::add(vector< pair<double, double> > &data, QString category, QColor color){
-
-
     double xmin = chart->xrange.x();
     double xmax = chart->xrange.y();
     double ymin = chart->yrange.x();

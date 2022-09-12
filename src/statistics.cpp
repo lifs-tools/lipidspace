@@ -109,6 +109,7 @@ void Statistics::exportData(){
             auto wbk = doc.workbook();
             wbk.addWorksheet("Data");
             wbk.addWorksheet("Statistics");
+            wbk.addWorksheet("Flat-data");
             wbk.deleteSheet("Sheet1");
             auto wks_data = doc.workbook().worksheet("Data");
             uint col = 1;
@@ -124,6 +125,25 @@ void Statistics::exportData(){
             for (auto kv : stat_results){
                 wks_stat.cell(row, 1).value() = kv.first;
                 wks_stat.cell(row++, 2).value() = kv.second;
+            }
+
+            if (flat_data.size() > 0){
+                auto wks_flat = doc.workbook().worksheet("Flat-data");
+                col = 1;
+                for (auto kv : flat_data){
+                    wks_flat.cell(1, col).value() = kv.first;
+                    for (uint row = 0; row < kv.second.size(); ++row){
+                        QVariant var = kv.second[row];
+                        if (var.type() == QVariant::String){
+                            wks_flat.cell(row + 2, col).value() = var.toString().toStdString();
+                        }
+                        else {
+                            wks_flat.cell(row + 2, col).value() = var.toDouble();
+                        }
+                    }
+
+                    ++col;
+                }
             }
 
             doc.save();
@@ -207,6 +227,7 @@ void Statistics::updateBarPlot(){
 
     series_titles.clear();
     series.clear();
+    flat_data.clear();
     stat_results.clear();
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
@@ -231,14 +252,17 @@ void Statistics::updateBarPlot(){
     vector<string> nominal_values;
 
     string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
-    bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
+    SecondaryType secondary_type = NoSecondary;
+    if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
+        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+    }
 
     int valid_lipidomes = 0;
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->study_variables[target_variable].missing) continue;
-            if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
 
             valid_lipidomes++;
 
@@ -248,7 +272,7 @@ void Statistics::updateBarPlot(){
                 nominal_values.push_back(nominal_value);
             }
             target_indexes.push_back(nominal_target_values[nominal_value]);
-            if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+            if (secondary_type != NoSecondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
 
 
         }
@@ -256,13 +280,13 @@ void Statistics::updateBarPlot(){
     else {
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->study_variables[target_variable].missing) continue;
-            if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
 
             valid_lipidomes++;
 
             target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
 
-            if (has_secondary){
+            if (secondary_type == NominalSecondary){
                 string nominal_value = lipidome->study_variables[secondary_target_variable].nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
@@ -271,7 +295,7 @@ void Statistics::updateBarPlot(){
                 target_indexes.push_back(nominal_target_values[nominal_value]);
             }
         }
-        if (!has_secondary) nom_counter += 1;
+        if (secondary_type != NominalSecondary) nom_counter += 1;
     }
 
     map<LipidAdduct*, int> lipid_map;
@@ -294,7 +318,7 @@ void Statistics::updateBarPlot(){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
 
         if (lipidome->study_variables[target_variable].missing) continue;
-        if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+        if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
 
 
         for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
@@ -318,7 +342,7 @@ void Statistics::updateBarPlot(){
     }
 
 
-    if (is_nominal || has_secondary){
+    if (is_nominal || (secondary_type == NominalSecondary)){
         for (int r = 0; r < stat_matrix.rows; ++r){ // for all values of a study variable
             for (int c = 0; c < stat_matrix.cols; c++){
                 if (stat_matrix(r, c) > 1e-15){
@@ -332,7 +356,7 @@ void Statistics::updateBarPlot(){
             Lipidome* lipidome = lipid_space->selected_lipidomes[r];
 
             if (lipidome->study_variables[target_variable].missing) continue;
-            if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
 
 
             for (int index : lipidome->selected_lipid_indexes){
@@ -351,9 +375,9 @@ void Statistics::updateBarPlot(){
     vector<QString> *categories = new vector<QString>();
     vector<QColor> *colors = new vector<QColor>();
     for (auto nominal_value : nominal_values) categories->push_back(nominal_value.c_str());
-    if (is_nominal | has_secondary){
+    if (is_nominal || (secondary_type == NominalSecondary)){
         for (auto nominal_value : nominal_values){
-            string color_key = ((is_nominal || !has_secondary) ? target_variable : secondary_target_variable) + "_" + nominal_value;
+            string color_key = ((is_nominal || (secondary_type == NoSecondary)) ? target_variable : secondary_target_variable) + "_" + nominal_value;
             colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
         }
     }
@@ -406,6 +430,7 @@ void Statistics::updateHistogram(){
 
     series_titles.clear();
     series.clear();
+    flat_data.clear();
     stat_results.clear();
 
 
@@ -511,6 +536,7 @@ void Statistics::updateROCCurve(){
 
     series_titles.clear();
     series.clear();
+    flat_data.clear();
     stat_results.clear();
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
@@ -666,6 +692,7 @@ void Statistics::updateBoxPlot(){
 
     series_titles.clear();
     series.clear();
+    flat_data.clear();
     stat_results.clear();
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
@@ -685,23 +712,30 @@ void Statistics::updateBoxPlot(){
     Array target_values;
     int nom_counter = 0;
     vector<string> nominal_values;
+    vector<Lipidome*> selected_lipidomes_for_boxplot;
 
     string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
-    bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
+    SecondaryType secondary_type = NoSecondary;
+    if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
+        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+    }
+    Array S;
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->study_variables[target_variable].missing) continue;
-            if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
 
             string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+            selected_lipidomes_for_boxplot.push_back(lipidome);
+
             if (uncontains_val(nominal_target_values, nominal_value)){
                 nominal_target_values.insert({nominal_value, nom_counter++});
                 nominal_values.push_back(nominal_value);
                 series_titles.push_back(nominal_value);
             }
             target_indexes.push_back(nominal_target_values[nominal_value]);
-            if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+            if (secondary_type != NoSecondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
 
 
         }
@@ -709,17 +743,19 @@ void Statistics::updateBoxPlot(){
     else {
         for (auto lipidome : lipid_space->selected_lipidomes){
             if (lipidome->study_variables[target_variable].missing) continue;
-            if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
 
             target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
-
-            if (has_secondary){
+            if (secondary_type == NominalSecondary){
                 string nominal_value = lipidome->study_variables[secondary_target_variable].nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                     nominal_values.push_back(nominal_value);
                 }
                 target_indexes.push_back(nominal_target_values[nominal_value]);
+            }
+            else if (secondary_type == NumericalSecondary){
+                S.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
             }
         }
     }
@@ -738,10 +774,17 @@ void Statistics::updateBoxPlot(){
 
     if (is_nominal){
 
+        flat_data.insert({"Sample", vector<QVariant>()});
+        flat_data.insert({"Category", vector<QVariant>()});
+        flat_data.insert({"Value", vector<QVariant>()});
+
         series.resize(nom_counter);
-        if (has_secondary){
+        if (secondary_type != NoSecondary){
             for (uint r = 0; r < target_indexes.size(); ++r){
                 series[target_indexes[r]].push_back(target_values[r]);
+                flat_data["Sample"].push_back(QString(selected_lipidomes_for_boxplot[r]->cleaned_name.c_str()));
+                flat_data["Category"].push_back(QString(nominal_values[target_indexes[r]].c_str()));
+                flat_data["Value"].push_back(target_values[r]);
             }
         }
         else {
@@ -754,6 +797,9 @@ void Statistics::updateBoxPlot(){
                 }
                 if (statistics_matrix.cols > 1 || sum > 1e-15){
                     series[target_indexes[r]].push_back(sum);
+                    flat_data["Sample"].push_back(QString(selected_lipidomes_for_boxplot[r]->cleaned_name.c_str()));
+                    flat_data["Category"].push_back(QString(nominal_values[target_indexes[r]].c_str()));
+                    flat_data["Value"].push_back(sum);
                 }
             }
         }
@@ -796,17 +842,21 @@ void Statistics::updateBoxPlot(){
         }
     }
     else {
-        Array constants(statistics_matrix.rows, 1);
-        statistics_matrix.add_column(constants);
 
         Array coefficiants;
+        if (secondary_type != NumericalSecondary){
+            Array constants(statistics_matrix.rows, 1);
+            statistics_matrix.add_column(constants);
+            coefficiants.compute_coefficiants(statistics_matrix, target_values);    // estimating coefficiants
+            S.mult(statistics_matrix, coefficiants);
+        }
 
-        coefficiants.compute_coefficiants(statistics_matrix, target_values);    // estimating coefficiants
-        Array S;
-        S.mult(statistics_matrix, coefficiants);
+        flat_data.insert({"Sample", vector<QVariant>()});
+        flat_data.insert({"Value measured", vector<QVariant>()});
+        flat_data.insert({"Value model", vector<QVariant>()});
 
         Scatterplot *scatterplot = new Scatterplot(chart);
-        if (!has_secondary){
+        if (secondary_type == NoSecondary){
 
             series_titles.push_back(target_variable + " (model)");
             series_titles.push_back(target_variable + " (measured)");
@@ -822,22 +872,36 @@ void Statistics::updateBoxPlot(){
 
         }
         else {
-            vector< vector< pair<double, double> > > data(S.size());
-            series.resize(S.size() * 2);
+            if (secondary_type == NominalSecondary){
+                vector< vector< pair<double, double> > > data(nominal_values.size());
+                series.resize(S.size() * 2);
 
-            for (uint i = 0; i < S.size(); ++i){
-                data[target_indexes[i]].push_back({S[i], target_values[i]});
-                series[target_indexes[i] * 2].push_back(S[i]);
-                series[target_indexes[i] * 2 + 1].push_back(target_values[i]);
+                for (uint i = 0; i < S.size(); ++i){
+                    data[target_indexes[i]].push_back({S[i], target_values[i]});
+                    series[target_indexes[i] * 2].push_back(S[i]);
+                    series[target_indexes[i] * 2 + 1].push_back(target_values[i]);
+                }
+
+                for (auto nominal_value : nominal_values){
+                    series_titles.push_back(secondary_target_variable + " / " + nominal_value + " (model)");
+                    series_titles.push_back(secondary_target_variable + " / " + nominal_value + " (measured)");
+
+                    string color_key = secondary_target_variable + "_" + nominal_value;
+                    QColor c = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+                    scatterplot->add(data[nominal_target_values[nominal_value]], nominal_value.c_str(), c);
+                }
             }
-
-            for (auto nominal_value : nominal_values){
-                series_titles.push_back(secondary_target_variable + " / " + nominal_value + " (model)");
-                series_titles.push_back(secondary_target_variable + " / " + nominal_value + " (measured)");
-
-                string color_key = secondary_target_variable + "_" + nominal_value;
-                QColor c = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("209fdf");
-                scatterplot->add(data[nominal_target_values[nominal_value]], nominal_value.c_str(), c);
+            else {
+                vector< pair<double, double> > data;
+                series.resize(2);
+                for (uint i = 0; i < S.size(); ++i){
+                    data.push_back({S[i], target_values[i]});
+                    series[0].push_back(S[i]);
+                    series[1].push_back(target_values[i]);
+                }
+                series_titles.push_back(secondary_target_variable);
+                series_titles.push_back(target_variable);
+                scatterplot->add(data, QString("%1 / %2").arg(secondary_target_variable.c_str()).arg(target_variable.c_str()), QColor("#209fdf"));
             }
 
         }
@@ -873,7 +937,7 @@ void Statistics::updateBoxPlot(){
         double R2 = 1. - SQR / SQT;
         stat_results.push_back({"R^2", R2});
         // store the weights of the linear regression for export
-        if (coefficiants.size() == lipid_space->statistics_lipids.size() + 1){
+        if (secondary_type != NumericalSecondary && coefficiants.size() == lipid_space->statistics_lipids.size() + 1){
             for (uint i = 0; i < lipid_space->statistics_lipids.size(); ++i){
                 stat_results.push_back({QString("weight %1").arg(lipid_space->statistics_lipids[i].c_str()).toStdString(), coefficiants[i]});
             }
