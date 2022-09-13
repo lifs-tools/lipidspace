@@ -617,9 +617,8 @@ void Statistics::updateROCCurve(){
     pair<vector<double>, vector<double>> ROC;
     double dist = 0;
     double pos_max = 0;
-    double sep_score = 0;
 
-    ks_separation_value(series[0], series[1], dist, pos_max, sep_score, &ROC);
+    ks_separation_value(series[0], series[1], dist, pos_max, &ROC);
 
     Lineplot *lineplot = new Lineplot(chart);
     Lineplot *diagonalplot = new Lineplot(chart);

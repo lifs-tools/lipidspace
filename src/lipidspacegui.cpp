@@ -631,14 +631,12 @@ void LipidSpaceGUI::updateSecondarySorting(int){
 
 void LipidSpaceGUI::setSecondarySorting(){
     ui->secondaryComboBox->clear();
-    ui->secondaryLabel->setText("Secondary sorting");
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
     if (is_nominal){
-        ui->secondaryLabel->setText("Secondary sorting");
-        ui->secondaryComboBox->addItem("no secondary sorting");
+        ui->secondaryComboBox->addItem("Selected lipid species");
         for (auto kv : lipid_space->study_variable_values){
             if (kv.second.study_variable_type == NumericalStudyVariable){
                 ui->secondaryComboBox->addItem(kv.first.c_str());
@@ -646,8 +644,7 @@ void LipidSpaceGUI::setSecondarySorting(){
         }
     }
     else {
-        ui->secondaryLabel->setText("Conditional coloring");
-        ui->secondaryComboBox->addItem("no conditional coloring");
+        ui->secondaryComboBox->addItem("Selected lipid species");
         for (auto kv : lipid_space->study_variable_values){
             if (target_variable != kv.first && kv.first != FILE_STUDY_VARIABLE_NAME){
                 ui->secondaryComboBox->addItem(kv.first.c_str());

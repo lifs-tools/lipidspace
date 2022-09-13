@@ -581,8 +581,8 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
         vector<double> &set1 = kv.second;
         vector<double> &set2 = right_child->study_variable_numerical[kv.first];
 
-        double pos_max = 0, d = 0, sep = 0;
-        ks_separation_value(set1, set2, d, pos_max, sep);
+        double pos_max = 0, d = 0;
+        ks_separation_value(set1, set2, d, pos_max);
         study_variable_numerical_thresholds.insert({kv.first, pos_max});
 
         study_variable_numerical.insert({kv.first, vector<double>()});
@@ -642,59 +642,86 @@ void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
 
 
 
-double compute_accuracy(vector<Array> &v){
-    SortVector<double, double> medians;
-    for (uint i = 0; i < v.size(); ++i){
-        auto &a = v[i];
-        sort(a.begin(), a.end());
-        medians.push_back({a.median(-1, -1, true), i});
-    }
-    medians.sort_asc();
-    double TP = 0, TN = 0, FP = 0, FN = 0;
-
-    Array borders;
-    for (uint i = 0; i < medians.size() - 1; ++i){
-        double d = 0;
-        double pos_max = 0;
-        double separation_score = 0;
-        int index_first = medians[i].second;
-        int index_second = medians[i + 1].second;
-        ks_separation_value(v[index_first], v[index_second], d, pos_max, separation_score);
-        borders.push_back(pos_max);
-    }
-    borders.push_back(1e100);
-    vector<int> pointers(v.size(), -1);
-
-    for (uint i = 0; i < borders.size(); ++i){
-        double border = borders[i];
-
-        uint current_index = medians[i].second;
-        for (uint j = 0; j < v.size(); ++j){
-            int index = v[j].greatest_less(border, pointers[j]);
-
-            if (current_index == j){
-                TP += index - pointers[j];
-                FN += v[j].size() - (index - pointers[j]);
-            }
-            else {
-                FP += index - pointers[j];
-                TN += v[j].size() - (index - pointers[j]);
-            }
-            pointers[j] = index;
+double compute_accuracy(vector<Array> &arrays){
+    // remove empty arrays
+    for (int i = (int)arrays.size() - 1; i >= 0; --i){
+        if (arrays[i].size() == 0){
+            arrays.erase(arrays.begin() + i);
         }
     }
 
-    return (TP + TN) / (TP + TN + FP + FN);
+    set<uint> indexes;
+    Indexes medians;
+    double all = 0;
+    for (uint i = 0; i < arrays.size(); ++i){
+        auto &array = arrays[i];
+        sort(array.begin(), array.end());
+        medians.push_back(array.median(-1, -1, true));
+        indexes.insert(i);
+        all += array.size();
+    }
+    // compute all separation positions for each pair of set
+    vector< vector<double> > border_matrix(arrays.size(), vector<double>(arrays.size()));
+    for (uint i = 0; i < arrays.size() - 1; ++i){
+        for (uint j = i + 1; j < arrays.size(); ++j){
+            double d = 0;
+            ks_separation_value(arrays[i], arrays[j], d, border_matrix[i][j]);
+        }
+    }
+
+    // define a list of all boundaries for each category
+    Array borders;
+    Indexes array_order;
+    borders.push_back(-1e100);
+    while (indexes.size() > 1){
+        uint min_i = 0;
+        uint min_j = 0;
+        double min_value = INFINITY;
+
+        for (auto i : indexes){
+            for (auto j : indexes){
+                if (i >= j) continue;
+                if (min_value == INFINITY || min_value > border_matrix[i][j]) {
+                    min_i = i;
+                    min_j = j;
+                    min_value = border_matrix[i][j];
+                }
+            }
+        }
+
+        borders.push_back(min_value);
+        if (medians[min_i] < medians[min_j]){
+            indexes.erase(min_i);
+            array_order.push_back(min_i);
+        }
+        else {
+            indexes.erase(min_j);
+            array_order.push_back(min_j);
+        }
+    }
+    array_order.push_back(*indexes.begin());
+    borders.push_back(1e100);
+
+    // count all true hits
+    double true_hits = 0;
+    for (uint i = 0; i < borders.size() - 1; ++i){
+        double border_lower = borders[i];
+        double border_upper = borders[i + 1];
+        int left = arrays[array_order[i]].greatest_less(border_lower) + 1;
+        int right = arrays[array_order[i]].greatest_less(border_upper);
+        true_hits += right - left + 1;
+    }
+
+    return true_hits / all;
 }
 
 
 
 
 
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, pair<vector<double>, vector<double>> *ROC){
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, pair<vector<double>, vector<double>> *ROC){
     d = 0;
     pos_max = 0;
-    separation_score = 0;
     int num1 = a.size();
     int num2 = b.size();
     sort(a.begin(), a.end());
@@ -702,8 +729,6 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
     double inv_m = 1. / num1, inv_n = 1. / num2;
     double ptr1 = 0, ptr2 = 0;
     double cdf1 = 0, cdf2 = 0;
-    double overlap1 = 0, overlap2 = 0;
-    double min1 = 1, max1 = num1 - 1, min2 = 1, max2 = num2 - 1;
 
     while ((ptr1 < num1) && (ptr2 < num2)){
         if (ROC){
@@ -717,7 +742,6 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
                 pos_max = a[ptr1];
             }
             ptr1 += 1;
-            if (min1 <= ptr1 && ptr1 <= max1 && min2 <= ptr2 && ptr2 <= max2) overlap1 += 1;
         }
         else {
             cdf2 += inv_n;
@@ -726,11 +750,7 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
                 pos_max = b[ptr2];
             }
             ptr2 += 1;
-            if (min1 <= ptr1 && ptr1 <= max1 && min2 <= ptr2 && ptr2 <= max2) overlap2 += 1;
         }
-    }
-    if (num1 > 0 && num2 > 0){
-        separation_score = sqrt((1. - overlap1 / (double)num1) * (1. - overlap2 / (double)num2));
     }
 }
 
@@ -820,11 +840,11 @@ double beta_cf(double a,double b,double x) {
 
 
 /*
-Source: https://en.wikipedia.org/wiki/Student%27s_t-distribution
+Source: https://en.wikipedia.org/wiki/Student%27s_t-distribution#Cumulative_distribution_function
 */
 double t_distribution_cdf(double t_stat, double free_deg){
     double tt = free_deg / (sq(t_stat) + free_deg);
-    return betainc(tt, free_deg * 0.5, 0.5);
+    return max(0., min(1., betainc(tt, free_deg * 0.5, 0.5)));
 }
 
 
@@ -843,8 +863,7 @@ double p_value_welch(Array &a, Array &b){
     double t = w0 / sqrt(sq(s1 / sqrt(n)) + sq(s2 / sqrt(m)));
     double v = sq(sq(s1) / n + sq(s2) / m) / (sq(sq(s1)) / (sq(n) * (n - 1)) + sq(sq(s2)) / (sq(m) * (m - 1)));
 
-    double pval = t_distribution_cdf(t, v);
-    return max(0., min(1., pval));
+    return max(0., min(1., t_distribution_cdf(t, v)));
 }
 
 
@@ -862,7 +881,7 @@ double p_value_student(Array &sample1, Array &sample2){
 
     double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
     double t = __abs(sqrt(n * m / (n + m)) * ((m1 - m2) / s));
-    return t_distribution_cdf(t, n + m - 2);
+    return max(0., min(1., t_distribution_cdf(t, n + m - 2.)));
 }
 
 
@@ -962,7 +981,7 @@ double p_value_anova(vector<Array> &arrays){
     I -= 1;
 
     double F = MSB * N / (MSW * I);
-    return f_distribution_cdf(F, I, N);
+    return max(0., min(1., f_distribution_cdf(F, I, N)));
 }
 
 
@@ -1011,9 +1030,6 @@ void Progress::prepare(int max_val){
 
 
 
-bool sort_order_one (pair<double, int> i, pair<double, int> j) { return (i.first < j.first); }
-
-
 double compute_aic(Matrix &data, Array &coefficiants, Array &values){
     Array S;
     S.mult(data, coefficiants);
@@ -1023,7 +1039,7 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
 
     int k = data.cols;
     int n = data.rows;
-    return n * (log(2 * M_PI) + 1 + log(s / n)) + (k * 2);
+    return n * (log(2. * M_PI) + 1. + log(s / n)) + (k * 2.);
 }
 
 
@@ -1031,28 +1047,6 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
 
 bool gene_aic(Gene g1, Gene g2){
     return g1.score < g2.score;
-}
-
-
-
-void BH_fdr(vector<double> &data){
-    if (data.size() < 2) return;
-
-    // sort p_values and store order for back ordering
-    vector<pair<double, int>> sorted;
-    for (int i = 0; i < (int)data.size(); ++i){
-        sorted.push_back({data[i], i});
-    }
-    sort (sorted.begin(), sorted.end(), sort_order_one);
-
-    // perform Benjamini-Hochberg correction
-    double n = data.size();
-    for (int i = n - 2; i >= 0; --i){
-        sorted[i].first = min(sorted[i].first * n / (double)(i + 1), sorted[i + 1].first);
-    }
-
-    // sort corrected values back into original data vector
-    for (auto p : sorted) data[p.second] = p.first;
 }
 
 

@@ -252,22 +252,20 @@ public:
 };
 
 
-void BH_fdr(vector<double> &data);
+double compute_accuracy(vector<Array> &v);
 double compute_aic(Matrix &data, Array &coefficiants, Array &values);
-bool gene_aic(Gene g1, Gene g2);
-void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, double &separation_score, pair<vector<double>, vector<double>> *ROC = 0);
 
-double p_value_anova(vector<Array> &v);
-double f_distribution_cdf(double fi_stat, double df1, double df2);
+bool gene_aic(Gene g1, Gene g2);
 double betainc(double x,double a, double b, bool flip_value = false);
 double beta_cf(double a,double b,double x);
-
 double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2);
+void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, pair<vector<double>, vector<double>> *ROC = 0);
+double t_distribution_cdf(double t_stat, double free_deg);
+double f_distribution_cdf(double fi_stat, double df1, double df2);
 
 double p_value_student(Array &a, Array &b);
 double p_value_welch(Array &a, Array &b);
-double t_distribution_cdf(double t_stat, double free_deg);
-double compute_accuracy(vector<Array> &v);
+double p_value_anova(vector<Array> &v);
 
 
 
