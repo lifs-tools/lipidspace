@@ -251,7 +251,6 @@ public:
     void get_indexes(Indexes &indexes);
 };
 
-
 double compute_accuracy(vector<Array> &v);
 double compute_aic(Matrix &data, Array &coefficiants, Array &values);
 
@@ -268,7 +267,17 @@ double p_value_welch(Array &a, Array &b);
 double p_value_anova(vector<Array> &v);
 
 
-
+inline double compute_l2_norm(const double *a, const double *b, const int rows){
+    __m256d dist = {0., 0., 0., 0.};
+    for (int r = 0; r < rows; r += 4){
+        __m256d val1 = _mm256_loadu_pd(&a[r]);
+        __m256d val2 = _mm256_loadu_pd(&b[r]);
+        __m256d sub = val1 - val2;
+        dist += sub * sub;
+    }
+    dist = _mm256_hadd_pd(dist, dist);
+    return dist[0] + dist[3];
+}
 
 
 

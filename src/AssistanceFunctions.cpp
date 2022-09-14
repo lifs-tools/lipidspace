@@ -640,8 +640,6 @@ void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
 
 
 
-
-
 double compute_accuracy(vector<Array> &arrays){
     // remove empty arrays
     for (int i = (int)arrays.size() - 1; i >= 0; --i){
@@ -672,7 +670,7 @@ double compute_accuracy(vector<Array> &arrays){
     // define a list of all boundaries for each category
     Array borders;
     Indexes array_order;
-    borders.push_back(-1e100);
+    borders.push_back(-INFINITY);
     while (indexes.size() > 1){
         uint min_i = 0;
         uint min_j = 0;
@@ -700,7 +698,7 @@ double compute_accuracy(vector<Array> &arrays){
         }
     }
     array_order.push_back(*indexes.begin());
-    borders.push_back(1e100);
+    borders.push_back(INFINITY);
 
     // count all true hits
     double true_hits = 0;
@@ -717,8 +715,6 @@ double compute_accuracy(vector<Array> &arrays){
 
 
 
-
-
 void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double &pos_max, pair<vector<double>, vector<double>> *ROC){
     d = 0;
     pos_max = 0;
@@ -726,7 +722,7 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
     int num2 = b.size();
     sort(a.begin(), a.end());
     sort(b.begin(), b.end());
-    double inv_m = 1. / num1, inv_n = 1. / num2;
+    double inv_m = 1. / (double)num1, inv_n = 1. / (double)num2;
     double ptr1 = 0, ptr2 = 0;
     double cdf1 = 0, cdf2 = 0;
 
@@ -737,16 +733,16 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
         }
         if (a[ptr1] <= b[ptr2]){
             cdf1 += inv_m;
-            if (d < fabs(cdf1 - cdf2)){
-                d = fabs(cdf1 - cdf2);
+            if (d < __abs(cdf1 - cdf2)){
+                d = __abs(cdf1 - cdf2);
                 pos_max = a[ptr1];
             }
             ptr1 += 1;
         }
         else {
             cdf2 += inv_n;
-            if (d < fabs(cdf1 - cdf2)){
-                d = fabs(cdf1 - cdf2);
+            if (d < __abs(cdf1 - cdf2)){
+                d = __abs(cdf1 - cdf2);
                 pos_max = b[ptr2];
             }
             ptr2 += 1;

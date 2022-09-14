@@ -3,7 +3,7 @@ win32:QT       += core gui printsupport widgets svg svgwidgets
 
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas -O3
+QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
 
 
 # The following define makes your compiler emit warnings if you use
@@ -18,6 +18,8 @@ RC_ICONS = LipidSpace.ico
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+QMAKE_CXXFLAGS_RELEASE += -O3
 
 !win32 {
     LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas libraries/OpenXLSX/bin/linux/libOpenXLSX.a

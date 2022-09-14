@@ -317,9 +317,9 @@ void Dendrogram::load(){
         max_title_width = max(max_title_width, (double)fm.horizontalAdvance(dendrogram_titles.back().title));
     }
 
-    x_min_d = 1e9;
+    x_min_d = INFINITY;
     x_max_d = 0;
-    y_min_d = 1e9;
+    y_min_d = INFINITY;
     y_max_d = 0;
 
     for (int i = 0; i < (int)lipid_space->dendrogram_points.size(); i += 4){
@@ -632,7 +632,7 @@ void Dendrogram::update_bounds(bool complete){
 
 
         if (top_line){
-            QPointF max_vals(1e9, -1e9);
+            QPointF max_vals(INFINITY, -INFINITY);
             if (dendrogram_y_factor != tmp_factor){
                 top_line->update_height_factor(dendrogram_y_factor / tmp_factor, &max_vals);
             }
@@ -708,10 +708,10 @@ void PointSet::loadPoints(){
     points.clear();
     labels.clear();
 
-    double x_min = 1e100;
-    double x_max = -1e100;
-    double y_min = 1e100;
-    double y_max = -1e100;
+    double x_min = INFINITY;
+    double x_max = -INFINITY;
+    double y_min = INFINITY;
+    double y_max = -INFINITY;
 
     // we need at least three lipids to span a lipid space
     if (view->lipid_space->global_lipidome->lipids.size() <= 2) return;
@@ -723,20 +723,18 @@ void PointSet::loadPoints(){
 
         double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
         double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
-        //double intens = GlobalData::showQuant ? log(exp(POINT_BASE_SIZE) + lipidome->visualization_intensities[rr]) : POINT_BASE_SIZE;
         double intens = GlobalData::showQuant ? lipidome->visualization_intensities[rr] : POINT_BASE_SIZE;
         double intens_boundery = intens * 0.5;
 
-        x_min = min(x_min, xval - intens_boundery);
-        x_max = max(x_max, xval + intens_boundery);
-        y_min = min(y_min, yval - intens_boundery);
-        y_max = max(y_max, yval + intens_boundery);
+        x_min = __min(x_min, xval - intens_boundery);
+        x_max = __max(x_max, xval + intens_boundery);
+        y_min = __min(y_min, yval - intens_boundery);
+        y_max = __max(y_max, yval + intens_boundery);
 
         points.push_back(PCPoint());
         PCPoint &pc_point = points.back();
         pc_point.point = QPointF(xval, yval);
         pc_point.normalized_intensity = lipidome->normalized_intensities[r];
-        //pc_point.normalized_intensity = lipidome->visualization_intensities[r];
         pc_point.intensity = intens;
         pc_point.color = GlobalData::colorMap[lipidome->classes[r]];
         pc_point.label = translations[lipidome->species[r]].c_str();

@@ -28,8 +28,8 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     xlabel = new QGraphicsTextItem("");
     ylabel = new QGraphicsTextItem("");
 
-    xrange = QPointF(1e100, -1e100);
-    yrange = QPointF(1e100, -1e100);
+    xrange = QPointF(INFINITY, -INFINITY);
+    yrange = QPointF(INFINITY, -INFINITY);
 
     log_x_axis = false;
     log_y_axis = false;
@@ -185,8 +185,8 @@ void Chart::clear(){
     xlabel->setPlainText("");
     ylabel->setPlainText("");
 
-    xrange = QPointF(1e100, -1e100);
-    yrange = QPointF(1e100, -1e100);
+    xrange = QPointF(INFINITY, -INFINITY);
+    yrange = QPointF(INFINITY, -INFINITY);
     log_x_axis = false;
     log_y_axis = false;
 

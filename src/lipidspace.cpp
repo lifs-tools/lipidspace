@@ -15,9 +15,9 @@ void LipidSpace::create_dendrogram(){
         double min_depth = INFINITY;
 
         for (auto node : nodes){
-            if (min_node == 0 || min_node->min_distance.first > node->min_distance.first || (min_node->min_distance.first == node->min_distance.first && (min_depth == INFINITY || (1 + max(node->depth, node->min_distance.second->depth)) < min_depth))){
+            if (min_node == 0 || min_node->min_distance.first > node->min_distance.first || (min_node->min_distance.first == node->min_distance.first && (min_depth == INFINITY || (1 + __max(node->depth, node->min_distance.second->depth)) < min_depth))){
                 min_node = node;
-                min_depth = 1 + max(node->depth, node->min_distance.second->depth);
+                min_depth = 1 + __max(node->depth, node->min_distance.second->depth);
             }
         }
 
@@ -1050,58 +1050,74 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
 
 
 
-// Efficient and Accurate Hausdorff Distance Computation Based on Diffusion Search
+// An efficient computational algorithm for Hausdorff distance based on points-ruling-out and systematic random sampling
+// Jegoon Ryu, Sei-ichiro Kamata
+// DOI: 10.1016/j.patcog.2021.107857
 double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
     double cmax = 0;
     const int rows = m1.rows;
-    double isp = m2.cols >> 1;
 
-    const double* m1col = m1.data();
-    for (int x = 0; x < m1.cols; ++x){
+    Array U(m1.cols, INFINITY);
+    Array V(m2.cols, INFINITY);
+
+
+    int delta = max(1, m2.cols >> 3);
+    int osp = rand() % delta;
+    double isp = m1.cols >> 1;
+    for (int x = osp; x < m2.cols; x += delta){
+        double cmin = INFINITY;
+        double dist1 = INFINITY;
+        double dist2 = INFINITY;
+        const double* m2col = m2.data() + (x * rows);
+
+        for (int y = isp - 1, z = isp; y >= 0 || z < m1.cols; y--, z++){
+            if (y >= 0){
+                const double* m1col = m1.data() + (y * rows);
+                dist1 = compute_l2_norm(m1col, m2col, rows);
+                if (dist1 < U[y]) U[y] = dist1;
+            }
+
+            if (z < m2.cols) {
+                const double* m1col = m1.data() + (z * rows);
+                dist2 = compute_l2_norm(m1col, m2col, rows);
+                if (dist2 < U[z]) U[z] = dist2;
+            }
+            double dist = __min(dist1, dist2);
+            if (dist < V[x]) V[x] = dist;
+            cmin = __min(cmin, dist);
+
+            if (cmin <= cmax){
+                isp = dist1 < dist2 ? y : z;
+                break;
+            }
+        }
+        if (cmin > cmax) cmax = cmin;
+    }
+
+
+    Indexes Ai;
+    for (uint i = 0; i < U.size(); ++i){
+        if (U[i] > cmax) Ai.push_back(i);
+    }
+
+    isp = m2.cols >> 1;
+    for (int x : Ai){
         double cmin = INFINITY;
         double dist1 = INFINITY;
         double dist2 = INFINITY;
 
+        const double* m1col = m1.data() + (x * rows);
         for (int y = isp - 1, z = isp; y >= 0 || z < m2.cols; y--, z++){
-            if (y >= 0 && z < m2.cols){
-                const double* m2coly = m2.data() + (y * rows);
-                const double* m2colz = m2.data() + (z * rows);
-                __m256d disty = {0., 0., 0., 0.};
-                __m256d distz = {0., 0., 0., 0.};
-                for (int r = 0; r < rows; r += 4){
-                    __m256d val1 = _mm256_loadu_pd(&m1col[r]);
-                    __m256d valy = _mm256_loadu_pd(&m2coly[r]);
-                    __m256d valz = _mm256_loadu_pd(&m2colz[r]);
-                    __m256d suby = _mm256_sub_pd(val1, valy);
-                    __m256d subz = _mm256_sub_pd(val1, valz);
-                    disty = _mm256_fmadd_pd(suby, suby, disty);
-                    distz = _mm256_fmadd_pd(subz, subz, distz);
-                }
-                dist1 = disty[0] + disty[1] + disty[2] + disty[3];
-                dist2 = distz[0] + distz[1] + distz[2] + distz[3];
-            }
-            else if (y >= 0){
+            if (y >= 0){
                 const double* m2col = m2.data() + (y * rows);
-                __m256d dist = {0., 0., 0., 0.};
-                for (int r = 0; r < rows; r += 4){
-                    __m256d val1 = _mm256_loadu_pd(&m1col[r]);
-                    __m256d val2 = _mm256_loadu_pd(&m2col[r]);
-                    __m256d sub = _mm256_sub_pd(val1, val2);
-                    dist = _mm256_fmadd_pd(sub, sub, dist);
-                }
-                dist1 = dist[0] + dist[1] + dist[2] + dist[3];
+                dist1 = compute_l2_norm(m1col, m2col, rows);
+                if (dist1 < V[y]) V[y] = dist1;
             }
 
-            else {
+            if (z < m2.cols) {
                 const double* m2col = m2.data() + (z * rows);
-                __m256d dist = {0., 0., 0., 0.};
-                for (int r = 0; r < rows; r += 4){
-                    __m256d val1 = _mm256_loadu_pd(&m1col[r]);
-                    __m256d val2 = _mm256_loadu_pd(&m2col[r]);
-                    __m256d sub = _mm256_sub_pd(val1, val2);
-                    dist = _mm256_fmadd_pd(sub, sub, dist);
-                }
-                dist2 = dist[0] + dist[1] + dist[2] + dist[3];
+                dist2 = compute_l2_norm(m1col, m2col, rows);
+                if (dist2 < V[z]) V[z] = dist2;
             }
 
             cmin = __min(__min(dist1, dist2), cmin);
@@ -1111,8 +1127,41 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
             }
         }
         cmax = __max(cmax, cmin);
-        m1col += rows;
     }
+
+
+    Indexes Bi;
+    for (uint i = 0; i < V.size(); ++i){
+        if (V[i] > cmax) Bi.push_back(i);
+    }
+
+    isp = m1.cols >> 1;
+    for (int x = 0; x < m2.cols; ++x){
+        double cmin = INFINITY;
+        double dist1 = INFINITY;
+        double dist2 = INFINITY;
+
+        const double* m2col = m2.data() + (x * rows);
+        for (int y = isp - 1, z = isp; y >= 0 || z < m1.cols; y--, z++){
+            if (y >= 0){
+                const double* m1col = m1.data() + (y * rows);
+                dist1 = compute_l2_norm(m1col, m2col, rows);
+            }
+
+            if (z < m2.cols) {
+                const double* m1col = m1.data() + (z * rows);
+                dist2 = compute_l2_norm(m1col, m2col, rows);
+            }
+
+            cmin = __min(__min(dist1, dist2), cmin);
+            if (cmin <= cmax || cmin == 0){
+                isp = dist1 < dist2 ? y : z;
+                break;
+            }
+        }
+        cmax = __max(cmax, cmin);
+    }
+
     return cmax;
 }
 
@@ -1160,9 +1209,7 @@ void LipidSpace::compute_hausdorff_matrix(){
         int i = (int)(pairs[ii] >> 32);
         int j = (int)(pairs[ii] & MASK32);
 
-        double hd1 = compute_hausdorff_distance(*matrixes[i], *matrixes[j]);
-        double hd2 = compute_hausdorff_distance(*matrixes[j], *matrixes[i]);
-        double hd = sqrt(max(hd1, hd2));
+        double hd = sqrt(compute_hausdorff_distance(*matrixes[i], *matrixes[j]));
         hausdorff_distances(i, j) = hd;
         hausdorff_distances(j, i) = hd;
     }
