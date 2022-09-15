@@ -162,7 +162,7 @@ ch: 'Cholesterol';
 chec: che | che headgroup_separator | che_fa;
 che: fa headgroup_separator hg_che;
 che_fa: hg_che round_open_bracket fa round_close_bracket;
-hg_che: 'Cholesteryl ester' | 'Cholesterol ester' | 'CE';
+hg_che: 'Cholesteryl ester' | 'Cholesterol ester' | 'CE' | 'ChE';
 
 
 /* mediator lipids */
@@ -181,7 +181,7 @@ mediator_oxo: 'Oxo' | 'oxo';
 
 /* generic rules */
 fa: fa_unmod | fa_unmod fa_mod | fa_unmod fa_mod_separator fa_mod;
-fa_unmod: round_open_bracket ether fa_pure round_close_bracket | round_open_bracket fa_pure round_close_bracket | ether fa_pure | fa_pure;
+fa_unmod: round_open_bracket fa_pure ether_suffix round_close_bracket | round_open_bracket ether_prefix fa_pure round_close_bracket | round_open_bracket fa_pure round_close_bracket | ether_prefix fa_pure | fa_pure ether_suffix | fa_pure;
 fa_mod: round_open_bracket modification round_close_bracket;
 modification: modification ',' modification | single_mod;
 single_mod : isomeric_mod | isomeric_mod square_open_bracket stereo square_close_bracket | structural_mod | structural_mod square_open_bracket stereo square_close_bracket;
@@ -190,13 +190,15 @@ structural_mod : mod_text | mod_text mod_num;
 mod_pos : number;
 mod_num : number;
 mod_text: 'OH' | 'Ke' | 'OOH' | 'My' | 'Me' | 'Br' | 'CHO' | 'COOH' | 'Cp' | 'Ep' | 'KE' | 'NH';
-ether : 'P-' | 'O-';
+ether_prefix : 'P-' | 'O-';
+ether_suffix : 'p' | 'e';
 stereo : 'R' | 'S';
 fa_pure: carbon carbon_db_separator db | carbon carbon_db_separator db db_hydroxyl_separator hydroxyl;
+lcb_pure_fa : lcb_fa;
 lcb_fa: lcb_fa_unmod | lcb_fa_unmod lcb_fa_mod;
 lcb_fa_unmod: carbon carbon_db_separator db;
 lcb_fa_mod: round_open_bracket modification round_close_bracket;
-lcb: hydroxyl_lcb lcb_fa | lcb_fa;
+lcb: hydroxyl_lcb lcb_fa | lcb_pure_fa;
 carbon: number;
 db : db_count | db_count db_positions;
 db_count : number;
