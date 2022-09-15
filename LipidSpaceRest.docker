@@ -39,7 +39,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 VOLUME /tmp
 COPY . /lipidspace 
 WORKDIR /lipidspace/cppgoslin
-RUN make clean && make -j$((`nproc`+1)) install
+RUN make clean && make -j$((`nproc`+1)) 
+RUN make install
 WORKDIR /lipidspace
 RUN qmake LipidSpaceRest.pro
 RUN make clean && make -j$((`nproc`+1))
