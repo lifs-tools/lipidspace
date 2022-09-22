@@ -1827,9 +1827,14 @@ void LipidSpaceGUI::copy_to_clipboard(){
         for (int c = left_column; c <= right_column; ++c){
 
             QVariant v = raw_data_model->getData(r, c);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            if (v.typeId() == QMetaType::Double) QTextStream(&str) << QString::number(v.toDouble());
+            else if (v.typeId() == QMetaType::QString) QTextStream(&str) << v.toString();
+#else
             if (v.type() == QVariant::Double) QTextStream(&str) << QString::number(v.toDouble());
             else if (v.type() == QVariant::String) QTextStream(&str) << v.toString();
-
+#endif
             if (c < right_column) QTextStream(&str) << "\t";
         }
         QTextStream(&str) << "\n";
@@ -1981,7 +1986,11 @@ void LipidSpaceGUI::export_table(){
         for (int col = 0; col < cols; ++col){
             for (int row = 0; row < rows; ++row){
                 QVariant variant = raw_data_model->getData(row, col);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                if (variant.typeId() == QMetaType::Double){
+#else
                 if (variant.type() == QVariant::Double){
+#endif
                     wks_data.cell(2 + row, 2 + col).value() = variant.toDouble();
                 }
                 else {

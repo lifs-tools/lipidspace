@@ -262,14 +262,19 @@ SignalCombobox::SignalCombobox(QWidget *parent, int _row) : QComboBox(parent) {
     connect(this, (void (SignalCombobox::*)(int))&SignalCombobox::currentIndexChanged, this, &SignalCombobox::changedIndex);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void SignalCombobox::enterEvent(QEnterEvent *event) {
+#else
 void SignalCombobox::enterEvent(QEvent *event) {
+#endif
+	
     QComboBox::enterEvent(event);
     QToolTip::showText(QCursor::pos(), tool_tip);
 }
 
 
 void SignalCombobox::leaveEvent(QEvent *event){
-    QComboBox::enterEvent(event);
+    QComboBox::leaveEvent(event);
     QToolTip::hideText();
 }
 

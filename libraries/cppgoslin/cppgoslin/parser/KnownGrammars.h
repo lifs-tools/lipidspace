@@ -88,9 +88,8 @@ med_hg_triple : 'WD'; \n\
  \n\
  \n\
 /* fatty acyl chain */ \n\
-lcb : fatty_acyl_chain; \n\
-fatty_acyl_chain : fatty_acyl | fatty_acyl; \n\
-fatty_acyl : fa_pure | ether fa_pure | fatty_acyl_linkage | fatty_alkyl_linkage; \n\
+lcb : fa_pure | ether fa_pure | fatty_acyl_linkage | fatty_alkyl_linkage; \n\
+fatty_acyl_chain : fa_pure | ether fa_pure | fatty_acyl_linkage | fatty_alkyl_linkage; \n\
 fatty_alkyl_linkage : fatty_linkage_number fatty_acyl_linkage_sign ROB fatty_acyl_chain RCB | fatty_acyl_linkage_sign ROB fatty_acyl_chain RCB; \n\
 fatty_acyl_linkage : fatty_linkage_number fatty_acyl_linkage_sign ROB med RCB | fatty_acyl_linkage_sign ROB med RCB; \n\
 hydrocarbon_chain : hydrocarbon_number ROB fatty_acyl_chain RCB | ROB fatty_acyl_chain RCB; \n\
@@ -100,7 +99,8 @@ hydrocarbon_number : number; \n\
 fa_pure : fa_pure_structure | fa_pure_structure sn; \n\
 sn : ROB 'sn-' sn_pos RCB; \n\
 sn_pos : number; \n\
-fa_pure_structure : carbon carbon_db_separator db  | carbon carbon_db_separator db db_funcgroup_separator func_group | carbon carbon_db_separator db stereo_fa | carbon carbon_db_separator db stereo_fa db_funcgroup_separator func_group; \n\
+fa_pure_structure : fa_db_only | carbon carbon_db_separator db db_funcgroup_separator func_group | carbon carbon_db_separator db stereo_fa | carbon carbon_db_separator db stereo_fa db_funcgroup_separator func_group; \n\
+fa_db_only : carbon carbon_db_separator db; \n\
 ether : ether_num ether_type | ether_type; \n\
 ether_num : 'm' | 'd' | 't' | 'e'; \n\
 ether_type: ether_types plasmalogen_separator | ether_types plasmalogen_separator; \n\
@@ -228,8 +228,8 @@ carbohydrate_structural : carbohydrate; \n\
 carbohydrate_isomeric : carbohydrate carbohydrate_separator; \n\
 sl_hg_double_name : 'SM' | 'Cer' | 'CerP' | acer_hg | 'HexCer' | 'GlcCer' | 'GalCer' | 'Hex2Cer' | 'LacCer' | 'SHexCer' | 'IPC' | 'PI-Cer' | 'EPC' | 'PE-Cer' | 'GIPC' | 'MIPC' | 'M(IP)2C' | 'Hex3Cer' | 'S' ROB '3' APOSTROPH RCB 'HexCer' | 'S' ROB '3' APOSTROPH RCB 'GalCer'; \n\
 acer_hg : acer_hg_pure ROB med RCB; \n\
+acer_species : acer_hg_pure | acer_hg_pure '(FA)'; \n\
 acer_hg_pure : 'ACer'; \n\
-acer_species : 'ACer(FA)'; \n\
 /* \n\
 acer_hg : acer_hg_pure | acer_med '-' acer_hg_pure; \n\
 acer_med : med; \n\
@@ -410,17 +410,27 @@ plasmalogen : 'O' | 'o' | 'P' | 'p'; \n\
  \n\
  \n\
 /* sphingolipid rules (21) */ \n\
-sl : lsl | dsl; \n\
+sl : lsl | dsl | so_lsl; \n\
 lsl : hg_lslc headgroup_separator lcb; \n\
+so_lsl : hg_so_lslc headgroup_separator fa; \n\
 dsl : hg_dslc headgroup_separator sl_species | hg_dslc headgroup_separator sl_subspecies; \n\
  \n\
 sl_species : lcb; \n\
 sl_subspecies : lcb sorted_fa_separator fa; \n\
  \n\
 hg_lslc : hg_lsl | hg_lsl heavy_hg; \n\
-hg_lsl : 'LCB' | 'LCBP' | 'LHexCer' | 'LSM' | 'LIPC' | 'So' | 'Sa' | 'SPH' | 'Sph' | 'LCB' | 'S1P' | 'SPH-P' | 'SIP' | 'Sa1P'; \n\
+hg_lsl : 'LCB' | 'LCBP' | 'LHexCer' | 'LSM' | 'LIPC' | 'So' | 'Sa' | 'SPH' | 'Sph' | 'LCB' | 'S1P' | 'SPH-P' | 'SIP' | 'Sa1P' | 'SPA1P' | 'SPA'; \n\
+hg_so_lslc : hg_so_lsl | hg_so_lsl heavy_hg; \n\
+hg_so_lsl : 'So' | 'Sa' | 'Sa1P' | 'S1P'; \n\
 hg_dslc : hg_dsl | hg_dsl heavy_hg; \n\
-hg_dsl : 'Cer' | 'CerP' | 'EPC' | 'GB4' | 'GD3' | 'GB3' | 'GM1' | 'GM3' | 'GM4' | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'MIP2C' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SM' | 'FMC-5' | 'FMC-6' | 'CerPE' | 'PE-Cer'; \n\
+hg_dsl : 'Cer' | 'CerP' | 'EPC' | 'HexCer' | 'Hex2Cer' | 'Hex3Cer' | 'IPC' | 'MIP2C' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SM' | 'FMC-5' | 'FMC-6' | 'CerPE' | 'PE-Cer' | \n\
+ 'GA1' | 'Ga1' | 'GA2' | 'Ga2' | \n\
+ 'GB3' | 'Gb3' | 'GB4' | 'Gb4' | \n\
+ 'GD1' | 'Gd1' | 'GD2' | 'Gd2' | 'GD3' | 'Gd3' | \n\
+ 'GM1' | 'Gm1' | 'GM2' | 'Gm2' | 'GM3' | 'Gm3' | 'GM4' | 'Gm4' | \n\
+ 'GP1' | 'Gp1' | \n\
+ 'GQ1' | 'Gq1' | \n\
+ 'GT1' | 'Gt1' | 'GT2' | 'Gt2' | 'GT3' | 'Gt3'; \n\
  \n\
  \n\
  \n\
@@ -435,7 +445,7 @@ stes : hg_stcs headgroup_separator fa; \n\
 hg_stc : hg_ste | hg_ste heavy_hg; \n\
 hg_ste : 'SE 27:1' | 'SE 27:2' | 'SE 28:3' | 'SE 30:2' | 'SE 29:2' | 'SE 28:2'; \n\
 hg_stcs : hg_stes | hg_stes heavy_hg; \n\
-hg_stes : 'ChE' | 'CE' | 'ChoE'; \n\
+hg_stes : 'ChE' | 'CE' | 'ChoE' | 'CholE'; \n\
  \n\
  \n\
 /* mediator lipids (1 class) */ \n\
@@ -450,8 +460,8 @@ mediator_tetranor : 'tetranor-'; \n\
 mediator_functional_group_clear: mediator_full_function | mediator_function_unknown_pos; \n\
 mediator_function_unknown_pos : mediator_functions; \n\
 mediator_functions : mediator_mono_functions | mediator_di_functions; \n\
-mediator_mono_functions: 'H' | 'Oxo'; \n\
-mediator_di_functions: 'E' | 'Ep' | 'DH' | 'DiH'; \n\
+mediator_mono_functions: 'H' | 'Oxo' | 'Hp'; \n\
+mediator_di_functions: 'E' | 'Ep' | 'DH' | 'DiH' | 'diH'; \n\
 mediator_mono_pos: mediator_position; \n\
 mediator_di_pos: mediator_position ',' mediator_position | mediator_position '_' mediator_position | mediator_position '(' mediator_position ')'; \n\
 mediator_full_function : mediator_mono_pos '-' mediator_mono_functions | mediator_di_pos '-' mediator_di_functions; \n\
@@ -709,7 +719,7 @@ ch: 'Cholesterol'; \n\
 chec: che | che headgroup_separator | che_fa; \n\
 che: fa headgroup_separator hg_che; \n\
 che_fa: hg_che round_open_bracket fa round_close_bracket; \n\
-hg_che: 'Cholesteryl ester' | 'Cholesterol ester' | 'CE'; \n\
+hg_che: 'Cholesteryl ester' | 'Cholesterol ester' | 'CE' | 'ChE'; \n\
  \n\
  \n\
 /* mediator lipids */ \n\
@@ -728,7 +738,7 @@ mediator_oxo: 'Oxo' | 'oxo'; \n\
  \n\
 /* generic rules */ \n\
 fa: fa_unmod | fa_unmod fa_mod | fa_unmod fa_mod_separator fa_mod; \n\
-fa_unmod: round_open_bracket ether fa_pure round_close_bracket | round_open_bracket fa_pure round_close_bracket | ether fa_pure | fa_pure; \n\
+fa_unmod: round_open_bracket fa_pure ether_suffix round_close_bracket | round_open_bracket ether_prefix fa_pure round_close_bracket | round_open_bracket fa_pure round_close_bracket | ether_prefix fa_pure | fa_pure ether_suffix | fa_pure; \n\
 fa_mod: round_open_bracket modification round_close_bracket; \n\
 modification: modification ',' modification | single_mod; \n\
 single_mod : isomeric_mod | isomeric_mod square_open_bracket stereo square_close_bracket | structural_mod | structural_mod square_open_bracket stereo square_close_bracket; \n\
@@ -737,13 +747,15 @@ structural_mod : mod_text | mod_text mod_num; \n\
 mod_pos : number; \n\
 mod_num : number; \n\
 mod_text: 'OH' | 'Ke' | 'OOH' | 'My' | 'Me' | 'Br' | 'CHO' | 'COOH' | 'Cp' | 'Ep' | 'KE' | 'NH'; \n\
-ether : 'P-' | 'O-'; \n\
+ether_prefix : 'P-' | 'O-'; \n\
+ether_suffix : 'p' | 'e'; \n\
 stereo : 'R' | 'S'; \n\
 fa_pure: carbon carbon_db_separator db | carbon carbon_db_separator db db_hydroxyl_separator hydroxyl; \n\
+lcb_pure_fa : lcb_fa; \n\
 lcb_fa: lcb_fa_unmod | lcb_fa_unmod lcb_fa_mod; \n\
 lcb_fa_unmod: carbon carbon_db_separator db; \n\
 lcb_fa_mod: round_open_bracket modification round_close_bracket; \n\
-lcb: hydroxyl_lcb lcb_fa | lcb_fa; \n\
+lcb: hydroxyl_lcb lcb_fa | lcb_pure_fa; \n\
 carbon: number; \n\
 db : db_count | db_count db_positions; \n\
 db_count : number; \n\

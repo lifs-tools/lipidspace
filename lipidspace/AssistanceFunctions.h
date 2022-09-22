@@ -41,6 +41,7 @@
 #define FILE_STUDY_VARIABLE_NAME "Origin"
 #define NO_VALUE_CHAR "Ø"
 #define MASK32 4294967295ull
+#define ulong unsigned long long
 
 using namespace OpenXLSX;
 using namespace std;
@@ -178,7 +179,11 @@ public:
     SignalCombobox(QWidget *parent = nullptr, int _row = -1);
 
 protected:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void enterEvent(QEnterEvent *event) override;
+#else
     void enterEvent(QEvent *event) override;
+#endif
     void leaveEvent(QEvent *event) override;
 
 signals:
