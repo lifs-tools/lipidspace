@@ -140,8 +140,16 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
 
-    main_widgets = {ui->actionLoad_list_s, ui->actionLoad_table, ui->actionQuit, ui->actionRemove_all_lipidomes, ui->actionSet_transparency, ui->actionAutomatically, ui->action2_columns, ui->action3_columns, ui->action4_columns, ui->action5_columns, ui->actionShow_global_lipidome, ui->actionShow_study_lipidomes, ui->action1_column, ui->action6_columns, ui->actionAbout, ui->actionLog_messages, ui->actionShow_quantitative_information, ui->actionIgnoring_lipid_sn_positions, ui->actionManage_lipidomes, ui->actionIgnore_quantitative_information, ui->actionUnbound_lipid_distance_metric, ui->actionExport_Results, ui->actionSet_number_of_principal_components, ui->actionSelect_principal_components, ui->actionImport_data_table, ui->actionImport_pivot_table, ui->actionSingle_linkage_clustering, ui->actionComplete_linkage_clustering, ui->actionAverage_linkage_clustering, ui->actionImport_mzTabM, ui->actionTranslate, ui->itemsTabWidget, ui->speciesComboBox, ui->speciesList, ui->classComboBox, ui->classList, ui->categoryComboBox, ui->categoryList, ui->treeWidget, ui->sampleComboBox, ui->sampleList, ui->normalizationComboBox, ui->applyChangesPushButton, ui->homeGraphicsView->firstTutorialPushButton, ui->homeGraphicsView->secondTutorialPushButton, ui->homeGraphicsView->thirdTutorialPushButton, ui->dendrogramView, ui->studyVariableComboBox, ui->pieTreeSpinBox, ui->dendrogramHeightSpinBox, ui->pieSizeSpinBox, ui->startAnalysisPushButton, ui->statisticsBoxPlot, ui->statisticsHistogram, ui->studyVariableComboBoxStat, ui->tickSizeSpinBox, ui->legendSizeSpinBox, ui->barNumberSpinBox, ui->menubar, ui->menuLipidSpace, ui->menuAnalysis, ui->menuClustering_strategy, ui->menuView, ui->menuTile_layout, ui->menuHelp, ui->viewsTabWidget, ui_it->tabWidget, ui_it->label_15, ui_it->sampleListWidgetRow, ui_it->okButtonRow, ui_it->cancelButtonRow, ui_it->ignoreListWidgetRow, ui_it->lipidListWidgetRow, ui_it->sampleListWidgetCol, ui_it->cancelButtonCol, ui_it->lipidListWidgetCol, ui_it->ignoreListWidgetCol, ui_it->numericalStudyVariableListWidgetCol, ui_it->nominalStudyVariableListWidgetCol, ui_it->flatTab, ui_it->lipidListWidgetFlat, ui_it->ignoreListWidgetFlat, ui_it->quantListWidgetFlat, ui_it->okButtonFlat, ui_it->numericalStudyVariableListWidgetFlat, ui_it->cancelButtonFlat, ui_it->sampleListWidgetFlat, ui_it->nominalStudyVariableListWidgetFlat, ui_it->tableWidget, ui_it->checkBoxMappingFlat, ui_it->checkBoxMappingCol};
+    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_study_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionTranslate, false}, {ui->itemsTabWidget, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsHistogram, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui_it->checkBoxMappingCol, false}};
 
+    for (auto &kv : main_widgets){
+        if (instanceof(kv.first, QWidget)){
+            kv.second = ((QWidget*)kv.first)->isEnabled();
+        }
+        else if (instanceof(kv.first, QAction)){
+            kv.second = ((QAction*)kv.first)->isEnabled();
+        }
+    }
 
     // tutorial starts
     connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_first_tutorial);
@@ -171,33 +179,36 @@ Tutorial::~Tutorial() {
 
 
 void Tutorial::x_clicked(){
+    Logging::write_log("X clicked");
     if (tutorialType == NoTutorial || (QMessageBox::question(this, "Quit tutorial", "Do you want to quit the tutorial?") == QMessageBox::Yes)){
-        close_tutorial(0);
+        close_tutorial(QDialog::Rejected);
     }
 }
 
 
 
 void Tutorial::close_directly_tutorial(){
-    close_tutorial(0);
+    Logging::write_log("direct close");
+    close_tutorial(QDialog::Rejected);
 }
 
 
 
 void Tutorial::close_tutorial(int state){
-    if (state) return;
+    Logging::write_log("close with state: " + std::to_string(state));
+    if (state == QDialog::Accepted) return;
 
     setVisible(false);
     hide_arrows();
     tutorialType = NoTutorial;
     step = -1;
 
-    for (auto obj : main_widgets){
-        if (instanceof(obj, QWidget)){
-            ((QWidget*)obj)->setEnabled(true);
+    for (auto kv : main_widgets){
+        if (instanceof(kv.first, QWidget)){
+            ((QWidget*)kv.first)->setEnabled(kv.second);
         }
-        else if (instanceof(obj, QAction)){
-            ((QAction*)obj)->setEnabled(true);
+        else if (instanceof(kv.first, QAction)){
+            ((QAction*)kv.first)->setEnabled(kv.second);
         }
     }
 }
@@ -291,6 +302,7 @@ void Tutorial::start_second_tutorial(){
 
 void Tutorial::continue_tutorial(){
     step++;
+    Logging::write_log("going to step: " + std::to_string(step));
     switch(tutorialType){
         case FirstTutorial: first_tutorial_steps(); break;
         case SecondTutorial: second_tutorial_steps(); break;
@@ -302,12 +314,12 @@ void Tutorial::continue_tutorial(){
 void Tutorial::disable(){
     continuePushButton->setEnabled(false);
     hide_arrows();
-    for (auto obj : main_widgets){
-        if (instanceof(obj, QWidget)){
-            ((QWidget*)obj)->setEnabled(false);
+    for (auto kv : main_widgets){
+        if (instanceof(kv.first, QWidget)){
+            ((QWidget*)kv.first)->setEnabled(false);
         }
-        else if (instanceof(obj, QAction)){
-            ((QAction*)obj)->setEnabled(false);
+        else if (instanceof(kv.first, QAction)){
+            ((QAction*)kv.first)->setEnabled(false);
         }
     }
 }
@@ -321,7 +333,8 @@ void Tutorial::hide_arrows(){
 
 
 void Tutorial::action_performed(){
-    if (step < 0 || tutorialType == NoTutorial || !isVisible()) return;
+    Logging::write_log("enter action - step: " + std::to_string(step) + ", tutorial type: " + std::to_string(tutorialType));
+    if (step < 0 || tutorialType == NoTutorial) return;
 
     switch(tutorialType){
         case FirstTutorial: {
@@ -363,7 +376,8 @@ void Tutorial::action_performed(){
 
 
 void Tutorial::tab_changed(int index){
-    if (step < 0 || tutorialType == NoTutorial || !isVisible()) return;
+    Logging::write_log("tab changed - step: " + std::to_string(step) + ", tutorial type: " + std::to_string(tutorialType));
+    if (step < 0 || tutorialType == NoTutorial) return;
 
     switch(tutorialType){
         case FirstTutorial: {
@@ -394,9 +408,9 @@ void Tutorial::tab_changed(int index){
 }
 
 
-//void Tutorial::item_changed(QListWidgetItem *){
 void Tutorial::item_changed(const QModelIndex &, int, int){
-    if (step < 0 || tutorialType == NoTutorial || !isVisible()) return;
+    Logging::write_log("item changed - step: " + std::to_string(step) + ", tutorial type: " + std::to_string(tutorialType));
+    if (step < 0 || tutorialType == NoTutorial) return;
 
     switch(tutorialType){
         case FirstTutorial: {
@@ -506,12 +520,6 @@ void Tutorial::first_tutorial_steps(){
 
 
         case FEnteredImport:
-            //TODO: delete
-            /*
-            lipidSpaceGUI->import_table.show();
-            lipidSpaceGUI->import_table.ui->tabWidget->setCurrentIndex(1);
-            */
-
             move(20, 20, &(lipidSpaceGUI->import_table));
             titleLabel->setText("Import Dialog");
             informationLabel->setText("Here we see the import dialog for tables. Tables can be structured in multiple ways. The three most common structures are lipid row-based, lipid column-based and flat-based.");
@@ -703,7 +711,6 @@ void Tutorial::first_tutorial_steps(){
 
 
         case FFinish:
-            disable();
             move(20, 20, lipidSpaceGUI->ui->centralwidget);
             titleLabel->setText("First Tutorial Completed");
             continuePushButton->setEnabled(true);

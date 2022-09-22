@@ -235,9 +235,16 @@ void Statistics::updateBarPlot(){
         return;
     }
 
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    SecondaryType secondary_type = NoSecondary;
+    if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
+        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+    }
+
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() < 1){
+    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary){
         chart->setVisible(false);
         return;
     }
@@ -251,11 +258,7 @@ void Statistics::updateBarPlot(){
     int nom_counter = 0;
     vector<string> nominal_values;
 
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
-    SecondaryType secondary_type = NoSecondary;
-    if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
-        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
-    }
+
 
     int valid_lipidomes = 0;
 
@@ -403,9 +406,15 @@ void Statistics::updateBarPlot(){
         }
 
     }
+
+    //vector<QColor> *ccc = new vector<QColor>{QColor("#a7a5a6"), QColor("#cf5eb6"), QColor("#39ae3e")};
+
     Barplot *barplot = new Barplot(chart, log_scale, show_data);
     barplot->add(barplot_data, categories, lipid_names, colors);
+    //barplot->add(barplot_data, categories, lipid_names, ccc);
     chart->add(barplot);
+    //chart->setYLabel("Amount [pmol/mg]");
+
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
     connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);
 }
@@ -508,9 +517,13 @@ void Statistics::updateHistogram(){
         colors.push_back(color);
     }
 
+    //vector<QColor> *ccc = new vector<QColor>{QColor("#a7a5a6"), QColor("#cf5eb6"), QColor("#39ae3e")};
+
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
     histogramplot->add(series, categories, &colors, num_bars);
+    //histogramplot->add(series, categories, ccc, num_bars);
     chart->add(histogramplot);
+    //chart->setYLabel("Counts [subjects]");
 
     double accuracy = compute_accuracy(series);
     stat_results.push_back({"accuracy", accuracy});
@@ -804,6 +817,7 @@ void Statistics::updateBoxPlot(){
         }
 
         Boxplot* boxplot = new Boxplot(chart, show_data);
+        //vector<QColor> ccc = {QColor("#a7a5a6"), QColor("#cf5eb6"), QColor("#39ae3e"), QColor("#39ae3e"), QColor("#39ae3e"), QColor("#39ae3e")};
         for (uint i = 0; i < nominal_values.size(); ++i){
             Array &single_series = series[i];
             QString category = QString(nominal_values[i].c_str()) + QString(" (%1)").arg(series[i].size());
@@ -811,8 +825,10 @@ void Statistics::updateBoxPlot(){
             QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : Qt::white;
 
             boxplot->add(single_series, category, color);
+            //boxplot->add(single_series, category, ccc[i]);
         }
         chart->add(boxplot);
+        //chart->setYLabel("Intensity [arb. unit]");
 
 
 

@@ -64,7 +64,7 @@ public:
     LipidSpaceGUI *lipidSpaceGUI;
     TutorialType tutorialType = NoTutorial;
     int step = -1;
-    vector<QObject*> main_widgets;
+    map<QObject*, bool> main_widgets;
 
     explicit Tutorial(LipidSpaceGUI *lipidSpaceGUI, QWidget *parent = 0);
     ~Tutorial();

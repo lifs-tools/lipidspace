@@ -20,9 +20,9 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     timer_id = -1;
 
-    tick_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"]);
-    label_font = QFont("Helvetica", GlobalData::gui_num_var["tick_size"], QFont::Bold);
-    title_legend_font = QFont("Helvetica", GlobalData::gui_num_var["legend_size"]);
+    tick_font = QFont("Calibri", GlobalData::gui_num_var["tick_size"]);
+    label_font = QFont("Calibri", GlobalData::gui_num_var["tick_size"], QFont::Bold);
+    title_legend_font = QFont("Calibri", GlobalData::gui_num_var["legend_size"]);
 
     title = new QGraphicsTextItem("");
     xlabel = new QGraphicsTextItem("");
