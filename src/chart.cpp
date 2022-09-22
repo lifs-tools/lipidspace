@@ -18,6 +18,11 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     setRenderHints(QPainter::Antialiasing);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    base = new QGraphicsRectItem();
+    base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
+    base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
+
     timer_id = -1;
 
     tick_font = QFont("Calibri", GlobalData::gui_num_var["tick_size"]);
@@ -46,8 +51,9 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
 
     setScene(&scene);
-    loaded = true;
+    scene.addItem(base);
 
+    loaded = true;
     animation = 0;
 }
 
@@ -61,6 +67,8 @@ void Chart::timerEvent(QTimerEvent *){
 void Chart::resizeEvent(QResizeEvent *event){
     update_chart();
     QGraphicsView::resizeEvent(event);
+    base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
+    base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
 }
 
 
@@ -216,6 +224,13 @@ void Chart::clear(){
     scene.addItem(xlabel);
     scene.addItem(ylabel);
 
+
+    base = new QGraphicsRectItem();
+    base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
+    base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
+    scene.addItem(base);
+
     update_chart();
 }
 
@@ -291,6 +306,9 @@ void Chart::add_category(QString category){
 
 void Chart::update_chart(){
     if (!loaded) return;
+
+    base->setPen(Qt::NoPen);
+    base->setBrush(Qt::NoBrush);
     scene.setSceneRect(0, 0, width(), height());
     setBackgroundBrush(QBrush());
 
@@ -371,8 +389,6 @@ void Chart::update_chart(){
     double max_x_tick_width = max(max_x_tick.boundingRect().width() / 2., 20.);
 
     chart_box_inner.setRect(chart_box.x() + max_tick_width, chart_box.y() + tick_rect.height() / 2, chart_box.width() - max_tick_width - max_x_tick_width, chart_box.height() - 1.5 * tick_rect.height());
-
-
 
 
 

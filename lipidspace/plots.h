@@ -243,7 +243,6 @@ public:
 class Scatterplot : public Chartplot {
 public:
     vector<ScPoint> points;
-    QGraphicsRectItem *base;
 
     Scatterplot(Chart *_chart);
     ~Scatterplot();
@@ -259,7 +258,7 @@ public:
 
 
 
-
+class Histogramplot;
 
 
 class HistogramBox {
@@ -270,18 +269,20 @@ public:
     QGraphicsRectItem *rect;
     QColor color;
 
-    HistogramBox(QGraphicsScene *scene, double _x, double _x_width, double _y, QColor _color = Qt::red, bool transparent = true);
+    HistogramBox(QGraphicsScene *scene, Histogramplot *histogram_plot, double _x, double _x_width, double _y, QColor _color = Qt::red, bool transparent = true);
 };
 
 class Histogramplot : public Chartplot {
 public:
     vector<HistogramBox> boxes;
+    QPointF borders;
 
     Histogramplot(Chart *_chart);
     ~Histogramplot();
     void add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors = 0, uint num_bars = 20);
     void update_chart();
     void clear();
+    void wheelEvent(QWheelEvent *event) override;
 };
 
 #endif /* PLOTS_H */

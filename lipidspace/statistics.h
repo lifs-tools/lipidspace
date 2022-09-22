@@ -43,11 +43,13 @@ public slots:
     void updateROCCurve();
     void updateBarPlot();
     void updateHistogram();
+    void updateSpeciesCV();
     void exportAsPdf();
     void exportData();
     void setLegendSize(int);
     void setTickSize(int);
-    void setBarNumber(int);
+    void setBarNumberHistogram(int);
+    void setBarNumberSpeciesCV(int);
     void setLogScaleBarPlot();
     void setShowDataBoxPlot();
     void setShowDataBarPlot();

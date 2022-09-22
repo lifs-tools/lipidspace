@@ -56,9 +56,16 @@ void Statistics::setTickSize(int font_size){
 
 
 
-void Statistics::setBarNumber(int bar_number){
+void Statistics::setBarNumberHistogram(int bar_number){
     GlobalData::gui_num_var["bar_number"] = bar_number;
     updateHistogram();
+}
+
+
+
+void Statistics::setBarNumberSpeciesCV(int bar_number){
+    GlobalData::gui_num_var["bar_number"] = bar_number;
+    updateSpeciesCV();
 }
 
 
@@ -420,14 +427,176 @@ void Statistics::updateBarPlot(){
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
 void Statistics::lipidEntered(string lipid_name){
     emit enterLipid(lipid_name);
 }
 
 
+
+
+
 void Statistics::lipidExited(){
     emit exitLipid();
 }
+
+
+
+
+
+
+
+
+
+
+void Statistics::updateSpeciesCV(){
+
+    chart->clear();
+    chart->setTitle("Lipid species - Coefficiants of Variation [%]");
+    chart->setVisible(true);
+
+    series_titles.clear();
+    series.clear();
+    flat_data.clear();
+    stat_results.clear();
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
+        return;
+    }
+
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    SecondaryType secondary_type = NoSecondary;
+    if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
+        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+    }
+
+    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+
+    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary){
+        chart->setVisible(false);
+        return;
+    }
+
+
+
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    int nom_counter = 0;
+    vector<string> nominal_values;
+    vector< map<LipidAdduct*, Array> > lipid_map;
+
+
+    if (is_nominal){
+        for (auto lipidome : lipid_space->selected_lipidomes){
+            if (lipidome->study_variables[target_variable].missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+
+            string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+            if (uncontains_val(nominal_target_values, nominal_value)){
+                nominal_target_values.insert({nominal_value, nom_counter++});
+                nominal_values.push_back(nominal_value);
+                lipid_map.push_back(map<LipidAdduct*, Array>());
+            }
+        }
+    }
+    else {
+        lipid_map.push_back(map<LipidAdduct*, Array>());
+        nom_counter = 1;
+    }
+
+
+
+    // set up lipid map for the several nominal values
+    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
+        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+
+        if (lipidome->study_variables[target_variable].missing) continue;
+        if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+
+        for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
+            int index = lipidome->selected_lipid_indexes[i];
+            int rr = 0;
+            if (is_nominal){
+                string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+                rr = nominal_target_values[nominal_value];
+            }
+
+            if (contains_val(lipid_map[rr], lipidome->lipids[index])){
+                lipid_map[rr].insert({lipidome->lipids[index], Array()});
+            }
+            lipid_map[rr][lipidome->lipids[index]].push_back(lipidome->normalized_intensities[index]);
+        }
+    }
+
+    series.resize(nom_counter);
+
+    vector<QString> categories;
+    vector<QColor> colors;
+    for (auto nominal_value : nominal_values){
+        categories.push_back(nominal_value.c_str());
+        series_titles.push_back(nominal_value);
+    }
+    if (is_nominal){
+        for (auto nominal_value : nominal_values){
+            string color_key = ((is_nominal || (secondary_type == NoSecondary)) ? target_variable : secondary_target_variable) + "_" + nominal_value;
+            colors.push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
+        }
+    }
+    else {
+        categories.push_back(QString("Selected lipids (%1)").arg(lipid_map[0].size()));
+        series_titles.push_back("Selected lipids (" + std::to_string(lipid_map[0].size()) + ")");
+        colors.push_back(QColor("#F6A611"));
+    }
+
+    double min_value = INFINITY;
+    double max_value = -INFINITY;
+    series.resize(nom_counter);
+    for (uint i = 0; i < lipid_map.size(); ++i){
+        auto lipid_cat_map = lipid_map[i];
+        for (auto kv : lipid_cat_map){
+            double value = kv.second.stdev() / kv.second.mean() * 100;
+            series[i].push_back(value);
+            min_value = __min(min_value, value);
+            max_value = __max(max_value, value);
+        }
+    }
+
+    if (min_value == INFINITY || max_value == -INFINITY || (max_value - min_value < 1e-20)) {
+        chart->setVisible(false);
+        return;
+    }
+
+    Histogramplot* histogramplot = new Histogramplot(chart);
+    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
+    histogramplot->add(series, categories, &colors, num_bars);
+    histogramplot->borders.setX(0);
+    chart->xrange.setX(0);
+    chart->add(histogramplot);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -517,13 +686,9 @@ void Statistics::updateHistogram(){
         colors.push_back(color);
     }
 
-    //vector<QColor> *ccc = new vector<QColor>{QColor("#a7a5a6"), QColor("#cf5eb6"), QColor("#39ae3e")};
-
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
     histogramplot->add(series, categories, &colors, num_bars);
-    //histogramplot->add(series, categories, ccc, num_bars);
     chart->add(histogramplot);
-    //chart->setYLabel("Counts [subjects]");
 
     double accuracy = compute_accuracy(series);
     stat_results.push_back({"accuracy", accuracy});
@@ -817,7 +982,6 @@ void Statistics::updateBoxPlot(){
         }
 
         Boxplot* boxplot = new Boxplot(chart, show_data);
-        //vector<QColor> ccc = {QColor("#a7a5a6"), QColor("#cf5eb6"), QColor("#39ae3e"), QColor("#39ae3e"), QColor("#39ae3e"), QColor("#39ae3e")};
         for (uint i = 0; i < nominal_values.size(); ++i){
             Array &single_series = series[i];
             QString category = QString(nominal_values[i].c_str()) + QString(" (%1)").arg(series[i].size());
@@ -825,10 +989,8 @@ void Statistics::updateBoxPlot(){
             QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : Qt::white;
 
             boxplot->add(single_series, category, color);
-            //boxplot->add(single_series, category, ccc[i]);
         }
         chart->add(boxplot);
-        //chart->setYLabel("Intensity [arb. unit]");
 
 
 

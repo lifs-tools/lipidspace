@@ -303,6 +303,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);
+    statisticsSpeciesCV.load_data(lipid_space, ui->statisticsSpeciesCV);
     statisticsROCCurve.load_data(lipid_space, ui->statisticsROCCurve);
 
     connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
@@ -380,11 +381,14 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setLegendSize);
+    connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setLegendSize);
-    connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setBarNumber);
+    connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setBarNumberHistogram);
+    connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setBarNumberSpeciesCV);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlot, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setTickSize);
+    connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setTickSize);
     connect(ui->labelSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->dendrogramView, &Canvas::setLabelSize);
     connect(ui->pieSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setPieSize);
@@ -594,6 +598,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
     statisticsHistogram.updateHistogram();
+    statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
     studyVariableChanged(ui->studyVariableComboBox->currentText().toStdString());
 
@@ -623,6 +628,7 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
     statisticsHistogram.updateHistogram();
+    statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
 }
 
@@ -1101,6 +1107,7 @@ void LipidSpaceGUI::runAnalysis(){
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
     statisticsHistogram.updateHistogram();
+    statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
 
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
@@ -1113,7 +1120,8 @@ void LipidSpaceGUI::runAnalysis(){
 
     // reset splitters for statistics tile view
     ui->splitterStatV1->setSizes(QList<int>{ui->splitterStat->height() >> 1, ui->splitterStat->height() >> 1});
-    ui->splitterStatV2->setSizes(QList<int>{ui->splitterStat->height() >> 1, ui->splitterStat->height() >> 1});
+    int h = (double)(ui->splitterStat->height()) * 0.333;
+    ui->splitterStatV2->setSizes(QList<int>{h, h, h});
     ui->splitterStat->setSizes(QList<int>{ui->splitterStat->width() >> 1, ui->splitterStat->width() >> 1});
 
     emit analysisCompleted();

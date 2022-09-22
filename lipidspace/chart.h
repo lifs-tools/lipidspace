@@ -68,6 +68,7 @@ public:
     vector<Chartplot*> chart_plots;
     double animation;
     steady_clock::time_point animation_start;
+    QGraphicsRectItem *base;
 
     vector<QGraphicsLineItem*> v_grid;
     vector<QGraphicsLineItem*> h_grid;

@@ -133,6 +133,7 @@ public:
     Statistics statisticsBoxPlot;
     Statistics statisticsHistogram;
     Statistics statisticsROCCurve;
+    Statistics statisticsSpeciesCV;
     Statistics statisticsBarPlot;
     QLabel *select_tiles_information;
     RawDataModel *raw_data_model;
