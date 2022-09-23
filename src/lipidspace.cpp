@@ -2419,7 +2419,6 @@ void LipidSpace::load_flat_table(ImportData *import_data){
 
 
 void LipidSpace::load_column_table(ImportData *import_data){
-
     vector<TableColumnType> *column_types = import_data->column_types;
     FileTableHandler *fth = import_data->file_table_handler;
     MappingData *mapping_data = import_data->mapping_data;
@@ -2430,6 +2429,10 @@ void LipidSpace::load_column_table(ImportData *import_data){
     bool has_sample_col = false;
     for (auto column_type : *column_types){
         has_sample_col |= (column_type == SampleColumn);
+    }
+
+    if (fth->headers.size() != column_types->size()){
+        throw LipidSpaceException("Error during table import: headers size (" + std::to_string(fth->headers.size()) + ") not equal to size of column type vector (" + std::to_string(column_types->size()) + ").");
     }
 
     if (!has_sample_col){
@@ -2466,7 +2469,6 @@ void LipidSpace::load_column_table(ImportData *import_data){
                     break;
             }
         }
-
 
         for (auto tokens : fth->rows){
             map<string, StudyVariable> study_variables;
@@ -2552,6 +2554,8 @@ void LipidSpace::load_column_table(ImportData *import_data){
             }
             lipidome->original_intensities.reset(intensities);
         }
+
+
 
         // checking consistancy of study variables
         set<string> registered_study_variables;

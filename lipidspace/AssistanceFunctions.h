@@ -35,7 +35,7 @@
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
 #define __max(a,b) (((a) > (b)) ? (a) : (b))
-#define __abs(a) (((a) >= 0) ? (a) : (-a))
+#define __abs(a) (((a) >= 0) ? (a) : (-(a)))
 
 #define UNDEFINED_LIPID "UNDEFINED"
 #define FILE_STUDY_VARIABLE_NAME "Origin"

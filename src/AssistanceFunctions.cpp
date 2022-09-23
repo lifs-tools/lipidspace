@@ -267,7 +267,7 @@ void SignalCombobox::enterEvent(QEnterEvent *event) {
 #else
 void SignalCombobox::enterEvent(QEvent *event) {
 #endif
-	
+
     QComboBox::enterEvent(event);
     QToolTip::showText(QCursor::pos(), tool_tip);
 }

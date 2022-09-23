@@ -73,19 +73,12 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 324; ++i) ct->push_back(LipidColumn);
+        for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
-
-
-        //for (int i = 1; i <= 40; ++i) ct->at(i) = IgnoreColumn;
         for (int i = 1; i <= 40; ++i) ct->at(i) = StudyVariableColumnNumerical;
-
-
-
-        ct->at(41) = StudyVariableColumnNominal;
+        ct->at(1) = StudyVariableColumnNominal;
         ct->at(42) = StudyVariableColumnNominal;
-        //ct->at(41) = IgnoreColumn;
-        //ct->at(42) = IgnoreColumn;
+        ct->at(43) = StudyVariableColumnNominal;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
     }
@@ -474,7 +467,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     select_tiles_information->setAlignment(Qt::AlignCenter);
     select_tiles_information->setText("No lipidome tile is selected. To select one or more tiles, go on: View > Selected tile(s) mode > Select tile(s).");
 
-	
+
 
     updateGUI();
 }
