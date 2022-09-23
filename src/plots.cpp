@@ -77,11 +77,11 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
     connect(&(rect->hover_rect_signal), &HoverRectSignal::exitLipid, this, &BarBox::lipidExited);
 
 
-    chart->scene.addItem(rect);
-    chart->scene.addItem(data_cloud);
-    chart->scene.addItem(base_line);
-    chart->scene.addItem(upper_error_line);
-    chart->scene.addItem(lower_error_line);
+    rect->setParentItem(chart->base);
+    base_line->setParentItem(chart->base);
+    lower_error_line->setParentItem(chart->base);
+    upper_error_line->setParentItem(chart->base);
+    data_cloud->setParentItem(chart->base);
 }
 
 
@@ -270,7 +270,7 @@ void Barplot::wheelEvent(QWheelEvent *event){
             if (bar->data_cloud && bar->data_cloud->data.size()) ymax = __max(ymax, bar->data_cloud->data.back().first);
         }
     }
-    chart->yrange = QPointF(chart->yrange.x(), ymax);
+    chart->yrange = QPointF(chart->yrange.x(), ymax * 1.001);
     chart->update_chart();
 }
 
@@ -314,7 +314,7 @@ void Barplot::mouseMoveEvent(QMouseEvent *event){
                         if (bar->data_cloud && bar->data_cloud->data.size()) ymax = __max(ymax, bar->data_cloud->data.back().first);
                     }
                 }
-                chart->yrange = QPointF(chart->yrange.x(), ymax);
+                chart->yrange = QPointF(chart->yrange.x(), ymax * 1.001);
                 chart->update_chart();
             }
         }
@@ -435,7 +435,7 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
 
     chart->xrange = QPointF(0, bars.size());
     ymin = pow(10, floor(log(ymin) / log(10)));
-    chart->yrange = QPointF(y_log_scale ? ymin : 0, ymax);
+    chart->yrange = QPointF(y_log_scale ? ymin : 0, ymax * 1.001);
     min_log_value = ymin;
 
     for (uint i = 0; i < categories->size(); ++i){
@@ -650,9 +650,19 @@ void Boxplot::add(Array &array, QString category, QColor color){
     box.lower_quartile = median(array, 0, count >> 1);
     box.upper_quartile = median(array, (count >> 1) + (count & 1), count);
 
+    double lower = INFINITY;
+    double upper = -INFINITY;
+    for (auto &box : boxes){
+        lower = __min(lower, box.lower_extreme);
+        upper = __max(upper, box.upper_extreme);
+    }
+    double diff = upper - lower;
+    lower -= diff * 1e-2;
+    upper += diff * 1e-2;
+
 
     chart->xrange = QPointF(-0.5, boxes.size() - 0.5);
-    chart->yrange = QPointF(boxes.size() > 1 ? min(chart->yrange.x(), array.front()) : array.front(), boxes.size() > 1 ? max(chart->yrange.y(), array.back()) : array.back());
+    chart->yrange = QPointF(lower, upper);
 
     chart->legend_categories.push_back(LegendCategory(category, box.color, &chart->scene));
 
@@ -775,9 +785,6 @@ ScPoint::ScPoint(double _x, double _y, QColor _color){
 
 
 Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
-    base = new QGraphicsRectItem();
-    base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
-    chart->scene.addItem(base);
 }
 
 Scatterplot::~Scatterplot(){
@@ -785,11 +792,8 @@ Scatterplot::~Scatterplot(){
 }
 
 void Scatterplot::update_chart(){
-    bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
-    base->setRect(chart->chart_box_inner.x(), chart->chart_box_inner.y(), chart->chart_box_inner.width(), chart->chart_box_inner.height());
-    base->setPen(Qt::NoPen);
-    base->setBrush(Qt::NoBrush);
 
+    bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
     double animation_length = chart->animation * points.size();
 
     for (uint i = 0; i < points.size(); ++i){
@@ -827,7 +831,7 @@ void Scatterplot::add(vector< pair<double, double> > &data, QString category, QC
 
         points.push_back(ScPoint(xy_point.first, xy_point.second, color));
         chart->scene.addItem(points.back().p);
-        points.back().p->setParentItem(base);
+        points.back().p->setParentItem(chart->base);
     }
     chart->xrange.setX(xmin);
     chart->xrange.setY(xmax);
@@ -848,7 +852,7 @@ void Scatterplot::add(vector< pair<double, double> > &data, QString category, QC
 
 
 
-HistogramBox::HistogramBox(QGraphicsScene *scene, double _x, double _x_width, double _y, QColor _color, bool transparent){
+HistogramBox::HistogramBox(Histogramplot *histogram_plot, double _x, double _x_width, double _y, QColor _color, bool transparent){
     x = _x;
     x_width = _x_width;
     y = _y;
@@ -856,7 +860,12 @@ HistogramBox::HistogramBox(QGraphicsScene *scene, double _x, double _x_width, do
     if (transparent) color.setAlpha(128);
 
     rect = new QGraphicsRectItem();
-    scene->addItem(rect);
+    rect->setZValue(100);
+    rect->setParentItem(histogram_plot->chart->base);
+
+    background_rect = new QGraphicsRectItem();
+    background_rect->setZValue(0);
+    background_rect->setParentItem(histogram_plot->chart->base);
 }
 
 
@@ -866,6 +875,30 @@ Histogramplot::Histogramplot(Chart *_chart) : Chartplot(_chart) {
 
 Histogramplot::~Histogramplot(){
 }
+
+
+void Histogramplot::wheelEvent(QWheelEvent *event){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QPointF mouse_pos = chart->mapToScene(QPoint(event->position().x(), event->position().y()));
+    double zoom = (event->angleDelta().y() > 0) ? 1. / 1.1 : 1.1;
+#else
+    QPointF mouse_pos = chart->mapToScene(event->pos());
+    double zoom = (event->delta() > 0) ? 1. / 1.1 : 1.1;
+#endif
+
+    if (!chart->chart_box_inner.contains(mouse_pos)) return;
+    double x = mouse_pos.x();
+    chart->back_translate(x);
+
+    double left = chart->xrange.x();
+    double right = chart->xrange.y();
+    left = __max(borders.x(), x + zoom * (left - x));
+    right = __min(borders.y(), x + zoom * (right - x));
+
+    chart->xrange = QPointF(left, right);
+    chart->update_chart();
+}
+
 
 void Histogramplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
@@ -882,6 +915,11 @@ void Histogramplot::update_chart(){
         box.rect->setPen(Qt::NoPen);
         box.rect->setBrush(box.color);
         box.rect->setVisible(visible);
+
+        box.background_rect->setRect(x1, y1, x2 - x1, y2 - y1);
+        box.background_rect->setPen(Qt::NoPen);
+        box.background_rect->setBrush(QBrush(Qt::white));
+        box.background_rect->setVisible(visible);
     }
 }
 
@@ -892,6 +930,7 @@ void Histogramplot::clear(){
 
 
 void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors, uint num_bars){
+    if (arrays.size() != categories.size() || arrays.size() != colors->size()) return;
 
     double all_min = INFINITY;
     double all_max = -INFINITY;
@@ -910,11 +949,12 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
 
         vector<int> counts(num_bars + 1, 0);
         for (auto val : array){
-            max_hist = max(max_hist, ++counts[int((val - all_min) / bar_size)]);
+            int pos = __min(num_bars, __max(0, int((val - all_min) / bar_size)));
+            max_hist = max(max_hist, ++counts[pos]);
         }
 
         for (uint i = 0; i <= num_bars; ++i){
-            if (counts[i]) boxes.push_back(HistogramBox(&(chart->scene), all_min + bar_size * (double)i, bar_size, counts[i], color, true));
+            if (counts[i]) boxes.push_back(HistogramBox(this, all_min + bar_size * (double)i, bar_size, counts[i], color, true));
         }
 
         chart->legend_categories.push_back(LegendCategory(category, color, &chart->scene));
@@ -929,6 +969,8 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
         }
     }
 
+
+    borders = QPointF(min(all_min - bar_size / 2., chart->xrange.x()), max(all_max + bar_size / 2., chart->xrange.y()));
     chart->xrange.setX(min(all_min - bar_size / 2., chart->xrange.x()));
     chart->xrange.setY(max(all_max + bar_size / 2., chart->xrange.y()));
     chart->yrange.setX(0);

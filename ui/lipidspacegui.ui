@@ -585,6 +585,7 @@
              <number>10</number>
             </property>
             <widget class="Chart" name="statisticsROCCurve"/>
+            <widget class="Chart" name="statisticsSpeciesCV"/>
             <widget class="Chart" name="statisticsBarPlot"/>
            </widget>
           </widget>

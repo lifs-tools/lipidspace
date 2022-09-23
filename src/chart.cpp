@@ -14,10 +14,19 @@ LegendCategory::LegendCategory(QString _category, QColor _color, QGraphicsScene 
 
 
 Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+
     setFrameStyle(QFrame::NoFrame);
     setRenderHints(QPainter::Antialiasing);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    base = new QGraphicsRectItem();
+    base->setZValue(10000);
+    base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
+    base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
+
     timer_id = -1;
 
     tick_font = QFont("Calibri", GlobalData::gui_num_var["tick_size"]);
@@ -40,14 +49,13 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
 
     scene.setSceneRect(0, 0, width(), height());
 
+    setScene(&scene);
     scene.addItem(title);
     scene.addItem(xlabel);
     scene.addItem(ylabel);
-    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    scene.addItem(base);
 
-    setScene(&scene);
     loaded = true;
-
     animation = 0;
 }
 
@@ -61,6 +69,8 @@ void Chart::timerEvent(QTimerEvent *){
 void Chart::resizeEvent(QResizeEvent *event){
     update_chart();
     QGraphicsView::resizeEvent(event);
+    base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
+    base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
 }
 
 
@@ -83,7 +93,6 @@ void Chart::animation_step(){
     }
     else {
         update_chart();
-        //timer.stop();
         if (timer_id != -1){
             killTimer(timer_id);
             timer_id = -1;
@@ -107,8 +116,10 @@ void Chart::create_x_numerical_axis(bool _log_x){
 
         QPen pen;
         pen.setWidthF(1);
+        if (0 < i && i < TICK_NUM - 1) pen.setStyle(Qt::DashLine);
         pen.setColor(QColor("#DDDDDD"));
         l->setPen(pen);
+        l->setZValue((0 < i && i < TICK_NUM - 1) ? 0 : 1000);
 
         scene.addItem(l);
         scene.addItem(t);
@@ -126,8 +137,10 @@ void Chart::create_x_nominal_axis(){
     v_grid.push_back(l);
     QPen pen;
     pen.setWidthF(1);
+    pen.setStyle(Qt::DashLine);
     pen.setColor(QColor("#DDDDDD"));
     l->setPen(pen);
+    l->setZValue(0);
     scene.addItem(l);
 }
 
@@ -151,8 +164,10 @@ void Chart::create_y_numerical_axis(bool _log_y){
 
             QPen pen;
             pen.setWidthF(1);
+            if (0 < i && i < TICK_NUM - 1) pen.setStyle(Qt::DashLine);
             pen.setColor(QColor("#DDDDDD"));
             l->setPen(pen);
+            l->setZValue((0 < i && i < TICK_NUM - 1) ? 0 : 1000);
 
             scene.addItem(l);
             scene.addItem(t);
@@ -168,8 +183,10 @@ void Chart::create_y_numerical_axis(bool _log_y){
 
             QPen pen;
             pen.setWidthF(1);
+            if (0 < i && i < TICK_NUM - 1) pen.setStyle(Qt::DashLine);
             pen.setColor(QColor("#DDDDDD"));
             l->setPen(pen);
+            l->setZValue((0 < i && i < TICK_NUM - 1) ? 0 : 1000);
 
             scene.addItem(l);
             scene.addItem(t);
@@ -215,6 +232,14 @@ void Chart::clear(){
     scene.addItem(title);
     scene.addItem(xlabel);
     scene.addItem(ylabel);
+
+
+    base = new QGraphicsRectItem();
+    base->setZValue(10000);
+    base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
+    base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
+    scene.addItem(base);
 
     update_chart();
 }
@@ -291,6 +316,12 @@ void Chart::add_category(QString category){
 
 void Chart::update_chart(){
     if (!loaded) return;
+
+    base->setPen(Qt::NoPen);
+    base->setBrush(Qt::NoBrush);
+    base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
+    base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
+
     scene.setSceneRect(0, 0, width(), height());
     setBackgroundBrush(QBrush());
 
@@ -371,8 +402,6 @@ void Chart::update_chart(){
     double max_x_tick_width = max(max_x_tick.boundingRect().width() / 2., 20.);
 
     chart_box_inner.setRect(chart_box.x() + max_tick_width, chart_box.y() + tick_rect.height() / 2, chart_box.width() - max_tick_width - max_x_tick_width, chart_box.height() - 1.5 * tick_rect.height());
-
-
 
 
 
