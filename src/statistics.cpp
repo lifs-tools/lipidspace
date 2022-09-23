@@ -141,7 +141,11 @@ void Statistics::exportData(){
                     wks_flat.cell(1, col).value() = kv.first;
                     for (uint row = 0; row < kv.second.size(); ++row){
                         QVariant var = kv.second[row];
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                        if (var.typeId() == QMetaType::QString){
+#else
                         if (var.type() == QVariant::String){
+#endif
                             wks_flat.cell(row + 2, col).value() = var.toString().toStdString();
                         }
                         else {
