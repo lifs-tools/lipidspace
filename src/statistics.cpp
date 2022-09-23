@@ -544,8 +544,9 @@ void Statistics::updateSpeciesCV(){
 
     vector<QString> categories;
     vector<QColor> colors;
-    for (auto nominal_value : nominal_values){
-        categories.push_back(nominal_value.c_str());
+    for (uint i = 0; i < nominal_values.size(); ++i){
+        auto nominal_value = nominal_values[i];
+        categories.push_back(QString("%1 (%2)").arg(nominal_value.c_str()).arg(lipid_map[i].size()));
         series_titles.push_back(nominal_value);
     }
     if (is_nominal){

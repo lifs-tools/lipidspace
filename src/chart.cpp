@@ -14,11 +14,15 @@ LegendCategory::LegendCategory(QString _category, QColor _color, QGraphicsScene 
 
 
 Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+
     setFrameStyle(QFrame::NoFrame);
     setRenderHints(QPainter::Antialiasing);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     base = new QGraphicsRectItem();
+    base->setZValue(10000);
     base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
     base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
     base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
@@ -45,12 +49,10 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
 
     scene.setSceneRect(0, 0, width(), height());
 
+    setScene(&scene);
     scene.addItem(title);
     scene.addItem(xlabel);
     scene.addItem(ylabel);
-    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-
-    setScene(&scene);
     scene.addItem(base);
 
     loaded = true;
@@ -91,7 +93,6 @@ void Chart::animation_step(){
     }
     else {
         update_chart();
-        //timer.stop();
         if (timer_id != -1){
             killTimer(timer_id);
             timer_id = -1;
@@ -115,8 +116,10 @@ void Chart::create_x_numerical_axis(bool _log_x){
 
         QPen pen;
         pen.setWidthF(1);
+        if (0 < i && i < TICK_NUM - 1) pen.setStyle(Qt::DashLine);
         pen.setColor(QColor("#DDDDDD"));
         l->setPen(pen);
+        l->setZValue((0 < i && i < TICK_NUM - 1) ? 0 : 1000);
 
         scene.addItem(l);
         scene.addItem(t);
@@ -134,8 +137,10 @@ void Chart::create_x_nominal_axis(){
     v_grid.push_back(l);
     QPen pen;
     pen.setWidthF(1);
+    pen.setStyle(Qt::DashLine);
     pen.setColor(QColor("#DDDDDD"));
     l->setPen(pen);
+    l->setZValue(0);
     scene.addItem(l);
 }
 
@@ -159,8 +164,10 @@ void Chart::create_y_numerical_axis(bool _log_y){
 
             QPen pen;
             pen.setWidthF(1);
+            if (0 < i && i < TICK_NUM - 1) pen.setStyle(Qt::DashLine);
             pen.setColor(QColor("#DDDDDD"));
             l->setPen(pen);
+            l->setZValue((0 < i && i < TICK_NUM - 1) ? 0 : 1000);
 
             scene.addItem(l);
             scene.addItem(t);
@@ -176,8 +183,10 @@ void Chart::create_y_numerical_axis(bool _log_y){
 
             QPen pen;
             pen.setWidthF(1);
+            if (0 < i && i < TICK_NUM - 1) pen.setStyle(Qt::DashLine);
             pen.setColor(QColor("#DDDDDD"));
             l->setPen(pen);
+            l->setZValue((0 < i && i < TICK_NUM - 1) ? 0 : 1000);
 
             scene.addItem(l);
             scene.addItem(t);
@@ -226,6 +235,7 @@ void Chart::clear(){
 
 
     base = new QGraphicsRectItem();
+    base->setZValue(10000);
     base->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
     base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
     base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
@@ -309,6 +319,9 @@ void Chart::update_chart(){
 
     base->setPen(Qt::NoPen);
     base->setBrush(Qt::NoBrush);
+    base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
+    base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
+
     scene.setSceneRect(0, 0, width(), height());
     setBackgroundBrush(QBrush());
 

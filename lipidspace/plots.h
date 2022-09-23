@@ -267,9 +267,10 @@ public:
     double x_width;
     double y;
     QGraphicsRectItem *rect;
+    QGraphicsRectItem *background_rect;
     QColor color;
 
-    HistogramBox(QGraphicsScene *scene, Histogramplot *histogram_plot, double _x, double _x_width, double _y, QColor _color = Qt::red, bool transparent = true);
+    HistogramBox(Histogramplot *histogram_plot, double _x, double _x_width, double _y, QColor _color = Qt::red, bool transparent = true);
 };
 
 class Histogramplot : public Chartplot {
