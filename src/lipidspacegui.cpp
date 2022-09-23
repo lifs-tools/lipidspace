@@ -468,6 +468,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     select_tiles_information->setAlignment(Qt::AlignCenter);
     select_tiles_information->setText("No lipidome tile is selected. To select one or more tiles, go on: View > Selected tile(s) mode > Select tile(s).");
 
+	
+
     updateGUI();
 }
 
