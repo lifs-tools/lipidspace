@@ -300,12 +300,18 @@ void Chart::add(Chartplot *plot){
     chart_plots.push_back(plot);
     connect(this, &Chart::wheel, plot, &Chartplot::wheelEvent);
     connect(this, &Chart::resize, plot, &Chartplot::resizeEvent);
+    connect(this, &Chart::settingStatResults, plot, &Chartplot::setStatResults);
     update_chart();
 }
 
 
 void Chart::wheelEvent(QWheelEvent *event){
     emit wheel(event);
+}
+
+
+void Chart::setStatResults(bool show_pvalues){
+    emit settingStatResults(show_pvalues);
 }
 
 

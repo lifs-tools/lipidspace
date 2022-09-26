@@ -125,8 +125,9 @@ public:
     vector< StatTestLine > stat_test_lines;
     static QFont stars_font;
     double stars_offset;
+    double show_pvalues;
 
-    Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);
+    Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false, bool _show_pvalues = false);
     ~Barplot();
     void add(vector< vector< Array > > *_data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors);
     void update_chart();
@@ -147,6 +148,7 @@ public slots:
     void setShowDataPoints(bool data_points);
     void mouseMoveEvent(QMouseEvent *event);
     void resizeEvent() override;
+    void setStatResults(bool _show_pvalues) override;
 };
 
 

@@ -133,10 +133,11 @@ void HoverRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 }
 
 
-Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_chart) {
+Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data, bool _show_pvalues) : Chartplot(_chart) {
     y_log_scale = _log_scale;
     show_data = _show_data;
-    min_log_value = 0;
+    show_pvalues = _show_pvalues;
+    min_log_value = 0.1;
     mouse_shift_start = QPointF(-1, -1);
     shift_start = QPointF(-1, -1);
     connect(chart, &Chart::yLogScaleChanged, this, &Barplot::setYLogScale);
@@ -235,14 +236,14 @@ void Barplot::update_chart(){
         if (b >= stat_test_lines.size()) continue;
         StatTestLine &stat_test_line = stat_test_lines[b];
         QPen stat_pen;
-        if (stat_test_line.pvalue <= 0.05 && barset.size() >= 2 && chart->xrange.x() <= b && b < chart->xrange.y()){
+        if (show_pvalues && stat_test_line.pvalue <= 0.05 && barset.size() >= 2 && chart->xrange.x() <= b && b < chart->xrange.y()){
             double xs = b;
             double xe = b + 1. / (double)barset.size();
-            double x1 = xs + (xe - xs) / 4.;
+            double x1 = xs + (xe - xs) / 2.;
 
             xs = b + ((double)barset.size() - 1.) / (double)barset.size();
             xe = b + 1.;
-            double x2 = xe - (xe - xs) / 4.;
+            double x2 = xe - (xe - xs) / 2.;
 
             double y1 = stat_test_line.line_y;
             double y2 = stat_test_line.line_y;
@@ -282,6 +283,12 @@ void Barplot::lipidEntered(string lipid_name){
 
 void Barplot::lipidExited(){
     emit exitLipid();
+}
+
+
+void Barplot::setStatResults(bool _show_pvalues){
+    show_pvalues = _show_pvalues;
+    update_chart();
 }
 
 
@@ -325,6 +332,7 @@ void Barplot::wheelEvent(QWheelEvent *event){
 
 void Barplot::setYLogScale(bool _log_scale){
     y_log_scale = _log_scale;
+    chart->yrange = QPointF(y_log_scale ? min_log_value : 0, chart->yrange.y());
     recompute_hights();
 }
 

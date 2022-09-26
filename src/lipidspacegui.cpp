@@ -2093,19 +2093,24 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
         actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(hovered_box_plot_lipid.c_str()), this);
     }
 
+    QAction *actionPValues = new QAction("Show statistical results", this);
     QAction *actionShowData = new QAction("Show data", this);
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
     actionLogScale->setCheckable(true);
     actionLogScale->setChecked(statisticsBarPlot.log_scale);
+    actionPValues->setCheckable(true);
+    actionPValues->setChecked(statisticsBarPlot.show_pvalues);
     actionShowData->setCheckable(true);
     actionShowData->setChecked(statisticsBarPlot.show_data);
     if (actionSelectLipid) menu->addAction(actionSelectLipid);
     menu->addAction(actionLogScale);
+    menu->addAction(actionPValues);
     menu->addAction(actionShowData);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
     if (actionSelectLipid) connect(actionSelectLipid, &QAction::triggered, this, &LipidSpaceGUI::deselectHoveredLipid);
+    connect(actionPValues, &QAction::triggered, &statisticsBarPlot, &Statistics::setStatResults);
     connect(actionLogScale, &QAction::triggered, &statisticsBarPlot, &Statistics::setLogScaleBarPlot);
     connect(actionShowData, &QAction::triggered, &statisticsBarPlot, &Statistics::setShowDataBarPlot);
     connect(actionData, &QAction::triggered, &statisticsBarPlot, &Statistics::exportData);
