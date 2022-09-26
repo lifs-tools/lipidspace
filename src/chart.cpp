@@ -67,8 +67,9 @@ void Chart::timerEvent(QTimerEvent *){
 
 
 void Chart::resizeEvent(QResizeEvent *event){
-    update_chart();
     QGraphicsView::resizeEvent(event);
+    emit resize();
+    update_chart();
     base->setVisible(chart_box_inner.width() > 0 && chart_box_inner.height() > 0);
     base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
 }
@@ -246,12 +247,23 @@ void Chart::clear(){
 
 
 
-void Chart::back_translate(double &x){
+void Chart::back_translate_x(double &x){
     if (log_x_axis){
         x = (x - chart_box_inner.x()) / (log(x / xrange.x())) / log(10) * (log(xrange.y() / xrange.x()) / log(10)) / chart_box_inner.width();
     }
     else {
         x = (x - chart_box_inner.x()) / (chart_box_inner.width() / (xrange.y() - xrange.x())) + xrange.x();
+    }
+}
+
+
+
+void Chart::back_translate_y(double &y){
+    if (log_x_axis){
+        y = exp((y - chart_box_inner.y() - chart_box_inner.height()) * (log(yrange.y() / yrange.x()) / log(10)) / chart_box_inner.height() * log(10.)) * yrange.x();
+    }
+    else {
+        y = (y - chart_box_inner.y() - chart_box_inner.height()) * (yrange.y() - yrange.x()) / chart_box_inner.height() + yrange.x();
     }
 }
 
@@ -287,6 +299,7 @@ void Chart::translate(double &x, double &y){
 void Chart::add(Chartplot *plot){
     chart_plots.push_back(plot);
     connect(this, &Chart::wheel, plot, &Chartplot::wheelEvent);
+    connect(this, &Chart::resize, plot, &Chartplot::resizeEvent);
     update_chart();
 }
 

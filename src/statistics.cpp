@@ -17,7 +17,6 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
 	chart->setRenderHint(QPainter::Antialiasing);
     chart->setTickSize(GlobalData::gui_num_var["tick_size"]);
     chart->setTitleSize(GlobalData::gui_num_var["legend_size"]);
-
 }
 
 

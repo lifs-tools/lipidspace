@@ -1,6 +1,9 @@
 #include "lipidspace/plots.h"
 
 
+QFont Barplot::stars_font = QFont("Calibri", 14);
+
+
 void HoverRectSignal::sendSignalEnter(string lipid_name){
     emit enterLipid(lipid_name);
 }
@@ -95,6 +98,23 @@ void BarBox::lipidExited(){
 }
 
 
+StatTestLine::StatTestLine(Chart *_chart, double _pvalue, double _line_y){
+    line = new QGraphicsLineItem();
+    stars = new QGraphicsSimpleTextItem();
+    pvalue = _pvalue;
+    line_y = _line_y;
+    line->setZValue(110);
+    stars->setZValue(110);
+
+    if (pvalue < 0.001) stars->setText("***");
+    else if (pvalue < 0.01) stars->setText("**");
+    else if (pvalue < 0.05) stars->setText("*");
+
+    line->setParentItem(_chart->base);
+    stars->setParentItem(_chart->base);
+}
+
+
 HoverRectItem::HoverRectItem(QString _label, string _lipid_name, QGraphicsItem *parent) : QGraphicsRectItem(parent), label(_label), lipid_name(_lipid_name) {
 
 }
@@ -123,6 +143,8 @@ Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data) : Chartplot(_c
     connect(chart, &Chart::showDataPointsChanged, this, &Barplot::setShowDataPoints);
     connect(chart, &Chart::mouseMoved, this, &Barplot::mouseMoveEvent);
     zoom = 0;
+    stars_offset = 0;
+    stars_font.setKerning(true);
 }
 
 Barplot::~Barplot(){
@@ -134,9 +156,11 @@ void Barplot::update_chart(){
     bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
     double animation_length = pow(chart->animation, 0.25);
 
+    QFontMetrics fm(stars_font);
+    int stars_width = fm.horizontalAdvance("***");
+
     for (uint b = 0; b < bars.size(); ++b){
         vector< BarBox* > &barset = bars[b];
-
         for (uint s = 0; s < barset.size(); ++s){
             BarBox *bar = barset[s];
             if (visible && (bar->value > 0) && chart->xrange.x() <= b && b < chart->xrange.y()){
@@ -204,7 +228,41 @@ void Barplot::update_chart(){
                 bar->base_line->setVisible(false);
                 bar->rect->setVisible(false);
                 bar->data_cloud->setVisible(false);
+
             }
+        }
+
+        if (b >= stat_test_lines.size()) continue;
+        StatTestLine &stat_test_line = stat_test_lines[b];
+        QPen stat_pen;
+        if (stat_test_line.pvalue <= 0.05 && barset.size() >= 2 && chart->xrange.x() <= b && b < chart->xrange.y()){
+            double xs = b;
+            double xe = b + 1. / (double)barset.size();
+            double x1 = xs + (xe - xs) / 4.;
+
+            xs = b + ((double)barset.size() - 1.) / (double)barset.size();
+            xe = b + 1.;
+            double x2 = xe - (xe - xs) / 4.;
+
+            double y1 = stat_test_line.line_y;
+            double y2 = stat_test_line.line_y;
+
+            chart->translate(x1, y1);
+            chart->translate(x2, y2);
+            stat_test_line.line->setLine(x1, y1, x2, y2);
+            stat_test_line.line->setPen(stat_pen);
+            bool lines_visible = (x2 - x1) > stars_width;
+
+            stat_test_line.stars->setFont(stars_font);
+            stat_test_line.stars->setX(x1 + (x2 - x1 - stat_test_line.stars->boundingRect().width()) * 0.5);
+            stat_test_line.stars->setY(y1 - stat_test_line.stars->boundingRect().height());
+
+            stat_test_line.line->setVisible(lines_visible);
+            stat_test_line.stars->setVisible(lines_visible);
+        }
+        else {
+            stat_test_line.line->setVisible(false);
+            stat_test_line.stars->setVisible(false);
         }
     }
 }
@@ -251,7 +309,7 @@ void Barplot::wheelEvent(QWheelEvent *event){
     uint right = bars.size();
     if (num_field < (int)bars.size()){
         double x = mouse_pos.x();
-        chart->back_translate(x);
+        chart->back_translate_x(x);
         left = __max(0., round(x - (double)num_field * (x - chart->xrange.x()) / (double)(chart->xrange.y() - chart->xrange.x())));
         right = left + num_field;
         if (right > bars.size()){
@@ -261,22 +319,13 @@ void Barplot::wheelEvent(QWheelEvent *event){
     }
 
     chart->xrange = QPointF(left, right);
-
-    double ymax = -INFINITY;
-    for (uint b = left; b < right && b < bars.size(); ++b){
-        auto bar_set = bars[b];
-        for (auto bar : bar_set){
-            ymax = __max(ymax, bar->value + bar->error);
-            if (bar->data_cloud && bar->data_cloud->data.size()) ymax = __max(ymax, bar->data_cloud->data.back().first);
-        }
-    }
-    chart->yrange = QPointF(chart->yrange.x(), ymax * 1.001);
-    chart->update_chart();
+    recompute_hights();
 }
 
 
-void Barplot::setYLogScale(bool log_scale){
-    chart->yrange = QPointF(log_scale ? min_log_value : 0, chart->yrange.y());
+void Barplot::setYLogScale(bool _log_scale){
+    y_log_scale = _log_scale;
+    recompute_hights();
 }
 
 
@@ -305,17 +354,7 @@ void Barplot::mouseMoveEvent(QMouseEvent *event){
 
             if (right <= bars.size()){
                 chart->xrange = QPointF(left, __min(right, bars.size()));
-
-                double ymax = -INFINITY;
-                for (uint b = left; b < right && b < bars.size(); ++b){
-                    auto bar_set = bars[b];
-                    for (auto bar : bar_set){
-                        ymax = __max(ymax, bar->value + bar->error);
-                        if (bar->data_cloud && bar->data_cloud->data.size()) ymax = __max(ymax, bar->data_cloud->data.back().first);
-                    }
-                }
-                chart->yrange = QPointF(chart->yrange.x(), ymax * 1.001);
-                chart->update_chart();
+                recompute_hights();
             }
         }
     }
@@ -323,6 +362,58 @@ void Barplot::mouseMoveEvent(QMouseEvent *event){
         mouse_shift_start = QPointF(-1, -1);
         shift_start = QPointF(-1, -1);
     }
+}
+
+
+
+void Barplot::resizeEvent(){
+    recompute_hights();
+}
+
+
+
+void Barplot::recompute_hights(){
+    bool update_stat_lines = (bars.front().size() > 1) && (bars.size() == stat_test_lines.size());
+
+    double ymax = -INFINITY;
+    double all_group_max = 0;
+    for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b){
+        auto bar_set = bars[b];
+        double group_max = 0;
+        for (auto bar : bar_set){
+            ymax = __max(ymax, bar->value + bar->error);
+            all_group_max = __max(all_group_max, bar->value + bar->error);
+            group_max = __max(group_max, bar->value + bar->error);
+            if (bar->data_cloud && bar->data_cloud->data.size()) ymax = __max(ymax, bar->data_cloud->data.back().first);
+        }
+        if (update_stat_lines) stat_test_lines[b].line_y = group_max;
+    }
+
+    QGraphicsSimpleTextItem stars;
+    stars.setFont(stars_font);
+    stars.setText("*");
+    stars_offset = stars.boundingRect().height();
+    if (y_log_scale){
+        double growth = pow(all_group_max / chart->yrange.x(), 1. / (chart->chart_box_inner.height() - 2 * stars_offset));
+        ymax = __max(chart->yrange.x() * pow(growth, chart->chart_box_inner.height()), ymax);
+        if (update_stat_lines){
+            for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b){
+                double exponent = log(stat_test_lines[b].line_y / chart->yrange.x()) / log(growth);
+                stat_test_lines[b].line_y = chart->yrange.x() * pow(growth, exponent + stars_offset);
+            }
+        }
+    }
+    else {
+        double h = all_group_max - chart->yrange.x();
+        double offset = (h / (chart->chart_box_inner.height() - 2 * stars_offset) * chart->chart_box_inner.height() - h) / 2.;
+        ymax = __max(all_group_max + 2 * offset, ymax);
+        if (update_stat_lines){
+            for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b) stat_test_lines[b].line_y += offset;
+        }
+    }
+    chart->yrange = QPointF(y_log_scale ? min_log_value : 0, ymax * 1.001);
+
+    chart->update_chart();
 }
 
 
@@ -335,6 +426,8 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
         delete colors;
         return;
     }
+
+    QFontMetrics fm(stars_font);
 
     for (auto category_data : *data){
         if (category_data.size() != categories->size()) return;
@@ -352,6 +445,7 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
         bars.push_back(vector< BarBox* >());
         vector< BarBox* > &bar_set = bars.back();
 
+        double group_max = 0;
         for (uint c = 0; c < data_set.size(); c++){
             QColor color = (colors != 0) ? colors->at(c) : Qt::white;
             auto values = data_set[c];
@@ -360,13 +454,13 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
             double error = values.stdev();
             if (isnan(mean) || isinf(mean)) mean = 0;
             if (isnan(error) || isinf(error)) error = 0;
-            if (mean > 0) ymin = min(ymin, mean);
-            ymax = max(ymax, mean + error);
+            if (mean > 0) ymin = __min(ymin, mean);
+            ymax = __max(ymax, mean + error);
+            group_max = __max(group_max, mean + error);
 
             SortVector<double, double> orig_data;
             // distribute the data around the center
             int n = values.size();
-
 
             Array X(n, 0);
             Array Y;
@@ -430,12 +524,36 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
             connect(bar_set.back(), &BarBox::enterLipid, this, &Barplot::lipidEntered);
             connect(bar_set.back(), &BarBox::exitLipid, this, &Barplot::lipidExited);
         }
+
+        if (data_set.size() == 2){
+            if (data_set[0].size() && data_set[1].size()) {
+                stat_test_lines.push_back(StatTestLine(chart, p_value_welch(data_set[0], data_set[1]), group_max));
+            }
+            else {
+                stat_test_lines.push_back(StatTestLine(chart, 1, group_max));
+            }
+        }
+
+        else if (data_set.size() > 2){
+            vector<Array> valid_data;
+            for (auto d : data_set) {
+                if (d.size()) valid_data.push_back(d);
+            }
+
+            if (valid_data.size() > 1){
+                stat_test_lines.push_back(StatTestLine(chart, p_value_anova(valid_data), group_max));
+            }
+            else {
+                stat_test_lines.push_back(StatTestLine(chart, 1, group_max));
+            }
+        }
         chart->add_category(labels->at(s));
     }
 
     chart->xrange = QPointF(0, bars.size());
     ymin = pow(10, floor(log(ymin) / log(10)));
-    chart->yrange = QPointF(y_log_scale ? ymin : 0, ymax * 1.001);
+    chart->yrange = QPointF(y_log_scale ? ymin : 0, ymax * 1.01);
+    recompute_hights();
     min_log_value = ymin;
 
     for (uint i = 0; i < categories->size(); ++i){
@@ -602,6 +720,7 @@ void Boxplot::add(Array &array, QString category, QColor color){
 
     sort(array.begin(), array.end());
     int count = array.size();
+
 
     // distribute the data around the center
     int n = array.size();
@@ -888,7 +1007,7 @@ void Histogramplot::wheelEvent(QWheelEvent *event){
 
     if (!chart->chart_box_inner.contains(mouse_pos)) return;
     double x = mouse_pos.x();
-    chart->back_translate(x);
+    chart->back_translate_x(x);
 
     double left = chart->xrange.x();
     double right = chart->xrange.y();

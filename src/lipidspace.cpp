@@ -344,7 +344,7 @@ const int LipidSpace::cols_for_pca_init = 7;
 int LipidSpace::cols_for_pca = 7;
 
 
-const vector< vector< vector< vector<int> > > > LipidSpace::orders{
+const vector< vector< vector< pair<int, int> > > > LipidSpace::orders {
     {{{}}},
     {{{}}},
     {
@@ -819,7 +819,7 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         for (int i = 0; i < (int)orders.at(len_fa1).size(); ++i){
             int uu = 0, ii = 0;
             for (auto order : orders.at(len_fa1).at(i)){
-                int* cell = cache[order.at(0) * len_fa1 + order.at(1)];
+                int* cell = cache[order.first * len_fa1 + order.second];
                 uu += cell[0];
                 ii += cell[1];
             }

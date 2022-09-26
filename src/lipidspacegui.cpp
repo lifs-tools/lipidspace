@@ -292,7 +292,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     raw_data_model = new RawDataModel(lipid_space, ui->tableView);
     ui->tableView->setModel(raw_data_model);
 
-
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);
@@ -466,8 +465,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     select_tiles_information = new QLabel();
     select_tiles_information->setAlignment(Qt::AlignCenter);
     select_tiles_information->setText("No lipidome tile is selected. To select one or more tiles, go on: View > Selected tile(s) mode > Select tile(s).");
-
-
 
     updateGUI();
 }

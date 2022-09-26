@@ -665,9 +665,9 @@ double compute_accuracy(vector<Array> &arrays){
     }
     // compute all separation positions for each pair of set
     vector< vector<double> > border_matrix(arrays.size(), vector<double>(arrays.size()));
+    double d = 0;
     for (uint i = 0; i < arrays.size() - 1; ++i){
         for (uint j = i + 1; j < arrays.size(); ++j){
-            double d = 0;
             ks_separation_value(arrays[i], arrays[j], d, border_matrix[i][j]);
         }
     }

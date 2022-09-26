@@ -21,6 +21,7 @@ public:
 
 public slots:
     virtual void wheelEvent(QWheelEvent *event);
+    virtual void resizeEvent();
 };
 
 

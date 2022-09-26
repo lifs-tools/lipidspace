@@ -80,7 +80,8 @@ public:
     void setXLabel(QString l);
     void setYLabel(QString l);
     void translate(double &x, double &y);
-    void back_translate(double &x);
+    void back_translate_x(double &x);
+    void back_translate_y(double &y);
     void add(Chartplot* plot);
     void add_category(QString);
     void create_x_numerical_axis(bool _log_x = false);
@@ -106,6 +107,7 @@ public slots:
 
 signals:
     void wheel(QWheelEvent *event);
+    void resize();
     void yLogScaleChanged(bool log_scale);
     void showDataPointsChanged(bool data_points);
     void mouseMoved(QMouseEvent *event);

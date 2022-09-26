@@ -99,6 +99,18 @@ public slots:
 };
 
 
+class StatTestLine {
+
+public:
+    QGraphicsLineItem *line;
+    QGraphicsSimpleTextItem *stars;
+    double pvalue;
+    double line_y;
+
+    StatTestLine(Chart *_chart, double _pvalue, double _line_y);
+};
+
+
 class Barplot : public Chartplot {
     Q_OBJECT
 
@@ -110,12 +122,16 @@ public:
     QPointF mouse_shift_start;
     QPointF shift_start;
     int zoom;
+    vector< StatTestLine > stat_test_lines;
+    static QFont stars_font;
+    double stars_offset;
 
     Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false);
     ~Barplot();
     void add(vector< vector< Array > > *_data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors);
     void update_chart();
     void clear();
+    void recompute_hights();
 
 
 signals:
@@ -130,12 +146,8 @@ public slots:
     void setYLogScale(bool log_scale);
     void setShowDataPoints(bool data_points);
     void mouseMoveEvent(QMouseEvent *event);
+    void resizeEvent() override;
 };
-
-
-
-
-
 
 
 

@@ -12,3 +12,8 @@ Chartplot::~Chartplot(){
 void Chartplot::wheelEvent(QWheelEvent *){
 
 }
+
+
+void Chartplot::resizeEvent(){
+
+}
