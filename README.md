@@ -24,6 +24,17 @@ See the `LipidSpaceRest.docker` file for required Ubuntu packages.
   qmake LipidSpace.pro
   make
 
+If you experience a build error like the following:
+
+  ./ui_lipidspacegui.h:33:10: fatal error: lipidspace/CBTableWidget.h: Datei oder Verzeichnis nicht gefunden
+  33 | #include "lipidspace/CBTableWidget.h"
+
+or
+
+  src/lipidspace.cpp:308:90: error: no matching function for call to ‘LipidAdduct::LipidAdduct(LipidAdduct*&)’
+
+Please make sure that you have the latest version of cppgoslin (https://github.com/lifs-tools/cppgoslin) installed on your computer (make && sudo make install).
+
 ## Building LipidSpace REST
 
   qmake LipidSpaceRest.pro
@@ -49,9 +60,3 @@ Which should return:
 
 The same curl call from above works on the running Docker container.
 
-# Defining Git Submodules for libraries
-
-cpp-httplib
-
-  git submodule add git@github.com:yhirose/cpp-httplib.git cpp-httplib
-  git checkout <TAG_VERSION>
