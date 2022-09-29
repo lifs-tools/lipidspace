@@ -17,23 +17,42 @@ RC_ICONS = LipidSpace.ico
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-!win32 {
-    LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas libraries/OpenXLSX/bin/linux/libOpenXLSX.a
-    INCLUDEPATH += $$PWD/libraries/OpenXLSX/include
-    DEPENDPATH += $$PWD/libraries/OpenXLSX/include
-    SOURCES += \
-        src/globaldata.cpp \
-        src/Matrix.cpp \
-        src/AssistanceFunctions.cpp \
-        src/lipidspace.cpp \
-        src/logging.cpp \
-        src/lipidspacerest.cpp
-    HEADERS += \
-        lipidspace/globaldata.h \
-        lipidspace/Matrix.h \
-        lipidspace/lipidspace.h \
-        lipidspace/AssistanceFunctions.h \
-        lipidspace/matplotlibcpp.h \\
-        lipidspace/logging.h \
-        libraries/cpp-httplib/httplib.h
+unix {
+    LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/linux64/libcppGoslin.so $$PWD/libraries/OpenBLAS/bin/linux64/libopenblas.so $$PWD/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a
 }
+
+win32 {
+    LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
+}
+
+macx {
+    #LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
+}
+
+INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+
+INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
+DEPENDPATH += $$PWD/libraries/OpenBLAS/include
+
+INCLUDEPATH += $$PWD/libraries/cppgoslin
+DEPENDPATH += $$PWD/libraries/cppgoslin
+
+SOURCES += \
+    src/globaldata.cpp \
+    src/Matrix.cpp \
+    src/AssistanceFunctions.cpp \
+    src/lipidspace.cpp \
+    src/logging.cpp \
+    src/lipidspacerest.cpp
+HEADERS += \
+    lipidspace/globaldata.h \
+    lipidspace/Matrix.h \
+    lipidspace/lipidspace.h \
+    lipidspace/AssistanceFunctions.h \
+    lipidspace/matplotlibcpp.h \\
+    lipidspace/logging.h \
+    libraries/cpp-httplib/httplib.h
+
+release:UI_DIR += objects
+release:MOC_DIR += objects
