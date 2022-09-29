@@ -210,7 +210,9 @@ void LipidSpace::create_dendrogram(){
                     num_lipid_in_lipidomes += 1;
                     arrays[target_values[r]].push_back(global_matrix(r, c));
                 }
-                double score = compute_accuracy(arrays) * num_lipid_in_lipidomes / (double)lipidomes_for_feature_selection.size();
+                double acc = compute_accuracy(arrays);
+                acc = __abs(1. / (double)nom_counter - acc) + 1. / (double)nom_counter;
+                double score = acc * num_lipid_in_lipidomes / (double)lipidomes_for_feature_selection.size();
                 regression_result.push_back({score, kv.first});
             }
             else {
@@ -3430,7 +3432,9 @@ void LipidSpace::feature_analysis(bool report_progress){
                     vector<Array> arrays(nom_counter);
                     for (int r = 0; r < sub_lipids.rows; ++r) arrays[target_values[r]].push_back(summed_values[r]);
 
-                    new_gene->score = compute_accuracy(arrays) * (cnt_lipids - missing_lipids) / cnt_lipids;
+                    double acc = compute_accuracy(arrays);
+                    acc = __abs(1. / (double)nom_counter - acc) + 1. / (double)nom_counter;
+                    new_gene->score = acc * (cnt_lipids - missing_lipids) / cnt_lipids;
 
                     // search for maximal nominal score
                     if (!best || best_score < new_gene->score || best_score == INFINITY){

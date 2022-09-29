@@ -419,7 +419,7 @@ void Barplot::recompute_hights(){
             for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b) stat_test_lines[b].line_y += offset;
         }
     }
-    chart->yrange = QPointF(y_log_scale ? min_log_value : 0, ymax * 1.001);
+    chart->yrange = QPointF(y_log_scale ? min_log_value : 0, ymax * 1.01);
 
     chart->update_chart();
 }
@@ -1063,8 +1063,8 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
     double all_max = -INFINITY;
     for (auto &array : arrays){
         sort(array.begin(), array.end());
-        all_min = min(all_min, array.front());
-        all_max = max(all_max, array.back());
+        all_min = __min(all_min, array.front());
+        all_max = __max(all_max, array.back());
     }
     double bar_size = (all_max - all_min) / num_bars;
 
@@ -1077,7 +1077,7 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
         vector<int> counts(num_bars + 1, 0);
         for (auto val : array){
             int pos = __min(num_bars, __max(0, int((val - all_min) / bar_size)));
-            max_hist = max(max_hist, ++counts[pos]);
+            max_hist = __max(max_hist, ++counts[pos]);
         }
 
         for (uint i = 0; i <= num_bars; ++i){
@@ -1097,11 +1097,11 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
     }
 
 
-    borders = QPointF(min(all_min - bar_size / 2., chart->xrange.x()), max(all_max + bar_size / 2., chart->xrange.y()));
-    chart->xrange.setX(min(all_min - bar_size / 2., chart->xrange.x()));
-    chart->xrange.setY(max(all_max + bar_size / 2., chart->xrange.y()));
+    borders = QPointF(__min(all_min - bar_size / 2., chart->xrange.x()), __max(all_max + bar_size / 2., chart->xrange.y()));
+    chart->xrange.setX(__min(all_min - bar_size / 2., chart->xrange.x()));
+    chart->xrange.setY(__max(all_max + bar_size / 2., chart->xrange.y()));
     chart->yrange.setX(0);
-    chart->yrange.setY(max(max_hist * 1.025, chart->yrange.y()));
+    chart->yrange.setY(__max(max_hist, chart->yrange.y()));
 
     chart->create_x_numerical_axis();
     chart->create_y_numerical_axis();
