@@ -13,15 +13,19 @@ To initialize the library submodules manually, e.g. if you cloned without `--rec
 
 ### Linux
 
-qt5
-qmake
-make
+Please use the latest QT 6 library.
 
-See the `LipidSpaceRest.docker` file for required Ubuntu packages.
+On Ubuntu 22.04, you can run
+  
+  sudo apt install qt6-base-dev qt6-base-dev-tools libqt6svg6-dev libqt6charts6-dev
+
+to install the necessary dependencies.
+
+See the `LipidSpaceRest.docker` file for other required Ubuntu 22.04 packages.
 
 ## Building LipidSpace
 
-  qmake LipidSpace.pro
+  qmake6 LipidSpace.pro
   make
 
 If you experience a build error like the following:
@@ -37,7 +41,7 @@ Please make sure that you have the latest version of cppgoslin (https://github.c
 
 ## Building LipidSpace REST
 
-  qmake LipidSpaceRest.pro
+  qmake6 LipidSpaceRest.pro
   make
 
 ### Running the REST server

@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 MAINTAINER Nils Hoffmann <nils.hoffmann@cebitec.uni-bielefeld.de>
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 #    python3 \
@@ -6,12 +6,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 #    python3-setuptools \
     build-essential \
     libfontconfig1 \
-    qt5-default \
-    qt5-qmake \
-    libqt5charts5 \
-    libqt5charts5-dev \
-    libqt5svg5 \
-    libqt5svg5-dev \
+    qt6-base-dev \
+    qt6-base-dev-tools \
+    libqt6svg6-dev \
+    libqt6charts6-dev \
     libopenblas-base \
     libopenblas-dev \
     libomp-dev \
@@ -39,7 +37,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 VOLUME /tmp
 COPY . /lipidspace 
 WORKDIR /lipidspace
-RUN qmake LipidSpaceRest.pro
+RUN qmake6 LipidSpaceRest.pro
 RUN make clean && make -j$((`nproc`+1))
 EXPOSE 8888/tcp
 ENTRYPOINT ["./LipidSpaceRest"]
