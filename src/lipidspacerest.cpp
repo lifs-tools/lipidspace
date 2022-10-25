@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
     signal(SIGINT, signal_handler);
     signal(SIGHUP, signal_handler);
     signal(SIGKILL, signal_handler);
-    signal(SIGABORT, signal_handler);
+    signal(SIGABRT, signal_handler);
 
     using namespace std;
     using namespace httplib;
