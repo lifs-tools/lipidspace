@@ -43,9 +43,9 @@ Which should return:
 
 ## Building LipidSpace REST Docker
 
-  docker build -f LipidSpaceRest.docker -t lifs-tools.org/lipidspace:latest .
+  docker build -f LipidSpaceRest.docker -t docker.lifs-tools.org/lipidspace:latest .
 
-  docker run -p8888:8888 --rm lifs-tools.org/lipidspace:latest
+  docker run -p8888:8888 --rm docker.lifs-tools.org/lipidspace:latest
 
 The same curl call from above works on the running Docker container.
 
