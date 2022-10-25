@@ -294,7 +294,7 @@ public:
     inline int stop(int signal)
     {
         qInfo() << "Server received signal: " << signal;
-        if (signal == SIGINT)
+        if (signal == SIGINT || signal == SIGHUP || signal == SIGKILL)
         { // only handle SIG INTERRUPT for now
             if (svr.is_running())
             {
