@@ -17,7 +17,20 @@ Please use the latest QT 6 library.
 
 On Ubuntu 22.04, you can run
   
-  sudo apt install qt6-base-dev qt6-base-dev-tools libqt6svg6-dev libqt6charts6-dev
+  sudo apt install \
+    build-essential \
+    libfontconfig1 \
+    qt6-base-dev \
+    qt6-base-dev-tools \
+    libqt6svg6-dev \
+    libqt6charts6-dev \
+    libopenblas-base \
+    libopenblas-dev \
+    libomp-dev \
+    mesa-common-dev \
+    libglu1-mesa-dev \
+    libc6 \
+    libstdc++6
 
 to install the necessary dependencies.
 
