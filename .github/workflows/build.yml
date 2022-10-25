@@ -46,13 +46,13 @@ jobs:
       run: |
         qmake6 LipidSpace.pro 
         make clean 
-        make install
+        make release
 
     - name: Build LipidSpaceRest
       run: |
         qmake6 LipidSpaceRest.pro
         make clean 
-        make install
+        make release
   docker:
     name: Build and push LipidSpace Rest Docker image
     needs: build
