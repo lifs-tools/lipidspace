@@ -1,2 +1,7 @@
 *.o
 *.swp
+Makefile*
+.vscode
+objects/
+LipidSpace
+LipidSpaceRest

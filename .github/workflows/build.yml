@@ -17,7 +17,6 @@ jobs:
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
-        submodules: recursive
     - name: Set Git user
       run: |
         git config --global committer.email "noreply@github.com"
@@ -69,7 +68,6 @@ jobs:
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
-        submodules: recursive          
     - name: Set Git user
       run: |
         git config --global committer.email "noreply@github.com"
