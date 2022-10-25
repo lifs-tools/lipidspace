@@ -73,19 +73,12 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 324; ++i) ct->push_back(LipidColumn);
+        for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
-
-
-        //for (int i = 1; i <= 40; ++i) ct->at(i) = IgnoreColumn;
         for (int i = 1; i <= 40; ++i) ct->at(i) = StudyVariableColumnNumerical;
-
-
-
-        ct->at(41) = StudyVariableColumnNominal;
+        ct->at(1) = StudyVariableColumnNominal;
         ct->at(42) = StudyVariableColumnNominal;
-        //ct->at(41) = IgnoreColumn;
-        //ct->at(42) = IgnoreColumn;
+        ct->at(43) = StudyVariableColumnNominal;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
     }
@@ -299,7 +292,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     raw_data_model = new RawDataModel(lipid_space, ui->tableView);
     ui->tableView->setModel(raw_data_model);
 
-
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);
@@ -473,8 +465,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     select_tiles_information = new QLabel();
     select_tiles_information->setAlignment(Qt::AlignCenter);
     select_tiles_information->setText("No lipidome tile is selected. To select one or more tiles, go on: View > Selected tile(s) mode > Select tile(s).");
-
-	
 
     updateGUI();
 }
@@ -2103,19 +2093,24 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
         actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(hovered_box_plot_lipid.c_str()), this);
     }
 
+    QAction *actionPValues = new QAction("Show statistical results", this);
     QAction *actionShowData = new QAction("Show data", this);
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
     actionLogScale->setCheckable(true);
     actionLogScale->setChecked(statisticsBarPlot.log_scale);
+    actionPValues->setCheckable(true);
+    actionPValues->setChecked(statisticsBarPlot.show_pvalues);
     actionShowData->setCheckable(true);
     actionShowData->setChecked(statisticsBarPlot.show_data);
     if (actionSelectLipid) menu->addAction(actionSelectLipid);
     menu->addAction(actionLogScale);
+    menu->addAction(actionPValues);
     menu->addAction(actionShowData);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
     if (actionSelectLipid) connect(actionSelectLipid, &QAction::triggered, this, &LipidSpaceGUI::deselectHoveredLipid);
+    connect(actionPValues, &QAction::triggered, &statisticsBarPlot, &Statistics::setStatResults);
     connect(actionLogScale, &QAction::triggered, &statisticsBarPlot, &Statistics::setLogScaleBarPlot);
     connect(actionShowData, &QAction::triggered, &statisticsBarPlot, &Statistics::setShowDataBarPlot);
     connect(actionData, &QAction::triggered, &statisticsBarPlot, &Statistics::exportData);

@@ -210,7 +210,9 @@ void LipidSpace::create_dendrogram(){
                     num_lipid_in_lipidomes += 1;
                     arrays[target_values[r]].push_back(global_matrix(r, c));
                 }
-                double score = compute_accuracy(arrays) * num_lipid_in_lipidomes / (double)lipidomes_for_feature_selection.size();
+                double acc = compute_accuracy(arrays);
+                acc = __abs(1. / (double)nom_counter - acc) + 1. / (double)nom_counter;
+                double score = acc * num_lipid_in_lipidomes / (double)lipidomes_for_feature_selection.size();
                 regression_result.push_back({score, kv.first});
             }
             else {
@@ -344,7 +346,7 @@ const int LipidSpace::cols_for_pca_init = 7;
 int LipidSpace::cols_for_pca = 7;
 
 
-const vector< vector< vector< vector<int> > > > LipidSpace::orders{
+const vector< vector< vector< pair<int, int> > > > LipidSpace::orders {
     {{{}}},
     {{{}}},
     {
@@ -819,7 +821,7 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
         for (int i = 0; i < (int)orders.at(len_fa1).size(); ++i){
             int uu = 0, ii = 0;
             for (auto order : orders.at(len_fa1).at(i)){
-                int* cell = cache[order.at(0) * len_fa1 + order.at(1)];
+                int* cell = cache[order.first * len_fa1 + order.second];
                 uu += cell[0];
                 ii += cell[1];
             }
@@ -2419,7 +2421,6 @@ void LipidSpace::load_flat_table(ImportData *import_data){
 
 
 void LipidSpace::load_column_table(ImportData *import_data){
-
     vector<TableColumnType> *column_types = import_data->column_types;
     FileTableHandler *fth = import_data->file_table_handler;
     MappingData *mapping_data = import_data->mapping_data;
@@ -2430,6 +2431,10 @@ void LipidSpace::load_column_table(ImportData *import_data){
     bool has_sample_col = false;
     for (auto column_type : *column_types){
         has_sample_col |= (column_type == SampleColumn);
+    }
+
+    if (fth->headers.size() != column_types->size()){
+        throw LipidSpaceException("Error during table import: headers size (" + std::to_string(fth->headers.size()) + ") not equal to size of column type vector (" + std::to_string(column_types->size()) + ").");
     }
 
     if (!has_sample_col){
@@ -2466,7 +2471,6 @@ void LipidSpace::load_column_table(ImportData *import_data){
                     break;
             }
         }
-
 
         for (auto tokens : fth->rows){
             map<string, StudyVariable> study_variables;
@@ -2552,6 +2556,8 @@ void LipidSpace::load_column_table(ImportData *import_data){
             }
             lipidome->original_intensities.reset(intensities);
         }
+
+
 
         // checking consistancy of study variables
         set<string> registered_study_variables;
@@ -3426,7 +3432,9 @@ void LipidSpace::feature_analysis(bool report_progress){
                     vector<Array> arrays(nom_counter);
                     for (int r = 0; r < sub_lipids.rows; ++r) arrays[target_values[r]].push_back(summed_values[r]);
 
-                    new_gene->score = compute_accuracy(arrays) * (cnt_lipids - missing_lipids) / cnt_lipids;
+                    double acc = compute_accuracy(arrays);
+                    acc = __abs(1. / (double)nom_counter - acc) + 1. / (double)nom_counter;
+                    new_gene->score = acc * (cnt_lipids - missing_lipids) / cnt_lipids;
 
                     // search for maximal nominal score
                     if (!best || best_score < new_gene->score || best_score == INFINITY){

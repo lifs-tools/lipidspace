@@ -13,20 +13,35 @@ To initialize the library submodules manually, e.g. if you cloned without `--rec
 
 ### Linux
 
-qt5
-qmake
-make
+Please use the latest QT 6 library.
 
-See the `LipidSpaceRest.docker` file for required Ubuntu packages.
+On Ubuntu 22.04, you can run
+  
+  sudo apt install qt6-base-dev qt6-base-dev-tools libqt6svg6-dev libqt6charts6-dev
+
+to install the necessary dependencies.
+
+See the `LipidSpaceRest.docker` file for other required Ubuntu 22.04 packages.
 
 ## Building LipidSpace
 
-  qmake LipidSpace.pro
+  qmake6 LipidSpace.pro
   make
+
+If you experience a build error like the following:
+
+  ./ui_lipidspacegui.h:33:10: fatal error: lipidspace/CBTableWidget.h: Datei oder Verzeichnis nicht gefunden
+  33 | #include "lipidspace/CBTableWidget.h"
+
+or
+
+  src/lipidspace.cpp:308:90: error: no matching function for call to ‘LipidAdduct::LipidAdduct(LipidAdduct*&)’
+
+Please make sure that you have the latest version of cppgoslin (https://github.com/lifs-tools/cppgoslin) installed on your computer (make && sudo make install).
 
 ## Building LipidSpace REST
 
-  qmake LipidSpaceRest.pro
+  qmake6 LipidSpaceRest.pro
   make
 
 ### Running the REST server
@@ -49,9 +64,3 @@ Which should return:
 
 The same curl call from above works on the running Docker container.
 
-# Defining Git Submodules for libraries
-
-cpp-httplib
-
-  git submodule add git@github.com:yhirose/cpp-httplib.git cpp-httplib
-  git checkout <TAG_VERSION>

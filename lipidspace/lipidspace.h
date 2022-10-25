@@ -29,7 +29,7 @@ public:
     map<string, LipidAdduct*> all_lipids;
     static const int cols_for_pca_init;
     static int cols_for_pca;
-    static const vector< vector< vector< vector<int> > > > orders;
+    static const vector< vector< vector< pair<int, int> > > > orders;
     bool keep_sn_position;
     bool ignore_unknown_lipids;
     bool ignore_doublette_lipids;
