@@ -1,4 +1,4 @@
-#include <libraries/cpp-httplib/httplib.h>
+#include "httplib.h"
 #include <chrono>
 #include <thread>
 #include <QtGlobal>
@@ -26,6 +26,7 @@ public:
 
     inline int start(string host, int port, string temp_folder, bool debug)
     {
+        qInfo("Using %d threads with openBLAS!", openblas_get_num_threads());
         GlobalData::rest_temp_folder = temp_folder;
         GlobalData::debug = debug;
         // stop(SIGINT);
