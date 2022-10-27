@@ -89,7 +89,7 @@ jobs:
       run: docker run --detach --name LipidSpaceRest -p8888:8888 --rm ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}
 
     - name: Test response is expected
-      run: curl -X POST -v -H 'Content-Type: application/json' --data-binary "@examples/Rest/Plasma-Singapore-Short.json" localhost:8888/lipidspace/v1/pca
+      run: curl -X POST -v -H "Content-Type: application/json" --data-binary "@examples/Rest/Plasma-Singapore-Short.json" localhost:8888/lipidspace/v1/pca
     
     - name: Stop REST service container
       run: docker stop LipidSpaceRest
