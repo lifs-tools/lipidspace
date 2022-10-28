@@ -38,9 +38,7 @@ enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial, ThirdTutorial, Fou
 
 enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-enum SecondSteps {SSeletionSection1, SSeletionSection2, SVisualizationSection, SStart, SLoadTable, SEnd};
-
-//enum SecondSteps {SStart, SLoadTable, SEnd};
+enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SVisualizationSection, SEnd};
 
 class LipidSpaceGUI;
 
@@ -68,6 +66,9 @@ public:
 
     explicit Tutorial(LipidSpaceGUI *lipidSpaceGUI, QWidget *parent = 0);
     ~Tutorial();
+
+    static const vector<FirstSteps> first_tutorial_steps_order;
+    static const vector<SecondSteps> second_tutorial_steps_order;
 
     void show_arrow(Arrow, QWidget *, int x, int y);
     void show_arrow(Arrow, QWidget *, QPoint);

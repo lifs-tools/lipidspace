@@ -1,6 +1,10 @@
 #include "lipidspace/Tutorial.h"
 
 
+const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
+
+const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SVisualizationSection, SEnd};
+
 Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(parent), lipidSpaceGUI(_lipidSpaceGUI) {
     setObjectName(QString::fromUtf8("TutorialFrame"));
     setGeometry(QRect(20, 110, 621, 251));
@@ -145,7 +149,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
 
     // tutorial starts
     connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_first_tutorial);
-    //connect(ui->homeGraphicsView->secondTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_second_tutorial);
+    connect(ui->homeGraphicsView->secondTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_second_tutorial);
 
     connect(&lipidSpaceGUI->import_table, &ImportTable::finished, this, &Tutorial::close_tutorial);
     connect(&lipidSpaceGUI->import_table, &ImportTable::rejected, this, &Tutorial::close_directly_tutorial);
@@ -252,7 +256,7 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
 bool Tutorial::can_start_tutorial(){
     if (lipidSpaceGUI->lipid_space->lipidomes.empty() || QMessageBox::question(this, "Reset LipidSpace", "In order to start the tutorial, LipidSpace will be reset. Do you want to proceed?") == QMessageBox::Yes){
         lipidSpaceGUI->resetAnalysis();
-		
+
 		// getting the enabled states of all UI widgets
 		for (auto &kv : main_widgets){
 			if (instanceof(kv.first, QWidget)){
@@ -262,7 +266,7 @@ bool Tutorial::can_start_tutorial(){
 				kv.second = ((QAction*)kv.first)->isEnabled();
 			}
 		}
-		
+
         return true;
     }
     return false;
@@ -283,21 +287,6 @@ void Tutorial::start_second_tutorial(){
     if (!can_start_tutorial()) return;
     step = 0;
     tutorialType = SecondTutorial;
-
-
-    // TODO: Delete this block
-    lipidSpaceGUI->resetAnalysis();
-    vector<TableColumnType> *ct = new vector<TableColumnType>(371, LipidColumn);
-    ct->at(0) = SampleColumn;
-    ct->at(1) = StudyVariableColumnNominal;
-    ct->at(2) = StudyVariableColumnNominal;
-    ct->at(3) = StudyVariableColumnNominal;
-    string path_to_example = QCoreApplication::applicationDirPath().toStdString();
-    lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
-
-
-
-
     second_tutorial_steps();
 }
 
@@ -479,13 +468,15 @@ void Tutorial::changeSize(int w, int h){
 
 void Tutorial::first_tutorial_steps(){
     disable();
-    pagesLabel->setText((std::to_string(step + 1) + " / 20").c_str());
+    pagesLabel->setText((std::to_string(step + 1) + " / "  + std::to_string(first_tutorial_steps_order.size() - 1)).c_str());
     setVisible(true);
     titleLabel->setText("");
     informationLabel->setText("");
     QFontMetrics font_metrics(QApplication::font());
 
-    switch((FirstSteps)step){
+    FirstSteps f_step = first_tutorial_steps_order[step];
+
+    switch(f_step){
         case FStart:
             move(20, 20);
             titleLabel->setText("First Tutorial - Data Import");
@@ -731,13 +722,15 @@ void Tutorial::first_tutorial_steps(){
 
 void Tutorial::second_tutorial_steps(){
     disable();
-    pagesLabel->setText((std::to_string(step + 1) + " / 19").c_str());
+    pagesLabel->setText((std::to_string(step + 1) + " / "  + std::to_string(second_tutorial_steps_order.size() - 1)).c_str());
     setVisible(true);
     titleLabel->setText("");
     informationLabel->setText("");
     QFontMetrics font_metrics(QApplication::font());
 
-    switch((SecondSteps)step){
+    SecondSteps s_step = second_tutorial_steps_order[step];
+
+    switch(s_step){
         case SStart:
             move(20, 20);
             titleLabel->setText("Second Tutorial - UI introduction");
@@ -750,7 +743,7 @@ void Tutorial::second_tutorial_steps(){
             {
                 move(420, 80);
                 lipidSpaceGUI->resetAnalysis();
-                vector<TableColumnType> *ct = new vector<TableColumnType>(371, LipidColumn);
+                vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
                 ct->at(0) = SampleColumn;
                 ct->at(1) = StudyVariableColumnNominal;
                 ct->at(2) = StudyVariableColumnNominal;
