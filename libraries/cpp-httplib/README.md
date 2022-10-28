@@ -7,12 +7,12 @@ A C++11 single-file header-only cross platform HTTP/HTTPS library.
 
 It's extremely easy to setup. Just include the **httplib.h** file in your code!
 
-NOTE: This library uses 'blocking' socket I/O. If you are looking for a library with 'non-blocking' socket I/O, this is not the one that you want.
+NOTE: This is a multi-threaded 'blocking' HTTP library. If you are looking for a 'non-blocking' library, this is not the one that you want.
 
 Simple examples
 ---------------
 
-#### Server (Multi-threaded)
+#### Server
 
 ```c++
 #define CPPHTTPLIB_OPENSSL_SUPPORT
@@ -212,22 +212,14 @@ svr.set_error_handler([](const auto& req, auto& res) {
 The exception handler gets called if a user routing handler throws an error.
 
 ```cpp
-svr.set_exception_handler([](const auto& req, auto& res, std::exception_ptr ep) {
+svr.set_exception_handler([](const auto& req, auto& res, std::exception &e) {
+  res.status = 500;
   auto fmt = "<h1>Error 500</h1><p>%s</p>";
   char buf[BUFSIZ];
-  try {
-    std::rethrow_exception(ep);
-  } catch (std::exception &e) {
-    snprintf(buf, sizeof(buf), fmt, e.what());
-  } catch (...) { // See the following NOTE
-    snprintf(buf, sizeof(buf), fmt, "Unknown Exception");
-  }
+  snprintf(buf, sizeof(buf), fmt, e.what());
   res.set_content(buf, "text/html");
-  res.status = 500;
 });
 ```
-
-NOTE: if you don't provide the `catch (...)` block for a rethrown exception pointer, an uncaught exception will end up causing the server crash. Be careful!
 
 ### Pre routing handler
 
@@ -443,7 +435,7 @@ int main(void)
     }
   } else {
     auto err = res.error();
-    std::cout << "HTTP error: " << httplib::to_string(err) << std::endl;
+    ...
   }
 }
 ```
@@ -476,9 +468,7 @@ enum Error {
   SSLConnection,
   SSLLoadingCerts,
   SSLServerVerification,
-  UnsupportedMultipartBoundaryChars,
-  Compression,
-  ConnectionTimeout,
+  UnsupportedMultipartBoundaryChars
 };
 ```
 
@@ -809,12 +799,12 @@ Include `httplib.h` before `Windows.h` or include `Windows.h` by defining `WIN32
 
 Note: cpp-httplib officially supports only the latest Visual Studio. It might work with former versions of Visual Studio, but I can no longer verify it. Pull requests are always welcome for the older versions of Visual Studio unless they break the C++11 conformance.
 
-Note: Windows 8 or lower, Visual Studio 2013 or lower, and Cygwin on Windows are not supported.
+Note: Windows 8 or lower and Cygwin on Windows are not supported.
 
 License
 -------
 
-MIT license (© 2022 Yuji Hirose)
+MIT license (© 2021 Yuji Hirose)
 
 Special Thanks To
 -----------------

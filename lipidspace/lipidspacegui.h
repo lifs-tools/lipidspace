@@ -171,6 +171,7 @@ signals:
     void studyVariableChanged(string);
     void updateHighlightedPoints(vector<QString> *);
     void analysisCompleted();
+    void resizing();
 
 
 

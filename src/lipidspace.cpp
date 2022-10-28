@@ -252,8 +252,9 @@ void LipidSpace::create_dendrogram(){
 
         // sorting all lipids according to the performance indicator
         regression_result.sort_desc();
-        lipid_sortings.insert({target_variable + " regression (Desc)", SortVector<string, double>()});
-        SortVector<string, double> &regression_vector = lipid_sortings[target_variable + " regression (Desc)"];
+        string target_regression_classification = target_variable + (is_nominal ? " classification" : " regression") + " (Desc)";
+        lipid_sortings.insert({target_regression_classification, SortVector<string, double>()});
+        SortVector<string, double> &regression_vector = lipid_sortings[target_regression_classification];
         for (auto kv_reg : regression_result) regression_vector.push_back({kv_reg.second, kv_reg.first});
 
     }

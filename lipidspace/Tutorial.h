@@ -38,7 +38,7 @@ enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial, ThirdTutorial, Fou
 
 enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SVisualizationSection, SEnd};
+enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SEnd};
 
 class LipidSpaceGUI;
 
@@ -82,6 +82,7 @@ public:
     void move(int x, int y, QWidget *w = 0);
     void changeSize(int w, int h);
     void item_changed(const QModelIndex &parent, int first, int last);
+    void combobox_changed(int index);
 
 public slots:
     void x_clicked();
@@ -91,6 +92,7 @@ public slots:
     void start_second_tutorial();
     void action_performed();
     void tab_changed(int);
+    void resize();
 };
 
 #endif /* TUTORIAL_H */

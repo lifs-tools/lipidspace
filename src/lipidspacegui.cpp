@@ -658,10 +658,10 @@ void LipidSpaceGUI::setSecondarySorting(){
 void LipidSpaceGUI::updateSelectionView(){
 
     // compute sort order for the groups
-    disconnect(ui->speciesComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
-    disconnect(ui->classComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
-    disconnect(ui->categoryComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
-    disconnect(ui->sampleComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
+    disconnect(ui->speciesComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
+    disconnect(ui->classComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
+    disconnect(ui->categoryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
+    disconnect(ui->sampleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
 
 
     for (int i = 0; i < 4; ++i){
@@ -1490,6 +1490,7 @@ void LipidSpaceGUI::setKnubbel(){
 
 
 void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
+    emit resizing();
     event->ignore();
 }
 
