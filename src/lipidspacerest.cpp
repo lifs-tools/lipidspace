@@ -1,4 +1,4 @@
-#include <libraries/cpp-httplib/httplib.h>
+#include "httplib.h"
 #include <chrono>
 #include <thread>
 #include <QtGlobal>
@@ -26,6 +26,7 @@ public:
 
     inline int start(string host, int port, string temp_folder, bool debug)
     {
+        qInfo("Using %d threads with openBLAS!", openblas_get_num_threads());
         GlobalData::rest_temp_folder = temp_folder;
         GlobalData::debug = debug;
         // stop(SIGINT);
@@ -294,7 +295,7 @@ public:
     inline int stop(int signal)
     {
         qInfo() << "Server received signal: " << signal;
-        if (signal == SIGINT)
+        if (signal == SIGINT || signal == SIGHUP || signal == SIGKILL || signal == SIGABRT)
         { // only handle SIG INTERRUPT for now
             if (svr.is_running())
             {
@@ -313,7 +314,10 @@ public:
 };
 
 static LipidSpaceRest lsr;
-extern "C" void signal_handler(int signum) { lsr.stop(signum); }
+extern "C" void signal_handler(int signum) {
+   int status = lsr.stop(signum);
+   exit(status);
+}
 
 void handleSigInt(int x)
 {
@@ -323,6 +327,12 @@ void handleSigInt(int x)
 
 int main(int argc, char *argv[])
 {
+
+    signal(SIGINT, signal_handler);
+    signal(SIGHUP, signal_handler);
+    signal(SIGKILL, signal_handler);
+    signal(SIGABRT, signal_handler);
+
     using namespace std;
     using namespace httplib;
 

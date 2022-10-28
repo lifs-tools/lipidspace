@@ -1099,7 +1099,7 @@
   </action>
   <action name="actionImport_mzTabM">
    <property name="text">
-    <string>Import mzTabM</string>
+    <string>Import mzTab-M</string>
    </property>
   </action>
   <action name="actionTranslate">

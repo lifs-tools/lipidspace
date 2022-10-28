@@ -38,6 +38,9 @@ DEPENDPATH += $$PWD/libraries/OpenBLAS/include
 INCLUDEPATH += $$PWD/libraries/cppgoslin
 DEPENDPATH += $$PWD/libraries/cppgoslin
 
+INCLUDEPATH += $$PWD/libraries/cpp-httplib
+DEPENDPATH += $$PWD/libraries/cpp-httplib
+
 SOURCES += \
     src/globaldata.cpp \
     src/Matrix.cpp \
