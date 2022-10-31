@@ -3,7 +3,12 @@
 
 const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SEnd};
+//const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SEnd};
+const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSortingPG, SNormalization, SGoToStudVarFilter, SEnd};
+
+const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart};
+
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart};
 
 Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(parent), lipidSpaceGUI(_lipidSpaceGUI) {
     setObjectName(QString::fromUtf8("TutorialFrame"));
@@ -296,6 +301,8 @@ void Tutorial::resize(){
     switch(tutorialType){
         case FirstTutorial: first_tutorial_steps(); break;
         case SecondTutorial: second_tutorial_steps(); break;
+        case ThirdTutorial: third_tutorial_steps(); break;
+        case FourthTutorial: fourth_tutorial_steps(); break;
         default: close_tutorial(0); break;
     }
 }
@@ -306,6 +313,8 @@ void Tutorial::continue_tutorial(){
     switch(tutorialType){
         case FirstTutorial: first_tutorial_steps(); break;
         case SecondTutorial: second_tutorial_steps(); break;
+        case ThirdTutorial: third_tutorial_steps(); break;
+        case FourthTutorial: fourth_tutorial_steps(); break;
         default: close_tutorial(0); break;
     }
 }
@@ -418,6 +427,10 @@ void Tutorial::tab_changed(int index){
         case SecondTutorial: {
             if (second_tutorial_steps_order[step] == SSorting && lipidSpaceGUI->ui->itemsTabWidget->currentIndex() != 0){
                 lipidSpaceGUI->ui->itemsTabWidget->setCurrentIndex(0);
+            }
+
+            else if (second_tutorial_steps_order[step] == SSorting && lipidSpaceGUI->ui->itemsTabWidget->currentIndex() == 3){
+
             }
         } break;
 
@@ -754,7 +767,6 @@ void Tutorial::second_tutorial_steps(){
     titleLabel->setText("");
     informationLabel->setText("");
     QFontMetrics font_metrics(QApplication::font());
-
     SecondSteps s_step = second_tutorial_steps_order[step];
 
     switch(s_step){
@@ -811,7 +823,7 @@ void Tutorial::second_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 80, 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Rerun analysis");
-                informationLabel->setText(QString("By default, all entries in each selection list are selected at the beginning. If you want to exclude certain lipid species, lipid classes, lipid categories, or even complete samples for a reanalysis of your data, you simple have to deselect the according entries and hit the '%1' button.").arg(((QPushButton*)widget)->text()));
+                informationLabel->setText(QString("By default, all entries in each selection list are selected at the beginning. If you want to exclude certain lipid species, lipid classes, lipid categories, or even complete samples for a reanalysis of your data, you simple have to deselect the respective entries and click the '%1' button.").arg(((QPushButton*)widget)->text()));
             }
             break;
 
@@ -851,9 +863,79 @@ void Tutorial::second_tutorial_steps(){
             break;
 
 
+        case SNormalization:
+            {
+                move(lipidSpaceGUI->width() - width() - 80, 80);
+                changeSize(650, 300);
+                QWidget *widget = lipidSpaceGUI->ui->normalizationComboBox;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Different normalizations");
+                informationLabel->setText("LipidSpace supports several types of lipid intensity normalizations. Absolute normalization (aka no normalization) is set by default. Relative normalization normalizes all lipidomes against each other. When nominal study variables are introduced, the user can select study based normalizations. That means, that all lipidomes assigned to the same variable remain in the same relation to each other.");
+            }
+            break;
+
+        case SGoToStudVarFilter:
+            {
+                move(lipidSpaceGUI->width() - width() - 80, 80);
+                changeSize(650, 250);
+                QWidget *widget = lipidSpaceGUI->ui->speciesComboBox;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALT, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
+                lipidSpaceGUI->ui->itemsTabWidget->setEnabled(true);
+                titleLabel->setText("Filtering study variables");
+                informationLabel->setText("If you want (temporarily) filter with respect to your study variables, please click on the 'Study Variables' tab.");
+            }
+            break;
+
 
 
         case SEnd:
+        default:
+            close_tutorial(0);
+            break;
+    }
+}
+
+
+
+
+
+void Tutorial::third_tutorial_steps(){
+    disable();
+    pagesLabel->setText((std::to_string(step + 1) + " / "  + std::to_string(third_tutorial_steps_order.size() - 1)).c_str());
+    setVisible(true);
+    titleLabel->setText("");
+    informationLabel->setText("");
+    QFontMetrics font_metrics(QApplication::font());
+    ThirdSteps t_step = third_tutorial_steps_order[step];
+
+    switch(t_step){
+        case TStart:
+        case TEnd:
+        default:
+            close_tutorial(0);
+            break;
+    }
+}
+
+
+
+
+
+void Tutorial::fourth_tutorial_steps(){
+    disable();
+    pagesLabel->setText((std::to_string(step + 1) + " / "  + std::to_string(fourth_tutorial_steps_order.size() - 1)).c_str());
+    setVisible(true);
+    titleLabel->setText("");
+    informationLabel->setText("");
+    QFontMetrics font_metrics(QApplication::font());
+    FourthSteps d_step = fourth_tutorial_steps_order[step];
+
+    switch(d_step){
+        case DStart:
+        case DEnd:
         default:
             close_tutorial(0);
             break;

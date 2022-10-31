@@ -38,7 +38,11 @@ enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial, ThirdTutorial, Fou
 
 enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SEnd};
+enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SEnd};
+
+enum ThirdSteps {TStart, TEnd};
+
+enum FourthSteps {DStart, DEnd};
 
 class LipidSpaceGUI;
 
@@ -69,6 +73,8 @@ public:
 
     static const vector<FirstSteps> first_tutorial_steps_order;
     static const vector<SecondSteps> second_tutorial_steps_order;
+    static const vector<ThirdSteps> third_tutorial_steps_order;
+    static const vector<FourthSteps> fourth_tutorial_steps_order;
 
     void show_arrow(Arrow, QWidget *, int x, int y);
     void show_arrow(Arrow, QWidget *, QPoint);
@@ -76,6 +82,8 @@ public:
     bool can_start_tutorial();
     void first_tutorial_steps();
     void second_tutorial_steps();
+    void third_tutorial_steps();
+    void fourth_tutorial_steps();
     void continue_tutorial();
     void disable();
     void hide_arrows();
