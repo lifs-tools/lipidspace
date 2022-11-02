@@ -51,22 +51,22 @@ int main(int argc, char** argv) {
         return application.exec();
     }
 
+    /*
     else if (argc > 1 && string(argv[1]) == "a"){
-        vector<double> ff = {3.98, 3.99, 4.07, 4.25, 4.27, 4.29, 4.31, 4.32, 4.34, 4.34, 4.35, 4.37, 4.39, 4.4, 4.4, 4.4, 4.41, 4.42, 4.43, 4.52, 4.54, 4.56, 4.58, 4.59, 4.59, 4.59, 4.65, 4.65, 4.7, 4.77, 4.83, 4.89, 4.91, 4.95, 5.14};
-        Array f;
-        f.add(ff);
+        vector<double> aa = {207, 282, 241};
+        Array a;
+        a.add(aa);
 
-        vector<double> mm = {4.32, 4.71, 4.72, 4.76, 4.79, 4.8, 4.87, 4.88, 4.9, 4.92, 4.95, 4.95, 4.96, 4.96, 4.97, 4.97, 5.02, 5.06, 5.07, 5.07, 5.1, 5.11, 5.13, 5.13, 5.14, 5.15, 5.17, 5.18, 5.2, 5.23, 5.32, 5.34, 5.36, 5.47, 5.52, 5.62};
-        Array m;
-        m.add(mm);
 
-        double d, sep;
-        ks_separation_value(m, f, d, sep);
+        vector<double> bb = {234, 242, 232};
+        Array b;
+        b.add(bb);
 
-        cout << d << " " << sep << endl;
+        cout << p_value_chi_sq(a, b) << endl;
 
         return 0;
     }
+    */
 
     else if (argc > 1 && string(argv[1]) == "mem"){
 

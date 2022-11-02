@@ -3206,7 +3206,11 @@ void LipidSpace::lipid_analysis(bool report_progress){
 
         statistics_lipids.resize(lipid_name_map.size());
         for (auto kv : lipid_name_map) statistics_lipids[kv.second] = kv.first;
+
     }
+
+
+
 
 
     auto stop = high_resolution_clock::now();

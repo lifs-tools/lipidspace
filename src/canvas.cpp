@@ -1302,9 +1302,8 @@ void Canvas::contextMenu(QPoint pos){
 void Canvas::mousePressEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
-
     if (event->button() == Qt::LeftButton){
-        if (GlobalData::ctrl_pressed){
+        if (GlobalData::ctrl_pressed && !GlobalData::in_tutorial){
             mouse(event, this);
         }
         else {
@@ -1370,7 +1369,7 @@ void Canvas::exportAsPdf(){
 
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent *){
-    if ((!dendrogram && !pointSet) || GlobalData::selected_view) return;
+    if ((!dendrogram && !pointSet) || GlobalData::selected_view || GlobalData::in_tutorial) return;
     marked_for_selected_view = !marked_for_selected_view;
 }
 
@@ -1403,7 +1402,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
     if (event->buttons() & Qt::LeftButton){
-        if (!GlobalData::ctrl_pressed){
+        if (!GlobalData::ctrl_pressed || GlobalData::in_tutorial){
             setBackgroundBrush(QBrush());
             viewport()->setCursor(Qt::DragMoveCursor);
             QRect viewportRect(0, 0, viewport()->width(), viewport()->height());

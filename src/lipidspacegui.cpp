@@ -1885,6 +1885,8 @@ void LipidSpaceGUI::lipidExited(){
 
 
 void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
+    if (GlobalData::in_tutorial) return;
+
     lipids_for_selection_menu.clear();
     for (auto l : lipids_for_selection) lipids_for_selection_menu.push_back(l);
 

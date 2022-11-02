@@ -869,6 +869,150 @@ double p_value_welch(Array &a, Array &b){
 
 
 
+
+/*
+Source: https://www.geeksforgeeks.org/python-pearsons-chi-square-test/
+*/
+
+double p_value_chi_sq(Array &a, Array &b){
+    if (a.size() != b.size()) return -1;
+    int n = a.size();
+
+    /*
+    Array rt(n, 0);
+    Array ct(2, 0);
+    double global_sum = 0;
+    double free_deg = (n - 1) * (2 - 1);
+    for (int r = 0; r < n; ++r){
+        ct[0] += a[r];
+        ct[1] += b[r];
+        rt[r] += a[r] + b[r];
+        global_sum += a[r] + b[r];
+    }
+
+    Array estimated_a(n, 0);
+    Array estimated_b(n, 0);
+
+    for (int r = 0; r < n; ++r){
+        estimated_a[r] = ct[0] * rt[r] / global_sum;
+        estimated_b[r] = ct[1] * rt[r] / global_sum;
+    }
+
+    double x2 = 0;
+    for (int r = 0; r < n; ++r){
+        x2 += sq(a[r] - estimated_a[r]) / estimated_a[r];
+        x2 += sq(b[r] - estimated_b[r]) / estimated_b[r];
+    }
+
+
+    free_deg /= 2.;
+    x2 /= 2;
+
+    */
+
+    double x2 = 0;
+    for (int r = 0; r < n; ++r){
+        x2 += sq(a[r] - b[r]) / b[r];
+    }
+
+
+    double free_deg = ((double)n - 1) / 2.;
+    x2 /= 2;
+    double pval = 0;
+    for (double k = 0; k < 100; ++k){
+        pval += exp(k * log(x2) - lgamma(k + free_deg + 1.));
+    }
+    pval *= pow(x2, free_deg) * exp(-x2);
+
+    return 1. - pval;
+}
+
+
+
+double cosine_similarity(Array &a, Array &b){
+    if (a.size() != b.size()) return -1;
+
+    double cs = 0, tmp_a = 0, tmp_b = 0;
+    for (uint i = 0; i < a.size(); ++i){
+        cs += a[i] * b[i];
+        tmp_a += sq(a[i]);
+        tmp_b += sq(b[i]);
+    }
+    return cs / (sqrt(tmp_a) * sqrt(tmp_b));
+}
+
+
+
+double test_benford(Array &a){
+    Array benford;
+    benford.push_back(0.30102999566398114);
+    benford.push_back(0.17609125905568124);
+    benford.push_back(0.1249387366082999);
+    benford.push_back(0.0969100130080564);
+    benford.push_back(0.0791812460476248);
+    benford.push_back(0.06694678963061322);
+    benford.push_back(0.057991946977686726);
+    benford.push_back(0.051152522447381284);
+    benford.push_back(0.04575749056067514);
+
+    double total_sum = 0;
+    Array leading_digits(10, 0);
+    for (auto val : a){
+        if (val <= 0) continue;
+        leading_digits[(int)(val / pow(10,(floor(log(val) / log(10)))))]++;
+        total_sum += 1;
+    }
+    leading_digits.erase(leading_digits.begin());
+
+    double d = 0;
+    for (uint i = 0; i < benford.size(); ++i){
+        d += sq(benford[i] - leading_digits[i] / total_sum);
+    }
+
+    return sqrt(d) / 1.0363099845062402;
+}
+
+
+
+double test_benford(Matrix &m){
+    Array benford;
+    benford.push_back(0.30102999566398114);
+    benford.push_back(0.17609125905568124);
+    benford.push_back(0.1249387366082999);
+    benford.push_back(0.0969100130080564);
+    benford.push_back(0.0791812460476248);
+    benford.push_back(0.06694678963061322);
+    benford.push_back(0.057991946977686726);
+    benford.push_back(0.051152522447381284);
+    benford.push_back(0.04575749056067514);
+
+    double total_sum = 0;
+    Array leading_digits(10, 0);
+
+    for (int c = 0; c < m.cols; c++){
+        for (int r = 0; r < m.rows; ++r){
+            double val = m(r, c);
+            if (val <= 0) continue;
+            leading_digits[(int)(val / pow(10, floor(log(val) / log(10))))]++;
+            total_sum += 1;
+        }
+    }
+    leading_digits.erase(leading_digits.begin());
+
+    double d = 0;
+    for (uint i = 0; i < benford.size(); ++i){
+        d += sq(benford[i] - leading_digits[i] / total_sum);
+    }
+
+    return sqrt(d) / 1.0363099845062402;
+}
+
+
+
+
+
+
+
 /*
 Source: https://en.wikipedia.org/wiki/Student%27s_t-test
 */
