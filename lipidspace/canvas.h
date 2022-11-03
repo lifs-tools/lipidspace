@@ -253,6 +253,7 @@ signals:
     void context(Canvas *canvas, QPoint pos);
     void rightClick(QPoint pos, set<int> *selected_d_lipidomes = 0);
     void lipidsForSelection(vector<string> &l);
+    void tileSelected();
 };
 
 #endif /* CANVAS_H */

@@ -3,8 +3,8 @@
 
 const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-//const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SFinish, SEnd};
-const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SLoadTable, SLeftPanel, SLipidSpaces, SFinish, SEnd};
+//const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SFinish, SEnd};
+const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SLoadTable, SDendrogram, SFinish, SEnd};
 
 const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart};
 
@@ -149,7 +149,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
 
-    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_study_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsHistogram, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}};
+    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_study_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsHistogram, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}};
 
 
     // window resize event
@@ -174,6 +174,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
     connect(lipidSpaceGUI->import_table.ui->nominalStudyVariableListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
     connect(lipidSpaceGUI->import_table.ui->lipidListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
+    connect(ui->actionSelection_mode_activated, &QAction::triggered, this, &Tutorial::action_performed);
 }
 
 
@@ -296,6 +297,10 @@ void Tutorial::start_second_tutorial(){
     tutorialType = SecondTutorial;
     second_tutorial_steps();
     GlobalData::in_tutorial = true;
+
+
+
+
 }
 
 
@@ -346,6 +351,24 @@ void Tutorial::hide_arrows(){
 
 
 
+void Tutorial::tile_selection_changed(){
+    if (step < 0 || tutorialType == NoTutorial) return;
+
+    switch(tutorialType){
+        case SecondTutorial: {
+            if (second_tutorial_steps_order[step] == SSpacesOptions){
+                int selected = 0;
+                for (auto canvas : lipidSpaceGUI->canvases) selected += canvas->marked_for_selected_view;
+                continuePushButton->setEnabled(selected == 2);
+            }
+        }
+
+        default: break;
+    }
+}
+
+
+
 
 void Tutorial::combobox_changed(int){
     if (step < 0 || tutorialType == NoTutorial) return;
@@ -369,8 +392,9 @@ void Tutorial::action_performed(){
 
     switch(tutorialType){
         case FirstTutorial: {
+            FirstSteps f_step = first_tutorial_steps_order[step];
 
-            switch((FirstSteps)step){
+            switch(f_step){
                 case FOpenImport:
                     {
                         ImportTable &it = lipidSpaceGUI->import_table;
@@ -397,7 +421,16 @@ void Tutorial::action_performed(){
         } break;
 
         case SecondTutorial: {
+            SecondSteps s_step = second_tutorial_steps_order[step];
 
+            switch(s_step){
+                case SSpacesSingleView:
+                    continue_tutorial();
+                    break;
+
+                default:
+                    break;
+            }
         } break;
 
         default:
@@ -411,8 +444,9 @@ void Tutorial::tab_changed(int index){
 
     switch(tutorialType){
         case FirstTutorial: {
+            FirstSteps f_step = first_tutorial_steps_order[step];
 
-            switch((FirstSteps)step){
+            switch(f_step){
                 case FSelectColumnTable:
                     if (index == 1) continue_tutorial();
                     break;
@@ -429,24 +463,57 @@ void Tutorial::tab_changed(int index){
         } break;
 
         case SecondTutorial: {
-            if (second_tutorial_steps_order[step] == SSorting && lipidSpaceGUI->ui->itemsTabWidget->currentIndex() != 0){
-                lipidSpaceGUI->ui->itemsTabWidget->setCurrentIndex(0);
-            }
+            SecondSteps s_step = second_tutorial_steps_order[step];
 
-            else if (second_tutorial_steps_order[step] == SGoToStudVarFilter && lipidSpaceGUI->ui->itemsTabWidget->currentIndex() == 3){
-                continue_tutorial();
-            }
+            switch(s_step){
+                case SSorting:
+                    if (lipidSpaceGUI->ui->itemsTabWidget->currentIndex() != 0){
+                        lipidSpaceGUI->ui->itemsTabWidget->setCurrentIndex(0);
+                    }
+                    break;
 
-            else if (second_tutorial_steps_order[step] == SLeftPanel && lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 1){
-                continue_tutorial();
-            }
+                case SGoToStudVarFilter:
+                    if (lipidSpaceGUI->ui->itemsTabWidget->currentIndex() == 3){
+                        continue_tutorial();
+                    }
+                    break;
 
-            else if (second_tutorial_steps_order[step] == SLeftPanel && lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 1){
-                lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
-            }
+                case SLeftPanel:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 1){
+                        continue_tutorial();
+                    }
+                    else if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 1){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                    }
+                    break;
 
-            else if (second_tutorial_steps_order[step] == SLipidSpaces && lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 1){
-                lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(1);
+                case SLipidSpaces:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 1){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(1);
+                    }
+                    break;
+
+                case SSpacesOptions:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 1){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(1);
+                    }
+                    break;
+
+                case SDendrogramClick:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 2){
+                        continue_tutorial();
+                    }
+                    else if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 2){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(1);
+                    }
+                    break;
+
+                case SDendrogram:
+                    lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                    break;
+
+                default:
+                    break;
             }
 
 
@@ -463,8 +530,9 @@ void Tutorial::item_changed(const QModelIndex &, int, int){
 
     switch(tutorialType){
         case FirstTutorial: {
+            FirstSteps f_step = first_tutorial_steps_order[step];
 
-            switch((FirstSteps)step){
+            switch(f_step){
                 case FSampleEntryAssignment:
                     {
                         QListWidget *list = lipidSpaceGUI->import_table.ui->sampleListWidgetCol;
@@ -554,7 +622,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FFindImport: {
                 move(200, 100);
-                show_arrow(ALT, lipidSpaceGUI->ui->centralwidget, font_metrics.boundingRect(lipidSpaceGUI->ui->menuLipidSpace->title()).width() / 2.0, 0);
+                show_arrow(ALT, lipidSpaceGUI->ui->centralwidget, lipidSpaceGUI->ui->menubar->actionGeometry(lipidSpaceGUI->ui->menuLipidSpace->menuAction()).width() / 2.0, 0);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Where to import Data?");
                 informationLabel->setText("LipidSpace supports three types of input data, pure csv lists containing lipid names (one per line), as an already mentioned table, or formatted in the mzTab format.");
@@ -817,6 +885,15 @@ void Tutorial::second_tutorial_steps(){
                     ct->at(3) = StudyVariableColumnNominal;
                     string path_to_example = QCoreApplication::applicationDirPath().toStdString();
                     lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
+
+                    main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
+                    main_widgets[lipidSpaceGUI->ui->menuView] = true;
+                    main_widgets[lipidSpaceGUI->ui->actionExport_Results] = true;
+                    main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
+                    main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
+                    main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
+
+                    for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
                 }
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("UI Sections of LipidSpace");
@@ -894,7 +971,7 @@ void Tutorial::second_tutorial_steps(){
         case SNormalization:
             {
                 move(lipidSpaceGUI->width() - width() - 20, 20);
-                changeSize(650, 270);
+                changeSize(650, 220);
                 QWidget *widget = lipidSpaceGUI->ui->normalizationComboBox;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
@@ -921,7 +998,7 @@ void Tutorial::second_tutorial_steps(){
         case SFilterStudyVar:
             {
                 move(lipidSpaceGUI->width() - width() - 20, 20);
-                changeSize(650, 270);
+                changeSize(650, 220);
                 QWidget *widget = lipidSpaceGUI->ui->itemsTabWidget;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ATL, lipidSpaceGUI, p.x() + widget->width(), p.y() + widget->height() / 2.);
@@ -934,7 +1011,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SLeftPanel:
             {
-                changeSize(650, 270);
+                changeSize(650, 220);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -948,12 +1025,85 @@ void Tutorial::second_tutorial_steps(){
 
         case SLipidSpaces:
             {
-                changeSize(550, 270);
+                changeSize(400, 320);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("The Lipid Spaces");
                 informationLabel->setText("The lipid spaces are a represention of the respective lipidomes. For each lipidome, you have a lipid space tile plus a global tile containing all lipid species within this analysis. All views are connected to each other. You can try move the views or zoom in / out. Afterwards, please continue.");
+            }
+            break;
+
+
+        case SSpacesOptions:
+            {
+                changeSize(650, 250);
+                move(20, lipidSpaceGUI->height() - height() - 80);
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                titleLabel->setText("Additional Options I");
+                informationLabel->setText("Additional options for the lipid space tiles are available. When holding the [CTRL] key, you may swap the tiles. On right click, a context menu is opening with options like (de)selecting these lipid species where the mouse cursor hovers above. On double click, the tile gets marked for single view mode. Please mark two tiles.");
+                tile_selection_changed();
+            }
+            break;
+
+
+
+
+        case SSpacesSingleView:
+            {
+                changeSize(650, 220);
+                move(20, lipidSpaceGUI->height() - height() - 80);
+
+                show_arrow(ATR, lipidSpaceGUI, lipidSpaceGUI->ui->menubar->actionGeometry(lipidSpaceGUI->ui->menuView->menuAction()).x(), lipidSpaceGUI->ui->menubar->height() / 2.);
+
+                lipidSpaceGUI->ui->menubar->setEnabled(true);
+                lipidSpaceGUI->ui->menuView->setEnabled(true);
+                lipidSpaceGUI->ui->menuSelected_tiles_mode->setEnabled(true);
+                lipidSpaceGUI->ui->actionSelection_mode_activated->setEnabled(true);
+
+                titleLabel->setText("Additional Options II");
+                informationLabel->setText("When clicking on View -> Selected tile(s) mode -> Activated you have the possibility to switch between displaying all tiles and only the selected ones. Be aware that when your dataset contains more than 100 lipidomes, the selected tile mode will be automatically. Please activate the selected tile mode now.");
+
+            }
+            break;
+
+
+
+
+        case SSpacesSingleViewExplaination:
+            {
+                changeSize(650, 220);
+                move(20, lipidSpaceGUI->height() - height() - 80);
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Single view mode");
+                informationLabel->setText("Especially when you are interested only in one ore a subset of lipidomes, you can activate that mode. Now, all other tiles vanish from the grid. If you want to add / remove tiles from this mode while it is activated, you can do so by opening a selection window with View -> Selected tile(s) mode -> Select tyle(s).");
+            }
+            break;
+
+
+        case SDendrogramClick:
+            {
+                changeSize(600, 180);
+                move(20, lipidSpaceGUI->height() - height() - 80);
+                QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALT, lipidSpaceGUI, p.x() + widget->width() / 4., p.y());
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                titleLabel->setText("Click on 'Dendrogram' tab");
+                informationLabel->setText("Please switch now to the dendrogram view clicking on the 'Dendrogram' tab.");
+            }
+            break;
+
+
+        case SDendrogram:
+            {
+                changeSize(650, 220);
+                move(20, 40);
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                continuePushButton->setEnabled(true);
+                lipidSpaceGUI->ui->dendrogramView->setEnabled(true);
+                titleLabel->setText("Dendrogram View");
+                informationLabel->setText("The dendrogram view summarizes the structural distances of all lipidomes based on their lipid space in one figure. It is also interactive, one can zoom in / out or (de)mark (sub)branches of the tree. Please try it out and continue the tutorial.");
             }
             break;
 

@@ -326,6 +326,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statisticsSpeciesCV->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsROCCurve->setContextMenuPolicy(Qt::CustomContextMenu);
 
+
     connect(ui->actionLoad_list_s, &QAction::triggered, this, &LipidSpaceGUI::openLists);
     connect(ui->actionLoad_table, &QAction::triggered, this, &LipidSpaceGUI::openTable);
     connect(ui->actionImport_mzTabM, &QAction::triggered, this, &LipidSpaceGUI::openMzTabM);
@@ -1507,7 +1508,6 @@ void LipidSpaceGUI::updateGUI(){
     ui->menuAnalysis->setEnabled(lipid_space->lipidomes.size());
     ui->menuView->setEnabled(lipid_space->lipidomes.size());
     ui->actionExport_Results->setEnabled(lipid_space->lipidomes.size());
-
 
     ui->actionAutomatically->setChecked(false);
     ui->action1_column->setChecked(false);

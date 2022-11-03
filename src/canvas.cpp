@@ -1369,8 +1369,9 @@ void Canvas::exportAsPdf(){
 
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent *){
-    if ((!dendrogram && !pointSet) || GlobalData::selected_view || GlobalData::in_tutorial) return;
+    if ((!dendrogram && !pointSet) || GlobalData::selected_view) return;
     marked_for_selected_view = !marked_for_selected_view;
+    emit tileSelected();
 }
 
 

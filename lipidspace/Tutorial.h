@@ -38,7 +38,7 @@ enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial, ThirdTutorial, Fou
 
 enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SFinish, SEnd};
+enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SFinish, SEnd};
 
 enum ThirdSteps {TStart, TEnd};
 
@@ -98,6 +98,7 @@ public slots:
     void close_tutorial(int state);
     void start_first_tutorial();
     void start_second_tutorial();
+    void tile_selection_changed();
     void action_performed();
     void tab_changed(int);
     void resize();
