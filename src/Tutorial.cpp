@@ -3,8 +3,8 @@
 
 const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-//const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SFinish, SEnd};
-const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SLoadTable, SDendrogram, SFinish, SEnd};
+//const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SFinish, SEnd};
+const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SLoadTable, SDendrogram, SDendrogram2, SStatistics, SFinish, SEnd};
 
 const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart};
 
@@ -149,7 +149,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
 
-    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_study_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsHistogram, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}};
+    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_study_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsHistogram, false}, {ui->statisticsROCCurve, false}, {ui->statisticsSpeciesCV, false}, {ui->statisticsBarPlot, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}, {ui->secondaryComboBox, false}};
 
 
     // window resize event
@@ -175,6 +175,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(lipidSpaceGUI->import_table.ui->nominalStudyVariableListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
     connect(lipidSpaceGUI->import_table.ui->lipidListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
     connect(ui->actionSelection_mode_activated, &QAction::triggered, this, &Tutorial::action_performed);
+    connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
 }
 
 
@@ -298,9 +299,6 @@ void Tutorial::start_second_tutorial(){
     second_tutorial_steps();
     GlobalData::in_tutorial = true;
 
-
-
-
 }
 
 
@@ -375,12 +373,29 @@ void Tutorial::combobox_changed(int){
 
     switch(tutorialType){
         case SecondTutorial: {
-            if (second_tutorial_steps_order[step] == SSorting && lipidSpaceGUI->ui->speciesComboBox->currentText() == "Type classification (Desc)"){
-                continue_tutorial();
+            SecondSteps s_step = second_tutorial_steps_order[step];
+
+            switch(s_step){
+                case SSorting:
+                    if (lipidSpaceGUI->ui->speciesComboBox->currentText() == "Type classification (Desc)"){
+                        continue_tutorial();
+                    }
+                    break;
+
+                case SStatistics:
+                    if (lipidSpaceGUI->ui->studyVariableComboBoxStat->currentText() == "Type"){
+                        continue_tutorial();
+                    }
+                    break;
+
+                default:
+                    break;
             }
+            break;
         }
 
-        default: break;
+        default:
+            break;
     }
 }
 
@@ -510,6 +525,19 @@ void Tutorial::tab_changed(int index){
 
                 case SDendrogram:
                     lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                    break;
+
+                case SDendrogram2:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 3){
+                        continue_tutorial();
+                    }
+                    else if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 3){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                    }
+                    break;
+
+                case SStatistics:
+                    lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(3);
                     break;
 
                 default:
@@ -1015,7 +1043,8 @@ void Tutorial::second_tutorial_steps(){
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
-                show_arrow(ART, lipidSpaceGUI, p.x() + widget->width() / 4., p.y());
+                int x = lipidSpaceGUI->ui->viewsTabWidget->mapTo(lipidSpaceGUI->ui->centralwidget, QPoint(lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(1).x(), 0)).x();
+                show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(1).width() / 2., p.y());
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Results Section");
                 informationLabel->setText("On the right hand side you can see the results section. It contains four tabs (+ home tab) showing different aspects of your data. You can choose between a view on all individual lipidomes, a dendrogram putting all lipidomes into relation, a statistics module and your imported raw data. Please select the 'Lipidomes' tab.");
@@ -1087,7 +1116,8 @@ void Tutorial::second_tutorial_steps(){
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
-                show_arrow(ALT, lipidSpaceGUI, p.x() + widget->width() / 4., p.y());
+                int x = lipidSpaceGUI->ui->viewsTabWidget->mapTo(lipidSpaceGUI->ui->centralwidget, QPoint(lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(2).x(), 0)).x();
+                show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(2).width() / 2., p.y());
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Click on 'Dendrogram' tab");
                 informationLabel->setText("Please switch now to the dendrogram view clicking on the 'Dendrogram' tab.");
@@ -1102,8 +1132,42 @@ void Tutorial::second_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 continuePushButton->setEnabled(true);
                 lipidSpaceGUI->ui->dendrogramView->setEnabled(true);
-                titleLabel->setText("Dendrogram View");
-                informationLabel->setText("The dendrogram view summarizes the structural distances of all lipidomes based on their lipid space in one figure. It is also interactive, one can zoom in / out or (de)mark (sub)branches of the tree. Please try it out and continue the tutorial.");
+                titleLabel->setText("Dendrogram View I");
+                informationLabel->setText("The dendrogram view summarizes the structural distances of all lipidomes based on their lipid space in one figure (which is the very heart of LipidSpace). It is also interactive, one can zoom in / out or (de)mark (sub)branches of the tree. Please try it out and continue the tutorial.");
+            }
+            break;
+
+
+        case SDendrogram2:
+            {
+                changeSize(650, 220);
+                move(20, lipidSpaceGUI->height() - height() - 80);
+                QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+
+                int x = lipidSpaceGUI->ui->viewsTabWidget->mapTo(lipidSpaceGUI->ui->centralwidget, QPoint(lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(3).x(), 0)).x();
+                show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(3).width() / 2., p.y());
+
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                titleLabel->setText("Dendrogram View II");
+                informationLabel->setText("On right click, a context menu allows you to take a pdf of the current dendrogram view. When right clicking over a dendrogram edge (branch), you can perform a subselection of only the lipidomes which are leaves of this branch. To continue, please click now on the 'Statistics' tab.");
+            }
+            break;
+
+
+
+
+        case SStatistics:
+            {
+                changeSize(650, 220);
+                move(20, 40);
+                QWidget *widget = lipidSpaceGUI->ui->studyVariableComboBoxStat;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 4., p.y());
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                widget->setEnabled(true);
+                titleLabel->setText("Statistics view I");
+                informationLabel->setText("The statistics module contains interactive statistics figures comprising several aspects of your data. For instance, you can adjust the views by changing study variable. Please select 'Type' study variable in the combo box.");
             }
             break;
 
