@@ -90,7 +90,6 @@ public:
     void move(int x, int y, QWidget *w = 0);
     void changeSize(int w, int h);
     void item_changed(const QModelIndex &parent, int first, int last);
-    void combobox_changed(int index);
 
 public slots:
     void x_clicked();
@@ -102,6 +101,7 @@ public slots:
     void action_performed();
     void tab_changed(int);
     void resize();
+    void combobox_changed(int index);
 };
 
 #endif /* TUTORIAL_H */

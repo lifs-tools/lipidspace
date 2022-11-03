@@ -371,10 +371,10 @@ void Tutorial::tile_selection_changed(){
 void Tutorial::combobox_changed(int){
     if (step < 0 || tutorialType == NoTutorial) return;
 
+
     switch(tutorialType){
         case SecondTutorial: {
             SecondSteps s_step = second_tutorial_steps_order[step];
-
             switch(s_step){
                 case SSorting:
                     if (lipidSpaceGUI->ui->speciesComboBox->currentText() == "Type classification (Desc)"){

@@ -579,9 +579,9 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
 
 
 void LipidSpaceGUI::setStudyVariable(int c){
-    disconnect(ui->studyVariableComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
-    disconnect(ui->studyVariableComboBoxStat, SIGNAL(currentIndexChanged(int)), 0, 0);
-    disconnect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), 0, 0);
+    disconnect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+    disconnect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+    disconnect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
 
     ui->studyVariableComboBox->setCurrentIndex(c);
     ui->studyVariableComboBoxStat->setCurrentIndex(c);
@@ -597,9 +597,9 @@ void LipidSpaceGUI::setStudyVariable(int c){
     statisticsROCCurve.updateROCCurve();
     studyVariableChanged(ui->studyVariableComboBox->currentText().toStdString());
 
-    connect(ui->studyVariableComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setStudyVariable(int)));
-    connect(ui->studyVariableComboBoxStat, SIGNAL(currentIndexChanged(int)), this, SLOT(setStudyVariable(int)));
-    connect(ui->secondaryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSecondarySorting(int)));
+    connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+    connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+    connect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
 }
 
 
