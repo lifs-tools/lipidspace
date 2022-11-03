@@ -33,6 +33,7 @@ public:
     vector< pair<string, double> > stat_results;
     bool log_scale;
     bool show_data;
+    bool show_pvalues;
 
     Statistics();
     void load_data(LipidSpace *_lipid_space, Chart *_chart);
@@ -55,6 +56,7 @@ public slots:
     void setShowDataBarPlot();
     void lipidEntered(string lipid_name);
     void lipidExited();
+    void setStatResults();
 
 signals:
     void enterLipid(string lipid_name);

@@ -8,6 +8,7 @@ Statistics::Statistics() {
     lipid_space = 0;
     log_scale = false;
     show_data = false;
+    show_pvalues = false;
 }
 
 
@@ -17,7 +18,6 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
 	chart->setRenderHint(QPainter::Antialiasing);
     chart->setTickSize(GlobalData::gui_num_var["tick_size"]);
     chart->setTitleSize(GlobalData::gui_num_var["legend_size"]);
-
 }
 
 
@@ -25,6 +25,13 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
 void Statistics::setLogScaleBarPlot(){
     log_scale = !log_scale;
     chart->setYLogScale(log_scale);
+}
+
+
+
+void Statistics::setStatResults(){
+    show_pvalues = !show_pvalues;
+    chart->setStatResults(show_pvalues);
 }
 
 
@@ -418,13 +425,9 @@ void Statistics::updateBarPlot(){
 
     }
 
-    //vector<QColor> *ccc = new vector<QColor>{QColor("#a7a5a6"), QColor("#cf5eb6"), QColor("#39ae3e")};
-
-    Barplot *barplot = new Barplot(chart, log_scale, show_data);
+    Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
     barplot->add(barplot_data, categories, lipid_names, colors);
-    //barplot->add(barplot_data, categories, lipid_names, ccc);
     chart->add(barplot);
-    //chart->setYLabel("Amount [pmol/mg]");
 
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
     connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);

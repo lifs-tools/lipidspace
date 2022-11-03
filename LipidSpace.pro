@@ -1,6 +1,6 @@
-!win32:QT       += core gui printsupport widgets svg
-win32:QT       += core gui printsupport widgets svg svgwidgets
-
+unix:QT += core gui printsupport widgets svg
+win32:QT += core gui printsupport widgets svg svgwidgets
+macx:QT += core gui printsupport widgets svg svgwidgets
 
 CONFIG += c++17 debug_and_release
 QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
@@ -17,15 +17,31 @@ RC_ICONS = LipidSpace.ico
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 QMAKE_CXXFLAGS_RELEASE += -O3
 
-!win32 {
-    LIBS += -fopenmp -lcppGoslin -L /usr/lib/x86_64-linux-gnu -l openblas libraries/OpenXLSX/bin/linux/libOpenXLSX.a
-    INCLUDEPATH += $$PWD/libraries/OpenXLSX/include
-    DEPENDPATH += $$PWD/libraries/OpenXLSX/include
+unix {
+    LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/linux64/libcppGoslin.so $$PWD/libraries/OpenBLAS/bin/linux64/libopenblas.so $$PWD/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a
 }
+
+win32 {
+    LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
+}
+
+macx {
+    #LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
+}
+
+INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+
+INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
+DEPENDPATH += $$PWD/libraries/OpenBLAS/include
+
+INCLUDEPATH += $$PWD/libraries/cppgoslin
+DEPENDPATH += $$PWD/libraries/cppgoslin
+
 
 SOURCES += \
     src/about.cpp \
@@ -101,15 +117,4 @@ release:MOC_DIR += objects
 #else: unix:!android: target.path = /opt/$${TARGET}/bin
 #!isEmpty(target.path): INSTALLS += target
 
-win32:LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll
-win32:LIBS += $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll
-win32:LIBS += -L $$PWD/libraries/OpenXLSX/bin/win64 -lOpenXLSX
 
-win32:INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
-win32:DEPENDPATH += $$PWD/libraries/OpenBLAS/include
-
-win32:INCLUDEPATH += $$PWD/libraries/cppgoslin
-win32:DEPENDPATH += $$PWD/libraries/cppgoslin
-
-win32:INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
-win32:DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include

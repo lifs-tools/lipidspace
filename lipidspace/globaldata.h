@@ -34,6 +34,7 @@ public:
     static QString last_folder;
     static map<string, string> gui_string_var;
     static map<string, double> gui_num_var;
+    static bool in_tutorial;
 };
 
 

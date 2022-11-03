@@ -38,9 +38,11 @@ enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial, ThirdTutorial, Fou
 
 enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-enum SecondSteps {SSeletionSection1, SSeletionSection2, SVisualizationSection, SStart, SLoadTable, SEnd};
+enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
-//enum SecondSteps {SStart, SLoadTable, SEnd};
+enum ThirdSteps {TStart, TEnd};
+
+enum FourthSteps {DStart, DEnd};
 
 class LipidSpaceGUI;
 
@@ -69,12 +71,19 @@ public:
     explicit Tutorial(LipidSpaceGUI *lipidSpaceGUI, QWidget *parent = 0);
     ~Tutorial();
 
+    static const vector<FirstSteps> first_tutorial_steps_order;
+    static const vector<SecondSteps> second_tutorial_steps_order;
+    static const vector<ThirdSteps> third_tutorial_steps_order;
+    static const vector<FourthSteps> fourth_tutorial_steps_order;
+
     void show_arrow(Arrow, QWidget *, int x, int y);
     void show_arrow(Arrow, QWidget *, QPoint);
     QPoint map_widget(QWidget *widget, QWidget *main);
     bool can_start_tutorial();
     void first_tutorial_steps();
     void second_tutorial_steps();
+    void third_tutorial_steps();
+    void fourth_tutorial_steps();
     void continue_tutorial();
     void disable();
     void hide_arrows();
@@ -88,8 +97,11 @@ public slots:
     void close_tutorial(int state);
     void start_first_tutorial();
     void start_second_tutorial();
+    void tile_selection_changed();
     void action_performed();
     void tab_changed(int);
+    void resize();
+    void combobox_changed(int index);
 };
 
 #endif /* TUTORIAL_H */

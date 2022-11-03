@@ -51,9 +51,22 @@ int main(int argc, char** argv) {
         return application.exec();
     }
 
+    /*
     else if (argc > 1 && string(argv[1]) == "a"){
+        vector<double> aa = {207, 282, 241};
+        Array a;
+        a.add(aa);
+
+
+        vector<double> bb = {234, 242, 232};
+        Array b;
+        b.add(bb);
+
+        cout << p_value_chi_sq(a, b) << endl;
+
         return 0;
     }
+    */
 
     else if (argc > 1 && string(argv[1]) == "mem"){
 

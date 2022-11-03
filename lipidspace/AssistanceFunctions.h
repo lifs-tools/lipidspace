@@ -28,6 +28,7 @@
 #include "lipidspace/Matrix.h"
 #include "lipidspace/logging.h"
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <math.h>
 #include <immintrin.h>
@@ -35,7 +36,7 @@
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
 #define __max(a,b) (((a) > (b)) ? (a) : (b))
-#define __abs(a) (((a) >= 0) ? (a) : (-a))
+#define __abs(a) (((a) >= 0) ? (a) : (-(a)))
 
 #define UNDEFINED_LIPID "UNDEFINED"
 #define FILE_STUDY_VARIABLE_NAME "Origin"
@@ -270,6 +271,10 @@ double f_distribution_cdf(double fi_stat, double df1, double df2);
 double p_value_student(Array &a, Array &b);
 double p_value_welch(Array &a, Array &b);
 double p_value_anova(vector<Array> &v);
+double p_value_chi_sq(Array &a, Array &b);
+double cosine_similarity(Array &a, Array &b);
+double test_benford(Array &a);
+double test_benford(Matrix &m);
 
 
 inline double compute_l2_norm(const double *a, const double *b, const int rows){
