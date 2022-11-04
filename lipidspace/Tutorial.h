@@ -40,9 +40,9 @@ enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport,
 
 enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
-enum ThirdSteps {TStart, TEnd};
+enum ThirdSteps {TStart, TFinish, TEnd};
 
-enum FourthSteps {DStart, DEnd};
+enum FourthSteps {DStart, DFinish, DEnd};
 
 class LipidSpaceGUI;
 
@@ -95,8 +95,7 @@ public slots:
     void x_clicked();
     void close_directly_tutorial();
     void close_tutorial(int state);
-    void start_first_tutorial();
-    void start_second_tutorial();
+    void start_tutorial(TutorialType _tutorial_type);
     void tile_selection_changed();
     void action_performed();
     void tab_changed(int);
