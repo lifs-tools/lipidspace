@@ -179,7 +179,7 @@
           </widget>
           <widget class="QWidget" name="featureTab">
            <attribute name="title">
-            <string>Study Variarbles</string>
+            <string>Study Variables</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <property name="spacing">

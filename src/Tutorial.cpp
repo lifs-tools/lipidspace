@@ -6,9 +6,9 @@ const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescripti
 const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 //const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SLoadTable, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
-const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart};
+const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TFinish, TEnd};
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DFinish, DEnd};
 
 Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(parent), lipidSpaceGUI(_lipidSpaceGUI) {
     setObjectName(QString::fromUtf8("TutorialFrame"));
@@ -22,7 +22,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     setLineWidth(10);
     titleLabel = new QLabel(this);
     titleLabel->setObjectName(QString::fromUtf8("titleLabel"));
-    titleLabel->setGeometry(QRect(20, 20, 481, 61));
+    titleLabel->setGeometry(QRect(20, 30, 481, 61));
     QFont font2;
     font2.setPointSize(16);
     font2.setBold(true);
@@ -31,15 +31,15 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     titleLabel->setWordWrap(true);
     informationLabel = new QLabel(this);
     informationLabel->setObjectName(QString::fromUtf8("informationLabel"));
-    informationLabel->setGeometry(QRect(20, 90, 581, 131));
+    informationLabel->setGeometry(QRect(20, 70, 581, 131));
     QFont font3;
     font3.setPointSize(12);
     informationLabel->setFont(font3);
-    informationLabel->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
+    informationLabel->setAlignment(Qt::AlignJustify);
     informationLabel->setWordWrap(true);
     continuePushButton = new QPushButton(this);
     continuePushButton->setObjectName(QString::fromUtf8("continuePushButton"));
-    continuePushButton->setGeometry(QRect(width() - 105, 50, 80, 26));
+    continuePushButton->setGeometry(QRect(width() - 105, 32, 80, 26));
     continuePushButton->setStyleSheet(QString::fromUtf8(""));
     continuePushButton->setText(QApplication::translate("LipidSpaceGUI", "Continue", nullptr));
     connect(continuePushButton, &QPushButton::clicked, this, &Tutorial::continue_tutorial);
@@ -53,9 +53,13 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     xLabel->move(width() - 25, 10);
     connect(xLabel, &ClickableLabel::clicked, this, &Tutorial::x_clicked);
 
+    QFont font_antialias;
+    font_antialias.setStyleStrategy(QFont::PreferAntialias);
+
     QPixmap close_x(QCoreApplication::applicationDirPath() + "/data/images/close-x.png");
     xLabel->setPixmap(close_x);
     xLabel->setAlignment(Qt::AlignLeading|Qt::AlignRight|Qt::AlignTop);
+    xLabel->setFont(font_antialias);
     QRect r = xLabel->geometry();
     r.setWidth(close_x.size().width());
     r.setHeight(close_x.size().height());
@@ -74,6 +78,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     r.setHeight(p_arrow_bl.size().height());
     arrow_bl->setGeometry(r);
     arrow_bl->setVisible(false);
+    arrow_bl->setFont(font_antialias);
     arrows.push_back(arrow_bl);
 
     QPixmap p_arrow_br(QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-right.png");
@@ -84,6 +89,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     r.setHeight(p_arrow_br.size().height());
     arrow_br->setGeometry(r);
     arrow_br->setVisible(false);
+    arrow_br->setFont(font_antialias);
     arrows.push_back(arrow_br);
 
     QPixmap p_arrow_lt(QCoreApplication::applicationDirPath() + "/data/images/arrow-left-top.png");
@@ -104,6 +110,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     r.setHeight(p_arrow_lb.size().height());
     arrow_lb->setGeometry(r);
     arrow_lb->setVisible(false);
+    arrow_lb->setFont(font_antialias);
     arrows.push_back(arrow_lb);
 
     QPixmap p_arrow_tl(QCoreApplication::applicationDirPath() + "/data/images/arrow-top-left.png");
@@ -114,6 +121,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     r.setHeight(p_arrow_tl.size().height());
     arrow_tl->setGeometry(r);
     arrow_tl->setVisible(false);
+    arrow_tl->setFont(font_antialias);
     arrows.push_back(arrow_tl);
 
     QPixmap p_arrow_tr(QCoreApplication::applicationDirPath() + "/data/images/arrow-top-right.png");
@@ -124,6 +132,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     r.setHeight(p_arrow_tr.size().height());
     arrow_tr->setGeometry(r);
     arrow_tr->setVisible(false);
+    arrow_tr->setFont(font_antialias);
     arrows.push_back(arrow_tr);
 
     QPixmap p_arrow_rt(QCoreApplication::applicationDirPath() + "/data/images/arrow-right-top.png");
@@ -134,6 +143,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     r.setHeight(p_arrow_rt.size().height());
     arrow_rt->setGeometry(r);
     arrow_rt->setVisible(false);
+    arrow_rt->setFont(font_antialias);
     arrows.push_back(arrow_rt);
 
     QPixmap p_arrow_rb(QCoreApplication::applicationDirPath() + "/data/images/arrow-right-bottom.png");
@@ -144,6 +154,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     r.setHeight(p_arrow_rb.size().height());
     arrow_rb->setGeometry(r);
     arrow_rb->setVisible(false);
+    arrow_rb->setFont(font_antialias);
     arrows.push_back(arrow_rb);
 
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
@@ -156,8 +167,10 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(lipidSpaceGUI, &LipidSpaceGUI::resizing, this, &Tutorial::resize);
 
     // tutorial starts
-    connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_first_tutorial);
-    connect(ui->homeGraphicsView->secondTutorialPushButton, &QPushButton::clicked, this, &Tutorial::start_second_tutorial);
+    connect(ui->homeGraphicsView->firstTutorialPushButton, &QPushButton::clicked, this, [=]() { start_tutorial(FirstTutorial); });
+    connect(ui->homeGraphicsView->secondTutorialPushButton, &QPushButton::clicked, this, [=]() { start_tutorial(SecondTutorial); });
+    connect(ui->homeGraphicsView->thirdTutorialPushButton, &QPushButton::clicked, this, [=]() { start_tutorial(ThirdTutorial); });
+    connect(ui->homeGraphicsView->fourthTutorialPushButton, &QPushButton::clicked, this, [=]() { start_tutorial(FourthTutorial); });
 
     connect(&lipidSpaceGUI->import_table, &ImportTable::finished, this, &Tutorial::close_tutorial);
     connect(&lipidSpaceGUI->import_table, &ImportTable::rejected, this, &Tutorial::close_directly_tutorial);
@@ -282,23 +295,18 @@ bool Tutorial::can_start_tutorial(){
 
 
 
-void Tutorial::start_first_tutorial(){
-    if (!can_start_tutorial()) return;
+void Tutorial::start_tutorial(TutorialType _tutorial_type){
+    if (!can_start_tutorial() || _tutorial_type == NoTutorial) return;
     step = 0;
-    tutorialType = FirstTutorial;
-    first_tutorial_steps();
+    tutorialType = _tutorial_type;
+    switch(tutorialType){
+        case FirstTutorial: first_tutorial_steps(); break;
+        case SecondTutorial: second_tutorial_steps(); break;
+        case ThirdTutorial: third_tutorial_steps(); break;
+        case FourthTutorial: fourth_tutorial_steps(); break;
+        default: break;
+    }
     GlobalData::in_tutorial = true;
-}
-
-
-
-void Tutorial::start_second_tutorial(){
-    if (!can_start_tutorial()) return;
-    step = 0;
-    tutorialType = SecondTutorial;
-    second_tutorial_steps();
-    GlobalData::in_tutorial = true;
-
 }
 
 
@@ -619,10 +627,10 @@ void Tutorial::move(int x, int y, QWidget *w){
 
 
 void Tutorial::changeSize(int w, int h){
-    continuePushButton->move(w - 105, 50);
+    continuePushButton->move(w - 105, 32);
     pagesLabel->move(w - 126, h - 31);
     xLabel->move(w - 25, 10);
-    informationLabel->setGeometry(QRect(20, 90, w - 40, h - 120));
+    informationLabel->setGeometry(QRect(20, 70, w - 45, h - 120));
     QPoint p = pos();
     setGeometry(p.x(), p.y(), w, h);
 }
@@ -1273,6 +1281,13 @@ void Tutorial::third_tutorial_steps(){
 
     switch(t_step){
         case TStart:
+            changeSize(650, 220);
+            move(20, 20);
+            titleLabel->setText("Third Tutorial - Feature Selection");
+            continuePushButton->setEnabled(true);
+            informationLabel->setText("Welcome to the third tutorial of LipidSpace. In the previous tutorial, we had in introduction into the general usage of LipidSpace. In this tutorial, we will learn how to analyse our lipid species with respect to provided study variables.");
+            break;
+
         case TEnd:
         default:
             close_tutorial(0);
@@ -1295,6 +1310,13 @@ void Tutorial::fourth_tutorial_steps(){
 
     switch(d_step){
         case DStart:
+            changeSize(650, 250);
+            move(20, 20);
+            titleLabel->setText("Second Tutorial - UI Introduction");
+            continuePushButton->setEnabled(true);
+            informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyse lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be performed on LipidSpace.");
+            break;
+
         case DEnd:
         default:
             close_tutorial(0);
