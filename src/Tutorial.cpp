@@ -23,46 +23,45 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     titleLabel = new QLabel(this);
     titleLabel->setObjectName(QString::fromUtf8("titleLabel"));
     titleLabel->setGeometry(QRect(20, 30, 481, 61));
+	
     QFont font2;
     font2.setPointSize(16);
     font2.setBold(true);
     titleLabel->setFont(font2);
     titleLabel->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
     titleLabel->setWordWrap(true);
+	
     informationLabel = new QLabel(this);
     informationLabel->setObjectName(QString::fromUtf8("informationLabel"));
     informationLabel->setGeometry(QRect(20, 70, 581, 131));
+	
     QFont font3;
     font3.setPointSize(12);
     informationLabel->setFont(font3);
     informationLabel->setAlignment(Qt::AlignJustify);
     informationLabel->setWordWrap(true);
+	
     continuePushButton = new QPushButton(this);
     continuePushButton->setObjectName(QString::fromUtf8("continuePushButton"));
     continuePushButton->setGeometry(QRect(width() - 105, 32, 80, 26));
     continuePushButton->setStyleSheet(QString::fromUtf8(""));
     continuePushButton->setText(QApplication::translate("LipidSpaceGUI", "Continue", nullptr));
     connect(continuePushButton, &QPushButton::clicked, this, &Tutorial::continue_tutorial);
+	
     pagesLabel = new QLabel(this);
     pagesLabel->setObjectName(QString::fromUtf8("pagesLabel"));
     pagesLabel->setGeometry(QRect(width() - 126, 220, 101, 20));
     pagesLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-    xLabel = new ClickableLabel(this);
+	
+    xLabel = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/close-x.png");
     xLabel->setObjectName(QString::fromUtf8("xLabel"));
     xLabel->setGeometry(QRect(550, 18, 51, 20));
     xLabel->move(width() - 25, 10);
-    connect(xLabel, &ClickableLabel::clicked, this, &Tutorial::x_clicked);
+    connect(xLabel, &ImageWidget::clicked, this, &Tutorial::x_clicked);
 
-    QFont font_antialias;
-    font_antialias.setStyleStrategy(QFont::PreferAntialias);
-
-    QPixmap close_x(QCoreApplication::applicationDirPath() + "/data/images/close-x.png");
-    xLabel->setPixmap(close_x);
-    xLabel->setAlignment(Qt::AlignLeading|Qt::AlignRight|Qt::AlignTop);
-    xLabel->setFont(font_antialias);
     QRect r = xLabel->geometry();
-    r.setWidth(close_x.size().width());
-    r.setHeight(close_x.size().height());
+    r.setWidth(xLabel->pixmap.size().width());
+    r.setHeight(xLabel->pixmap.size().height());
     xLabel->setGeometry(r);
 
     titleLabel->setText("Welcome");
@@ -70,91 +69,68 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     pagesLabel->setText("1 / 29");
     setVisible(false);
 
-    QPixmap p_arrow_bl(QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-left.png");
-    arrow_bl = new QLabel();
-    arrow_bl->setPixmap(p_arrow_bl);
+    arrow_bl = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-left.png");
     r = arrow_bl->geometry();
-    r.setWidth(p_arrow_bl.size().width());
-    r.setHeight(p_arrow_bl.size().height());
+    r.setWidth(arrow_bl->pixmap.size().width());
+    r.setHeight(arrow_bl->pixmap.size().height());
     arrow_bl->setGeometry(r);
     arrow_bl->setVisible(false);
-    arrow_bl->setFont(font_antialias);
     arrows.push_back(arrow_bl);
 
-    QPixmap p_arrow_br(QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-right.png");
-    arrow_br = new QLabel();
-    arrow_br->setPixmap(p_arrow_br);
+    arrow_br = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-right.png");
     r = arrow_br->geometry();
-    r.setWidth(p_arrow_br.size().width());
-    r.setHeight(p_arrow_br.size().height());
+    r.setWidth(arrow_br->pixmap.size().width());
+    r.setHeight(arrow_br->pixmap.size().height());
     arrow_br->setGeometry(r);
     arrow_br->setVisible(false);
-    arrow_br->setFont(font_antialias);
     arrows.push_back(arrow_br);
 
-    QPixmap p_arrow_lt(QCoreApplication::applicationDirPath() + "/data/images/arrow-left-top.png");
-    arrow_lt = new QLabel();
-    arrow_lt->setPixmap(p_arrow_lt);
+    arrow_lt = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-left-top.png");
     r = arrow_lt->geometry();
-    r.setWidth(p_arrow_lt.size().width());
-    r.setHeight(p_arrow_lt.size().height());
+    r.setWidth(arrow_lt->pixmap.size().width());
+    r.setHeight(arrow_lt->pixmap.size().height());
     arrow_lt->setGeometry(r);
     arrow_lt->setVisible(false);
     arrows.push_back(arrow_lt);
 
-    QPixmap p_arrow_lb(QCoreApplication::applicationDirPath() + "/data/images/arrow-left-bottom.png");
-    arrow_lb = new QLabel();
-    arrow_lb->setPixmap(p_arrow_lb);
+    arrow_lb = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-left-bottom.png");
     r = arrow_lb->geometry();
-    r.setWidth(p_arrow_lb.size().width());
-    r.setHeight(p_arrow_lb.size().height());
+    r.setWidth(arrow_lb->pixmap.size().width());
+    r.setHeight(arrow_lb->pixmap.size().height());
     arrow_lb->setGeometry(r);
     arrow_lb->setVisible(false);
-    arrow_lb->setFont(font_antialias);
     arrows.push_back(arrow_lb);
 
-    QPixmap p_arrow_tl(QCoreApplication::applicationDirPath() + "/data/images/arrow-top-left.png");
-    arrow_tl = new QLabel();
-    arrow_tl->setPixmap(p_arrow_tl);
+    arrow_tl = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-top-left.png");
     r = arrow_tl->geometry();
-    r.setWidth(p_arrow_tl.size().width());
-    r.setHeight(p_arrow_tl.size().height());
+    r.setWidth(arrow_tl->pixmap.size().width());
+    r.setHeight(arrow_tl->pixmap.size().height());
     arrow_tl->setGeometry(r);
     arrow_tl->setVisible(false);
-    arrow_tl->setFont(font_antialias);
     arrows.push_back(arrow_tl);
 
-    QPixmap p_arrow_tr(QCoreApplication::applicationDirPath() + "/data/images/arrow-top-right.png");
-    arrow_tr = new QLabel();
-    arrow_tr->setPixmap(p_arrow_tr);
+    arrow_tr = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-top-right.png");
     r = arrow_tr->geometry();
-    r.setWidth(p_arrow_tr.size().width());
-    r.setHeight(p_arrow_tr.size().height());
+    r.setWidth(arrow_tr->pixmap.size().width());
+    r.setHeight(arrow_tr->pixmap.size().height());
     arrow_tr->setGeometry(r);
     arrow_tr->setVisible(false);
-    arrow_tr->setFont(font_antialias);
     arrows.push_back(arrow_tr);
 
-    QPixmap p_arrow_rt(QCoreApplication::applicationDirPath() + "/data/images/arrow-right-top.png");
-    arrow_rt = new QLabel();
-    arrow_rt->setPixmap(p_arrow_rt);
+    arrow_rt = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-right-top.png");
     r = arrow_rt->geometry();
-    r.setWidth(p_arrow_rt.size().width());
-    r.setHeight(p_arrow_rt.size().height());
+    r.setWidth(arrow_rt->pixmap.size().width());
+    r.setHeight(arrow_rt->pixmap.size().height());
     arrow_rt->setGeometry(r);
     arrow_rt->setVisible(false);
-    arrow_rt->setFont(font_antialias);
     arrows.push_back(arrow_rt);
 
-    QPixmap p_arrow_rb(QCoreApplication::applicationDirPath() + "/data/images/arrow-right-bottom.png");
-    arrow_rb = new QLabel();
-    arrow_rb->setPixmap(p_arrow_rb);
+    arrow_rb = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-right-bottom.png");
     r = arrow_rb->geometry();
-    r.setWidth(p_arrow_rb.size().width());
-    r.setHeight(p_arrow_rb.size().height());
+    r.setWidth(arrow_rb->pixmap.size().width());
+    r.setHeight(arrow_rb->pixmap.size().height());
     arrow_rb->setGeometry(r);
     arrow_rb->setVisible(false);
-    arrow_rb->setFont(font_antialias);
     arrows.push_back(arrow_rb);
 
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
@@ -190,6 +166,14 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(ui->actionSelection_mode_activated, &QAction::triggered, this, &Tutorial::action_performed);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
 }
+
+
+void ImageWidget::paintEvent(QPaintEvent *){
+	QPainter painter(this);
+    painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
+	painter.drawPixmap(QRect(0, 0, geometry().width(), geometry().height()), pixmap);
+}
+
 
 
 Tutorial::~Tutorial() {
@@ -244,27 +228,27 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, QPoint p){
 
 
 void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
-    QLabel* arrow = arrows[a];
+    ImageWidget* arrow = arrows[a];
     int offset = 26;
     switch(a){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         case ATL: y -= offset; break;
-        case ATR: x -= arrow->pixmap().size().width(); y -= offset; break;
-        case ABL: y -= arrow->pixmap().size().height() - offset; break;
-        case ABR: x -= arrow->pixmap().size().width(); y -= arrow->pixmap().size().height() - offset; break;
+        case ATR: x -= arrow->pixmap.size().width(); y -= offset; break;
+        case ABL: y -= arrow->pixmap.size().height() - offset; break;
+        case ABR: x -= arrow->pixmap.size().width(); y -= arrow->pixmap.size().height() - offset; break;
         case ALT: x -= offset; break;
-        case ALB: x -= offset; y -= arrow->pixmap().size().height(); break;
-        case ART: x -= arrow->pixmap().size().width() - offset; break;
-        case ARB: x -= arrow->pixmap().size().width() - offset; y -= arrow->pixmap().size().height(); break;
+        case ALB: x -= offset; y -= arrow->pixmap.size().height(); break;
+        case ART: x -= arrow->pixmap.size().width() - offset; break;
+        case ARB: x -= arrow->pixmap.size().width() - offset; y -= arrow->pixmap.size().height(); break;
 #else
         case ATL: y -= offset; break;
-        case ATR: x -= arrow->pixmap()->size().width(); y -= offset; break;
-        case ABL: y -= arrow->pixmap()->size().height() - offset; break;
-        case ABR: x -= arrow->pixmap()->size().width(); y -= arrow->pixmap()->size().height() - offset; break;
+        case ATR: x -= arrow->pixmap->size().width(); y -= offset; break;
+        case ABL: y -= arrow->pixmap->size().height() - offset; break;
+        case ABR: x -= arrow->pixmap->size().width(); y -= arrow->pixmap->size().height() - offset; break;
         case ALT: x -= offset; break;
         case ALB: x -= offset; y -= arrow->pixmap()->size().height(); break;
-        case ART: x -= arrow->pixmap()->size().width() - offset; break;
-        case ARB: x -= arrow->pixmap()->size().width() - offset; y -= arrow->pixmap()->size().height(); break;
+        case ART: x -= arrow->pixmap->size().width() - offset; break;
+        case ARB: x -= arrow->pixmap->size().width() - offset; y -= arrow->pixmap->size().height(); break;
 #endif
     }
     arrow->setParent(widget);
