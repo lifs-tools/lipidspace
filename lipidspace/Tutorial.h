@@ -44,25 +44,48 @@ enum ThirdSteps {TStart, TFinish, TEnd};
 
 enum FourthSteps {DStart, DFinish, DEnd};
 
+
 class LipidSpaceGUI;
 
+
+class ImageWidget : public QWidget {
+	Q_OBJECT
+	
+public:
+	QPixmap pixmap;
+	ImageWidget(QWidget *parent, QString s) : QWidget(parent), pixmap(s){}
+	
+protected:
+    void paintEvent(QPaintEvent *) override;
+	void mousePressEvent(QMouseEvent *event) override {
+		emit clicked();
+		QWidget::mousePressEvent(event);
+	}
+	
+signals:
+	void clicked();
+};
+
+
 class Tutorial : public QFrame {
+	Q_OBJECT
+	
 public:
     QFrame *tutorialFrame;
     QLabel *titleLabel;
     QLabel *informationLabel;
-    QLabel *arrow_bl;
-    QLabel *arrow_br;
-    QLabel *arrow_lt;
-    QLabel *arrow_lb;
-    QLabel *arrow_tl;
-    QLabel *arrow_tr;
-    QLabel *arrow_rt;
-    QLabel *arrow_rb;
+    ImageWidget *arrow_bl;
+    ImageWidget *arrow_br;
+    ImageWidget *arrow_lt;
+    ImageWidget *arrow_lb;
+    ImageWidget *arrow_tl;
+    ImageWidget *arrow_tr;
+    ImageWidget *arrow_rt;
+    ImageWidget *arrow_rb;
     QPushButton *continuePushButton;
     QLabel *pagesLabel;
-    ClickableLabel *xLabel;
-    vector<QLabel*> arrows;
+    ImageWidget *xLabel;
+    vector<ImageWidget*> arrows;
     LipidSpaceGUI *lipidSpaceGUI;
     TutorialType tutorialType = NoTutorial;
     int step = -1;
