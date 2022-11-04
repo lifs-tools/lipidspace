@@ -23,36 +23,36 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     titleLabel = new QLabel(this);
     titleLabel->setObjectName(QString::fromUtf8("titleLabel"));
     titleLabel->setGeometry(QRect(20, 30, 481, 61));
-	
+
     QFont font2;
     font2.setPointSize(16);
     font2.setBold(true);
     titleLabel->setFont(font2);
     titleLabel->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
     titleLabel->setWordWrap(true);
-	
+
     informationLabel = new QLabel(this);
     informationLabel->setObjectName(QString::fromUtf8("informationLabel"));
     informationLabel->setGeometry(QRect(20, 70, 581, 131));
-	
+
     QFont font3;
     font3.setPointSize(12);
     informationLabel->setFont(font3);
     informationLabel->setAlignment(Qt::AlignJustify);
     informationLabel->setWordWrap(true);
-	
+
     continuePushButton = new QPushButton(this);
     continuePushButton->setObjectName(QString::fromUtf8("continuePushButton"));
     continuePushButton->setGeometry(QRect(width() - 105, 32, 80, 26));
     continuePushButton->setStyleSheet(QString::fromUtf8(""));
     continuePushButton->setText(QApplication::translate("LipidSpaceGUI", "Continue", nullptr));
     connect(continuePushButton, &QPushButton::clicked, this, &Tutorial::continue_tutorial);
-	
+
     pagesLabel = new QLabel(this);
     pagesLabel->setObjectName(QString::fromUtf8("pagesLabel"));
     pagesLabel->setGeometry(QRect(width() - 126, 220, 101, 20));
     pagesLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-	
+
     xLabel = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/close-x.png");
     xLabel->setObjectName(QString::fromUtf8("xLabel"));
     xLabel->setGeometry(QRect(550, 18, 51, 20));
@@ -133,6 +133,15 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_rb->setVisible(false);
     arrows.push_back(arrow_rb);
 
+    connect(arrow_bl, &ImageWidget::doubleClicked, arrow_bl, &ImageWidget::rotate);
+    connect(arrow_br, &ImageWidget::doubleClicked, arrow_br, &ImageWidget::rotate);
+    connect(arrow_lb, &ImageWidget::doubleClicked, arrow_lb, &ImageWidget::rotate);
+    connect(arrow_lt, &ImageWidget::doubleClicked, arrow_lt, &ImageWidget::rotate);
+    connect(arrow_rb, &ImageWidget::doubleClicked, arrow_rb, &ImageWidget::rotate);
+    connect(arrow_rt, &ImageWidget::doubleClicked, arrow_rt, &ImageWidget::rotate);
+    connect(arrow_tl, &ImageWidget::doubleClicked, arrow_tl, &ImageWidget::rotate);
+    connect(arrow_tr, &ImageWidget::doubleClicked, arrow_tr, &ImageWidget::rotate);
+
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
 
@@ -169,9 +178,57 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
 
 
 void ImageWidget::paintEvent(QPaintEvent *){
-	QPainter painter(this);
+    QPainter painter(this);
+
     painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
-	painter.drawPixmap(QRect(0, 0, geometry().width(), geometry().height()), pixmap);
+    painter.save();
+    painter.translate(geometry().width() / 2., geometry().height() / 2.);
+    painter.rotate(angle);
+    painter.drawPixmap(QRect(-geometry().width() / 2., -geometry().height() / 2., geometry().width(), geometry().height()), pixmap);
+    painter.restore();
+}
+
+
+
+void ImageWidget::rotate(){
+    if (is_rotating) return;
+    is_rotating = true;
+    timerId = startTimer(10);
+}
+
+
+
+ImageWidget::ImageWidget(QWidget *parent, QString s) : QWidget(parent), pixmap(s) {
+    angle = 0;
+    timerId = -1;
+    is_rotating = false;
+}
+
+
+
+void ImageWidget::mousePressEvent(QMouseEvent *event) {
+    emit clicked();
+    QWidget::mousePressEvent(event);
+}
+
+
+
+void ImageWidget::mouseDoubleClickEvent(QMouseEvent *event) {
+    emit doubleClicked();
+    QWidget::mouseDoubleClickEvent(event);
+}
+
+
+void ImageWidget::timerEvent(QTimerEvent *) {
+    if (angle < 360){
+        angle += 5;
+        repaint();
+    }
+    else {
+        killTimer(timerId);
+        angle = 0;
+        is_rotating = false;
+    }
 }
 
 
@@ -242,13 +299,13 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
         case ARB: x -= arrow->pixmap.size().width() - offset; y -= arrow->pixmap.size().height(); break;
 #else
         case ATL: y -= offset; break;
-        case ATR: x -= arrow->pixmap->size().width(); y -= offset; break;
-        case ABL: y -= arrow->pixmap->size().height() - offset; break;
-        case ABR: x -= arrow->pixmap->size().width(); y -= arrow->pixmap->size().height() - offset; break;
+        case ATR: x -= arrow->pixmap.size().width(); y -= offset; break;
+        case ABL: y -= arrow->pixmap.size().height() - offset; break;
+        case ABR: x -= arrow->pixmap.size().width(); y -= arrow->pixmap.size().height() - offset; break;
         case ALT: x -= offset; break;
-        case ALB: x -= offset; y -= arrow->pixmap()->size().height(); break;
-        case ART: x -= arrow->pixmap->size().width() - offset; break;
-        case ARB: x -= arrow->pixmap->size().width() - offset; y -= arrow->pixmap->size().height(); break;
+        case ALB: x -= offset; y -= arrow->pixmap.size().height(); break;
+        case ART: x -= arrow->pixmap.size().width() - offset; break;
+        case ARB: x -= arrow->pixmap.size().width() - offset; y -= arrow->pixmap.size().height(); break;
 #endif
     }
     arrow->setParent(widget);
@@ -1296,7 +1353,7 @@ void Tutorial::fourth_tutorial_steps(){
         case DStart:
             changeSize(650, 250);
             move(20, 20);
-            titleLabel->setText("Second Tutorial - UI Introduction");
+            titleLabel->setText("Fourth Tutorial - Quality Control");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyse lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be performed on LipidSpace.");
             break;

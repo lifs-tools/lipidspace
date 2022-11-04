@@ -49,27 +49,35 @@ class LipidSpaceGUI;
 
 
 class ImageWidget : public QWidget {
-	Q_OBJECT
-	
+    Q_OBJECT
+
 public:
-	QPixmap pixmap;
-	ImageWidget(QWidget *parent, QString s) : QWidget(parent), pixmap(s){}
-	
+    QPixmap pixmap;
+    double angle;
+    int timerId;
+    bool is_rotating;
+
+    ImageWidget(QWidget *parent, QString s);
+
+
 protected:
     void paintEvent(QPaintEvent *) override;
-	void mousePressEvent(QMouseEvent *event) override {
-		emit clicked();
-		QWidget::mousePressEvent(event);
-	}
-	
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void timerEvent(QTimerEvent *) override;
+
+public slots:
+    void rotate();
+
 signals:
-	void clicked();
+    void clicked();
+    void doubleClicked();
 };
 
 
 class Tutorial : public QFrame {
 	Q_OBJECT
-	
+
 public:
     QFrame *tutorialFrame;
     QLabel *titleLabel;

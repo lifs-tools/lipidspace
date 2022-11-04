@@ -18,11 +18,11 @@ HomeView::HomeView(QWidget *parent) : QGraphicsView(parent){
     firstTutorialPushButton = new QPushButton(this);
     firstTutorialPushButton->setObjectName(QString::fromUtf8("firstTutorialPushButton"));
     firstTutorialPushButton->setGeometry(QRect(60, 360, 221, 31));
-    firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "1. Tutorial - Load tables", nullptr));
+    firstTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "1. Tutorial - Load Tables", nullptr));
     secondTutorialPushButton = new QPushButton(this);
     secondTutorialPushButton->setObjectName(QString::fromUtf8("secondTutorialPushButton"));
     secondTutorialPushButton->setGeometry(QRect(320, 360, 221, 31));
-    secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "2. Tutorial - UI introduction", nullptr));
+    secondTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "2. Tutorial - UI Introduction", nullptr));
     thirdTutorialPushButton = new QPushButton(this);
     thirdTutorialPushButton->setObjectName(QString::fromUtf8("thirdTutorialPushButton"));
     thirdTutorialPushButton->setGeometry(QRect(60, 400, 221, 31));
@@ -30,7 +30,7 @@ HomeView::HomeView(QWidget *parent) : QGraphicsView(parent){
     fourthTutorialPushButton = new QPushButton(this);
     fourthTutorialPushButton->setObjectName(QString::fromUtf8("fourthTutorialPushButton"));
     fourthTutorialPushButton->setGeometry(QRect(320, 400, 221, 31));
-    fourthTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "4. Tutorial - Quality control", nullptr));
+    fourthTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "4. Tutorial - Quality Control", nullptr));
     banner = 0;
 }
 
