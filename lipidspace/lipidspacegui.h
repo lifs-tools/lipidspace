@@ -253,5 +253,6 @@ public slots:
     void deselectHoveredLipid();
     void setLipidsForSelection(vector<string> &list);
     void spaceLipidsSelect(int index, bool do_select);
+    void openExampleDataset();
 };
 #endif // LIPIDSPACEGUI_H

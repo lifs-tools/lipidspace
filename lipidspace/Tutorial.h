@@ -40,7 +40,7 @@ enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport,
 
 enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
-enum ThirdSteps {TStart, TFinish, TEnd};
+enum ThirdSteps {TStart, TLoadTable, TFeaturePanel, TFinish, TEnd};
 
 enum FourthSteps {DStart, DFinish, DEnd};
 

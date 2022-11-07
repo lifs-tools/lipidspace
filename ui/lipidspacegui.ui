@@ -814,6 +814,7 @@
     <addaction name="actionLoad_list_s"/>
     <addaction name="actionLoad_table"/>
     <addaction name="actionImport_mzTabM"/>
+    <addaction name="actionImport_eample_dataset"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Results"/>
     <addaction name="separator"/>
@@ -1129,6 +1130,11 @@
   <action name="actionSelect_tiles">
    <property name="text">
     <string>Select tile(s)</string>
+   </property>
+  </action>
+  <action name="actionImport_eample_dataset">
+   <property name="text">
+    <string>Import example &amp;dataset</string>
    </property>
   </action>
  </widget>

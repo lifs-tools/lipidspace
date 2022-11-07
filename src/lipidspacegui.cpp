@@ -340,6 +340,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionShow_study_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::showHideStudyLipidomes);
     connect(ui->actionSelection_mode_activated, &QAction::triggered, this, &LipidSpaceGUI::setSelectedTilesMode);
     connect(ui->actionTranslate, &QAction::triggered, this, &LipidSpaceGUI::toggleLipidNameTranslation);
+    connect(ui->actionImport_eample_dataset, &QAction::triggered, this, &LipidSpaceGUI::openExampleDataset);
     connect(ui->action1_column, &QAction::triggered, this, &LipidSpaceGUI::set1ColumnLayout);
     connect(ui->action2_columns, &QAction::triggered, this, &LipidSpaceGUI::set2ColumnLayout);
     connect(ui->action3_columns, &QAction::triggered, this, &LipidSpaceGUI::set3ColumnLayout);
@@ -481,6 +482,26 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete raw_data_model;
 }
 
+
+
+
+
+void LipidSpaceGUI::openExampleDataset(){
+    string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
+    if (!QFile::exists(file_name.c_str())){
+        QMessageBox::information(this, "Import error", "It seems that the example lipidomics dataset file cannot be found on the disk. Please get in contact with the developers and send a bug report.");
+        Logging::write_log("It seems that the example lipidomics dataset file cannot be found on the disk. Please get in contact with the developers and send a bug report.");
+        return;
+    }
+
+    vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
+    ct->at(0) = SampleColumn;
+    ct->at(1) = StudyVariableColumnNominal;
+    ct->at(2) = StudyVariableColumnNominal;
+    ct->at(3) = StudyVariableColumnNominal;
+    loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
+
+}
 
 
 

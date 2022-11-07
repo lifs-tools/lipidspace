@@ -6,7 +6,16 @@ const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescripti
 const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 //const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SLoadTable, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
-const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TFinish, TEnd};
+
+
+
+//const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFinish, TEnd};
+
+const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFinish, TEnd};
+
+
+
+
 
 const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DFinish, DEnd};
 
@@ -503,6 +512,8 @@ void Tutorial::action_performed(){
 }
 
 
+
+
 void Tutorial::tab_changed(int index){
     if (step < 0 || tutorialType == NoTutorial) return;
 
@@ -611,6 +622,8 @@ void Tutorial::tab_changed(int index){
 }
 
 
+
+
 void Tutorial::item_changed(const QModelIndex &, int, int){
     if (step < 0 || tutorialType == NoTutorial) return;
 
@@ -659,11 +672,15 @@ void Tutorial::item_changed(const QModelIndex &, int, int){
 }
 
 
+
+
 void Tutorial::move(int x, int y, QWidget *w){
     if (w) setParent(w);
     QFrame::move(x, y);
     setVisible(true);
 }
+
+
 
 
 
@@ -675,6 +692,18 @@ void Tutorial::changeSize(int w, int h){
     QPoint p = pos();
     setGeometry(p.x(), p.y(), w, h);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -938,7 +967,7 @@ void Tutorial::first_tutorial_steps(){
             move(20, 20, lipidSpaceGUI->ui->centralwidget);
             titleLabel->setText("First Tutorial Completed");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Congratulations, you managed to import a first lipid data set into LipidSpace. Feel free to play around with the data set and explore LipidSpace or just start the second tutorial.");
+            informationLabel->setText("Congratulations, you managed to import a first lipid dataset into LipidSpace. Feel free to play around with the dataset and explore LipidSpace or just start the second tutorial.");
             break;
 
 
@@ -948,6 +977,18 @@ void Tutorial::first_tutorial_steps(){
             break;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1312,6 +1353,17 @@ void Tutorial::second_tutorial_steps(){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 void Tutorial::third_tutorial_steps(){
     disable();
     pagesLabel->setText((std::to_string(step + 1) + " / "  + std::to_string(third_tutorial_steps_order.size() - 1)).c_str());
@@ -1323,31 +1375,94 @@ void Tutorial::third_tutorial_steps(){
 
     switch(t_step){
         case TStart:
-            changeSize(650, 220);
+            changeSize(650, 200);
             move(20, 20);
             titleLabel->setText("Third Tutorial - Feature Selection");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Welcome to the third tutorial of LipidSpace. In the previous tutorial, we had in introduction into the general usage of LipidSpace. In this tutorial, we will learn how to analyse our lipid species with respect to provided study variables.");
+            informationLabel->setText("Welcome to the third tutorial of LipidSpace. In the previous tutorial, we had in introduction into the general usage of LipidSpace. In this tutorial, we will learn how to analyse our lipid species with respect to provided study variables. In order to continue, the example dataset will be again automatically loaded now.");
             break;
 
-        case TEnd:
+
+
+
+
+        case TLoadTable:
+            {
+                changeSize(650, 170);
+                move(lipidSpaceGUI->width() - width() - 20, 20);
+                if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
+                    lipidSpaceGUI->resetAnalysis();
+                    vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
+                    ct->at(0) = SampleColumn;
+                    ct->at(1) = StudyVariableColumnNominal;
+                    ct->at(2) = StudyVariableColumnNominal;
+                    ct->at(3) = StudyVariableColumnNominal;
+                    string path_to_example = QCoreApplication::applicationDirPath().toStdString();
+                    lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
+
+                    main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
+                    main_widgets[lipidSpaceGUI->ui->menuView] = true;
+                    main_widgets[lipidSpaceGUI->ui->actionExport_Results] = true;
+                    main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
+                    main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
+                    main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
+
+                    for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
+                }
+
+
+                QWidget *widget = lipidSpaceGUI->ui->dendrogramView;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ARB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y() + widget->height());
+
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Dataset Loaded");
+                informationLabel->setText("Easy as that. The results section should be already familiar to you. If not, we recommend to run the second tutorial. Otherwise, please continue.");
+                break;
+            }
+            break;
+
+
+        case TFeaturePanel:
+            changeSize(650, 200);
+            move(20, 20);
+            titleLabel->setText("Feature Pie Figures");
+            continuePushButton->setEnabled(true);
+            informationLabel->setText("You may have noticed that in the dendrogram you can see ");
+            break;
+
+
 
 
         case TFinish:
             {
                 move(20, 20, lipidSpaceGUI->ui->centralwidget);
-                changeSize(650, 180);
+                changeSize(650, 170);
                 titleLabel->setText("Third Tutorial Completed");
                 continuePushButton->setEnabled(true);
                 informationLabel->setText("Congratulations, you did some feature analysis to dive deeper into lipidomics data. Try to load your own data in LipidSpace and analyse it or just start the fourth tutorial.");
             }
             break;
 
+
+
+        case TEnd:
         default:
             close_tutorial(0);
             break;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
