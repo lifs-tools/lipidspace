@@ -962,7 +962,7 @@ void Tutorial::second_tutorial_steps(){
 
     switch(s_step){
         case SStart:
-            changeSize(650, 220);
+            changeSize(650, 190);
             move(20, 20);
             titleLabel->setText("Second Tutorial - UI Introduction");
             continuePushButton->setEnabled(true);
@@ -972,7 +972,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SLoadTable:
             {
-                changeSize(650, 200);
+                changeSize(650, 170);
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
                     lipidSpaceGUI->resetAnalysis();
@@ -1009,7 +1009,7 @@ void Tutorial::second_tutorial_steps(){
                     show_arrow(ATL, lipidSpaceGUI, p.x() + widget->width(), p.y() + widget->height() / 2.);
                 });
 
-                changeSize(650, 200);
+                changeSize(650, 170);
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Section");
@@ -1020,7 +1020,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SSeletionSection2:
             {
-                changeSize(650, 220);
+                changeSize(650, 190);
                 QWidget *widget = lipidSpaceGUI->ui->applyChangesPushButton;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
@@ -1034,7 +1034,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SSorting:
             {
-                changeSize(650, 220);
+                changeSize(650, 190);
                 connect(lipidSpaceGUI->ui->speciesComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 QWidget *widget = lipidSpaceGUI->ui->speciesComboBox;
@@ -1050,7 +1050,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SSortingBars:
             {
-                changeSize(650, 250);
+                changeSize(650, 210);
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Sorting II");
@@ -1061,7 +1061,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SSortingPG:
             {
-                changeSize(650, 220);
+                changeSize(650, 190);
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Sorting III");
@@ -1073,7 +1073,7 @@ void Tutorial::second_tutorial_steps(){
         case SNormalization:
             {
                 move(lipidSpaceGUI->width() - width() - 20, 20);
-                changeSize(650, 250);
+                changeSize(650, 230);
                 QWidget *widget = lipidSpaceGUI->ui->normalizationComboBox;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
@@ -1086,7 +1086,7 @@ void Tutorial::second_tutorial_steps(){
         case SGoToStudVarFilter:
             {
                 move(lipidSpaceGUI->width() - width() - 20, 20);
-                changeSize(650, 180);
+                changeSize(650, 150);
                 QWidget *widget = lipidSpaceGUI->ui->speciesComboBox;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ALT, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
@@ -1100,7 +1100,7 @@ void Tutorial::second_tutorial_steps(){
         case SFilterStudyVar:
             {
                 move(lipidSpaceGUI->width() - width() - 20, 20);
-                changeSize(650, 200);
+                changeSize(650, 170);
                 QWidget *widget = lipidSpaceGUI->ui->itemsTabWidget;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ATL, lipidSpaceGUI, p.x() + widget->width(), p.y() + widget->height() / 2.);
@@ -1113,7 +1113,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SLeftPanel:
             {
-                changeSize(650, 250);
+                changeSize(650, 210);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1128,7 +1128,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SLipidSpaces:
             {
-                changeSize(400, 350);
+                changeSize(400, 320);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 continuePushButton->setEnabled(true);
@@ -1140,7 +1140,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SSpacesOptions:
             {
-                changeSize(400, 320);
+                changeSize(400, 270);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Additional Options I");
@@ -1154,7 +1154,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SSpacesSingleView:
             {
-                changeSize(650, 220);
+                changeSize(650, 200);
                 move(20, lipidSpaceGUI->height() - height() - 80);
 
                 show_arrow(ATR, lipidSpaceGUI, lipidSpaceGUI->ui->menubar->actionGeometry(lipidSpaceGUI->ui->menuView->menuAction()).x(), lipidSpaceGUI->ui->menubar->height() / 2.);
@@ -1175,7 +1175,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SSpacesSingleViewExplaination:
             {
-                changeSize(650, 220);
+                changeSize(650, 190);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Single view mode");
@@ -1186,7 +1186,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SDendrogramClick:
             {
-                changeSize(600, 180);
+                changeSize(600, 150);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1201,7 +1201,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SDendrogram:
             {
-                changeSize(650, 220);
+                changeSize(650, 190);
                 move(20, 40);
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 continuePushButton->setEnabled(true);
@@ -1214,7 +1214,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SDendrogram2:
             {
-                changeSize(650, 220);
+                changeSize(650, 190);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1233,7 +1233,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SStatistics:
             {
-                changeSize(650, 220);
+                changeSize(650, 170);
                 move(20, 40);
                 QWidget *widget = lipidSpaceGUI->ui->studyVariableComboBoxStat;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1250,7 +1250,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SStatistics2:
             {
-                changeSize(650, 220);
+                changeSize(650, 190);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Statistics view II");
@@ -1263,7 +1263,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SRawClick:
             {
-                changeSize(600, 180);
+                changeSize(600, 130);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1280,7 +1280,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SRawTable:
             {
-                changeSize(600, 220);
+                changeSize(600, 190);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Raw Data Table");
@@ -1292,7 +1292,7 @@ void Tutorial::second_tutorial_steps(){
         case SFinish:
             {
                 move(20, 20, lipidSpaceGUI->ui->centralwidget);
-                changeSize(650, 180);
+                changeSize(650, 150);
                 titleLabel->setText("Second Tutorial Completed");
                 continuePushButton->setEnabled(true);
                 informationLabel->setText("Congratulations, you should be able now to operate on LipidSpace. Try to load your own data in LipidSpace and explore it or just start the third tutorial.");
