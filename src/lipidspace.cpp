@@ -22,6 +22,10 @@ void LipidSpace::create_dendrogram(){
         }
 
         DendrogramNode* pair_node = min_node->min_distance.second;
+        int min_node_index = *(min_node->indexes.begin());
+        int pair_node_index = *(pair_node->indexes.begin());
+        if (min_node_index > pair_node_index) swap(min_node, pair_node);
+
         nodes.erase(min_node);
         nodes.erase(pair_node);
         DendrogramNode* new_node = new DendrogramNode(min_node, pair_node, min_node->min_distance.first);
@@ -3093,7 +3097,6 @@ void LipidSpace::lipid_analysis(bool report_progress){
         progress->prepare(9);
     }
 
-    auto start = high_resolution_clock::now();
     analysis_finished = false;
     if (dendrogram_root){
         delete dendrogram_root;
@@ -3209,13 +3212,6 @@ void LipidSpace::lipid_analysis(bool report_progress){
 
     }
 
-
-
-
-
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Process: " << duration.count() << endl;
     analysis_finished = true;
 
     if (progress && !progress->stop_progress && report_progress){

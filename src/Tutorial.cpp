@@ -183,6 +183,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(lipidSpaceGUI->import_table.ui->lipidListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
     connect(ui->actionSelection_mode_activated, &QAction::triggered, this, &Tutorial::action_performed);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
+    connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
 }
 
 
@@ -452,6 +453,22 @@ void Tutorial::combobox_changed(int){
             break;
         }
 
+
+        case ThirdTutorial: {
+            ThirdSteps t_step = third_tutorial_steps_order[step];
+            switch(t_step){
+                case TFeaturePanel:
+                    if (lipidSpaceGUI->ui->studyVariableComboBox->currentText() == "Treatment"){
+                        continue_tutorial();
+                    }
+
+                default:
+                    break;
+
+            }
+            break;
+        }
+
         default:
             break;
     }
@@ -613,8 +630,28 @@ void Tutorial::tab_changed(int index){
                     break;
             }
 
+            break;
+        }
 
-        } break;
+
+
+        case ThirdTutorial: {
+            ThirdSteps t_step = third_tutorial_steps_order[step];
+
+            switch(t_step){
+                case TFeaturePanel:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 2){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                    }
+                    break;
+
+
+                default:
+                    break;
+            }
+
+            break;
+        }
 
         default:
             break;
@@ -1031,6 +1068,7 @@ void Tutorial::second_tutorial_steps(){
                     main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
                     main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
                     main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
+                    main_widgets[lipidSpaceGUI->ui->startAnalysisPushButton] = true;
 
                     for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
                 }
@@ -1388,7 +1426,7 @@ void Tutorial::third_tutorial_steps(){
 
         case TLoadTable:
             {
-                changeSize(650, 170);
+                changeSize(650, 190);
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
                     lipidSpaceGUI->resetAnalysis();
@@ -1410,25 +1448,32 @@ void Tutorial::third_tutorial_steps(){
                     for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
                 }
 
-
-                QWidget *widget = lipidSpaceGUI->ui->dendrogramView;
-                QPoint p = map_widget(widget, lipidSpaceGUI);
-                show_arrow(ARB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y() + widget->height());
+                QTimer::singleShot(10, [this]() {
+                    QWidget *widget = lipidSpaceGUI->ui->dendrogramView;
+                    QPoint p = map_widget(widget, lipidSpaceGUI);
+                    show_arrow(ARB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y() + widget->height());
+                });
 
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Dataset Loaded");
-                informationLabel->setText("Easy as that. The results section should be already familiar to you. If not, we recommend to run the second tutorial. Otherwise, please continue.");
+                informationLabel->setText("Easy as that. The results section should be already familiar to you. If not, we recommend to run the second tutorial. Anyhow, on the bottom you can see the 'Feature analysis' panel with which you can do both control the entire dendogram and start a feature analysis.");
                 break;
             }
             break;
 
 
         case TFeaturePanel:
-            changeSize(650, 200);
-            move(20, 20);
-            titleLabel->setText("Feature Pie Figures");
-            continuePushButton->setEnabled(true);
-            informationLabel->setText("You may have noticed that in the dendrogram you can see ");
+            {
+                changeSize(650, 200);
+                move(20, 20);
+                QWidget *widget = lipidSpaceGUI->ui->studyVariableComboBox;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ABR, lipidSpaceGUI, p.x(), p.y() + widget->height() / 2.);
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                titleLabel->setText("Feature Pie Figures");
+                widget->setEnabled(true);
+                informationLabel->setText("You may have noticed that in the dendrogram you can see these light blue bubbles. It is pie figures showing the distribution of values of current study variable. Here, the only internal variable 'Origin' is selected. Please select the value 'Treatment' in the feature selection box of the analysis panel.");
+            }
             break;
 
 
@@ -1507,6 +1552,8 @@ void Tutorial::fourth_tutorial_steps(){
 
 
 void Tutorial::wheelEvent(QWheelEvent *event){
+    return;
+
     QRect r = geometry();
     changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));
     cout << "Height: " << geometry().height() << endl;
