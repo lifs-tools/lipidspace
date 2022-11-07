@@ -671,7 +671,7 @@ void Tutorial::changeSize(int w, int h){
     continuePushButton->move(w - 105, 32);
     pagesLabel->move(w - 126, h - 31);
     xLabel->move(w - 25, 10);
-    informationLabel->setGeometry(QRect(20, 70, w - 45, h - 120));
+    informationLabel->setGeometry(QRect(20, 70, w - 45, h - 90));
     QPoint p = pos();
     setGeometry(p.x(), p.y(), w, h);
 }
@@ -690,7 +690,7 @@ void Tutorial::first_tutorial_steps(){
 
     switch(f_step){
         case FStart:
-            changeSize(650, 220);
+            changeSize(650, 190);
             move(20, 20);
             titleLabel->setText("First Tutorial - Data Import");
             continuePushButton->setEnabled(true);
@@ -700,7 +700,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FDescription:
             move(20, 20);
-            changeSize(650, 220);
+            changeSize(650, 190);
             titleLabel->setText("What is LipidSpace");
             continuePushButton->setEnabled(true);
             informationLabel->setText("LipidSpace is a tool to analyse a multitude of lipidomes, putting them together in one model, and offer several functions for a deeper and quicker investigation of your lipidomic data. Usually, data of indentified and quantified lipidomics analyses are structured as a table of size (# of lipids) x (# of samples).");
@@ -709,7 +709,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FFindImport: {
                 move(200, 100);
-                changeSize(650, 200);
+                changeSize(650, 170);
                 show_arrow(ALT, lipidSpaceGUI->ui->centralwidget, lipidSpaceGUI->ui->menubar->actionGeometry(lipidSpaceGUI->ui->menuLipidSpace->menuAction()).width() / 2.0, 0);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Where to import Data?");
@@ -718,7 +718,7 @@ void Tutorial::first_tutorial_steps(){
             break;
 
         case FOpenImport:
-            changeSize(650, 220);
+            changeSize(650, 190);
             titleLabel->setText("Open Import Dialog");
             informationLabel->setText("Please click on File > Import table. Browse to the directory where LipidSpace is stored, go into the folder 'examples', select 'Example-Dataset.xlsx', and select in the following dialog the work sheet 'Data'. Be aware, that LipidSpace supports xlsx and csv files, but not the deprecated xls format.");
             lipidSpaceGUI->ui->menubar->setEnabled(true);
@@ -730,7 +730,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FEnteredImport:
             move(20, 20, &(lipidSpaceGUI->import_table));
-            changeSize(650, 200);
+            changeSize(650, 170);
             titleLabel->setText("Import Dialog");
             informationLabel->setText("Here we see the import dialog for tables. Tables can be structured in multiple ways. The three most common structures are lipid row-based, lipid column-based and flat-based.");
             continuePushButton->setEnabled(true);
@@ -740,7 +740,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FExplainRow: {
                 move(20, 300);
-                changeSize(650, 220);
+                changeSize(650, 190);
                 QTabWidget *tab_widget = lipidSpaceGUI->import_table.ui->tabWidget;
                 QRect r = tab_widget->tabBar()->tabRect(0);
                 QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
@@ -755,7 +755,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FExplainColumn: {
                 move(20, 300);
-                changeSize(650, 250);
+                changeSize(650, 210);
                 QTabWidget *tab_widget = lipidSpaceGUI->import_table.ui->tabWidget;
                 QRect r = tab_widget->tabBar()->tabRect(0);
                 QRect r2 = tab_widget->tabBar()->tabRect(1);
@@ -771,7 +771,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FExplainFlat: {
                 move(20, 300);
-                changeSize(650, 220);
+                changeSize(650, 190);
                 QTabWidget *tab_widget = lipidSpaceGUI->import_table.ui->tabWidget;
                 QRect r = tab_widget->tabBar()->tabRect(0);
                 QRect r2 = tab_widget->tabBar()->tabRect(1);
@@ -788,7 +788,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FShowPreview: {
                 move(20, 20);
-                changeSize(650, 180);
+                changeSize(650, 150);
                 QTableWidget *table_widget = lipidSpaceGUI->import_table.ui->tableWidget;
                 QPoint p = map_widget(table_widget, &lipidSpaceGUI->import_table);
                 show_arrow(ARB, &lipidSpaceGUI->import_table, p.x() + table_widget->width() / 2.0, p.y());
@@ -801,7 +801,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FSelectColumnTable: {
                 move(20, 300);
-                changeSize(650, 180);
+                changeSize(650, 150);
                 QTabWidget *tab_widget = lipidSpaceGUI->import_table.ui->tabWidget;
                 QRect r = tab_widget->tabBar()->tabRect(0);
                 QRect r2 = tab_widget->tabBar()->tabRect(1);
@@ -817,7 +817,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FExplainColumnField: {
                 move(20, 400);
-                changeSize(650, 200);
+                changeSize(650, 170);
                 QWidget *widget = lipidSpaceGUI->import_table.ui->ignoreListWidgetCol;
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
                 show_arrow(ABL, &lipidSpaceGUI->import_table, p.x() + widget->width(), p.y() + widget->height() / 2.0);
@@ -830,7 +830,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FExplainLipidColumnField: {
                 move(20, 400);
-                changeSize(650, 220);
+                changeSize(650, 190);
                 QWidget *widget = lipidSpaceGUI->import_table.ui->lipidListWidgetCol;
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
                 show_arrow(ABR, &lipidSpaceGUI->import_table, p.x(), p.y() + widget->height() / 2.0);
@@ -845,7 +845,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FExplainSampleColumnField: {
                 move(20, 400);
-                changeSize(650, 200);
+                changeSize(650, 170);
                 QWidget *widget = lipidSpaceGUI->import_table.ui->sampleListWidgetCol;
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
                 show_arrow(ATR, &lipidSpaceGUI->import_table, p.x(), p.y() + widget->height() / 2.0);
@@ -858,6 +858,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FExplainStudyFields: {
                 move(20, 400);
+                changeSize(650, 180);
                 QWidget *widget = lipidSpaceGUI->import_table.ui->numericalStudyVariableListWidgetCol;
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
                 show_arrow(ARB, &lipidSpaceGUI->import_table, p.x() + widget->width() * 0.8, p.y());
@@ -872,7 +873,7 @@ void Tutorial::first_tutorial_steps(){
 
 
         case FSampleEntryAssignment:
-            changeSize(650, 180);
+            changeSize(650, 150);
             move(20, 450);
             titleLabel->setText("Assign Sample Column");
             informationLabel->setText("It's your time, please assign the 'Species' entry from the 'Input columns' field to the 'Sample column' field.");
@@ -884,7 +885,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FStudyVarAssignment:
             move(20, 450);
-            changeSize(650, 180);
+            changeSize(650, 150);
             titleLabel->setText("Assign Study Variables");
             informationLabel->setText("Great, please assign as next the optional study variables, that is 'Type', 'Treatment', and 'Type-Treatment'.");
             lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
@@ -895,7 +896,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FLipidAssignment:
             move(20, 450);
-            changeSize(650, 200);
+            changeSize(650, 170);
             titleLabel->setText("Assign Lipid Names");
             informationLabel->setText("Awesome, now only column remained in the input field containg lipid names. Please drag them all into the 'Lipid column' field. You can select all entries by using the [CTRL] + A key combination.");
             lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
@@ -906,7 +907,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FStudyVarMapping: {
                 move(20, 20);
-                changeSize(650, 240);
+                changeSize(650, 210);
                 QWidget *widget = lipidSpaceGUI->import_table.ui->checkBoxMappingCol;
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
                 show_arrow(ATR, &lipidSpaceGUI->import_table, p.x(), p.y() + widget->height() / 2.);
@@ -919,7 +920,7 @@ void Tutorial::first_tutorial_steps(){
 
         case FFinishImport:
             {
-                changeSize(650, 150);
+                changeSize(650, 120);
                 move(20, 20);
                 QWidget *widget = lipidSpaceGUI->import_table.ui->okButtonCol;
                 QPoint p = map_widget(widget, &lipidSpaceGUI->import_table);
@@ -933,7 +934,7 @@ void Tutorial::first_tutorial_steps(){
 
 
         case FFinish:
-            changeSize(650, 200);
+            changeSize(650, 170);
             move(20, 20, lipidSpaceGUI->ui->centralwidget);
             titleLabel->setText("First Tutorial Completed");
             continuePushButton->setEnabled(true);
@@ -1330,6 +1331,18 @@ void Tutorial::third_tutorial_steps(){
             break;
 
         case TEnd:
+
+
+        case TFinish:
+            {
+                move(20, 20, lipidSpaceGUI->ui->centralwidget);
+                changeSize(650, 180);
+                titleLabel->setText("Third Tutorial Completed");
+                continuePushButton->setEnabled(true);
+                informationLabel->setText("Congratulations, you did some feature analysis to dive deeper into lipidomics data. Try to load your own data in LipidSpace and analyse it or just start the fourth tutorial.");
+            }
+            break;
+
         default:
             close_tutorial(0);
             break;
@@ -1351,16 +1364,35 @@ void Tutorial::fourth_tutorial_steps(){
 
     switch(d_step){
         case DStart:
-            changeSize(650, 250);
+            changeSize(650, 230);
             move(20, 20);
             titleLabel->setText("Fourth Tutorial - Quality Control");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyse lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be performed on LipidSpace.");
             break;
 
-        case DEnd:
+
+
+        case DFinish:
+            {
+                move(20, 20, lipidSpaceGUI->ui->centralwidget);
+                changeSize(650, 180);
+                titleLabel->setText("Fourth Tutorial Completed");
+                continuePushButton->setEnabled(true);
+                informationLabel->setText("Congratulations, you mastered the final tutorial. Hopefully these tutorials gave you a decent introduction into LipidSpace. If you have issues, comments, or critics about the tool, please drop us a line, contact information you'll find in the menu Help -> About. Have fun using LipidSpace :-)");
+            }
+            break;
+
         default:
             close_tutorial(0);
             break;
     }
+}
+
+
+
+void Tutorial::wheelEvent(QWheelEvent *event){
+    QRect r = geometry();
+    changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));
+    cout << "Height: " << geometry().height() << endl;
 }

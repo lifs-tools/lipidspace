@@ -121,6 +121,7 @@ public:
     void move(int x, int y, QWidget *w = 0);
     void changeSize(int w, int h);
     void item_changed(const QModelIndex &parent, int first, int last);
+    void wheelEvent(QWheelEvent *) override;
 
 public slots:
     void x_clicked();
