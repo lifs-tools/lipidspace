@@ -4,14 +4,14 @@
 const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
 const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
-//const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SLoadTable, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
 
 
 
-//const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFinish, TEnd};
 
-const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TLoadTable, TFeaturePanel, TFeatureAnalysis, TFeatureAnalysis2, TFinish, TEnd};
+const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
+
+//const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TLoadTable, TFeaturePanel, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
 
 
@@ -464,6 +464,13 @@ void Tutorial::combobox_changed(int){
                     if (lipidSpaceGUI->ui->studyVariableComboBox->currentText() == "Treatment"){
                         continue_tutorial();
                     }
+                    break;
+
+                case TAssessStatistics3:
+                    if (lipidSpaceGUI->ui->speciesComboBox->currentText() == "Treatment classification (Desc)"){
+                        continue_tutorial();
+                    }
+                    break;
 
                 default:
                     break;
@@ -692,6 +699,7 @@ void Tutorial::tab_changed(int index){
 
 
                 case TSwitchToStat1:
+                case TAssessFeatureAnalysis2:
                     if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 3){
                         continue_tutorial();
                     }
@@ -702,6 +710,7 @@ void Tutorial::tab_changed(int index){
 
 
                 case TAssessStatistics2:
+                case TAssessFeatureAnalysis1:
                     if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 2){
                         continue_tutorial();
                     }
@@ -1531,7 +1540,7 @@ void Tutorial::third_tutorial_steps(){
 
         case TFeaturePanel:
             {
-                changeSize(650, 200);
+                changeSize(650, 210);
                 move(20, 20);
                 QWidget *widget = lipidSpaceGUI->ui->studyVariableComboBox;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1539,7 +1548,7 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Feature Pie Figures");
                 widget->setEnabled(true);
-                informationLabel->setText("You may have noticed that in the dendrogram you can see these light blue bubbles. It is pie figures showing the distribution of values of current study variable. Here, the only internal variable 'Origin' is selected. Please select the value 'Treatment' in the feature selection box of the analysis panel.");
+                informationLabel->setText("You may have noticed that in the dendrogram you can see these light blue bubbles. These are pie figures showing the distribution of values of current study variable. Here, the only internal variable 'Origin' is selected with one value. Please select the value 'Treatment' in the feature selection box of the analysis panel for a better example.");
             }
             break;
 
@@ -1554,14 +1563,14 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Feature Visualization");
                 widget->setEnabled(true);
-                informationLabel->setText("Now the bubbles have changed their colors into the actual branch distributions. A legend on the top right is indicating the complete distribution of all lipidomes. You can see now, that when going down the dendrogram from top, some branches go purer in color. This means that these subgroups of lipidomes become more homogenous. To show control the tree depth until the pie figures are drawn. Please set the 'Pie depth' value to 6.");
+                informationLabel->setText("Now the bubbles have changed their colors into the actual branch distributions. A legend on the top right is indicating the complete distribution of all lipidomes. You can see now, that when going down the dendrogram from top, some branches go purer in color. This means that these subgroups of lipidomes become more homogenous. You can control the tree depth until the pie figures are drawn. Please set the 'Pie depth' value to 6.");
             }
             break;
 
 
         case TSwitchToStat1:
             {
-                changeSize(400, 250);
+                changeSize(400, 260);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1571,18 +1580,18 @@ void Tutorial::third_tutorial_steps(){
 
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Assess Lipid Distribution I");
-                informationLabel->setText("Now we have a better impression, if the branches become more homogenous on higher depth or lower. It seem that the branches are rather hetergeneous until the leaves (which correspond to the individual lipidomes). A look at the statistics module will give more sophisticated results.");
+                informationLabel->setText("Now we have a better impression, if the branches become more homogenous on higher depth or lower. It seem that the branches are rather hetergeneous until the leaves (individual lipidomes) hinting at a poor separation potencial. A look at the statistics module will give more sophisticated results.");
             }
             break;
 
 
         case TAssessStatistics1:
             {
-                changeSize(400, 280);
+                changeSize(400, 290);
                 move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Assess Lipid Distribution II");
-                informationLabel->setText("For all selected lipids in the analysis, a normalized average is computed for each lipidome. A distribution of these values for all lipidomes you can see on the both left figures as box and bar plot. Measures such as p-value or accuracy indicate a weak separation potencial with respect to the study variable 'Treatment' when considering all lipids.");
+                informationLabel->setText("For all selected lipids in the analysis, a normalized average is computed for each lipidome. You can see a distribution of these values for all lipidomes on the both left figures as a box and bar plot. Measures such as p-value or accuracy indeed indicate a weak separation potencial with respect to the study variable 'Treatment' when considering all lipid species'.");
             }
             break;
 
@@ -1599,14 +1608,14 @@ void Tutorial::third_tutorial_steps(){
 
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Assess Lipid Distribution III");
-                informationLabel->setText("The less overlap between the bars and boxes are shown in these plots, the better the separation. Let's try to let LipidSpace assess which subset of lipids provides the \"best\" separation potencial. Therefore, please to the 'Dendrogram' tab.");
+                informationLabel->setText("The less overlap between the bars and boxes are shown in these plots, the better the separation. Let's try to let LipidSpace assess which subset of lipids provides the \"best\" separation potencial. Therefore, please go back to the 'Dendrogram' tab.");
             }
             break;
 
 
         case TFeatureAnalysis:
             {
-                changeSize(600, 220);
+                changeSize(600, 210);
                 move(20, 20);
                 QWidget *widget = lipidSpaceGUI->ui->startAnalysisPushButton;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1614,14 +1623,14 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 widget->setEnabled(true);
                 titleLabel->setText("Feature Analysis I");
-                informationLabel->setText("Assessing all possible subsets of a list of entities has an exponential complexity. Therefore LipidSpace is using a heuristic called \"sequential forward selection\" to find a good solution which is not necessary the optimal solution. To start the analysis, simply click on the 'Feature Analysis' button.");
+                informationLabel->setText("Assessing all possible subsets of a list of entities has an exponential complexity. Therefore LipidSpace is using a heuristic called \"sequential forward selection\" to find a good solution which is not necessary the optimal solution. Please keep that in mind. To start the analysis, simply click on the 'Feature Analysis' button.");
             }
             break;
 
 
         case TFeatureAnalysis2:
             {
-                changeSize(600, 220);
+                changeSize(600, 230);
                 move(20, 20);
                 QWidget *widget = lipidSpaceGUI->ui->applyChangesPushButton;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1629,23 +1638,76 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 widget->setEnabled(true);
                 titleLabel->setText("Feature Analysis II");
-                informationLabel->setText("After the analysis, LipidSpace automatically unchecks the lipids from the species list that are contributing to a good variable separation. In fact, only one lipid remained in the list. To apply these changes in the lipid list, you have to rerun the LipidSpace analysis. Be aware that a info box will pop up now informing you that your lipid selection contains less than three lipids.");
+                informationLabel->setText("After the analysis, LipidSpace automatically unchecks the lipids from the species list that are not contributing to a good variable separation. In fact, lipid species 'PA 18:0_20:4' is the only selected entity. To apply the changes of the lipid list, you have to rerun the LipidSpace analysis. Be aware that an info box will pop up now informing you that your lipid selection contains less than three lipids.");
             }
             break;
 
 
+        case TAssessFeatureAnalysis1:
+            {
+                changeSize(600, 230);
+                move(20, 20);
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Feature Analysis Evaluation I");
+                informationLabel->setText("You can see now immediately the changes caused by the feature analysis in the dendrogram. The branches on higher levels are clearly more homogenous now. The four treatment groups are visibly better separated. However, the dendrogram is indicating to you that the results of treatments with thrombin are in this study closer to each other than to the remaining treatments without thrombin.");
+            }
+            break;
 
 
+        case TAssessFeatureAnalysis2:
+            {
+                changeSize(600, 140);
+                move(20, lipidSpaceGUI->height() - height() - 80);
+                QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+
+                int x = lipidSpaceGUI->ui->viewsTabWidget->mapTo(lipidSpaceGUI->ui->centralwidget, QPoint(lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(3).x(), 0)).x();
+                show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(3).width() / 2., p.y());
+
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                titleLabel->setText("Feature Analysis Evaluation I");
+                informationLabel->setText("For an even better evaluation of the feature analysis, please go once again on the 'Staticstics' tab.");
+            }
+            break;
 
 
+        case TAssessStatistics3:
+            {
+                changeSize(440, 250);
+                move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
+                connect(lipidSpaceGUI->ui->speciesComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
+                move(lipidSpaceGUI->width() - width() - 20, 20);
+                QWidget *widget = lipidSpaceGUI->ui->speciesComboBox;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ATL, lipidSpaceGUI, p.x() + widget->width(), p.y() + widget->height() / 2.);
+                lipidSpaceGUI->ui->itemsTabWidget->setEnabled(true);
+                widget->setEnabled(true);
+                titleLabel->setText("Feature Analysis Evaluation II");
+                informationLabel->setText("In the both left figures, we can clearly see now that all four groups are perfectly separated with a p-value < 0.001 and an accuracy of 100 % (for our imported lipidomes). Here, we can start to put the results into a bigger context. Therefore, please select also 'Treatment classification (DESC)' as lipid species sorting.");
+            }
+            break;
 
 
+        case TAssessStatistics4:
+            {
+                changeSize(440, 310);
+                move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Feature Analysis Evaluation II");
+                informationLabel->setText("Does this result make sence? Since stimulating with C-reactive protein (CRP) or thrombin leads to an estrification of free arachidonic acid (FA 20:4), having PA 18:0_20:4 as the best separation lipid makes totally sence. In the sorted species list, we can see on the top four positions lipid species' either containing arachidonic acid or precursors to these ones. Of course, in other experiments or for other study variables the feature analysis can select more than one lipid species.");
+            }
+            break;
 
 
-
-
-
-
+        case TAssessStatistics5:
+            {
+                changeSize(440, 230);
+                move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Feature Analysis Evaluation II");
+                informationLabel->setText("As a suggestion, one could now check the remaining separation potencials of the selected lipid(s) on the other study variables or perform another feature analysis on them. In general, the feature analysis works on both nominal and numerical study variables.");
+            }
+            break;
 
 
         case TFinish:
@@ -1721,6 +1783,8 @@ void Tutorial::fourth_tutorial_steps(){
 
 
 void Tutorial::wheelEvent(QWheelEvent *event){
+    return;
+
     QRect r = geometry();
     changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));
     cout << "Height: " << geometry().height() << endl;

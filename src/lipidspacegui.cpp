@@ -990,7 +990,7 @@ void LipidSpaceGUI::runAnalysis(){
         QMessageBox msg;
         msg.setWindowTitle("LipidSpace Analysis");
         msg.setWindowFlags(Qt::WindowStaysOnTopHint);
-        msg.setText("Less than three lipids were taken for analysis. Therefore, no lipid spaces could be computed. However, dendrogram and statistics view can still be investigated.");
+        msg.setText("Less than three lipids were taken for analysis. Therefore, no lipid spaces could be computed. However, the dendrogram and statistics view can still be investigated.");
         QCheckBox *check_box = new QCheckBox("Don't show this again");
         msg.setCheckBox(check_box);
         msg.exec();
