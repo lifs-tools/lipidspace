@@ -9,9 +9,9 @@ const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTab
 
 
 
-//const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFinish, TEnd};
+//const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFinish, TEnd};
 
-const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFinish, TEnd};
+const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TLoadTable, TFeaturePanel, TFeatureAnalysis, TFeatureAnalysis2, TFinish, TEnd};
 
 
 
@@ -172,6 +172,9 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     // actions
     connect(&lipidSpaceGUI->import_table, &ImportTable::importOpened, this, &Tutorial::action_performed);
     connect(lipidSpaceGUI, &LipidSpaceGUI::analysisCompleted, this, &Tutorial::action_performed);
+    connect(ui->startAnalysisPushButton, &QPushButton::clicked, this, &Tutorial::action_performed);
+    connect(ui->actionSelection_mode_activated, &QAction::triggered, this, &Tutorial::action_performed);
+    connect(ui->applyChangesPushButton, &QPushButton::clicked, this, &Tutorial::action_performed);
 
     // widgets
     connect(lipidSpaceGUI->import_table.ui->tabWidget, &QTabWidget::currentChanged, this, &Tutorial::tab_changed);
@@ -181,9 +184,9 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
     connect(lipidSpaceGUI->import_table.ui->nominalStudyVariableListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
     connect(lipidSpaceGUI->import_table.ui->lipidListWidgetCol->model(), &QAbstractItemModel::rowsRemoved, this, &Tutorial::item_changed);
-    connect(ui->actionSelection_mode_activated, &QAction::triggered, this, &Tutorial::action_performed);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
+    connect(ui->pieTreeSpinBox,(void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &Tutorial::spinbox_changed);
 }
 
 
@@ -476,6 +479,32 @@ void Tutorial::combobox_changed(int){
 
 
 
+void Tutorial::spinbox_changed(int){
+    if (step < 0 || tutorialType == NoTutorial) return;
+
+
+    switch(tutorialType){
+        case ThirdTutorial: {
+            ThirdSteps t_step = third_tutorial_steps_order[step];
+            switch(t_step){
+                case TFeatureVisualization:
+                    if (lipidSpaceGUI->ui->pieTreeSpinBox->value() == 6){
+                        continue_tutorial();
+                    }
+
+                default:
+                    break;
+
+            }
+            break;
+        }
+
+        default:
+            break;
+    }
+}
+
+
 
 void Tutorial::action_performed(){
     if (step < 0 || tutorialType == NoTutorial) return;
@@ -515,6 +544,20 @@ void Tutorial::action_performed(){
 
             switch(s_step){
                 case SSpacesSingleView:
+                    continue_tutorial();
+                    break;
+
+                default:
+                    break;
+            }
+        } break;
+
+        case ThirdTutorial: {
+            ThirdSteps t_step = third_tutorial_steps_order[step];
+
+            switch(t_step){
+                case TFeatureAnalysis:
+                case TFeatureAnalysis2:
                     continue_tutorial();
                     break;
 
@@ -640,10 +683,34 @@ void Tutorial::tab_changed(int index){
 
             switch(t_step){
                 case TFeaturePanel:
+                case TFeatureAnalysis:
+                case TFeatureVisualization:
                     if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 2){
                         lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
                     }
                     break;
+
+
+                case TSwitchToStat1:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 3){
+                        continue_tutorial();
+                    }
+                    else if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 3){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                    }
+                    break;
+
+
+                case TAssessStatistics2:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 2){
+                        continue_tutorial();
+                    }
+                    else if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 2){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(3);
+                    }
+                    break;
+
+
 
 
                 default:
@@ -769,7 +836,7 @@ void Tutorial::first_tutorial_steps(){
             changeSize(650, 190);
             titleLabel->setText("What is LipidSpace");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("LipidSpace is a tool to analyse a multitude of lipidomes, putting them together in one model, and offer several functions for a deeper and quicker investigation of your lipidomic data. Usually, data of indentified and quantified lipidomics analyses are structured as a table of size (# of lipids) x (# of samples).");
+            informationLabel->setText("LipidSpace is a tool to analyze a multitude of lipidomes, putting them together in one model, and offer several functions for a deeper and quicker investigation of your lipidomic data. Usually, data of identified and quantified lipidomics analyses are structured as a table of size (# of lipids) x (# of samples).");
             break;
 
 
@@ -812,7 +879,7 @@ void Tutorial::first_tutorial_steps(){
                 QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
                 show_arrow(ALT, &lipidSpaceGUI->import_table, p.x() + r.width() / 2.0, p.y() + r.height());
                 titleLabel->setText("Lipid Row-Based Tables");
-                informationLabel->setText("The first type of table structures is called lipid row table. The abundences over all samples for one specific lipid are structured row-wise. Usually, all lipids are written in one column. This structure requires that all sample names are denoted in the top row.");
+                informationLabel->setText("The first type of table structures is called lipid row table. The abundances over all samples for one specific lipid are structured row-wise. Usually, all lipids are written in one column. This structure requires that all sample names are denoted in the top row.");
                 continuePushButton->setEnabled(true);
             }
             break;
@@ -828,7 +895,7 @@ void Tutorial::first_tutorial_steps(){
                 QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
                 show_arrow(ALT, &lipidSpaceGUI->import_table, p.x() + r.width() + r2.width() / 2.0, p.y() + r.height());
                 titleLabel->setText("Lipid Column-Based Tables");
-                informationLabel->setText("The second type of table structures is called lipid column table. The abundences over all samples for one specific lipid are structured column-wise. This structure requires that all lipid names are denoted in the top row. Additionally, specific study variables assigned to the samples such as age, condition, treatment, etc may be present column-wise.");
+                informationLabel->setText("The second type of table structures is called lipid column table. The abundances over all samples for one specific lipid are structured column-wise. This structure requires that all lipid names are denoted in the top row. Additionally, specific study variables assigned to the samples such as age, condition, treatment, etc may be present column-wise.");
                 continuePushButton->setEnabled(true);
             }
             break;
@@ -845,7 +912,7 @@ void Tutorial::first_tutorial_steps(){
                 QPoint p = map_widget(tab_widget, &lipidSpaceGUI->import_table);
                 show_arrow(ART, &lipidSpaceGUI->import_table, p.x() + r.width() + r2.width() + r3.width() / 2.0, p.y() + r.height());
                 titleLabel->setText("Flat Tables");
-                informationLabel->setText("The third type of table structures is called flat table. Here, the lipid names, the sample names, and their according abundence are written in separate columns. Typically, in this table many additional columns with additional information (e.g., study variables) are stored.");
+                informationLabel->setText("The third type of table structures is called flat table. Here, the lipid names, the sample names, and their according abundance are written in separate columns. Typically, in this table many additional columns with additional information (e.g., study variables) are stored.");
                 continuePushButton->setEnabled(true);
             }
             break;
@@ -964,7 +1031,7 @@ void Tutorial::first_tutorial_steps(){
             move(20, 450);
             changeSize(650, 170);
             titleLabel->setText("Assign Lipid Names");
-            informationLabel->setText("Awesome, now only column remained in the input field containg lipid names. Please drag them all into the 'Lipid column' field. You can select all entries by using the [CTRL] + A key combination.");
+            informationLabel->setText("Awesome, now only columns remained in the input field containg lipid names. Please drag them all into the 'Lipid column' field. You can select all entries by using the [CTRL] + A key combination.");
             lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->lipidListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
@@ -1044,7 +1111,7 @@ void Tutorial::second_tutorial_steps(){
             move(20, 20);
             titleLabel->setText("Second Tutorial - UI Introduction");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Welcome to the second tutorial of LipidSpace. In the previous tutorial, we've seen how to import datasets. Now we will discover the actual functions and windows / views of LipidSpace. To do so, the example dataset will be automatically loaded now.");
+            informationLabel->setText("Welcome to the second tutorial of LipidSpace. In the previous tutorial, we have seen how to import datasets. Now we will discover the actual functions and windows / views of LipidSpace. To do so, the example dataset will be automatically loaded now.");
             break;
 
 
@@ -1068,7 +1135,6 @@ void Tutorial::second_tutorial_steps(){
                     main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
                     main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
                     main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
-                    main_widgets[lipidSpaceGUI->ui->startAnalysisPushButton] = true;
 
                     for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
                 }
@@ -1106,7 +1172,7 @@ void Tutorial::second_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Rerun Analysis");
-                informationLabel->setText(QString("By default, all entries in each selection list are selected at the beginning. If you want to exclude certain lipid species, lipid classes, lipid categories, or even complete samples for a reanalysis of your data, you simple have to deselect the respective entries and click the '%1' button.").arg(((QPushButton*)widget)->text()));
+                informationLabel->setText(QString("By default, all entries in each selection list are selected at the beginning. If you want to exclude certain lipid species, lipid classes, lipid categories, or even complete samples for a reanalysis of your data, you simply have to deselect the respective entries and click the '%1' button.").arg(((QPushButton*)widget)->text()));
             }
             break;
 
@@ -1122,7 +1188,7 @@ void Tutorial::second_tutorial_steps(){
                 lipidSpaceGUI->ui->itemsTabWidget->setEnabled(true);
                 widget->setEnabled(true);
                 titleLabel->setText("Selection Sorting I");
-                informationLabel->setText("All tabs (except the 'Study Variables' tab) contain a possibility to alternate the sorting of the entities (alphabetically by default). For the 'Species' tab, additional sorting possibilities dependent on the number of registered study variables show up. Please select the 'Type classification (Desc)' sorting.");
+                informationLabel->setText("All tabs (except the 'Study Variables' tab) contain a possibility to alternate the sorting of the entities (alphabetically by default). For the 'Species' tab, additional sorting possibilities show up when registering study variables. Please select the 'Type classification (Desc)' sorting.");
             }
             break;
 
@@ -1133,7 +1199,7 @@ void Tutorial::second_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Sorting II");
-                informationLabel->setText("The lipid species are now sorted according to their accuracy to correctly separate the values (here wildtype and knockout) the respective study variable 'Type'. Be aware, that this is not an accuracy on multiple lipid species' but on each species individually. The grey bars are indicating the accuracy from 0 to 1 (perfect separation behavior).");
+                informationLabel->setText("The lipid species are now sorted according to their accuracy of correctly separating the values (here wildtype and knockout) of the respective study variable 'Type'. Be aware, that this is not an accuracy on multiple lipid species' but on each species individually. The grey bars are indicating the accuracy from 0 to 1 (perfect separation behavior).");
             }
             break;
 
@@ -1157,8 +1223,8 @@ void Tutorial::second_tutorial_steps(){
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
                 continuePushButton->setEnabled(true);
-                titleLabel->setText("Different Normalizations");
-                informationLabel->setText("LipidSpace supports several types of lipid intensity normalizations. Absolute normalization (aka no normalization) is set by default. Relative normalization normalizes all lipidomes against each other. When nominal study variables are introduced, the user can select study based normalizations. That means, that all lipidomes assigned to the same variable remain in the same relation to each other.");
+                titleLabel->setText("Different Normalization Modes");
+                informationLabel->setText("LipidSpace supports several types of lipid intensity normalization modes. Absolute normalization (aka no normalization) is set by default. Relative normalization normalizes all lipidomes against each other. When nominal study variables are introduced, the user can select study based normalization modes. This means, that all lipidomes assigned to the same variable remain in the same relation to each other.");
             }
             break;
 
@@ -1200,7 +1266,7 @@ void Tutorial::second_tutorial_steps(){
                 show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(1).width() / 2., p.y());
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Results Section");
-                informationLabel->setText("On the right hand side you can see the results section. It contains and tabs (plus the 'Home' tab) showing different aspects of your data. You can choose between a view on all individual lipidomes, a dendrogram putting all lipidomes into relation, a statistics module and your imported raw data. Please select the 'Lipidomes' tab.");
+                informationLabel->setText("On the right hand side you can see the results section. It contains four tabs (plus the 'Home' tab) showing different aspects of your data. You can choose between a view on all individual lipidomes, a dendrogram putting all lipidomes into relation, a statistics module and your imported raw data. Please select the 'Lipidomes' tab.");
             }
             break;
 
@@ -1212,7 +1278,7 @@ void Tutorial::second_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("The Lipid Spaces");
-                informationLabel->setText("The lipid spaces are a represention of the respective lipidomes. Lipids of the same lipid class have the same bubble color. The size of the bubbles indicates the lipids quantity. For each lipidome, you have an interactive lipid space tile plus a global tile containing all lipid species (with averaged lipid values) within this analysis. All views are connected to each other. You can try move the views or zoom in / out. Afterwards, please continue.");
+                informationLabel->setText("The lipid spaces are a represention of the respective lipidomes. Lipids of the same lipid class have the same bubble color. The size of the bubbles indicates the lipids quantity. For each lipidome, you have an interactive lipid space tile plus a global tile containing all lipid species (with averaged lipid values) within this analysis. All views are connected to each other. You can try moving the views or zoom in / out. Afterwards, please continue.");
             }
             break;
 
@@ -1258,7 +1324,7 @@ void Tutorial::second_tutorial_steps(){
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Single view mode");
-                informationLabel->setText("Especially when you are interested only in one ore a subset of lipidomes, you can activate that mode. Now, all other tiles vanish from the grid. If you want to add / remove tiles from this mode while it is activated, you can do so by opening a selection window with View -> Selected tile(s) mode -> Select tyle(s).");
+                informationLabel->setText("Especially when you are interested only in one or a subset of lipidomes, you can activate that mode. Now, all other tiles vanish from the grid. If you want to add / remove tiles from this mode while it is activated, you can do so by opening a selection window with View -> Selected tile(s) mode -> Select tyle(s).");
             }
             break;
 
@@ -1333,7 +1399,7 @@ void Tutorial::second_tutorial_steps(){
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Statistics view II");
-                informationLabel->setText("In the 'Quantitative data' box, you can select the source of your quant data for the figures. With a right click, you can activate additional options, such as showing data points on the box or bar graphs or export either the data of which the respective figure was drawn or the figure itself as pdf.");
+                informationLabel->setText("In the 'Quantitative data' box, you can select the source of your quant data for the figures. With a right click, you can activate additional options, such as showing data points within the box or bar graphs or export either the data of which the respective figure was drawn or the figure itself as pdf.");
             }
             break;
 
@@ -1417,7 +1483,7 @@ void Tutorial::third_tutorial_steps(){
             move(20, 20);
             titleLabel->setText("Third Tutorial - Feature Selection");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Welcome to the third tutorial of LipidSpace. In the previous tutorial, we had in introduction into the general usage of LipidSpace. In this tutorial, we will learn how to analyse our lipid species with respect to provided study variables. In order to continue, the example dataset will be again automatically loaded now.");
+            informationLabel->setText("Welcome to the third tutorial of LipidSpace. In the previous tutorial, we had in introduction into the general usage of LipidSpace. In this tutorial, we will learn how to analyze our lipid species with respect to provided study variables. In order to continue, the example dataset will be again automatically loaded now.");
             break;
 
 
@@ -1444,6 +1510,7 @@ void Tutorial::third_tutorial_steps(){
                     main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
                     main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
                     main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
+                    main_widgets[lipidSpaceGUI->ui->startAnalysisPushButton] = true;
 
                     for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
                 }
@@ -1477,6 +1544,108 @@ void Tutorial::third_tutorial_steps(){
             break;
 
 
+        case TFeatureVisualization:
+            {
+                changeSize(400, 320);
+                move(20, 20);
+                QWidget *widget = lipidSpaceGUI->ui->pieTreeSpinBox;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ABR, lipidSpaceGUI, p.x(), p.y() + widget->height() / 2.);
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                titleLabel->setText("Feature Visualization");
+                widget->setEnabled(true);
+                informationLabel->setText("Now the bubbles have changed their colors into the actual branch distributions. A legend on the top right is indicating the complete distribution of all lipidomes. You can see now, that when going down the dendrogram from top, some branches go purer in color. This means that these subgroups of lipidomes become more homogenous. To show control the tree depth until the pie figures are drawn. Please set the 'Pie depth' value to 6.");
+            }
+            break;
+
+
+        case TSwitchToStat1:
+            {
+                changeSize(400, 250);
+                move(20, lipidSpaceGUI->height() - height() - 80);
+                QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+
+                int x = lipidSpaceGUI->ui->viewsTabWidget->mapTo(lipidSpaceGUI->ui->centralwidget, QPoint(lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(3).x(), 0)).x();
+                show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(3).width() / 2., p.y());
+
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                titleLabel->setText("Assess Lipid Distribution I");
+                informationLabel->setText("Now we have a better impression, if the branches become more homogenous on higher depth or lower. It seem that the branches are rather hetergeneous until the leaves (which correspond to the individual lipidomes). A look at the statistics module will give more sophisticated results.");
+            }
+            break;
+
+
+        case TAssessStatistics1:
+            {
+                changeSize(400, 280);
+                move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Assess Lipid Distribution II");
+                informationLabel->setText("For all selected lipids in the analysis, a normalized average is computed for each lipidome. A distribution of these values for all lipidomes you can see on the both left figures as box and bar plot. Measures such as p-value or accuracy indicate a weak separation potencial with respect to the study variable 'Treatment' when considering all lipids.");
+            }
+            break;
+
+
+        case TAssessStatistics2:
+            {
+                changeSize(400, 230);
+                move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
+                QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+
+                int x = lipidSpaceGUI->ui->viewsTabWidget->mapTo(lipidSpaceGUI->ui->centralwidget, QPoint(lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(2).x(), 0)).x();
+                show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(2).width() / 2., p.y());
+
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                titleLabel->setText("Assess Lipid Distribution III");
+                informationLabel->setText("The less overlap between the bars and boxes are shown in these plots, the better the separation. Let's try to let LipidSpace assess which subset of lipids provides the \"best\" separation potencial. Therefore, please to the 'Dendrogram' tab.");
+            }
+            break;
+
+
+        case TFeatureAnalysis:
+            {
+                changeSize(600, 220);
+                move(20, 20);
+                QWidget *widget = lipidSpaceGUI->ui->startAnalysisPushButton;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                widget->setEnabled(true);
+                titleLabel->setText("Feature Analysis I");
+                informationLabel->setText("Assessing all possible subsets of a list of entities has an exponential complexity. Therefore LipidSpace is using a heuristic called \"sequential forward selection\" to find a good solution which is not necessary the optimal solution. To start the analysis, simply click on the 'Feature Analysis' button.");
+            }
+            break;
+
+
+        case TFeatureAnalysis2:
+            {
+                changeSize(600, 220);
+                move(20, 20);
+                QWidget *widget = lipidSpaceGUI->ui->applyChangesPushButton;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ABL, lipidSpaceGUI, p.x() + widget->width(), p.y() + widget->height() / 2.);
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                widget->setEnabled(true);
+                titleLabel->setText("Feature Analysis II");
+                informationLabel->setText("After the analysis, LipidSpace automatically unchecks the lipids from the species list that are contributing to a good variable separation. In fact, only one lipid remained in the list. To apply these changes in the lipid list, you have to rerun the LipidSpace analysis. Be aware that a info box will pop up now informing you that your lipid selection contains less than three lipids.");
+            }
+            break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         case TFinish:
@@ -1485,7 +1654,7 @@ void Tutorial::third_tutorial_steps(){
                 changeSize(650, 170);
                 titleLabel->setText("Third Tutorial Completed");
                 continuePushButton->setEnabled(true);
-                informationLabel->setText("Congratulations, you did some feature analysis to dive deeper into lipidomics data. Try to load your own data in LipidSpace and analyse it or just start the fourth tutorial.");
+                informationLabel->setText("Congratulations, you did some feature analysis to dive deeper into lipidomics data. Try to load your own data in LipidSpace and analyze it or just start the fourth tutorial.");
             }
             break;
 
@@ -1528,7 +1697,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             titleLabel->setText("Fourth Tutorial - Quality Control");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyse lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be performed on LipidSpace.");
+            informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyze lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be performed on LipidSpace.");
             break;
 
 
@@ -1552,8 +1721,6 @@ void Tutorial::fourth_tutorial_steps(){
 
 
 void Tutorial::wheelEvent(QWheelEvent *event){
-    return;
-
     QRect r = geometry();
     changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));
     cout << "Height: " << geometry().height() << endl;

@@ -1303,7 +1303,7 @@ void Canvas::mousePressEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
     if (event->button() == Qt::LeftButton){
-        if (GlobalData::ctrl_pressed && !GlobalData::in_tutorial){
+        if (GlobalData::ctrl_pressed){
             mouse(event, this);
         }
         else {
@@ -1403,7 +1403,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
     if (event->buttons() & Qt::LeftButton){
-        if (!GlobalData::ctrl_pressed || GlobalData::in_tutorial){
+        if (!GlobalData::ctrl_pressed){
             setBackgroundBrush(QBrush());
             viewport()->setCursor(Qt::DragMoveCursor);
             QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
