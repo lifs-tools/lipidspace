@@ -1208,7 +1208,7 @@ void Tutorial::second_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Sorting II");
-                informationLabel->setText("The lipid species are now sorted according to their accuracy of correctly separating the values (here wildtype and knockout) of the respective study variable 'Type'. Be aware, that this is not an accuracy on multiple lipid species' but on each species individually. The grey bars are indicating the accuracy from 0 to 1 (perfect separation behavior).");
+                informationLabel->setText("The lipid species are now sorted according to their accuracy of correctly separating the values (here wildtype and knockout) of the respective study variable 'Type'. Be aware, that this is not an accuracy on multiple lipid species but on each species individually. The grey bars are indicating the accuracy from 0 to 1 (perfect separation behavior).");
             }
             break;
 
@@ -1492,7 +1492,7 @@ void Tutorial::third_tutorial_steps(){
             move(20, 20);
             titleLabel->setText("Third Tutorial - Feature Selection");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Welcome to the third tutorial of LipidSpace. In the previous tutorial, we had in introduction into the general usage of LipidSpace. In this tutorial, we will learn how to analyze our lipid species with respect to provided study variables. In order to continue, the example dataset will be again automatically loaded now.");
+            informationLabel->setText("Welcome to the third tutorial of LipidSpace. In the previous tutorial, we had an introduction into the general usage of LipidSpace. In this tutorial, we will learn how to analyze our lipid species with respect to provided study variables. In order to continue, the example dataset will be again automatically loaded now.");
             break;
 
 
@@ -1563,7 +1563,7 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Feature Visualization");
                 widget->setEnabled(true);
-                informationLabel->setText("Now the bubbles have changed their colors into the actual branch distributions. A legend on the top right is indicating the complete distribution of all lipidomes. You can see now, that when going down the dendrogram from top, some branches go purer in color. This means that these subgroups of lipidomes become more homogenous. You can control the tree depth until the pie figures are drawn. Please set the 'Pie depth' value to 6.");
+                informationLabel->setText("Now the bubbles have changed their colors into the actual branch distributions. A legend on the top right is indicating the complete distribution of all lipidomes. You can see now, that when going down the dendrogram from top, some branches go purer in color. This means that these subgroups of lipidomes become more homogenous. You can control how deep the pies figures are drawn in the tree. Please set the 'Pie depth' value to 6.");
             }
             break;
 
@@ -1580,7 +1580,7 @@ void Tutorial::third_tutorial_steps(){
 
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Assess Lipid Distribution I");
-                informationLabel->setText("Now we have a better impression, if the branches become more homogenous on higher depth or lower. It seem that the branches are rather hetergeneous until the leaves (individual lipidomes) hinting at a poor separation potencial. A look at the statistics module will give more sophisticated results.");
+                informationLabel->setText("Now we have a better impression, if the branches become more homogenous on higher depth or lower. It seems that the branches are rather hetergeneous until the leaves (individual lipidomes) hinting at a poor separation potential. A look at the statistics module will give more sophisticated results.");
             }
             break;
 
@@ -1591,7 +1591,7 @@ void Tutorial::third_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Assess Lipid Distribution II");
-                informationLabel->setText("For all selected lipids in the analysis, a normalized average is computed for each lipidome. You can see a distribution of these values for all lipidomes on the both left figures as a box and bar plot. Measures such as p-value or accuracy indeed indicate a weak separation potencial with respect to the study variable 'Treatment' when considering all lipid species'.");
+                informationLabel->setText("For all selected lipids in the analysis, a normalized average is computed for each lipidome. You can see a distribution of these values for all lipidomes on the both left figures as a box and bar plot. Measures such as p-value or accuracy indeed indicate a weak separation potential with respect to the study variable 'Treatment' when considering all lipid species.");
             }
             break;
 
@@ -1608,7 +1608,7 @@ void Tutorial::third_tutorial_steps(){
 
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Assess Lipid Distribution III");
-                informationLabel->setText("The less overlap between the bars and boxes are shown in these plots, the better the separation. Let's try to let LipidSpace assess which subset of lipids provides the \"best\" separation potencial. Therefore, please go back to the 'Dendrogram' tab.");
+                informationLabel->setText("The less overlap between the bars and boxes are shown in these plots, the better the separation. Let's try to let LipidSpace assess which subset of lipids provides the \"best\" separation potential. Therefore, please go back to the 'Dendrogram' tab.");
             }
             break;
 
@@ -1623,7 +1623,7 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 widget->setEnabled(true);
                 titleLabel->setText("Feature Analysis I");
-                informationLabel->setText("Assessing all possible subsets of a list of entities has an exponential complexity. Therefore LipidSpace is using a heuristic called \"sequential forward selection\" to find a good solution which is not necessary the optimal solution. Please keep that in mind. To start the analysis, simply click on the 'Feature Analysis' button.");
+                informationLabel->setText("Assessing all possible subsets of a list of entities has an exponential complexity. Therefore LipidSpace is using a heuristic called \"sequential forward selection\" to find a good solution which is not necessarily the optimal solution. Please keep that in mind. To start the analysis, simply click on the 'Start Analysis' button.");
             }
             break;
 
@@ -1694,7 +1694,7 @@ void Tutorial::third_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Feature Analysis Evaluation II");
-                informationLabel->setText("Does this result make sence? Since stimulating with C-reactive protein (CRP) or thrombin leads to an estrification of free arachidonic acid (FA 20:4), having PA 18:0_20:4 as the best separation lipid makes totally sence. In the sorted species list, we can see on the top four positions lipid species' either containing arachidonic acid or precursors to these ones. Of course, in other experiments or for other study variables the feature analysis can select more than one lipid species.");
+                informationLabel->setText("Does this result make sense? Since stimulating with C-reactive protein (CRP) or thrombin leads to an estrification of free arachidonic acid (FA 20:4), having PA 18:0_20:4 as the best separation lipid makes totally sense. In the sorted species list, we can see on the top four positions lipid species either containing arachidonic acid or precursors to these ones. Of course, in other experiments or for other study variables the feature analysis can select more than one lipid species.");
             }
             break;
 
@@ -1705,7 +1705,7 @@ void Tutorial::third_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Feature Analysis Evaluation II");
-                informationLabel->setText("As a suggestion, one could now check the remaining separation potencials of the selected lipid(s) on the other study variables or perform another feature analysis on them. In general, the feature analysis works on both nominal and numerical study variables.");
+                informationLabel->setText("As a suggestion, one could now check the remaining separation potentials of the selected lipid(s) on the other study variables or perform another feature analysis on them. In general, the feature analysis works on both nominal and numerical study variables.");
             }
             break;
 
