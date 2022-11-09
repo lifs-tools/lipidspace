@@ -254,5 +254,6 @@ public slots:
     void setLipidsForSelection(vector<string> &list);
     void spaceLipidsSelect(int index, bool do_select);
     void openExampleDataset();
+    void checkBenford();
 };
 #endif // LIPIDSPACEGUI_H

@@ -43,6 +43,7 @@
 #define NO_VALUE_CHAR "Ø"
 #define MASK32 4294967295ull
 #define ulong unsigned long long
+#define BENFORD_THRESHOLD 0.05
 
 using namespace OpenXLSX;
 using namespace std;
@@ -63,7 +64,7 @@ static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_T
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"StudyVariableColumnNumerical", StudyVariableColumnNumerical}, {"StudyVariableColumnNominal", StudyVariableColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
 static const set<string> NA_VALUES{"NA", "nan", "N/A", "", "n/a", "NaN", NO_VALUE_CHAR};
 
-
+class Lipidome;
 
 class Mapping {
 public:
@@ -273,8 +274,9 @@ double p_value_welch(Array &a, Array &b);
 double p_value_anova(vector<Array> &v);
 double p_value_chi_sq(Array &a, Array &b);
 double cosine_similarity(Array &a, Array &b);
-double test_benford(Array &a);
-double test_benford(Matrix &m);
+bool test_benford(Array &a);
+bool test_benford(Matrix &m);
+bool test_benford(vector<Lipidome*> &l);
 
 
 inline double compute_l2_norm(const double *a, const double *b, const int rows){

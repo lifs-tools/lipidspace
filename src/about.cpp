@@ -20,8 +20,11 @@ About::About(QWidget *parent, bool log_view) : QDialog(parent), ui(new Ui::About
         ui->textBrowser->append("Nils Hoffmann");
         ui->textBrowser->append("Robert Ahrends\n\n");
 
+        ui->textBrowser->append("More information is available on:");
+        ui->textBrowser->append("https://lipidomics.at\n\n");
 
-        ui->textBrowser->append("LipidSpace is using third-party libriaries. All libraries are listed with their according Licenses:");
+
+        ui->textBrowser->append("LipidSpace is using third-party libriaries. All libraries are listed with their according licenses:");
         ui->textBrowser->append("- Qt 5 (LGPL license)");
         ui->textBrowser->append("- cppGoslin (MIT license)");
         ui->textBrowser->append("- openBlas (BSD license)");

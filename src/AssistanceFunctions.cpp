@@ -943,7 +943,7 @@ double cosine_similarity(Array &a, Array &b){
 
 
 
-double test_benford(Array &a){
+bool test_benford(Array &a){
     Array benford;
     benford.push_back(0.30102999566398114);
     benford.push_back(0.17609125905568124);
@@ -966,15 +966,16 @@ double test_benford(Array &a){
 
     double d = 0;
     for (uint i = 0; i < benford.size(); ++i){
+        if (i > 0 && leading_digits[i - 1] < leading_digits[i]) return false;
         d += sq(benford[i] - leading_digits[i] / total_sum);
     }
 
-    return sqrt(d) / 1.0363099845062402;
+    return sqrt(d) / 1.0363099845062402 <= BENFORD_THRESHOLD;
 }
 
 
 
-double test_benford(Matrix &m){
+bool test_benford(Matrix &m){
     Array benford;
     benford.push_back(0.30102999566398114);
     benford.push_back(0.17609125905568124);
@@ -1001,10 +1002,46 @@ double test_benford(Matrix &m){
 
     double d = 0;
     for (uint i = 0; i < benford.size(); ++i){
+        if (i > 0 && leading_digits[i - 1] < leading_digits[i]) return false;
         d += sq(benford[i] - leading_digits[i] / total_sum);
     }
 
-    return sqrt(d) / 1.0363099845062402;
+    return sqrt(d) / 1.0363099845062402 <= BENFORD_THRESHOLD;
+}
+
+
+
+bool test_benford(vector<Lipidome*> &l){
+    Array benford;
+    benford.push_back(0.30102999566398114);
+    benford.push_back(0.17609125905568124);
+    benford.push_back(0.1249387366082999);
+    benford.push_back(0.0969100130080564);
+    benford.push_back(0.0791812460476248);
+    benford.push_back(0.06694678963061322);
+    benford.push_back(0.057991946977686726);
+    benford.push_back(0.051152522447381284);
+    benford.push_back(0.04575749056067514);
+
+    double total_sum = 0;
+    Array leading_digits(10, 0);
+
+    for (auto lipidome : l){
+        for (auto val : lipidome->original_intensities){
+            if (val <= 0) continue;
+            leading_digits[(int)(val / pow(10, floor(log(val) / log(10))))]++;
+            total_sum += 1;
+        }
+    }
+    leading_digits.erase(leading_digits.begin());
+
+    double d = 0;
+    for (uint i = 0; i < benford.size(); ++i){
+        if (i > 0 && leading_digits[i - 1] < leading_digits[i]) return false;
+        d += sq(benford[i] - leading_digits[i] / total_sum);
+    }
+
+    return sqrt(d) / 1.0363099845062402 <= BENFORD_THRESHOLD;
 }
 
 

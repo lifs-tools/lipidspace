@@ -73,6 +73,10 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
+        for (int i = 0; i < 5; ++i) ct->push_back(LipidColumn);
+        ct->at(0) = SampleColumn;
+        loadTable(new ImportData("examples/benford.csv", "", COLUMN_PIVOT_TABLE, ct));
+        /*
         for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
         for (int i = 1; i <= 40; ++i) ct->at(i) = StudyVariableColumnNumerical;
@@ -80,6 +84,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(42) = StudyVariableColumnNominal;
         ct->at(43) = StudyVariableColumnNominal;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
+        */
 
     }
     else if (event->key() == Qt::Key_2){
@@ -308,6 +313,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(lipid_space, &LipidSpace::fileLoaded, this, &LipidSpaceGUI::updateSelectionView);
     connect(lipid_space, &LipidSpace::reassembled, this, &LipidSpaceGUI::updateSelectionView);
+
+    connect(lipid_space, &LipidSpace::reassembled, this, &LipidSpaceGUI::checkBenford);
+    connect(lipid_space, &LipidSpace::fileLoaded, this, &LipidSpaceGUI::checkBenford);
 
     dragLayer = new DragLayer(this, ui->centralwidget);
     dragLayer->move(0, 0);
@@ -943,6 +951,12 @@ void LipidSpaceGUI::startFeatureAnalysis(){
 
 
 
+void LipidSpaceGUI::checkBenford(){
+    GlobalData::benford_warning = !test_benford(lipid_space->lipidomes);
+}
+
+
+
 void LipidSpaceGUI::runAnalysis(){
     string species_selection = GlobalData::gui_string_var["species_selection"];
     string study_var = GlobalData::gui_string_var["study_var"];
@@ -976,12 +990,16 @@ void LipidSpaceGUI::runAnalysis(){
     updateGUI();
 
 
-
     // (re)start analysis
     progress->reset();
     lipid_space->start();
     progressbar->exec(); // waiting for the progress bar to finish
 
+    if (GlobalData::benford_warning){
+        QMessageBox::warning(this, "Warning", "Please be aware that your current raw data do not conform to Benfords law. For further details, please have a look in the logs (Help → Log messages).");
+        Logging::write_log("Your data does not conform to Benfords law. The law says that for real datsets with empirical or measured data ranging over several orders the distribution of the first digit frequency is reciprocal, not equally distributed. Deviations from the rule may be caused by several factors:\n - Your data is in low orders of magnitude range\n - You have only few data points\n - Incorrect data imputation was previously performed\nIn any case, please check your raw data manually in the 'Raw data table' tab for abnormalities before continuing your analysis.");
+        GlobalData::benford_warning = false;
+    }
     if (!lipid_space->analysis_finished) return;
 
     if (lipid_space->study_variable_values.size() > 1 || lipid_space->study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);

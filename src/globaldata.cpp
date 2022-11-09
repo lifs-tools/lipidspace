@@ -6,6 +6,7 @@ bool GlobalData::showQuant = true;
 bool GlobalData::debug = false;
 bool GlobalData::ctrl_pressed = false;
 bool GlobalData::in_tutorial = false;
+bool GlobalData::benford_warning = false;
 int GlobalData::color_counter = 0;
 map<string, QColor> GlobalData::colorMap;
 int GlobalData::PC1 = 0;

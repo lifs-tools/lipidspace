@@ -5,19 +5,21 @@ const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescripti
 
 const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
-
-
-
-
 const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
-//const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TLoadTable, TFeaturePanel, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
 
 
 
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DFinish, DEnd};
+//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DFinish, DEnd};
+
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DFinish, DEnd};
+
+
+
+
+
 
 Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(parent), lipidSpaceGUI(_lipidSpaceGUI) {
     setObjectName(QString::fromUtf8("TutorialFrame"));
@@ -1319,7 +1321,7 @@ void Tutorial::second_tutorial_steps(){
                 lipidSpaceGUI->ui->actionSelection_mode_activated->setEnabled(true);
 
                 titleLabel->setText("Additional Options II");
-                informationLabel->setText("When clicking on View -> Selected tile(s) mode -> Activated you have the possibility to switch between displaying all tiles and only the selected ones. Be aware that when your dataset contains more than 100 lipidomes, the selected tile mode will be automatically. Please activate the selected tile mode now.");
+                informationLabel->setText("When clicking on View → Selected tile(s) mode → Activated you have the possibility to switch between displaying all tiles and only the selected ones. Be aware that when your dataset contains more than 100 lipidomes, the selected tile mode will be automatically. Please activate the selected tile mode now.");
 
             }
             break;
@@ -1333,7 +1335,7 @@ void Tutorial::second_tutorial_steps(){
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Single view mode");
-                informationLabel->setText("Especially when you are interested only in one or a subset of lipidomes, you can activate that mode. Now, all other tiles vanish from the grid. If you want to add / remove tiles from this mode while it is activated, you can do so by opening a selection window with View -> Selected tile(s) mode -> Select tyle(s).");
+                informationLabel->setText("Especially when you are interested only in one or a subset of lipidomes, you can activate that mode. Now, all other tiles vanish from the grid. If you want to add / remove tiles from this mode while it is activated, you can do so by opening a selection window with View → Selected tile(s) mode → Select tyle(s).");
             }
             break;
 
@@ -1683,7 +1685,7 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->itemsTabWidget->setEnabled(true);
                 widget->setEnabled(true);
                 titleLabel->setText("Feature Analysis Evaluation II");
-                informationLabel->setText("In the both left figures, we can clearly see now that all four groups are perfectly separated with a p-value < 0.001 and an accuracy of 100 % (for our imported lipidomes). Here, we can start to put the results into a bigger context. Therefore, please select also 'Treatment classification (DESC)' as lipid species sorting.");
+                informationLabel->setText("In the both left figures, we can clearly see now that all four groups are perfectly separated with a p-value < 0.001 and an accuracy of 100 % (for our imported lipidomes). Here, we can start to put the results into a bigger context. Therefore, please select also 'Treatment classification (Desc)' as lipid species sorting.");
             }
             break;
 
@@ -1763,6 +1765,17 @@ void Tutorial::fourth_tutorial_steps(){
             break;
 
 
+        case DBenford:
+            changeSize(650, 190);
+            move(20, 20);
+            titleLabel->setText("Benfords Law");
+            continuePushButton->setEnabled(true);
+            informationLabel->setText("Having said that, there is one builtin QC function. Every time when you import or remove lipidome data in LipidSpace, the data is checked if it conforms to Benfords law (please find details in the menu Help → log messages). If your data doesn't, you will be informed with hints how to check your imported raw data.");
+
+            Logging::write_log("Benfords law describes the distrubution of the first digits of numbers in big data sets [Cho, W.K.T. and Gaines, B.J. (2007) Breaking the (Benford) Law: Statistical Fraud Detection in Campaign Finance. The American Statistician. 61, 218–223].");
+            Logging::write_log("Real datsets with empirical or measured data ranging over several orders of magnitude tend to follow Benfords law.");
+            break;
+
 
         case DFinish:
             {
@@ -1770,7 +1783,7 @@ void Tutorial::fourth_tutorial_steps(){
                 changeSize(650, 180);
                 titleLabel->setText("Fourth Tutorial Completed");
                 continuePushButton->setEnabled(true);
-                informationLabel->setText("Congratulations, you mastered the final tutorial. Hopefully these tutorials gave you a decent introduction into LipidSpace. If you have issues, comments, or critics about the tool, please drop us a line, contact information you'll find in the menu Help -> About. Have fun using LipidSpace :-)");
+                informationLabel->setText("Congratulations, you mastered the final tutorial. Hopefully these tutorials gave you a decent introduction into LipidSpace. If you have issues, comments, or critics about the tool, please drop us a line, contact information you'll find in the menu Help → About. Have fun using LipidSpace :-)");
             }
             break;
 
@@ -1783,7 +1796,7 @@ void Tutorial::fourth_tutorial_steps(){
 
 
 void Tutorial::wheelEvent(QWheelEvent *event){
-    return;
+    //return;
 
     QRect r = geometry();
     changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));
