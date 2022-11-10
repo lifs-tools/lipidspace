@@ -410,7 +410,9 @@ LipidSpace::~LipidSpace(){
 
 
 void LipidSpace::cut_cycle(FattyAcid* fa){
-    if (uncontains_val_p(fa->functional_groups, "cy")) return;
+    if (fa == 0 || uncontains_val_p(fa->functional_groups, "cy")){
+        return;
+    }
 
     if (((Cycle*)fa->functional_groups->at("cy").at(0))->start > -1){
         int start = ((Cycle*)fa->functional_groups->at("cy").at(0))->start;
@@ -627,7 +629,9 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
                 for (auto f : fa1->functional_groups->at(key)) keys_fa1.push_back(f->position);
                 vector<int> keys_fa2;
                 for (auto f : fa2->functional_groups->at(key)) keys_fa2.push_back(f->position);
-                int naab = fa1->functional_groups->at(key).at(0)->num_atoms_and_bonds;
+
+
+                int naab = fa1->functional_groups->at(key).at(0)->num_atoms;
 
                 vector<int> unions;
                 set_union(keys_fa1.begin(), keys_fa1.end(), keys_fa2.begin(), keys_fa2.end(), back_inserter(unions));
@@ -636,13 +640,14 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
 
                 inter_num += inters.size() * naab;
                 union_num += unions.size() * naab;
+
             }
         }
         // functional group occurs only in first fatty acid
         else {
             FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group(key);
             if (func_group){
-                int naab = func_group->num_atoms_and_bonds;
+                int naab = func_group->num_atoms;
 
                 int num = 0;
                 if (fa1->functional_groups->at(key).at(0)->position > -1){
@@ -657,7 +662,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
             }
             else {
                 for (auto fg : kv.second){
-                    union_num += fg->num_atoms_and_bonds;
+                    union_num += fg->num_atoms;
                 }
             }
         }
@@ -678,7 +683,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
 
         FunctionalGroup* func_group = KnownFunctionalGroups::get_functional_group(key);
         if (func_group){
-            int naab = func_group->num_atoms_and_bonds;
+            int naab = func_group->num_atoms;
 
             int num = 0;
             if (fa2->functional_groups->at(key).at(0)->position > -1){
@@ -693,7 +698,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
         }
         else {
             for (auto fg : fa2->functional_groups->at(key)){
-                union_num += fg->num_atoms_and_bonds;
+                union_num += fg->num_atoms;
             }
         }
     }
@@ -780,15 +785,6 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
             for (int i = (int)orig_fa_list_2->size(); i < (int)orig_fa_list_1->size(); ++i){
 
                 fatty_acyl_similarity(orig_fa_list_1->at(i), dummy, union_num, inter_num);
-                /*
-                FattyAcid* fa = orig_fa_list_1->at(i);
-                union_num += fa->get_double_bonds();
-                ElementTable* e = fa->get_elements();
-                for (auto kv : *e){
-                    if (kv.first != ELEMENT_H) union_num += kv.second;
-                }
-                delete e;
-                */
             }
             delete dummy;
         }
@@ -2968,8 +2964,9 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
         }
     }
 
-    if (l == nullptr) return l;
-
+    if (l == nullptr){
+        return l;
+    }
 
     // deleting adduct since not necessary
     if (l->adduct != nullptr){
@@ -2980,7 +2977,9 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
     string translated_name = l->get_lipid_string();
 
     l->sort_fatty_acyl_chains();
-    for (auto fa : l->lipid->fa_list) cut_cycle(fa);
+    for (auto fa : l->lipid->fa_list){
+        cut_cycle(fa);
+    }
 
     string lipid_string = l->get_lipid_string();
     if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], translated_name))

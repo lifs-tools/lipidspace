@@ -73,18 +73,19 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
+        /*
         for (int i = 0; i < 5; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
         loadTable(new ImportData("examples/benford.csv", "", COLUMN_PIVOT_TABLE, ct));
-        /*
+        */
         for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
-        for (int i = 1; i <= 40; ++i) ct->at(i) = StudyVariableColumnNumerical;
+        for (int i = 1; i <= 44; ++i) ct->at(i) = StudyVariableColumnNumerical;
         ct->at(1) = StudyVariableColumnNominal;
         ct->at(42) = StudyVariableColumnNominal;
         ct->at(43) = StudyVariableColumnNominal;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
-        */
+
 
     }
     else if (event->key() == Qt::Key_2){
