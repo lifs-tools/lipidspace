@@ -72,12 +72,13 @@ void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
     if (event->key() == Qt::Key_1){
         resetAnalysis();
-        vector<TableColumnType> *ct = new vector<TableColumnType>();
         /*
+        vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 5; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
         loadTable(new ImportData("examples/benford.csv", "", COLUMN_PIVOT_TABLE, ct));
         */
+        /*
         for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
         for (int i = 1; i <= 44; ++i) ct->at(i) = StudyVariableColumnNumerical;
@@ -85,9 +86,24 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(42) = StudyVariableColumnNominal;
         ct->at(43) = StudyVariableColumnNominal;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
+        */
 
+        vector<TableColumnType> *ct_1 = new vector<TableColumnType>(201, LipidColumn);
+        ct_1->at(0) = SampleColumn;
+        ct_1->at(1) = StudyVariableColumnNominal;
+        loadTable(new ImportData("examples/ThreeStudies.xlsx", "Study1", COLUMN_PIVOT_TABLE, ct_1), false);
 
+        vector<TableColumnType> *ct_2 = new vector<TableColumnType>(231, LipidColumn);
+        ct_2->at(0) = SampleColumn;
+        ct_2->at(1) = StudyVariableColumnNominal;
+        loadTable(new ImportData("examples/ThreeStudies.xlsx", "Study2", COLUMN_PIVOT_TABLE, ct_2), false);
+
+        vector<TableColumnType> *ct_3 = new vector<TableColumnType>(233, LipidColumn);
+        ct_3->at(0) = SampleColumn;
+        ct_3->at(1) = StudyVariableColumnNominal;
+        loadTable(new ImportData("examples/ThreeStudies.xlsx", "Study3", COLUMN_PIVOT_TABLE, ct_3));
     }
+
     else if (event->key() == Qt::Key_2){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();

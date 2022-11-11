@@ -12,9 +12,9 @@ const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable
 
 
 
-//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DFinish, DEnd};
+//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DFinish, DEnd};
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DFinish, DEnd};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DLoadData, DFinish, DEnd};
 
 
 
@@ -156,7 +156,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
 
-    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_study_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsHistogram, false}, {ui->statisticsROCCurve, false}, {ui->statisticsSpeciesCV, false}, {ui->statisticsBarPlot, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}, {ui->secondaryComboBox, false}};
+    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_study_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionImport_eample_dataset, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsHistogram, false}, {ui->statisticsROCCurve, false}, {ui->statisticsSpeciesCV, false}, {ui->statisticsBarPlot, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}, {ui->secondaryComboBox, false}};
 
 
     // window resize event
@@ -254,7 +254,7 @@ Tutorial::~Tutorial() {
 
 
 void Tutorial::x_clicked(){
-    if (tutorialType == NoTutorial || (QMessageBox::question(this, "Quit tutorial", "Do you want to quit the tutorial?") == QMessageBox::Yes)){
+    if (QMessageBox::question(this, "Quit tutorial", "Do you want to quit the tutorial?") == QMessageBox::Yes){
         close_tutorial(QDialog::Rejected);
     }
 }
@@ -268,7 +268,7 @@ void Tutorial::close_directly_tutorial(){
 
 
 void Tutorial::close_tutorial(int state){
-    if (state == QDialog::Accepted) return;
+    if (tutorialType == NoTutorial || state == QDialog::Accepted) return;
 
     setVisible(false);
     hide_arrows();
@@ -835,7 +835,7 @@ void Tutorial::first_tutorial_steps(){
     switch(f_step){
         case FStart:
             changeSize(650, 190);
-            move(20, 20);
+            move(20, 20, lipidSpaceGUI);
             titleLabel->setText("First Tutorial - Data Import");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Welcome to the first tutorial of LipidSpace. The tutorials are designed to interactively guide you through the actual interface of LipidSpace. In this tutorial, we will go through the ways to import your lipidomics data into LipidSpace.");
@@ -1119,7 +1119,7 @@ void Tutorial::second_tutorial_steps(){
     switch(s_step){
         case SStart:
             changeSize(650, 190);
-            move(20, 20);
+            move(20, 20, lipidSpaceGUI);
             titleLabel->setText("Second Tutorial - UI Introduction");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Welcome to the second tutorial of LipidSpace. In the previous tutorial, we have seen how to import datasets. Now we will discover the actual functions and windows / views of LipidSpace. To do so, the example dataset will be automatically loaded now.");
@@ -1491,7 +1491,7 @@ void Tutorial::third_tutorial_steps(){
     switch(t_step){
         case TStart:
             changeSize(650, 200);
-            move(20, 20);
+            move(20, 20, lipidSpaceGUI);
             titleLabel->setText("Third Tutorial - Feature Selection");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Welcome to the third tutorial of LipidSpace. In the previous tutorial, we had an introduction into the general usage of LipidSpace. In this tutorial, we will learn how to analyze our lipid species with respect to provided study variables. In order to continue, the example dataset will be again automatically loaded now.");
@@ -1758,7 +1758,7 @@ void Tutorial::fourth_tutorial_steps(){
     switch(d_step){
         case DStart:
             changeSize(650, 230);
-            move(20, 20);
+            move(20, 20, lipidSpaceGUI);
             titleLabel->setText("Fourth Tutorial - Quality Control");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyze lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be performed on LipidSpace.");
@@ -1768,13 +1768,67 @@ void Tutorial::fourth_tutorial_steps(){
         case DBenford:
             changeSize(650, 190);
             move(20, 20);
-            titleLabel->setText("Benfords Law");
             continuePushButton->setEnabled(true);
+            titleLabel->setText("Benfords Law");
             informationLabel->setText("Having said that, there is one builtin QC function. Every time when you import or remove lipidome data in LipidSpace, the data is checked if it conforms to Benfords law (please find details in the menu Help → log messages). If your data doesn't, you will be informed with hints how to check your imported raw data.");
 
             Logging::write_log("Benfords law describes the distrubution of the first digits of numbers in big data sets [Cho, W.K.T. and Gaines, B.J. (2007) Breaking the (Benford) Law: Statistical Fraud Detection in Campaign Finance. The American Statistician. 61, 218–223].");
             Logging::write_log("Real datsets with empirical or measured data ranging over several orders of magnitude tend to follow Benfords law.");
             break;
+
+        case DRelativeQC:
+            changeSize(650, 210);
+            move(20, 20);
+            continuePushButton->setEnabled(true);
+            titleLabel->setText("Relative QC");
+            informationLabel->setText("Beside Benfords law, it is difficult assess the quality of your data without any reference data. Therefore, we assume for that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset from two different studies will be loaded now for demonstration.");
+            break;
+
+
+        case DLoadData:
+            changeSize(650, 190);
+            move(lipidSpaceGUI->width() - width() - 20, 20);
+            /*
+            if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
+                lipidSpaceGUI->resetAnalysis();
+                vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
+                ct->at(0) = SampleColumn;
+                ct->at(1) = StudyVariableColumnNominal;
+                ct->at(2) = StudyVariableColumnNominal;
+                ct->at(3) = StudyVariableColumnNominal;
+                string path_to_example = QCoreApplication::applicationDirPath().toStdString();
+                lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
+
+                main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
+                main_widgets[lipidSpaceGUI->ui->menuView] = true;
+                main_widgets[lipidSpaceGUI->ui->actionExport_Results] = true;
+                main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
+                main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
+                main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
+                main_widgets[lipidSpaceGUI->ui->startAnalysisPushButton] = true;
+
+                for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
+            }
+            */
+
+            QTimer::singleShot(10, [this]() {
+                QWidget *widget = lipidSpaceGUI->ui->dendrogramView;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ARB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y() + widget->height());
+            });
+            continuePushButton->setEnabled(true);
+            titleLabel->setText("Relative QC");
+            informationLabel->setText("Beside Benfords law, it is difficult assess the quality of your data without any reference data. Therefore, we assume for that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset from two different studies will be loaded now for demonstration.");
+            break;
+
+
+
+
+
+
+
+
+
 
 
         case DFinish:

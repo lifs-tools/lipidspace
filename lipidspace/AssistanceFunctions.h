@@ -43,7 +43,7 @@
 #define NO_VALUE_CHAR "Ø"
 #define MASK32 4294967295ull
 #define ulong unsigned long long
-#define BENFORD_THRESHOLD 0.05
+#define BENFORD_THRESHOLD 0.01
 
 using namespace OpenXLSX;
 using namespace std;

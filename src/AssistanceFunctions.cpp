@@ -970,7 +970,7 @@ bool test_benford(Array &a){
         d += sq(benford[i] - leading_digits[i] / total_sum);
     }
 
-    return sqrt(d) / 1.0363099845062402 <= BENFORD_THRESHOLD;
+    return sqrt(d) / 21.04527783158751 <= BENFORD_THRESHOLD;
 }
 
 
@@ -1006,7 +1006,7 @@ bool test_benford(Matrix &m){
         d += sq(benford[i] - leading_digits[i] / total_sum);
     }
 
-    return sqrt(d) / 1.0363099845062402 <= BENFORD_THRESHOLD;
+    return sqrt(d) / 21.04527783158751 <= BENFORD_THRESHOLD;
 }
 
 
@@ -1038,10 +1038,10 @@ bool test_benford(vector<Lipidome*> &l){
     double d = 0;
     for (uint i = 0; i < benford.size(); ++i){
         if (i > 0 && leading_digits[i - 1] < leading_digits[i]) return false;
-        d += sq(benford[i] - leading_digits[i] / total_sum);
+        d += sq((benford[i] - leading_digits[i] / total_sum) / benford[i]);
     }
 
-    return sqrt(d) / 1.0363099845062402 <= BENFORD_THRESHOLD;
+    return sqrt(d) / 21.04527783158751 <= BENFORD_THRESHOLD;
 }
 
 
