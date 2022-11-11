@@ -12,9 +12,9 @@ const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable
 
 
 
-//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DFinish, DEnd};
+//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DFinish, DEnd};
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DLoadData, DFinish, DEnd};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DLoadData, DDataExplain, DNormalization, DFinish, DEnd};
 
 
 
@@ -189,6 +189,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
     connect(ui->pieTreeSpinBox,(void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &Tutorial::spinbox_changed);
+    connect(ui->pieSizeSpinBox,(void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &Tutorial::spinbox_changed);
 }
 
 
@@ -481,6 +482,25 @@ void Tutorial::combobox_changed(int){
             break;
         }
 
+
+        case FourthTutorial: {
+            FourthSteps d_step = fourth_tutorial_steps_order[step];
+            switch(d_step){
+                case DLoadData:
+                    continuePushButton->setEnabled(lipidSpaceGUI->ui->studyVariableComboBox->currentText() == "Origin" && lipidSpaceGUI->ui->pieTreeSpinBox->value() >= 10 && lipidSpaceGUI->ui->pieSizeSpinBox->value() == 200);
+                    break;
+
+                default:
+                    break;
+
+            }
+            break;
+        }
+
+
+
+
+
         default:
             break;
     }
@@ -500,6 +520,26 @@ void Tutorial::spinbox_changed(int){
                     if (lipidSpaceGUI->ui->pieTreeSpinBox->value() == 6){
                         continue_tutorial();
                     }
+
+                default:
+                    break;
+
+            }
+            break;
+        }
+
+        default:
+            break;
+    }
+
+
+    switch(tutorialType){
+        case FourthTutorial: {
+            FourthSteps d_step = fourth_tutorial_steps_order[step];
+            switch(d_step){
+                case DLoadData:
+                    continuePushButton->setEnabled(lipidSpaceGUI->ui->studyVariableComboBox->currentText() == "Origin" && lipidSpaceGUI->ui->pieTreeSpinBox->value() >= 10 && lipidSpaceGUI->ui->pieSizeSpinBox->value() == 200);
+                    break;
 
                 default:
                     break;
@@ -721,8 +761,24 @@ void Tutorial::tab_changed(int index){
                     }
                     break;
 
+                default:
+                    break;
+            }
+
+            break;
+        }
 
 
+
+        case FourthTutorial: {
+            FourthSteps d_step = fourth_tutorial_steps_order[step];
+
+            switch(d_step){
+                case DLoadData:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 2){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                    }
+                    break;
 
                 default:
                     break;
@@ -730,6 +786,7 @@ void Tutorial::tab_changed(int index){
 
             break;
         }
+
 
         default:
             break;
@@ -1787,7 +1844,7 @@ void Tutorial::fourth_tutorial_steps(){
 
         case DLoadData:
             changeSize(650, 190);
-            move(lipidSpaceGUI->width() - width() - 20, 20);
+            move(20, 20);
             if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
                 lipidSpaceGUI->resetAnalysis();
                 string path_to_example = QCoreApplication::applicationDirPath().toStdString();
@@ -1795,17 +1852,17 @@ void Tutorial::fourth_tutorial_steps(){
                 vector<TableColumnType> *ct_1 = new vector<TableColumnType>(201, LipidColumn);
                 ct_1->at(0) = SampleColumn;
                 ct_1->at(1) = StudyVariableColumnNominal;
-                loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study1", COLUMN_PIVOT_TABLE, ct_1), false);
+                lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study1", COLUMN_PIVOT_TABLE, ct_1), false);
 
                 vector<TableColumnType> *ct_2 = new vector<TableColumnType>(231, LipidColumn);
                 ct_2->at(0) = SampleColumn;
                 ct_2->at(1) = StudyVariableColumnNominal;
-                loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study2", COLUMN_PIVOT_TABLE, ct_2), false);
+                lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study2", COLUMN_PIVOT_TABLE, ct_2), false);
 
                 vector<TableColumnType> *ct_3 = new vector<TableColumnType>(233, LipidColumn);
                 ct_3->at(0) = SampleColumn;
                 ct_3->at(1) = StudyVariableColumnNominal;
-                loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study3", COLUMN_PIVOT_TABLE, ct_3));
+                lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study3", COLUMN_PIVOT_TABLE, ct_3));
 
                 main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
                 main_widgets[lipidSpaceGUI->ui->menuView] = true;
@@ -1818,17 +1875,45 @@ void Tutorial::fourth_tutorial_steps(){
                 for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
             }
 
-            /*
-            QTimer::singleShot(10, [this]() {
-                QWidget *widget = lipidSpaceGUI->ui->dendrogramView;
-                QPoint p = map_widget(widget, lipidSpaceGUI);
-                show_arrow(ARB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y() + widget->height());
-            });
-            */
-            continuePushButton->setEnabled(true);
+            lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+            lipidSpaceGUI->ui->studyVariableComboBox->setEnabled(true);
+            lipidSpaceGUI->ui->pieTreeSpinBox->setEnabled(true);
+            lipidSpaceGUI->ui->pieSizeSpinBox->setEnabled(true);
+
             titleLabel->setText("Human Plasma Studies");
-            informationLabel->setText("The data presented here is an excerpt from three published human plasma studies. First let's adjust the dendrogram view get a better glimpse of the data. Set the study variable to the builtin 'Origin' variable, 'Pie size' to 200 %% and 'Pie depth' at least to 10 to continue.");
+            informationLabel->setText("The data presented here is an excerpt from three published human plasma studies. First let's adjust the dendrogram view get a better glimpse of the data. Set the study variable to the builtin 'Origin' variable, 'Pie size' to 200 % and 'Pie depth' at least to 10 to continue.");
+
+
+            // TODO: delete
+            lipidSpaceGUI->ui->studyVariableComboBox->setCurrentIndex(1);
+            lipidSpaceGUI->ui->pieTreeSpinBox->setValue(10);
+            lipidSpaceGUI->ui->pieSizeSpinBox->setValue(200);
+            continuePushButton->setEnabled(true);
+
             break;
+
+
+        case DDataExplain:
+            changeSize(650, 230);
+            move(20, 20);
+
+            continuePushButton->setEnabled(true);
+            titleLabel->setText("First Examination");
+            informationLabel->setText("Better. So, what do we see at first glance? From the legend, we know that the three studies contain in total 89 individual lipidomes (aka samples or measurements). Since the vertical lines of the dendrogram shows the distance between two branches, we see that the lipidomes from the second and third study clustered together are close to each other whereas the first study is also clustered but their distances are much higher.");
+            break;
+
+
+        case DNormalization:
+            changeSize(650, 210);
+            move(20, 20);
+
+            titleLabel->setText("First Examination");
+            informationLabel->setText("This might be an indicator that the studies were providing their results in different units. No problem, let's normalize the data with respect to the origin aka studies. That is, the data remains in the same relation within the studies, but the studies themselve will be normalized to each other. Please select the 'Origin grouped normalization' and apply the changes.");
+            break;
+
+
+
+
 
 
 

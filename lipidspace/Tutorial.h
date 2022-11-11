@@ -42,7 +42,7 @@ enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSor
 
 enum ThirdSteps {TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
-enum FourthSteps {DStart, DBenford, DRelativeQC, DLoadData, DFinish, DEnd};
+enum FourthSteps {DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DFinish, DEnd};
 
 
 class LipidSpaceGUI;
