@@ -16,6 +16,8 @@ public:
     explicit SelectLipidomes(QWidget *parent = nullptr);
     ~SelectLipidomes();
 
+    void init();
+
 public slots:
     void cancel();
     void ok();

@@ -8,7 +8,11 @@ SelectLipidomes::SelectLipidomes(QWidget *parent) : QDialog(parent), ui(new Ui::
 
     connect(ui->okButton, &QPushButton::clicked, this, &SelectLipidomes::ok);
     connect(ui->cancelButton, &QPushButton::clicked, this, &SelectLipidomes::cancel);
+}
 
+
+void SelectLipidomes::init(){
+    ui->lipidomesListWidget->clear();
     for (auto canvas : ((LipidSpaceGUI*)parentWidget())->canvases){
         QListWidgetItem *item = new QListWidgetItem(canvas->pointSet->title);
         item->setCheckState(canvas->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
@@ -21,7 +25,7 @@ SelectLipidomes::~SelectLipidomes() {
 }
 
 void SelectLipidomes::cancel(){
-    close();
+    reject();
 }
 
 void SelectLipidomes::ok(){
@@ -35,5 +39,5 @@ void SelectLipidomes::ok(){
         }
     }
     if (do_update && ((LipidSpaceGUI*)parentWidget())->selected_tiles_mode) ((LipidSpaceGUI*)parentWidget())->updateGUI();
-    close();
+    accept();
 }

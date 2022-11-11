@@ -37,6 +37,7 @@ QT_END_NAMESPACE
 class Canvas;
 class Tutorial;
 class LipidSpaceGUI;
+class SelectLipidomes;
 
 
 class HomeItem : public QGraphicsItem {
@@ -130,6 +131,7 @@ public:
     QPixmap *arrow_bl;
     Tutorial *tutorial;
     ImportTable import_table;
+    SelectLipidomes *select_lipidomes;
     Statistics statisticsBoxPlot;
     Statistics statisticsHistogram;
     Statistics statisticsROCCurve;

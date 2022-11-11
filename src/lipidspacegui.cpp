@@ -303,6 +303,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     lipid_space = _lipid_space;
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
+    select_lipidomes = new SelectLipidomes(this);
+    select_lipidomes->setModal(true);
     keystrokes = "";
     selected_d_lipidomes = 0;
     knubbel = false;
@@ -350,7 +352,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statisticsHistogram->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsSpeciesCV->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsROCCurve->setContextMenuPolicy(Qt::CustomContextMenu);
-
 
     connect(ui->actionLoad_list_s, &QAction::triggered, this, &LipidSpaceGUI::openLists);
     connect(ui->actionLoad_table, &QAction::triggered, this, &LipidSpaceGUI::openTable);
@@ -505,6 +506,8 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete dragLayer;
     delete select_tiles_information;
     delete raw_data_model;
+    delete tutorial;
+    delete select_lipidomes;
 }
 
 
@@ -1475,9 +1478,8 @@ void LipidSpaceGUI::openSetAlpha(){
 
 
 void LipidSpaceGUI::openSelectLipidomes(){
-    SelectLipidomes select_lipidomes(this);
-    select_lipidomes.setModal(true);
-    select_lipidomes.exec();
+    select_lipidomes->init();
+    select_lipidomes->exec();
 }
 
 
