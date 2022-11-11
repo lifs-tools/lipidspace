@@ -12,9 +12,9 @@ const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable
 
 
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
+//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
 
-//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DLoadData, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DLoadData, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
 
 
 
@@ -1871,7 +1871,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20, lipidSpaceGUI);
             titleLabel->setText("Fourth Tutorial - Quality Control");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyze lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be performed on LipidSpace.");
+            informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyze lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be applied on LipidSpace.");
             break;
 
 
@@ -1880,7 +1880,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Benfords Law");
-            informationLabel->setText("Having said that, there is one builtin QC function. Every time when you import or remove lipidome data in LipidSpace, the data is checked if it conforms to Benfords law (please find details in the menu Help → log messages). If your data doesn't, you will be informed with hints how to check your imported raw data.");
+            informationLabel->setText("Having said that, there is one builtin QC function. Every time when you import or remove lipidomics data in LipidSpace, the data is checked if it conforms to Benfords law (please find details in the menu Help → log messages). If your data does not, you will be informed with hints how to check your imported raw data.");
 
             Logging::write_log("Benfords law describes the distrubution of the first digits of numbers in big data sets [Cho, W.K.T. and Gaines, B.J. (2007) Breaking the (Benford) Law: Statistical Fraud Detection in Campaign Finance. The American Statistician. 61, 218–223].");
             Logging::write_log("Real datsets with empirical or measured data ranging over several orders of magnitude tend to follow Benfords law.");
@@ -1891,7 +1891,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Relative QC");
-            informationLabel->setText("Beside Benfords law, it is difficult assess the quality of your data without any reference data. Therefore, we assume for that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset from two different studies will be loaded now for demonstration.");
+            informationLabel->setText("Beside Benfords law, it is difficult to assess the quality of your data without any reference data. Therefore, we assume for that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset from three different studies will be loaded now for demonstration.");
             break;
 
 
@@ -1934,25 +1934,17 @@ void Tutorial::fourth_tutorial_steps(){
             lipidSpaceGUI->ui->pieSizeSpinBox->setEnabled(true);
 
             titleLabel->setText("Human Plasma Studies");
-            informationLabel->setText("The data presented here is an excerpt from three published human plasma studies. First let's adjust the dendrogram view get a better glimpse of the data. Set the study variable to the builtin 'Origin' variable, 'Pie size' to 200 % and 'Pie depth' at least to 10 to continue.");
-
-
-            // TODO: delete
-            lipidSpaceGUI->ui->studyVariableComboBox->setCurrentIndex(1);
-            lipidSpaceGUI->ui->pieTreeSpinBox->setValue(10);
-            lipidSpaceGUI->ui->pieSizeSpinBox->setValue(200);
-            continuePushButton->setEnabled(true);
-
+            informationLabel->setText("The data presented here is an excerpt from three published human plasma studies. First, let's adjust the dendrogram view to get a better glimpse of the data. Set the study variable to the builtin 'Origin' variable, 'Pie size' to 200 %, and 'Pie depth' at least to 10 to continue.");
             break;
 
 
         case DDataExplain:
-            changeSize(650, 230);
+            changeSize(650, 250);
             move(20, 20);
 
             continuePushButton->setEnabled(true);
             titleLabel->setText("First Examination");
-            informationLabel->setText("Better. So, what do we see at first glance? From the legend, we know that the three studies contain in total 89 individual lipidomes (aka samples or measurements). Since the vertical lines of the dendrogram shows the distance between two branches, we see that the lipidomes from the second and third study clustered together are close to each other whereas the first study is also clustered but their distances are much higher.");
+            informationLabel->setText("That's better. What do we see at first glance? From the legend, we know that the three studies contain in total 89 individual lipidomes (aka samples or measurements). Since the vertical lines of the dendrogram relate to the distance between two branches, we see that the lipidomes from all three studies form individual clusters. However, the lipidomes within second and third study are close to each other whereas the lipidome distances of first study are much higher.");
             break;
 
 
@@ -1967,7 +1959,7 @@ void Tutorial::fourth_tutorial_steps(){
 
                 widget->setEnabled(true);
                 titleLabel->setText("First Examination");
-                informationLabel->setText("This might be an indicator that the studies were providing their results in different units. No problem, let's normalize the data with respect to the origin aka studies. That is, the data remains in the same relation within the studies, but the studies themselve will be normalized to each other. Please select the 'Origin grouped normalization' and apply the changes.");
+                informationLabel->setText("This might be an indicator that the studies were providing their results in different units. No problem, let's normalize the data with respect to the origin aka studies. That is, the data remains in the same relation within the studies, but the studies themself will be normalized to each other. Please select the 'Origin grouped normalization' and apply the changes.");
             }
             break;
 
@@ -1977,7 +1969,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Normalized Data");
-            informationLabel->setText("This looks better. You can see, that the distances within the groups remain intact. What we see now is that on relatively high distance the studies split into homogenous branches. Since all three studies are supposed to contain data from the \"same\" origin, we would expect that the branches in the dendrogram are rather hetergeneous.");
+            informationLabel->setText("This looks better. You can see, that the distances within the groups remain intact. What we see now is that on relatively high distance the studies split into homogenous branches. Since all three studies are supposed to contain data from the \"same\" origin, we would expect that the branches in the dendrogram are rather hetergeneously composed.");
             break;
 
 
@@ -1991,17 +1983,17 @@ void Tutorial::fourth_tutorial_steps(){
             lipidSpaceGUI->ui->actionIgnore_quantitative_information->setEnabled(true);
 
             titleLabel->setText("Normalized Data");
-            informationLabel->setText("The dendrogram involves both the information about the lipid species and their quantities. Let's have a closer look on the pure lipid species distribution without the quantities. To exclude the quantities from analysis, check in the menu Analysis → Ignore quantitative information.");
+            informationLabel->setText("The dendrogram involves both the information about the lipid species and their quantities. Let's have a closer look on the pure lipid species distribution without the quantities. To exclude the quantities from the analysis, check in the menu Analysis → Ignore quantitative information.");
             break;
 
 
 
         case DAnalyzeQualData:
-            changeSize(650, 240);
+            changeSize(650, 250);
             move(20, 20);
             continuePushButton->setEnabled(true);
-            titleLabel->setText("Analyze qualitative Data");
-            informationLabel->setText("Now we see that relations for each lipidome solely based on the stoichiometric information on the lipid species. For example, all lipidomes of the second study have a distance of 0 to each other. That means, that for all lipid species in this study a value in each lipidome is reported. This is usually the case when applying targeted methods. Beside, the remaining two studies also well clustered here implying that the acquisition techniques or methods might be rather different.");
+            titleLabel->setText("Analysis of qualitative Data");
+            informationLabel->setText("Now we can see the relations for each lipidome solely based on the stoichiometric information on the lipid species. For example, all lipidomes of the second study have a distance of 0 to each other. That means, that for all these lipid species a value in each lipidome is reported. This is usually the case when applying targeted methods. Beside, the remaining two studies also well clustered here implying that the acquisition techniques or methods might be rather different.");
             break;
 
 
@@ -2018,24 +2010,24 @@ void Tutorial::fourth_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
 
                 titleLabel->setText("Switch to 'Lipidomes' Tab");
-                informationLabel->setText("To get a clue what might cause these discrepancies, we can have a look on lipid spaces. Therefore, please click on the 'Lipidomes' tab.");
+                informationLabel->setText("To get a clue what might cause these discrepancies, we can have a look on the lipid spaces. Therefore, please click on the 'Lipidomes' tab.");
             }
             break;
 
         case DSelectStudies:
             changeSize(650, 230);
-            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 60);
+            move(lipidSpaceGUI->width() - width() - 20, lipidSpaceGUI->height() - height() - 60);
             lipidSpaceGUI->ui->menubar->setEnabled(true);
             lipidSpaceGUI->ui->menuView->setEnabled(true);
             lipidSpaceGUI->ui->menuSelected_tiles_mode->setEnabled(true);
             lipidSpaceGUI->ui->actionSelect_tiles->setEnabled(true);
             titleLabel->setText("Study-comprised Lipid Spaces");
-            informationLabel->setText("The sheer number of lipid space tiles might be overwhelming but fortunatily we can select single lipidomes. LipidSpace even support study-comprised lipid spaces when importing more than one study. Instead of double-clicking on the tiles, we will learn another method to select the tiles. Please go on View → Selected tile(s) mode → Select tile(s) and select on top of the list all three tiles with the prefix 'Study lipidome'.");
+            informationLabel->setText("The sheer number of lipid space tiles might be overwhelming but fortunatily we can select single lipidomes. LipidSpace even supports study-comprised lipid spaces when importing more than one study. Instead of double-clicking on the tiles, we will learn another method to select the tiles. Please go on View → Selected tile(s) mode → Select tile(s) and select on top of the list all three tiles with the prefix 'Study lipidome'.");
             break;
 
         case DApplySelection:
             changeSize(650, 150);
-            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 60);
+            move(lipidSpaceGUI->width() - width() - 20, lipidSpaceGUI->height() - height() - 60);
             lipidSpaceGUI->ui->menubar->setEnabled(true);
             lipidSpaceGUI->ui->menuView->setEnabled(true);
             lipidSpaceGUI->ui->menuSelected_tiles_mode->setEnabled(true);
@@ -2045,8 +2037,8 @@ void Tutorial::fourth_tutorial_steps(){
             break;
 
         case DGuessDifferences:
-            changeSize(400, 210);
-            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 60);
+            changeSize(440, 190);
+            move(lipidSpaceGUI->width() - width() - 20, lipidSpaceGUI->height() - height() - 60);
             lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Search for Differences");
@@ -2054,8 +2046,8 @@ void Tutorial::fourth_tutorial_steps(){
             break;
 
         case DReveal:
-            changeSize(400, 270);
-            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 60);
+            changeSize(440, 250);
+            move(lipidSpaceGUI->width() - width() - 20, lipidSpaceGUI->height() - height() - 60);
             lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Study Differences");
@@ -2067,7 +2059,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Quality control");
-            informationLabel->setText("Since we did not enter this analysis with a biological question or hypothesis, we spotted here the differences only for demonstration purposes. However, when you have datasets of different types, you can quickly check if your data has significant differences that cannot be explained solely based on your hypothesis or the nature of your sample types. A decent quality control of your data should always be performed before diving deeper in analysis.");
+            informationLabel->setText("Since we did not enter this analysis with a biological question or hypothesis, we spotted here the differences only for demonstration purposes. However, when you have datasets of different types, you can quickly check if your data has significant differences that cannot be explained solely based on your hypothesis or the nature of your sample types. A decent quality control of your data should always be applied before diving deeper in the analysis.");
             break;
 
         case DFinish:
@@ -2076,7 +2068,7 @@ void Tutorial::fourth_tutorial_steps(){
                 changeSize(650, 180);
                 titleLabel->setText("Fourth Tutorial Completed");
                 continuePushButton->setEnabled(true);
-                informationLabel->setText("Congratulations, you mastered the final tutorial. Hopefully these tutorials gave you a decent introduction into LipidSpace. If you have issues, comments, or critics about the tool, please drop us a line, contact information you'll find in the menu Help → About. Have fun using LipidSpace :-)");
+                informationLabel->setText("Congratulations, you mastered the final tutorial. Hopefully these tutorials gave you a good introduction into LipidSpace. If you have issues, comments, or critics about the tool, please drop us a line, contact information you will find in the menu Help → About. Have fun using LipidSpace :-)");
             }
             break;
 
@@ -2089,7 +2081,7 @@ void Tutorial::fourth_tutorial_steps(){
 
 
 void Tutorial::wheelEvent(QWheelEvent *event){
-    //return;
+    return;
 
     QRect r = geometry();
     changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));
