@@ -12,9 +12,9 @@ const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable
 
 
 
-//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DChangeToLipidSpaces, DSelectStudies, DFinish, DEnd};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DLoadData, DNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DChangeToLipidSpaces, DSelectStudies, DFinish, DEnd};
+//const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DLoadData, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
 
 
 
@@ -636,9 +636,15 @@ void Tutorial::action_performed(){
                 case DSelectStudies:
                     {
                         int selected = 0;
-                        for (auto canvas : lipidSpaceGUI->canvases) selected += canvas->marked_for_selected_view;
-                        if (selected == 2) continue_tutorial();
+                        for (auto canvas : lipidSpaceGUI->canvases){
+                            if (canvas->canvas_type == StudySpaceCanvas) selected += canvas->marked_for_selected_view;
+                        }
+                        if (selected == 3) continue_tutorial();
                     }
+                    break;
+
+                case DApplySelection:
+                    continue_tutorial();
                     break;
 
                 default:
@@ -818,6 +824,14 @@ void Tutorial::tab_changed(int index){
                     else if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 1){
                         lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
                     }
+                    break;
+
+                case DGuessDifferences:
+                case DReveal:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 1){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(1);
+                    }
+                    break;
 
                 default:
                     break;
@@ -1995,7 +2009,7 @@ void Tutorial::fourth_tutorial_steps(){
         case DChangeToLipidSpaces:
             {
                 changeSize(650, 150);
-                move(20, lipidSpaceGUI->height() - height() - 80);
+                move(20, lipidSpaceGUI->height() - height() - 60);
 
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -2010,7 +2024,7 @@ void Tutorial::fourth_tutorial_steps(){
 
         case DSelectStudies:
             changeSize(650, 230);
-            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
+            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 60);
             lipidSpaceGUI->ui->menubar->setEnabled(true);
             lipidSpaceGUI->ui->menuView->setEnabled(true);
             lipidSpaceGUI->ui->menuSelected_tiles_mode->setEnabled(true);
@@ -2019,15 +2033,42 @@ void Tutorial::fourth_tutorial_steps(){
             informationLabel->setText("The sheer number of lipid space tiles might be overwhelming but fortunatily we can select single lipidomes. LipidSpace even support study-comprised lipid spaces when importing more than one study. Instead of double-clicking on the tiles, we will learn another method to select the tiles. Please go on View → Selected tile(s) mode → Select tile(s) and select on top of the list all three tiles with the prefix 'Study lipidome'.");
             break;
 
+        case DApplySelection:
+            changeSize(650, 150);
+            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 60);
+            lipidSpaceGUI->ui->menubar->setEnabled(true);
+            lipidSpaceGUI->ui->menuView->setEnabled(true);
+            lipidSpaceGUI->ui->menuSelected_tiles_mode->setEnabled(true);
+            lipidSpaceGUI->ui->actionSelection_mode_activated->setEnabled(true);
+            titleLabel->setText("Apply Selection");
+            informationLabel->setText("Please apply the selection by activating the single view mode on View → Selected tile(s) mode → Activated.");
+            break;
 
+        case DGuessDifferences:
+            changeSize(400, 210);
+            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 60);
+            lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+            continuePushButton->setEnabled(true);
+            titleLabel->setText("Search for Differences");
+            informationLabel->setText("Now only the three study tiles are activated. Please feel free to browse through the lipid spaces and make an assumption what is different. When you continue, we reveal our observations.");
+            break;
 
+        case DReveal:
+            changeSize(400, 270);
+            move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 60);
+            lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+            continuePushButton->setEnabled(true);
+            titleLabel->setText("Study Differences");
+            informationLabel->setText("The biggest differences that we spotted were I) that the third study lacks completely glyceroceramids and sterol lipids but reports hexosylceramides (HexCer) as only study, II) the first study reports no glycerophosphoinositols (PI), and III) the third study does not report cholesterol which is the most abundant lipid species in plasma.");
+            break;
 
-
-
-
-
-
-
+        case DInterpretation:
+            changeSize(650, 230);
+            move(20, 20);
+            continuePushButton->setEnabled(true);
+            titleLabel->setText("Quality control");
+            informationLabel->setText("Since we did not enter this analysis with a biological question or hypothesis, we spotted here the differences only for demonstration purposes. However, when you have datasets of different types, you can quickly check if your data has significant differences that cannot be explained solely based on your hypothesis or the nature of your sample types. A decent quality control of your data should always be performed before diving deeper in analysis.");
+            break;
 
         case DFinish:
             {
