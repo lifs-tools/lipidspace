@@ -1788,16 +1788,24 @@ void Tutorial::fourth_tutorial_steps(){
         case DLoadData:
             changeSize(650, 190);
             move(lipidSpaceGUI->width() - width() - 20, 20);
-            /*
             if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
                 lipidSpaceGUI->resetAnalysis();
-                vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
-                ct->at(0) = SampleColumn;
-                ct->at(1) = StudyVariableColumnNominal;
-                ct->at(2) = StudyVariableColumnNominal;
-                ct->at(3) = StudyVariableColumnNominal;
                 string path_to_example = QCoreApplication::applicationDirPath().toStdString();
-                lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
+
+                vector<TableColumnType> *ct_1 = new vector<TableColumnType>(201, LipidColumn);
+                ct_1->at(0) = SampleColumn;
+                ct_1->at(1) = StudyVariableColumnNominal;
+                loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study1", COLUMN_PIVOT_TABLE, ct_1), false);
+
+                vector<TableColumnType> *ct_2 = new vector<TableColumnType>(231, LipidColumn);
+                ct_2->at(0) = SampleColumn;
+                ct_2->at(1) = StudyVariableColumnNominal;
+                loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study2", COLUMN_PIVOT_TABLE, ct_2), false);
+
+                vector<TableColumnType> *ct_3 = new vector<TableColumnType>(233, LipidColumn);
+                ct_3->at(0) = SampleColumn;
+                ct_3->at(1) = StudyVariableColumnNominal;
+                loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study3", COLUMN_PIVOT_TABLE, ct_3));
 
                 main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
                 main_widgets[lipidSpaceGUI->ui->menuView] = true;
@@ -1809,16 +1817,17 @@ void Tutorial::fourth_tutorial_steps(){
 
                 for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
             }
-            */
 
+            /*
             QTimer::singleShot(10, [this]() {
                 QWidget *widget = lipidSpaceGUI->ui->dendrogramView;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ARB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y() + widget->height());
             });
+            */
             continuePushButton->setEnabled(true);
-            titleLabel->setText("Relative QC");
-            informationLabel->setText("Beside Benfords law, it is difficult assess the quality of your data without any reference data. Therefore, we assume for that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset from two different studies will be loaded now for demonstration.");
+            titleLabel->setText("Human Plasma Studies");
+            informationLabel->setText("The data presented here is an excerpt from three published human plasma studies. First let's adjust the dendrogram view get a better glimpse of the data. Set the study variable to the builtin 'Origin' variable, 'Pie size' to 200 %% and 'Pie depth' at least to 10 to continue.");
             break;
 
 
