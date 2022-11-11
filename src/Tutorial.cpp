@@ -1919,9 +1919,23 @@ void Tutorial::fourth_tutorial_steps(){
             }
 
             lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
-            lipidSpaceGUI->ui->studyVariableComboBox->setEnabled(true);
-            lipidSpaceGUI->ui->pieTreeSpinBox->setEnabled(true);
-            lipidSpaceGUI->ui->pieSizeSpinBox->setEnabled(true);
+
+            QTimer::singleShot(10, [this]() {
+                QWidget *widget = lipidSpaceGUI->ui->studyVariableComboBox;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ABR, lipidSpaceGUI, p.x(), p.y() + widget->height() / 2.);
+                widget->setEnabled(true);
+
+                widget = lipidSpaceGUI->ui->pieTreeSpinBox;
+                p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ARB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
+                widget->setEnabled(true);
+
+                widget = lipidSpaceGUI->ui->pieSizeSpinBox;
+                p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
+                widget->setEnabled(true);
+            });
 
             titleLabel->setText("Human Plasma Studies");
             informationLabel->setText("The data presented here is an excerpt from three published human plasma studies. First, let's adjust the dendrogram view to get a better glimpse of the data. Set the study variable to the builtin 'Origin' variable, 'Pie size' to 200 %, and 'Pie depth' at least to 10 to continue.");
