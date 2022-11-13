@@ -6,18 +6,6 @@
 #include <QTreeWidgetItem>
 #include <lipidspace/lipidspacegui.h>
 
-/*
-class SelectItem : public QTreeWidgetItem {
-    Q_OBJECT
-public:
-    childGetUpdated(Qt::CheckState);
-    parentGetUpdated(Qt::CheckState);
-
-signals():
-    updateParent(Qt::CheckState);
-    updateChildren(Qt::CheckState);
-};
-*/
 
 namespace Ui {
     class SelectLipidomes;
@@ -28,6 +16,7 @@ class SelectLipidomes : public QDialog {
 
 public:
     bool updating_states;
+    map<QTreeWidgetItem*, int> item_to_canvas_position;
 
     explicit SelectLipidomes(QWidget *parent = nullptr);
     ~SelectLipidomes();

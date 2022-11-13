@@ -1007,6 +1007,7 @@ void LipidSpaceGUI::runAnalysis(){
         delete canvas;
     }
     canvases.clear();
+    canvas_ids.clear();
     updateGUI();
 
 
@@ -1052,6 +1053,7 @@ void LipidSpaceGUI::runAnalysis(){
     int n = 0;
 
     // insert global lipidome canvases
+    canvas_ids.insert({lipid_space->global_lipidome, n});
     Canvas* canvas = new Canvas(lipid_space, n++, -1, ui->speciesList, GlobalSpaceCanvas, ui->centralwidget);
     if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
     connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
@@ -1078,6 +1080,7 @@ void LipidSpaceGUI::runAnalysis(){
         if (kv.second.size() <= 1) continue;
 
         for (uint i = 0; i < kv.second.size(); ++i){
+            canvas_ids.insert({lipid_space->group_lipidomes[kv.first][i], n});
             Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, StudyVariableSpaceCanvas, ui->centralwidget, kv.first);
             if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
             connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
@@ -1101,6 +1104,7 @@ void LipidSpaceGUI::runAnalysis(){
 
     // insert single lipidomes
     for (uint i = 0; i < lipid_space->selected_lipidomes.size(); ++i){
+        canvas_ids.insert({lipid_space->selected_lipidomes[i], n});
         Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, SampleSpaceCanvas, ui->centralwidget);
         if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
         connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
@@ -1294,6 +1298,7 @@ void LipidSpaceGUI::resetAnalysis(){
     }
     for (auto canvas : canvases) delete canvas;
     canvases.clear();
+    canvas_ids.clear();
     lipid_space->reset_analysis();
     GlobalData::PC1 = 0;
     GlobalData::PC2 = 1;

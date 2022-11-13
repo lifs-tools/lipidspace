@@ -200,7 +200,7 @@ public:
     LipidSpace *lipid_space;
     QMainWindow *mainWindow;
     int canvas_id;
-    int num;
+    Lipidome* lipidome;
     string lipidome_group_name;
     CanvasType canvas_type;
     bool hovered_for_swap;

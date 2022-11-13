@@ -6,6 +6,7 @@ SelectLipidomes::SelectLipidomes(QWidget *parent) : QDialog(parent), ui(new Ui::
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     setFixedSize(this->width(), this->height());
     updating_states = false;
+    item_to_canvas_position.clear();
 
     connect(ui->okButton, &QPushButton::clicked, this, &SelectLipidomes::ok);
     connect(ui->cancelButton, &QPushButton::clicked, this, &SelectLipidomes::cancel);
@@ -14,14 +15,32 @@ SelectLipidomes::SelectLipidomes(QWidget *parent) : QDialog(parent), ui(new Ui::
 
 void SelectLipidomes::init(){
     updating_states = false;
-    ui->lipidomesListWidget->clear();
-    for (auto canvas : ((LipidSpaceGUI*)parentWidget())->canvases){
-        QListWidgetItem *item = new QListWidgetItem(canvas->pointSet->title);
-        item->setCheckState(canvas->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
-        ui->lipidomesListWidget->addItem(item);
+    ui->lipidomesTreeWidget->clear();
+    item_to_canvas_position.clear();
+    LipidSpaceGUI* lipidSpaceGUI = (LipidSpaceGUI*)parentWidget();
+    LipidSpace* lipid_space = lipidSpaceGUI->lipid_space;
+
+    map<Lipidome*, int> lipidome_to_canvas_position;
+    for (uint i = 0; i < lipidSpaceGUI->canvases.size(); ++i) lipidome_to_canvas_position.insert({lipidSpaceGUI->canvases[i]->lipidome, i});
+
+    // add global item
+    QTreeWidgetItem *global_item = new QTreeWidgetItem();
+    global_item->setText(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipid_space->global_lipidome]]->pointSet->title);
+    global_item->setCheckState(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipid_space->global_lipidome]]->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
+    item_to_canvas_position.insert({global_item, lipidome_to_canvas_position[lipid_space->global_lipidome]});
+    ui->lipidomesTreeWidget->addTopLevelItem(global_item);
+
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        if (uncontains_val(lipidome_to_canvas_position, lipidome)) continue;
+        QTreeWidgetItem *item = new QTreeWidgetItem();
+        item->setText(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipidome]]->pointSet->title);
+
+        item->setCheckState(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipidome]]->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
+        item_to_canvas_position.insert({item, lipidome_to_canvas_position[lipidome]});
+        ui->lipidomesTreeWidget->addTopLevelItem(item);
     }
 
-    ui->lipidomesTreeWidget->clear();
+    /*
     for (auto canvas : ((LipidSpaceGUI*)parentWidget())->canvases){
         QTreeWidgetItem *item = new QTreeWidgetItem();
         item->setText(0, canvas->pointSet->title);
@@ -42,6 +61,7 @@ void SelectLipidomes::init(){
 
         ui->lipidomesTreeWidget->addTopLevelItem(item);
     }
+    */
 }
 
 
@@ -103,9 +123,10 @@ void SelectLipidomes::cancel(){
 
 void SelectLipidomes::ok(){
     bool do_update = false;
-    for (int i = 0; i < ui->lipidomesListWidget->count(); ++i){
-        Canvas *canvas = ((LipidSpaceGUI*)parentWidget())->canvases[i];
-        bool checked_state = ui->lipidomesListWidget->item(i)->checkState() == Qt::Checked;
+    LipidSpaceGUI* lipidSpaceGUI = (LipidSpaceGUI*)parentWidget();
+    for (auto &kv : item_to_canvas_position){
+        Canvas *canvas = lipidSpaceGUI->canvases[kv.second];
+        bool checked_state = kv.first->checkState(0) == Qt::Checked;
         if (canvas->marked_for_selected_view != checked_state){
             canvas->marked_for_selected_view = checked_state;
             do_update = true;
