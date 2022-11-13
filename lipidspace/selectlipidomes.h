@@ -26,7 +26,7 @@ public:
 public slots:
     void cancel();
     void ok();
-    void foo(QTreeWidgetItem *item, int column);
+    void itemChanged(QTreeWidgetItem *item, int column);
 
 private:
     Ui::SelectLipidomes *ui;

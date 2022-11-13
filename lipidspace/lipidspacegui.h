@@ -141,7 +141,7 @@ public:
     RawDataModel *raw_data_model;
     set<int> *selected_d_lipidomes;
     map<Lipidome*, int> canvas_ids;
-    bool showStudyLipidomes;
+    bool showGroupLipidomes;
     bool showGlobalLipidome;
     TileLayout tileLayout;
     bool updating;
@@ -190,7 +190,7 @@ public slots:
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();
-    void showHideStudyLipidomes();
+    void showHideGroupLipidomes();
     void showHideGlobalLipidome();
     void toggleLipidNameTranslation();
     void showHideQuant();

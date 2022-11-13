@@ -363,7 +363,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionAutomatically, &QAction::triggered, this, &LipidSpaceGUI::setAutomaticLayout);
     connect(ui->actionShow_quantitative_information, &QAction::triggered, this, &LipidSpaceGUI::showHideQuant);
     connect(ui->actionShow_global_lipidome, &QAction::triggered, this, &LipidSpaceGUI::showHideGlobalLipidome);
-    connect(ui->actionShow_study_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::showHideStudyLipidomes);
+    connect(ui->actionShow_group_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::showHideGroupLipidomes);
     connect(ui->actionSelection_mode_activated, &QAction::triggered, this, &LipidSpaceGUI::setSelectedTilesMode);
     connect(ui->actionTranslate, &QAction::triggered, this, &LipidSpaceGUI::toggleLipidNameTranslation);
     connect(ui->actionImport_eample_dataset, &QAction::triggered, this, &LipidSpaceGUI::openExampleDataset);
@@ -443,7 +443,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     tileLayout = AUTOMATIC;
     GlobalData::showQuant = true;
-    showStudyLipidomes = true;
+    showGroupLipidomes = false;
     showGlobalLipidome = true;
     updating = false;
     GlobalData::color_counter = 0;
@@ -1081,7 +1081,7 @@ void LipidSpaceGUI::runAnalysis(){
 
         for (uint i = 0; i < kv.second.size(); ++i){
             canvas_ids.insert({lipid_space->group_lipidomes[kv.first][i], n});
-            Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, StudyVariableSpaceCanvas, ui->centralwidget, kv.first);
+            Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, GroupSpaceCanvas, ui->centralwidget, kv.first);
             if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
             connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
             connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
@@ -1125,6 +1125,13 @@ void LipidSpaceGUI::runAnalysis(){
         canvases.push_back(canvas);
     }
 
+
+    ui->menuAnalysis->setEnabled(true);
+    ui->menuView->setEnabled(true);
+    ui->actionExport_Results->setEnabled(true);
+    ui->menuClustering_strategy->setEnabled(true);
+    ui->menuTile_layout->setEnabled(true);
+    ui->menuSelected_tiles_mode->setEnabled(true);
 
     if (canvases.size() > 100){
         //TODO: recomment
@@ -1329,8 +1336,8 @@ void LipidSpaceGUI::toggleBoundMetric(){
 }
 
 
-void LipidSpaceGUI::showHideStudyLipidomes(){
-    showStudyLipidomes = ui->actionShow_study_lipidomes->isChecked();
+void LipidSpaceGUI::showHideGroupLipidomes(){
+    showGroupLipidomes = ui->actionShow_group_lipidomes->isChecked();
     updateGUI();
 }
 
@@ -1609,7 +1616,7 @@ void LipidSpaceGUI::updateGUI(){
     }
     else {
         numTiles = (lipid_space->selected_lipidomes.size() > 1 && showGlobalLipidome) + num_lipidomes;
-        if (showStudyLipidomes){
+        if (showGroupLipidomes){
             for (auto &kv : lipid_space->group_lipidomes){
                 numTiles += kv.second.size() * (kv.second.size() > 1);
             }
@@ -1623,8 +1630,9 @@ void LipidSpaceGUI::updateGUI(){
     for (auto canvas : canvases) {
         if (selected_tiles_mode && (!selected_tiles_mode || !canvas->marked_for_selected_view)) continue;
 
-        if ((canvas->canvas_type == GlobalSpaceCanvas && showGlobalLipidome && num_lipidomes > 1) ||
-            (canvas->canvas_type == StudyVariableSpaceCanvas && showStudyLipidomes) ||
+        if ((selected_tiles_mode && canvas->marked_for_selected_view) ||
+            (canvas->canvas_type == GlobalSpaceCanvas && showGlobalLipidome && num_lipidomes > 1) ||
+            (canvas->canvas_type == GroupSpaceCanvas && showGroupLipidomes) ||
             canvas->canvas_type == SampleSpaceCanvas){
             ui->gridLayout->addWidget(canvas, r, c);
             if (++c == tileColumns){

@@ -58,7 +58,7 @@ enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 enum LipidNameState {NORMALIZED_NAME = 0, TRANSLATED_NAME = 1, IMPORT_NAME = 2};
 enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, MappingTo, InsertNaN, InsertDefault};
 enum NormalizationType {AbsoluteNormalization, RelativeNormalization, GroupNormalization, UndefinedNormalization};
-enum CanvasType {UndefinedCanvasType, DendrogramCanvas, GlobalSpaceCanvas, StudyVariableSpaceCanvas, SampleSpaceCanvas};
+enum CanvasType {UndefinedCanvasType, DendrogramCanvas, GlobalSpaceCanvas, GroupSpaceCanvas, SampleSpaceCanvas};
 
 static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_TABLE}, {"COLUMN_PIVOT_TABLE", COLUMN_PIVOT_TABLE}, {"FLAT_TABLE", FLAT_TABLE}};
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"StudyVariableColumnNumerical", StudyVariableColumnNumerical}, {"StudyVariableColumnNominal", StudyVariableColumnNominal}, {"IgnoreColumn", IgnoreColumn}};

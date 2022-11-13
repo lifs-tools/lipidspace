@@ -875,7 +875,7 @@
     <addaction name="separator"/>
     <addaction name="actionTranslate"/>
     <addaction name="actionShow_global_lipidome"/>
-    <addaction name="actionShow_study_lipidomes"/>
+    <addaction name="actionShow_group_lipidomes"/>
     <addaction name="actionShow_quantitative_information"/>
     <addaction name="separator"/>
     <addaction name="menuSelected_tiles_mode"/>
@@ -972,15 +972,15 @@
     <string>Show global lipidome</string>
    </property>
   </action>
-  <action name="actionShow_study_lipidomes">
+  <action name="actionShow_group_lipidomes">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
-    <string>Show study lipidomes</string>
+    <string>Show group lipidomes</string>
    </property>
   </action>
   <action name="action1_column">
