@@ -49,6 +49,21 @@
     </rect>
    </property>
   </widget>
+  <widget class="QTreeWidget" name="lipidomesTreeWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>421</width>
+     <height>531</height>
+    </rect>
+   </property>
+   <column>
+    <property name="text">
+     <string>Lipidomes</string>
+    </property>
+   </column>
+  </widget>
  </widget>
  <resources/>
  <connections/>

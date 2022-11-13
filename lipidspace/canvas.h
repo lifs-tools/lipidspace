@@ -201,6 +201,7 @@ public:
     QMainWindow *mainWindow;
     int canvas_id;
     int num;
+    string lipidome_group_name;
     CanvasType canvas_type;
     bool hovered_for_swap;
     bool marked_for_selected_view;
@@ -213,7 +214,7 @@ public:
     QListWidget *listed_species;
 
     Canvas(QWidget *parent = nullptr);
-    Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *parent = nullptr);
+    Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *parent = nullptr, string group_name = "");
     ~Canvas();
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;

@@ -627,7 +627,7 @@ void Tutorial::action_performed(){
                     {
                         int selected = 0;
                         for (auto canvas : lipidSpaceGUI->canvases){
-                            if (canvas->canvas_type == StudySpaceCanvas) selected += canvas->marked_for_selected_view;
+                            if (canvas->canvas_type == StudyVariableSpaceCanvas) selected += canvas->marked_for_selected_view;
                         }
                         if (selected == 3) continue_tutorial();
                     }

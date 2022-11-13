@@ -1048,8 +1048,6 @@ void LipidSpaceGUI::runAnalysis(){
         }
     }
 
-    int num_studies = lipid_space->study_lipidomes.size();
-    num_studies *= (num_studies > 1);
     ui->dendrogramView->resetDendrogram();
     int n = 0;
 
@@ -1075,26 +1073,30 @@ void LipidSpaceGUI::runAnalysis(){
     canvases.push_back(canvas);
 
 
-    // insert study lipidomes
-    for (int i = 0; i < num_studies; ++i){
-        Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, StudySpaceCanvas, ui->centralwidget);
-        if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
-        connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
-        connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
-        connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
-        connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
-        connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
-        connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
-        connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
-        connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
-        connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
-        connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
-        connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
-        canvas->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
-        connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
-        connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
-        canvases.push_back(canvas);
+    // insert group lipidomes
+    for (auto &kv : lipid_space->group_lipidomes){
+        if (kv.second.size() <= 1) continue;
+
+        for (uint i = 0; i < kv.second.size(); ++i){
+            Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, StudyVariableSpaceCanvas, ui->centralwidget, kv.first);
+            if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
+            connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
+            connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
+            connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
+            connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+            connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
+            connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
+            connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
+            connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
+            connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
+            connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
+            connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+            canvas->setContextMenuPolicy(Qt::CustomContextMenu);
+            connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
+            connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
+            connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
+            canvases.push_back(canvas);
+        }
     }
 
     // insert single lipidomes
@@ -1596,15 +1598,17 @@ void LipidSpaceGUI::updateGUI(){
     for (auto canvas : canvases) canvas->setVisible(false);
     int numTiles = 0;
     int num_lipidomes = lipid_space->selected_lipidomes.size();
-    int num_studies = lipid_space->study_lipidomes.size();
 
     if (selected_tiles_mode){
         for (auto canvas : canvases) numTiles += canvas->marked_for_selected_view;
     }
     else {
-
-        int num_studies = lipid_space->study_lipidomes.size();
-        numTiles = (lipid_space->selected_lipidomes.size() > 1 && showGlobalLipidome) + showStudyLipidomes * num_studies * (num_studies > 1) + num_lipidomes;
+        numTiles = (lipid_space->selected_lipidomes.size() > 1 && showGlobalLipidome) + num_lipidomes;
+        if (showStudyLipidomes){
+            for (auto &kv : lipid_space->group_lipidomes){
+                numTiles += kv.second.size() * (kv.second.size() > 1);
+            }
+        }
     }
 
     int tileColumns = tileLayout == AUTOMATIC ? ceil(sqrt((double)numTiles)) : (int)tileLayout;
@@ -1615,7 +1619,7 @@ void LipidSpaceGUI::updateGUI(){
         if (selected_tiles_mode && (!selected_tiles_mode || !canvas->marked_for_selected_view)) continue;
 
         if ((canvas->canvas_type == GlobalSpaceCanvas && showGlobalLipidome && num_lipidomes > 1) ||
-            (canvas->canvas_type == StudySpaceCanvas && showStudyLipidomes && num_studies > 1) ||
+            (canvas->canvas_type == StudyVariableSpaceCanvas && showStudyLipidomes) ||
             canvas->canvas_type == SampleSpaceCanvas){
             ui->gridLayout->addWidget(canvas, r, c);
             if (++c == tileColumns){

@@ -1121,6 +1121,7 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     dendrogram = 0;
     canvas_id = -1;
     canvas_type = UndefinedCanvasType;
+    lipidome_group_name = "";
     hovered_for_swap = false;
     marked_for_selected_view = false;
 
@@ -1181,11 +1182,12 @@ void Canvas::setDendrogramHeight(){
 }
 
 
-Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *) : num(_num) {
+Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *, string _group_name) : num(_num) {
     lipid_space = _lipid_space;
     listed_species = _listed_species;
     canvas_type = _canvas_type;
     canvas_id = _canvas_id;
+    lipidome_group_name = _group_name;
 
     pointSet = 0;
     dendrogram = 0;
@@ -1221,14 +1223,14 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* 
         LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
     }
-    else if (canvas_type == StudySpaceCanvas){ // global lipidome
-        pointSet = new PointSet(lipid_space->study_lipidomes[num], this);
+    else if (canvas_type == StudyVariableSpaceCanvas){ // group lipidomes
+        pointSet = new PointSet(lipid_space->group_lipidomes[lipidome_group_name][num], this);
         graphics_scene.addItem(pointSet);
-        pointSet->title = QString(lipid_space->study_lipidomes[num]->cleaned_name.c_str());
+        pointSet->title = QString(lipid_space->group_lipidomes[lipidome_group_name][num]->cleaned_name.c_str());
         pointSet->loadPoints();
 
         Array vars;
-        LipidSpace::compute_PCA_variances(lipid_space->study_lipidomes[num]->m, vars);
+        LipidSpace::compute_PCA_variances(lipid_space->group_lipidomes[lipidome_group_name][num]->m, vars);
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
     }
     else { // regular lipidome
@@ -1567,8 +1569,8 @@ void Canvas::reloadPoints(){
         if (canvas_type == GlobalSpaceCanvas){
             LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
         }
-        else if (canvas_type == StudySpaceCanvas){
-            LipidSpace::compute_PCA_variances(lipid_space->study_lipidomes[num]->m, vars);
+        else if (canvas_type == StudyVariableSpaceCanvas){
+            LipidSpace::compute_PCA_variances(lipid_space->group_lipidomes[lipidome_group_name][num]->m, vars);
         }
         else if (canvas_type == SampleSpaceCanvas){
             LipidSpace::compute_PCA_variances(lipid_space->selected_lipidomes[num]->m, vars);

@@ -280,6 +280,7 @@ LipidSpace::LipidSpace() {
     process_id = 0;
     target_variable = "";
     study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
+    group_lipidomes.insert({FILE_STUDY_VARIABLE_NAME, vector<Lipidome*>()});
     lipid_name_translations.resize(3);
 
 
@@ -1252,8 +1253,10 @@ int LipidSpace::compute_global_distance_matrix(){
     global_lipidome->PCA_intensities.clear();
     global_lipidome->m.reset(1, 1);
 
-    for (auto lipidome : study_lipidomes) delete lipidome;
-    study_lipidomes.clear();
+    for (auto kv : group_lipidomes){
+        for (auto lipidome : kv.second) delete lipidome;
+    }
+    group_lipidomes.clear();
 
 
 
@@ -1450,49 +1453,45 @@ void LipidSpace::separate_matrixes(){
     }
 
 
-    if (contains_val(study_variable_values, FILE_STUDY_VARIABLE_NAME)){
-        for (auto kv : study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values){
+    for (auto &kv_study_var : study_variable_values){
+        for (auto kv : study_variable_values[kv_study_var.first].nominal_values){
             if (!kv.second) continue;
 
-            string study = kv.first;
-            //map<string, Array> study_lipid_intensities;
-            //for (auto kv : global_lipid_intensities) study_lipid_intensities.insert({kv.first, Array()});
-            Lipidome* study_lipidome = new Lipidome("Study lipidome - " + study, "");
+            string var_value = kv.first;
+            Lipidome* group_lipidome = new Lipidome("'" + kv_study_var.first + "' group lipidome - " + var_value, "");
             set<int> selected_lipid_indexes_set;
             for (auto lipidome : selected_lipidomes){
-                if (lipidome->study_variables[FILE_STUDY_VARIABLE_NAME].nominal_value != study) continue;
+                if (lipidome->study_variables[kv_study_var.first].nominal_value != var_value) continue;
 
                 for (int i = 0; i < (int)lipidome->species.size(); ++i){
                     string lipid_species = lipidome->species[i];
                     if (!(selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species))) continue;
                     selected_lipid_indexes_set.insert(lipid_indexes.at(lipid_species));
-                    //if (contains_val(study_lipid_intensities, lipid_species)) study_lipid_intensities[lipid_species].push_back(lipidome->original_intensities[i]);
                 }
             }
             if (selected_lipid_indexes_set.empty()){
-                delete study_lipidome;
+                delete group_lipidome;
             }
             else {
                 Indexes selected_lipid_indexes;
                 for (int i : selected_lipid_indexes_set){
                     selected_lipid_indexes.push_back(i);
-                    study_lipidome->lipids.push_back(global_lipidome->lipids[i]);
-                    study_lipidome->species.push_back(global_lipidome->species[i]);
-                    study_lipidome->classes.push_back(global_lipidome->classes[i]);
-                    study_lipidome->categories.push_back(global_lipidome->categories[i]);
-                    //study_lipidome->original_intensities.push_back(study_lipid_intensities[global_lipidome->species[i]].mean());
-                    //study_lipidome->normalized_intensities.push_back(study_lipid_intensities[global_lipidome->species[i]].mean());
+                    group_lipidome->lipids.push_back(global_lipidome->lipids[i]);
+                    group_lipidome->species.push_back(global_lipidome->species[i]);
+                    group_lipidome->classes.push_back(global_lipidome->classes[i]);
+                    group_lipidome->categories.push_back(global_lipidome->categories[i]);
 
                 }
-                int n = study_lipidome->lipids.size();
-                for (int i = 0; i < n; ++i) study_lipidome->selected_lipid_indexes.push_back(i);
-                study_lipidome->original_intensities.resize(n, 1);
-                study_lipidome->visualization_intensities.resize(n, 1);
-                study_lipidome->normalized_intensities.resize(n, 1);
-                study_lipidome->PCA_intensities.resize(n, 1);
-                study_lipidome->m.rewrite(global_lipidome->m, selected_lipid_indexes);
+                int n = group_lipidome->lipids.size();
+                for (int i = 0; i < n; ++i) group_lipidome->selected_lipid_indexes.push_back(i);
+                group_lipidome->original_intensities.resize(n, 1);
+                group_lipidome->visualization_intensities.resize(n, 1);
+                group_lipidome->normalized_intensities.resize(n, 1);
+                group_lipidome->PCA_intensities.resize(n, 1);
+                group_lipidome->m.rewrite(global_lipidome->m, selected_lipid_indexes);
 
-                study_lipidomes.push_back(study_lipidome);
+                if (uncontains_val(group_lipidomes, kv_study_var.first)) group_lipidomes.insert({kv_study_var.first, vector<Lipidome*>()});
+                group_lipidomes[kv_study_var.first].push_back(group_lipidome);
             }
         }
     }
@@ -1618,43 +1617,45 @@ void LipidSpace::normalize_intensities(){
 
 
 
-    // apply for all study lipidomes
+    // apply for all group lipidomes
     map<string, Array> global_vis_intensities;
     map<string, Array> global_norm_intensities;
     for (auto lipid_species : global_lipidome->species) global_vis_intensities.insert({lipid_species, Array()});
     for (auto lipid_species : global_lipidome->species) global_norm_intensities.insert({lipid_species, Array()});
 
-    for (auto study : study_lipidomes){
-        map<string, Array> study_norm_intensities;
-        map<string, Array> study_vis_intensities;
-        for (auto lipid_species : global_lipidome->species) study_norm_intensities.insert({lipid_species, Array()});
-        for (auto lipid_species : global_lipidome->species) study_vis_intensities.insert({lipid_species, Array()});
+    for (auto &group_kv : group_lipidomes){
+        for (auto group_lipidome : group_kv.second){
+            map<string, Array> group_norm_intensities;
+            map<string, Array> group_vis_intensities;
+            for (auto lipid_species : global_lipidome->species) group_norm_intensities.insert({lipid_species, Array()});
+            for (auto lipid_species : global_lipidome->species) group_vis_intensities.insert({lipid_species, Array()});
 
-        for (auto lipidome : selected_lipidomes){
-            if (uncontains_val(lipidome->study_variables, FILE_STUDY_VARIABLE_NAME) || "Study lipidome - " + lipidome->study_variables[FILE_STUDY_VARIABLE_NAME].nominal_value != study->cleaned_name) continue;
+            for (auto lipidome : selected_lipidomes){
+                if (uncontains_val(lipidome->study_variables, group_kv.first) || "'" + group_kv.first + "' group lipidome - " + lipidome->study_variables[group_kv.first].nominal_value != group_lipidome->cleaned_name) continue;
 
-            for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
-                string lipid_species = lipidome->species[lipidome->selected_lipid_indexes[i]];
-                study_vis_intensities[lipid_species].push_back(lipidome->visualization_intensities[i]);
-                global_vis_intensities[lipid_species].push_back(lipidome->visualization_intensities[i]);
+                for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
+                    string lipid_species = lipidome->species[lipidome->selected_lipid_indexes[i]];
+                    group_vis_intensities[lipid_species].push_back(lipidome->visualization_intensities[i]);
+                    global_vis_intensities[lipid_species].push_back(lipidome->visualization_intensities[i]);
+                }
+
+                for (uint i = 0; i < lipidome->normalized_intensities.size(); ++i){
+                    string lipid_species = lipidome->species[i];
+                    group_norm_intensities[lipid_species].push_back(lipidome->normalized_intensities[i]);
+                    global_norm_intensities[lipid_species].push_back(lipidome->normalized_intensities[i]);
+                }
             }
 
-            for (uint i = 0; i < lipidome->normalized_intensities.size(); ++i){
-                string lipid_species = lipidome->species[i];
-                study_norm_intensities[lipid_species].push_back(lipidome->normalized_intensities[i]);
-                global_norm_intensities[lipid_species].push_back(lipidome->normalized_intensities[i]);
+            for (uint i = 0; i < group_lipidome->selected_lipid_indexes.size(); ++i){
+                int index = group_lipidome->selected_lipid_indexes[i];
+                string lipid_species = group_lipidome->species[index];
+                group_lipidome->visualization_intensities[i] = group_vis_intensities[lipid_species].mean();
             }
-        }
 
-        for (uint i = 0; i < study->selected_lipid_indexes.size(); ++i){
-            int index = study->selected_lipid_indexes[i];
-            string lipid_species = study->species[index];
-            study->visualization_intensities[i] = study_vis_intensities[lipid_species].mean();
-        }
-
-        for (uint i = 0; i < study->normalized_intensities.size(); ++i){
-            string lipid_species = study->species[i];
-            study->normalized_intensities[i] = study_norm_intensities[lipid_species].mean();
+            for (uint i = 0; i < group_lipidome->normalized_intensities.size(); ++i){
+                string lipid_species = group_lipidome->species[i];
+                group_lipidome->normalized_intensities[i] = group_norm_intensities[lipid_species].mean();
+            }
         }
     }
 
@@ -3747,8 +3748,11 @@ void LipidSpace::reset_analysis(){
     delete global_lipidome;
     global_lipidome = new Lipidome("Global lipidome", "");
 
-    for (auto lipidome : study_lipidomes) delete lipidome;
-    study_lipidomes.clear();
+    for (auto &kv : group_lipidomes){
+        for (auto lipidome : kv.second) delete lipidome;
+    }
+    group_lipidomes.clear();
+    group_lipidomes.insert({FILE_STUDY_VARIABLE_NAME, vector<Lipidome*>()});
 }
 
 
