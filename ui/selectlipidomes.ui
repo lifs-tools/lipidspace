@@ -39,7 +39,7 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QListWidget" name="lipidomesListWidget">
+  <widget class="QTreeWidget" name="lipidomesTreeWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -48,6 +48,11 @@
      <height>531</height>
     </rect>
    </property>
+   <column>
+    <property name="text">
+     <string>Lipidomes</string>
+    </property>
+   </column>
   </widget>
  </widget>
  <resources/>
