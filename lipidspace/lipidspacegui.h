@@ -140,7 +140,6 @@ public:
     QLabel *select_tiles_information;
     RawDataModel *raw_data_model;
     set<int> *selected_d_lipidomes;
-    map<Lipidome*, int> canvas_ids;
     bool showGroupLipidomes;
     bool showGlobalLipidome;
     TileLayout tileLayout;

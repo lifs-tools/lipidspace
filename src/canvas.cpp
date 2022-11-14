@@ -42,11 +42,18 @@ void HomeView::resizeEvent(QResizeEvent *) {
         scene()->addItem(banner);
         LIFS = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS.svg");
         scene()->addItem(LIFS);
-        citation = new Citation("Citation: Kopczynski, Dominik et al. The Journal 47(11):08-15, 2022.");
+
+
+        // TODO: decomment next line
+        //citation = new Citation("Citation: Kopczynski, Dominik et al. The Journal 47(11):08-15, 2022.");
+        citation = new Citation("");
+
         citation->setDefaultTextColor(Qt::white);
         scene()->addItem(citation);
         LIFS_monitor = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS-monitor.svg");
         scene()->addItem(LIFS_monitor);
+
+
     }
 
     double factor = min((double)width() / 1207., (double)height() / 483.);
