@@ -70,15 +70,10 @@ void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
 
 
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
-    /*
+
     if (event->key() == Qt::Key_1){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
-        for (int i = 0; i < 5; ++i) ct->push_back(LipidColumn);
-        ct->at(0) = SampleColumn;
-        loadTable(new ImportData("examples/benford.csv", "", COLUMN_PIVOT_TABLE, ct));
-        */
-        /*
         for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
         ct->at(0) = SampleColumn;
         for (int i = 1; i <= 44; ++i) ct->at(i) = StudyVariableColumnNumerical;
@@ -263,7 +258,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         loadTable(new ImportData("Bakerpanel.csv", "", COLUMN_PIVOT_TABLE, ct));
     }
 
-    else */ if (event->key() == Qt::Key_Control){
+    else  if (event->key() == Qt::Key_Control){
         GlobalData::ctrl_pressed = true;
     }
 

@@ -7,7 +7,7 @@ const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTab
 
 const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DCVStatistic, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
 
 
 
@@ -813,12 +813,21 @@ void Tutorial::tab_changed(int index){
                     }
                     break;
 
+                case DCVStatistic:
+                    if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 3){
+                        continue_tutorial();
+                    }
+                    else if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 3){
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                    }
+                    break;
+
                 case DChangeToLipidSpaces:
                     if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() == 1){
                         continue_tutorial();
                     }
                     else if (lipidSpaceGUI->ui->viewsTabWidget->currentIndex() != 1){
-                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(2);
+                        lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(3);
                     }
                     break;
 
@@ -2007,10 +2016,26 @@ void Tutorial::fourth_tutorial_steps(){
             break;
 
 
+        case DCVStatistic:
+            {
+                changeSize(650, 210);
+                move(20, lipidSpaceGUI->height() - height() - 60);
+
+                QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                int x = lipidSpaceGUI->ui->viewsTabWidget->mapTo(lipidSpaceGUI->ui->centralwidget, QPoint(lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(3).x(), 0)).x();
+                show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(3).width() / 2., p.y());
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+
+                titleLabel->setText("Switch to 'Statistics' Tab");
+                informationLabel->setText("Especially when data for different study conditions (e.g., wild type vs. knockout) is acquired on different time, different equipment or even in different laboratories, it is important to check if these datasets can be used together in one experiment. One figure in the statistics module is dedicated to. Therefore, please switch to the 'Staticstics' tab.");
+            }
+            break;
+
 
         case DChangeToLipidSpaces:
             {
-                changeSize(650, 150);
+                changeSize(650, 230);
                 move(20, lipidSpaceGUI->height() - height() - 60);
 
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
@@ -2019,8 +2044,8 @@ void Tutorial::fourth_tutorial_steps(){
                 show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(1).width() / 2., p.y());
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
 
-                titleLabel->setText("Switch to 'Lipidomes' Tab");
-                informationLabel->setText("To get a clue what might cause these discrepancies, we can have a look on the lipid spaces. Therefore, please click on the 'Lipidomes' tab.");
+                titleLabel->setText("Coefficient of Variation");
+                informationLabel->setText("The top right figure illustrates the distribution of the coefficients of variation for each lipid species based on the selected study variable. In this case, we have selected 'Origin' and thus can assess if all three studies have a similar distribution. Unfortunately, they are slightly different. To get a clue what might cause these discrepancies, we can have a look on the lipid spaces. Therefore, please click on the 'Lipidomes' tab.");
             }
             break;
 
@@ -2091,7 +2116,7 @@ void Tutorial::fourth_tutorial_steps(){
 
 
 void Tutorial::wheelEvent(QWheelEvent *event){
-    return;
+    //return;
 
     QRect r = geometry();
     changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));

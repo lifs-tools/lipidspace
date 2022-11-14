@@ -469,7 +469,7 @@ void Statistics::lipidExited(){
 void Statistics::updateSpeciesCV(){
 
     chart->clear();
-    chart->setTitle("Lipid species - Coefficiants of Variation [%]");
+    chart->setTitle("Lipid species - Coefficients of Variation [%]");
     chart->setVisible(true);
 
     series_titles.clear();
