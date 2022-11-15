@@ -7,7 +7,7 @@ const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTab
 
 const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DCVStatistic, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DCVStatistic, DIntroduceCVStatistic, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
 
 
 
@@ -1649,7 +1649,7 @@ void Tutorial::third_tutorial_steps(){
 
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Dataset Loaded");
-                informationLabel->setText("Easy as that. The results section should be already familiar to you. If not, we recommend to run the second tutorial. Anyhow, on the bottom you can see the 'Feature analysis' panel with which you can do both control the entire dendogram and start a feature analysis.");
+                informationLabel->setText("Simple as that. The results section should be already familiar to you. If not, we recommend to run the second tutorial. Anyhow, on the bottom you can see the 'Feature analysis' panel with which you can do both control the entire dendogram and start a feature analysis.");
                 break;
             }
             break;
@@ -1876,19 +1876,19 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20, lipidSpaceGUI);
             titleLabel->setText("Fourth Tutorial - Quality Control");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyze lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be applied on LipidSpace.");
+            informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyze lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be applied in LipidSpace.");
             break;
 
 
         case DBenford:
-            changeSize(650, 190);
+            changeSize(650, 210);
             move(20, 20);
             continuePushButton->setEnabled(true);
-            titleLabel->setText("Benfords Law");
-            informationLabel->setText("Having said that, there is one builtin QC function. Every time when you import or remove lipidomics data in LipidSpace, the data is checked if it conforms to Benfords law (please find details in the menu Help → log messages). If your data does not, you will be informed with hints how to check your imported raw data.");
+            titleLabel->setText("Benford's Law");
+            informationLabel->setText("Having said that, there is one builtin QC function. Every time when you import or remove lipidomics data in LipidSpace, the data is checked if it conforms to Benford's law (please find details in the menu Help → log messages). If your data does not, you will be informed with hints how to check your imported raw data.");
 
-            Logging::write_log("Benfords law describes the distrubution of the first digits of numbers in big data sets [Cho, W.K.T. and Gaines, B.J. (2007) Breaking the (Benford) Law: Statistical Fraud Detection in Campaign Finance. The American Statistician. 61, 218–223].");
-            Logging::write_log("Real datsets with empirical or measured data ranging over several orders of magnitude tend to follow Benfords law.");
+            Logging::write_log("Benford's law describes the distrubution of the first digits of numbers in big data sets [Cho, W.K.T. and Gaines, B.J. (2007) Breaking the (Benford) Law: Statistical Fraud Detection in Campaign Finance. The American Statistician. 61, 218–223].");
+            Logging::write_log("Real datsets with empirical or measured data ranging over several orders of magnitude tend to follow Benford's law.");
             break;
 
         case DRelativeQC:
@@ -1896,7 +1896,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Relative QC");
-            informationLabel->setText("Beside Benfords law, it is difficult to assess the quality of your data without any reference data. Therefore, we assume for that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset from three different studies will be loaded now for demonstration.");
+            informationLabel->setText("Beside Benford's law, it is difficult to assess the quality of your data without any reference data. Therefore, we assume for that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset including three different studies will be loaded now for demonstration.");
             break;
 
 
@@ -2012,7 +2012,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Analysis of qualitative Data");
-            informationLabel->setText("Now we can see the relations for each lipidome solely based on the stoichiometric information on the lipid species. For example, all lipidomes of the second study have a distance of 0 to each other. That means, that for all these lipid species a value in each lipidome is reported. This is usually the case when applying targeted methods. Beside, the remaining two studies also well clustered here implying that the acquisition techniques or methods might be rather different.");
+            informationLabel->setText("Now we can see the relations for each lipidome solely based on the stoichiometric information on the lipid species. For example, all lipidomes of the second study have a distance of 0 to each other. That means, that for all these lipid species a value in each lipidome is reported. This is usually the case when applying targeted methods. Beside, the remaining two studies are also well clustered here implying that the acquisition techniques or methods might be rather different.");
             break;
 
 
@@ -2033,9 +2033,25 @@ void Tutorial::fourth_tutorial_steps(){
             break;
 
 
+        case DIntroduceCVStatistic:
+            {
+                changeSize(650, 190);
+                move(20, lipidSpaceGUI->height() - height() - 60);
+
+                QWidget *widget = lipidSpaceGUI->ui->statisticsSpeciesCV;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALT, lipidSpaceGUI, p.x(), p.y() + widget->height() / 2.);
+
+                continuePushButton->setEnabled(true);
+                titleLabel->setText("Coefficient of Variation");
+                informationLabel->setText("The top right figure illustrates the distribution of the coefficients of variation for each lipid species based on the selected study variable. In this case, we have selected 'Origin' and thus can assess if all three studies have a similar distribution. Unfortunately, they are slightly different.");
+            }
+            break;
+
+
         case DChangeToLipidSpaces:
             {
-                changeSize(650, 230);
+                changeSize(650, 150);
                 move(20, lipidSpaceGUI->height() - height() - 60);
 
                 QWidget *widget = lipidSpaceGUI->ui->homeGraphicsView;
@@ -2045,7 +2061,7 @@ void Tutorial::fourth_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
 
                 titleLabel->setText("Coefficient of Variation");
-                informationLabel->setText("The top right figure illustrates the distribution of the coefficients of variation for each lipid species based on the selected study variable. In this case, we have selected 'Origin' and thus can assess if all three studies have a similar distribution. Unfortunately, they are slightly different. To get a clue what might cause these discrepancies, we can have a look on the lipid spaces. Therefore, please click on the 'Lipidomes' tab.");
+                informationLabel->setText("To get a clue what might cause these discrepancies, we can have a look on the lipid spaces. To do so, please click on the 'Lipidomes' tab.");
             }
             break;
 
@@ -2100,7 +2116,7 @@ void Tutorial::fourth_tutorial_steps(){
         case DFinish:
             {
                 move(20, 20, lipidSpaceGUI->ui->centralwidget);
-                changeSize(650, 180);
+                changeSize(650, 190);
                 titleLabel->setText("Fourth Tutorial Completed");
                 continuePushButton->setEnabled(true);
                 informationLabel->setText("Congratulations, you mastered the final tutorial. Hopefully these tutorials gave you a good introduction into LipidSpace. If you have issues, comments, or critics about the tool, please drop us a line, contact information you will find in the menu Help → About. Have fun using LipidSpace :-)");
@@ -2116,7 +2132,7 @@ void Tutorial::fourth_tutorial_steps(){
 
 
 void Tutorial::wheelEvent(QWheelEvent *event){
-    //return;
+    return;
 
     QRect r = geometry();
     changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));

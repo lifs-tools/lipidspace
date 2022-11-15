@@ -70,7 +70,7 @@ void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
 
 
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
-
+    /*
     if (event->key() == Qt::Key_1){
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
@@ -258,7 +258,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         loadTable(new ImportData("Bakerpanel.csv", "", COLUMN_PIVOT_TABLE, ct));
     }
 
-    else  if (event->key() == Qt::Key_Control){
+    else */ if (event->key() == Qt::Key_Control){
         GlobalData::ctrl_pressed = true;
     }
 
