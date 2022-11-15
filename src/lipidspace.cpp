@@ -1150,7 +1150,7 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
                 dist1 = compute_l2_norm(m1col, m2col, rows);
             }
 
-            if (z < m2.cols) {
+            if (z < m1.cols) {
                 const double* m1col = m1.data() + (z * rows);
                 dist2 = compute_l2_norm(m1col, m2col, rows);
             }
