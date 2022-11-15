@@ -1896,7 +1896,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Relative QC");
-            informationLabel->setText("Beside Benford's law, it is difficult to assess the quality of your data without any reference data. Therefore, we assume for that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset including three different studies will be loaded now for demonstration.");
+            informationLabel->setText("Beside Benford's law, it is difficult to assess the quality of your data without any reference data. Therefore, we assume that your data has at least two different conditions (either as study variables or different datasets) where one condition can be taken as reference. Another examplary dataset including three different studies will be loaded now for demonstration.");
             break;
 
 
@@ -2040,7 +2040,7 @@ void Tutorial::fourth_tutorial_steps(){
 
                 QWidget *widget = lipidSpaceGUI->ui->statisticsSpeciesCV;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
-                show_arrow(ALT, lipidSpaceGUI, p.x(), p.y() + widget->height() / 2.);
+                show_arrow(ATR, lipidSpaceGUI, p.x(), p.y() + widget->height() / 2.);
 
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Coefficient of Variation");
