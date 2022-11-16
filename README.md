@@ -1,7 +1,15 @@
-# lipidspace
-LipidSpace
+# LipidSpace
+[![CI Status](https://github.com/lifs-tools/lipidspace/actions/workflows/build.yml/badge.svg)](https://github.com/lifs-tools/lipidspace/actions/workflows/build.yml)
+LipidSpace is a stand-alone tool to analyze and compare lipidomes by assessing their structural differences. A graph-based comparison of lipid structures allows to calculate distances between lipids and to determine similarities across lipidomes. It allows for a rapid (re)analysis of experiments, identifies lipids responsible for shaping the respective lipidome, and provides methods for quality
+control.
+
+LipidSpace has been built and tested under Windows 10 and Ubuntu 22.04 Linux. It comes with four built-in tutorials to get you started.
+
+Please check the `LICENSE*` files for more information about individual license terms of embedded libraries.
 
 ## Prerequisites
+
+LipidSpace uses the [QT6](https://www.qt.io/product/qt6) libraries for the graphical user interface.
 
 ### Cloning the repository
 
