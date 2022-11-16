@@ -7,7 +7,7 @@ const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTab
 
 const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalysisWithoutQuant, DAnalyzeQualData, DCVStatistic, DIntroduceCVStatistic, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalyzeQualData, DCVStatistic, DIntroduceCVStatistic, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
 
 
 
@@ -866,7 +866,7 @@ void Tutorial::item_changed(const QModelIndex &, int, int){
                     {
                         QListWidget *list = lipidSpaceGUI->import_table.ui->sampleListWidgetCol;
                         list->update();
-                        continuePushButton->setEnabled(list->count() == 1 && list->item(0)->text().toStdString() == "Species");
+                        continuePushButton->setEnabled(list->count() == 1 && list->item(0)->text().toStdString() == "SampleID");
                     }
                     break;
 
@@ -1135,7 +1135,7 @@ void Tutorial::first_tutorial_steps(){
             changeSize(650, 150);
             move(20, 450);
             titleLabel->setText("Assign Sample Column");
-            informationLabel->setText("It's your time, please assign the 'Species' entry from the 'Input columns' field to the 'Sample column' field.");
+            informationLabel->setText("It's your time, please assign the 'SampleID' entry from the 'Input columns' field to the 'Sample column' field.");
             lipidSpaceGUI->import_table.ui->ignoreListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->sampleListWidgetCol->setEnabled(true);
             lipidSpaceGUI->import_table.ui->tabWidget->setEnabled(true);
@@ -1197,7 +1197,7 @@ void Tutorial::first_tutorial_steps(){
             move(20, 20, lipidSpaceGUI->ui->centralwidget);
             titleLabel->setText("First Tutorial Completed");
             continuePushButton->setEnabled(true);
-            informationLabel->setText("Congratulations, you managed to import a first lipid dataset into LipidSpace. Feel free to play around with the dataset and explore LipidSpace or just start the second tutorial.");
+            informationLabel->setText("Congratulations, you managed to import a first lipid dataset into LipidSpace. Feel free to play around with the dataset and explore LipidSpace or just start the second tutorial that you find in the 'Home' tab.");
             break;
 
 
@@ -1266,7 +1266,7 @@ void Tutorial::second_tutorial_steps(){
                 }
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("UI Sections of LipidSpace");
-                informationLabel->setText("Here we go. As you can see now, LipidSpace is split after data import into two major sections. On the left hand side, you find the selection section and on the right hand side the visualization section.");
+                informationLabel->setText("Here we go. As you can see now, LipidSpace is split after data import into two major sections. On the left-hand side, you find the selection section and on the right-hand side the visualization section.");
                 break;
             }
             break;
@@ -1325,7 +1325,7 @@ void Tutorial::second_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Sorting II");
-                informationLabel->setText("The lipid species are now sorted according to their accuracy of correctly separating the values (here wildtype and knockout) of the respective study variable 'Type'. Be aware, that this is not an accuracy on multiple lipid species but on each species individually. The grey bars are indicating the accuracy from 0 to 1 (perfect separation behavior).");
+                informationLabel->setText("The lipid species are now sorted according to their accuracy of correctly separating the values (here wildtype and knockout) of the respective study variable 'Type'. Be aware, that this is not an accuracy on multiple lipid species but on each species individually. The grey bars are indicating the accuracy from 0 to 1 (where 1 is a perfect separation behavior).");
             }
             break;
 
@@ -1392,7 +1392,7 @@ void Tutorial::second_tutorial_steps(){
                 show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(1).width() / 2., p.y());
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Results Section");
-                informationLabel->setText("On the right hand side you can see the results section. It contains four tabs (plus the 'Home' tab) showing different aspects of your data. You can choose between a view on all individual lipidomes, a dendrogram putting all lipidomes into relation, a statistics module and your imported raw data. Please select the 'Lipidomes' tab.");
+                informationLabel->setText("On the right-hand side, you can see the results section. It contains four tabs (plus the 'Home' tab) showing different aspects of your data. You can choose between a view on all individual lipidomes, a dendrogram putting all lipidomes into relation, a statistics module and your imported raw data. Please select the 'Lipidomes' tab.");
             }
             break;
 
@@ -1811,7 +1811,7 @@ void Tutorial::third_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Feature Analysis Evaluation II");
-                informationLabel->setText("Does this result make sense? Since stimulating with C-reactive protein (CRP) or thrombin leads to an estrification of free arachidonic acid (FA 20:4), having PA 18:0_20:4 as the best separation lipid makes totally sense. In the sorted species list, we can see on the top four positions lipid species either containing arachidonic acid or precursors to these ones. Of course, in other experiments or for other study variables the feature analysis can select more than one lipid species.");
+                informationLabel->setText("Does this result make sense? Since stimulating with collagen related peptide (CRP) or thrombin leads, among other things, to an estrification of free arachidonic acid (FA 20:4), having PA 18:0_20:4 as the best separation lipid makes totally sense. In the sorted species list, we can see on the top four positions lipid species either containing arachidonic acid or precursors to these ones. Of course, in other experiments or for other study variables the feature analysis can select more than one lipid species.");
             }
             break;
 
@@ -2012,7 +2012,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Analysis of qualitative Data");
-            informationLabel->setText("Now we can see the relations for each lipidome solely based on the stoichiometric information on the lipid species. For example, all lipidomes of the second study have a distance of 0 to each other. That means, that for all these lipid species a value in each lipidome is reported. This is usually the case when applying targeted methods. Beside, the remaining two studies are also well clustered here implying that the acquisition techniques or methods might be rather different.");
+            informationLabel->setText("Now we can see the relations for each lipidome solely based on the stoichiometric information on the structural level. For example, all lipidomes of the second study have a distance of 0 to each other. That means, that for all these lipid species a value in each lipidome is reported. This is usually the case when applying targeted methods. Beside, the remaining two studies are also well clustered here implying that the acquisition techniques or methods might be rather different.");
             break;
 
 
@@ -2028,7 +2028,7 @@ void Tutorial::fourth_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
 
                 titleLabel->setText("Switch to 'Statistics' Tab");
-                informationLabel->setText("Especially when data for different study conditions (e.g., wild type vs. knockout) is acquired on different time, different equipment or even in different laboratories, it is important to check if these datasets can be used together in one experiment. One figure in the statistics module is dedicated to. Therefore, please switch to the 'Staticstics' tab.");
+                informationLabel->setText("Especially when data for different study conditions (e.g., wild type vs. knockout) is acquired at different time points, on different equipment or even in different laboratories, it is important to check if these datasets can be used together in one experiment. One figure in the statistics module is dedicated to this. Therefore, please switch to the 'Staticstics' tab.");
             }
             break;
 
@@ -2102,7 +2102,7 @@ void Tutorial::fourth_tutorial_steps(){
             lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Study Differences");
-            informationLabel->setText("The biggest differences that we spotted were I) that the third study lacks completely glyceroceramids and sterol lipids but reports hexosylceramides (HexCer) as only study, II) the first study reports no glycerophosphoinositols (PI), and III) the third study does not report cholesterol which is the most abundant lipid species in plasma.");
+            informationLabel->setText("The biggest differences that we spotted were I) that the third study lacks completely glyceroceramids and sterol lipids but reports hexosylceramides (HexCer) as the only study, II) the first study reports no glycerophosphoinositols (PI), and III) the third study does not report cholesterol which is the most abundant lipid species in plasma.");
             break;
 
         case DInterpretation:
