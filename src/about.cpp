@@ -1,5 +1,6 @@
 #include "lipidspace/about.h"
 
+
 About::About(QWidget *parent, bool log_view) : QDialog(parent), ui(new Ui::About) {
     ui->setupUi(this);
         setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);

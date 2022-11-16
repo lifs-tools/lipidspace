@@ -25,7 +25,7 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 unix {
-    LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/linux64/libcppGoslin.so $$PWD/libraries/OpenBLAS/bin/linux64/libopenblas.so $$PWD/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a
+    LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX"
 }
 
 win32 {

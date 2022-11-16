@@ -43,8 +43,6 @@ void LipidSpace::create_dendrogram(){
     double* ret = dendrogram_root->execute(0, &dendrogram_points, &dendrogram_sorting);
     delete []ret;
 
-
-
     // determining importance of lipids based on goodness of separating
     // study variables applying simple 1D linear regression
     map<LipidAdduct*, int> lipid_map;
@@ -132,6 +130,7 @@ void LipidSpace::create_dendrogram(){
         }
     }
 
+
     // computing mean values for all lipids
     vector<double> mx_values;
     for (int c = 0; c < global_matrix.cols; c++){
@@ -202,6 +201,7 @@ void LipidSpace::create_dendrogram(){
             }
         }
 
+
         // going through all lipids
         for (auto kv : lipid_name_map){
             int c = kv.second;
@@ -214,7 +214,9 @@ void LipidSpace::create_dendrogram(){
                     num_lipid_in_lipidomes += 1;
                     arrays[target_values[r]].push_back(global_matrix(r, c));
                 }
+
                 double acc = compute_accuracy(arrays);
+
                 acc = __abs(1. / (double)nom_counter - acc) + 1. / (double)nom_counter;
                 double score = acc * num_lipid_in_lipidomes / (double)lipidomes_for_feature_selection.size();
                 regression_result.push_back({score, kv.first});
@@ -262,6 +264,7 @@ void LipidSpace::create_dendrogram(){
         for (auto kv_reg : regression_result) regression_vector.push_back({kv_reg.second, kv_reg.first});
 
     }
+
 }
 
 

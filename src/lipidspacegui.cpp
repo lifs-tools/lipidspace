@@ -1,6 +1,5 @@
 #include "lipidspace/lipidspacegui.h"
 
-
 DragLayer::DragLayer(LipidSpaceGUI *_lipid_space_gui, QWidget *parent) : QWidget(parent) {
     lipid_space_gui = _lipid_space_gui;
 
