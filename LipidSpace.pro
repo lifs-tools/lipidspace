@@ -1,4 +1,4 @@
-unix:QT += core gui printsupport widgets svg
+unix:QT += core gui printsupport widgets svg svgwidgets
 win32:QT += core gui printsupport widgets svg svgwidgets
 macx:QT += core gui printsupport widgets svg svgwidgets
 

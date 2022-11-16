@@ -33,6 +33,7 @@ jobs:
         qt6-base-dev \
         qt6-base-dev-tools \
         libqt6svg6-dev \
+        libqt6svgwidgets6 \
         libqt6charts6-dev \
         libopenblas-base \
         libopenblas-dev \
