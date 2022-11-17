@@ -21,6 +21,18 @@ LipidSpace supports both csv and xlsx files for import. The tabels can be either
 </p>
 </details>
 
+<details><summary><b>How can I quickly select a subset of lipidomes for a follow-up analysis?</b></summary>
+<p>
+Go to the dendrogram view and right-click on any branch which you are interested. In the context menu choose 'Select these lipidomes in sample selection' and restart the analysis.
+</p>
+</details>
+
+<details><summary><b>What is an unbound lipid distance metric?</b></summary>
+<p>
+As default, LipidSpace is using a bound distance metric to compare the structure of any two lipids. That means that the distance is a value that ranges between 0 (both lipids are identical) and 1. However, other distance measures suggest an unbound distance ranging from 0 to infinity. This mode provides more accurate results but reduces the visibility of the lipid spaces since the distances may become very big.
+</p>
+</details>
+
 <details><summary><b>Which linkage types are supported for creating the lipidome dendrogram?</b></summary>
 <p>
 The user can switch between simple linkage, unweighted agerage, and complete linkage cluster in the menu → Analysis → Clustering strategy.
