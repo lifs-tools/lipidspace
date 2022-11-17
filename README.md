@@ -15,9 +15,21 @@ LipidSpace uses the [QT6](https://www.qt.io/product/qt6) libraries for the graph
 
 ## Frequently asked questions
 
+<details><summary><b>How can I install LipidSpace?</b></summary>
+<p>
+Please go on the <a href=https://lifs-tools.org/lipidspace.html target=_blank>download page</a> and download the right version for your operation system. The download comes as a zip folder. Just unzip the folder on your computer and start LipidSpace.exe or LipidSpace.sh. No installation is necessary.
+</p>
+</details>
+
 <details><summary><b>What data formats can be imported?</b></summary>
 <p>
-LipidSpace supports both csv and xlsx files for import. The tables can be either pivot tables (that is lipid species in columns, samples in rows or lipid species in rows and samples in columns) or flat tables. Further, lipidomics data files in <a href=https://pubs.acs.org/doi/10.1021/acs.analchem.8b04310>mzTab-M</a> format can be imported.
+LipidSpace supports both csv and xlsx files for import. The tabels can be either pivot tables (that is lipid species in columns, samples in rows or lipid species in rows and samples in columns) or flat tables. Further, lipidomics data files in <a href=https://pubs.acs.org/doi/10.1021/acs.analchem.8b04310>mzTab-M</a> format can be imported.
+</p>
+</details>
+
+<details><summary><b>How can I play around with LipidSpace?</b></summary>
+<p>
+You can open our provided example dataset in the menu → File → Import example dataset.
 </p>
 </details>
 
