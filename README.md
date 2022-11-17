@@ -13,6 +13,87 @@ Please check the `LICENSE*` files for more information about individual license 
 
 LipidSpace uses the [QT6](https://www.qt.io/product/qt6) libraries for the graphical user interface.
 
+## Frequently asked questions
+
+<details><summary><b>How can I install LipidSpace?</b></summary>
+<p>
+Please go on the <a href="https://lifs-tools.org/lipidspace.html" target="_blank">download page</a> and download the right version for your operation system. The download comes as a zip folder. Just unzip the folder on your computer and start LipidSpace.exe or LipidSpace.sh. No installation is necessary.
+</p>
+</details>
+
+<details><summary><b>What data formats can be imported?</b></summary>
+<p>
+LipidSpace supports both csv and xlsx files for import. The tabels can be either pivot tables (that is lipid species in columns, samples in rows or lipid species in rows and samples in columns) or flat tables. Further, lipidomics data files in <a href=https://pubs.acs.org/doi/10.1021/acs.analchem.8b04310>mzTab-M</a> format can be imported.
+</p>
+</details>
+
+<details><summary><b>How can I play around with LipidSpace?</b></summary>
+<p>
+You can open our provided example dataset in the menu → File → Import example dataset.
+</p>
+</details>
+
+<details><summary><b>How can I quickly select a subset of lipidomes for a follow-up analysis?</b></summary>
+<p>
+Go to the dendrogram view and right-click on any branch which you are interested. In the context menu choose 'Select these lipidomes in sample selection' and restart the analysis.
+</p>
+</details>
+
+<details><summary><b>How can I remove individual lipidomes from the analysis?</b></summary>
+<p>
+If you want to remove lipidomes only temporaly, simply deselect them in the sample tab on the left-hand side. If you want to remove lipidomes permantently, go in the menu → Analysis → Manage lipidomes.
+</p>
+</details>
+
+<details><summary><b>What is a 'Complete feature analysis'?</b></summary>
+<p>
+When your imported data contains at least two study variables, LipidSpace creates for each study variable a regression/classification model and applies this model on all remaining study variables to compute the accuracy. This is a meaure for the relation/dependency between any two study variables. You can run and store such an analysis in the menu → Analysis → Complete feature analysis.
+</p>
+</details>
+
+<details><summary><b>Can I save my current analysis?</b></summary>
+<p>
+At the moment it is not possible to store or load an analysis. But please drop us a line if you think that this feature is necessary.
+</p>
+</details>
+
+<details><summary><b>Which fatty acyl chain is compared to which one?</b></summary>
+<p>
+In default mode, LipidSpace is comparing the first fatty acyl chain (FA) of the first lipid with the first FA of the second lipid, the second FA of the first lipid with the second FA of the second lipid, etc. However, when the sn-position is not specified as for instance in PC 18:0_16:1, a mode can be activated to compare all combinations of FA comparisons for both lipids and picking the lowest distance. The results are more accurate, but the performance is decreased. You can activate this mode in the menu → Analysis → Ignore lipid sn-positions.
+</p>
+</details>
+
+<details><summary><b>What is an unbound lipid distance metric?</b></summary>
+<p>
+As default, LipidSpace is using a bound distance metric to compare the structure of any two lipids. That means that the distance is a value that ranges between 0 (both lipids are identical) and 1. However, other distance measures suggest an unbound distance ranging from 0 to infinity. This mode provides more accurate results but reduces the visibility of the lipid spaces since the distances may become very big. You can activate this mode in the Menu → Analysis → Unbound distance metric.
+</p>
+</details>
+
+<details><summary><b>Which linkage types are supported for creating the lipidome dendrogram?</b></summary>
+<p>
+The user can switch between single linkage, unweighted average, and complete linkage clustering in the menu → Analysis → Clustering strategy.
+</p>
+</details>
+
+<details><summary><b>Where can I find a tutorial for LipidSpace?</b></summary>
+<p>
+Directly when opening LipidSpace, you can start four interactive tutorials within the tool that guide you through the actual user interface. The tutorials are give an introduction to i) data import, ii) handling of the UI for result interpretation, iii) feature analysis, and iv) quality control methods.
+</p>
+</details>
+
+<details><summary><b>Are there easter eggs hidden in LipidSpace?</b></summary>
+<p>
+Of course, feel free to spot them ;-)
+</p>
+</details>
+
+<details><summary><b>Some feature in your tool is missing for my analyses? Can I ask you for a feature request?</b></summary>
+<p>
+We're delighted when someone gives us feedback on LipidSpace, even when it is a feature request. Therefore, yes please :-)
+</p>
+</details>
+
+
 ### Cloning the repository
 
 ```
