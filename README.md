@@ -17,7 +17,7 @@ LipidSpace uses the [QT6](https://www.qt.io/product/qt6) libraries for the graph
 
 <details><summary><b>How can I install LipidSpace?</b></summary>
 <p>
-Please go on the <a href=https://lifs-tools.org/lipidspace.html target=_blank>download page</a> and download the right version for your operation system. The download comes as a zip folder. Just unzip the folder on your computer and start LipidSpace.exe or LipidSpace.sh. No installation is necessary.
+Please go on the <a href="https://lifs-tools.org/lipidspace.html" target="_blank">download page</a> and download the right version for your operation system. The download comes as a zip folder. Just unzip the folder on your computer and start LipidSpace.exe or LipidSpace.sh. No installation is necessary.
 </p>
 </details>
 
