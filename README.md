@@ -27,9 +27,15 @@ Go to the dendrogram view and right-click on any branch which you are interested
 </p>
 </details>
 
+<details><summary><b>Which fatty acyl chain is compared to which one?</b></summary>
+<p>
+In default mode, LipidSpace is comparing the first fatty acyl chain (FA) of the first lipid with the first FA of the second lipid, the second FA of the first lipid with the second FA of the second lipid, etc. However, when the sn-position is not specified as for instance in PC 18:0_16:1, a mode can be activated to compare all combinations of FA comparisons for both lipids and picking the lowest distance. The results are more accurate, but the performance is decreased. You can activate this mode in the menu → Analysis → Ignore lipid sn-positions.
+</p>
+</details>
+
 <details><summary><b>What is an unbound lipid distance metric?</b></summary>
 <p>
-As default, LipidSpace is using a bound distance metric to compare the structure of any two lipids. That means that the distance is a value that ranges between 0 (both lipids are identical) and 1. However, other distance measures suggest an unbound distance ranging from 0 to infinity. This mode provides more accurate results but reduces the visibility of the lipid spaces since the distances may become very big.
+As default, LipidSpace is using a bound distance metric to compare the structure of any two lipids. That means that the distance is a value that ranges between 0 (both lipids are identical) and 1. However, other distance measures suggest an unbound distance ranging from 0 to infinity. This mode provides more accurate results but reduces the visibility of the lipid spaces since the distances may become very big. You can activate this mode in the menu → Analysis → Unbound distance metric.
 </p>
 </details>
 
