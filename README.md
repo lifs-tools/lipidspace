@@ -27,6 +27,18 @@ The user can switch between simple linkage, unweighted agerage, and complete lin
 </p>
 </details>
 
+<details><summary><b>Where can I find a tutorial for LipidSpace?</b></summary>
+<p>
+Directly when opening LipidSpace, you can start four interactive tutorials within the tool that guide you through the actual user interface. The tutorials are give an introduction to i) data import, ii) handling of the UI for result interpretation, iii) feature analysis, and iv) quality control methods.
+</p>
+</details>
+
+<details><summary><b>Are there easter eggs hidden in LipidSpace?</b></summary>
+<p>
+Of course, feel free to spot them ;-)
+</p>
+</details>
+
 
 ### Cloning the repository
 
