@@ -646,12 +646,15 @@ void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
 
 
 double compute_accuracy(vector<Array> &arrays){
+    if (arrays.size() < 2) return 1;
+
     // remove empty arrays
     for (int i = (int)arrays.size() - 1; i >= 0; --i){
         if (arrays[i].size() == 0){
             arrays.erase(arrays.begin() + i);
         }
     }
+    if (arrays.size() < 2) return 1;
 
     set<uint> indexes;
     Indexes medians;
