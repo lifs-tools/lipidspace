@@ -13,6 +13,12 @@ Please check the `LICENSE*` files for more information about individual license 
 
 LipidSpace uses the [QT6](https://www.qt.io/product/qt6) libraries for the graphical user interface.
 
+## Frequently asked questions
+
+*What data formats can be imported?*
+LipidSpace supports both csv and xlsx files for import. The tabels can be either pivot tables (that is lipid species in columns, samples in rows or lipid species in rows and samples in columns) or flat tables. Further, lipidomics data files in [mzTab-M](https://pubs.acs.org/doi/10.1021/acs.analchem.8b04310) format can be imported.
+
+
 ### Cloning the repository
 
 ```
