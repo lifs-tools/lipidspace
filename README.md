@@ -35,7 +35,7 @@ If you want to remove lipidomes only temporaly, simply deselect them in the samp
 
 <details><summary><b>What is a 'Complete feature analysis'?</b></summary>
 <p>
-When your imported data contains at least two study variables, LipidSpace creates for each study variable a regression/classification model and applies this model on all remaining study variables to compute the accuracy. This is a meaure for the relation/dependency between any two study variables.
+When your imported data contains at least two study variables, LipidSpace creates for each study variable a regression/classification model and applies this model on all remaining study variables to compute the accuracy. This is a meaure for the relation/dependency between any two study variables. You can run and store such an analysis in the menu → Analysis → Complete feature analysis.
 </p>
 </details>
 
