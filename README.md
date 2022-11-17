@@ -27,6 +27,18 @@ Go to the dendrogram view and right-click on any branch which you are interested
 </p>
 </details>
 
+<details><summary><b>How can I remove individual lipidomes from the analysis?</b></summary>
+<p>
+If you want to remove lipidomes only temporaly, simply deselect them in the sample tab on the left-hand side. If you want to remove lipidomes permantently, go in the menu → Analysis → Manage lipidomes.
+</p>
+</details>
+
+<details><summary><b>Can I save my current analysis?</b></summary>
+<p>
+At the moment it is not possible to store or load an analysis. But please drop us a line if you think that this feature is necessary.
+</p>
+</details>
+
 <details><summary><b>Which fatty acyl chain is compared to which one?</b></summary>
 <p>
 In default mode, LipidSpace is comparing the first fatty acyl chain (FA) of the first lipid with the first FA of the second lipid, the second FA of the first lipid with the second FA of the second lipid, etc. However, when the sn-position is not specified as for instance in PC 18:0_16:1, a mode can be activated to compare all combinations of FA comparisons for both lipids and picking the lowest distance. The results are more accurate, but the performance is decreased. You can activate this mode in the menu → Analysis → Ignore lipid sn-positions.
@@ -54,6 +66,12 @@ Directly when opening LipidSpace, you can start four interactive tutorials withi
 <details><summary><b>Are there easter eggs hidden in LipidSpace?</b></summary>
 <p>
 Of course, feel free to spot them ;-)
+</p>
+</details>
+
+<details><summary><b>Some feature in your tool is missing for my analyses? Can I ask you for a feature request?</b></summary>
+<p>
+We're delighted when someone gives us feedback on LipidSpace, even when it is a feature request. Therefore, yes please :-)
 </p>
 </details>
 
