@@ -22,7 +22,7 @@ About::About(QWidget *parent, bool log_view) : QDialog(parent), ui(new Ui::About
         ui->textBrowser->append("Robert Ahrends\n\n");
 
         ui->textBrowser->append("More information is available on:");
-        ui->textBrowser->append("https://lipidomics.at\n\n");
+        ui->textBrowser->append("https://lifs-tools.org\n\n");
 
 
         ui->textBrowser->append("LipidSpace is using third-party libriaries. All libraries are listed with their according licenses:");
