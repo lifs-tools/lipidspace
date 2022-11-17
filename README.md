@@ -17,7 +17,7 @@ LipidSpace uses the [QT6](https://www.qt.io/product/qt6) libraries for the graph
 
 <details><summary><b>What data formats can be imported?</b></summary>
 <p>
-LipidSpace supports both csv and xlsx files for import. The tabels can be either pivot tables (that is lipid species in columns, samples in rows or lipid species in rows and samples in columns) or flat tables. Further, lipidomics data files in <a href=https://pubs.acs.org/doi/10.1021/acs.analchem.8b04310>mzTab-M</a> format can be imported.
+LipidSpace supports both csv and xlsx files for import. The tables can be either pivot tables (that is lipid species in columns, samples in rows or lipid species in rows and samples in columns) or flat tables. Further, lipidomics data files in <a href=https://pubs.acs.org/doi/10.1021/acs.analchem.8b04310>mzTab-M</a> format can be imported.
 </p>
 </details>
 
@@ -53,13 +53,13 @@ In default mode, LipidSpace is comparing the first fatty acyl chain (FA) of the 
 
 <details><summary><b>What is an unbound lipid distance metric?</b></summary>
 <p>
-As default, LipidSpace is using a bound distance metric to compare the structure of any two lipids. That means that the distance is a value that ranges between 0 (both lipids are identical) and 1. However, other distance measures suggest an unbound distance ranging from 0 to infinity. This mode provides more accurate results but reduces the visibility of the lipid spaces since the distances may become very big. You can activate this mode in the menu → Analysis → Unbound distance metric.
+As default, LipidSpace is using a bound distance metric to compare the structure of any two lipids. That means that the distance is a value that ranges between 0 (both lipids are identical) and 1. However, other distance measures suggest an unbound distance ranging from 0 to infinity. This mode provides more accurate results but reduces the visibility of the lipid spaces since the distances may become very big. You can activate this mode in the Menu → Analysis → Unbound distance metric.
 </p>
 </details>
 
 <details><summary><b>Which linkage types are supported for creating the lipidome dendrogram?</b></summary>
 <p>
-The user can switch between simple linkage, unweighted agerage, and complete linkage cluster in the menu → Analysis → Clustering strategy.
+The user can switch between single linkage, unweighted average, and complete linkage clustering in the menu → Analysis → Clustering strategy.
 </p>
 </details>
 
