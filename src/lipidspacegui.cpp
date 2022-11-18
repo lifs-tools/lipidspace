@@ -1107,7 +1107,7 @@ void LipidSpaceGUI::runAnalysis(){
     ui->menuTile_layout->setEnabled(true);
     ui->menuSelected_tiles_mode->setEnabled(true);
 
-    if (canvases.size() > 100){
+    if (canvases.size() > 100 && !selected_tiles_mode){
         QMessageBox::warning(this, "Warning", QString("Since %1 lipidome spaces are registered, LipidSpace will be immediately set to 'Selected tile(s) mode' to keep performance.").arg(canvases.size()));
         ui->actionSelection_mode_activated->setChecked(true);
         setSelectedTilesMode();
