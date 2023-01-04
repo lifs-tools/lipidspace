@@ -1260,7 +1260,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     l = max(0., min(1., l));
 
     if (l > 1e-15) {
-        painter->setBrush(QBrush(QColor(128, 128, 128, 20)));
+        painter->setBrush(QBrush(QColor(212, 240, 255, 80)));
         QRect r = option.rect;
         r.setWidth(r.width() * l - 2);
         painter->drawRect(r);

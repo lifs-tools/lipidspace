@@ -1932,7 +1932,6 @@ void LipidSpaceGUI::lipidExited(){
 
 
 void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
-    if (GlobalData::in_tutorial) return;
 
     lipids_for_selection_menu.clear();
     for (auto l : lipids_for_selection) lipids_for_selection_menu.push_back(l);
@@ -1941,15 +1940,19 @@ void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
     if (lipids_for_selection_menu.size()){
         QMenu *action_selectLipids = new QMenu(menu);
         action_selectLipids->setTitle("Select");
+        action_selectLipids->setEnabled(!GlobalData::in_tutorial);
         QMenu *action_deselectLipids = new QMenu(menu);
         action_deselectLipids->setTitle("Deselect");
+        action_deselectLipids->setEnabled(!GlobalData::in_tutorial);
 
         QAction *action_select_all = new QAction("All hovered", this);
         action_selectLipids->addAction(action_select_all);
+        action_select_all->setEnabled(!GlobalData::in_tutorial);
         connect(action_select_all, &QAction::triggered, [=](){ spaceLipidsSelect(-1, true); });
 
         QAction *action_deselect_all = new QAction("All hovered", this);
         action_deselectLipids->addAction(action_deselect_all);
+        action_deselect_all->setEnabled(!GlobalData::in_tutorial);
         connect(action_deselect_all, &QAction::triggered, [=](){ spaceLipidsSelect(-1, false); });
 
 
@@ -1968,6 +1971,7 @@ void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
         menu->addAction(action_deselectLipids->menuAction());
     }
     QAction *exportAsPdf = new QAction("Export as pdf", this);
+    exportAsPdf->setEnabled(!GlobalData::in_tutorial);
     menu->addAction(exportAsPdf);
     menu->popup(canvas->viewport()->mapToGlobal(pos));
     connect(exportAsPdf, &QAction::triggered, canvas, &Canvas::exportAsPdf);
