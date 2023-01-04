@@ -103,6 +103,18 @@ Mapping::Mapping(string _name, StudyVariableType v_type){
 
 
 
+bool analytics(string action){
+    httplib::Client cli("https://lifs-tools.org/matomo");
+
+    auto res = cli.Get(("/matomo.php?idsite=14&rec=1&e_c=LipidSpace-" + GlobalData::LipidSpace_version + "&e_a=" + action).c_str());
+    if (!res) return false;
+
+    return res->status == 200;
+}
+
+
+
+
 
 ImportData::ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types){
     table_file = _table_file;

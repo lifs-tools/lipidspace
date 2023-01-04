@@ -32,6 +32,8 @@
 #include <algorithm>
 #include <math.h>
 #include <immintrin.h>
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "httplib.h"
 
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
@@ -277,6 +279,8 @@ double cosine_similarity(Array &a, Array &b);
 bool test_benford(Array &a);
 bool test_benford(Matrix &m);
 bool test_benford(vector<Lipidome*> &l);
+
+bool analytics(string action);
 
 
 inline double compute_l2_norm(const double *a, const double *b, const int rows){

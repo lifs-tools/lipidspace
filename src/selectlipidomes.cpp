@@ -70,7 +70,7 @@ void SelectLipidomes::init(){
 
 
 void SelectLipidomes::itemChanged(QTreeWidgetItem *item, int column){
-    if (updating_states) return;
+    if (updating_states || (item == 0)) return;
     updating_states = true;
 
     if (item->childCount()){ // parent node
@@ -85,31 +85,35 @@ void SelectLipidomes::itemChanged(QTreeWidgetItem *item, int column){
             bool any_checked = false;
 
             QTreeWidgetItem *parent = item->parent();
-            for (int c = 0; c < parent->childCount(); c++){
-                QTreeWidgetItem *child = parent->child(c);
-                if (child == item) continue;
-                if (child->checkState(column) == Qt::Checked){
-                    any_checked = true;
-                    break;
+            if (parent){
+                for (int c = 0; c < parent->childCount(); c++){
+                    QTreeWidgetItem *child = parent->child(c);
+                    if (child == item) continue;
+                    if (child->checkState(column) == Qt::Checked){
+                        any_checked = true;
+                        break;
+                    }
                 }
-            }
 
-            parent->setCheckState(column, any_checked ? Qt::PartiallyChecked : Qt::Unchecked);
+                parent->setCheckState(column, any_checked ? Qt::PartiallyChecked : Qt::Unchecked);
+            }
         }
         else {
             bool all_checked = true;
 
             QTreeWidgetItem *parent = item->parent();
-            for (int c = 0; c < parent->childCount(); c++){
-                QTreeWidgetItem *child = parent->child(c);
-                if (child == item) continue;
-                if (child->checkState(column) == Qt::Unchecked){
-                    all_checked = false;
-                    break;
+            if (parent){
+                for (int c = 0; c < parent->childCount(); c++){
+                    QTreeWidgetItem *child = parent->child(c);
+                    if (child == item) continue;
+                    if (child->checkState(column) == Qt::Unchecked){
+                        all_checked = false;
+                        break;
+                    }
                 }
-            }
 
-            parent->setCheckState(column, all_checked ? Qt::Checked : Qt::PartiallyChecked);
+                parent->setCheckState(column, all_checked ? Qt::Checked : Qt::PartiallyChecked);
+            }
         }
     }
 
