@@ -5,6 +5,7 @@ versionAtLeast(QT_VERSION, 6.0.0) {
     QT += core gui printsupport widgets svg
 }
 
+
 CONFIG += c++17 debug_and_release
 QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
 
