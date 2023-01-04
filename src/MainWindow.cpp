@@ -56,10 +56,6 @@ int main(int argc, char** argv) {
         cout << "inter: " << inter_num << endl;
     }
 
-    else if (argc > 1 && string(argv[1]) == "a"){
-        analytics("launch");
-    }
-
     else if (argc > 1 && string(argv[1]) == "test"){
         QApplication application(argc, argv);
         LipidSpace lipid_space;

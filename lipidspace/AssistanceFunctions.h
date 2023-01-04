@@ -32,8 +32,6 @@
 #include <algorithm>
 #include <math.h>
 #include <immintrin.h>
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "httplib.h"
 
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
