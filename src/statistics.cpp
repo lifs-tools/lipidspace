@@ -956,7 +956,6 @@ void Statistics::updateBoxPlot(){
     tmp.rewrite(statistics_matrix, lipidomes_to_keep);
     statistics_matrix.rewrite(tmp);
 
-
     if (is_nominal){
 
         flat_data.insert({"Sample", vector<QVariant>()});
@@ -1142,4 +1141,158 @@ void Statistics::updateBoxPlot(){
         QString sign = intercept >= 0 ? "+" : "-";
         chart->setTitle(QString("Linear regression model"));
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void Statistics::updatePCA(){
+
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+    series_titles.clear();
+    series.clear();
+    flat_data.clear();
+    stat_results.clear();
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
+
+    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+
+    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca){
+        chart->setVisible(false);
+        return;
+    }
+
+
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Indexes target_indexes;
+    int nom_counter = 0;
+    vector<string> nominal_values;
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    SecondaryType secondary_type = NoSecondary;
+    if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
+        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+    }
+    Array S;
+
+    if (is_nominal){
+        for (auto lipidome : lipid_space->selected_lipidomes){
+            if (lipidome->study_variables[target_variable].missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+
+            string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+
+            if (uncontains_val(nominal_target_values, nominal_value)){
+                nominal_target_values.insert({nominal_value, nom_counter++});
+                nominal_values.push_back(nominal_value);
+            }
+            target_indexes.push_back(nominal_target_values[nominal_value]);
+
+
+        }
+    }
+    else {
+        for (auto lipidome : lipid_space->selected_lipidomes){
+            if (lipidome->study_variables[target_variable].missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+
+            if (secondary_type == NominalSecondary){
+                string nominal_value = lipidome->study_variables[secondary_target_variable].nominal_value;
+                if (uncontains_val(nominal_target_values, nominal_value)){
+                    nominal_target_values.insert({nominal_value, nom_counter++});
+                    nominal_values.push_back(nominal_value);
+                }
+                target_indexes.push_back(nominal_target_values[nominal_value]);
+            }
+            else if (secondary_type == NumericalSecondary){
+                S.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+            }
+        }
+    }
+
+    Matrix statistics_matrix(lipid_space->statistics_matrix);
+
+    // if any lipidome has a missing study variable, discard the lipidome from the statistic
+    Indexes lipidomes_to_keep;
+    for (int r = 0; r < statistics_matrix.rows; ++r){
+        if (!lipid_space->selected_lipidomes[r]->study_variables[target_variable].missing) lipidomes_to_keep.push_back(r);
+    }
+    Matrix tmp;
+    tmp.rewrite(statistics_matrix, lipidomes_to_keep);
+    statistics_matrix.rewrite(tmp);
+
+
+
+    Matrix pca;
+    lipid_space->statistics_matrix.PCA(pca, lipid_space->cols_for_pca);
+
+
+    Scatterplot *scatterplot = new Scatterplot(chart);
+    if (is_nominal && pca.rows == (int)target_indexes.size()){
+        vector< vector< pair<double, double> > > all_data(nominal_values.size());
+
+        for (int i = 0; i < pca.rows; ++i){
+            all_data[target_indexes[i]].push_back({pca(i, GlobalData::PC1), pca(i, GlobalData::PC2)});
+        }
+
+        vector< pair<string, int> > sorted_nominal_values;
+        for (uint i = 0; i < nominal_values.size(); ++i) sorted_nominal_values.push_back({nominal_values[i], i});
+        sort(sorted_nominal_values.begin(), sorted_nominal_values.end(), [](const pair<string, int> &a, const pair<string, int> &b) -> bool {
+            return a < b;
+        });
+
+
+        series.resize(sorted_nominal_values.size() * 2);
+        for (uint i = 0; i < sorted_nominal_values.size(); ++i){
+            series_titles.push_back(sorted_nominal_values[i].first + " - PC" + std::to_string(GlobalData::PC1 + 1));
+            series_titles.push_back(sorted_nominal_values[i].first + " - PC" + std::to_string(GlobalData::PC1 + 2));
+
+
+            string color_key = target_variable + "_" + sorted_nominal_values[i].first;
+            QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+            QString group_label = QStringLiteral("%1 (%2)").arg(sorted_nominal_values[i].first.c_str()).arg(all_data[sorted_nominal_values[i].second].size());
+            scatterplot->add(all_data[sorted_nominal_values[i].second], group_label, color);
+
+            for (auto &p : all_data[sorted_nominal_values[i].second]){
+                series[i * 2].push_back(p.first);
+                series[i * 2 + 1].push_back(p.second);
+            }
+        }
+    }
+    else {
+        vector< pair<double, double> > data;
+        for (int i = 0; i < pca.rows; ++i){
+            data.push_back({pca(i, 0), pca(i, 1)});
+        }
+        QString group_label = QStringLiteral("Global (%1)").arg(data.size());
+        scatterplot->add(data, group_label, QColor("#209fdf"));
+    }
+    chart->add(scatterplot);
+
+    Array vars;
+    LipidSpace::compute_PCA_variances(pca, vars);
+    chart->setXLabel(QStringLiteral("Principal component %1: %2%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3));
+    chart->setYLabel(QStringLiteral("Principal component %1: %2%").arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3));
+    chart->setTitle("Principal Component Analysis");
+
+
 }

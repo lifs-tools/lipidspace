@@ -137,6 +137,7 @@ public:
     Statistics statisticsROCCurve;
     Statistics statisticsSpeciesCV;
     Statistics statisticsBarPlot;
+    Statistics statisticsPCA;
     QLabel *select_tiles_information;
     RawDataModel *raw_data_model;
     set<int> *selected_d_lipidomes;
@@ -228,6 +229,7 @@ public slots:
     void ShowContextMenuStatisticsHistogram(const QPoint);
     void ShowContextMenuStatisticsSpeciesCV(const QPoint);
     void ShowContextMenuStatisticsROCCurve(const QPoint);
+    void ShowContextMenuStatisticsPCA(const QPoint);
     void ShowTableContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint, set<int> *selected_d_lipidomes = 0);
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);
