@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 as build
 MAINTAINER Nils Hoffmann <nils.hoffmann@cebitec.uni-bielefeld.de>
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
@@ -6,7 +6,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     qt6-base-dev \
     qt6-base-dev-tools \
     libqt6svg6-dev \
-    libqt6charts6-dev \
     libopenblas-base \
     libopenblas-dev \
     libomp-dev \
@@ -20,6 +19,20 @@ COPY . /lipidspace
 WORKDIR /lipidspace
 RUN qmake6 LipidSpaceRest.pro
 RUN make clean && make release -j$((`nproc`+1))
+
+FROM ubuntu:22.04 as main
+MAINTAINER Nils Hoffmann <nils.hoffmann@cebitec.uni-bielefeld.de>
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    qt6-base-dev \
+    libopenblas-base \
+    libc6 \
+    libstdc++6 \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=build /lipidspace/data /lipidspace/data
+COPY --from=build /lipidspace/LipidSpaceRest /lipidspace/LipidSpaceRest
+COPY --from=build /lipidspace/libraries/cppgoslin/bin/linux64/libcppGoslin.so /lipidspace/libraries/cppgoslin/bin/linux64/libcppGoslin.so
+COPY --from=build /lipidspace/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a /lipidspace/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a
+WORKDIR /lipidspace
 EXPOSE 8888/tcp
 ENTRYPOINT ["./LipidSpaceRest"]
 #CMD ["--help"]
