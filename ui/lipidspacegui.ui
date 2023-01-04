@@ -576,6 +576,7 @@
             </property>
             <widget class="Chart" name="statisticsBoxPlot"/>
             <widget class="Chart" name="statisticsHistogram"/>
+            <widget class="Chart" name="statisticsPCA"/>
            </widget>
            <widget class="QSplitter" name="splitterStatV2">
             <property name="orientation">

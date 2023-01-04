@@ -45,6 +45,7 @@ public slots:
     void updateBarPlot();
     void updateHistogram();
     void updateSpeciesCV();
+    void updatePCA();
     void exportAsPdf();
     void exportData();
     void setLegendSize(int);

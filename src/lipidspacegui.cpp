@@ -299,6 +299,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);
     statisticsSpeciesCV.load_data(lipid_space, ui->statisticsSpeciesCV);
     statisticsROCCurve.load_data(lipid_space, ui->statisticsROCCurve);
+    statisticsPCA.load_data(lipid_space, ui->statisticsPCA);
 
     connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsBarPlot, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
@@ -330,6 +331,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statisticsHistogram->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsSpeciesCV->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsROCCurve->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statisticsPCA->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->actionLoad_list_s, &QAction::triggered, this, &LipidSpaceGUI::openLists);
     connect(ui->actionLoad_table, &QAction::triggered, this, &LipidSpaceGUI::openTable);
@@ -382,6 +384,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setLegendSize);
+    connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPCA, &Statistics::setLegendSize);
     connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setBarNumberHistogram);
     connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setBarNumberSpeciesCV);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setTickSize);
@@ -389,6 +392,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setTickSize);
+    connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPCA, &Statistics::setTickSize);
     connect(ui->labelSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->dendrogramView, &Canvas::setLabelSize);
     connect(ui->pieSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setPieSize);
     connect(ui->normalizationComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setNormalization);
@@ -411,6 +415,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsHistogram, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsHistogram);
     connect(ui->statisticsSpeciesCV, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsSpeciesCV);
     connect(ui->statisticsROCCurve, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsROCCurve);
+    connect(ui->statisticsPCA, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsPCA);
 
     sorting_boxes.push_back(ui->speciesComboBox);
     sorting_boxes.push_back(ui->classComboBox);
@@ -622,6 +627,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
+    statisticsPCA.updatePCA();
     studyVariableChanged(ui->studyVariableComboBox->currentText().toStdString());
 
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
@@ -652,6 +658,7 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
+    statisticsPCA.updatePCA();
 }
 
 
@@ -1149,6 +1156,7 @@ void LipidSpaceGUI::runAnalysis(){
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
+    statisticsPCA.updatePCA();
 
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
@@ -1159,8 +1167,8 @@ void LipidSpaceGUI::runAnalysis(){
     if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
 
     // reset splitters for statistics tile view
-    ui->splitterStatV1->setSizes(QList<int>{ui->splitterStat->height() >> 1, ui->splitterStat->height() >> 1});
     int h = (double)(ui->splitterStat->height()) * 0.333;
+    ui->splitterStatV1->setSizes(QList<int>{h, h, h});
     ui->splitterStatV2->setSizes(QList<int>{h, h, h});
     ui->splitterStat->setSizes(QList<int>{ui->splitterStat->width() >> 1, ui->splitterStat->width() >> 1});
 
@@ -2125,6 +2133,19 @@ void LipidSpaceGUI::ShowContextMenuStatisticsROCCurve(const QPoint pos){
     connect(actionData, &QAction::triggered, &statisticsROCCurve, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, &statisticsROCCurve, &Statistics::exportAsPdf);
     menu->popup(ui->statisticsROCCurve->viewport()->mapToGlobal(pos));
+}
+
+
+void LipidSpaceGUI::ShowContextMenuStatisticsPCA(const QPoint pos){
+    if (statisticsPCA.chart->chart_plots.size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
+    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionData);
+    menu->addAction(actionExportPdf);
+    connect(actionData, &QAction::triggered, &statisticsPCA, &Statistics::exportData);
+    connect(actionExportPdf, &QAction::triggered, &statisticsPCA, &Statistics::exportAsPdf);
+    menu->popup(ui->statisticsPCA->viewport()->mapToGlobal(pos));
 }
 
 
