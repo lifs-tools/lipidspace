@@ -104,9 +104,9 @@ Mapping::Mapping(string _name, StudyVariableType v_type){
 
 
 bool analytics(string action){
-    httplib::Client cli("https://lifs-tools.org/matomo");
+    httplib::Client cli("https://lifs-tools.org");
 
-    auto res = cli.Get(("/matomo.php?idsite=14&rec=1&e_c=LipidSpace-" + GlobalData::LipidSpace_version + "&e_a=" + action).c_str());
+    auto res = cli.Get(("/matomo/piwik.php?idsite=14&rec=1&e_c=LipidSpace-" + GlobalData::LipidSpace_version + "&e_a=" + action).c_str());
     if (!res) return false;
 
     return res->status == 200;

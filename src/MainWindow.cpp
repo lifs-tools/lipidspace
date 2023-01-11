@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     }
 
     else if (argc > 1 && string(argv[1]) == "a"){
-        analytics("launch");
+        analytics("start");
     }
 
     else if (argc > 1 && string(argv[1]) == "test"){
