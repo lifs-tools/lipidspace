@@ -103,16 +103,27 @@ Mapping::Mapping(string _name, StudyVariableType v_type){
 
 
 
-bool analytics(string action){
+void analytics_thread(string action){
     httplib::Client cli("https://lifs-tools.org");
-
     auto res = cli.Get(("/matomo/piwik.php?idsite=14&rec=1&e_c=LipidSpace-" + GlobalData::LipidSpace_version + "&e_a=" + action).c_str());
-    if (!res) return false;
-
-    return res->status == 200;
 }
 
 
+
+void analytics(string action){
+    ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/analytics.txt");
+    int result = 0;
+    if (!infile.good()){
+        return;
+    }
+    else if (infile >> result) {
+        if (result == 1){
+            std::thread (analytics_thread, action).detach();
+        }
+    }
+
+    infile.close();
+}
 
 
 
@@ -1270,7 +1281,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     l = max(0., min(1., l));
 
     if (l > 1e-15) {
-        painter->setBrush(QBrush(QColor(128, 128, 128, 20)));
+        painter->setBrush(QBrush(QColor(212, 240, 255, 80)));
         QRect r = option.rect;
         r.setWidth(r.width() * l - 2);
         painter->drawRect(r);

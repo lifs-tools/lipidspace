@@ -3,6 +3,7 @@
 #include "lipidspace/logging.h"
 #include "lipidspace/globaldata.h"
 #include <QApplication>
+#include <QMessageBox>
 #include <string>
 
 using namespace std;
@@ -12,12 +13,13 @@ using namespace std;
 int main(int argc, char** argv) {
 
     if (argc == 1){
-
         QApplication application(argc, argv);
         Logging::write_log("LipidSpace " + GlobalData::LipidSpace_version + " was launched in window mode");
+
         LipidSpace lipid_space;
         LipidSpaceGUI lipid_space_gui(&lipid_space);
         lipid_space_gui.show();
+        analytics("launch");
         return application.exec();
     }
 
@@ -54,10 +56,6 @@ int main(int argc, char** argv) {
         cout << argv[2] << "(" << l1->get_lipid_string() << ")" << " vs. " << argv[3] << "(" << l2->get_lipid_string() << ")" << endl;
         cout << "union: " << union_num << endl;
         cout << "inter: " << inter_num << endl;
-    }
-
-    else if (argc > 1 && string(argv[1]) == "a"){
-        analytics("start");
     }
 
     else if (argc > 1 && string(argv[1]) == "test"){

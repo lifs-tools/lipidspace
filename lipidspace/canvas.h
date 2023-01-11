@@ -191,6 +191,20 @@ public:
 
 double compute_scale(Lipidome *l, int i);
 
+
+class Decoration : public QGraphicsItem {
+public:
+    Canvas *view;
+    QString title;
+    QString footer;
+
+    Decoration(Canvas* v, QString t, QString f = "");
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
+    QRectF boundingRect() const override;
+};
+
+
+
 class Canvas : public QGraphicsView
 {
     Q_OBJECT
@@ -198,20 +212,22 @@ class Canvas : public QGraphicsView
 public:
     QGraphicsScene graphics_scene;
     LipidSpace *lipid_space;
-    QMainWindow *mainWindow;
+    QMainWindow *mainWindow = 0;
     int canvas_id;
-    Lipidome* lipidome;
+    Lipidome* lipidome = 0;
     string lipidome_group_name;
     CanvasType canvas_type;
     bool hovered_for_swap;
     bool marked_for_selected_view;
     bool showQuant;
+    bool dragging = false;
     QPoint m_lastMousePos;
     QPoint oldCenter;
     QRectF oldView;
-    PointSet *pointSet;
+    PointSet *pointSet = 0;
     Dendrogram *dendrogram;
-    QListWidget *listed_species;
+    QListWidget *listed_species = 0;
+    Decoration *decoration = 0;
 
     Canvas(QWidget *parent = nullptr);
     Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *parent = nullptr, string group_name = "");

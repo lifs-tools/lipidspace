@@ -708,9 +708,16 @@ PointSet::PointSet(Lipidome *_lipidome, Canvas *_view) : view(_view) {
 
 
 void PointSet::loadPoints(){
-    view->graphics_scene.removeItem(this);
+    vector<QGraphicsItem*> items;
+    for (auto item : view->graphics_scene.items()){
+        items.push_back(item);
+        view->graphics_scene.removeItem(item);
+    }
     view->graphics_scene.clear();
-    view->graphics_scene.addItem(this);
+    for (auto item : items){
+        view->graphics_scene.addItem(item);
+    }
+
 
     points.clear();
     labels.clear();
@@ -898,8 +905,7 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         painter->restore();
     }
 
-
-
+    /*
     // Draw the title and the variances
     QFont title_font("Helvetica", 7);
     painter->setFont(title_font);
@@ -922,6 +928,7 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         painter->drawRect(0, 0, view->width() - 1, view->height() -1);
         painter->restore();
     }
+    */
 }
 
 
@@ -1112,8 +1119,41 @@ void PointSet::resize(){
 
 
 
+Decoration::Decoration(Canvas *v, QString t, QString f) : view(v){
+    title = t;
+    footer = f;
+    setZValue(1000);
+}
 
+void Decoration::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
 
+    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+    // Draw the title and the variances
+    QFont title_font("Helvetica", 7);
+    painter->setFont(title_font);
+    QTransform qtrans = view->transform();
+    painter->save();
+    painter->translate(QPointF(v.x(), v.y()));
+    painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+    painter->setPen(Qt::black);
+    painter->drawText(QRectF(2, 0, 200, 60), Qt::AlignTop | Qt::AlignLeft, title);
+    painter->drawText(QRectF(2, view->viewport()->geometry().height() - 60, 200, 60), Qt::AlignBottom | Qt::AlignLeft, footer);
+    painter->restore();
+
+    if (view->marked_for_selected_view && !GlobalData::selected_view){
+        painter->save();
+        painter->translate(QPointF(v.x(), v.y()));
+        painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+        painter->setPen(Qt::black);
+        painter->drawRect(0, 0, view->width() - 1, view->height() -1);
+        painter->restore();
+    }
+}
+
+QRectF Decoration::boundingRect() const {
+    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+    return v;
+}
 
 
 
@@ -1231,6 +1271,8 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int num, QListWidget* _
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+        decoration = new Decoration(this, pointSet->title, pointSet->variances);
+        graphics_scene.addItem(decoration);
     }
     else if (canvas_type == GroupSpaceCanvas){ // group lipidomes
         pointSet = new PointSet(lipid_space->group_lipidomes[lipidome_group_name][num], this);
@@ -1242,6 +1284,8 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int num, QListWidget* _
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->group_lipidomes[lipidome_group_name][num]->m, vars);
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+        decoration = new Decoration(this, pointSet->title, pointSet->variances);
+        graphics_scene.addItem(decoration);
     }
     else { // regular lipidome
         pointSet = new PointSet(lipid_space->selected_lipidomes[num], this);
@@ -1253,6 +1297,8 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int num, QListWidget* _
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->selected_lipidomes[num]->m, vars);
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+        decoration = new Decoration(this, pointSet->title, pointSet->variances);
+        graphics_scene.addItem(decoration);
     }
 }
 
@@ -1320,6 +1366,7 @@ void Canvas::mousePressEvent(QMouseEvent *event){
             mouse(event, this);
         }
         else {
+            dragging = true;
             QGraphicsView::mousePressEvent(event);
         }
     }
@@ -1403,6 +1450,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event){
         oldCenter.setX(v.x() + v.width() * 0.5);
         oldCenter.setY(v.y() + v.height() * 0.5);
     }
+    dragging = false;
     QGraphicsView::mouseReleaseEvent(event);
     viewport()->setCursor(Qt::ArrowCursor);
 }
@@ -1416,7 +1464,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
     if (!dendrogram && !pointSet) return;
 
     if (event->buttons() & Qt::LeftButton){
-        if (!GlobalData::ctrl_pressed){
+        if (!GlobalData::ctrl_pressed && dragging){
             setBackgroundBrush(QBrush());
             viewport()->setCursor(Qt::DragMoveCursor);
             QRect viewportRect(0, 0, viewport()->width(), viewport()->height());
@@ -1580,6 +1628,7 @@ void Canvas::reloadPoints(){
         LipidSpace::compute_PCA_variances(lipidome->m, vars);
 
         pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+        decoration->footer = pointSet->variances;
     }
     else if (dendrogram){
         QRect viewportRect(0, 0, viewport()->width(), viewport()->height());

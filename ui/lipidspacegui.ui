@@ -576,6 +576,7 @@
             </property>
             <widget class="Chart" name="statisticsBoxPlot"/>
             <widget class="Chart" name="statisticsHistogram"/>
+            <widget class="Chart" name="statisticsPCA"/>
            </widget>
            <widget class="QSplitter" name="splitterStatV2">
             <property name="orientation">
@@ -818,6 +819,7 @@
     <addaction name="separator"/>
     <addaction name="actionExport_Results"/>
     <addaction name="separator"/>
+    <addaction name="actionsend_statistics"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuAnalysis">
@@ -1135,6 +1137,14 @@
   <action name="actionImport_eample_dataset">
    <property name="text">
     <string>Import example &amp;dataset</string>
+   </property>
+  </action>
+  <action name="actionsend_statistics">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Send anonymous statistics</string>
    </property>
   </action>
  </widget>

@@ -299,6 +299,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);
     statisticsSpeciesCV.load_data(lipid_space, ui->statisticsSpeciesCV);
     statisticsROCCurve.load_data(lipid_space, ui->statisticsROCCurve);
+    statisticsPCA.load_data(lipid_space, ui->statisticsPCA);
 
     connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsBarPlot, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
@@ -330,6 +331,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statisticsHistogram->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsSpeciesCV->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsROCCurve->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statisticsPCA->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->actionLoad_list_s, &QAction::triggered, this, &LipidSpaceGUI::openLists);
     connect(ui->actionLoad_table, &QAction::triggered, this, &LipidSpaceGUI::openTable);
@@ -382,6 +384,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setLegendSize);
+    connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPCA, &Statistics::setLegendSize);
     connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setBarNumberHistogram);
     connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setBarNumberSpeciesCV);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setTickSize);
@@ -389,6 +392,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setTickSize);
+    connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPCA, &Statistics::setTickSize);
     connect(ui->labelSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->dendrogramView, &Canvas::setLabelSize);
     connect(ui->pieSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setPieSize);
     connect(ui->normalizationComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setNormalization);
@@ -396,6 +400,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->startAnalysisPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::startFeatureAnalysis);
     connect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
     connect(ui->actionSelect_tiles, &QAction::triggered, this, &LipidSpaceGUI::openSelectLipidomes);
+    connect(ui->actionsend_statistics, &QAction::triggered, this, &LipidSpaceGUI::sendStatistics);
 
     ui->speciesList->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->classList->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -411,6 +416,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsHistogram, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsHistogram);
     connect(ui->statisticsSpeciesCV, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsSpeciesCV);
     connect(ui->statisticsROCCurve, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsROCCurve);
+    connect(ui->statisticsPCA, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsPCA);
 
     sorting_boxes.push_back(ui->speciesComboBox);
     sorting_boxes.push_back(ui->classComboBox);
@@ -472,6 +478,33 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     select_tiles_information->setAlignment(Qt::AlignCenter);
     select_tiles_information->setText("No lipidome tile is selected. To select one or more tiles, go on: View > Selected tile(s) mode > Select tile(s).");
 
+
+    // check the statistics
+    string analytics_file = QCoreApplication::applicationDirPath().toStdString() + "/data/analytics.txt";
+    ifstream infile(analytics_file, ifstream::in | ifstream::binary | ifstream::ate);
+    if (!infile.good() || infile.tellg() == 0){
+        QMessageBox::StandardButton button = QMessageBox::information(this, "LipidSpace note", QString("Thank you for choosing LipidSpace.\n\n") +
+        QString("LipidSpace is funded by the Austrian research consortium (FWF).\nThe project administration requires us to report ANONYMIZED usage statistics for this tool to evaluate its usefulness for the community.\n\n") +
+        QString("With your permission, we collect the following ANONYMIZED statistics:\n - # of LipidSpace launches\n - # of LipidSpace analyses\n\n") +
+        QString("We do NOT collect any of the following statistics:\n - IP address\n - operating system\n - any information that may traced back to the user\n\n") +
+        QString("When you click 'Yes':\n - you agree to allow us to collect ANONYMIZED usage statistics.\n\n") +
+        QString("When you click 'No':\n - no data will be sent\n - you can use LipidSpace without any restrictions.\n\n") +
+        QString("We would highly appreciate your help to secure further funding for the continued development of LipidSpace."), QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
+        infile.close();
+
+        ofstream off(analytics_file);
+        off << (button == QMessageBox::Yes ? "1" : "0") << endl;
+    }
+    else {
+        int result = 0;
+        infile.seekg(0);
+        if (infile >> result){
+            if (result == 1){
+                ui->actionsend_statistics->setChecked(true);
+            }
+        }
+    }
+
     updateGUI();
 }
 
@@ -486,6 +519,14 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete raw_data_model;
     delete tutorial;
     delete select_lipidomes;
+}
+
+
+
+
+void LipidSpaceGUI::sendStatistics(){
+    ofstream off(QCoreApplication::applicationDirPath().toStdString() + "/data/analytics.txt");
+    off << (ui->actionsend_statistics->isChecked() ? "1" : "0") << endl;
 }
 
 
@@ -622,6 +663,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
+    statisticsPCA.updatePCA();
     studyVariableChanged(ui->studyVariableComboBox->currentText().toStdString());
 
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
@@ -652,6 +694,7 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
+    statisticsPCA.updatePCA();
 }
 
 
@@ -1149,6 +1192,7 @@ void LipidSpaceGUI::runAnalysis(){
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
+    statisticsPCA.updatePCA();
 
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
@@ -1159,8 +1203,8 @@ void LipidSpaceGUI::runAnalysis(){
     if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
 
     // reset splitters for statistics tile view
-    ui->splitterStatV1->setSizes(QList<int>{ui->splitterStat->height() >> 1, ui->splitterStat->height() >> 1});
     int h = (double)(ui->splitterStat->height()) * 0.333;
+    ui->splitterStatV1->setSizes(QList<int>{h, h, h});
     ui->splitterStatV2->setSizes(QList<int>{h, h, h});
     ui->splitterStat->setSizes(QList<int>{ui->splitterStat->width() >> 1, ui->splitterStat->width() >> 1});
 
@@ -1932,7 +1976,6 @@ void LipidSpaceGUI::lipidExited(){
 
 
 void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
-    if (GlobalData::in_tutorial) return;
 
     lipids_for_selection_menu.clear();
     for (auto l : lipids_for_selection) lipids_for_selection_menu.push_back(l);
@@ -1941,15 +1984,19 @@ void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
     if (lipids_for_selection_menu.size()){
         QMenu *action_selectLipids = new QMenu(menu);
         action_selectLipids->setTitle("Select");
+        action_selectLipids->setEnabled(!GlobalData::in_tutorial);
         QMenu *action_deselectLipids = new QMenu(menu);
         action_deselectLipids->setTitle("Deselect");
+        action_deselectLipids->setEnabled(!GlobalData::in_tutorial);
 
         QAction *action_select_all = new QAction("All hovered", this);
         action_selectLipids->addAction(action_select_all);
+        action_select_all->setEnabled(!GlobalData::in_tutorial);
         connect(action_select_all, &QAction::triggered, [=](){ spaceLipidsSelect(-1, true); });
 
         QAction *action_deselect_all = new QAction("All hovered", this);
         action_deselectLipids->addAction(action_deselect_all);
+        action_deselect_all->setEnabled(!GlobalData::in_tutorial);
         connect(action_deselect_all, &QAction::triggered, [=](){ spaceLipidsSelect(-1, false); });
 
 
@@ -1968,6 +2015,7 @@ void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
         menu->addAction(action_deselectLipids->menuAction());
     }
     QAction *exportAsPdf = new QAction("Export as pdf", this);
+    exportAsPdf->setEnabled(!GlobalData::in_tutorial);
     menu->addAction(exportAsPdf);
     menu->popup(canvas->viewport()->mapToGlobal(pos));
     connect(exportAsPdf, &QAction::triggered, canvas, &Canvas::exportAsPdf);
@@ -2125,6 +2173,19 @@ void LipidSpaceGUI::ShowContextMenuStatisticsROCCurve(const QPoint pos){
     connect(actionData, &QAction::triggered, &statisticsROCCurve, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, &statisticsROCCurve, &Statistics::exportAsPdf);
     menu->popup(ui->statisticsROCCurve->viewport()->mapToGlobal(pos));
+}
+
+
+void LipidSpaceGUI::ShowContextMenuStatisticsPCA(const QPoint pos){
+    if (statisticsPCA.chart->chart_plots.size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
+    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionData);
+    menu->addAction(actionExportPdf);
+    connect(actionData, &QAction::triggered, &statisticsPCA, &Statistics::exportData);
+    connect(actionExportPdf, &QAction::triggered, &statisticsPCA, &Statistics::exportAsPdf);
+    menu->popup(ui->statisticsPCA->viewport()->mapToGlobal(pos));
 }
 
 

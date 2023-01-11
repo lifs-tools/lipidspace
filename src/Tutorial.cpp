@@ -1244,6 +1244,7 @@ void Tutorial::second_tutorial_steps(){
         case SLoadTable:
             {
                 changeSize(650, 170);
+                emit lipidSpaceGUI->ui->itemsTabWidget->setCurrentIndex(0);
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
                     lipidSpaceGUI->resetAnalysis();
@@ -1284,7 +1285,7 @@ void Tutorial::second_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Section");
-                informationLabel->setText("Here we have the selection section. It contains five tabs, one for all imported lipid species, lipid classes, lipid categories, study varibles, and samples. In each tab, you can find a selection list of the respective entity.");
+                informationLabel->setText("Here we have the selection section. It contains five tabs, one for all imported lipid species, lipid classes, lipid categories, study variables, and samples. In each tab, you can find a selection list of the respective entity.");
             }
             break;
 
@@ -1325,7 +1326,7 @@ void Tutorial::second_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Sorting II");
-                informationLabel->setText("The lipid species are now sorted according to their accuracy of correctly separating the values (here wildtype and knockout) of the respective study variable 'Type'. Be aware, that this is not an accuracy on multiple lipid species but on each species individually. The grey bars are indicating the accuracy from 0 to 1 (where 1 is a perfect separation behavior).");
+                informationLabel->setText("The lipid species are now sorted according to their accuracy to distinguish the groups (here wildtype and knockout) of the respective study variable 'Type'. Be aware, that this is not an accuracy on multiple lipid species but on each species individually. The light blue bars are indicating the accuracy from 0 to 1 (where 1 is a perfect separation behavior).");
             }
             break;
 
@@ -1336,7 +1337,7 @@ void Tutorial::second_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Selection Sorting III");
-                informationLabel->setText("Here, the lipid species 'PG 18:1_18:2' is on top with a grey bar going to the right edge. This means, that for all imported samples a prediction model can be found separating the 'Type' study variable perfectly with respect to the provided lipid quant value (e.g., concentrations).");
+                informationLabel->setText("Here, the lipid species 'PG 18:1_18:2' is on top with a light blue bar going to the right edge. This means, that for all samples a prediction model can be found separating the 'Type' study variable perfectly with respect to the provided lipid quant value (e.g., concentrations).");
             }
             break;
 
@@ -1350,7 +1351,7 @@ void Tutorial::second_tutorial_steps(){
                 show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Different Normalization Modes");
-                informationLabel->setText("LipidSpace supports several types of lipid intensity normalization modes. Absolute normalization (aka no normalization) is set by default. Relative normalization normalizes all lipidomes against each other. When nominal study variables are introduced, the user can select study based normalization modes. This means, that all lipidomes assigned to the same variable remain in the same relation to each other.");
+                informationLabel->setText("LipidSpace supports several types of lipid intensity normalization modes. Absolute normalization (that is no normalization) is set by default. Relative normalization equalizes the variances with each other. When nominal study variables are introduced, the user can select study based normalization modes. This means, that all lipidomes assigned to the same variable remain in the same relation to each other.");
             }
             break;
 
@@ -1363,7 +1364,7 @@ void Tutorial::second_tutorial_steps(){
                 show_arrow(ALT, lipidSpaceGUI, p.x() + widget->width() / 2., p.y());
                 lipidSpaceGUI->ui->itemsTabWidget->setEnabled(true);
                 titleLabel->setText("Filtering Study Variables I");
-                informationLabel->setText("If you want (temporarily) filter with respect to your study variables, please click on the 'Study Variables' tab.");
+                informationLabel->setText("If you want to filter with respect to your study variables, please click on the 'Study Variables' tab.");
             }
             break;
 
@@ -1392,7 +1393,7 @@ void Tutorial::second_tutorial_steps(){
                 show_arrow(ALT, lipidSpaceGUI, x + lipidSpaceGUI->ui->viewsTabWidget->tabBar()->tabRect(1).width() / 2., p.y());
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Results Section");
-                informationLabel->setText("On the right-hand side, you can see the results section. It contains four tabs (plus the 'Home' tab) showing different aspects of your data. You can choose between a view on all individual lipidomes, a dendrogram putting all lipidomes into relation, a statistics module and your imported raw data. Please select the 'Lipidomes' tab.");
+                informationLabel->setText("On the right-hand side, you can see the results section. It contains four tabs (plus the 'Home' tab) showing different results of the data analysis. You can choose between a view on all individual lipidomes, a dendrogram putting all lipidomes into relation, a statistics module and your imported raw data. Please select the 'Lipidomes' tab.");
             }
             break;
 
@@ -1512,7 +1513,7 @@ void Tutorial::second_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 widget->setEnabled(true);
                 titleLabel->setText("Statistics view I");
-                informationLabel->setText("The statistics module contains interactive statistics figures comprising several aspects of your data. For instance, you can adjust the views by changing study variable. Please select 'Type' study variable in the combo box.");
+                informationLabel->setText("The statistics module contains interactive statistics plots of your data. These plots can be adjusted by selecting a study variable. Please select 'Type' study variable in the dropdown menu.");
             }
             break;
 
@@ -1525,7 +1526,7 @@ void Tutorial::second_tutorial_steps(){
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Statistics view II");
-                informationLabel->setText("In the 'Quantitative data' box, you can select the source of your quant data for the figures. With a right click, you can activate additional options, such as showing data points within the box or bar graphs or export either the data of which the respective figure was drawn or the figure itself as pdf.");
+                informationLabel->setText("In the 'Quantitative data' box, you can select the source of your quantitative data for the figures. With a right click, you can activate additional options, such as showing data points within the box or bar graphs or export either the data of which the respective figure was drawn or the figure itself as pdf.");
             }
             break;
 
@@ -1555,7 +1556,7 @@ void Tutorial::second_tutorial_steps(){
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Raw Data Table");
-                informationLabel->setText("The raw data table comprises all imported data, that is the lipid species, lipidomes, their quantitative data and all study variables. The values in the table do NOT alter when picking a different normalization mode. The table can be transposed or export on right click when desired.");
+                informationLabel->setText("The raw data table comprises all imported data, that is the lipid species, samples, together with the quantitative data and the study variables. The values in the table do NOT change when picking a different normalization mode. The table can be transposed or exported on right click when desired.");
             }
             break;
 
@@ -1566,7 +1567,7 @@ void Tutorial::second_tutorial_steps(){
                 changeSize(650, 150);
                 titleLabel->setText("Second Tutorial Completed");
                 continuePushButton->setEnabled(true);
-                informationLabel->setText("Congratulations, you should be able now to operate on LipidSpace. Try to load your own data in LipidSpace and explore it or just start the third tutorial.");
+                informationLabel->setText("Congratulations, you should be able now to operate LipidSpace. Try to load your own data in LipidSpace and explore it or just start the third tutorial.");
             }
             break;
 
@@ -1618,7 +1619,7 @@ void Tutorial::third_tutorial_steps(){
 
         case TLoadTable:
             {
-                changeSize(650, 190);
+                changeSize(650, 170);
                 move(lipidSpaceGUI->width() - width() - 20, 20);
                 if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
                     lipidSpaceGUI->resetAnalysis();
@@ -1649,7 +1650,7 @@ void Tutorial::third_tutorial_steps(){
 
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Dataset Loaded");
-                informationLabel->setText("Simple as that. The results section should be already familiar to you. If not, we recommend to run the second tutorial. Anyhow, on the bottom you can see the 'Feature analysis' panel with which you can do both control the entire dendogram and start a feature analysis.");
+                informationLabel->setText("On the bottom the 'Feature analysis' panel is located with which you can control the entire dendogram or start a feature analysis.");
                 break;
             }
             break;
@@ -1665,7 +1666,7 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Feature Pie Figures");
                 widget->setEnabled(true);
-                informationLabel->setText("You may have noticed that in the dendrogram you can see these light blue bubbles. These are pie figures showing the distribution of values of current study variable. Here, the only internal variable 'Origin' is selected with one value. Please select the value 'Treatment' in the feature selection box of the analysis panel for a better example.");
+                informationLabel->setText("In the dendrogram, you can see these light blue bubbles. These are pie figures showing the distribution of values of the selected study variable. Here, the only internal variable 'Origin' is selected with one value. Please select the value 'Treatment' in the feature selection box of the analysis panel for a better example.");
             }
             break;
 
@@ -1680,7 +1681,7 @@ void Tutorial::third_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 titleLabel->setText("Feature Visualization");
                 widget->setEnabled(true);
-                informationLabel->setText("Now the bubbles have changed their colors into the actual branch distributions. A legend on the top right is indicating the complete distribution of all lipidomes. You can see now, that when going down the dendrogram from top, some branches go purer in color. This means that these subgroups of lipidomes become more homogenous. You can control how deep the pies figures are drawn in the tree. Please set the 'Pie depth' value to 6.");
+                informationLabel->setText("Now the bubbles have changed their colors into the actual branch distributions. A legend on the top right is indicating the complete distribution of all lipidomes. You can see now, that when going down the dendrogram from top, some branches go purer in color. This means that these subgroups of lipidomes are more homogenous. You can control how deep the pies figures are drawn in the tree. Please set the 'Pie depth' value to 6.");
             }
             break;
 
@@ -1811,7 +1812,7 @@ void Tutorial::third_tutorial_steps(){
                 move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Feature Analysis Evaluation II");
-                informationLabel->setText("Does this result make sense? Since stimulating with collagen related peptide (CRP) or thrombin leads, among other things, to an estrification of free arachidonic acid (FA 20:4), having PA 18:0_20:4 as the best separation lipid makes totally sense. In the sorted species list, we can see on the top four positions lipid species either containing arachidonic acid or precursors to these ones. Of course, in other experiments or for other study variables the feature analysis can select more than one lipid species.");
+                informationLabel->setText("Does this result make sense? Since stimulating with collagen related peptide (CRP) or thrombin leads, among other things, to an esterification of free arachidonic acid (FA 20:4), having PA 18:0_20:4 as the best separation lipid makes totally sense. In the sorted species list, we can see on the top four positions lipid species either containing arachidonic acid or precursors to these ones. Of course, in other experiments or for other study variables the feature analysis can select more than one lipid species.");
             }
             break;
 
@@ -1874,6 +1875,8 @@ void Tutorial::fourth_tutorial_steps(){
         case DStart:
             changeSize(650, 230);
             move(20, 20, lipidSpaceGUI);
+            lipidSpaceGUI->ui->actionSelection_mode_activated->setChecked(false);
+            lipidSpaceGUI->setSelectedTilesMode();
             titleLabel->setText("Fourth Tutorial - Quality Control");
             continuePushButton->setEnabled(true);
             informationLabel->setText("Welcome to the fourth and final tutorial of LipidSpace. In the previous tutorial, we learned how to analyze lipidomics data based on the provided lipid species and study varibles. In this tutorial, we get a glimpse into several layers and methods of quality control (QC). Therefore, be aware that there is no builtin function for QC but rather it's a set of methods that can be applied in LipidSpace.");
@@ -1963,7 +1966,7 @@ void Tutorial::fourth_tutorial_steps(){
 
             continuePushButton->setEnabled(true);
             titleLabel->setText("First Examination");
-            informationLabel->setText("That's better. What do we see at first glance? From the legend, we know that the three studies contain in total 89 individual lipidomes (aka samples or measurements). Since the vertical lines of the dendrogram relate to the distance between two branches, we see that the lipidomes from all three studies form individual clusters. However, the lipidomes within second and third study are close to each other whereas the lipidome distances of first study are much higher.");
+            informationLabel->setText("What do we see at first glance? From the legend, we know that the three studies contain in total 89 individual lipidomes (aka samples or measurements). Since the vertical lines of the dendrogram relate to the distance between two branches, we see that the lipidomes from all three studies form individual clusters. However, the lipidomes within second and third study are close to each other whereas the lipidome distances of first study are much higher.");
             break;
 
 
@@ -1978,7 +1981,7 @@ void Tutorial::fourth_tutorial_steps(){
 
                 widget->setEnabled(true);
                 titleLabel->setText("First Examination");
-                informationLabel->setText("This might be an indicator that the studies were providing their results in different units. No problem, let's normalize the data with respect to the origin aka studies. That is, the data remains in the same relation within the studies, but the studies themself will be normalized to each other. Please select the 'Origin grouped normalization' and apply the changes.");
+                informationLabel->setText("This might be an indicator that the studies were providing their results in different units. Let's normalize the data with respect to the origin aka studies. That is, the data remains in the same relation within the studies, but the studies themself will be normalized to each other. Please select the 'Origin grouped normalization' and apply the changes.");
             }
             break;
 

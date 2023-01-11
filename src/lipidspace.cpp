@@ -3679,15 +3679,17 @@ void LipidSpace::complete_feature_analysis(){
 
 void LipidSpace::run(){
     if (process_id == 1){
+        analytics("lipid-analysis");
         lipid_analysis();
     }
 
     else if (process_id == 2 && target_variable != ""){
+        analytics("feature-analysis");
         feature_analysis();
     }
 
     else if (process_id == 3){
-        //complete_feature_analysis();
+        analytics("complete-feature-analysis");
 
         complete_feature_analysis_table.clear();
         complete_feature_analysis_lipids.clear();
