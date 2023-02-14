@@ -54,6 +54,7 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     scene.addItem(xlabel);
     scene.addItem(ylabel);
     scene.addItem(base);
+    setAcceptDrops(true);
 
     loaded = true;
     animation = 0;
@@ -62,6 +63,28 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
 
 void Chart::timerEvent(QTimerEvent *){
     animation_step();
+}
+
+
+void Chart::dragEnterEvent(QDragEnterEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void Chart::dragMoveEvent(QDragMoveEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void Chart::dragLeaveEvent(QDragLeaveEvent* event){
+   event->accept();
+}
+
+
+void Chart::dropEvent(QDropEvent *event){
+    if (event->mimeData()->hasUrls()){
+        emit openFiles(event->mimeData()->urls());
+    }
 }
 
 

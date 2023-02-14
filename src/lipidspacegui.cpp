@@ -463,6 +463,21 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
     connect(ui->homeGraphicsView, &HomeView::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->speciesList, &LSListWidget::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->classList, &LSListWidget::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->categoryList, &LSListWidget::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->treeWidget, &LSTreeWidget::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->sampleList, &LSListWidget::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->lipidomesTab, &LSWidget::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsTab, &LSWidget::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->dendrogramView, &Canvas::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsBoxPlot, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsHistogram, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsPCA, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsROCCurve, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsSpeciesCV, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsBarPlot, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->tableView, &CBTableView::openFiles, this, &LipidSpaceGUI::openFiles);
 
 
     // adding scene for home tab
@@ -1117,6 +1132,7 @@ void LipidSpaceGUI::runAnalysis(){
     connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
     connect(ui->speciesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), canvas, SLOT(moveToPoint(QListWidgetItem*)));
     connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
+    connect(canvas, &Canvas::openFiles, this, &LipidSpaceGUI::openFiles);
     canvases.push_back(canvas);
 
 
@@ -1142,6 +1158,7 @@ void LipidSpaceGUI::runAnalysis(){
             connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
             connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
             connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
+            connect(canvas, &Canvas::openFiles, this, &LipidSpaceGUI::openFiles);
             canvases.push_back(canvas);
         }
     }
@@ -1165,6 +1182,7 @@ void LipidSpaceGUI::runAnalysis(){
         connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
         connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
         connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
+            connect(canvas, &Canvas::openFiles, this, &LipidSpaceGUI::openFiles);
         canvases.push_back(canvas);
     }
 

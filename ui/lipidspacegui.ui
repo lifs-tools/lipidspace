@@ -117,7 +117,7 @@
              <widget class="QComboBox" name="speciesComboBox"/>
             </item>
             <item>
-             <widget class="QListWidget" name="speciesList"/>
+             <widget class="LSListWidget" name="speciesList"/>
             </item>
            </layout>
           </widget>
@@ -145,7 +145,7 @@
              <widget class="QComboBox" name="classComboBox"/>
             </item>
             <item>
-             <widget class="QListWidget" name="classList"/>
+             <widget class="LSListWidget" name="classList"/>
             </item>
            </layout>
           </widget>
@@ -173,7 +173,7 @@
              <widget class="QComboBox" name="categoryComboBox"/>
             </item>
             <item>
-             <widget class="QListWidget" name="categoryList"/>
+             <widget class="LSListWidget" name="categoryList"/>
             </item>
            </layout>
           </widget>
@@ -198,7 +198,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QTreeWidget" name="treeWidget">
+             <widget class="LSTreeWidget" name="treeWidget">
               <column>
                <property name="text">
                 <string notr="true">1</string>
@@ -232,7 +232,7 @@
              <widget class="QComboBox" name="sampleComboBox"/>
             </item>
             <item>
-             <widget class="QListWidget" name="sampleList"/>
+             <widget class="LSListWidget" name="sampleList"/>
             </item>
            </layout>
           </widget>
@@ -291,7 +291,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="LSWidget" name="LipidomesTab">
+       <widget class="LSWidget" name="lipidomesTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -319,7 +319,7 @@
          </property>
         </layout>
        </widget>
-       <widget class="LSWidget" name="DendrogramTab">
+       <widget class="LSWidget" name="dendrogramTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -533,7 +533,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="statisticsTab">
+       <widget class="LSWidget" name="statisticsTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -1177,6 +1177,16 @@
   <customwidget>
    <class>LSWidget</class>
    <extends>QWidget</extends>
+   <header>lipidspace/canvas.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LSListWidget</class>
+   <extends>QListWidget</extends>
+   <header>lipidspace/canvas.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LSTreeWidget</class>
+   <extends>QTreeWidget</extends>
    <header>lipidspace/canvas.h</header>
   </customwidget>
  </customwidgets>

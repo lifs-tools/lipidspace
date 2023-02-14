@@ -1,5 +1,26 @@
 #include "lipidspace/canvas.h"
 
+#define LSDragClass(NewClassName, OldClassName) void NewClassName::dragEnterEvent(QDragEnterEvent* event){ \
+   event->acceptProposedAction(); \
+} \
+void NewClassName::dragMoveEvent(QDragMoveEvent* event){ \
+   event->acceptProposedAction(); \
+} \
+void NewClassName::dragLeaveEvent(QDragLeaveEvent* event){ \
+   event->accept(); \
+} \
+void NewClassName::dropEvent(QDropEvent *event){ \
+    if (event->mimeData()->hasUrls()){ \
+        emit openFiles(event->mimeData()->urls()); \
+    } \
+} \
+NewClassName::NewClassName(QWidget *parent) : OldClassName(parent){ \
+    setAcceptDrops(true); \
+}
+
+
+
+
 
 
 Citation::Citation(const QString &text, QGraphicsItem *parent) : QGraphicsTextItem(text, parent){
@@ -58,34 +79,13 @@ void HomeView::dropEvent(QDropEvent *event){
 }
 
 
+LSDragClass(LSWidget, QWidget);
 
 
-
-void LSWidget::dragEnterEvent(QDragEnterEvent* event){
-   event->acceptProposedAction();
-}
+LSDragClass(LSListWidget, QListWidget);
 
 
-void LSWidget::dragMoveEvent(QDragMoveEvent* event){
-   event->acceptProposedAction();
-}
-
-
-void LSWidget::dragLeaveEvent(QDragLeaveEvent* event){
-   event->accept();
-}
-
-
-void LSWidget::dropEvent(QDropEvent *event){
-    if (event->mimeData()->hasUrls()){
-        emit openFiles(event->mimeData()->urls());
-    }
-}
-
-
-LSWidget::LSWidget(QWidget *parent) : QWidget(parent){
-    setAcceptDrops(true);
-}
+LSDragClass(LSTreeWidget, QTreeWidget);
 
 
 void HomeView::resizeEvent(QResizeEvent *) {
@@ -1224,6 +1224,7 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
     hovered_for_swap = false;
     marked_for_selected_view = false;
     lipidome = 0;
+    setAcceptDrops(true);
 
     setDragMode(QGraphicsView::ScrollHandDrag);
     setFrameStyle(QFrame::NoFrame);
@@ -1288,6 +1289,7 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int num, QListWidget* _
     canvas_id = _canvas_id;
     lipidome_group_name = _group_name;
     lipidome = 0;
+    setAcceptDrops(true);
 
     pointSet = 0;
     dendrogram = 0;
@@ -1357,6 +1359,28 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int num, QListWidget* _
 
 
 Canvas::~Canvas(){
+}
+
+
+void Canvas::dragEnterEvent(QDragEnterEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void Canvas::dragMoveEvent(QDragMoveEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void Canvas::dragLeaveEvent(QDragLeaveEvent* event){
+   event->accept();
+}
+
+
+void Canvas::dropEvent(QDropEvent *event){
+    if (event->mimeData()->hasUrls()){
+        emit openFiles(event->mimeData()->urls());
+    }
 }
 
 

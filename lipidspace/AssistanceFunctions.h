@@ -113,8 +113,13 @@ public:
 
     explicit CBTableView(QWidget *parent = 0);
     void wheelEvent(QWheelEvent*) override;
+    void dropEvent(QDropEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
+    void dragLeaveEvent(QDragLeaveEvent* event);
 
 signals:
+    void openFiles(const QList<QUrl> &);
     void cornerButtonClick();
     void zooming();
 

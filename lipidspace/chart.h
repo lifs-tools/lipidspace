@@ -93,6 +93,10 @@ public:
     void clear();
     void reset_animation();
     void animation_step();
+    void dropEvent(QDropEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
+    void dragLeaveEvent(QDragLeaveEvent* event);
 
 protected:
     void timerEvent(QTimerEvent *event) override;
@@ -113,6 +117,7 @@ signals:
     void showDataPointsChanged(bool data_points);
     void mouseMoved(QMouseEvent *event);
     void settingStatResults(bool show_pvalues);
+    void openFiles(const QList<QUrl> &);
 };
 
 

@@ -97,6 +97,38 @@ signals:
 };
 
 
+
+class LSListWidget : public QListWidget {
+    Q_OBJECT
+
+public:
+    LSListWidget(QWidget *parent = nullptr);
+    void dropEvent(QDropEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
+    void dragLeaveEvent(QDragLeaveEvent* event);
+
+signals:
+    void openFiles(const QList<QUrl> &);
+};
+
+
+
+class LSTreeWidget : public QTreeWidget {
+    Q_OBJECT
+
+public:
+    LSTreeWidget(QWidget *parent = nullptr);
+    void dropEvent(QDropEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
+    void dragLeaveEvent(QDragLeaveEvent* event);
+
+signals:
+    void openFiles(const QList<QUrl> &);
+};
+
+
 class HomeView : public QGraphicsView {
     Q_OBJECT
 
@@ -265,6 +297,10 @@ public:
     void setDendrogramData(LipidSpace *_lipid_space);
     void resetDendrogram();
     void update_alpha();
+    void dropEvent(QDropEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
+    void dragLeaveEvent(QDragLeaveEvent* event);
 
 
 public slots:
@@ -295,6 +331,7 @@ signals:
     void rightClick(QPoint pos, set<int> *selected_d_lipidomes = 0);
     void lipidsForSelection(vector<string> &l);
     void tileSelected();
+    void openFiles(const QList<QUrl> &);
 };
 
 #endif /* CANVAS_H */

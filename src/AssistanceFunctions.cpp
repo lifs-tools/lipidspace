@@ -42,6 +42,7 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 CBTableView::CBTableView(QWidget *parent) : QTableView(parent) {
     QAbstractButton *btn = findChild<QAbstractButton *>();
     transpose_label = 0;
+    setAcceptDrops(true);
 
     if (btn != NULL) {
         QVBoxLayout* lay = new QVBoxLayout(btn);
@@ -80,7 +81,26 @@ void CBTableView::wheelEvent(QWheelEvent* event){
 }
 
 
+void CBTableView::dragEnterEvent(QDragEnterEvent* event){
+   event->acceptProposedAction();
+}
 
+
+void CBTableView::dragMoveEvent(QDragMoveEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void CBTableView::dragLeaveEvent(QDragLeaveEvent* event){
+   event->accept();
+}
+
+
+void CBTableView::dropEvent(QDropEvent *event){
+    if (event->mimeData()->hasUrls()){
+        emit openFiles(event->mimeData()->urls());
+    }
+}
 
 
 
