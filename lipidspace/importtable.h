@@ -38,7 +38,7 @@ public:
 
     explicit ImportTable(QWidget *parent = nullptr);
     ~ImportTable();
-    void show(LipidSpace *_lipid_space);
+    void show(LipidSpace *_lipid_space, bool file_request = true);
     bool checkStudyVariables();
 
 signals:

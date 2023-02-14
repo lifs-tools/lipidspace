@@ -291,7 +291,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="LipidomesTab">
+       <widget class="LSWidget" name="LipidomesTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -319,7 +319,7 @@
          </property>
         </layout>
        </widget>
-       <widget class="QWidget" name="DendrogramTab">
+       <widget class="LSWidget" name="DendrogramTab">
         <property name="font">
          <font>
           <family>Noto Sans</family>
@@ -1173,6 +1173,11 @@
    <class>Chart</class>
    <extends>QGraphicsView</extends>
    <header>lipidspace/chart.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LSWidget</class>
+   <extends>QWidget</extends>
+   <header>lipidspace/canvas.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

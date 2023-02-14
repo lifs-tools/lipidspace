@@ -32,8 +32,60 @@ HomeView::HomeView(QWidget *parent) : QGraphicsView(parent){
     fourthTutorialPushButton->setGeometry(QRect(320, 400, 221, 31));
     fourthTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "4. Tutorial - Quality Control", nullptr));
     banner = 0;
+    setAcceptDrops(true);
 }
 
+
+void HomeView::dragEnterEvent(QDragEnterEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void HomeView::dragMoveEvent(QDragMoveEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void HomeView::dragLeaveEvent(QDragLeaveEvent* event){
+   event->accept();
+}
+
+
+void HomeView::dropEvent(QDropEvent *event){
+    if (event->mimeData()->hasUrls()){
+        emit openFiles(event->mimeData()->urls());
+    }
+}
+
+
+
+
+
+void LSWidget::dragEnterEvent(QDragEnterEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void LSWidget::dragMoveEvent(QDragMoveEvent* event){
+   event->acceptProposedAction();
+}
+
+
+void LSWidget::dragLeaveEvent(QDragLeaveEvent* event){
+   event->accept();
+}
+
+
+void LSWidget::dropEvent(QDropEvent *event){
+    if (event->mimeData()->hasUrls()){
+        emit openFiles(event->mimeData()->urls());
+    }
+}
+
+
+LSWidget::LSWidget(QWidget *parent) : QWidget(parent){
+    setAcceptDrops(true);
+}
 
 
 void HomeView::resizeEvent(QResizeEvent *) {

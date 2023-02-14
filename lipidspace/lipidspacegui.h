@@ -183,6 +183,7 @@ public slots:
     void openLists();
     void openTable();
     void openMzTabM();
+    void openMzTabM(QString file_name);
     void fill_table();
     void export_list();
     void loadTable(ImportData *import_data);
@@ -260,5 +261,6 @@ public slots:
     void openExampleDataset();
     void checkBenford();
     void sendStatistics();
+    void openFiles(const QList<QUrl> &file_list);
 };
 #endif // LIPIDSPACEGUI_H

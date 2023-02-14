@@ -81,7 +81,25 @@ public:
 };
 
 
+
+class LSWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    LSWidget(QWidget *parent = nullptr);
+    void dropEvent(QDropEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
+    void dragLeaveEvent(QDragLeaveEvent* event);
+
+signals:
+    void openFiles(const QList<QUrl> &);
+};
+
+
 class HomeView : public QGraphicsView {
+    Q_OBJECT
+
 public:
 
     QPushButton *firstTutorialPushButton;
@@ -95,6 +113,13 @@ public:
 
     HomeView(QWidget *parent = nullptr);
     void resizeEvent(QResizeEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
+    void dragLeaveEvent(QDragLeaveEvent* event);
+
+signals:
+    void openFiles(const QList<QUrl> &);
 };
 
 
@@ -205,8 +230,7 @@ public:
 
 
 
-class Canvas : public QGraphicsView
-{
+class Canvas : public QGraphicsView {
     Q_OBJECT
 
 public:

@@ -115,7 +115,7 @@ void ImportTable::checkBoxFlat(int state){
 }
 
 
-void ImportTable::show(LipidSpace *_lipid_space){
+void ImportTable::show(LipidSpace *_lipid_space, bool file_request){
     lipid_space = _lipid_space;
     mapping_of_study_variables = false;
     ui->checkBoxMappingFlat->setCheckState(Qt::Unchecked);
@@ -140,7 +140,10 @@ void ImportTable::show(LipidSpace *_lipid_space){
     ui->tabWidget->setCurrentIndex(0);
     sheet = "";
 
-    file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Worksheets *.xlsx (*.xlsx);;Data Tables *.csv *.tsv (*.csv *.tsv)");
+    if (file_request || file_name == ""){
+        file_name = QFileDialog::getOpenFileName(this, "Select a lipid data table", GlobalData::last_folder, "Worksheets *.xlsx (*.xlsx);;Data Tables *.csv *.tsv (*.csv *.tsv)");
+    }
+
     if (!file_name.length()) {
         QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
         return;

@@ -335,7 +335,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(ui->actionLoad_list_s, &QAction::triggered, this, &LipidSpaceGUI::openLists);
     connect(ui->actionLoad_table, &QAction::triggered, this, &LipidSpaceGUI::openTable);
-    connect(ui->actionImport_mzTabM, &QAction::triggered, this, &LipidSpaceGUI::openMzTabM);
+    connect(ui->actionImport_mzTabM, &QAction::triggered, this, (void (LipidSpaceGUI::*)())&LipidSpaceGUI::openMzTabM);
     connect(ui->actionQuit, &QAction::triggered, this, &LipidSpaceGUI::quitProgram);
     connect(ui->actionComplete_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setCompleteLinkage);
     connect(ui->actionAverage_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setAverageLinkage);
@@ -460,6 +460,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(&import_table, &ImportTable::importTable, this, (void (LipidSpaceGUI::*)(ImportData*))&LipidSpaceGUI::loadTable);
     import_table.setModal(true);
+
+
+    connect(ui->homeGraphicsView, &HomeView::openFiles, this, &LipidSpaceGUI::openFiles);
 
 
     // adding scene for home tab
@@ -678,6 +681,29 @@ void LipidSpaceGUI::quitProgram(){
     close();
 }
 
+
+
+void LipidSpaceGUI::openFiles(const QList<QUrl> &file_list){
+    set<string> extensions = {"csv", "tsv", "xlsx", "mztab"};
+    if (file_list.empty()) return;
+
+    QString file_name = file_list.first().path();
+    QFileInfo qFileInfo(file_name);
+    string extension = qFileInfo.completeSuffix().toLower().toStdString();
+
+    if (contains_val(extensions, extension)){
+        if (extension == "mztab"){
+            openMzTabM(file_name);
+        }
+        else {
+            import_table.file_name = file_name;
+            import_table.show(lipid_space, false);
+        }
+    }
+    else {
+        QMessageBox::warning(this, "Warning", QStringLiteral("Unable to load file '%1' due to unknown extension.").arg(file_name));
+    }
+}
 
 
 
@@ -1680,11 +1706,16 @@ void LipidSpaceGUI::updateGUI(){
 }
 
 
-
-
 void LipidSpaceGUI::openMzTabM(){
+    openMzTabM("");
+}
 
-    QString file_name = QFileDialog::getOpenFileName(this, "Select one or more lipid lists", GlobalData::last_folder, "mzTabM files *.mzTab *.mzTabM *.mztab *.mztabm (*.mzTab *.mzTabM *.mztab *.mztabm)");
+
+void LipidSpaceGUI::openMzTabM(QString file_name){
+
+    if (file_name == ""){
+        file_name = QFileDialog::getOpenFileName(this, "Select one or more lipid lists", GlobalData::last_folder, "mzTabM files *.mzTab *.mzTabM *.mztab *.mztabm (*.mzTab *.mzTabM *.mztab *.mztabm)");
+    }
     if (!file_name.length()) return;
 
     QFileInfo fi(file_name);
