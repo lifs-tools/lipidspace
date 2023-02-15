@@ -1188,7 +1188,7 @@ void Decoration::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     painter->translate(QPointF(v.x(), v.y()));
     painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
     painter->setPen(Qt::black);
-    painter->drawText(QRectF(2, 0, 200, 60), Qt::AlignTop | Qt::AlignLeft, title);
+    painter->drawText(QRectF(2, 0, view->viewport()->geometry().width() - 4, 60), Qt::AlignTop | Qt::AlignLeft, title);
     painter->drawText(QRectF(2, view->viewport()->geometry().height() - 60, 200, 60), Qt::AlignBottom | Qt::AlignLeft, footer);
     painter->restore();
 
