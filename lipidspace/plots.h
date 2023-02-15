@@ -243,24 +243,26 @@ public:
 
 
 
-class ScPoint {
+class ScPoint : public QGraphicsEllipseItem {
 public:
     double x;
     double y;
     QColor color;
-    QGraphicsEllipseItem* p;
+    QString label;
 
-    ScPoint(double _x, double _y, QColor _color = QColor("#209fdf"));
+    ScPoint(double _x, double _y, QColor _color = QColor("#209fdf"), QString _label = "", QGraphicsItem *parent = nullptr);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 };
 
 
 class Scatterplot : public Chartplot {
 public:
-    vector<ScPoint> points;
+    vector<ScPoint*> points;
 
     Scatterplot(Chart *_chart);
     ~Scatterplot();
-    void add(vector< pair<double, double> > &data, QString category, QColor color = QColor("#209fdf"));
+    void add(vector< pair<double, double> > &data, QString category, QColor color = QColor("#209fdf"), vector<QString> *data_labels = 0);
     void update_chart();
     void clear();
 };

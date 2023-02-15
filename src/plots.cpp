@@ -862,8 +862,6 @@ void Lineplot::clear(){
 
 
 void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > &_lines, QString category, QColor _color){
-
-
     double xmin = chart->xrange.x();
     double xmax = chart->xrange.y();
     double ymin = chart->yrange.x();
@@ -902,11 +900,23 @@ void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > 
 
 
 
-ScPoint::ScPoint(double _x, double _y, QColor _color){
+ScPoint::ScPoint(double _x, double _y, QColor _color, QString _label, QGraphicsItem *parent) : QGraphicsEllipseItem(parent) {
     x = _x;
     y = _y;
     color = _color;
-    p = new QGraphicsEllipseItem();
+    label = _label;
+}
+
+
+void ScPoint::hoverEnterEvent(QGraphicsSceneHoverEvent *event){
+    QGraphicsEllipseItem::hoverEnterEvent(event);
+    QToolTip::showText(QCursor::pos(), label, nullptr, {}, 5000);
+}
+
+
+void ScPoint::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
+    QGraphicsEllipseItem::hoverLeaveEvent(event);
+    QToolTip::hideText();
 }
 
 
@@ -924,17 +934,17 @@ void Scatterplot::update_chart(){
     double animation_length = chart->animation * points.size();
 
     for (uint i = 0; i < points.size(); ++i){
-        auto &p = points[i];
-        double x = p.x;
-        double y = p.y;
+        auto p = points[i];
+        double x = p->x;
+        double y = p->y;
         chart->translate(x, y);
 
         QPen pen(Qt::white);
         pen.setWidthF(1.5);
-        p.p->setPen(pen);
-        p.p->setRect(x - 7, y - 7, 14, 14);
-        p.p->setBrush(QBrush(p.color));
-        p.p->setVisible(visible && (i <= animation_length));
+        p->setPen(pen);
+        p->setRect(x - 7, y - 7, 14, 14);
+        p->setBrush(QBrush(p->color));
+        p->setVisible(visible && (i <= animation_length));
     }
 }
 
@@ -945,20 +955,27 @@ void Scatterplot::clear(){
 
 
 
-void Scatterplot::add(vector< pair<double, double> > &data, QString category, QColor color){
+void Scatterplot::add(vector< pair<double, double> > &data, QString category, QColor color, vector<QString>* data_labels){
+    if (data_labels && data_labels->size() != data.size()) return;
+
     double xmin = chart->xrange.x();
     double xmax = chart->xrange.y();
     double ymin = chart->yrange.x();
     double ymax = chart->yrange.y();
-    for (auto xy_point : data){
+    for (uint i = 0; i < data.size(); ++i){
+        auto xy_point = data[i];
+        QString data_label = data_labels ? data_labels->at(i) : "";
+
         xmin = min(xmin, xy_point.first);
         xmax = max(xmax, xy_point.first);
         ymin = min(ymin, xy_point.second);
         ymax = max(ymax, xy_point.second);
 
-        points.push_back(ScPoint(xy_point.first, xy_point.second, color));
-        chart->scene.addItem(points.back().p);
-        points.back().p->setParentItem(chart->base);
+        ScPoint *sc_point = new ScPoint(xy_point.first, xy_point.second, color, data_label);
+        sc_point->setAcceptHoverEvents(true);
+        points.push_back(sc_point);
+        chart->scene.addItem(sc_point);
+        sc_point->setParentItem(chart->base);
     }
     chart->xrange.setX(xmin);
     chart->xrange.setY(xmax);

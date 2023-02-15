@@ -1192,7 +1192,6 @@ void Statistics::updatePCA(){
     if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
         secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
     }
-    Array S;
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
@@ -1223,9 +1222,6 @@ void Statistics::updatePCA(){
                 }
                 target_indexes.push_back(nominal_target_values[nominal_value]);
             }
-            else if (secondary_type == NumericalSecondary){
-                S.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
-            }
         }
     }
 
@@ -1249,9 +1245,11 @@ void Statistics::updatePCA(){
     Scatterplot *scatterplot = new Scatterplot(chart);
     if (is_nominal && pca.rows == (int)target_indexes.size()){
         vector< vector< pair<double, double> > > all_data(nominal_values.size());
+        vector< vector<QString> > data_labels(nominal_values.size());
 
         for (int i = 0; i < pca.rows; ++i){
             all_data[target_indexes[i]].push_back({pca(i, GlobalData::PC1), pca(i, GlobalData::PC2)});
+            data_labels[target_indexes[i]].push_back(lipid_space->selected_lipidomes[i]->cleaned_name.c_str());
         }
 
         vector< pair<string, int> > sorted_nominal_values;
@@ -1270,7 +1268,7 @@ void Statistics::updatePCA(){
             string color_key = target_variable + "_" + sorted_nominal_values[i].first;
             QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
             QString group_label = QStringLiteral("%1 (%2)").arg(sorted_nominal_values[i].first.c_str()).arg(all_data[sorted_nominal_values[i].second].size());
-            scatterplot->add(all_data[sorted_nominal_values[i].second], group_label, color);
+            scatterplot->add(all_data[sorted_nominal_values[i].second], group_label, color, &data_labels[sorted_nominal_values[i].second]);
 
             for (auto &p : all_data[sorted_nominal_values[i].second]){
                 series[i * 2].push_back(p.first);
