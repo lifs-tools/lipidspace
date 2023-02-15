@@ -815,6 +815,8 @@ void Boxplot::add(Array &array, QString category, QColor color){
 
 
 
+
+
 LPLine::LPLine(double _x1, double _y1, double _x2, double _y2, QColor _color){
     x1 = _x1;
     y1 = _y1;
@@ -828,6 +830,7 @@ LPLine::LPLine(double _x1, double _y1, double _x2, double _y2, QColor _color){
 
 Lineplot::Lineplot(Chart *_chart) : Chartplot(_chart) {
 }
+
 
 Lineplot::~Lineplot(){
 
@@ -858,7 +861,6 @@ void Lineplot::update_chart(){
 void Lineplot::clear(){
     lines.clear();
 }
-
 
 
 void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > &_lines, QString category, QColor _color){
@@ -921,8 +923,10 @@ void ScPoint::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 
 
 
+
 Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
 }
+
 
 Scatterplot::~Scatterplot(){
 

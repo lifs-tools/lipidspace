@@ -1203,8 +1203,7 @@ void Decoration::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 }
 
 QRectF Decoration::boundingRect() const {
-    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
-    return v;
+    return QRectF(-1000000, -1000000, 10000000, 10000000);
 }
 
 
