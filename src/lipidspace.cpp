@@ -3348,7 +3348,12 @@ void LipidSpace::feature_analysis(bool report_progress){
             Lipidome* lipidome = lipidomes_for_feature_selection[r];
 
             for (uint i = 0; i < lipidome->lipids.size(); ++i){
-                global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+                if (without_quant){
+                    global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i] > 1e-15;
+                }
+                else {
+                    global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+                }
             }
         }
 
@@ -3364,7 +3369,7 @@ void LipidSpace::feature_analysis(bool report_progress){
         }
     }
 
-    if (is_nominal){
+    if (is_nominal && !without_quant){
         global_matrix.scale();
     }
 
@@ -3427,7 +3432,6 @@ void LipidSpace::feature_analysis(bool report_progress){
 
                     vector<Array> arrays(nom_counter);
                     for (int r = 0; r < sub_lipids.rows; ++r) arrays[target_values[r]].push_back(summed_values[r]);
-
                     double acc = compute_accuracy(arrays);
                     acc = __abs(1. / (double)nom_counter - acc) + 1. / (double)nom_counter;
                     new_gene->score = acc * (cnt_lipids - missing_lipids) / cnt_lipids;
