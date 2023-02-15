@@ -1278,11 +1278,13 @@ void Statistics::updatePCA(){
     }
     else {
         vector< pair<double, double> > data;
+        vector<QString> data_labels;
         for (int i = 0; i < pca.rows; ++i){
             data.push_back({pca(i, 0), pca(i, 1)});
+            data_labels.push_back(lipid_space->selected_lipidomes[i]->cleaned_name.c_str());
         }
         QString group_label = QStringLiteral("Global (%1)").arg(data.size());
-        scatterplot->add(data, group_label, QColor("#209fdf"));
+        scatterplot->add(data, group_label, QColor("#209fdf"), &data_labels);
     }
     chart->add(scatterplot);
 
