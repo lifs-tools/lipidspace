@@ -26,7 +26,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        DEBIAN_FRONTEND=noninteractive sudo apt update 
+        DEBIAN_FRONTEND=noninteractive sudo apt update
         sudo apt install -y --no-install-recommends \
         build-essential \
         libfontconfig1 \
@@ -42,16 +42,16 @@ jobs:
         libc6 \
         libstdc++6
 
-    - name: Build LipidSpace
-      run: |
-        qmake6 LipidSpace.pro 
-        make clean 
-        make release
+    #- name: Build LipidSpace
+    #  run: |
+    #    qmake6 LipidSpace.pro
+    #    make clean
+    #    make release
 
     - name: Build LipidSpaceRest
       run: |
         qmake6 LipidSpaceRest.pro
-        make clean 
+        make clean
         make release
   docker:
     name: Build, test and push LipidSpace Rest Docker image
@@ -91,10 +91,10 @@ jobs:
     - name: Test response is expected
       run: |
         curl -X POST -v -H "Content-Type: application/json" --data-binary "@examples/Rest/Plasma-Singapore-Short.json" localhost:8888/lipidspace/v1/pca
-    
+
     - name: Stop REST service container
       run: docker stop LipidSpaceRest
-      
+
     - name: Push Docker image
-      run: docker push ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}  
+      run: docker push ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_DATE }}
 
