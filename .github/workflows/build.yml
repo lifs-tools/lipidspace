@@ -42,11 +42,11 @@ jobs:
         libc6 \
         libstdc++6
 
-    #- name: Build LipidSpace
-    #  run: |
-    #    qmake6 LipidSpace.pro
-    #    make clean
-    #    make release
+    - name: Build LipidSpace
+      run: |
+        qmake6 LipidSpace.pro
+        make clean
+        make release
 
     - name: Build LipidSpaceRest
       run: |
