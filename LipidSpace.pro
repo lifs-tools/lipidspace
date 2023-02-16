@@ -7,7 +7,7 @@ versionAtLeast(QT_VERSION, 6.0.0) {
 
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
+QMAKE_CXXFLAGS += -fopenmp -std=c++17 -march=native -Wno-unknown-pragmas
 
 
 # The following define makes your compiler emit warnings if you use
@@ -37,8 +37,8 @@ macx {
     #LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
 }
 
-INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
-DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+INCLUDEPATH += $$PWD/libraries/OpenXLSX/include
+DEPENDPATH += $$PWD/libraries/OpenXLSX/include
 
 INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
 DEPENDPATH += $$PWD/libraries/OpenBLAS/include

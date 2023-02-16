@@ -1,7 +1,7 @@
 QT       += core widgets
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
+QMAKE_CXXFLAGS += -fopenmp -std=c++17 -march=native -Wno-unknown-pragmas
 
 
 # The following define makes your compiler emit warnings if you use
@@ -18,19 +18,19 @@ RC_ICONS = LipidSpace.ico
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 unix {
-    LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/linux64/libcppGoslin.so $$PWD/libraries/OpenBLAS/bin/linux64/libopenblas.so $$PWD/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a $$PWD/libraries/openssl/bin/linux64/libssl.so $$PWD/libraries/openssl/bin/linux64/libcrypto.so
+    LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX" "-L$$PWD/libraries/openssl/bin/linux64" "-lssl" "-lcrypto"
 }
 
 win32 {
-    LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll $$PWD\libraries\openssl\bin\win64\libssl.so $$PWD\libraries\openssl\bin\win64\libcrypto.so
+    LIBS += -std=c++17 -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll $$PWD\libraries\openssl\bin\win64\libssl.so $$PWD\libraries\openssl\bin\win64\libcrypto.so
 }
 
 macx {
     #LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
 }
 
-INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
-DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+INCLUDEPATH += $$PWD/libraries/OpenXLSX/include
+DEPENDPATH += $$PWD/libraries/OpenXLSX/include
 
 INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
 DEPENDPATH += $$PWD/libraries/OpenBLAS/include
