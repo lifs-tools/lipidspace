@@ -1194,7 +1194,7 @@ void LipidSpaceGUI::runAnalysis(){
     ui->menuTile_layout->setEnabled(true);
     ui->menuSelected_tiles_mode->setEnabled(true);
 
-    if (canvases.size() > 100 && !selected_tiles_mode){
+    if (canvases.size() > LIPID_SPACE_NUM_LIMIT && !selected_tiles_mode){
         QMessageBox::warning(this, "Warning", QString("Since %1 lipidome spaces are registered, LipidSpace will be immediately set to 'Selected tile(s) mode' to keep performance.").arg(canvases.size()));
         ui->actionSelection_mode_activated->setChecked(true);
         setSelectedTilesMode();
@@ -1403,7 +1403,7 @@ void LipidSpaceGUI::showHideGroupLipidomes(){
 
 void LipidSpaceGUI::setSelectedTilesMode(){
     selected_tiles_mode = ui->actionSelection_mode_activated->isChecked();
-    if (!selected_tiles_mode && canvases.size() > 100){
+    if (!selected_tiles_mode && canvases.size() > LIPID_SPACE_NUM_LIMIT){
         if (QMessageBox::question(this, "Warning", QString("Currently %1 lipidome spaces are available. Showing all will reduce performance significantly. Do you want to continue?").arg(canvases.size())) != QMessageBox::Yes){
             selected_tiles_mode = true;
             GlobalData::selected_view = selected_tiles_mode;

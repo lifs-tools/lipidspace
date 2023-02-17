@@ -29,6 +29,7 @@
 
 #define ALPHABETICALLY_ASC "Alphabetically (Asc)"
 #define ALPHABETICALLY_DESC "Alphabetically (Desc)"
+#define LIPID_SPACE_NUM_LIMIT 100
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class LipidSpaceGUI; }

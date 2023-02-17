@@ -2161,6 +2161,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             // handle lipid
             LipidAdduct *l = 0;
             string translated_name = "";
+            string lipid_name = "";
             if (uncontains_val(load_lipids, lipid_table_name)){
                 try {
                     l = parser.parse(lipid_table_name);
@@ -2193,7 +2194,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                         continue;
                     }
                 }
-                string lipid_name = l->get_lipid_string();
+                lipid_name = l->get_lipid_string();
                 if (contains_val(all_lipids, lipid_name)){
                     delete l;
                     l = all_lipids[lipid_name];
@@ -2206,27 +2207,31 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                     lipid_map.insert({lipid_name, l});
                 }
                 load_lipids.insert({lipid_table_name, l});
+
+
+                if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], translated_name))
+                    lipid_name_translations[NORMALIZED_NAME].insert({translated_name, lipid_name});
+
+                if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], lipid_table_name))
+                    lipid_name_translations[NORMALIZED_NAME].insert({lipid_table_name, lipid_name});
+
+                if (uncontains_val(lipid_name_translations[TRANSLATED_NAME], lipid_name))
+                    lipid_name_translations[TRANSLATED_NAME].insert({lipid_name, translated_name});
+
+                if (uncontains_val(lipid_name_translations[IMPORT_NAME], lipid_name))
+                    lipid_name_translations[IMPORT_NAME].insert({lipid_name, lipid_table_name});
+
             }
             else {
                 l = load_lipids[lipid_table_name];
+                lipid_name = l->get_lipid_string();
             }
 
 
-            string lipid_string = l->get_lipid_string();
-            if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], translated_name))
-                lipid_name_translations[NORMALIZED_NAME].insert({translated_name, lipid_string});
 
-            if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], lipid_table_name))
-                lipid_name_translations[NORMALIZED_NAME].insert({lipid_table_name, lipid_string});
-
-            if (uncontains_val(lipid_name_translations[TRANSLATED_NAME], lipid_string))
-                lipid_name_translations[TRANSLATED_NAME].insert({lipid_string, translated_name});
-
-            if (uncontains_val(lipid_name_translations[IMPORT_NAME], lipid_string))
-                lipid_name_translations[IMPORT_NAME].insert({lipid_string, lipid_table_name});
 
             lipidome->lipids.push_back(l);
-            lipidome->species.push_back(lipid_string);
+            lipidome->species.push_back(lipid_name);
             lipidome->classes.push_back(l->get_lipid_string(CLASS));
             lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
             double val = atof(quant_val.c_str());

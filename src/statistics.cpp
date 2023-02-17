@@ -524,7 +524,6 @@ void Statistics::updateSpeciesCV(){
     }
 
 
-
     // set up lipid map for the several nominal values
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
@@ -534,13 +533,9 @@ void Statistics::updateSpeciesCV(){
 
         for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
             int index = lipidome->selected_lipid_indexes[i];
-            int rr = 0;
-            if (is_nominal){
-                string nominal_value = lipidome->study_variables[target_variable].nominal_value;
-                rr = nominal_target_values[nominal_value];
-            }
+            int rr = is_nominal ? nominal_target_values[lipidome->study_variables[target_variable].nominal_value] : 0;
 
-            if (contains_val(lipid_map[rr], lipidome->lipids[index])){
+            if (uncontains_val(lipid_map[rr], lipidome->lipids[index])){
                 lipid_map[rr].insert({lipidome->lipids[index], Array()});
             }
             lipid_map[rr][lipidome->lipids[index]].push_back(lipidome->normalized_intensities[index]);
@@ -551,9 +546,21 @@ void Statistics::updateSpeciesCV(){
 
     vector<QString> categories;
     vector<QColor> colors;
+    double min_value = INFINITY;
+    double max_value = -INFINITY;
     for (uint i = 0; i < nominal_values.size(); ++i){
         auto nominal_value = nominal_values[i];
-        categories.push_back(QString("%1 (%2)").arg(nominal_value.c_str()).arg(lipid_map[i].size()));
+        auto lipid_cat_map = lipid_map[i];
+        for (auto kv : lipid_cat_map){
+
+            if (kv.second.size() <= 1) continue;
+            double value = kv.second.stdev() / kv.second.mean() * 100;
+            series[i].push_back(value);
+            min_value = __min(min_value, value);
+            max_value = __max(max_value, value);
+        }
+
+        categories.push_back(QString("%1 (%2)").arg(nominal_value.c_str()).arg(series[i].size()));
         series_titles.push_back(nominal_value);
     }
     if (is_nominal){
@@ -568,18 +575,6 @@ void Statistics::updateSpeciesCV(){
         colors.push_back(QColor("#F6A611"));
     }
 
-    double min_value = INFINITY;
-    double max_value = -INFINITY;
-    series.resize(nom_counter);
-    for (uint i = 0; i < lipid_map.size(); ++i){
-        auto lipid_cat_map = lipid_map[i];
-        for (auto kv : lipid_cat_map){
-            double value = kv.second.stdev() / kv.second.mean() * 100;
-            series[i].push_back(value);
-            min_value = __min(min_value, value);
-            max_value = __max(max_value, value);
-        }
-    }
 
     if (min_value == INFINITY || max_value == -INFINITY || (max_value - min_value < 1e-20)) {
         chart->setVisible(false);
