@@ -1230,7 +1230,7 @@ void Statistics::updatePCA(){
     Matrix tmp;
     tmp.rewrite(statistics_matrix, lipidomes_to_keep);
     statistics_matrix.rewrite(tmp);
-
+    statistics_matrix.scale();
 
 
     Matrix pca;

@@ -257,7 +257,13 @@ public:
 
 
 class Scatterplot : public Chartplot {
+    Q_OBJECT
+
 public:
+    QPointF mouse_shift_start;
+    QPointF shift_start_x;
+    QPointF shift_start_y;
+    QPointF zoom_start;
     vector<ScPoint*> points;
 
     Scatterplot(Chart *_chart);
@@ -265,6 +271,10 @@ public:
     void add(vector< pair<double, double> > &data, QString category, QColor color = QColor("#209fdf"), vector<QString> *data_labels = 0);
     void update_chart();
     void clear();
+    void wheelEvent(QWheelEvent *event) override;
+
+public slots:
+    void mouseMoveEvent(QMouseEvent *event);
 };
 
 

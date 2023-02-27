@@ -270,7 +270,7 @@ void Chart::clear(){
 
 
 
-void Chart::back_translate_x(double &x){
+void Chart::back_translate_x(double &x){  // translates mouse coordinates back to cartesian system
     if (log_x_axis){
         x = (x - chart_box_inner.x()) / (log(x / xrange.x())) / log(10) * (log(xrange.y() / xrange.x()) / log(10)) / chart_box_inner.width();
     }
@@ -281,17 +281,17 @@ void Chart::back_translate_x(double &x){
 
 
 
-void Chart::back_translate_y(double &y){
+void Chart::back_translate_y(double &y){  // translates mouse coordinates back to cartesian system
     if (log_x_axis){
-        y = exp((y - chart_box_inner.y() - chart_box_inner.height()) * (log(yrange.y() / yrange.x()) / log(10)) / chart_box_inner.height() * log(10.)) * yrange.x();
+        y = exp((y - chart_box_inner.y() - chart_box_inner.height()) * (log(yrange.y() / yrange.x()) / log(10)) / (-chart_box_inner.height()) * log(10.)) * yrange.x();
     }
     else {
-        y = (y - chart_box_inner.y() - chart_box_inner.height()) * (yrange.y() - yrange.x()) / chart_box_inner.height() + yrange.x();
+        y = (y - chart_box_inner.y() - chart_box_inner.height()) * (yrange.y() - yrange.x()) / -chart_box_inner.height() + yrange.x();
     }
 }
 
 
-void Chart::translate(double &x, double &y){
+void Chart::translate(double &x, double &y){  // translates cartesian system to mouse coordinates
     if (log_x_axis){
         if (x > xrange.x()){
             x = chart_box_inner.x() + chart_box_inner.width() / (log(xrange.y() / xrange.x()) / log(10)) * (log(x / xrange.x())) / log(10);

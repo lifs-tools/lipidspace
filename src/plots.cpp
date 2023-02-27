@@ -925,12 +925,86 @@ void ScPoint::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 
 
 Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
+    connect(chart, &Chart::mouseMoved, this, &Scatterplot::mouseMoveEvent);
+    mouse_shift_start = QPointF(INFINITY, INFINITY);
+    shift_start_x = QPointF(INFINITY, INFINITY);
+    shift_start_y = QPointF(INFINITY, INFINITY);
+    zoom_start = QPointF(INFINITY, INFINITY);
 }
 
 
 Scatterplot::~Scatterplot(){
 
 }
+
+
+
+
+void Scatterplot::mouseMoveEvent(QMouseEvent *event){
+    QPointF mouse_pos = chart->mapToScene(event->pos());
+
+    if (event->buttons() & Qt::LeftButton){
+        if (chart->chart_box_inner.contains(mouse_pos)){
+
+            if (mouse_shift_start.x() == INFINITY){
+                double zx = chart->chart_box_inner.width() / (chart->xrange.y() - chart->xrange.x());
+                double zy = chart->chart_box_inner.height() / (chart->yrange.y() - chart->yrange.x());
+                zoom_start = QPointF(zx, zy);
+
+                shift_start_x = chart->xrange;
+                shift_start_y = chart->yrange;
+
+                mouse_shift_start = mouse_pos;
+            }
+            QPointF mouse_diff = mouse_pos - mouse_shift_start;
+            double xl = shift_start_x.x() - mouse_diff.x() / zoom_start.x();
+            double xr = shift_start_x.y() - mouse_diff.x() / zoom_start.x();
+            chart->xrange = QPointF(xl, xr);
+
+            double yt = shift_start_y.x() + mouse_diff.y() / zoom_start.y();
+            double yb = shift_start_y.y() + mouse_diff.y() / zoom_start.y();
+            chart->yrange = QPointF(yt, yb);
+            chart->update_chart();
+        }
+    }
+    else {
+        mouse_shift_start = QPointF(INFINITY, INFINITY);
+        shift_start_x = QPointF(INFINITY, INFINITY);
+        shift_start_y = QPointF(INFINITY, INFINITY);
+        zoom_start = QPointF(INFINITY, INFINITY);
+    }
+}
+
+void Scatterplot::wheelEvent(QWheelEvent *event){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QPointF mouse_pos = chart->mapToScene(QPoint(event->position().x(), event->position().y()));
+    double zoom = (event->angleDelta().y() > 0) ? 1. / 1.1 : 1.1;
+#else
+    QPointF mouse_pos = chart->mapToScene(event->pos());
+    double zoom = (event->delta() > 0) ? 1. / 1.1 : 1.1;
+#endif
+
+    if (!chart->chart_box_inner.contains(mouse_pos)) return;
+    double x = mouse_pos.x();
+    double y = mouse_pos.y();
+    chart->back_translate_x(x);
+    chart->back_translate_y(y);
+
+    double left = chart->xrange.x();
+    double right = chart->xrange.y();
+    double top = chart->yrange.x();
+    double bottom = chart->yrange.y();
+
+    left = x + zoom * (left - x);
+    right = x + zoom * (right - x);
+    top = y + zoom * (top - y);
+    bottom = y + zoom * (bottom - y);
+
+    chart->xrange = QPointF(left, right);
+    chart->yrange = QPointF(top, bottom);
+    chart->update_chart();
+}
+
 
 void Scatterplot::update_chart(){
 
