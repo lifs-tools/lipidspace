@@ -881,6 +881,7 @@ void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > 
 
         lines.push_back(LPLine(x1, y1, x2, y2, _color));
         chart->scene.addItem(lines.back().line);
+        lines.back().line->setParentItem(chart->base);
     }
     chart->xrange.setX(xmin);
     chart->xrange.setY(xmax);
@@ -934,7 +935,7 @@ Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
 
 
 Scatterplot::~Scatterplot(){
-
+    clear();
 }
 
 
@@ -1028,6 +1029,7 @@ void Scatterplot::update_chart(){
 
 
 void Scatterplot::clear(){
+    for (auto point : points) delete point;
     points.clear();
 }
 
@@ -1201,4 +1203,76 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
     chart->create_x_numerical_axis();
     chart->create_y_numerical_axis();
     chart->reset_animation();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+PlottingFunction::PlottingFunction(Chart* _chart, std::function<double(double, vector<double>)> _plotting_function, vector<double> _plotting_parameters, QColor _color){
+    chart = _chart;
+    plotting_function = _plotting_function;
+    plotting_parameters = _plotting_parameters;
+    color = _color;
+}
+
+
+void PlottingFunction::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*){
+    QPen pen(color);
+    pen.setWidthF(1.5);
+    painter->setPen(pen);
+    painter->setRenderHint(QPainter::Antialiasing);
+
+    double interval = (chart->xrange.y() - chart->xrange.x()) / chart->chart_box_inner.width();
+    double x_last = INFINITY, y_last = INFINITY;
+    if (isnan(interval) || isinf(interval) || chart->xrange.y() <= chart->xrange.x()) return;
+    for (double x = chart->xrange.x(); x + interval <= chart->xrange.y(); x += interval){
+        double x_plot = x;
+        double y_plot = plotting_function(x, plotting_parameters);
+        if (isinf(x_plot) || isinf(y_plot) || isnan(x_plot) || isnan(y_plot)) break;
+        chart->translate(x_plot, y_plot);
+        if (x_last != INFINITY) painter->drawLine(x_last, y_last, x_plot, y_plot);
+        x_last = x_plot;
+        y_last = y_plot;
+    }
+}
+
+QRectF PlottingFunction::boundingRect() const {
+    return chart->geometry();
+}
+
+
+
+FunctionPlot::FunctionPlot(Chart *_chart) : Chartplot(_chart) {
+}
+
+FunctionPlot::~FunctionPlot(){
+}
+
+
+void FunctionPlot::clear(){
+    for (auto plotting_function : functions) delete plotting_function;
+    functions.clear();
+}
+
+
+void FunctionPlot::add(std::function<double(double, vector<double>)> _plotting_function, vector<double> _plotting_parameters, QString category, QColor _color){
+    functions.push_back(new PlottingFunction(chart, _plotting_function, _plotting_parameters, _color));
+
+    chart->scene.addItem(functions.back());
+    functions.back()->setParentItem(chart->base);
+    if (category.length() > 0) chart->legend_categories.push_back(LegendCategory(category, _color, &chart->scene));
+    update_chart();
+}
+
+void FunctionPlot::update_chart(){
+
 }

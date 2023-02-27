@@ -312,4 +312,31 @@ public:
     void wheelEvent(QWheelEvent *event) override;
 };
 
+
+
+
+
+class PlottingFunction : public QGraphicsItem {
+public:
+    Chart* chart;
+    std::function<double(double, vector<double>)> plotting_function;
+    vector<double> plotting_parameters;
+    QColor color;
+
+    PlottingFunction(Chart* chart, std::function<double(double, vector<double>)>, vector<double>, QColor _color = Qt::red);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
+    QRectF boundingRect() const override;
+};
+
+class FunctionPlot : public Chartplot {
+public:
+    vector<PlottingFunction*> functions;
+
+    FunctionPlot(Chart *_chart);
+    ~FunctionPlot();
+    void add(std::function<double(double, vector<double>)>, vector<double>, QString category = "", QColor _color = Qt::red);
+    void update_chart();
+    void clear();
+};
+
 #endif /* PLOTS_H */

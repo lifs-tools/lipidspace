@@ -1123,15 +1123,11 @@ void Statistics::updateBoxPlot(){
             stat_results.push_back({"weight constant", coefficiants[coefficiants.size() - 1]});
         }
 
-        Lineplot *regression_line = new Lineplot(chart);
+        // draw the regression line as a function
+        FunctionPlot *regression_function = new FunctionPlot(chart);
         QString rg_name = QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2);
-        vector< pair<pair<double, double>, pair<double, double> > > data;
-
-        double min_x = chart->xrange.x();
-        double max_x = chart->xrange.y();
-        data.push_back({{min_x, slope * min_x + intercept}, {max_x, slope * max_x + intercept}});
-        regression_line->add(data, rg_name, QColor("#99ca53"));
-        chart->add(regression_line);
+        regression_function->add([](double x, vector<double> par){ return par[0] * x + par[1];}, {slope, intercept}, rg_name, QColor("#99ca53"));
+        chart->add(regression_function);
 
         QString sign = intercept >= 0 ? "+" : "-";
         chart->setTitle(QString("Linear regression model"));
@@ -1170,7 +1166,7 @@ void Statistics::updatePCA(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca){
+    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable){
         chart->setVisible(false);
         return;
     }
