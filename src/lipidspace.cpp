@@ -613,7 +613,7 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
     union_num += max(0, max(fa1->num_carbon - m1, fa2->num_carbon - m2) - (db1 + db2 - common_db));
 
 
-    if (fa1->functional_groups->size() == 0 && fa2->functional_groups->size() == 0){
+    if (fa1->functional_groups->empty() && fa2->functional_groups->empty()){
         if (fa1db_new) delete fa1db;
         if (fa2db_new) delete fa2db;
         return;
@@ -718,7 +718,6 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
 
 
 void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int& union_num, int& inter_num){
-
     string key = lipid1->get_extended_class() + "/" + lipid2->get_extended_class();
 
     if (uncontains_val(class_matrix, key)){
@@ -1020,10 +1019,6 @@ void LipidSpace::load_list(string lipid_list_file){
         for (auto kv : lipid_set){
             if (uncontains_val(all_lipids, kv.first)) all_lipids.insert({kv.first, kv.second});
         }
-    }
-    catch(LipidSpaceException &e){
-        delete lipidome;
-        throw e;
     }
     catch(exception &e){
         delete lipidome;
@@ -2165,25 +2160,6 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             if (uncontains_val(load_lipids, lipid_table_name)){
                 try {
                     l = parser.parse(lipid_table_name);
-
-                    if (uncontains_val(registered_lipid_classes, l->get_extended_class())){
-                        if (!ignore_unknown_lipids){
-                            throw LipidSpaceException("Lipid structure not registered: lipid '" + lipid_table_name + "' cannot be parsed.", LipidNotRegistered);
-                        }
-                        else {
-                            Logging::write_log("Ignoring unregistered lipid '" + lipid_table_name + "'");
-                            continue;
-                        }
-                    }
-                    translated_name = l->get_lipid_string();
-
-                    // deleting adduct since not necessary
-                    if (l->adduct != 0){
-                        delete l->adduct;
-                        l->adduct = 0;
-                    }
-                    l->sort_fatty_acyl_chains();
-                    for (auto fa : l->lipid->fa_list) cut_cycle(fa);
                 }
                 catch (exception &e) {
                     if (!ignore_unknown_lipids){
@@ -2194,7 +2170,31 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                         continue;
                     }
                 }
+
+                if (uncontains_val(registered_lipid_classes, l->get_extended_class())){
+                    if (!ignore_unknown_lipids){
+                        throw LipidSpaceException("Lipid structure not registered: lipid '" + lipid_table_name + "' cannot be parsed.", LipidNotRegistered);
+                    }
+                    else {
+                        Logging::write_log("Ignoring unregistered lipid '" + lipid_table_name + "'");
+                        continue;
+                    }
+                }
+
+                translated_name = l->get_lipid_string();
+
+                // deleting adduct since not necessary
+                if (l->adduct != nullptr){
+                    delete l->adduct;
+                    l->adduct = nullptr;
+                }
+                for (auto fa : l->lipid->fa_list) cut_cycle(fa);
+                cut_cycle(l->lipid->info);
+                l->sort_fatty_acyl_chains();
+
+
                 lipid_name = l->get_lipid_string();
+
                 if (contains_val(all_lipids, lipid_name)){
                     delete l;
                     l = all_lipids[lipid_name];
@@ -2977,10 +2977,9 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
 
     string translated_name = l->get_lipid_string();
 
+    for (auto fa : l->lipid->fa_list) cut_cycle(fa);
+    cut_cycle(l->lipid->info);
     l->sort_fatty_acyl_chains();
-    for (auto fa : l->lipid->fa_list){
-        cut_cycle(fa);
-    }
 
     string lipid_string = l->get_lipid_string();
     if (uncontains_val(lipid_name_translations[NORMALIZED_NAME], translated_name))

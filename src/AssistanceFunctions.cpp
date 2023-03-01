@@ -2,9 +2,9 @@
 #include "lipidspace/globaldata.h"
 
 LipidSpaceException::LipidSpaceException(string _message, LipidSpaceExceptionType _type){
-    Logging::write_log(message);
     message = _message;
     type = _type;
+    Logging::write_log(message);
 }
 
 
@@ -641,7 +641,7 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
             study_variable_numerical[kv.first].push_back(val);
         }
     }
-    return new double[3]{(x_left + x_right) / 2, y, (double)cnt};
+    return new double[3]{(x_left + x_right) / 2., y, (double)cnt};
 }
 
 
@@ -678,6 +678,7 @@ void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
             }
             distances.insert({node, dist});
             if (uncontains_val(node->distances, this)) node->distances.insert({this, dist});
+            else node->distances[this] = dist;
         }
 
         if (min_distance.first == INFINITY || dist < min_distance.first || (dist == min_distance.first && node->depth < min_distance.second->depth)){

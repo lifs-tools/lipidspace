@@ -1229,20 +1229,19 @@ void PlottingFunction::paint(QPainter *painter, const QStyleOptionGraphicsItem*,
     QPen pen(color);
     pen.setWidthF(1.5);
     painter->setPen(pen);
-    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, true);
 
     double interval = (chart->xrange.y() - chart->xrange.x()) / chart->chart_box_inner.width();
-    double x_last = INFINITY, y_last = INFINITY;
     if (isnan(interval) || isinf(interval) || chart->xrange.y() <= chart->xrange.x()) return;
+    QPainterPath path;
     for (double x = chart->xrange.x(); x + interval <= chart->xrange.y(); x += interval){
         double x_plot = x;
         double y_plot = plotting_function(x, plotting_parameters);
         if (isinf(x_plot) || isinf(y_plot) || isnan(x_plot) || isnan(y_plot)) break;
         chart->translate(x_plot, y_plot);
-        if (x_last != INFINITY) painter->drawLine(x_last, y_last, x_plot, y_plot);
-        x_last = x_plot;
-        y_last = y_plot;
+        path.lineTo(x_plot, y_plot);
     }
+    painter->drawPath(path);
 }
 
 QRectF PlottingFunction::boundingRect() const {
