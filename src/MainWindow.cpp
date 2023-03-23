@@ -10,15 +10,17 @@ using namespace std;
 
 
 int main(int argc, char** argv) {
+    Analytics analytics;
 
     if (argc == 1){
         QApplication application(argc, argv);
         Logging::write_log("LipidSpace " + GlobalData::LipidSpace_version + " was launched");
 
         LipidSpace lipid_space;
+        analytics.connect(&lipid_space, &LipidSpace::analytics, &analytics, &Analytics::analytics);
         LipidSpaceGUI lipid_space_gui(&lipid_space);
         lipid_space_gui.show();
-        analytics("launch");
+        analytics.analytics("launch");
         return application.exec();
     }
 

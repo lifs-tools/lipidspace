@@ -123,14 +123,7 @@ Mapping::Mapping(string _name, StudyVariableType v_type){
 
 
 
-void analytics_thread(string action){
-    httplib::Client cli("https://lifs-tools.org");
-    auto res = cli.Get(("/matomo/piwik.php?idsite=14&rec=1&e_c=LipidSpace-" + GlobalData::LipidSpace_version + "&e_a=" + action).c_str());
-}
-
-
-
-void analytics(string action){
+void Analytics::analytics(string action) {
     ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/analytics.txt");
     int result = 0;
     if (!infile.good()){
@@ -138,13 +131,13 @@ void analytics(string action){
     }
     else if (infile >> result) {
         if (result == 1){
-            std::thread (analytics_thread, action).detach();
+            string url = "https://lifs-tools.org/matomo/matomo.php?idsite=14&rec=1&e_c=LipidSpace-" + GlobalData::LipidSpace_version + "&e_a=" + action;
+            reply.reset(qnam.get(QNetworkRequest(QUrl(url.c_str()))));
         }
     }
 
     infile.close();
 }
-
 
 
 ImportData::ImportData(string _table_file, string _sheet, TableType _table_type, vector<TableColumnType> *_column_types){

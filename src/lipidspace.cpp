@@ -3022,10 +3022,6 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
 
 
 
-
-
-
-
 void LipidSpace::store_distance_table(string output_folder, Lipidome* lipidome){
     vector<string> &species = (lipidome != 0) ? lipidome->species : global_lipidome->species;
     Matrix &output_matrix = (lipidome != 0) ? lipidome->m : global_distances;

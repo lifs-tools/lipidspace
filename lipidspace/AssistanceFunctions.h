@@ -2,6 +2,8 @@
 #define ASSISTANCE_FUNCTIONS_H
 
 #include <QtCore>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QListWidget>
 #include <QTreeWidget>
 #include <QTreeView>
@@ -286,8 +288,20 @@ bool test_benford(Array &a);
 bool test_benford(Matrix &m);
 bool test_benford(vector<Lipidome*> &l);
 
-void analytics(string action);
-void analytics_thread(string action);
+
+class Analytics : public QObject {
+    Q_OBJECT
+
+
+public slots:
+    void analytics(string action);
+
+private:
+    QNetworkAccessManager qnam;
+    QScopedPointer<QNetworkReply, QScopedPointerDeleteLater> reply;
+};
+
+
 
 
 inline double compute_l2_norm(const double *a, const double *b, const int rows){

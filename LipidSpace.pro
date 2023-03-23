@@ -1,8 +1,8 @@
 versionAtLeast(QT_VERSION, 6.0.0) {
-    QT += core gui printsupport widgets svg svgwidgets
+    QT += core gui printsupport widgets svg svgwidgets network
 }
 !versionAtLeast(QT_VERSION, 6.0.0) {
-    QT += core gui printsupport widgets svg
+    QT += core gui printsupport widgets svg network
 }
 
 

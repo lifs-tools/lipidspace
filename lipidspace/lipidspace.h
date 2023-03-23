@@ -91,6 +91,7 @@ public:
 signals:
     void fileLoaded();
     void reassembled();
+    void analytics(string);
 
 public slots:
     void store_results(string);
