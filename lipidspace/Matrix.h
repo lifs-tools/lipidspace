@@ -4,9 +4,8 @@
 #include <math.h>
 #include <iostream>
 #include <cassert>
-//#ifndef _WIN32
+#include <immintrin.h>
 #include <cblas.h>
-//#endif
 #include <QtCore>
 
 using lambda_lanczos::LambdaLanczos;
