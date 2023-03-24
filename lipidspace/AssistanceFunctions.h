@@ -2,8 +2,6 @@
 #define ASSISTANCE_FUNCTIONS_H
 
 #include <QtCore>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
 #include <QListWidget>
 #include <QTreeWidget>
 #include <QTreeView>
@@ -35,8 +33,8 @@
 #include <algorithm>
 #include <math.h>
 #include <immintrin.h>
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "httplib.h"
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
@@ -116,9 +114,9 @@ public:
     explicit CBTableView(QWidget *parent = 0);
     void wheelEvent(QWheelEvent*) override;
     void dropEvent(QDropEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dragLeaveEvent(QDragLeaveEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
 
 signals:
     void openFiles(const QList<QUrl> &);
@@ -307,13 +305,13 @@ private:
 inline double compute_l2_norm(const double *a, const double *b, const int rows){
     __m256d dist = {0., 0., 0., 0.};
     for (int r = 0; r < rows; r += 4){
-        __m256d val1 = _mm256_loadu_pd(&a[r]);
-        __m256d val2 = _mm256_loadu_pd(&b[r]);
+        __m256d val1 = *(__m256d*)(a + r);
+        __m256d val2 = *(__m256d*)(b + r);
         __m256d sub = val1 - val2;
         dist += sub * sub;
     }
-    dist = _mm256_hadd_pd(dist, dist);
-    return dist[0] + dist[3];
+    //dist = _mm256_hadd_pd(dist, dist);
+    return dist[0] + dist[1] + dist[2] + dist[3];
 }
 
 

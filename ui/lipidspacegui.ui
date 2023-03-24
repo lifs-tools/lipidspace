@@ -91,7 +91,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="speciesTab">
            <attribute name="title">
@@ -239,7 +239,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="normalizationComboBox"/>
+         <widget class="QComboBox" name="normalizationComboBox">
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="applyChangesPushButton">
@@ -258,7 +262,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -374,7 +378,7 @@
              <rect>
               <x>10</x>
               <y>20</y>
-              <width>91</width>
+              <width>131</width>
               <height>18</height>
              </rect>
             </property>
@@ -805,7 +809,7 @@
      <x>0</x>
      <y>0</y>
      <width>1151</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLipidSpace">

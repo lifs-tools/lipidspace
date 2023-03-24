@@ -499,25 +499,25 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
                 __m256d yi = {Y[i], Y[i], Y[i], Y[i]};
                 for (int j = 0; j < n4; j += 4){
 
-                    __m256d xj = _mm256_loadu_pd(&X[j]);
-                    __m256d yj = _mm256_loadu_pd(&Y[j]);
+                    __m256d xj = *(__m256d*)(X.data() + j);
+                    __m256d yj = *(__m256d*)(Y.data() + j);
 
-                    __m256d x_diff = _mm256_sub_pd(xi, xj);
-                    __m256d y_diff = _mm256_sub_pd(yi, yj);
+                    __m256d x_diff = xi - xj;
+                    __m256d y_diff = yi - yj;
 
                     __m256d d = {0., 0., 0., 0.};
-                    d = _mm256_fmadd_pd(x_diff, x_diff, d);
-                    d = _mm256_fmadd_pd(y_diff, y_diff, d);
+                    d = d + x_diff * x_diff;
+                    d = d + y_diff * y_diff;
 
-                    x_diff = _mm256_sub_pd(xj, xi);
+                    x_diff = xj - xi;
 
-                    d = _mm256_mul_pd(-d, o_three);
-                    d = _mm256_sub_pd(d, one);
-                    d = _mm256_mul_pd(d, d);
-                    d = _mm256_mul_pd(d, d);
-                    d = _mm256_div_pd(one, d);
+                    d = -d * o_three;
+                    d = d - one;
+                    d = d * d;
+                    d = d * d;
+                    d = one / d;
 
-                    fx4 = _mm256_fmadd_pd(x_diff, d, fx4);
+                    fx4 = fx4 + x_diff * d;
                 }
                 double fx = fx4[0] + fx4[1] + fx4[2] + fx4[3];
                 xx[i] = X[i] - fx / sq(sq(0.30482918 * (-sq(fx)) - 1.));
@@ -1173,7 +1173,7 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
 
         vector<int> counts(num_bars + 1, 0);
         for (auto val : array){
-            int pos = __min(num_bars, __max(0, int((val - all_min) / bar_size)));
+            int pos = __min(num_bars, __max(int(0), int((val - all_min) / bar_size)));
             max_hist = __max(max_hist, ++counts[pos]);
         }
 

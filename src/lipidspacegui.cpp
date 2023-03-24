@@ -297,6 +297,14 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     raw_data_model = new RawDataModel(lipid_space, ui->tableView);
     ui->tableView->setModel(raw_data_model);
 
+    ui->normalizationComboBox->setStyleSheet("background-color: white; background: white;");
+    ui->speciesComboBox->setStyleSheet("background-color: white; background: white;");
+    ui->classComboBox->setStyleSheet("background-color: white; background: white;");
+    ui->categoryComboBox->setStyleSheet("background-color: white; background: white;");
+    ui->sampleComboBox->setStyleSheet("background-color: white; background: white;");
+    ui->studyVariableComboBox->setStyleSheet("background-color: white; background: white;");
+    ui->studyVariableComboBoxStat->setStyleSheet("background-color: white; background: white;");
+
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);

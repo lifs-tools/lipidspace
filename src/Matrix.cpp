@@ -451,10 +451,10 @@ double Matrix::vector_vector_mult(int n, const double *x, const double *y){
     __m256d vector_sum = {0., 0., 0., 0.};
 
     for (i = 0; i < n8; i += 8) {
-        __m256d vector_x1 = _mm256_loadu_pd(&x[i]);
-        __m256d vector_y1 = _mm256_loadu_pd(&y[i]);
-        __m256d vector_x2 = _mm256_loadu_pd(&x[i + 4]);
-        __m256d vector_y2 = _mm256_loadu_pd(&y[i + 4]);
+        __m256d vector_x1 = *(__m256d*)(x + i);
+        __m256d vector_y1 = *(__m256d*)(y + i);
+        __m256d vector_x2 = *(__m256d*)(x + i + 4);
+        __m256d vector_y2 = *(__m256d*)(y + i + 4);
         vector_sum += vector_x1 * vector_y1;
         vector_sum += vector_x2 * vector_y2;
     }

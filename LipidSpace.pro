@@ -7,8 +7,7 @@ versionAtLeast(QT_VERSION, 6.0.0) {
 
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -std=c++17 -march=native -Wno-unknown-pragmas
-
+QMAKE_CXXFLAGS += -fopenmp -std=c++17 -Wno-unknown-pragmas
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -30,7 +29,8 @@ unix {
 }
 
 win32 {
-    LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll $$PWD\libraries\openssl\bin\win64\libssl.dll $$PWD\libraries\openssl\bin\win64\libcrypto.dll
+    LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll
+    #$$PWD\libraries\openssl\bin\win64\libssl.dll $$PWD\libraries\openssl\bin\win64\libcrypto.dll
 }
 
 macx {
@@ -46,11 +46,11 @@ DEPENDPATH += $$PWD/libraries/OpenBLAS/include
 INCLUDEPATH += $$PWD/libraries/cppgoslin
 DEPENDPATH += $$PWD/libraries/cppgoslin
 
-INCLUDEPATH += $$PWD/libraries/cpp-httplib
-DEPENDPATH += $$PWD/libraries/cpp-httplib
+#INCLUDEPATH += $$PWD/libraries/cpp-httplib
+#DEPENDPATH += $$PWD/libraries/cpp-httplib
 
-INCLUDEPATH += $$PWD/libraries/openssl
-DEPENDPATH += $$PWD/libraries/openssl
+#INCLUDEPATH += $$PWD/libraries/openssl
+#DEPENDPATH += $$PWD/libraries/openssl
 
 SOURCES += \
     src/about.cpp \
@@ -102,8 +102,8 @@ HEADERS += \
     lipidspace/chart.h \
     lipidspace/chartplot.h \
     lipidspace/plots.h \
-    lipidspace/studyvariablemapping.h \
-    libraries/cpp-httplib/httplib.h
+    lipidspace/studyvariablemapping.h # \
+    #libraries/cpp-httplib/httplib.h
 
 FORMS += \
     ui/about.ui \
