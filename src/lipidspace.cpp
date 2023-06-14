@@ -6,6 +6,7 @@ void LipidSpace::create_dendrogram(){
     dendrogram_points.clear();
     lipid_sortings.clear();
 
+
     set<DendrogramNode*> nodes;
     for (int i = 0; i < hausdorff_distances.rows; ++i) nodes.insert(new DendrogramNode(i, &study_variable_values, selected_lipidomes[i]));
     for (auto node : nodes) node->update_distances(nodes, hausdorff_distances);
@@ -38,10 +39,21 @@ void LipidSpace::create_dendrogram(){
             }
         }
     }
-
     dendrogram_root = *nodes.begin();
+
+    /*
+    dendrogram_root = new DendrogramNode(0, &study_variable_values, selected_lipidomes[0]);
+    for (int i = 1; i < hausdorff_distances.rows; ++i){
+        DendrogramNode *nn2 = new DendrogramNode(i, &study_variable_values, selected_lipidomes[i]);
+        dendrogram_root = new DendrogramNode(dendrogram_root, nn2, 2);
+    }
+    */
+
     double* ret = dendrogram_root->execute(0, &dendrogram_points, &dendrogram_sorting);
     delete []ret;
+
+    if (pure_analysis_mode) return;
+
 
     // determining importance of lipids based on goodness of separating
     // study variables applying simple 1D linear regression
@@ -262,7 +274,6 @@ void LipidSpace::create_dendrogram(){
         lipid_sortings.insert({target_regression_classification, SortVector<string, double>()});
         SortVector<string, double> &regression_vector = lipid_sortings[target_regression_classification];
         for (auto kv_reg : regression_result) regression_vector.push_back({kv_reg.second, kv_reg.first});
-
     }
 
 }
@@ -280,6 +291,7 @@ LipidSpace::LipidSpace() {
     progress = 0;
     analysis_finished = false;
     dendrogram_root = 0;
+    pure_analysis_mode = false;
     process_id = 0;
     target_variable = "";
     study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
@@ -312,8 +324,10 @@ LipidSpace::LipidSpace() {
 
 
 LipidSpace::LipidSpace(LipidSpace *ls){
-    progress = ls->progress;
+    //progress = ls->progress;
     dendrogram_root = 0;
+    progress = 0;
+    pure_analysis_mode = 0;
 
     for (auto kv : ls->class_matrix) class_matrix.insert({kv.first, pair<int, int>{kv.second.first, kv.second.second}});
     for (auto kv : ls->all_lipids) all_lipids.insert({kv.first, new LipidAdduct(kv.second)});
@@ -1020,6 +1034,10 @@ void LipidSpace::load_list(string lipid_list_file){
             if (uncontains_val(all_lipids, kv.first)) all_lipids.insert({kv.first, kv.second});
         }
     }
+    catch(LipidSpaceException &e){
+        delete lipidome;
+        throw e;
+    }
     catch(exception &e){
         delete lipidome;
         throw e;
@@ -1338,11 +1356,6 @@ int LipidSpace::compute_global_distance_matrix(){
     // set equal intensities, later important for ploting
     int n = global_lipidome->lipids.size();
 
-    // Lanczos algorithm computes one less principal components than
-    // lipids provided, we need at least 2 dimensions, therefore
-    // at least three lipids
-    if (n < 3) return n;
-
 
     global_lipidome->original_intensities.resize(n, 1);
     global_lipidome->visualization_intensities.resize(n, 1);
@@ -1354,13 +1367,34 @@ int LipidSpace::compute_global_distance_matrix(){
     distance_matrix.reset(n, n);
 
 
+    // Lanczos algorithm computes one less principal components than
+    // lipids provided, we need at least 2 dimensions, therefore
+    // at least three lipids
+    if (n < 3) return n;
+
+    int N = (n * (n - 1)) >> 1;
+    ulong *pairs = new ulong[N];
+    int k = 0;
+    for (ulong i = 0; i < (ulong)n - 1; ++i){
+        ulong ii = i << 32;
+        for (ulong j = i + 1; j < (ulong)n; ++j){
+            pairs[k++] = ii | j;
+        }
+    }
+
+
+    #pragma omp parallel for
+    for (int ii = 0; ii < N; ++ii){
+        int i = (int)(pairs[ii] >> 32);
+        int j = (int)(pairs[ii] & MASK32);
+/*
     #pragma omp parallel for
     for (int ii = 0; ii < n * n; ++ii){
         int i = ii / n;
         int j = ii % n;
 
         if (i < j){
-
+*/
             bool go_on = true;
             if (progress){
                 #pragma omp critical
@@ -1383,7 +1417,7 @@ int LipidSpace::compute_global_distance_matrix(){
                 distance_matrix(i, j) = distance;
                 distance_matrix(j, i) = distance;
             }
-        }
+        //}
     }
     return n;
 }
@@ -1405,8 +1439,6 @@ void LipidSpace::separate_matrixes(){
     }
     global_lipidome->selected_lipid_indexes.clear();
 
-
-
     map<string, int> lipid_indexes;
     map<string, Array> global_lipid_intensities;
     for (int i = 0; i < (int)global_lipidome->species.size(); ++i){
@@ -1415,7 +1447,6 @@ void LipidSpace::separate_matrixes(){
         global_lipid_intensities.insert({lipid_species, Array()});
         global_lipidome->selected_lipid_indexes.push_back(i);
     }
-
 
 
     vector<int> remove_lipidomes;
@@ -1446,10 +1477,13 @@ void LipidSpace::separate_matrixes(){
     // compute mean intensities for global lipidome
     for (uint i = 0; i < global_lipidome->lipids.size(); ++i){
         string lipid_species = global_lipidome->species[i];
-        global_lipidome->original_intensities[i] = global_lipid_intensities[lipid_species].mean();
-        global_lipidome->normalized_intensities[i] = global_lipid_intensities[lipid_species].mean();
+        double gli_mean = global_lipid_intensities[lipid_species].mean();
+
+        global_lipidome->original_intensities[i] = gli_mean;
+        global_lipidome->normalized_intensities[i] = gli_mean;
     }
 
+    if (pure_analysis_mode) return;
 
     for (auto &kv_study_var : study_variable_values){
         for (auto kv : study_variable_values[kv_study_var.first].nominal_values){
@@ -1493,13 +1527,6 @@ void LipidSpace::separate_matrixes(){
             }
         }
     }
-}
-
-
-
-
-inline double gauss(double x, double mue, double sigma){
-    return exp(-0.5 * sq((x - mue) / sigma)) / sqrt(2 * M_PI);
 }
 
 
@@ -3175,9 +3202,7 @@ void LipidSpace::lipid_analysis(bool report_progress){
 
 
 
-
-
-    if (!progress || !progress->stop_progress){
+    if ((!progress || !progress->stop_progress) && !pure_analysis_mode){
         // for statistics
         statistics_matrix.reset(0, 0);
         map<LipidAdduct*, int> lipid_map;
@@ -3204,7 +3229,6 @@ void LipidSpace::lipid_analysis(bool report_progress){
 
         statistics_lipids.resize(lipid_name_map.size());
         for (auto kv : lipid_name_map) statistics_lipids[kv.second] = kv.first;
-
     }
 
     analysis_finished = true;
@@ -3219,6 +3243,8 @@ void LipidSpace::lipid_analysis(bool report_progress){
 
 
 void LipidSpace::feature_analysis(bool report_progress){
+
+
     Array target_values;
     map<string, double> nominal_target_values;
     int nom_counter = 0;
@@ -3227,7 +3253,6 @@ void LipidSpace::feature_analysis(bool report_progress){
     Matrix global_matrix;
     vector< Gene* >genes;
     Array missing_values;
-    bool is_nominal = study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
     if (uncontains_val(study_variable_values, target_variable)){
         if (progress && !progress->stop_progress && report_progress){
@@ -3236,6 +3261,7 @@ void LipidSpace::feature_analysis(bool report_progress){
         return;
     }
     Logging::write_log("Started feature analysis");
+    bool is_nominal = study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
 
 
@@ -3302,6 +3328,262 @@ void LipidSpace::feature_analysis(bool report_progress){
 
 
 
+    // create a list of all lipids from all active lipidomes
+    set<string> lipid_set;
+    if (progress && !progress->stop_progress && report_progress){
+        // setting up lipid to column in matrix map
+        for (auto lipidome : lipidomes_for_feature_selection){
+            for (uint i = 0; i < lipidome->lipids.size(); ++i){
+                LipidAdduct* lipid = lipidome->lipids[i];
+                if (uncontains_val(lipid_map, lipid) && contains_val(lipidome->study_variables, target_variable) && !lipidome->study_variables[target_variable].missing){
+                    lipid_set.insert(lipidome->species[i]);
+                }
+            }
+        }
+    }
+    vector<string> lipid_list;
+    for (auto s : lipid_set) lipid_list.push_back(s);
+
+    // create a list of all active values with a nominal study variable
+    if (uncontains_val(study_variable_values, target_variable)){
+        if (progress && !progress->stop_progress && report_progress){
+            progress->finish();
+        }
+        return;
+    }
+
+    set<string> study_vars_selected;
+    for (auto &kv : study_variable_values[target_variable].nominal_values){
+        if (kv.second){
+            study_vars_selected.insert(kv.first);
+        }
+    }
+
+    if (study_vars_selected.size() < 2 || study_vars_selected.size() > lipid_list.size()){
+        if (progress && !progress->stop_progress && report_progress){
+            progress->finish();
+        }
+        return;
+    }
+
+
+
+
+    // determining the upper number of features to consider
+    int n_features = lipid_list.size();
+    int n = 10; //min(n_features - 2, (int)sqrt(n));
+
+    // perform the principal component analysis
+    if (!progress || !progress->stop_progress){
+        // set the step size for the next analyses
+        if (progress && report_progress){
+            progress->prepare(n * n_features);
+        }
+
+        genes.resize(n + 1, 0);
+        genes[0] = new Gene(n_features + 1);
+        genes[0]->score = 0;
+
+
+        if (progress && report_progress){
+            progress->increment();
+        }
+    }
+
+
+    LipidSpace fa_lipid_space(this);
+    for (auto &kv : fa_lipid_space.selection[0]){
+        kv.second = false;
+    }
+    fa_lipid_space.pure_analysis_mode = true;
+
+    // implementation of sequential forward lipid (feature) selection
+    for(int i = 1; i <= n && (!progress || !progress->stop_progress); ++i){
+        if (progress->stop_progress) break;
+        Gene* best = 0;
+        //int pos = 0;
+        double best_score = 0;
+        Gene* last = genes[i - 1];
+
+        //#pragma omp parallel for
+        for (int pos = 0; pos < n_features; ++pos){
+            if (progress && progress->stop_progress) continue;
+            if (!last->gene_code[pos]){
+                Gene* new_gene = new Gene(last);
+                new_gene->gene_code[pos] = true;
+
+
+                // do the selection according to gene
+                for (uint l = 0; l < lipid_list.size(); ++l){
+                    string lipid_species = lipid_list[l];
+                    fa_lipid_space.selection[0][lipid_species] = new_gene->gene_code[l];
+                }
+                fa_lipid_space.lipid_analysis(false);
+
+
+                // compute the Gini impurity value
+                vector< pair<double, DendrogramNode*> > d_nodes;
+                d_nodes.push_back({fa_lipid_space.dendrogram_root->distance, fa_lipid_space.dendrogram_root});
+
+                while (d_nodes.size() < study_vars_selected.size()){
+                    int d = (int)d_nodes.size() - 1;
+                    for (; d >= 0; --d){
+                        if (d_nodes[d].second->left_child && d_nodes[d].second->right_child) break;
+                    }
+                    DendrogramNode* dn = d_nodes[d].second;
+                    d_nodes.erase(d_nodes.begin() + d);
+
+
+                    d_nodes.push_back({dn->left_child->distance, dn->left_child});
+                    d_nodes.push_back({dn->right_child->distance, dn->right_child});
+
+                    sort(d_nodes.begin(), d_nodes.end(),
+                        [](auto &a, auto &b) -> bool {
+                        return a.first < b.first;
+                    });
+                }
+
+                double Gs = 0;
+                vector< pair<double, double> > partial;
+                for (auto &p : d_nodes){
+                    DendrogramNode *dn = p.second;
+                    double s = 0;
+                    for (string var : study_vars_selected){
+                        s += dn->study_variable_count_nominal[target_variable][var];
+                    }
+                    double Gg = 0;
+                    for (string var : study_vars_selected){
+                        double t = dn->study_variable_count_nominal[target_variable][var];
+                        Gg += t / s * (1. - t / s);
+                    }
+                    partial.push_back({s, Gg});
+                    Gs += s;
+                }
+
+                double G = 0;
+                for (auto &p : partial){
+                    G += p.first / Gs * p.second;
+                }
+
+                new_gene->score = (1. - G) * (double)fa_lipid_space.selected_lipidomes.size() / (double)fa_lipid_space.lipidomes.size();
+
+                // search for maximal nominal score
+                //#pragma omp critical
+                {
+                    if (!best || best_score < new_gene->score || best_score == INFINITY){
+                        best = new_gene;
+                        best_score = new_gene->score;
+                    }
+                    else {
+                        delete new_gene;
+                    }
+                }
+            }
+            //++pos;
+            if (progress && report_progress){
+                progress->increment();
+            }
+        }
+
+        genes[i] = best;
+        if (best->score == 1) break;
+    }
+
+    if (!progress || !progress->stop_progress){
+        // find the feature subset with the lowest best_score
+        int best_pos = 0;
+        if (is_nominal){
+            double best_score = 0;
+            for (uint i = 1; i < genes.size(); ++i){
+                if (genes[i] == 0) continue;
+                if (best_score < genes[i]->score){
+                    best_score = genes[i]->score;
+                    best_pos = i;
+                }
+            }
+        }
+        else {
+            double best_score = INFINITY;
+            for (uint i = 1; i < genes.size(); ++i){
+                if (genes[i] == 0) continue;
+                if (best_score == INFINITY || best_score > genes[i]->score){
+                    best_score = genes[i]->score;
+                    best_pos = i;
+                }
+            }
+        }
+
+
+        // do the selection
+        for (uint l = 0; l < lipid_list.size(); ++l){
+            string lipid_name = lipid_list[l];
+            selection[0][lipid_name] = genes[best_pos]->gene_code[l];
+        }
+
+        // cleanup
+        for (auto gene : genes){
+            if (gene) delete gene;
+        }
+
+        if (progress && !progress->stop_progress && report_progress){
+            progress->finish();
+        }
+        emit reassembled();
+    }
+
+
+
+
+    if (progress && !progress->stop_progress && report_progress){
+        progress->finish();
+    }
+
+    return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
     // perform the principal component analysis
     if (!progress || !progress->stop_progress){
         // set the step size for the next analyses
@@ -3518,6 +3800,7 @@ void LipidSpace::feature_analysis(bool report_progress){
         }
         emit reassembled();
     }
+    */
 }
 
 

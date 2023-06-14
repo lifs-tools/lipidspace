@@ -392,10 +392,8 @@ void Matrix::scale(){
 
 void Matrix::transpose(){
     double *tmp = new double[cols * rows];
-    //#pragma omp parallel for
     for (int i = 0; i < cols * rows; ++i) tmp[i] = m[i];
 
-    //#pragma omp parallel for collapse(2)
     for (int c = 0; c < cols; c++){
         for (int r = 0; r < rows; ++r){
             m[r * cols + c] = tmp[c * rows + r];
@@ -412,7 +410,10 @@ void Matrix::compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int to
 
     // Prepare matrix-vector multiplication routine used in Lanczos algorithm
     auto mv_mul = [&](const vector<double>& in, vector<double>& out) {
-	cblas_dgemv(CblasColMajor, CblasNoTrans, rows, cols, 1.0, data(), rows, in.data(), 1, 0, out.data(), 1);
+        #pragma omp parallel num_threads(1)
+        {
+            cblas_dgemv(CblasColMajor, CblasNoTrans, rows, cols, 1.0, data(), rows, in.data(), 1, 0, out.data(), 1);
+        }
     };
     // Execute Lanczos algorithm
     LambdaLanczos<double> engine(mv_mul, rows, true); // true means to calculate the largest eigenvalue.
@@ -499,7 +500,7 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
     reset(num_cols_A, num_cols_B);
 
 
-    #pragma omp parallel for collapse(2)
+    // #pragma omp parallel for collapse(2)
     for (int i = 0; i < num_cols_A; i += tile_size) {
         for (int j = 0; j < num_cols_B; j += tile_size) {
             int it = min(num_cols_A, i + tile_size);

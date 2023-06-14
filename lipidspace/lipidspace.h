@@ -56,6 +56,7 @@ public:
     vector<string> statistics_lipids;
     vector< vector<double> > complete_feature_analysis_table;
     vector< set<string> > complete_feature_analysis_lipids;
+    bool pure_analysis_mode;
 
 
     LipidSpace();

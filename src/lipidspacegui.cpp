@@ -67,7 +67,7 @@ void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
 
 
 
-//#define HOTKEYS
+#define HOTKEYS
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
 #ifdef HOTKEYS
@@ -698,6 +698,66 @@ void LipidSpaceGUI::setStudyVariable(int c){
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
+
+
+
+
+
+    /*
+    vector< pair<double, DendrogramNode*> > d_nodes;
+    d_nodes.push_back({lipid_space->dendrogram_root->distance, lipid_space->dendrogram_root});
+    set<string> study_vars_selected;
+
+    cout << GlobalData::gui_string_var["study_var"] << endl;
+    if (uncontains_val(lipid_space->study_variable_values, GlobalData::gui_string_var["study_var"])) return;
+    for (auto &kv : lipid_space->study_variable_values[GlobalData::gui_string_var["study_var"]].nominal_values){
+        if (kv.second){
+            study_vars_selected.insert(kv.first);
+            cout << "selecting: " << kv.first << endl;
+        }
+    }
+    if (study_vars_selected.size() < 2) return;
+
+    while (d_nodes.size() < study_vars_selected.size()){
+        DendrogramNode* dn = d_nodes.back().second;
+        cout << d_nodes.back().first << endl;
+        d_nodes.pop_back();
+
+        // TODO handle leaves
+
+        d_nodes.push_back({dn->left_child->distance, dn->left_child});
+        d_nodes.push_back({dn->right_child->distance, dn->right_child});
+
+        sort(d_nodes.begin(), d_nodes.end(),
+            [](auto &a, auto & b) -> bool {
+            return a.first < b.first;
+        });
+    }
+
+    double Gs = 0;
+    vector< pair<double, double> > partial;
+    for (auto &p : d_nodes){
+        DendrogramNode *dn = p.second;
+        double s = 0;
+        for (string var : study_vars_selected){
+            s += dn->study_variable_count_nominal[GlobalData::gui_string_var["study_var"]][var];
+        }
+        double Gg = 0;
+        for (string var : study_vars_selected){
+            double t = dn->study_variable_count_nominal[GlobalData::gui_string_var["study_var"]][var];
+            Gg += t / s * (1. - t / s);
+        }
+        partial.push_back({s, Gg});
+        Gs += s;
+    }
+
+    double G = 0;
+    for (auto &p : partial){
+        G += p.first / Gs * p.second;
+    }
+
+    cout << "Gini: " << G << endl;
+    */
 }
 
 
