@@ -713,6 +713,8 @@ void Boxplot::clear(){
 
 
 double Boxplot::median(vector<double> &lst, int begin, int end){
+    if (lst.size() == 1) return lst.front();
+
     int count = end - begin;
     if (count & 1) {
         return lst[(count >> 1) + begin];
@@ -725,9 +727,9 @@ double Boxplot::median(vector<double> &lst, int begin, int end){
 
 
 void Boxplot::add(Array &array, QString category, QColor color){
+    if (array.empty()) return;
 
     sort(array.begin(), array.end());
-    int count = array.size();
 
 
     // distribute the data around the center
@@ -773,9 +775,10 @@ void Boxplot::add(Array &array, QString category, QColor color){
     box.color = color;
     box.lower_extreme = array.front();
     box.upper_extreme = array.back();
-    box.median = median(array, 0, count);
-    box.lower_quartile = median(array, 0, count >> 1);
-    box.upper_quartile = median(array, (count >> 1) + (count & 1), count);
+    box.median = median(array, 0, n);
+    box.lower_quartile = median(array, 0, n >> 1);
+    box.upper_quartile = median(array, (n >> 1) + (n & 1), n);
+    cout << array.front() << " " << box.lower_quartile << " " << box.median << " " << box.upper_quartile << " " << array.back() << " " << n << endl;
 
     double lower = INFINITY;
     double upper = -INFINITY;
@@ -1154,17 +1157,20 @@ void Histogramplot::clear(){
 
 
 void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors, uint num_bars){
-    if (arrays.size() != categories.size() || arrays.size() != colors->size()) return;
+    if (arrays.size() != categories.size() || arrays.size() != colors->size() || num_bars == 0) return;
 
     double all_min = INFINITY;
     double all_max = -INFINITY;
+
     for (auto &array : arrays){
+        if (array.empty()) continue;
         sort(array.begin(), array.end());
         all_min = __min(all_min, array.front());
         all_max = __max(all_max, array.back());
     }
-    double bar_size = (all_max - all_min) / num_bars;
+    if (all_min == INFINITY || all_max == -INFINITY) return;
 
+    double bar_size = (all_max - all_min) / num_bars;
     int max_hist = 0;
     for (uint a = 0; a < arrays.size(); ++a){
         auto &array = arrays[a];
