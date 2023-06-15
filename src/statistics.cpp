@@ -581,6 +581,7 @@ void Statistics::updateSpeciesCV(){
         return;
     }
 
+
     Histogramplot* histogramplot = new Histogramplot(chart);
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
     histogramplot->add(series, categories, &colors, num_bars);

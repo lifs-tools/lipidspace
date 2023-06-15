@@ -67,11 +67,25 @@ void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
 
 
 
-//#define HOTKEYS
+#define HOTKEYS
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
 #ifdef HOTKEYS
     if (event->key() == Qt::Key_1){
+
+        resetAnalysis();
+        vector<TableColumnType> *ct = new vector<TableColumnType>();
+        for (int i = 0; i < 10; ++i) ct->push_back(IgnoreColumn);
+        ct->at(0) = LipidColumn;
+        ct->at(9) = QuantColumn;
+        ct->at(2) = SampleColumn;
+        ct->at(4) = StudyVariableColumnNominal;
+        //ct->at(5) = StudyVariableColumnNominal;
+        //ct->at(6) = StudyVariableColumnNominal;
+        //ct->at(7) = StudyVariableColumnNumerical;
+
+        loadTable(new ImportData("Result-quant-table.csv", "", FLAT_TABLE, ct));
+        /*
         resetAnalysis();
         vector<TableColumnType> *ct = new vector<TableColumnType>();
         for (int i = 0; i < 325; ++i) ct->push_back(LipidColumn);
@@ -81,6 +95,7 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
         ct->at(42) = StudyVariableColumnNominal;
         ct->at(43) = StudyVariableColumnNominal;
         loadTable(new ImportData("examples/Sales-Extended.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
+        */
     }
 
     else if (event->key() == Qt::Key_2){
