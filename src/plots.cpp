@@ -778,7 +778,6 @@ void Boxplot::add(Array &array, QString category, QColor color){
     box.median = median(array, 0, n);
     box.lower_quartile = median(array, 0, n >> 1);
     box.upper_quartile = median(array, (n >> 1) + (n & 1), n);
-    cout << array.front() << " " << box.lower_quartile << " " << box.median << " " << box.upper_quartile << " " << array.back() << " " << n << endl;
 
     double lower = INFINITY;
     double upper = -INFINITY;
