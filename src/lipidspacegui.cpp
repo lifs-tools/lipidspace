@@ -67,7 +67,7 @@ void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
 
 
 
-#define HOTKEYS
+//#define HOTKEYS
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
 #ifdef HOTKEYS
@@ -728,7 +728,7 @@ void LipidSpaceGUI::openFiles(const QList<QUrl> &file_list){
     set<string> extensions = {"csv", "tsv", "xlsx", "mztab"};
     if (file_list.empty() || GlobalData::in_tutorial) return;
 
-    QString file_name = file_list.first().path();
+    QString file_name = file_list.first().toLocalFile();
     QFileInfo qFileInfo(file_name);
     string extension = qFileInfo.completeSuffix().toLower().toStdString();
 
