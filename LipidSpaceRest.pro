@@ -1,4 +1,4 @@
-QT       += core widgets
+QT       += core widgets network
 
 CONFIG += c++17 debug_and_release
 QMAKE_CXXFLAGS += -fopenmp -std=c++17 -march=native -Wno-unknown-pragmas
