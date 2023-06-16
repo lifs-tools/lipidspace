@@ -91,7 +91,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="speciesTab">
            <attribute name="title">
@@ -262,7 +262,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -580,7 +580,8 @@
             </property>
             <widget class="Chart" name="statisticsBoxPlot"/>
             <widget class="Chart" name="statisticsHistogram"/>
-            <widget class="Chart" name="statisticsPCA"/>
+            <widget class="Chart" name="statisticsSpeciesCV"/>
+            <widget class="Chart" name="statisticsPVal"/>
            </widget>
            <widget class="QSplitter" name="splitterStatV2">
             <property name="orientation">
@@ -589,8 +590,9 @@
             <property name="handleWidth">
              <number>10</number>
             </property>
+            <widget class="Chart" name="statisticsPCA"/>
             <widget class="Chart" name="statisticsROCCurve"/>
-            <widget class="Chart" name="statisticsSpeciesCV"/>
+            <widget class="Chart" name="statisticsVolcano"/>
             <widget class="Chart" name="statisticsBarPlot"/>
            </widget>
           </widget>
@@ -617,7 +619,7 @@
              <rect>
               <x>10</x>
               <y>40</y>
-              <width>181</width>
+              <width>171</width>
               <height>26</height>
              </rect>
             </property>
@@ -638,9 +640,9 @@
            <widget class="QSpinBox" name="tickSizeSpinBox">
             <property name="geometry">
              <rect>
-              <x>210</x>
+              <x>340</x>
               <y>40</y>
-              <width>89</width>
+              <width>51</width>
               <height>27</height>
              </rect>
             </property>
@@ -660,7 +662,7 @@
            <widget class="QSpinBox" name="legendSizeSpinBox">
             <property name="geometry">
              <rect>
-              <x>310</x>
+              <x>400</x>
               <y>40</y>
               <width>89</width>
               <height>27</height>
@@ -682,7 +684,7 @@
            <widget class="QLabel" name="label_2">
             <property name="geometry">
              <rect>
-              <x>210</x>
+              <x>340</x>
               <y>20</y>
               <width>141</width>
               <height>18</height>
@@ -695,7 +697,7 @@
            <widget class="QLabel" name="label_3">
             <property name="geometry">
              <rect>
-              <x>310</x>
+              <x>400</x>
               <y>20</y>
               <width>141</width>
               <height>18</height>
@@ -708,7 +710,7 @@
            <widget class="QSpinBox" name="barNumberSpinBox">
             <property name="geometry">
              <rect>
-              <x>410</x>
+              <x>500</x>
               <y>40</y>
               <width>89</width>
               <height>27</height>
@@ -730,9 +732,9 @@
            <widget class="QLabel" name="label_4">
             <property name="geometry">
              <rect>
-              <x>410</x>
+              <x>500</x>
               <y>20</y>
-              <width>141</width>
+              <width>91</width>
               <height>18</height>
              </rect>
             </property>
@@ -743,9 +745,9 @@
            <widget class="QComboBox" name="secondaryComboBox">
             <property name="geometry">
              <rect>
-              <x>520</x>
+              <x>600</x>
               <y>40</y>
-              <width>181</width>
+              <width>151</width>
               <height>26</height>
              </rect>
             </property>
@@ -753,15 +755,48 @@
            <widget class="QLabel" name="secondaryLabel">
             <property name="geometry">
              <rect>
-              <x>520</x>
+              <x>600</x>
               <y>20</y>
-              <width>141</width>
+              <width>121</width>
               <height>18</height>
              </rect>
             </property>
             <property name="text">
              <string>Quantitative data</string>
             </property>
+           </widget>
+           <widget class="QLabel" name="label_5">
+            <property name="geometry">
+             <rect>
+              <x>190</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Statistics level</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="studyVariableComboBoxStatLevel">
+            <property name="geometry">
+             <rect>
+              <x>190</x>
+              <y>40</y>
+              <width>141</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <item>
+             <property name="text">
+              <string>Lipidomes</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Lipid species</string>
+             </property>
+            </item>
            </widget>
           </widget>
          </item>
@@ -809,7 +844,7 @@
      <x>0</x>
      <y>0</y>
      <width>1151</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLipidSpace">

@@ -24,6 +24,7 @@ public:
     static map<string, QColor> colorMap;
     static int PC1;
     static int PC2;
+    static bool stat_level_lipidomes;
     static int study_variable_counter;
     static NormalizationType normalization_type;
     static string rest_temp_folder;

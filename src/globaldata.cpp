@@ -19,6 +19,7 @@ string GlobalData::rest_temp_folder = ".";
 string GlobalData::normalization = "absolute";
 NormalizationType GlobalData::normalization_type = AbsoluteNormalization;
 QString GlobalData::last_folder = "";
+bool GlobalData::stat_level_lipidomes = true;
 map<string, QColor> GlobalData::colorMapStudyVariables;
 map<string, string> GlobalData::gui_string_var{{"species_selection", ""}, {"study_var", ""}, {"study_var_stat", ""}, {"secondary_var", ""}};
 map<string, double> GlobalData::gui_num_var{{"pie_tree_depth", 3}, {"dendrogram_height", 100}, {"pie_size", 100}, {"translate", 1}, {"label_size", 18}, {"tick_size", 10}, {"legend_size", 14}, {"dont_less_3_message", 0}, {"bar_number", 20}, {"table_zoom", 10}};

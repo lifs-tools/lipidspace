@@ -326,6 +326,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     statisticsSpeciesCV.load_data(lipid_space, ui->statisticsSpeciesCV);
     statisticsROCCurve.load_data(lipid_space, ui->statisticsROCCurve);
     statisticsPCA.load_data(lipid_space, ui->statisticsPCA);
+    statisticsPVal.load_data(lipid_space, ui->statisticsPVal);
+    statisticsVolcano.load_data(lipid_space, ui->statisticsVolcano);
 
     connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsBarPlot, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
@@ -395,6 +397,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->tableView, &QTableView::customContextMenuRequested, this, &LipidSpaceGUI::ShowTableContextMenu);
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+    connect(ui->studyVariableComboBoxStatLevel, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStatLevel);
     connect(this, &LipidSpaceGUI::studyVariableChanged, ui->dendrogramView, &Canvas::setStudyVariable);
     connect(ui->speciesList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->classList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
@@ -405,20 +408,28 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->applyChangesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->pieTreeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setPieTree);
     connect(ui->dendrogramHeightSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setDendrogramHeight);
+
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPCA, &Statistics::setLegendSize);
+    connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPVal, &Statistics::setLegendSize);
+    connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsVolcano, &Statistics::setLegendSize);
+
     connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setBarNumberHistogram);
     connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setBarNumberSpeciesCV);
+
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlot, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPCA, &Statistics::setTickSize);
+    connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPVal, &Statistics::setTickSize);
+    connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsVolcano, &Statistics::setTickSize);
+
     connect(ui->labelSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, ui->dendrogramView, &Canvas::setLabelSize);
     connect(ui->pieSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setPieSize);
     connect(ui->normalizationComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setNormalization);
@@ -503,6 +514,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsROCCurve, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsSpeciesCV, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsBarPlot, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsPVal, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsVolcano, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->tableView, &CBTableView::openFiles, this, &LipidSpaceGUI::openFiles);
 
 
@@ -690,6 +703,19 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
 
 
 
+void LipidSpaceGUI::setStatLevel(int c){
+    GlobalData::stat_level_lipidomes = 1 - c;
+    statisticsBoxPlot.updateBoxPlot();
+    statisticsBarPlot.updateBarPlot();
+    statisticsHistogram.updateHistogram();
+    statisticsSpeciesCV.updateSpeciesCV();
+    statisticsROCCurve.updateROCCurve();
+    statisticsPCA.updatePCA();
+    statisticsPVal.updatePVal();
+    statisticsVolcano.updateVolcano();
+}
+
+
 void LipidSpaceGUI::setStudyVariable(int c){
     disconnect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     disconnect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
@@ -708,6 +734,8 @@ void LipidSpaceGUI::setStudyVariable(int c){
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
     statisticsPCA.updatePCA();
+    statisticsPVal.updatePVal();
+    statisticsVolcano.updateVolcano();
     studyVariableChanged(ui->studyVariableComboBox->currentText().toStdString());
 
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
@@ -762,6 +790,8 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
     statisticsPCA.updatePCA();
+    statisticsPVal.updatePVal();
+    statisticsVolcano.updateVolcano();
 }
 
 
@@ -1263,6 +1293,8 @@ void LipidSpaceGUI::runAnalysis(){
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
     statisticsPCA.updatePCA();
+    statisticsPVal.updatePVal();
+    statisticsVolcano.updateVolcano();
 
     int pos = ui->speciesComboBox->findText(species_selection.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
@@ -1273,9 +1305,9 @@ void LipidSpaceGUI::runAnalysis(){
     if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
 
     // reset splitters for statistics tile view
-    int h = (double)(ui->splitterStat->height()) * 0.333;
-    ui->splitterStatV1->setSizes(QList<int>{h, h, h});
-    ui->splitterStatV2->setSizes(QList<int>{h, h, h});
+    int h = (double)(ui->splitterStat->height()) * 0.5;
+    ui->splitterStatV1->setSizes(QList<int>{h, h, h, h});
+    ui->splitterStatV2->setSizes(QList<int>{h, h, h, h});
     ui->splitterStat->setSizes(QList<int>{ui->splitterStat->width() >> 1, ui->splitterStat->width() >> 1});
 
     emit analysisCompleted();

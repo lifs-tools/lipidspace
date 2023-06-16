@@ -262,7 +262,7 @@ void Statistics::updateBarPlot(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary){
+    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level_lipidomes){
         chart->setVisible(false);
         return;
     }
@@ -491,7 +491,7 @@ void Statistics::updateSpeciesCV(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary){
+    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level_lipidomes){
         chart->setVisible(false);
         return;
     }
@@ -617,7 +617,7 @@ void Statistics::updateHistogram(){
 
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1);
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && GlobalData::stat_level_lipidomes;
 
     chart->setVisible(do_continue);
     if (!do_continue) return;
@@ -722,7 +722,7 @@ void Statistics::updateROCCurve(){
     stat_results.clear();
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1);
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) & GlobalData::stat_level_lipidomes;
 
     chart->setVisible(do_continue);
     if (!do_continue){
@@ -881,7 +881,7 @@ void Statistics::updateBoxPlot(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() <= 1){
+    if (lipid_space->selected_lipidomes.size() <= 1 || !GlobalData::stat_level_lipidomes){
         chart->setVisible(false);
         return;
     }
@@ -1167,7 +1167,7 @@ void Statistics::updatePCA(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable){
+    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable || !GlobalData::stat_level_lipidomes){
         chart->setVisible(false);
         return;
     }
@@ -1288,3 +1288,90 @@ void Statistics::updatePCA(){
 
 
 }
+
+
+
+
+
+
+
+void Statistics::updatePVal(){
+
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+    series_titles.clear();
+    series.clear();
+    flat_data.clear();
+    stat_results.clear();
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
+
+    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+
+    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level_lipidomes){
+        chart->setVisible(false);
+        return;
+    }
+}
+
+
+
+
+
+
+
+void Statistics::updateVolcano(){
+
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+    series_titles.clear();
+    series.clear();
+    flat_data.clear();
+    stat_results.clear();
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
+
+    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+
+    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level_lipidomes){
+        chart->setVisible(false);
+        return;
+    }
+
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Indexes target_indexes;
+    Array target_values;
+    int nom_counter = 0;
+    vector<string> nominal_values;
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
+
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        if (lipidome->study_variables[target_variable].missing) continue;
+        if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+
+        string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+        if (uncontains_val(nominal_target_values, nominal_value)){
+            nominal_target_values.insert({nominal_value, nom_counter++});
+            nominal_values.push_back(nominal_value);
+        }
+        target_indexes.push_back(nominal_target_values[nominal_value]);
+        if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+
+
+    }
+
+    if (nom_counter != 2){
+        chart->setVisible(false);
+        return;
+    }
+}
+

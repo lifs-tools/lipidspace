@@ -139,6 +139,8 @@ public:
     Statistics statisticsSpeciesCV;
     Statistics statisticsBarPlot;
     Statistics statisticsPCA;
+    Statistics statisticsPVal;
+    Statistics statisticsVolcano;
     QLabel *select_tiles_information;
     RawDataModel *raw_data_model;
     set<int> *selected_d_lipidomes;
@@ -252,6 +254,7 @@ public slots:
     void setDendrogramHeight(int);
     void setPieSize(int);
     void setNormalization(int);
+    void setStatLevel(int pos);
     void selectDendrogramLipidomes();
     void setSelectedTilesMode();
     void lipidEntered(string _lipid_name);

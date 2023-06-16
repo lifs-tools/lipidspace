@@ -46,6 +46,8 @@ public slots:
     void updateHistogram();
     void updateSpeciesCV();
     void updatePCA();
+    void updatePVal();
+    void updateVolcano();
     void exportAsPdf();
     void exportData();
     void setLegendSize(int);
