@@ -1087,6 +1087,30 @@ bool test_benford(vector<Lipidome*> &l){
 
 
 
+void multiple_correction_bonferoni(Array &a){
+    for (auto &v : a) v = min(1., v * a.size());
+}
+
+
+
+
+void multiple_correction_bh(Array &arr){
+    vector<pair<double, double>> data;
+    for (int i = 0; i < (int)arr.size(); ++i) data.push_back({arr[i], i});
+
+    sort(data.begin(), data.end(),
+    [](const pair<double, double> &a, const pair<double, double> &b) -> bool {
+        return a.first < b.first;
+    });
+    for (int i = data.size() - 2; i >= 0; i--){
+        data[i].first = min(data[i + 1].first, data[i].first * data.size() / (i + 1));
+    }
+    for (auto &kv : data){
+        arr[kv.second] = kv.first;
+    }
+}
+
+
 
 
 

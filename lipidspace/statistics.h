@@ -54,6 +54,7 @@ public slots:
     void setTickSize(int);
     void setBarNumberHistogram(int);
     void setBarNumberSpeciesCV(int);
+    void setBarNumberPvalues(int bar_number);
     void setLogScaleBarPlot();
     void setShowDataBoxPlot();
     void setShowDataBarPlot();

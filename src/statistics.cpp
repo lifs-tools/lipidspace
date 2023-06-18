@@ -77,6 +77,13 @@ void Statistics::setBarNumberSpeciesCV(int bar_number){
 
 
 
+void Statistics::setBarNumberPvalues(int bar_number){
+    GlobalData::gui_num_var["bar_number"] = bar_number;
+    updatePVal();
+}
+
+
+
 void Statistics::exportData(){
     if (chart->chart_plots.size() == 0) return;
     QString file_name = QFileDialog::getSaveFileName(chart, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
@@ -1315,6 +1322,110 @@ void Statistics::updatePVal(){
         chart->setVisible(false);
         return;
     }
+
+
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, double> nominal_target_values;
+    Indexes target_indexes;
+    Array target_values;
+    int nom_counter = 0;
+    map<string, string> nominal_values;
+
+    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
+
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        if (lipidome->study_variables[target_variable].missing) continue;
+        if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+
+        string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+        if (uncontains_val(nominal_target_values, nominal_value)){
+            nominal_target_values.insert({nominal_value, nom_counter++});
+        }
+        nominal_values.insert({lipidome->cleaned_name, nominal_value});
+        target_indexes.push_back(nominal_target_values[nominal_value]);
+        if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+    }
+
+    if (nom_counter < 2){
+        chart->setVisible(false);
+        return;
+    }
+
+
+    Matrix stat_matrix;
+    map<LipidAdduct*, int> lipid_map;
+    map<string, int> lipid_name_map;
+    map<string, int> lipidome_name_map;
+    // setting up lipid to column in matrix map
+    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
+        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
+        if (uncontains_val(lipid_map, lipid)){
+            lipid_map.insert({lipid, lipid_map.size()});
+            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
+        }
+    }
+
+    // set up matrix for multiple linear regression
+    stat_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
+    stat_matrix += NAN;
+    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
+        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        lipidome_name_map.insert({lipidome->cleaned_name, r});
+        for (uint i = 0; i < lipidome->lipids.size(); ++i){
+            if (contains_val(lipid_map, lipidome->lipids[i])){
+                stat_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+            }
+        }
+    }
+
+    vector<Array> p_values{Array()};
+    for (auto &kv : lipid_name_map){
+        string lipid_name = kv.first;
+        int lipid_col = kv.second;
+
+        vector<Array> arrays(nom_counter, Array());
+        for (auto &kv_val : nominal_values){
+            string lipidome_name = kv_val.first;
+            string nom_value = kv_val.second;
+            int array_index = nominal_target_values[nom_value];
+            int lipidome_row = lipidome_name_map[lipidome_name];
+
+            double stat_value = stat_matrix(lipidome_row, lipid_col);
+            if (!isnan(stat_value)) arrays[array_index].push_back(stat_value);
+        }
+
+        for (int i = arrays.size() - 1; i >= 0; --i){
+            if (arrays[i].size() < 2) arrays.erase(arrays.begin() + i);
+        }
+        if (arrays.size() <= 1) continue;
+
+        if (nom_counter == 2){
+            p_values.back().push_back(p_value_student(arrays[0], arrays[1]));
+        }
+        else {
+            p_values.back().push_back(p_value_anova(arrays));
+        }
+    }
+
+
+    Histogramplot* histogramplot = new Histogramplot(chart);
+    vector<QString> categories{"P values"};
+    vector<QColor> colors{"#85b3ce"};
+
+    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
+    histogramplot->add(p_values, categories, &colors, num_bars);
+    histogramplot->borders.setX(0);
+    chart->xrange.setX(0);
+    chart->xrange.setY(1);
+    chart->yrange.setX(0);
+    chart->add(histogramplot);
+
+    /*
+    double accuracy = compute_accuracy(series);
+    stat_results.push_back({"accuracy", accuracy});
+    */
+    chart->setTitle("P-value distribution");
 }
 
 
@@ -1349,7 +1460,8 @@ void Statistics::updateVolcano(){
     Indexes target_indexes;
     Array target_values;
     int nom_counter = 0;
-    vector<string> nominal_values;
+    map<string, string> nominal_values;
+    vector<string> nominal_values_list;
 
     string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
     bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
@@ -1361,17 +1473,114 @@ void Statistics::updateVolcano(){
         string nominal_value = lipidome->study_variables[target_variable].nominal_value;
         if (uncontains_val(nominal_target_values, nominal_value)){
             nominal_target_values.insert({nominal_value, nom_counter++});
-            nominal_values.push_back(nominal_value);
+            nominal_values_list.push_back(nominal_value);
         }
+        nominal_values.insert({lipidome->cleaned_name, nominal_value});
         target_indexes.push_back(nominal_target_values[nominal_value]);
         if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
-
-
     }
 
     if (nom_counter != 2){
         chart->setVisible(false);
         return;
     }
+
+
+    Matrix stat_matrix;
+    map<LipidAdduct*, int> lipid_map;
+    map<string, int> lipid_name_map;
+    map<string, int> lipidome_name_map;
+    // setting up lipid to column in matrix map
+    for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
+        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
+        if (uncontains_val(lipid_map, lipid)){
+            lipid_map.insert({lipid, lipid_map.size()});
+            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
+        }
+    }
+
+    // set up matrix for multiple linear regression
+    stat_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
+    stat_matrix += NAN;
+    for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
+        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        lipidome_name_map.insert({lipidome->cleaned_name, r});
+        for (uint i = 0; i < lipidome->lipids.size(); ++i){
+            if (contains_val(lipid_map, lipidome->lipids[i])){
+                stat_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+            }
+        }
+    }
+
+    double max_x = 0;
+    Array p_values;
+    Array fold_changes;
+    for (auto &kv : lipid_name_map){
+        string lipid_name = kv.first;
+        int lipid_col = kv.second;
+
+        vector<Array> arrays(nom_counter, Array());
+        for (auto &kv_val : nominal_values){
+            string lipidome_name = kv_val.first;
+            string nom_value = kv_val.second;
+            int array_index = nominal_target_values[nom_value];
+            int lipidome_row = lipidome_name_map[lipidome_name];
+
+            double stat_value = stat_matrix(lipidome_row, lipid_col);
+            if (!isnan(stat_value)) arrays[array_index].push_back(stat_value);
+        }
+
+        for (int i = arrays.size() - 1; i >= 0; --i){
+            if (arrays[i].size() < 2) arrays.erase(arrays.begin() + i);
+        }
+        if (arrays.size() != 2) continue;
+
+        double p_value = p_value_student(arrays[0], arrays[1]);
+        double fc = arrays[0].mean() / arrays[1].mean();
+        if (fc <= 0 || p_value <= 1e-50) continue;
+
+        p_values.push_back(p_value);
+        fold_changes.push_back(fc);
+    }
+
+    multiple_correction_bonferoni(p_values);
+    vector<pair<double, double>> pval_fc_down;
+    vector<pair<double, double>> pval_fc_non;
+    vector<pair<double, double>> pval_fc_up;
+
+    for (int i = 0; i < (int)p_values.size(); ++i){
+        double p_value = p_values[i];
+        double fc = fold_changes[i];
+
+        double log_p_value = -log10(p_value);
+        double log_fc = log2(fc);
+
+        if (0.05 < p_value){
+            pval_fc_non.push_back({log_fc, log_p_value});
+        }
+        else {
+            if (log_fc <= -1) pval_fc_down.push_back({log_fc, log_p_value});
+
+            else if (1 <= log_fc) pval_fc_up.push_back({log_fc, log_p_value});
+
+            else pval_fc_non.push_back({log_fc, log_p_value});
+        }
+        max_x = max(max_x, fabs(log_fc));
+
+    }
+    string color_key = target_variable + "_" + nominal_values_list[0];
+    QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+    color_key = target_variable + "_" + nominal_values_list[1];
+    QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+
+    Scatterplot* scatterplot = new Scatterplot(chart);
+    scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_down.size()));
+    //scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[0]).arg(pval_fc_down.size()), color_down);
+    //scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[1]).arg(pval_fc_up.size()), color_up);
+    chart->add(scatterplot);
+    chart->xrange.setX(-max_x * 1.05);
+    chart->xrange.setY(max_x * 1.05);
+    chart->yrange.setX(0);
+    chart->setTitle("Volcano plot");
 }
 

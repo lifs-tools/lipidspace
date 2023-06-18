@@ -282,6 +282,8 @@ double p_value_welch(Array &a, Array &b);
 double p_value_anova(vector<Array> &v);
 double p_value_chi_sq(Array &a, Array &b);
 double cosine_similarity(Array &a, Array &b);
+void multiple_correction_bonferoni(Array &a);
+void multiple_correction_bh(Array &a);
 bool test_benford(Array &a);
 bool test_benford(Matrix &m);
 bool test_benford(vector<Lipidome*> &l);

@@ -7,6 +7,7 @@
 #include <immintrin.h>
 #include <cblas.h>
 #include <QtCore>
+#include <cmath>
 
 using lambda_lanczos::LambdaLanczos;
 using namespace std;
