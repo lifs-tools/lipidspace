@@ -2303,9 +2303,46 @@ void LipidSpaceGUI::ShowContextMenuStatisticsPCA(const QPoint pos){
 
 void LipidSpaceGUI::ShowContextMenuStatisticsPVal(const QPoint pos){
     if (statisticsPVal.chart->chart_plots.size() == 0) return;
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (uncontains_val(lipid_space->study_variable_values, target_variable)) return;
+
     QMenu *menu = new QMenu(this);
+    QMenu *menuTest = new QMenu("Statistical test", this);
+
+    int num_cases = 0;
+    for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
+        num_cases += kv.second;
+    }
+
+    if (num_cases == 2){
+        QAction *actionTestStudent = new QAction("Student T-Test", this); actionTestStudent->setCheckable(true);
+        QAction *actionTestWelch = new QAction("Welch T-Test", this); actionTestWelch->setCheckable(true);
+        QAction *actionTestKS = new QAction("Kolmogorow-Smirnow-Test", this); actionTestKS->setCheckable(true);
+
+        if (GlobalData::pval_test == "student") actionTestStudent->setChecked(true);
+        else if (GlobalData::pval_test == "welch") actionTestWelch->setChecked(true);
+        else actionTestKS->setChecked(true);
+
+        menuTest->addAction(actionTestStudent);
+        menuTest->addAction(actionTestWelch);
+        menuTest->addAction(actionTestKS);
+
+        connect(actionTestStudent, &QAction::triggered, this, [=](){ changePValTest("student"); });
+        connect(actionTestWelch, &QAction::triggered, this, [=](){ changePValTest("welch"); });
+        connect(actionTestKS, &QAction::triggered, this, [=](){ changePValTest("ks"); });
+    }
+    else if (num_cases > 2){
+        QAction *actionAnova = new QAction("ANOVA", this);
+        actionAnova->setCheckable(true);
+        actionAnova->setChecked(true);
+        actionAnova->setEnabled(false);
+        menuTest->addAction(actionAnova);
+    }
+
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addMenu(menuTest);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
     connect(actionData, &QAction::triggered, &statisticsPVal, &Statistics::exportData);
@@ -2316,14 +2353,131 @@ void LipidSpaceGUI::ShowContextMenuStatisticsPVal(const QPoint pos){
 
 void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     if (statisticsVolcano.chart->chart_plots.size() == 0) return;
+
     QMenu *menu = new QMenu(this);
+    QMenu *menuTest = new QMenu("Statistical test", this);
+    QMenu *menuCorrection = new QMenu("Multiple testing correction", this);
+    QMenu *menuSigLevel = new QMenu("Significance level", this);
+    QMenu *menuFC = new QMenu("Log fold change level", this);
+
+
+    QAction *actionSig5 = new QAction("significance < 5%", this); actionSig5->setCheckable(true);
+    QAction *actionSig1 = new QAction("significance < 1%", this); actionSig1->setCheckable(true);
+    QAction *actionSig01 = new QAction("significance < 0.1%", this); actionSig01->setCheckable(true);
+
+    QAction *actionFC1 = new QAction("log(fold change) = +/- 1", this); actionFC1->setCheckable(true);
+    QAction *actionFC2 = new QAction("log(fold change) = +/- 2", this); actionFC2->setCheckable(true);
+    QAction *actionFC3 = new QAction("log(fold change) = +/- 3", this); actionFC3->setCheckable(true);
+
+    if (GlobalData::volcano_sig == "5") actionSig5->setChecked(true);
+    else if (GlobalData::volcano_sig == "1") actionSig1->setChecked(true);
+    else actionSig01->setChecked(true);
+
+    if (GlobalData::volcano_log_fc == "+/- 1") actionFC1->setChecked(true);
+    else if (GlobalData::volcano_sig == "+/- 2") actionFC2->setChecked(true);
+    else actionFC3->setChecked(true);
+
+    menuFC->addAction(actionFC1);
+    menuFC->addAction(actionFC2);
+    menuFC->addAction(actionFC3);
+
+    menuSigLevel->addAction(actionSig5);
+    menuSigLevel->addAction(actionSig1);
+    menuSigLevel->addAction(actionSig01);
+
+    menu->addMenu(menuFC);
+    menu->addMenu(menuSigLevel);
+    menu->addSeparator();
+
+
+    QAction *actionTestStudent = new QAction("Student T-Test", this); actionTestStudent->setCheckable(true);
+    QAction *actionTestWelch = new QAction("Welch T-Test", this); actionTestWelch->setCheckable(true);
+    QAction *actionTestKS = new QAction("Kolmogorow-Smirnow-Test", this); actionTestKS->setCheckable(true);
+
+    if (GlobalData::volcano_test == "student") actionTestStudent->setChecked(true);
+    else if (GlobalData::volcano_test == "welch") actionTestWelch->setChecked(true);
+    else actionTestKS->setChecked(true);
+
+    QAction *actionNoCorrection = new QAction("No correction", this); actionNoCorrection->setCheckable(true);
+    QAction *actionBonferoniCorrection = new QAction("Bonferoni method", this); actionBonferoniCorrection->setCheckable(true);
+    QAction *actionBHCorrection = new QAction("Benjamini-Hochberg FDR", this); actionBHCorrection->setCheckable(true);
+
+    if (GlobalData::vocano_multiple == "bh") actionBHCorrection->setChecked(true);
+    else if (GlobalData::vocano_multiple == "bonferoni") actionBonferoniCorrection->setChecked(true);
+    else actionNoCorrection->setChecked(true);
+
+    menu->addMenu(menuTest);
+    menu->addMenu(menuCorrection);
+    menu->addSeparator();
+
+    menuTest->addAction(actionTestStudent);
+    menuTest->addAction(actionTestWelch);
+    menuTest->addAction(actionTestKS);
+
+    menuCorrection->addAction(actionNoCorrection);
+    menuCorrection->addAction(actionBonferoniCorrection);
+    menuCorrection->addAction(actionBHCorrection);
+
+
     QAction *actionData = new QAction("Export data", this);
     QAction *actionExportPdf = new QAction("Export as pdf", this);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
     connect(actionData, &QAction::triggered, &statisticsVolcano, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, &statisticsVolcano, &Statistics::exportAsPdf);
+
+    connect(actionNoCorrection, &QAction::triggered, this, [=](){ changeVolcanoMultiple("no"); });
+    connect(actionBonferoniCorrection, &QAction::triggered, this, [=](){ changeVolcanoMultiple("bonferoni"); });
+    connect(actionBHCorrection, &QAction::triggered, this, [=](){ changeVolcanoMultiple("bh"); });
+
+    connect(actionTestStudent, &QAction::triggered, this, [=](){ changeVolcanoTest("student"); });
+    connect(actionTestWelch, &QAction::triggered, this, [=](){ changeVolcanoTest("welch"); });
+    connect(actionTestKS, &QAction::triggered, this, [=](){ changeVolcanoTest("ks"); });
+
+    connect(actionSig5, &QAction::triggered, this, [=](){ changeVolcanoSig("5"); });
+    connect(actionSig1, &QAction::triggered, this, [=](){ changeVolcanoSig("1"); });
+    connect(actionSig01, &QAction::triggered, this, [=](){ changeVolcanoSig("01"); });
+
+    connect(actionFC1, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 1"); });
+    connect(actionFC2, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 2"); });
+    connect(actionFC3, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 3"); });
+
     menu->popup(ui->statisticsVolcano->viewport()->mapToGlobal(pos));
+}
+
+
+
+void LipidSpaceGUI::changeVolcanoMultiple(string method){
+    GlobalData::vocano_multiple = method;
+    statisticsVolcano.updateVolcano();
+}
+
+
+
+void LipidSpaceGUI::changeVolcanoTest(string method){
+    GlobalData::volcano_test = method;
+    statisticsVolcano.updateVolcano();
+}
+
+
+
+void LipidSpaceGUI::changePValTest(string method){
+    GlobalData::pval_test = method;
+    statisticsPVal.updatePVal();
+}
+
+
+
+void LipidSpaceGUI::changeVolcanoSig(string method){
+    GlobalData::volcano_sig = method;
+    statisticsVolcano.updateVolcano();
+}
+
+
+
+void LipidSpaceGUI::changeVolcanoFC(string method){
+    GlobalData::volcano_log_fc = method;
+    statisticsVolcano.updateVolcano();
 }
 
 

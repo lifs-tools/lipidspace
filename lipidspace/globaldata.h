@@ -39,6 +39,9 @@ public:
     static bool in_tutorial;
     static string vocano_multiple;
     static string volcano_test;
+    static string volcano_sig;
+    static string volcano_log_fc;
+    static string pval_test;
 };
 
 

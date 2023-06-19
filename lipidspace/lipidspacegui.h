@@ -241,6 +241,11 @@ public slots:
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);
     void reassembleSelection();
     void setStudyVariable(int pos);
+    void changeVolcanoMultiple(string method);
+    void changeVolcanoTest(string method);
+    void changeVolcanoSig(string method);
+    void changeVolcanoFC(string method);
+    void changePValTest(string method);
     void itemChanged(QListWidgetItem *item);
     void studyVariableItemChanged(QTreeWidgetItem *item, int col);
     void studyVariableItemDoubleClicked(QTreeWidgetItem *item, int col);

@@ -1401,12 +1401,17 @@ void Statistics::updatePVal(){
         if (arrays.size() <= 1) continue;
 
         if (nom_counter == 2){
-            p_values.back().push_back(p_value_student(arrays[0], arrays[1]));
+            double p_value = 0;
+            if (GlobalData::pval_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
+            else if (GlobalData::pval_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
+            else if (GlobalData::pval_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+            p_values.back().push_back(p_value);
         }
         else {
             p_values.back().push_back(p_value_anova(arrays));
         }
     }
+
 
 
     Histogramplot* histogramplot = new Histogramplot(chart);
@@ -1515,6 +1520,7 @@ void Statistics::updateVolcano(){
     double max_x = 0;
     Array p_values;
     Array fold_changes;
+    vector<QString> p_val_lipids;
     for (auto &kv : lipid_name_map){
         string lipid_name = kv.first;
         int lipid_col = kv.second;
@@ -1545,6 +1551,7 @@ void Statistics::updateVolcano(){
 
         p_values.push_back(p_value);
         fold_changes.push_back(fc);
+        p_val_lipids.push_back(lipid_name.c_str());
     }
 
     if (GlobalData::vocano_multiple == "bh") multiple_correction_bh(p_values);
@@ -1552,8 +1559,20 @@ void Statistics::updateVolcano(){
 
 
     vector<pair<double, double>> pval_fc_down;
+    vector<QString> fc_down_lipids;
     vector<pair<double, double>> pval_fc_non;
+    vector<QString> fc_non_lipids;
     vector<pair<double, double>> pval_fc_up;
+    vector<QString> fc_up_lipids;
+
+    double alpha_level = 0.001;
+    if (GlobalData::volcano_sig == "5") alpha_level = 0.05;
+    else if (GlobalData::volcano_sig == "1") alpha_level = 0.01;
+
+    double log_fc_level = 3;
+    if (GlobalData::volcano_log_fc == "+/- 1") log_fc_level = 1;
+    else if (GlobalData::volcano_log_fc == "+/- 2") log_fc_level = 2;
+
 
     for (int i = 0; i < (int)p_values.size(); ++i){
         double p_value = p_values[i];
@@ -1562,15 +1581,25 @@ void Statistics::updateVolcano(){
         double log_p_value = -log10(p_value);
         double log_fc = log2(fc);
 
-        if (0.05 < p_value){
+        if (alpha_level < p_value){
             pval_fc_non.push_back({log_fc, log_p_value});
+            fc_non_lipids.push_back(p_val_lipids[i]);
         }
         else {
-            if (log_fc <= -1) pval_fc_down.push_back({log_fc, log_p_value});
+            if (log_fc <= -log_fc_level){
+                pval_fc_down.push_back({log_fc, log_p_value});
+                fc_down_lipids.push_back(p_val_lipids[i]);
+            }
 
-            else if (1 <= log_fc) pval_fc_up.push_back({log_fc, log_p_value});
+            else if (log_fc_level <= log_fc){
+                pval_fc_up.push_back({log_fc, log_p_value});
+                fc_up_lipids.push_back(p_val_lipids[i]);
+            }
 
-            else pval_fc_non.push_back({log_fc, log_p_value});
+            else {
+                pval_fc_non.push_back({log_fc, log_p_value});
+                fc_non_lipids.push_back(p_val_lipids[i]);
+            }
         }
         max_x = max(max_x, fabs(log_fc));
 
@@ -1581,9 +1610,9 @@ void Statistics::updateVolcano(){
     QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
 
     Scatterplot* scatterplot = new Scatterplot(chart);
-    scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd");
-    scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[0].c_str()).arg(pval_fc_down.size()), color_down);
-    scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[1].c_str()).arg(pval_fc_up.size()), color_up);
+    scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
+    scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[0].c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
+    scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[1].c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
     chart->add(scatterplot);
     chart->xrange.setX(-max_x * 1.05);
     chart->xrange.setY(max_x * 1.05);
