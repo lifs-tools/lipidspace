@@ -360,6 +360,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->statisticsSpeciesCV->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsROCCurve->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsPCA->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statisticsPVal->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statisticsVolcano->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->actionLoad_list_s, &QAction::triggered, this, &LipidSpaceGUI::openLists);
     connect(ui->actionLoad_table, &QAction::triggered, this, &LipidSpaceGUI::openTable);
@@ -455,6 +457,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsSpeciesCV, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsSpeciesCV);
     connect(ui->statisticsROCCurve, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsROCCurve);
     connect(ui->statisticsPCA, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsPCA);
+    connect(ui->statisticsPVal, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsPVal);
+    connect(ui->statisticsVolcano, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsVolcano);
 
     sorting_boxes.push_back(ui->speciesComboBox);
     sorting_boxes.push_back(ui->classComboBox);
@@ -2294,6 +2298,32 @@ void LipidSpaceGUI::ShowContextMenuStatisticsPCA(const QPoint pos){
     connect(actionData, &QAction::triggered, &statisticsPCA, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, &statisticsPCA, &Statistics::exportAsPdf);
     menu->popup(ui->statisticsPCA->viewport()->mapToGlobal(pos));
+}
+
+
+void LipidSpaceGUI::ShowContextMenuStatisticsPVal(const QPoint pos){
+    if (statisticsPVal.chart->chart_plots.size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
+    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionData);
+    menu->addAction(actionExportPdf);
+    connect(actionData, &QAction::triggered, &statisticsPVal, &Statistics::exportData);
+    connect(actionExportPdf, &QAction::triggered, &statisticsPVal, &Statistics::exportAsPdf);
+    menu->popup(ui->statisticsPVal->viewport()->mapToGlobal(pos));
+}
+
+
+void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
+    if (statisticsVolcano.chart->chart_plots.size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
+    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    menu->addAction(actionData);
+    menu->addAction(actionExportPdf);
+    connect(actionData, &QAction::triggered, &statisticsVolcano, &Statistics::exportData);
+    connect(actionExportPdf, &QAction::triggered, &statisticsVolcano, &Statistics::exportAsPdf);
+    menu->popup(ui->statisticsVolcano->viewport()->mapToGlobal(pos));
 }
 
 

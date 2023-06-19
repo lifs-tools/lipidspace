@@ -234,6 +234,8 @@ public slots:
     void ShowContextMenuStatisticsSpeciesCV(const QPoint);
     void ShowContextMenuStatisticsROCCurve(const QPoint);
     void ShowContextMenuStatisticsPCA(const QPoint);
+    void ShowContextMenuStatisticsPVal(const QPoint);
+    void ShowContextMenuStatisticsVolcano(const QPoint);
     void ShowTableContextMenu(const QPoint);
     void ShowContextMenuDendrogram(const QPoint, set<int> *selected_d_lipidomes = 0);
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);

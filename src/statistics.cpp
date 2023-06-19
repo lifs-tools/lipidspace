@@ -1535,7 +1535,11 @@ void Statistics::updateVolcano(){
         }
         if (arrays.size() != 2) continue;
 
-        double p_value = p_value_student(arrays[0], arrays[1]);
+        double p_value = 0;
+        if (GlobalData::volcano_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
+        else if (GlobalData::volcano_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
+        else if (GlobalData::volcano_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+
         double fc = arrays[0].mean() / arrays[1].mean();
         if (fc <= 0 || p_value <= 1e-50) continue;
 
@@ -1543,7 +1547,10 @@ void Statistics::updateVolcano(){
         fold_changes.push_back(fc);
     }
 
-    multiple_correction_bonferoni(p_values);
+    if (GlobalData::vocano_multiple == "bh") multiple_correction_bh(p_values);
+    else if (GlobalData::vocano_multiple == "bonferoni") multiple_correction_bonferoni(p_values);
+
+
     vector<pair<double, double>> pval_fc_down;
     vector<pair<double, double>> pval_fc_non;
     vector<pair<double, double>> pval_fc_up;
@@ -1574,9 +1581,9 @@ void Statistics::updateVolcano(){
     QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
 
     Scatterplot* scatterplot = new Scatterplot(chart);
-    scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_down.size()));
-    //scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[0]).arg(pval_fc_down.size()), color_down);
-    //scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[1]).arg(pval_fc_up.size()), color_up);
+    scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd");
+    scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[0].c_str()).arg(pval_fc_down.size()), color_down);
+    scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[1].c_str()).arg(pval_fc_up.size()), color_up);
     chart->add(scatterplot);
     chart->xrange.setX(-max_x * 1.05);
     chart->xrange.setY(max_x * 1.05);

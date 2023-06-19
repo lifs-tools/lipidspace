@@ -37,6 +37,8 @@ public:
     static map<string, string> gui_string_var;
     static map<string, double> gui_num_var;
     static bool in_tutorial;
+    static string vocano_multiple;
+    static string volcano_test;
 };
 
 
