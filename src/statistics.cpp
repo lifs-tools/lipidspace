@@ -84,6 +84,26 @@ void Statistics::setBarNumberPvalues(int bar_number){
 
 
 
+void Statistics::highlightPoints(QListWidget* speciesList){
+    if (chart->chart_plots.empty()) return;
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+
+    map<QString, ScPoint*> points = ((Scatterplot*)chart->chart_plots[0])->point_map;
+    for (auto &kv : points) kv.second->highlight = false;
+
+    for (auto item : speciesList->selectedItems()){
+        string lipid_name = item->text().toStdString();
+        if (uncontains_val(translations, lipid_name)) continue;
+        QString translated_lipid_name = translations[lipid_name].c_str();
+        if (contains_val(points, translated_lipid_name)){
+            points[translated_lipid_name]->highlight = true;
+        }
+    }
+    chart->update_chart();
+}
+
+
+
 void Statistics::exportData(){
     if (chart->chart_plots.size() == 0) return;
     QString file_name = QFileDialog::getSaveFileName(chart, "Export data", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
@@ -1570,6 +1590,7 @@ void Statistics::updateVolcano(){
     else if (GlobalData::volcano_sig == "1") alpha_level = 0.01;
 
     double log_fc_level = 3;
+    if (GlobalData::volcano_log_fc == "+/- 0.5") log_fc_level = 0.5;
     if (GlobalData::volcano_log_fc == "+/- 1") log_fc_level = 1;
     else if (GlobalData::volcano_log_fc == "+/- 2") log_fc_level = 2;
 
@@ -1614,9 +1635,15 @@ void Statistics::updateVolcano(){
     scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[0].c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
     scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[1].c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
     chart->add(scatterplot);
+
+    Lineplot *line_plot = new Lineplot(chart, true);
+    vector< pair< pair<double, double>, pair<double, double> > > boundaries{{{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}}, {{-log_fc_level, -1e5}, {-log_fc_level, 1e5}}, {{log_fc_level, -1e5}, {log_fc_level, 1e5}}};
+    line_plot->add(boundaries, "", "#ff0000");
+    chart->add(line_plot);
+
     chart->xrange.setX(-max_x * 1.05);
     chart->xrange.setY(max_x * 1.05);
-    chart->yrange.setX(0);
+    chart->yrange.setX(-0.1);
     chart->setTitle("Volcano plot");
 }
 

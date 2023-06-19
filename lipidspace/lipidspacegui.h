@@ -168,7 +168,7 @@ public:
     void keyReleaseEvent(QKeyEvent *event) override;
     void copy_to_clipboard();
     void closeEvent(QCloseEvent *event) override;
-
+    void lipid_selection_changed();
 
 signals:
     void transforming(QRectF f);
@@ -178,7 +178,7 @@ signals:
     void updateHighlightedPoints(vector<QString> *);
     void analysisCompleted();
     void resizing();
-
+    void highlightLipids(QListWidget *);
 
 
 public slots:

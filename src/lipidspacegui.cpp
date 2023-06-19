@@ -331,6 +331,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsBarPlot, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
+    connect(ui->speciesList, &QListWidget::itemSelectionChanged, this, &LipidSpaceGUI::lipid_selection_changed);
+    connect(this, &LipidSpaceGUI::highlightLipids, &statisticsVolcano, &Statistics::highlightPoints);
 
     qRegisterMetaType<string>("string");
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
@@ -581,6 +583,13 @@ LipidSpaceGUI::~LipidSpaceGUI(){
     delete raw_data_model;
     delete tutorial;
     delete select_lipidomes;
+}
+
+
+
+
+void LipidSpaceGUI::lipid_selection_changed() {
+    emit highlightLipids(ui->speciesList);
 }
 
 
@@ -1175,19 +1184,20 @@ void LipidSpaceGUI::runAnalysis(){
     int n = 0;
 
     // insert global lipidome canvases
-    Canvas* canvas = new Canvas(lipid_space, n++, -1, ui->speciesList, GlobalSpaceCanvas, ui->centralwidget);
+    Canvas* canvas = new Canvas(lipid_space, n++, -1, GlobalSpaceCanvas, ui->centralwidget);
     if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
     connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
     connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
     connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
-    connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+    //connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+    connect(this, &LipidSpaceGUI::highlightLipids, canvas, &Canvas::highlightPoints);
     connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
     connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
     connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
     connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
     connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
     connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
-    connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+    //connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
     canvas->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
     connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
@@ -1202,19 +1212,20 @@ void LipidSpaceGUI::runAnalysis(){
         if (kv.second.size() <= 1) continue;
 
         for (uint i = 0; i < kv.second.size(); ++i){
-            Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, GroupSpaceCanvas, ui->centralwidget, kv.first);
+            Canvas* canvas = new Canvas(lipid_space, n++, i, GroupSpaceCanvas, ui->centralwidget, kv.first);
             if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
             connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
             connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
             connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
-            connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+            //connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+            connect(this, &LipidSpaceGUI::highlightLipids, canvas, &Canvas::highlightPoints);
             connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
             connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
             connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
             connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
             connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
             connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
-            connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+            //connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
             canvas->setContextMenuPolicy(Qt::CustomContextMenu);
             connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
             connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
@@ -1226,19 +1237,20 @@ void LipidSpaceGUI::runAnalysis(){
 
     // insert single lipidomes
     for (uint i = 0; i < lipid_space->selected_lipidomes.size(); ++i){
-        Canvas* canvas = new Canvas(lipid_space, n++, i, ui->speciesList, SampleSpaceCanvas, ui->centralwidget);
+        Canvas* canvas = new Canvas(lipid_space, n++, i, SampleSpaceCanvas, ui->centralwidget);
         if (canvas->pointSet && contains_val(selected_tiles, canvas->pointSet->title)) canvas->marked_for_selected_view = true;
         connect(canvas, SIGNAL(transforming(QRectF)), this, SLOT(setTransforming(QRectF)));
         connect(this, SIGNAL(transforming(QRectF)), canvas, SLOT(setTransforming(QRectF)));
         connect(canvas, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
-        connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+        //connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+        connect(this, &LipidSpaceGUI::highlightLipids, canvas, &Canvas::highlightPoints);
         connect(this, SIGNAL(updateCanvas()), canvas, SLOT(setUpdate()));
         connect(this, SIGNAL(exporting(string)), lipid_space, SLOT(store_results(string)));
         connect(canvas, SIGNAL(mouse(QMouseEvent*, Canvas*)), dragLayer, SLOT(mousePressEvent(QMouseEvent*, Canvas*)));
         connect(dragLayer, SIGNAL(hover()), canvas, SLOT(hoverOver()));
         connect(dragLayer, SIGNAL(swapping(int)), canvas, SLOT(setSwap(int)));
         connect(canvas, SIGNAL(swappingLipidomes(int, int)), this, SLOT(swapLipidomes(int, int)));
-        connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
+        //connect(ui->speciesList, SIGNAL(itemSelectionChanged()), canvas, SLOT(highlightPoints()));
         canvas->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
         connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
@@ -2365,21 +2377,24 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     QAction *actionSig1 = new QAction("significance < 1%", this); actionSig1->setCheckable(true);
     QAction *actionSig01 = new QAction("significance < 0.1%", this); actionSig01->setCheckable(true);
 
-    QAction *actionFC1 = new QAction("log(fold change) = +/- 1", this); actionFC1->setCheckable(true);
-    QAction *actionFC2 = new QAction("log(fold change) = +/- 2", this); actionFC2->setCheckable(true);
-    QAction *actionFC3 = new QAction("log(fold change) = +/- 3", this); actionFC3->setCheckable(true);
+    QAction *actionFC1 = new QAction("log(fold change) = +/- 0.5", this); actionFC1->setCheckable(true);
+    QAction *actionFC2 = new QAction("log(fold change) = +/- 1", this); actionFC1->setCheckable(true);
+    QAction *actionFC3 = new QAction("log(fold change) = +/- 2", this); actionFC2->setCheckable(true);
+    QAction *actionFC4 = new QAction("log(fold change) = +/- 3", this); actionFC3->setCheckable(true);
 
     if (GlobalData::volcano_sig == "5") actionSig5->setChecked(true);
     else if (GlobalData::volcano_sig == "1") actionSig1->setChecked(true);
     else actionSig01->setChecked(true);
 
-    if (GlobalData::volcano_log_fc == "+/- 1") actionFC1->setChecked(true);
-    else if (GlobalData::volcano_sig == "+/- 2") actionFC2->setChecked(true);
-    else actionFC3->setChecked(true);
+    if (GlobalData::volcano_log_fc == "+/- 0.5") actionFC1->setChecked(true);
+    else if (GlobalData::volcano_log_fc == "+/- 1") actionFC2->setChecked(true);
+    else if (GlobalData::volcano_log_fc == "+/- 2") actionFC3->setChecked(true);
+    else actionFC4->setChecked(true);
 
     menuFC->addAction(actionFC1);
     menuFC->addAction(actionFC2);
     menuFC->addAction(actionFC3);
+    menuFC->addAction(actionFC4);
 
     menuSigLevel->addAction(actionSig5);
     menuSigLevel->addAction(actionSig1);
@@ -2438,9 +2453,10 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     connect(actionSig1, &QAction::triggered, this, [=](){ changeVolcanoSig("1"); });
     connect(actionSig01, &QAction::triggered, this, [=](){ changeVolcanoSig("01"); });
 
-    connect(actionFC1, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 1"); });
-    connect(actionFC2, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 2"); });
-    connect(actionFC3, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 3"); });
+    connect(actionFC1, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 0.5"); });
+    connect(actionFC2, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 1"); });
+    connect(actionFC3, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 2"); });
+    connect(actionFC4, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 3"); });
 
     menu->popup(ui->statisticsVolcano->viewport()->mapToGlobal(pos));
 }

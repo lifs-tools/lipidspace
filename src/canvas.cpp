@@ -1284,9 +1284,8 @@ void Canvas::setDendrogramHeight(){
 }
 
 
-Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *, string _group_name) {
+Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int num, CanvasType _canvas_type, QWidget *, string _group_name) {
     lipid_space = _lipid_space;
-    listed_species = _listed_species;
     canvas_type = _canvas_type;
     canvas_id = _canvas_id;
     lipidome_group_name = _group_name;
@@ -1392,11 +1391,11 @@ void Canvas::clear(){
 
 
 
-void Canvas::highlightPoints(){
+void Canvas::highlightPoints(QListWidget *species_widget){
     if (pointSet){
         pointSet->highlighted_points.clear();
 
-        for (auto item : listed_species->selectedItems()){
+        for (auto item : species_widget->selectedItems()){
             pointSet->highlighted_points.insert(item->text());
         }
 

@@ -61,6 +61,7 @@ public slots:
     void lipidEntered(string lipid_name);
     void lipidExited();
     void setStatResults();
+    void highlightPoints(QListWidget*);
 
 signals:
     void enterLipid(string lipid_name);

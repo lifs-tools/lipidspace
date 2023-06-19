@@ -830,7 +830,8 @@ LPLine::LPLine(double _x1, double _y1, double _x2, double _y2, QColor _color){
 
 
 
-Lineplot::Lineplot(Chart *_chart) : Chartplot(_chart) {
+Lineplot::Lineplot(Chart *_chart, bool _is_border) : Chartplot(_chart) {
+    is_border = _is_border;
 }
 
 
@@ -851,8 +852,10 @@ void Lineplot::update_chart(){
         chart->translate(x1, y1);
         chart->translate(x2, y2);
 
+        if (is_border) line.color.setAlpha(128);
         QPen pen(line.color);
-        pen.setWidthF(2);
+        if (is_border) pen.setStyle(Qt::DashLine);
+        else pen.setWidthF(2);
         line.line->setPen(pen);
         line.line->setLine(x1, y1, x2, y2);
         line.line->setVisible(visible && (i <= animation_length));
@@ -885,10 +888,13 @@ void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > 
         chart->scene.addItem(lines.back().line);
         lines.back().line->setParentItem(chart->base);
     }
-    chart->xrange.setX(xmin);
-    chart->xrange.setY(xmax);
-    chart->yrange.setX(ymin);
-    chart->yrange.setY(ymax);
+
+    if (!is_border){
+        chart->xrange.setX(xmin);
+        chart->xrange.setY(xmax);
+        chart->yrange.setX(ymin);
+        chart->yrange.setY(ymax);
+    }
 
     if (category.length() > 0) chart->legend_categories.push_back(LegendCategory(category, _color, &chart->scene));
     chart->create_x_numerical_axis();
@@ -987,7 +993,21 @@ void Scatterplot::wheelEvent(QWheelEvent *event){
     double zoom = (event->delta() > 0) ? 1. / 1.1 : 1.1;
 #endif
 
-    if (!chart->chart_box_inner.contains(mouse_pos)) return;
+
+
+    bool update_x = false;
+    bool update_y = false;
+    if (chart->chart_box_inner.contains(mouse_pos)){
+        update_x = true;
+        update_y = true;
+    }
+    else if (chart->xlabel_box.contains(mouse_pos)) update_x = true;
+    else if (chart->ylabel_box.contains(mouse_pos)) update_y = true;
+    else if (chart->chart_box.contains(mouse_pos) && mouse_pos.x() < chart->chart_box_inner.x()) update_y = true;
+    else if (chart->chart_box.contains(mouse_pos) && mouse_pos.y() > chart->chart_box_inner.y()) update_x = true;
+
+    if (!update_x && !update_y) return;
+
     double x = mouse_pos.x();
     double y = mouse_pos.y();
     chart->back_translate_x(x);
@@ -1003,36 +1023,59 @@ void Scatterplot::wheelEvent(QWheelEvent *event){
     top = y + zoom * (top - y);
     bottom = y + zoom * (bottom - y);
 
-    chart->xrange = QPointF(left, right);
-    chart->yrange = QPointF(top, bottom);
+    if (update_x) chart->xrange = QPointF(left, right);
+    if (update_y) chart->yrange = QPointF(top, bottom);
     chart->update_chart();
 }
 
 
 void Scatterplot::update_chart(){
+    if (points.size()){
+        bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
+        double animation_length = chart->animation * points.size();
 
-    bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
-    double animation_length = chart->animation * points.size();
+        for (uint i = 0; i < points.size(); ++i){
+            auto p = points[i];
+            double x = p->x;
+            double y = p->y;
+            chart->translate(x, y);
 
-    for (uint i = 0; i < points.size(); ++i){
-        auto p = points[i];
-        double x = p->x;
-        double y = p->y;
-        chart->translate(x, y);
+            QPen pen(p->highlight ? Qt::black : Qt::white);
+            pen.setWidthF(1.5);
+            p->setPen(pen);
+            p->setRect(x - 7, y - 7, 14, 14);
+            p->setBrush(QBrush(p->color));
+            p->setVisible(visible && (i <= animation_length));
+        }
+    }
+    else if (point_map.size()){
+        bool visible = (chart->chart_box_inner.width() > 0 && chart->chart_box_inner.height() > 0);
+        double animation_length = chart->animation * point_map.size();
 
-        QPen pen(Qt::white);
-        pen.setWidthF(1.5);
-        p->setPen(pen);
-        p->setRect(x - 7, y - 7, 14, 14);
-        p->setBrush(QBrush(p->color));
-        p->setVisible(visible && (i <= animation_length));
+        int i = 0;
+        for (auto &kv : point_map){
+            auto p = kv.second;
+            double x = p->x;
+            double y = p->y;
+            chart->translate(x, y);
+
+            QPen pen(p->highlight ? Qt::black : Qt::white);
+            p->setZValue(99 + p->highlight);
+            pen.setWidthF(1.5);
+            p->setPen(pen);
+            p->setRect(x - 7, y - 7, 14, 14);
+            p->setBrush(QBrush(p->color));
+            p->setVisible(visible && (i <= animation_length));
+        }
     }
 }
 
 
 void Scatterplot::clear(){
     for (auto point : points) delete point;
+    for (auto &kv : point_map) delete kv.second;
     points.clear();
+    point_map.clear();
 }
 
 
@@ -1055,7 +1098,8 @@ void Scatterplot::add(vector< pair<double, double> > &data, QString category, QC
 
         ScPoint *sc_point = new ScPoint(xy_point.first, xy_point.second, color, data_label);
         sc_point->setAcceptHoverEvents(true);
-        points.push_back(sc_point);
+        if (data_labels) point_map.insert({data_labels->at(i), sc_point});
+        else points.push_back(sc_point);
         chart->scene.addItem(sc_point);
         sc_point->setParentItem(chart->base);
     }

@@ -280,11 +280,10 @@ public:
     QRectF oldView;
     PointSet *pointSet = 0;
     Dendrogram *dendrogram;
-    QListWidget *listed_species = 0;
     Decoration *decoration = 0;
 
     Canvas(QWidget *parent = nullptr);
-    Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, QListWidget* _listed_species, CanvasType _canvas_type, QWidget *parent = nullptr, string group_name = "");
+    Canvas(LipidSpace *_lipid_space, int _canvas_id, int _num, CanvasType _canvas_type, QWidget *parent = nullptr, string group_name = "");
     ~Canvas();
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
@@ -312,7 +311,7 @@ public slots:
     void reloadPoints();
     void setStudyVariable(string);
     void clear();
-    void highlightPoints();
+    void highlightPoints(QListWidget *);
     void moveToPoint(QListWidgetItem*);
     void contextMenu(QPoint pos);
     void setLabelSize(int);

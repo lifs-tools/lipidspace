@@ -225,8 +225,9 @@ public:
 class Lineplot : public Chartplot {
 public:
     vector<LPLine> lines;
+    bool is_border;
 
-    Lineplot(Chart *_chart);
+    Lineplot(Chart *_chart, bool _is_border = false);
     ~Lineplot();
     void add(vector< pair< pair<double, double>, pair<double, double> > > &lines, QString category, QColor color = QColor("#99ca53"));
     void update_chart();
@@ -249,6 +250,7 @@ public:
     double y;
     QColor color;
     QString label;
+    bool highlight = false;
 
     ScPoint(double _x, double _y, QColor _color = QColor("#209fdf"), QString _label = "", QGraphicsItem *parent = nullptr);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
@@ -265,6 +267,7 @@ public:
     QPointF shift_start_y;
     QPointF zoom_start;
     vector<ScPoint*> points;
+    map<QString, ScPoint*> point_map;
 
     Scatterplot(Chart *_chart);
     ~Scatterplot();

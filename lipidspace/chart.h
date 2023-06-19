@@ -44,11 +44,11 @@ public:
     QGraphicsTextItem *title;
     QGraphicsTextItem *xlabel;
     QGraphicsTextItem *ylabel;
-    QRect title_box;
-    QRect xlabel_box;
-    QRect ylabel_box;
-    QRect legend_box;
-    QRect chart_box;
+    QRectF title_box;
+    QRectF xlabel_box;
+    QRectF ylabel_box;
+    QRectF legend_box;
+    QRectF chart_box;
     QRectF chart_box_inner;
     QFont tick_font;
     QFont label_font;
