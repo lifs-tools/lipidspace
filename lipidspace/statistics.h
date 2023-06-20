@@ -62,6 +62,7 @@ public slots:
     void lipidExited();
     void setStatResults();
     void highlightPoints(QListWidget*);
+    void highlightBars(QListWidget* speciesList);
     void lipidMarked();
 
 signals:

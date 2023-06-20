@@ -331,11 +331,13 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsBarPlot, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
+    connect(&statisticsBarPlot, &Statistics::markLipid, this, &LipidSpaceGUI::lipidMarked);
     connect(&statisticsVolcano, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsVolcano, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
     connect(&statisticsVolcano, &Statistics::markLipid, this, &LipidSpaceGUI::lipidMarked);
     connect(ui->speciesList, &QListWidget::itemSelectionChanged, this, &LipidSpaceGUI::lipid_selection_changed);
     connect(this, &LipidSpaceGUI::highlightLipids, &statisticsVolcano, &Statistics::highlightPoints);
+    connect(this, &LipidSpaceGUI::highlightLipids, &statisticsBarPlot, &Statistics::highlightBars);
 
     qRegisterMetaType<string>("string");
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");

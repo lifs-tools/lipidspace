@@ -8,8 +8,6 @@ void HoverSignal::sendSignalEnter(string lipid_name){
     emit enterLipid(lipid_name);
 }
 
-
-
 void HoverSignal::sendSignalExit(){
     emit exitLipid();
 }
@@ -78,6 +76,7 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
     rect->setAcceptHoverEvents(true);
     connect(&(rect->hover_signal), &HoverSignal::enterLipid, this, &BarBox::lipidEntered);
     connect(&(rect->hover_signal), &HoverSignal::exitLipid, this, &BarBox::lipidExited);
+    connect(&(rect->hover_signal), &HoverSignal::markLipid, this, &BarBox::lipidMarked);
 
 
     rect->setParentItem(chart->base);
@@ -95,6 +94,10 @@ void BarBox::lipidEntered(string lipid_name){
 
 void BarBox::lipidExited(){
     emit exitLipid();
+}
+
+void BarBox::lipidMarked(){
+    emit markLipid();
 }
 
 
@@ -134,23 +137,11 @@ void HoverRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 }
 
 
-
-
-HoverEllipseItem::HoverEllipseItem(QString _label, string _lipid_name, QGraphicsItem *parent) : QGraphicsEllipseItem(parent), label(_label), lipid_name(_lipid_name) {
-
-}
-
-void HoverEllipseItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event){
-    QGraphicsEllipseItem::hoverEnterEvent(event);
-    QToolTip::showText(QCursor::pos(), label);
-    hover_signal.sendSignalEnter(lipid_name);
-}
-
-
-void HoverEllipseItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
-    QGraphicsEllipseItem::hoverLeaveEvent(event);
-    QToolTip::hideText();
-    hover_signal.sendSignalExit();
+void HoverRectItem::mousePressEvent(QGraphicsSceneMouseEvent *event){
+    QGraphicsRectItem::mousePressEvent(event);
+    if (event->button() == Qt::MouseButton::LeftButton) {
+        emit hover_signal.markLipid();
+    }
 }
 
 
@@ -182,12 +173,12 @@ void Barplot::update_chart(){
     int stars_width = fm.horizontalAdvance("***");
 
     for (uint b = 0; b < bars.size(); ++b){
-        vector< BarBox* > &barset = bars[b];
-        for (uint s = 0; s < barset.size(); ++s){
-            BarBox *bar = barset[s];
+        vector< BarBox* > *bar_set = bars[b];
+        for (uint s = 0; s < bar_set->size(); ++s){
+            BarBox *bar = bar_set->at(s);
             if (visible && (bar->value > 0) && chart->xrange.x() <= b && b < chart->xrange.y()){
-                double xs = b + (double)s / (double)barset.size();
-                double xe = b + (double)(s + 1) / (double)barset.size();
+                double xs = b + (double)s / (double)bar_set->size();
+                double xe = b + (double)(s + 1) / (double)bar_set->size();
 
                 // draw error line
                 double x1 = xs + (xe - xs) / 4.;
@@ -214,9 +205,12 @@ void Barplot::update_chart(){
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
                 bar->rect->setBrush(QBrush(bar->color));
-                bar->rect->setPen(lines_visible ? QPen(Qt::black) : Qt::NoPen);
+                QPen rect_pen((lines_visible || bar->highlight) ? (bar->highlight ? QPen(Qt::black) : QPen(QColor("#dddddd"))) : Qt::NoPen);
+                rect_pen.setWidthF(1 + bar->highlight);
+                bar->rect->setPen(rect_pen);
                 bar->rect->setRect(x1, y1, x2 - x1, y2 - y1);
                 bar->rect->setVisible(true);
+                bar->rect->setZValue(99 + bar->highlight);
 
                 // draw lower error line
                 x1 = xs + (xe - xs) / 4.;
@@ -257,12 +251,12 @@ void Barplot::update_chart(){
         if (b >= stat_test_lines.size()) continue;
         StatTestLine &stat_test_line = stat_test_lines[b];
         QPen stat_pen;
-        if (show_pvalues && stat_test_line.pvalue <= 0.05 && barset.size() >= 2 && chart->xrange.x() <= b && b < chart->xrange.y()){
+        if (show_pvalues && stat_test_line.pvalue <= 0.05 && bar_set->size() >= 2 && chart->xrange.x() <= b && b < chart->xrange.y()){
             double xs = b;
-            double xe = b + 1. / (double)barset.size();
+            double xe = b + 1. / (double)bar_set->size();
             double x1 = xs + (xe - xs) / 2.;
 
-            xs = b + ((double)barset.size() - 1.) / (double)barset.size();
+            xs = b + ((double)bar_set->size() - 1.) / (double)bar_set->size();
             xe = b + 1.;
             double x2 = xe - (xe - xs) / 2.;
 
@@ -291,8 +285,10 @@ void Barplot::update_chart(){
 
 
 void Barplot::clear(){
+    bar_map.clear();
     for (auto bar_set : bars){
-        for (auto bar : bar_set) delete bar;
+        for (auto bar : *bar_set) delete bar;
+        delete bar_set;
     }
     bars.clear();
 }
@@ -304,6 +300,10 @@ void Barplot::lipidEntered(string lipid_name){
 
 void Barplot::lipidExited(){
     emit exitLipid();
+}
+
+void Barplot::lipidMarked(){
+    emit markLipid();
 }
 
 
@@ -402,14 +402,15 @@ void Barplot::resizeEvent(){
 
 
 void Barplot::recompute_hights(){
-    bool update_stat_lines = (bars.front().size() > 1) && (bars.size() == stat_test_lines.size());
+    if (bars.empty()) return;
+    bool update_stat_lines = (bars.size() == stat_test_lines.size()) && (bars.front()->size() > 1);
 
     double ymax = -INFINITY;
     double all_group_max = 0;
     for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b){
         auto bar_set = bars[b];
         double group_max = 0;
-        for (auto bar : bar_set){
+        for (auto bar : *bar_set){
             ymax = __max(ymax, bar->value + bar->error);
             all_group_max = __max(all_group_max, bar->value + bar->error);
             group_max = __max(group_max, bar->value + bar->error);
@@ -471,8 +472,9 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
     for (uint si = 0; si < data->size(); ++si){
         uint s = sorted_indexes[si].second;
         auto data_set = data->at(s);
-        bars.push_back(vector< BarBox* >());
-        vector< BarBox* > &bar_set = bars.back();
+        auto *bar_set = new vector<BarBox*>();
+        bars.push_back(bar_set);
+        bar_map.insert({labels->at(s), bar_set});
 
         double group_max = 0;
         for (uint c = 0; c < data_set.size(); c++){
@@ -549,9 +551,10 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
                 orig_data.push_back({values[i], xx[i] / max_x});
                 ymax = max(ymax, values[i]);
             }
-            bar_set.push_back(new BarBox(chart, mean, error, labels->at(s), color, &orig_data));
-            connect(bar_set.back(), &BarBox::enterLipid, this, &Barplot::lipidEntered);
-            connect(bar_set.back(), &BarBox::exitLipid, this, &Barplot::lipidExited);
+            bar_set->push_back(new BarBox(chart, mean, error, labels->at(s), color, &orig_data));
+            connect(bar_set->back(), &BarBox::enterLipid, this, &Barplot::lipidEntered);
+            connect(bar_set->back(), &BarBox::exitLipid, this, &Barplot::lipidExited);
+            connect(bar_set->back(), &BarBox::markLipid, this, &Barplot::lipidMarked);
         }
 
         if (data_set.size() == 2){
@@ -596,8 +599,8 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
         for (uint j = 0; j < lc_n - 1 - i; ++j){
             if (chart->legend_categories[j].category_string.toStdString() > chart->legend_categories[j + 1].category_string.toStdString()){
                 swap(chart->legend_categories[j], chart->legend_categories[j + 1]);
-                for (auto &bar_set : bars){
-                    swap(bar_set[j], bar_set[j + 1]);
+                for (auto bar_set : bars){
+                    swap(bar_set->at(j), bar_set->at(j + 1));
                 }
             }
         }

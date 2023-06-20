@@ -45,20 +45,7 @@ public:
     HoverRectItem(QString _label, string _lipid_name, QGraphicsItem *parent = nullptr);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
-
-};
-
-
-
-class HoverEllipseItem : public QGraphicsEllipseItem {
-public:
-    QString label;
-    string lipid_name;
-    HoverSignal hover_signal;
-
-    HoverEllipseItem(QString _label, string _lipid_name, QGraphicsItem *parent = nullptr);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
 };
 
@@ -97,6 +84,7 @@ public:
     DataCloud *data_cloud;
     HoverRectItem *rect;
     QColor color;
+    bool highlight = false;
 
     BarBox(Chart *_chart, double _value, double _error, QString _label, QColor _color, SortVector<double, double> *_data);
 
@@ -104,10 +92,12 @@ public:
 signals:
     void enterLipid(string lipid_name);
     void exitLipid();
+    void markLipid();
 
 public slots:
     void lipidEntered(string lipid_name);
     void lipidExited();
+    void lipidMarked();
 
 };
 
@@ -128,7 +118,8 @@ class Barplot : public Chartplot {
     Q_OBJECT
 
 public:
-    vector< vector<BarBox*> > bars;
+    vector< vector<BarBox*>* > bars;
+    map<QString, vector<BarBox*>* > bar_map;
     bool y_log_scale;
     bool show_data;
     double min_log_value;
@@ -151,11 +142,13 @@ public:
 signals:
     void enterLipid(string lipid_name);
     void exitLipid();
+    void markLipid();
     void startLoading(Barplot *barplot, vector< vector< Array > > *_data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors);
 
 public slots:
     void lipidEntered(string lipid_name);
     void lipidExited();
+    void lipidMarked();
     void wheelEvent(QWheelEvent *event) override;
     void setYLogScale(bool log_scale);
     void setShowDataPoints(bool data_points);

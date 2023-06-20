@@ -48,6 +48,11 @@
 #define ulong unsigned long long
 #define BENFORD_THRESHOLD 0.01
 
+template<typename Base, typename T>
+inline bool instanceof(const T *ptr) {
+    return dynamic_cast<const Base*>(ptr) != nullptr;
+}
+
 using namespace OpenXLSX;
 using namespace std;
 

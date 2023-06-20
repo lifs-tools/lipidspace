@@ -86,6 +86,7 @@ void Statistics::setBarNumberPvalues(int bar_number){
 
 void Statistics::highlightPoints(QListWidget* speciesList){
     if (chart->chart_plots.empty()) return;
+    if (!instanceof<Scatterplot>(chart->chart_plots[0])) return;
 
     map<QString, ScPoint*> points = ((Scatterplot*)chart->chart_plots[0])->point_map;
     for (auto &kv : points) kv.second->highlight = false;
@@ -94,6 +95,30 @@ void Statistics::highlightPoints(QListWidget* speciesList){
         QString lipid_name = item->text();
         if (contains_val(points, lipid_name)){
             points[lipid_name]->highlight = true;
+        }
+    }
+    chart->update_chart();
+}
+
+
+
+void Statistics::highlightBars(QListWidget* speciesList){
+    if (chart->chart_plots.empty()) return;
+    if (!instanceof<Barplot>(chart->chart_plots[0])) return;
+
+    map<QString, vector<BarBox*>*> bars = ((Barplot*)chart->chart_plots[0])->bar_map;
+    for (auto &kv : bars){
+        for (auto bar : *(kv.second)){
+            bar->highlight = false;
+        }
+    }
+
+    for (auto item : speciesList->selectedItems()){
+        QString lipid_name = item->text();
+        if (contains_val(bars, lipid_name)){
+            for (auto bar : *(bars[lipid_name])){
+                bar->highlight = true;
+            }
         }
     }
     chart->update_chart();
@@ -455,6 +480,7 @@ void Statistics::updateBarPlot(){
 
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
     connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);
+    connect(barplot, &Barplot::markLipid, this, &Statistics::lipidMarked);
 }
 
 
