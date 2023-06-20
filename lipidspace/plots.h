@@ -7,6 +7,7 @@
 #include <QCursor>
 #include <vector>
 #include <QObject>
+#include <QGraphicsSceneMouseEvent>
 
 #define MAX_ZOOM 20.
 
@@ -15,7 +16,7 @@ class Chartplot;
 using namespace std;
 
 
-class HoverRectSignal : public QObject {
+class HoverSignal : public QObject {
     Q_OBJECT
 
 public:
@@ -25,10 +26,8 @@ public:
 signals:
     void enterLipid(string lipid_name);
     void exitLipid();
+    void markLipid();
 };
-
-
-
 
 
 
@@ -41,9 +40,23 @@ class HoverRectItem : public QGraphicsRectItem {
 public:
     QString label;
     string lipid_name;
-    HoverRectSignal hover_rect_signal;
+    HoverSignal hover_signal;
 
     HoverRectItem(QString _label, string _lipid_name, QGraphicsItem *parent = nullptr);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+
+};
+
+
+
+class HoverEllipseItem : public QGraphicsEllipseItem {
+public:
+    QString label;
+    string lipid_name;
+    HoverSignal hover_signal;
+
+    HoverEllipseItem(QString _label, string _lipid_name, QGraphicsItem *parent = nullptr);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
@@ -251,10 +264,12 @@ public:
     QColor color;
     QString label;
     bool highlight = false;
+    HoverSignal hover_signal;
 
     ScPoint(double _x, double _y, QColor _color = QColor("#209fdf"), QString _label = "", QGraphicsItem *parent = nullptr);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 };
 
 
@@ -276,7 +291,15 @@ public:
     void clear();
     void wheelEvent(QWheelEvent *event) override;
 
+signals:
+    void enterLipid(string lipid_name);
+    void exitLipid();
+    void markLipid();
+
 public slots:
+    void lipidEntered(string lipid_name);
+    void lipidExited();
+    void lipidMarked();
     void mouseMoveEvent(QMouseEvent *event);
 };
 

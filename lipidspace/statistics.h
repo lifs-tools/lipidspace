@@ -62,10 +62,12 @@ public slots:
     void lipidExited();
     void setStatResults();
     void highlightPoints(QListWidget*);
+    void lipidMarked();
 
 signals:
     void enterLipid(string lipid_name);
     void exitLipid();
+    void markLipid();
 };
 
 

@@ -4,13 +4,13 @@
 QFont Barplot::stars_font = QFont("Calibri", 14);
 
 
-void HoverRectSignal::sendSignalEnter(string lipid_name){
+void HoverSignal::sendSignalEnter(string lipid_name){
     emit enterLipid(lipid_name);
 }
 
 
 
-void HoverRectSignal::sendSignalExit(){
+void HoverSignal::sendSignalExit(){
     emit exitLipid();
 }
 
@@ -76,8 +76,8 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
     rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
     rect->setZValue(100);
     rect->setAcceptHoverEvents(true);
-    connect(&(rect->hover_rect_signal), &HoverRectSignal::enterLipid, this, &BarBox::lipidEntered);
-    connect(&(rect->hover_rect_signal), &HoverRectSignal::exitLipid, this, &BarBox::lipidExited);
+    connect(&(rect->hover_signal), &HoverSignal::enterLipid, this, &BarBox::lipidEntered);
+    connect(&(rect->hover_signal), &HoverSignal::exitLipid, this, &BarBox::lipidExited);
 
 
     rect->setParentItem(chart->base);
@@ -119,17 +119,38 @@ HoverRectItem::HoverRectItem(QString _label, string _lipid_name, QGraphicsItem *
 
 }
 
+
 void HoverRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event){
     QGraphicsRectItem::hoverEnterEvent(event);
     QToolTip::showText(QCursor::pos(), label);
-    hover_rect_signal.sendSignalEnter(lipid_name);
+    hover_signal.sendSignalEnter(lipid_name);
 }
 
 
 void HoverRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
     QGraphicsRectItem::hoverLeaveEvent(event);
     QToolTip::hideText();
-    hover_rect_signal.sendSignalExit();
+    hover_signal.sendSignalExit();
+}
+
+
+
+
+HoverEllipseItem::HoverEllipseItem(QString _label, string _lipid_name, QGraphicsItem *parent) : QGraphicsEllipseItem(parent), label(_label), lipid_name(_lipid_name) {
+
+}
+
+void HoverEllipseItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event){
+    QGraphicsEllipseItem::hoverEnterEvent(event);
+    QToolTip::showText(QCursor::pos(), label);
+    hover_signal.sendSignalEnter(lipid_name);
+}
+
+
+void HoverEllipseItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
+    QGraphicsEllipseItem::hoverLeaveEvent(event);
+    QToolTip::hideText();
+    hover_signal.sendSignalExit();
 }
 
 
@@ -854,7 +875,10 @@ void Lineplot::update_chart(){
 
         if (is_border) line.color.setAlpha(128);
         QPen pen(line.color);
-        if (is_border) pen.setStyle(Qt::DashLine);
+        if (is_border){
+            pen.setStyle(Qt::DashLine);
+            line.line->setZValue(10000);
+        }
         else pen.setWidthF(2);
         line.line->setPen(pen);
         line.line->setLine(x1, y1, x2, y2);
@@ -922,15 +946,23 @@ ScPoint::ScPoint(double _x, double _y, QColor _color, QString _label, QGraphicsI
 void ScPoint::hoverEnterEvent(QGraphicsSceneHoverEvent *event){
     QGraphicsEllipseItem::hoverEnterEvent(event);
     QToolTip::showText(QCursor::pos(), label, nullptr, {}, 5000);
+    emit hover_signal.enterLipid(label.toStdString());
 }
 
 
 void ScPoint::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
     QGraphicsEllipseItem::hoverLeaveEvent(event);
     QToolTip::hideText();
+    emit hover_signal.exitLipid();
 }
 
 
+void ScPoint::mousePressEvent(QGraphicsSceneMouseEvent *event){
+    QGraphicsEllipseItem::mousePressEvent(event);
+    if (event->button() == Qt::MouseButton::LeftButton) {
+        emit hover_signal.markLipid();
+    }
+}
 
 
 Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
@@ -946,7 +978,17 @@ Scatterplot::~Scatterplot(){
     clear();
 }
 
+void Scatterplot::lipidEntered(string lipid_name){
+    emit enterLipid(lipid_name);
+}
 
+void Scatterplot::lipidExited(){
+    emit exitLipid();
+}
+
+void Scatterplot::lipidMarked(){
+    emit markLipid();
+}
 
 
 void Scatterplot::mouseMoveEvent(QMouseEvent *event){
@@ -1102,6 +1144,12 @@ void Scatterplot::add(vector< pair<double, double> > &data, QString category, QC
         else points.push_back(sc_point);
         chart->scene.addItem(sc_point);
         sc_point->setParentItem(chart->base);
+        if(data_labels){
+            sc_point->setAcceptHoverEvents(true);
+            connect(&(sc_point->hover_signal), &HoverSignal::enterLipid, this, &Scatterplot::lipidEntered);
+            connect(&(sc_point->hover_signal), &HoverSignal::exitLipid, this, &Scatterplot::lipidExited);
+            connect(&(sc_point->hover_signal), &HoverSignal::markLipid, this, &Scatterplot::lipidMarked);
+        }
     }
     chart->xrange.setX(xmin);
     chart->xrange.setY(xmax);

@@ -273,5 +273,6 @@ public slots:
     void checkBenford();
     void sendStatistics();
     void openFiles(const QList<QUrl> &file_list);
+    void lipidMarked();
 };
 #endif // LIPIDSPACEGUI_H

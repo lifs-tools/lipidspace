@@ -86,17 +86,14 @@ void Statistics::setBarNumberPvalues(int bar_number){
 
 void Statistics::highlightPoints(QListWidget* speciesList){
     if (chart->chart_plots.empty()) return;
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
 
     map<QString, ScPoint*> points = ((Scatterplot*)chart->chart_plots[0])->point_map;
     for (auto &kv : points) kv.second->highlight = false;
 
     for (auto item : speciesList->selectedItems()){
-        string lipid_name = item->text().toStdString();
-        if (uncontains_val(translations, lipid_name)) continue;
-        QString translated_lipid_name = translations[lipid_name].c_str();
-        if (contains_val(points, translated_lipid_name)){
-            points[translated_lipid_name]->highlight = true;
+        QString lipid_name = item->text();
+        if (contains_val(points, lipid_name)){
+            points[lipid_name]->highlight = true;
         }
     }
     chart->update_chart();
@@ -477,14 +474,14 @@ void Statistics::lipidEntered(string lipid_name){
 }
 
 
-
-
-
 void Statistics::lipidExited(){
     emit exitLipid();
 }
 
 
+void Statistics::lipidMarked(){
+    emit markLipid();
+}
 
 
 
@@ -1515,12 +1512,15 @@ void Statistics::updateVolcano(){
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     map<string, int> lipidome_name_map;
+    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
         LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
         if (uncontains_val(lipid_map, lipid)){
             lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
+            string lipid_name = lipid_space->global_lipidome->species[i];
+            if (contains_val(translations, lipid_name)) lipid_name = translations[lipid_name];
+            lipid_name_map.insert({lipid_name, lipid_name_map.size()});
         }
     }
 
@@ -1645,5 +1645,10 @@ void Statistics::updateVolcano(){
     chart->xrange.setY(max_x * 1.05);
     chart->yrange.setX(-0.1);
     chart->setTitle("Volcano plot");
+
+
+    connect(scatterplot, &Scatterplot::enterLipid, this, &Statistics::lipidEntered);
+    connect(scatterplot, &Scatterplot::exitLipid, this, &Statistics::lipidExited);
+    connect(scatterplot, &Scatterplot::markLipid, this, &Statistics::lipidMarked);
 }
 

@@ -331,6 +331,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsBarPlot, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
+    connect(&statisticsVolcano, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
+    connect(&statisticsVolcano, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
+    connect(&statisticsVolcano, &Statistics::markLipid, this, &LipidSpaceGUI::lipidMarked);
     connect(ui->speciesList, &QListWidget::itemSelectionChanged, this, &LipidSpaceGUI::lipid_selection_changed);
     connect(this, &LipidSpaceGUI::highlightLipids, &statisticsVolcano, &Statistics::highlightPoints);
 
@@ -894,6 +897,22 @@ void LipidSpaceGUI::updateSelectionView(){
     connect(ui->categoryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
     connect(ui->sampleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateView(int)));
     updateView(0);
+}
+
+
+
+
+void LipidSpaceGUI::lipidMarked(){
+    disconnect(ui->speciesList, &QListWidget::itemSelectionChanged, 0, 0);
+    for (int r = 0; r < ui->speciesList->count(); ++r){
+
+        if (!GlobalData::ctrl_pressed) ui->speciesList->setCurrentRow(r, QItemSelectionModel::Deselect);
+        if (hovered_box_plot_lipid.length() > 0 && ui->speciesList->item(r)->text().toStdString() == hovered_box_plot_lipid){
+            ui->speciesList->setCurrentRow(r, QItemSelectionModel::Toggle);
+        }
+    }
+    connect(ui->speciesList, &QListWidget::itemSelectionChanged, this, &LipidSpaceGUI::lipid_selection_changed);
+    emit ui->speciesList->itemSelectionChanged();
 }
 
 
@@ -2391,6 +2410,19 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     else if (GlobalData::volcano_log_fc == "+/- 2") actionFC3->setChecked(true);
     else actionFC4->setChecked(true);
 
+
+    QAction *actionSelectLipid = 0;
+
+    map<string, string> &translations = lipid_space->lipid_name_translations[NORMALIZED_NAME];
+    bool hover_over_lipid = hovered_box_plot_lipid.length() > 0 && contains_val(translations, hovered_box_plot_lipid) && contains_val(lipid_space->selection[0], translations[hovered_box_plot_lipid]);
+
+    if (hover_over_lipid){
+        lipid_for_deselect = translations[hovered_box_plot_lipid];
+        bool deselect = lipid_space->selection[0][lipid_for_deselect];
+        actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(hovered_box_plot_lipid.c_str()), this);
+    }
+
+
     menuFC->addAction(actionFC1);
     menuFC->addAction(actionFC2);
     menuFC->addAction(actionFC3);
@@ -2421,6 +2453,7 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     else if (GlobalData::vocano_multiple == "bonferoni") actionBonferoniCorrection->setChecked(true);
     else actionNoCorrection->setChecked(true);
 
+    if (actionSelectLipid) menu->addAction(actionSelectLipid);
     menu->addMenu(menuTest);
     menu->addMenu(menuCorrection);
     menu->addSeparator();
@@ -2438,6 +2471,8 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     QAction *actionExportPdf = new QAction("Export as pdf", this);
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
+
+    if (actionSelectLipid) connect(actionSelectLipid, &QAction::triggered, this, &LipidSpaceGUI::deselectHoveredLipid);
     connect(actionData, &QAction::triggered, &statisticsVolcano, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, &statisticsVolcano, &Statistics::exportAsPdf);
 
