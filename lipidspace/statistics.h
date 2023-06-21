@@ -34,6 +34,7 @@ public:
     bool log_scale;
     bool show_data;
     bool show_pvalues;
+    map<string, vector<string>> volcano_data;
 
     Statistics();
     void load_data(LipidSpace *_lipid_space, Chart *_chart);
@@ -64,11 +65,13 @@ public slots:
     void highlightPoints(QListWidget*);
     void highlightBars(QListWidget* speciesList);
     void lipidMarked();
+    void lipidsMarked(set<string> *lipids);
 
 signals:
     void enterLipid(string lipid_name);
     void exitLipid();
     void markLipid();
+    void markLipids(set<string> *lipids);
 };
 
 

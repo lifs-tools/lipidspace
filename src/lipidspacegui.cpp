@@ -335,6 +335,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(&statisticsVolcano, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsVolcano, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
     connect(&statisticsVolcano, &Statistics::markLipid, this, &LipidSpaceGUI::lipidMarked);
+    connect(&statisticsVolcano, &Statistics::markLipids, this, &LipidSpaceGUI::lipidsMarked);
     connect(ui->speciesList, &QListWidget::itemSelectionChanged, this, &LipidSpaceGUI::lipid_selection_changed);
     connect(this, &LipidSpaceGUI::highlightLipids, &statisticsVolcano, &Statistics::highlightPoints);
     connect(this, &LipidSpaceGUI::highlightLipids, &statisticsBarPlot, &Statistics::highlightBars);
@@ -910,6 +911,20 @@ void LipidSpaceGUI::lipidMarked(){
 
         if (!GlobalData::ctrl_pressed) ui->speciesList->setCurrentRow(r, QItemSelectionModel::Deselect);
         if (hovered_box_plot_lipid.length() > 0 && ui->speciesList->item(r)->text().toStdString() == hovered_box_plot_lipid){
+            ui->speciesList->setCurrentRow(r, QItemSelectionModel::Toggle);
+        }
+    }
+    connect(ui->speciesList, &QListWidget::itemSelectionChanged, this, &LipidSpaceGUI::lipid_selection_changed);
+    emit ui->speciesList->itemSelectionChanged();
+}
+
+
+void LipidSpaceGUI::lipidsMarked(set<string> *lipids){
+    disconnect(ui->speciesList, &QListWidget::itemSelectionChanged, 0, 0);
+    for (int r = 0; r < ui->speciesList->count(); ++r){
+
+        ui->speciesList->setCurrentRow(r, QItemSelectionModel::Deselect);
+        if (contains_val_p(lipids, ui->speciesList->item(r)->text().toStdString())){
             ui->speciesList->setCurrentRow(r, QItemSelectionModel::Toggle);
         }
     }
@@ -2403,15 +2418,16 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     QAction *actionFC3 = new QAction("log(fold change) = +/- 2", this); actionFC2->setCheckable(true);
     QAction *actionFC4 = new QAction("log(fold change) = +/- 3", this); actionFC3->setCheckable(true);
 
-    if (GlobalData::volcano_sig == "5") actionSig5->setChecked(true);
-    else if (GlobalData::volcano_sig == "1") actionSig1->setChecked(true);
-    else actionSig01->setChecked(true);
+    QMenu *menuSelect = new QMenu("Select", this);
+    QMenu *menuDeselect = new QMenu("Deselect", this);
 
-    if (GlobalData::volcano_log_fc == "+/- 0.5") actionFC1->setChecked(true);
-    else if (GlobalData::volcano_log_fc == "+/- 1") actionFC2->setChecked(true);
-    else if (GlobalData::volcano_log_fc == "+/- 2") actionFC3->setChecked(true);
-    else actionFC4->setChecked(true);
+    QAction *actionSelDown = new QAction("Down regulated", this);
+    QAction *actionSelNon = new QAction("Not regulated", this);
+    QAction *actionSelUp = new QAction("Up regulated", this);
 
+    QAction *actionDeselDown = new QAction("Down regulated", this);
+    QAction *actionDeselNon = new QAction("Not regulated", this);
+    QAction *actionDeselUp = new QAction("Up regulated", this);
 
     QAction *actionSelectLipid = 0;
 
@@ -2422,7 +2438,28 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
         lipid_for_deselect = translations[hovered_box_plot_lipid];
         bool deselect = lipid_space->selection[0][lipid_for_deselect];
         actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(hovered_box_plot_lipid.c_str()), this);
+        menu->addSeparator();
     }
+
+    menu->addMenu(menuSelect);
+    menuSelect->addAction(actionSelDown);
+    menuSelect->addAction(actionSelNon);
+    menuSelect->addAction(actionSelUp);
+    menu->addMenu(menuDeselect);
+    menuDeselect->addAction(actionDeselDown);
+    menuDeselect->addAction(actionDeselNon);
+    menuDeselect->addAction(actionDeselUp);
+    menu->addSeparator();
+
+
+    if (GlobalData::volcano_sig == "5") actionSig5->setChecked(true);
+    else if (GlobalData::volcano_sig == "1") actionSig1->setChecked(true);
+    else actionSig01->setChecked(true);
+
+    if (GlobalData::volcano_log_fc == "+/- 0.5") actionFC1->setChecked(true);
+    else if (GlobalData::volcano_log_fc == "+/- 1") actionFC2->setChecked(true);
+    else if (GlobalData::volcano_log_fc == "+/- 2") actionFC3->setChecked(true);
+    else actionFC4->setChecked(true);
 
 
     menuFC->addAction(actionFC1);
@@ -2474,9 +2511,20 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     menu->addAction(actionData);
     menu->addAction(actionExportPdf);
 
+
+
     if (actionSelectLipid) connect(actionSelectLipid, &QAction::triggered, this, &LipidSpaceGUI::deselectHoveredLipid);
     connect(actionData, &QAction::triggered, &statisticsVolcano, &Statistics::exportData);
     connect(actionExportPdf, &QAction::triggered, &statisticsVolcano, &Statistics::exportAsPdf);
+
+
+    connect(actionSelDown, &QAction::triggered, this, [=](){ changeVolcanoSelection(true, "down"); });
+    connect(actionSelNon, &QAction::triggered, this, [=](){ changeVolcanoSelection(true, "non"); });
+    connect(actionSelUp, &QAction::triggered, this, [=](){ changeVolcanoSelection(true, "up"); });
+
+    connect(actionDeselDown, &QAction::triggered, this, [=](){ changeVolcanoSelection(false, "down"); });
+    connect(actionDeselNon, &QAction::triggered, this, [=](){ changeVolcanoSelection(false, "non"); });
+    connect(actionDeselUp, &QAction::triggered, this, [=](){ changeVolcanoSelection(false, "up"); });
 
     connect(actionNoCorrection, &QAction::triggered, this, [=](){ changeVolcanoMultiple("no"); });
     connect(actionBonferoniCorrection, &QAction::triggered, this, [=](){ changeVolcanoMultiple("bonferoni"); });
@@ -2496,6 +2544,17 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     connect(actionFC4, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 3"); });
 
     menu->popup(ui->statisticsVolcano->viewport()->mapToGlobal(pos));
+}
+
+
+void LipidSpaceGUI::changeVolcanoSelection(bool select, string mode){
+    if (uncontains_val(statisticsVolcano.volcano_data, mode)) return;
+    for (auto lipid_name : statisticsVolcano.volcano_data[mode]){
+        if (contains_val(lipid_space->selection[0], lipid_name)){
+            lipid_space->selection[0][lipid_name] = select;
+        }
+    }
+    updateSelectionView();
 }
 
 

@@ -670,3 +670,9 @@ void Chart::mouseMoveEvent(QMouseEvent *event){
     emit mouseMoved(event);
     QGraphicsView::mouseMoveEvent(event);
 }
+
+
+void Chart::mouseReleaseEvent(QMouseEvent *event){
+    emit mouseReleased(event);
+    QGraphicsView::mouseReleaseEvent(event);
+}

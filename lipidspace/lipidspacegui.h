@@ -269,10 +269,12 @@ public slots:
     void deselectHoveredLipid();
     void setLipidsForSelection(vector<string> &list);
     void spaceLipidsSelect(int index, bool do_select);
+    void changeVolcanoSelection(bool select, string mode);
     void openExampleDataset();
     void checkBenford();
     void sendStatistics();
     void openFiles(const QList<QUrl> &file_list);
     void lipidMarked();
+    void lipidsMarked(set<string> *lipids);
 };
 #endif // LIPIDSPACEGUI_H

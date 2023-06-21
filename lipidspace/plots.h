@@ -276,24 +276,30 @@ public:
     QPointF zoom_start;
     vector<ScPoint*> points;
     map<QString, ScPoint*> point_map;
+    QGraphicsRectItem *selection_rect;
+    bool lipid_plot = false;
 
-    Scatterplot(Chart *_chart);
+    Scatterplot(Chart *_chart, bool _lipid_plot = false);
     ~Scatterplot();
     void add(vector< pair<double, double> > &data, QString category, QColor color = QColor("#209fdf"), vector<QString> *data_labels = 0);
     void update_chart();
     void clear();
     void wheelEvent(QWheelEvent *event) override;
+    void highlight_lipids(QPointF);
 
 signals:
     void enterLipid(string lipid_name);
     void exitLipid();
     void markLipid();
+    void markLipids(set<string> *lipids);
 
 public slots:
     void lipidEntered(string lipid_name);
     void lipidExited();
     void lipidMarked();
+    void lipidsMarked(set<string> *lipids);
     void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 };
 
 

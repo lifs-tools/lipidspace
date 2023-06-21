@@ -968,12 +968,22 @@ void ScPoint::mousePressEvent(QGraphicsSceneMouseEvent *event){
 }
 
 
-Scatterplot::Scatterplot(Chart *_chart) : Chartplot(_chart) {
+Scatterplot::Scatterplot(Chart *_chart, bool _lipid_plot) : Chartplot(_chart) {
     connect(chart, &Chart::mouseMoved, this, &Scatterplot::mouseMoveEvent);
+    connect(chart, &Chart::mouseReleased, this, &Scatterplot::mouseReleaseEvent);
     mouse_shift_start = QPointF(INFINITY, INFINITY);
     shift_start_x = QPointF(INFINITY, INFINITY);
     shift_start_y = QPointF(INFINITY, INFINITY);
     zoom_start = QPointF(INFINITY, INFINITY);
+    selection_rect = new QGraphicsRectItem();
+    selection_rect->setVisible(false);
+    lipid_plot = _lipid_plot;
+
+    QPen pen(Qt::black);
+    pen.setStyle(Qt::DashLine);
+    selection_rect->setPen(pen);
+    selection_rect->setZValue(10000);
+    chart->scene.addItem(selection_rect);
 }
 
 
@@ -993,6 +1003,47 @@ void Scatterplot::lipidMarked(){
     emit markLipid();
 }
 
+void Scatterplot::lipidsMarked(set<string> *lipids){
+    emit markLipids(lipids);
+}
+
+void Scatterplot::mouseReleaseEvent(QMouseEvent *event){
+    if (selection_rect->isVisible()){
+        highlight_lipids(chart->mapToScene(event->pos()));
+        selection_rect->setVisible(false);
+        chart->update_chart();
+    }
+}
+
+
+void Scatterplot::highlight_lipids(QPointF mouse_pos){
+    if (mouse_shift_start.x() == INFINITY) return;
+
+    double x_lower = mouse_pos.x();
+    double y_lower = mouse_pos.y();
+    chart->back_translate_x(x_lower);
+    chart->back_translate_y(y_lower);
+
+    double x_upper = mouse_shift_start.x();
+    double y_upper = mouse_shift_start.y();
+    chart->back_translate_x(x_upper);
+    chart->back_translate_y(y_upper);
+
+    if (x_upper < x_lower) swap(x_lower, x_upper);
+    if (y_upper < y_lower) swap(y_lower, y_upper);
+
+    set<string> lipids;
+    for (auto &kv : point_map){
+        string lipid_name = kv.first.toStdString();
+        auto p = kv.second;
+        if (x_lower <= p->x && p->x <= x_upper && y_lower <= p->y && p->y <= y_upper){
+            lipids.insert(lipid_name);
+        }
+    }
+    markLipids(&lipids);
+}
+
+
 
 void Scatterplot::mouseMoveEvent(QMouseEvent *event){
     QPointF mouse_pos = chart->mapToScene(event->pos());
@@ -1011,14 +1062,27 @@ void Scatterplot::mouseMoveEvent(QMouseEvent *event){
                 mouse_shift_start = mouse_pos;
             }
             QPointF mouse_diff = mouse_pos - mouse_shift_start;
-            double xl = shift_start_x.x() - mouse_diff.x() / zoom_start.x();
-            double xr = shift_start_x.y() - mouse_diff.x() / zoom_start.x();
-            chart->xrange = QPointF(xl, xr);
 
-            double yt = shift_start_y.x() + mouse_diff.y() / zoom_start.y();
-            double yb = shift_start_y.y() + mouse_diff.y() / zoom_start.y();
-            chart->yrange = QPointF(yt, yb);
-            chart->update_chart();
+            if (!GlobalData::ctrl_pressed || !lipid_plot){
+                if (selection_rect->isVisible()){
+                    highlight_lipids(mouse_pos);
+                    selection_rect->setVisible(false);
+                }
+
+                double xl = shift_start_x.x() - mouse_diff.x() / zoom_start.x();
+                double xr = shift_start_x.y() - mouse_diff.x() / zoom_start.x();
+                chart->xrange = QPointF(xl, xr);
+
+                double yt = shift_start_y.x() + mouse_diff.y() / zoom_start.y();
+                double yb = shift_start_y.y() + mouse_diff.y() / zoom_start.y();
+                chart->yrange = QPointF(yt, yb);
+                chart->update_chart();
+            }
+            else if (lipid_plot) {
+                selection_rect->setVisible(true);
+                selection_rect->setRect(mouse_shift_start.x(), mouse_shift_start.y(), mouse_pos.x() - mouse_shift_start.x(), mouse_pos.y() - mouse_shift_start.y());
+                chart->update_chart();
+            }
         }
     }
     else {
@@ -1029,6 +1093,7 @@ void Scatterplot::mouseMoveEvent(QMouseEvent *event){
     }
 }
 
+
 void Scatterplot::wheelEvent(QWheelEvent *event){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QPointF mouse_pos = chart->mapToScene(QPoint(event->position().x(), event->position().y()));
@@ -1037,7 +1102,6 @@ void Scatterplot::wheelEvent(QWheelEvent *event){
     QPointF mouse_pos = chart->mapToScene(event->pos());
     double zoom = (event->delta() > 0) ? 1. / 1.1 : 1.1;
 #endif
-
 
 
     bool update_x = false;

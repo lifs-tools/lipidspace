@@ -108,6 +108,7 @@ public slots:
     void setYLogScale(bool log_scale);
     void setShowDataPoints(bool data_points);
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void setStatResults(bool show_pvalues);
 
 signals:
@@ -116,6 +117,7 @@ signals:
     void yLogScaleChanged(bool log_scale);
     void showDataPointsChanged(bool data_points);
     void mouseMoved(QMouseEvent *event);
+    void mouseReleased(QMouseEvent *event);
     void settingStatResults(bool show_pvalues);
     void openFiles(const QList<QUrl> &);
 };

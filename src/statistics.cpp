@@ -510,6 +510,11 @@ void Statistics::lipidMarked(){
 }
 
 
+void Statistics::lipidsMarked(set<string> *lipids){
+    emit markLipids(lipids);
+}
+
+
 
 
 
@@ -1492,6 +1497,10 @@ void Statistics::updateVolcano(){
     series.clear();
     flat_data.clear();
     stat_results.clear();
+    volcano_data.clear();
+    volcano_data.insert({"down", vector<string>()});
+    volcano_data.insert({"non", vector<string>()});
+    volcano_data.insert({"up", vector<string>()});
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
@@ -1656,11 +1665,15 @@ void Statistics::updateVolcano(){
     color_key = target_variable + "_" + nominal_values_list[1];
     QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
 
-    Scatterplot* scatterplot = new Scatterplot(chart);
+    Scatterplot* scatterplot = new Scatterplot(chart, true);
     scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
     scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[0].c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
     scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[1].c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
     chart->add(scatterplot);
+
+    for (auto lipid_name : fc_down_lipids) volcano_data["down"].push_back(lipid_name.toStdString());
+    for (auto lipid_name : fc_non_lipids) volcano_data["non"].push_back(lipid_name.toStdString());
+    for (auto lipid_name : fc_up_lipids) volcano_data["up"].push_back(lipid_name.toStdString());
 
     Lineplot *line_plot = new Lineplot(chart, true);
     vector< pair< pair<double, double>, pair<double, double> > > boundaries{{{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}}, {{-log_fc_level, -1e5}, {-log_fc_level, 1e5}}, {{log_fc_level, -1e5}, {log_fc_level, 1e5}}};
@@ -1676,5 +1689,6 @@ void Statistics::updateVolcano(){
     connect(scatterplot, &Scatterplot::enterLipid, this, &Statistics::lipidEntered);
     connect(scatterplot, &Scatterplot::exitLipid, this, &Statistics::lipidExited);
     connect(scatterplot, &Scatterplot::markLipid, this, &Statistics::lipidMarked);
+    connect(scatterplot, &Scatterplot::markLipids, this, &Statistics::lipidsMarked);
 }
 
