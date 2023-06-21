@@ -64,11 +64,14 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
     upper_error_line = new QGraphicsLineItem();
     lower_error_line = new QGraphicsLineItem();
     base_line = new QGraphicsLineItem();
+    background = new QGraphicsRectItem();
+    background->setVisible(false);
     data_cloud = new DataCloud(chart, _data);
 
     upper_error_line->setZValue(100);
     lower_error_line->setZValue(100);
     base_line->setZValue(100);
+    background->setZValue(1);
     data_cloud->setZValue(100);
 
     rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
@@ -80,6 +83,7 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
 
 
     rect->setParentItem(chart->base);
+    background->setParentItem(chart->base);
     base_line->setParentItem(chart->base);
     lower_error_line->setParentItem(chart->base);
     upper_error_line->setParentItem(chart->base);
@@ -212,6 +216,23 @@ void Barplot::update_chart(){
                 bar->rect->setVisible(true);
                 bar->rect->setZValue(99 + bar->highlight);
 
+                // draw the background
+                if (bar->highlight){
+                    bar->background->setVisible(true);
+                    x1 = xs;
+                    y1 = chart->yrange.y();
+                    x2 = xe;
+                    y2 = 0;
+                    chart->translate(x1, y1);
+                    chart->translate(x2, y2);
+                    bar->background->setPen(QPen(QColor("#eeeeee")));
+                    bar->background->setBrush(QBrush(QColor("#eeeeee")));
+                    bar->background->setRect(x1, y1, x2 - x1, y2 - y1);
+                }
+                else {
+                    bar->background->setVisible(false);
+                }
+
                 // draw lower error line
                 x1 = xs + (xe - xs) / 4.;
                 y1 = (bar->value - bar->error) * animation_length;
@@ -244,7 +265,7 @@ void Barplot::update_chart(){
                 bar->base_line->setVisible(false);
                 bar->rect->setVisible(false);
                 bar->data_cloud->setVisible(false);
-
+                bar->background->setVisible(false);
             }
         }
 

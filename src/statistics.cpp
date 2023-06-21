@@ -1588,7 +1588,9 @@ void Statistics::updateVolcano(){
             int lipidome_row = lipidome_name_map[lipidome_name];
 
             double stat_value = stat_matrix(lipidome_row, lipid_col);
-            if (!isnan(stat_value)) arrays[array_index].push_back(stat_value);
+            if (!isnan(stat_value)){
+                arrays[array_index].push_back(stat_value);
+            }
         }
 
         for (int i = arrays.size() - 1; i >= 0; --i){
@@ -1601,7 +1603,7 @@ void Statistics::updateVolcano(){
         else if (GlobalData::volcano_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
         else if (GlobalData::volcano_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
 
-        double fc = arrays[0].mean() / arrays[1].mean();
+        double fc = arrays[1].mean() / arrays[0].mean();
         if (fc <= 0 || p_value <= 1e-50) continue;
 
         p_values.push_back(p_value);

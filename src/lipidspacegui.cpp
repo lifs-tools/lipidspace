@@ -761,6 +761,10 @@ void LipidSpaceGUI::setStudyVariable(int c){
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
+
+    statisticsVolcano.highlightPoints(ui->speciesList);
+    statisticsBarPlot.highlightBars(ui->speciesList);
+    ui->studyVariableComboBoxStatLevel->setEnabled(true);
 }
 
 
@@ -812,6 +816,16 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsPCA.updatePCA();
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();
+
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (uncontains_val(lipid_space->study_variable_values, target_variable)) return;
+    if (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable || ui->secondaryComboBox->currentIndex() == 0){
+        ui->studyVariableComboBoxStatLevel->setEnabled(true);
+    }
+    else {
+        ui->studyVariableComboBoxStatLevel->setCurrentIndex(0);
+        ui->studyVariableComboBoxStatLevel->setEnabled(false);
+    }
 }
 
 
@@ -923,7 +937,7 @@ void LipidSpaceGUI::lipidsMarked(set<string> *lipids){
     disconnect(ui->speciesList, &QListWidget::itemSelectionChanged, 0, 0);
     for (int r = 0; r < ui->speciesList->count(); ++r){
 
-        ui->speciesList->setCurrentRow(r, QItemSelectionModel::Deselect);
+        //ui->speciesList->setCurrentRow(r, QItemSelectionModel::Deselect);
         if (contains_val_p(lipids, ui->speciesList->item(r)->text().toStdString())){
             ui->speciesList->setCurrentRow(r, QItemSelectionModel::Toggle);
         }

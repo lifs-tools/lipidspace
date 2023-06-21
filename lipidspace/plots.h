@@ -83,6 +83,7 @@ public:
     QGraphicsLineItem *base_line;
     DataCloud *data_cloud;
     HoverRectItem *rect;
+    QGraphicsRectItem *background;
     QColor color;
     bool highlight = false;
 
@@ -258,6 +259,7 @@ public:
     QString label;
     bool highlight = false;
     HoverSignal hover_signal;
+
 
     ScPoint(double _x, double _y, QColor _color = QColor("#209fdf"), QString _label = "", QGraphicsItem *parent = nullptr);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
