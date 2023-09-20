@@ -1427,7 +1427,13 @@ void Statistics::updatePVal(){
         }
     }
 
-    vector<Array> p_values{Array()};
+
+    series.push_back(Array());
+    flat_data.insert({"Lipid species", vector<QVariant>()});
+    flat_data.insert({"Lipidome", vector<QVariant>()});
+    flat_data.insert({"Condition", vector<QVariant>()});
+    flat_data.insert({"Quantity", vector<QVariant>()});
+
     for (auto &kv : lipid_name_map){
         string lipid_name = kv.first;
         int lipid_col = kv.second;
@@ -1440,7 +1446,13 @@ void Statistics::updatePVal(){
             int lipidome_row = lipidome_name_map[lipidome_name];
 
             double stat_value = stat_matrix(lipidome_row, lipid_col);
-            if (!isnan(stat_value)) arrays[array_index].push_back(stat_value);
+            if (!isnan(stat_value)){
+                flat_data["Lipid species"].push_back(lipid_name.c_str());
+                flat_data["Lipidome"].push_back(lipidome_name.c_str());
+                flat_data["Condition"].push_back(nom_value.c_str());
+                flat_data["Quantity"].push_back(stat_value);
+                arrays[array_index].push_back(stat_value);
+            }
         }
 
         for (int i = arrays.size() - 1; i >= 0; --i){
@@ -1453,33 +1465,36 @@ void Statistics::updatePVal(){
             if (GlobalData::pval_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
             else if (GlobalData::pval_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
             else if (GlobalData::pval_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
-            p_values.back().push_back(p_value);
+            series.back().push_back(p_value);
         }
         else {
-            p_values.back().push_back(p_value_anova(arrays));
+            series.back().push_back(p_value_anova(arrays));
         }
     }
 
-
+    series_titles.push_back("P-values");
 
     Histogramplot* histogramplot = new Histogramplot(chart);
-    vector<QString> categories{"P values"};
+    vector<QString> categories{"P-values"};
     vector<QColor> colors{"#85b3ce"};
 
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
-    histogramplot->add(p_values, categories, &colors, num_bars);
+    histogramplot->add(series, categories, &colors, num_bars);
     histogramplot->borders.setX(0);
     chart->xrange.setX(0);
     chart->xrange.setY(1);
     chart->yrange.setX(0);
     chart->add(histogramplot);
-
-    /*
-    double accuracy = compute_accuracy(series);
-    stat_results.push_back({"accuracy", accuracy});
-    */
     chart->setTitle("P-value distribution");
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -1576,6 +1591,10 @@ void Statistics::updateVolcano(){
     Array p_values;
     Array fold_changes;
     vector<QString> p_val_lipids;
+    flat_data.insert({"Lipid species", vector<QVariant>()});
+    flat_data.insert({"Lipidome", vector<QVariant>()});
+    flat_data.insert({"Condition", vector<QVariant>()});
+    flat_data.insert({"Quantity", vector<QVariant>()});
     for (auto &kv : lipid_name_map){
         string lipid_name = kv.first;
         int lipid_col = kv.second;
@@ -1589,6 +1608,10 @@ void Statistics::updateVolcano(){
 
             double stat_value = stat_matrix(lipidome_row, lipid_col);
             if (!isnan(stat_value)){
+                flat_data["Lipid species"].push_back(lipid_name.c_str());
+                flat_data["Lipidome"].push_back(lipidome_name.c_str());
+                flat_data["Condition"].push_back(nom_value.c_str());
+                flat_data["Quantity"].push_back(stat_value);
                 arrays[array_index].push_back(stat_value);
             }
         }
@@ -1632,6 +1655,15 @@ void Statistics::updateVolcano(){
     else if (GlobalData::volcano_log_fc == "+/- 2") log_fc_level = 2;
 
 
+    for (int i = 0; i < 6; ++i) series.push_back(Array());
+    series_titles.push_back("Down regulated - p-value");
+    series_titles.push_back("Down regulated - fc");
+    series_titles.push_back("Not regulated - p-value");
+    series_titles.push_back("Not regulated - fc");
+    series_titles.push_back("Up regulated - p-value");
+    series_titles.push_back("Up regulated - fc");
+
+
     for (int i = 0; i < (int)p_values.size(); ++i){
         double p_value = p_values[i];
         double fc = fold_changes[i];
@@ -1642,21 +1674,33 @@ void Statistics::updateVolcano(){
         if (alpha_level < p_value){
             pval_fc_non.push_back({log_fc, log_p_value});
             fc_non_lipids.push_back(p_val_lipids[i]);
+
+            series[2].push_back(p_value);
+            series[3].push_back(fc);
         }
         else {
             if (log_fc <= -log_fc_level){
                 pval_fc_down.push_back({log_fc, log_p_value});
                 fc_down_lipids.push_back(p_val_lipids[i]);
+
+                series[0].push_back(p_value);
+                series[1].push_back(fc);
             }
 
             else if (log_fc_level <= log_fc){
                 pval_fc_up.push_back({log_fc, log_p_value});
                 fc_up_lipids.push_back(p_val_lipids[i]);
+
+                series[4].push_back(p_value);
+                series[5].push_back(fc);
             }
 
             else {
                 pval_fc_non.push_back({log_fc, log_p_value});
                 fc_non_lipids.push_back(p_val_lipids[i]);
+
+                series[2].push_back(p_value);
+                series[3].push_back(fc);
             }
         }
         max_x = max(max_x, fabs(log_fc));

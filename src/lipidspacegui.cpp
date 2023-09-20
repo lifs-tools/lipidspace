@@ -67,7 +67,7 @@ void LipidSpaceGUI::keyReleaseEvent(QKeyEvent *event){
 
 
 
-#define HOTKEYS
+//#define HOTKEYS
 void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
 #ifdef HOTKEYS
@@ -764,7 +764,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
 
     statisticsVolcano.highlightPoints(ui->speciesList);
     statisticsBarPlot.highlightBars(ui->speciesList);
-    ui->studyVariableComboBoxStatLevel->setEnabled(true);
+    if (!GlobalData::in_tutorial) ui->studyVariableComboBoxStatLevel->setEnabled(true);
 }
 
 

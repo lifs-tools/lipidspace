@@ -3,11 +3,11 @@
 
 const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
+const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatisticsLevel, SStatisticsLipids, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
 const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
-const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalyzeQualData, DCVStatistic, DIntroduceCVStatistic, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
+const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford, DRelativeQC, DLoadData, DDataExplain, DNormalization, DAfterNormalization, DAnalysisWithoutQuant, DAnalyzeQualData, DCVStatistic, DSwitchStatistics, DIntroduceCVStatistic, DChangeToLipidSpaces, DSelectStudies, DApplySelection, DGuessDifferences, DReveal, DInterpretation, DFinish, DEnd};
 
 
 
@@ -146,7 +146,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
 
-    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_group_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionImport_eample_dataset, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->actionComplete_feature_analysis, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsPCA, false}, {ui->statisticsHistogram, false}, {ui->statisticsROCCurve, false}, {ui->statisticsSpeciesCV, false}, {ui->statisticsBarPlot, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}, {ui->secondaryComboBox, false}, {ui->actionSelection_mode_activated, false}, {ui->studyVariableComboBoxStatLevel, false}, {ui->statisticsPVal, false}, {ui->statisticsVolcano, false}};
+    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_group_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionImport_eample_dataset, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->actionComplete_feature_analysis, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsPCA, false}, {ui->statisticsHistogram, false}, {ui->statisticsROCCurve, false}, {ui->statisticsSpeciesCV, false}, {ui->statisticsBarPlot, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}, {ui->secondaryComboBox, false}, {ui->actionSelection_mode_activated, false}, {ui->studyVariableComboBoxStatLevel, false}, {ui->statisticsPVal, false}, {ui->statisticsVolcano, false}, {ui->actionsend_statistics, false}};
 
 
     // window resize event
@@ -181,6 +181,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
     connect(ui->normalizationComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
+    connect(ui->studyVariableComboBoxStatLevel, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
     connect(ui->pieTreeSpinBox,(void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &Tutorial::spinbox_changed);
     connect(ui->pieSizeSpinBox,(void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &Tutorial::spinbox_changed);
 }
@@ -449,6 +450,12 @@ void Tutorial::combobox_changed(int){
                     }
                     break;
 
+                case SStatisticsLevel:
+                    if (lipidSpaceGUI->ui->studyVariableComboBoxStatLevel->currentIndex() == 1){
+                        continue_tutorial();
+                    }
+                    break;
+
                 default:
                     break;
             }
@@ -484,6 +491,12 @@ void Tutorial::combobox_changed(int){
             switch(d_step){
                 case DLoadData:
                     continuePushButton->setEnabled(lipidSpaceGUI->ui->studyVariableComboBox->currentText() == "Origin" && lipidSpaceGUI->ui->pieTreeSpinBox->value() >= 10 && lipidSpaceGUI->ui->pieSizeSpinBox->value() == 200);
+                    break;
+
+                case DSwitchStatistics:
+                    if (lipidSpaceGUI->ui->studyVariableComboBoxStatLevel->currentIndex() == 1){
+                        continue_tutorial();
+                    }
                     break;
 
                 case DNormalization:
@@ -1519,6 +1532,34 @@ void Tutorial::second_tutorial_steps(){
 
 
 
+        case SStatisticsLevel:
+            {
+                changeSize(650, 170);
+                move(20, 40);
+                QWidget *widget = lipidSpaceGUI->ui->studyVariableComboBoxStatLevel;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 4., p.y());
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                widget->setEnabled(true);
+                titleLabel->setText("Statistics level - Lipidome");
+                informationLabel->setText("The statistics module offers figures on two levels. You can choose either between statistics on lipidomes or on lipid species. On lipidome level, you have up to four different figures. Please switch to lipid species level.");
+            }
+            break;
+
+
+
+        case SStatisticsLipids:
+            {
+                changeSize(650, 170);
+                move(20, 40);
+                titleLabel->setText("Statistics level - Lipid species");
+                informationLabel->setText("Now you can see and interact with statistics figures on lipid species level. Dependent on the type of selected study variable and the number of its values, only the possible figures will be visible.");
+                continuePushButton->setEnabled(true);
+            }
+            break;
+
+
+
 
         case SStatistics2:
             {
@@ -1552,7 +1593,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SRawTable:
             {
-                changeSize(600, 190);
+                changeSize(600, 210);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Raw Data Table");
@@ -1705,9 +1746,10 @@ void Tutorial::third_tutorial_steps(){
 
         case TAssessStatistics1:
             {
-                changeSize(400, 290);
+                changeSize(400, 300);
                 move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
+                lipidSpaceGUI->ui->studyVariableComboBoxStatLevel->setCurrentIndex(0);
                 titleLabel->setText("Assess Lipid Distribution II");
                 informationLabel->setText("For all selected lipids in the analysis, a normalized average is computed for each lipidome. You can see a distribution of these values for all lipidomes on the both left figures as a box and bar plot. Measures such as p-value or accuracy indeed indicate a weak separation potential with respect to the study variable 'Treatment' when considering all lipid species.");
             }
@@ -1808,7 +1850,7 @@ void Tutorial::third_tutorial_steps(){
 
         case TAssessStatistics4:
             {
-                changeSize(440, 310);
+                changeSize(440, 330);
                 move(lipidSpaceGUI->width() - width() - 40, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Feature Analysis Evaluation II");
@@ -1890,7 +1932,7 @@ void Tutorial::fourth_tutorial_steps(){
             titleLabel->setText("Benford's Law");
             informationLabel->setText("Having said that, there is one builtin QC function. Every time when you import or remove lipidomics data in LipidSpace, the data is checked if it conforms to Benford's law (please find details in the menu Help → log messages). If your data does not, you will be informed with hints how to check your imported raw data.");
 
-            Logging::write_log("Benford's law describes the distrubution of the first digits of numbers in big data sets [Cho, W.K.T. and Gaines, B.J. (2007) Breaking the (Benford) Law: Statistical Fraud Detection in Campaign Finance. The American Statistician. 61, 218–223].");
+            Logging::write_log("Benford's law describes the distrubution of the first digits of numbers in big data sets [Cho, W.K.T. and Gaines, B.J. (2007) Violating the (Benford) Law: Statistical Fraud Detection in Campaign Finance. The American Statistician. 61, 218–223].");
             Logging::write_log("Real datsets with empirical or measured data ranging over several orders of magnitude tend to follow Benford's law.");
             break;
 
@@ -2036,18 +2078,35 @@ void Tutorial::fourth_tutorial_steps(){
             break;
 
 
+        case DSwitchStatistics:
+            {
+                changeSize(650, 110);
+                move(20, 40);
+                QWidget *widget = lipidSpaceGUI->ui->studyVariableComboBoxStatLevel;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ALB, lipidSpaceGUI, p.x() + widget->width() / 4., p.y());
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                widget->setEnabled(true);
+                titleLabel->setText("Switch to lipid species level");
+            }
+            break;
+
+
+
         case DIntroduceCVStatistic:
             {
                 changeSize(650, 190);
                 move(20, lipidSpaceGUI->height() - height() - 60);
 
+                /*
                 QWidget *widget = lipidSpaceGUI->ui->statisticsSpeciesCV;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
                 show_arrow(ATR, lipidSpaceGUI, p.x(), p.y() + widget->height() / 2.);
+                */
 
                 continuePushButton->setEnabled(true);
                 titleLabel->setText("Coefficient of Variation");
-                informationLabel->setText("The top right figure illustrates the distribution of the coefficients of variation for each lipid species based on the selected study variable. In this case, we have selected 'Origin' and thus can assess if all three studies have a similar distribution. Unfortunately, they are slightly different.");
+                informationLabel->setText("The top left figure illustrates the distribution of the coefficients of variation for each lipid species based on the selected study variable. In this case, we have selected 'Origin' and thus can assess if all three studies have a similar distribution. Unfortunately, they are slightly different.");
             }
             break;
 
@@ -2068,6 +2127,7 @@ void Tutorial::fourth_tutorial_steps(){
             }
             break;
 
+
         case DSelectStudies:
             changeSize(650, 230);
             move(lipidSpaceGUI->width() - width() - 20, lipidSpaceGUI->height() - height() - 60);
@@ -2078,6 +2138,7 @@ void Tutorial::fourth_tutorial_steps(){
             titleLabel->setText("Group-comprised Lipid Spaces");
             informationLabel->setText("The sheer number of lipid space tiles might be overwhelming but fortunatily we can select single lipidomes. LipidSpace even supports group-comprised lipid spaces when importing more nominal study variables. Instead of double-clicking on the tiles, we will learn another method to select the tiles. Please go on View → Selected tile(s) mode → Select tile(s) and select on top of the list the item \"'Origin' group lipidomes\".");
             break;
+
 
         case DApplySelection:
             changeSize(650, 150);
@@ -2105,7 +2166,7 @@ void Tutorial::fourth_tutorial_steps(){
             lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
             continuePushButton->setEnabled(true);
             titleLabel->setText("Study Differences");
-            informationLabel->setText("The biggest differences that we spotted were I) that the third study lacks completely glyceroceramids and sterol lipids but reports hexosylceramides (HexCer) as the only study, II) the first study reports no glycerophosphoinositols (PI), and III) the third study does not report cholesterol which is the most abundant lipid species in plasma.");
+            informationLabel->setText("The biggest differences that we spotted were I) that the third study completely lacks glycerolipids (DG, TG) and sterol lipids but reports hexosylceramides (HexCer) as the only study, II) the first study reports no glycerophosphoinositols (PI), and III) the third study does not report cholesterol which is the most abundant lipid species in plasma.");
             break;
 
         case DInterpretation:
