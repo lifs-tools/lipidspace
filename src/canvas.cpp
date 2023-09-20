@@ -369,10 +369,15 @@ void Dendrogram::load(){
 
     if (!lipid_space->dendrogram_root) return;
 
+
     max_title_width = 0;
     QFontMetrics fm(QFont("Helvetica", GlobalData::gui_num_var["label_size"]));
+    bool multiple_origins = lipid_space->study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values.size() > 1;
     for (int i : lipid_space->dendrogram_sorting){
-        dendrogram_titles.push_back(DendrogramTitle(QString(lipid_space->selected_lipidomes[i]->cleaned_name.c_str())));
+
+        string lipidome_name = lipid_space->selected_lipidomes[i]->lipidome_name + (multiple_origins ? lipid_space->selected_lipidomes[i]->suffix : "");
+
+        dendrogram_titles.push_back(DendrogramTitle(QString(lipidome_name.c_str())));
         max_title_width = max(max_title_width, (double)fm.horizontalAdvance(dendrogram_titles.back().title));
     }
 

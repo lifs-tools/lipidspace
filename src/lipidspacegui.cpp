@@ -2874,7 +2874,13 @@ void HomeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     painter->drawText(QRectF(0., 0., 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "Accessing the chemical space of individual lipidomes:\n  • Comprehensive study of multiple lipidomes\n  • Providing mechanism for quality control\n  • Feature analysis and lipid selection\n  • Integration of study variables");
 
     painter->drawText(QRectF(0, 120., 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "LipidSpace offers several interactive tutorials for an easy introduction\ninto its functionality:");
+
+
+    f.setPointSizeF(18.);
+    painter->setFont(f);
+    painter->drawText(QRectF(0, 1400, 1000., 400.), Qt::AlignTop | Qt::AlignLeft, "What do you expect to see here, a hidden easter egg? I am sorry,\nbut I must disappoint you ;-)");
     painter->restore();
+
 }
 
 

@@ -408,6 +408,8 @@ class Lipidome {
 public:
     string file_name;
     string cleaned_name;
+    string lipidome_name;
+    string suffix;
     vector<string> species;
     vector<string> classes;
     vector<string> categories;

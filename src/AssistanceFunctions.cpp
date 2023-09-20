@@ -439,18 +439,21 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
 }
 
 
-Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name, bool is_file_name) : file_name(lipidome_file) {
+Lipidome::Lipidome(string _lipidome_name, string lipidome_file, string sheet_name, bool is_file_name) : file_name(lipidome_file) {
     QFileInfo qFileInfo(file_name.c_str());
-    string cleaned_file = qFileInfo.baseName().toStdString();
+    string cleaned_file_name = qFileInfo.baseName().toStdString();
+    lipidome_name = _lipidome_name;
+
     if (is_file_name){
-        cleaned_name = cleaned_file + (sheet_name.length() > 0 ? "/" + sheet_name : "");
+        lipidome_name = cleaned_file_name;
+        suffix = (sheet_name.length() > 0 ? "/" + sheet_name : "");
     }
     else {
-        string suffix = (cleaned_file.length() > 0) ? " - " + cleaned_file : "";
+        suffix = (cleaned_file_name.length() > 0) ? " - " + cleaned_file_name : "";
         if (suffix.length() > 0 && sheet_name.length() > 0) suffix += "/" + sheet_name;
-        cleaned_name = lipidome_name + suffix;
     }
-    study_variables.insert({FILE_STUDY_VARIABLE_NAME, StudyVariable(FILE_STUDY_VARIABLE_NAME, cleaned_file + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
+    cleaned_name = lipidome_name + suffix;
+    study_variables.insert({FILE_STUDY_VARIABLE_NAME, StudyVariable(FILE_STUDY_VARIABLE_NAME, cleaned_file_name + (sheet_name.length() > 0 ?  "/" + sheet_name : ""))});
 }
 
 
@@ -459,6 +462,8 @@ Lipidome::Lipidome(string lipidome_name, string lipidome_file, string sheet_name
 Lipidome::Lipidome(Lipidome *lipidome){
     file_name = lipidome->file_name;
     cleaned_name = lipidome->cleaned_name;
+    lipidome_name = lipidome->lipidome_name;
+    suffix = lipidome->suffix;
     for (auto value : lipidome->species) species.push_back(value);
     for (auto value : lipidome->classes) classes.push_back(value);
     for (auto value : lipidome->categories) categories.push_back(value);

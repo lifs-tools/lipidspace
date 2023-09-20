@@ -856,8 +856,10 @@
     <addaction name="actionImport_mzTabM"/>
     <addaction name="actionImport_eample_dataset"/>
     <addaction name="separator"/>
-    <addaction name="actionExport_Results"/>
+    <addaction name="actionLoad_session"/>
+    <addaction name="actionSave_session"/>
     <addaction name="separator"/>
+    <addaction name="actionExport_Results"/>
     <addaction name="actionsend_statistics"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -1184,6 +1186,16 @@
    </property>
    <property name="text">
     <string>Send anonymous statistics</string>
+   </property>
+  </action>
+  <action name="actionLoad_session">
+   <property name="text">
+    <string>Load session</string>
+   </property>
+  </action>
+  <action name="actionSave_session">
+   <property name="text">
+    <string>Save session</string>
    </property>
   </action>
  </widget>

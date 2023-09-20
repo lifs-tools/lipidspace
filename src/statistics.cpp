@@ -1075,6 +1075,8 @@ void Statistics::updateBoxPlot(){
                 chart->setTitle(QString("Statistics: <i>p</i>-value<sub>ANOVA</sub> = %2").arg(QString::number(p_anova, 'e', -1)));
             }
         }
+
+        chart->setYLabel("Arbitrary units [A.U.]");
     }
     else {
 
