@@ -391,6 +391,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->action4_columns, &QAction::triggered, this, &LipidSpaceGUI::set4ColumnLayout);
     connect(ui->action5_columns, &QAction::triggered, this, &LipidSpaceGUI::set5ColumnLayout);
     connect(ui->action6_columns, &QAction::triggered, this, &LipidSpaceGUI::set6ColumnLayout);
+    connect(ui->actionLoad_session, &QAction::triggered, this, &LipidSpaceGUI::loadSession);
+    connect(ui->actionSave_session, &QAction::triggered, this, &LipidSpaceGUI::saveSession);
     connect(ui->actionComplete_feature_analysis, &QAction::triggered, this, &LipidSpaceGUI::completeFeatureAnalysis);
     connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
     connect(ui->actionManage_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::openManageLipidomesWindow);
@@ -1305,7 +1307,7 @@ void LipidSpaceGUI::runAnalysis(){
         connect(canvas, &QGraphicsView::customContextMenuRequested, canvas, &Canvas::contextMenu);
         connect(canvas, &Canvas::context, this, &LipidSpaceGUI::ShowContextMenuLipidome);
         connect(canvas, &Canvas::lipidsForSelection, this, &LipidSpaceGUI::setLipidsForSelection);
-            connect(canvas, &Canvas::openFiles, this, &LipidSpaceGUI::openFiles);
+        connect(canvas, &Canvas::openFiles, this, &LipidSpaceGUI::openFiles);
         canvases.push_back(canvas);
     }
 
@@ -1313,6 +1315,7 @@ void LipidSpaceGUI::runAnalysis(){
     ui->menuAnalysis->setEnabled(true);
     ui->menuView->setEnabled(true);
     ui->actionExport_Results->setEnabled(true);
+    ui->actionSave_session->setEnabled(true);
     ui->menuClustering_strategy->setEnabled(true);
     ui->menuTile_layout->setEnabled(true);
     ui->menuSelected_tiles_mode->setEnabled(true);
@@ -1765,6 +1768,7 @@ void LipidSpaceGUI::updateGUI(){
     ui->menuAnalysis->setEnabled(lipid_space->lipidomes.size());
     ui->menuView->setEnabled(lipid_space->lipidomes.size());
     ui->actionExport_Results->setEnabled(lipid_space->lipidomes.size());
+    ui->actionSave_session->setEnabled(lipid_space->lipidomes.size());
 
     ui->actionAutomatically->setChecked(false);
     ui->action1_column->setChecked(false);
@@ -1949,6 +1953,56 @@ void LipidSpaceGUI::openMzTabM(QString file_name){
         runAnalysis();
     }
 }
+
+
+
+
+
+
+
+void LipidSpaceGUI::loadSession(){
+    if (lipid_space->analysis_finished){
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Load session", "You are about to load a session. This would overwrite the current session. Do you want to continue?", QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No) {
+            return;
+        }
+    }
+
+    QString file_name = QFileDialog::getOpenFileName(this, "Select a LipidSpace session", GlobalData::last_folder, "LipidSpace session *.ls (*.ls)");
+    if (file_name == "") return;
+
+    lipid_space->reset_analysis();
+    if (lipid_space->load_session(file_name.toStdString())) runAnalysis();
+    else {
+        QMessageBox::warning(this, "Load session", "An error occurred, session file could not be read.");
+    }
+}
+
+
+
+void LipidSpaceGUI::saveSession(){
+    if (!lipid_space->analysis_finished){
+        QMessageBox::warning(this, "Save session", "No data was loaded, session cannot be stored.");
+        return;
+    }
+
+    QString file_name = QFileDialog::getSaveFileName(this, "Export table", GlobalData::last_folder, "LipidSpace session *.ls (*.ls)");
+    if (!file_name.length()) return;
+
+    try {
+        if (QFile::exists(file_name)){
+            QFile::remove(file_name);
+        }
+        lipid_space->save_session(file_name.toStdString());
+    }
+    catch (exception &e){
+        Logging::write_log(e.what());
+        QMessageBox::critical(this, "Unexpected Error", "An unexpected error happened. Please check the log file and get in contact with the developers.");
+    }
+}
+
+
 
 
 

@@ -276,5 +276,7 @@ public slots:
     void openFiles(const QList<QUrl> &file_list);
     void lipidMarked();
     void lipidsMarked(set<string> *lipids);
+    void loadSession();
+    void saveSession();
 };
 #endif // LIPIDSPACEGUI_H

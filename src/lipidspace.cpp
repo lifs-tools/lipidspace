@@ -3723,6 +3723,23 @@ void LipidSpace::run(){
 
 
 
+
+bool LipidSpace::load_session(string session_file_name){
+    return true;
+}
+
+
+
+
+bool LipidSpace::save_session(string session_file_name){
+    return true;
+}
+
+
+
+
+
+
 void LipidSpace::reset_analysis(){
     analysis_finished = false;
     study_variable_values.clear();

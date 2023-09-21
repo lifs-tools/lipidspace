@@ -28,6 +28,7 @@
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/Matrix.h"
 #include "lipidspace/logging.h"
+#include "nlohmann/json.hpp"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>

@@ -88,6 +88,9 @@ public:
     void load_mzTabM(string mzTabM_file);
     int extract_number(string line, int line_number = -1);
 
+    bool load_session(string session_file_name);
+    bool save_session(string session_file_name);
+
 signals:
     void fileLoaded();
     void reassembled();
