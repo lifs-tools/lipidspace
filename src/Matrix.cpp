@@ -206,10 +206,53 @@ Matrix::Matrix(Matrix &mat, bool transpose) : QObject(){
 }
 
 
+Matrix::Matrix(json &container) : QObject(){
+    for (string field : {"rows", "cols", "m"}){
+        if (container.find(field) == container.end()){
+            throw LipidException("Error: field '" + field + "' not found in class 'Matrix'.");
+        }
+    }
+    rows = container["rows"];
+    cols = container["cols"];
+
+    for (auto val : container["m"]) m.push_back(val);
+
+    if (rows * cols != (int)m.size()){
+        throw LipidException("Error: matrix dimensions do not fit with content.");
+    }
+}
+
+
 void Matrix::clear(){
     m.clear();
     cols = 0;
     rows = 0;
+}
+
+
+void Matrix::load(json &container){
+    for (string field : {"rows", "cols", "m"}){
+        if (container.find(field) == container.end()){
+            throw LipidException("Error: field '" + field + "' not found in class 'Matrix'.");
+        }
+    }
+    rows = container["rows"];
+    cols = container["cols"];
+
+    m.clear();
+    for (auto val : container["m"]) m.push_back(val);
+
+    if (rows * cols != (int)m.size()){
+        throw LipidException("Error: matrix dimensions do not fit with content.");
+    }
+}
+
+
+
+void Matrix::save(json &container){
+    container["rows"] = rows;
+    container["cols"] = cols;
+    for (auto val : m) container["m"] += val;
 }
 
 

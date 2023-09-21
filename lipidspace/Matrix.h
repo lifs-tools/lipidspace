@@ -1,4 +1,6 @@
 #include "lipidspace/lambda_lanczos.hpp"
+#include "cppgoslin/cppgoslin.h"
+#include "nlohmann/json.hpp"
 
 #include <vector>
 #include <math.h>
@@ -11,6 +13,7 @@
 
 using lambda_lanczos::LambdaLanczos;
 using namespace std;
+using json = nlohmann::json;
 
 #define sq(x) ((x) * (x))
 #define mmin(x, y) ((x) < (y) ? (x) : (y))
@@ -78,6 +81,7 @@ public:
     Matrix(vector<vector<double>> &copy);
     Matrix(int _rows, int _cols);
     Matrix(Matrix &mat, bool transpose = false);
+    Matrix(json &container);
     friend Matrix& operator+=(Matrix &me, const double val);
     friend Matrix& operator-=(Matrix &me, const double val);
     friend Matrix& operator*=(Matrix &me, const double val);
@@ -102,6 +106,9 @@ public:
     void PCA(Matrix &pca, int dimensions = 2);
     void add_column(Array &col);
     double* data();
+    void load(json &container);
+    void save(json &container);
+
     friend ostream& operator << (ostream& os, const Matrix& m){
         for (int r = 0; r < m.rows; ++r){
             for (int c = 0; c < m.cols; c++){

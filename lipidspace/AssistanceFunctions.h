@@ -56,6 +56,7 @@ inline bool instanceof(const T *ptr) {
 
 using namespace OpenXLSX;
 using namespace std;
+using json = nlohmann::json;
 
 enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
 enum StudyVariableType {NumericalStudyVariable, NominalStudyVariable, NominalValue};
@@ -225,6 +226,8 @@ public:
     StudyVariableSet(string _name, StudyVariableType f_type);
     StudyVariableSet();
     StudyVariableSet(StudyVariableSet *study_varable_set);
+    StudyVariableSet(json &container);
+    void save(json &container);
 };
 
 
@@ -258,6 +261,8 @@ public:
     StudyVariable(string _name, string nom_val, bool _missing = false);
     StudyVariable(string _name, double num_val, bool _missing = false);
     StudyVariable(StudyVariable *f);
+    StudyVariable(json &container);
+    void save(json &container);
 };
 
 
@@ -425,6 +430,8 @@ public:
 
     Lipidome(string lipidome_name, string lipidome_file, string sheet_name = "", bool is_file_name = false);
     Lipidome(Lipidome *lipidome);
+    Lipidome(json &container, map<string, LipidAdduct*> &all_lipids);
+    void save(json &container);
     string to_json();
 };
 
@@ -511,9 +518,12 @@ public:
 
     DendrogramNode(int index, map<string, StudyVariableSet> *study_variable_values, Lipidome *lipidome);
     DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d);
+    DendrogramNode(json &container);
+
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);
     void update_distances(set<DendrogramNode*> &nodes, Matrix &m);
+    void save(json &container);
 };
 
 

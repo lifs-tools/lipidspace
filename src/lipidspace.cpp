@@ -3728,11 +3728,82 @@ bool LipidSpace::load_session(string session_file_name){
     std::ifstream stream_in(session_file_name.c_str());
     json container = json::parse(stream_in);
 
-    for (string field : {"keep_sn_position", "ignore_unknown_lipidse", "ignore_doublette_lipids", "unboundend_distance", "without_quant"}){
+    for (string field : {"keep_sn_position", "ignore_unknown_lipids", "ignore_doublette_lipids", "unboundend_distance", "without_quant", "all_lipids", "cols_for_pca", "lipidomes", "lipid_name_translations", "global_lipidome", "group_lipidomes", "dendrogram_points", "dendrogram_sorting", "hausdorff_distances", "analysis_finished", "selection", "selected_lipidomes", "global_distances", "target_variable", "registered_lipid_classes", "statistics_matrix", "statistics_lipids", "lipid_sortings", "study_variable_values", "dendrogram_root"}){
         if (!contains_val(container, field)){
-            throw LipidException("Error: field '" + field + "' not found in file '" + session_file_name + "'");
+            throw LipidException("Error: field '" + field + "' not found in file '" + session_file_name + "'.");
         }
     }
+
+    if (container["selection"].size() != 4){
+        throw LipidException("Error: field 'selection' has not 4 entries.");
+    }
+
+    keep_sn_position = container["keep_sn_position"];
+    ignore_unknown_lipids = container["ignore_unknown_lipids"];
+    ignore_doublette_lipids = container["ignore_doublette_lipids"];
+    unboundend_distance = container["unboundend_distance"];
+    cols_for_pca = container["cols_for_pca"];
+    without_quant = container["without_quant"];
+
+    vector<Lipidome*> lipidome_index;
+    for (string lipid_name : container["all_lipids"]) all_lipids.insert({lipid_name, parser.parse(lipid_name)});
+
+    for (auto c : container["lipidomes"]){
+        Lipidome* lipidome = new Lipidome(c, all_lipids);
+        lipidomes.push_back(lipidome);
+        lipidome_index.push_back(lipidome);
+    }
+
+    for (auto c : container["lipid_name_translations"]){
+        lipid_name_translations.push_back(map<string, string>());
+        map<string, string> &map_trans = lipid_name_translations.back();
+        for (auto &kv : c.items()) map_trans.insert({kv.key(), kv.value()});
+    }
+
+    delete global_lipidome;
+    global_lipidome = new Lipidome(container["global_lipidome"], all_lipids);
+
+    for (auto &kv : container["group_lipidomes"].items()){
+        group_lipidomes.insert({kv.key(), vector<Lipidome*>()});
+        vector<Lipidome*> &vector_lipidome_group = group_lipidomes[kv.key()];
+        for (auto c : kv.value()) vector_lipidome_group.push_back(new Lipidome(c, all_lipids));
+    }
+
+    for (auto val : container["dendrogram_points"]) dendrogram_points.push_back(val);
+    for (auto val : container["dendrogram_sorting"]) dendrogram_sorting.push_back(val);
+
+    hausdorff_distances.load(container["hausdorff_distances"]);
+
+    analysis_finished = container["analysis_finished"];
+
+    for (int i = 0; i < 4; ++i){
+        for (auto &kv : container["selection"][i].items()) selection[i].insert({(string)kv.key(), (bool)kv.value()});
+    }
+
+    for (int i : container["selected_lipidomes"]) selected_lipidomes.push_back(lipidome_index[i]);
+
+    global_distances.load(container["global_distances"]);
+
+    target_variable = container["target_variable"];
+
+    for (auto val : container["registered_lipid_classes"]) registered_lipid_classes.insert(val);
+
+    statistics_matrix.load(container["statistics_matrix"]);
+
+    for (auto val : container["statistics_lipids"]) statistics_lipids.push_back(val);
+
+    for (auto &kv : container["lipid_sortings"].items()){
+        lipid_sortings.insert({kv.key(), SortVector<string, double>()});
+        SortVector<string, double> &sv = lipid_sortings[kv.key()];
+        for (auto &v : kv.value()) sv.push_back({(string)v[0], (double)v[1]});
+    }
+
+    for (auto &kv : container["study_variable_values"].items()){
+        study_variable_values.insert({kv.key(), StudyVariableSet(kv.value())});
+    }
+
+    dendrogram_root = new DendrogramNode(container["dendrogram_root"]);
+
     return true;
 }
 
@@ -3745,7 +3816,62 @@ bool LipidSpace::save_session(string session_file_name){
     container["ignore_unknown_lipids"] = ignore_unknown_lipids;
     container["ignore_doublette_lipids"] = ignore_doublette_lipids;
     container["unboundend_distance"] = unboundend_distance;
+    container["cols_for_pca"] = cols_for_pca;
     container["without_quant"] = without_quant;
+    for (auto &kv : all_lipids) container["all_lipids"] += kv.first;
+
+    map<Lipidome*, int> lipidome_to_index;
+    for (int i = 0; i < (int)lipidomes.size(); ++i){
+        auto lipidome = lipidomes[i];
+        lipidome_to_index.insert({lipidome, i});
+        lipidome->save(container["lipdomes"][i]);
+    }
+
+    for (auto &map_trans : lipid_name_translations){
+        for (auto &kv : map_trans) container["lipid_name_translations"][kv.first] = kv.second;
+    }
+
+
+    global_lipidome->save(container["global_lipidome"]);
+
+    for (auto &kv : group_lipidomes){
+        for (int i = 0; i < (int)kv.second.size(); ++i){
+            kv.second[i]->save(container["group_lipidomes"][kv.first][i]);
+        }
+    }
+
+    for (auto val : dendrogram_points) container["dendrogram_points"] += val;
+    for (auto val : dendrogram_sorting) container["dendrogram_sorting"] += val;
+
+    hausdorff_distances.save(container["hausdorff_distances"]);
+    container["analysis_finished"] = analysis_finished;
+
+    for (int i = 0; i < 4; ++i){
+        for (auto &kv : selection[i]) container["selection"][i][kv.first] = kv.second;
+    }
+
+    for (auto lipidome : selected_lipidomes){
+        container["selected_lipidomes"] += lipidome_to_index[lipidome];
+    }
+
+    global_distances.save(container["global_distances"]);
+
+    container["target_variable"] = target_variable;
+
+    for (auto val : registered_lipid_classes) container["registered_lipid_classes"] += val;
+
+    statistics_matrix.save(container["statistics_matrix"]);
+
+    for (auto val : statistics_lipids) container["statistics_lipids"] += val;
+
+    for (auto &kv : lipid_sortings){
+        for (auto &p : kv.second) container["lipid_sortings"][kv.first] += {p.first, p.second};
+    }
+
+    for (auto &kv : study_variable_values) kv.second.save(container["study_variable_values"][kv.first]);
+
+    dendrogram_root->save(container["dendrogram_root"]);
+
 
     ofstream stream_out(session_file_name.c_str());
     stream_out << container;

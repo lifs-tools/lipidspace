@@ -17,7 +17,6 @@
 
 using namespace std;
 using namespace std::chrono;
-using json = nlohmann::json;
 
 class LipidSpace : public QThread {
     Q_OBJECT
