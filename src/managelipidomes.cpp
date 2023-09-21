@@ -38,6 +38,7 @@ void ManageLipidomes::ok(){
         else {
             sort(removeItems.begin(), removeItems.end());
             for (int i = removeItems.size() - 1; i >= 0; i--){
+                delete lipid_space->lipidomes[removeItems[i]];
                 lipid_space->lipidomes.erase(lipid_space->lipidomes.begin() + removeItems[i]);
             }
             reassembleSelection();

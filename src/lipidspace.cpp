@@ -3725,6 +3725,14 @@ void LipidSpace::run(){
 
 
 bool LipidSpace::load_session(string session_file_name){
+    std::ifstream stream_in(session_file_name.c_str());
+    json container = json::parse(stream_in);
+
+    for (string field : {"keep_sn_position", "ignore_unknown_lipidse", "ignore_doublette_lipids", "unboundend_distance", "without_quant"}){
+        if (!contains_val(container, field)){
+            throw LipidException("Error: field '" + field + "' not found in file '" + session_file_name + "'");
+        }
+    }
     return true;
 }
 
@@ -3732,6 +3740,16 @@ bool LipidSpace::load_session(string session_file_name){
 
 
 bool LipidSpace::save_session(string session_file_name){
+    json container;
+    container["keep_sn_position"] = keep_sn_position;
+    container["ignore_unknown_lipids"] = ignore_unknown_lipids;
+    container["ignore_doublette_lipids"] = ignore_doublette_lipids;
+    container["unboundend_distance"] = unboundend_distance;
+    container["without_quant"] = without_quant;
+
+    ofstream stream_out(session_file_name.c_str());
+    stream_out << container;
+
     return true;
 }
 

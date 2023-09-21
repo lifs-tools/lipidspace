@@ -1972,10 +1972,17 @@ void LipidSpaceGUI::loadSession(){
     QString file_name = QFileDialog::getOpenFileName(this, "Select a LipidSpace session", GlobalData::last_folder, "LipidSpace session *.ls (*.ls)");
     if (file_name == "") return;
 
-    lipid_space->reset_analysis();
-    if (lipid_space->load_session(file_name.toStdString())) runAnalysis();
-    else {
-        QMessageBox::warning(this, "Load session", "An error occurred, session file could not be read.");
+    resetAnalysis();
+
+    try {
+        if (lipid_space->load_session(file_name.toStdString())) runAnalysis();
+        else {
+            QMessageBox::warning(this, "Load session", "An error occurred, session file could not be read.");
+        }
+    }
+    catch (exception &e){
+        Logging::write_log(e.what());
+        QMessageBox::critical(this, "Unexpected Error", "An unexpected error happened. Please check the log file and get in contact with the developers.");
     }
 }
 
@@ -1994,7 +2001,9 @@ void LipidSpaceGUI::saveSession(){
         if (QFile::exists(file_name)){
             QFile::remove(file_name);
         }
-        lipid_space->save_session(file_name.toStdString());
+        if (lipid_space->save_session(file_name.toStdString())){
+            QMessageBox::information(this, "Save session", "Session was successfully saved.");
+        }
     }
     catch (exception &e){
         Logging::write_log(e.what());
