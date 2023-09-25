@@ -1162,6 +1162,9 @@ void LipidSpaceGUI::checkBenford(){
 
 
 void LipidSpaceGUI::runAnalysis(){
+    string species_selection = GlobalData::gui_string_var["species_selection"];
+    string study_var = GlobalData::gui_string_var["study_var"];
+    string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
     set<QString> selected_tiles;
 
     // clear all windows with canvases
@@ -1191,14 +1194,11 @@ void LipidSpaceGUI::runAnalysis(){
     lipid_space->start();
     progressbar->exec(); // waiting for the progress bar to finish
 
-    visualizeFinishedAnalysis(selected_tiles);
+    visualizeFinishedAnalysis(selected_tiles, species_selection, study_var, study_var_stat);
 }
 
 
-void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles){
-    string species_selection = GlobalData::gui_string_var["species_selection"];
-    string study_var = GlobalData::gui_string_var["study_var"];
-    string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
+void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, string species_selection, string study_var, string study_var_stat){
 
     if (GlobalData::benford_warning){
         QMessageBox::warning(this, "Warning", "Please be aware that your current raw data do not conform to Benfords law. For further details, please have a look in the logs (Help → Log messages).");
@@ -1963,6 +1963,10 @@ void LipidSpaceGUI::openMzTabM(QString file_name){
 
 
 void LipidSpaceGUI::loadSession(){
+    string species_selection = GlobalData::gui_string_var["species_selection"];
+    string study_var = GlobalData::gui_string_var["study_var"];
+    string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
+
     if (lipid_space->analysis_finished){
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Load session", "You are about to load a session. This would overwrite the current session. Do you want to continue?", QMessageBox::Yes|QMessageBox::No);
@@ -1990,7 +1994,7 @@ void LipidSpaceGUI::loadSession(){
             set<QString> selected_tiles;
             updateSelectionView();
             checkBenford();
-            visualizeFinishedAnalysis(selected_tiles);
+            visualizeFinishedAnalysis(selected_tiles, species_selection, study_var, study_var_stat);
         }
         else {
             QMessageBox::warning(this, "Load session", "An error occurred, session file could not be read.");

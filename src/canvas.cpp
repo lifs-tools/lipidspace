@@ -449,6 +449,7 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
             sum += kv.second;
         }
 
+
         for (auto kv : node->study_variable_count_nominal[study_variable]){
             if (kv.second == 0) continue;
             int span = 16. * 360. * (double)kv.second / sum;

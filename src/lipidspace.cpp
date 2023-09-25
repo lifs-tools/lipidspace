@@ -1257,14 +1257,6 @@ int LipidSpace::compute_global_distance_matrix(){
     }
     group_lipidomes.clear();
 
-    /*
-    for (auto kvs : study_variable_values){
-        for (auto &kv : kvs.second.nominal_values){
-            cout << "loaded: >" << kvs.first << "< >" << kvs.second.name << "< >" << kv.first << "< >" << kv.second << "<" << endl;
-        }
-    }
-    */
-
     set<string> registered_lipids;
 
     for (auto lipidome : lipidomes){
@@ -1350,13 +1342,15 @@ int LipidSpace::compute_global_distance_matrix(){
     // Lanczos algorithm computes one less principal components than
     // lipids provided, we need at least 2 dimensions, therefore
     // at least three lipids
-    if (n < 3) return n;
+    if (n < 0) return n;
 
 
     global_lipidome->original_intensities.resize(n, 1);
     global_lipidome->visualization_intensities.resize(n, 1);
     global_lipidome->normalized_intensities.resize(n, 1);
     global_lipidome->PCA_intensities.resize(n, 1);
+
+    if (n < 3) return n;
 
     // compute distances
     Matrix& distance_matrix = global_lipidome->m;
@@ -1425,8 +1419,6 @@ void LipidSpace::separate_matrixes(){
         global_lipidome->selected_lipid_indexes.push_back(i);
     }
 
-
-
     vector<int> remove_lipidomes;
     int l = 0;
     for (auto lipidome : selected_lipidomes){
@@ -1458,7 +1450,6 @@ void LipidSpace::separate_matrixes(){
         global_lipidome->original_intensities[i] = global_lipid_intensities[lipid_species].mean();
         global_lipidome->normalized_intensities[i] = global_lipid_intensities[lipid_species].mean();
     }
-
 
     for (auto &kv_study_var : study_variable_values){
         for (auto kv : study_variable_values[kv_study_var.first].nominal_values){
@@ -3111,7 +3102,6 @@ void LipidSpace::lipid_analysis(bool report_progress){
     dendrogram_points.clear();
     statistics_lipids.clear();
 
-
     int num_for_PCA = 0;
     // compute PCA matrixes for the complete lipidome
     if (!progress || !progress->stop_progress){
@@ -3127,8 +3117,6 @@ void LipidSpace::lipid_analysis(bool report_progress){
             return;
         }
     }
-
-
 
     if (num_for_PCA >= 3){
         cols_for_pca = min(cols_for_pca, (int)global_lipidome->lipids.size() - 1);
@@ -3816,13 +3804,6 @@ bool LipidSpace::load_session(string session_file_name){
     }
 
     dendrogram_root = new DendrogramNode(container["dendrogram_root"]);
-
-
-    for (auto kvs : study_variable_values){
-        for (auto &kv : kvs.second.nominal_values){
-            cout << "loaded: >" << kvs.first << "< >" << kvs.second.name << "< >" << kv.first << "< >" << kv.second << "<" << endl;
-        }
-    }
 
     return true;
 }

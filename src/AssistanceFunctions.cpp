@@ -554,7 +554,7 @@ Lipidome::Lipidome(Lipidome *lipidome){
 
 
 Lipidome::Lipidome (json &container, map<string, LipidAdduct*> &all_lipids){
-    for (string field : {"file_name", "cleaned_name", "lipidome_name", "suffix", "species", "original_intensities", "study_variables", "visualization_intensities", "selected_lipid_indexes", "normalized_intensities", "PCA_intensities"}){
+    for (string field : {"file_name", "cleaned_name", "lipidome_name", "suffix", "species", "original_intensities", "study_variables"}){
         if (!contains_val(container, field)){
             throw LipidException("Error: field '" + field + "' not found in class 'Lipidome'.");
         }
@@ -578,17 +578,25 @@ Lipidome::Lipidome (json &container, map<string, LipidAdduct*> &all_lipids){
     for (double val : container["original_intensities"]){
         original_intensities.push_back(val);
     }
-    for (double val : container["visualization_intensities"]){
-        visualization_intensities.push_back(val);
+    if (contains_val(container, "visualization_intensities")){
+        for (double val : container["visualization_intensities"]){
+            visualization_intensities.push_back(val);
+        }
     }
-    for (double val : container["selected_lipid_indexes"]){
-        selected_lipid_indexes.push_back(val);
+    if (contains_val(container, "selected_lipid_indexes")){
+        for (double val : container["selected_lipid_indexes"]){
+            selected_lipid_indexes.push_back(val);
+        }
     }
-    for (double val : container["normalized_intensities"]){
-        normalized_intensities.push_back(val);
+    if (contains_val(container, "normalized_intensities")){
+        for (double val : container["normalized_intensities"]){
+            normalized_intensities.push_back(val);
+        }
     }
-    for (double val : container["PCA_intensities"]){
-        PCA_intensities.push_back(val);
+    if (contains_val(container, "PCA_intensities")){
+        for (double val : container["PCA_intensities"]){
+            PCA_intensities.push_back(val);
+        }
     }
 
     for (auto &kv : container["study_variables"].items()){
@@ -609,6 +617,7 @@ void Lipidome::save(json &container){
     for (auto &kv : study_variables){
         kv.second.save(container["study_variables"][kv.first]);
     }
+
     for (int val : selected_lipid_indexes) container["selected_lipid_indexes"] += val;
     for (double val : original_intensities) container["original_intensities"] += val;
     for (double val : visualization_intensities) container["visualization_intensities"] += val;
@@ -721,7 +730,7 @@ DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d)
 
 
 DendrogramNode::DendrogramNode(json &container){
-    for (string field : {"order", "left_child", "right_child", "distance", "x_left", "x_right", "y", "depth"}){
+    for (string field : {"indexes", "order", "left_child", "right_child", "distance", "x_left", "x_right", "y", "depth"}){
         if (!contains_val(container, field)){
             throw LipidException("Error: field '" + field + "' not found in class 'DendrogramNode'.");
         }
@@ -740,6 +749,28 @@ DendrogramNode::DendrogramNode(json &container){
 
     left_child = container["left_child"].is_number() ? 0 : new DendrogramNode(container["left_child"]);
     right_child = container["right_child"].is_number() ? 0 : new DendrogramNode(container["right_child"]);
+
+    if (contains_val(container, "study_variable_count_nominal")){
+        for (auto &kv : container["study_variable_count_nominal"].items()){
+            study_variable_count_nominal.insert({(string)kv.key(), map<string, int>()});
+            map<string, int> &m = study_variable_count_nominal[kv.key()];
+            for (auto &kv2 : kv.value().items()) m.insert({(string)kv2.key(), (int)kv2.value()});
+        }
+    }
+
+    if (contains_val(container, "study_variable_numerical")){
+        for (auto &kv : container["study_variable_numerical"].items()){
+            study_variable_numerical.insert({(string)kv.key(), vector<double>()});
+            vector<double> &v = study_variable_numerical[kv.key()];
+            for (double val : kv.value()) v.push_back(val);
+        }
+    }
+
+    if (contains_val(container, "study_variable_numerical_thresholds")){
+        for (auto &kv : container["study_variable_numerical_thresholds"].items()){
+            study_variable_numerical_thresholds.insert({(string)kv.key(), (double)kv.value()});
+        }
+    }
 }
 
 
@@ -758,6 +789,20 @@ void DendrogramNode::save(json &container){
 
     if (right_child) right_child->save(container["right_child"]);
     else container["right_child"] = 0;
+
+    for (auto &kv : study_variable_count_nominal){
+        for (auto &kv2 : kv.second){
+            container["study_variable_count_nominal"][kv.first][kv2.first] = kv2.second;
+        }
+    }
+
+    for (auto &kv : study_variable_numerical){
+        for (double val : kv.second) container["study_variable_numerical"][kv.first] += val;
+    }
+
+    for (auto &kv : study_variable_numerical_thresholds){
+        container["study_variable_numerical_thresholds"][kv.first] = kv.second;
+    }
 }
 
 
