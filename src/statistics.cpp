@@ -370,7 +370,7 @@ void Statistics::updateBarPlot(){
 
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
 
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
@@ -1564,7 +1564,7 @@ void Statistics::updateVolcano(){
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     map<string, int> lipidome_name_map;
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
         LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];

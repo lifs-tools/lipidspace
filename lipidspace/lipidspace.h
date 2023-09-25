@@ -35,7 +35,7 @@ public:
     bool unboundend_distance;
     bool without_quant;
     vector<Lipidome*> lipidomes;
-    vector< map<string, string> > lipid_name_translations;
+    map<string, string> lipid_name_translations[3];
     Lipidome* global_lipidome;
     map<string, vector<Lipidome*>> group_lipidomes;
     Array dendrogram_points;

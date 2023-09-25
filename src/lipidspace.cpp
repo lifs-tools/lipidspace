@@ -284,7 +284,6 @@ LipidSpace::LipidSpace() {
     target_variable = "";
     study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
     group_lipidomes.insert({FILE_STUDY_VARIABLE_NAME, vector<Lipidome*>()});
-    lipid_name_translations.resize(3);
 
 
 
@@ -329,10 +328,12 @@ LipidSpace::LipidSpace(LipidSpace *ls){
         lipidomes.push_back(new_lipidome);
         lipidome_map.insert({lipidome, new_lipidome});
     }
-    for (auto translation : ls->lipid_name_translations){
-        lipid_name_translations.push_back(map<string, string>());
-        for (auto kv : translation) lipid_name_translations.back().insert({kv.first, kv.second});
-    }
+
+    for (auto &kv : ls->lipid_name_translations[0]) lipid_name_translations[0].insert({kv.first, kv.second});
+    for (auto &kv : ls->lipid_name_translations[1]) lipid_name_translations[1].insert({kv.first, kv.second});
+    for (auto &kv : ls->lipid_name_translations[2]) lipid_name_translations[2].insert({kv.first, kv.second});
+
+
     global_lipidome = (ls->global_lipidome != 0) ? new Lipidome(ls->global_lipidome) : 0;
     hausdorff_distances.rewrite(ls->hausdorff_distances);
     analysis_finished = false;
@@ -1256,13 +1257,21 @@ int LipidSpace::compute_global_distance_matrix(){
     }
     group_lipidomes.clear();
 
-
+    /*
+    for (auto kvs : study_variable_values){
+        for (auto &kv : kvs.second.nominal_values){
+            cout << "loaded: >" << kvs.first << "< >" << kvs.second.name << "< >" << kv.first << "< >" << kv.second << "<" << endl;
+        }
+    }
+    */
 
     set<string> registered_lipids;
 
     for (auto lipidome : lipidomes){
         // check if lipidome was (de)selected for analysis
-        if (!selection[SAMPLE_ITEM][lipidome->cleaned_name]) continue;
+        if (!selection[SAMPLE_ITEM][lipidome->cleaned_name]){
+            continue;
+        }
 
         // check if lipidome is being excluded by deselected study variable(s)
         bool filtered_out = false;
@@ -3746,7 +3755,9 @@ bool LipidSpace::load_session(string session_file_name){
     without_quant = container["without_quant"];
 
     vector<Lipidome*> lipidome_index;
-    for (string lipid_name : container["all_lipids"]) all_lipids.insert({lipid_name, parser.parse(lipid_name)});
+    for (string lipid_species : container["all_lipids"]){
+        all_lipids.insert({lipid_species, parser.parse(lipid_species)});
+    }
 
     for (auto c : container["lipidomes"]){
         Lipidome* lipidome = new Lipidome(c, all_lipids);
@@ -3754,11 +3765,12 @@ bool LipidSpace::load_session(string session_file_name){
         lipidome_index.push_back(lipidome);
     }
 
-    for (auto c : container["lipid_name_translations"]){
-        lipid_name_translations.push_back(map<string, string>());
-        map<string, string> &map_trans = lipid_name_translations.back();
-        for (auto &kv : c.items()) map_trans.insert({kv.key(), kv.value()});
+    if (container["lipid_name_translations"].size() != 3){
+        throw LipidException("Error: translation table has not three entries in file '" + session_file_name + "'.");
     }
+    for (auto &kv : container["lipid_name_translations"][0].items()) lipid_name_translations[0].insert({kv.key(), kv.value()});
+    for (auto &kv : container["lipid_name_translations"][1].items()) lipid_name_translations[1].insert({kv.key(), kv.value()});
+    for (auto &kv : container["lipid_name_translations"][2].items()) lipid_name_translations[2].insert({kv.key(), kv.value()});
 
     delete global_lipidome;
     global_lipidome = new Lipidome(container["global_lipidome"], all_lipids);
@@ -3798,11 +3810,19 @@ bool LipidSpace::load_session(string session_file_name){
         for (auto &v : kv.value()) sv.push_back({(string)v[0], (double)v[1]});
     }
 
+    study_variable_values.clear();
     for (auto &kv : container["study_variable_values"].items()){
         study_variable_values.insert({kv.key(), StudyVariableSet(kv.value())});
     }
 
     dendrogram_root = new DendrogramNode(container["dendrogram_root"]);
+
+
+    for (auto kvs : study_variable_values){
+        for (auto &kv : kvs.second.nominal_values){
+            cout << "loaded: >" << kvs.first << "< >" << kvs.second.name << "< >" << kv.first << "< >" << kv.second << "<" << endl;
+        }
+    }
 
     return true;
 }
@@ -3824,13 +3844,12 @@ bool LipidSpace::save_session(string session_file_name){
     for (int i = 0; i < (int)lipidomes.size(); ++i){
         auto lipidome = lipidomes[i];
         lipidome_to_index.insert({lipidome, i});
-        lipidome->save(container["lipdomes"][i]);
+        lipidome->save(container["lipidomes"][i]);
     }
 
-    for (auto &map_trans : lipid_name_translations){
-        for (auto &kv : map_trans) container["lipid_name_translations"][kv.first] = kv.second;
-    }
-
+    for (auto &kv : lipid_name_translations[0]) container["lipid_name_translations"][0][kv.first] = kv.second;
+    for (auto &kv : lipid_name_translations[1]) container["lipid_name_translations"][1][kv.first] = kv.second;
+    for (auto &kv : lipid_name_translations[2]) container["lipid_name_translations"][2][kv.first] = kv.second;
 
     global_lipidome->save(container["global_lipidome"]);
 

@@ -236,21 +236,24 @@ StudyVariableSet::StudyVariableSet(json &container){
     }
     numerical_filter = {NoFilter, vector<double>()};
 
-    name = container["name"];
+    name = (string)container["name"];
     study_variable_type = container["study_variable_type"];
-    if (study_variable_type == NumericalStudyVariable){
+    if (study_variable_type == NominalStudyVariable){
 
         if (!contains_val(container, "nominal_values")){
             throw LipidException("Error: field 'nominal_values' not found in class 'StudyVariableSet'.");
         }
 
-        for (auto &kv : container["nominal_values"].items()) nominal_values.insert({kv.key(), kv.value()});
+        for (auto &kv : container["nominal_values"].items()){
+            nominal_values.insert({(string)kv.key(), (bool)kv.value()});
+        }
+        numerical_filter = {NoFilter, vector<double>()};
     }
     else {
-        if (!contains_val(container, "numerical_values")){
-            throw LipidException("Error: field 'numerical_values' not found in class 'StudyVariableSet'.");
+        if (contains_val(container, "numerical_values")){
+            for (double val : container["numerical_values"]) numerical_values.insert(val);
         }
-        for (double val : container["numerical_values"]) numerical_values.insert(val);
+
 
         if (contains_val(container, "numerical_filter")){
             if (contains_val(container["numerical_filter"], "key")) numerical_filter.first = container["numerical_filter"]["key"];
@@ -267,11 +270,13 @@ StudyVariableSet::StudyVariableSet(json &container){
 void StudyVariableSet::save(json &container){
     container["name"] = name;
     container["study_variable_type"] = study_variable_type;
-    if (study_variable_type == NumericalStudyVariable){
-        for (auto &kv : nominal_values) container["nominal_values"][kv.first] = kv.second;
+    if (study_variable_type == NominalStudyVariable){
+        for (auto &kv : nominal_values){
+            container["nominal_values"][kv.first] = kv.second;
+        }
     }
     else {
-        for (auto val : numerical_values) container["numerical_values"] += val;
+        for (double val : numerical_values) container["numerical_values"] += val;
         container["numerical_filter"]["key"] = numerical_filter.first;
         for (double val: numerical_filter.second) container["numerical_filter"]["value"] += val;
     }
@@ -322,9 +327,9 @@ StudyVariable::StudyVariable (json &container){
 
     name = container["name"];
     study_variable_type = container["study_variable_type"];
-    numerical_value = container["numerical_value"];
-    nominal_value = container["nominal_value"];
-    missing = container["missing"];
+    numerical_value = (double)container["numerical_value"];
+    nominal_value = (string)container["nominal_value"];
+    missing = (bool)container["missing"];
 }
 
 
@@ -549,22 +554,24 @@ Lipidome::Lipidome(Lipidome *lipidome){
 
 
 Lipidome::Lipidome (json &container, map<string, LipidAdduct*> &all_lipids){
-    for (string field : {"file_name", "cleaned_name", "lipidome_name", "suffix", "lipids", "original_intensities", "study_variables", "visualization_intensities", "selected_lipid_indexes", "normalized_intensities", "PCA_intensities"}){
+    for (string field : {"file_name", "cleaned_name", "lipidome_name", "suffix", "species", "original_intensities", "study_variables", "visualization_intensities", "selected_lipid_indexes", "normalized_intensities", "PCA_intensities"}){
         if (!contains_val(container, field)){
             throw LipidException("Error: field '" + field + "' not found in class 'Lipidome'.");
         }
     }
 
-    file_name = container["file_name"];
-    cleaned_name = container["cleaned_name"];
-    lipidome_name = container["lipidome_name"];
-    suffix = container["suffix"];
-    for (string lipid_name : container["lipids"]){
-        if (!contains_val(all_lipids, lipid_name)){
-            throw LipidException("Error: lipid '" + lipid_name + "' in lipidome not registered in session '" + cleaned_name + "'.");
+
+    file_name = (string)container["file_name"];
+    cleaned_name = (string)container["cleaned_name"];
+    lipidome_name = (string)container["lipidome_name"];
+    suffix = (string)container["suffix"];
+    for (string lipid_species : container["species"]){
+        if (!contains_val(all_lipids, lipid_species)){
+            throw LipidException("Error: lipid '" + lipid_species + "' in lipidome not registered in lipidome '" + cleaned_name + "'.");
         }
-        LipidAdduct* l = all_lipids[lipid_name];
-        species.push_back(lipid_name);
+        LipidAdduct* l = all_lipids[lipid_species];
+        lipids.push_back(l);
+        species.push_back(lipid_species);
         classes.push_back(l->get_lipid_string(CLASS));
         categories.push_back(l->get_lipid_string(CATEGORY));
     }
@@ -585,10 +592,10 @@ Lipidome::Lipidome (json &container, map<string, LipidAdduct*> &all_lipids){
     }
 
     for (auto &kv : container["study_variables"].items()){
-        study_variables.insert({kv.key(), StudyVariable(kv.value())});
+        study_variables.insert({(string)kv.key(), StudyVariable(kv.value())});
     }
 
-    m.save(container["m"]);
+    m.load(container["m"]);
 }
 
 
@@ -598,13 +605,17 @@ void Lipidome::save(json &container){
     container["lipidome_name"] = lipidome_name;
     container["suffix"] = suffix;
 
-    for (auto lipid : lipids) container["lipids"] += lipid->get_lipid_string();
-    for (auto val : original_intensities) container["original_intensities"] += val;
-    for (auto &kv : study_variables) kv.second.save(container["study_variables"][kv.first]);
-    for (auto val : visualization_intensities) container["visualization_intensities"] += val;
-    for (auto val : selected_lipid_indexes) container["selected_lipid_indexes"] += val;
-    for (auto val : normalized_intensities) container["normalized_intensities"] += val;
-    for (auto val : PCA_intensities) container["PCA_intensities"] += val;
+    for (auto lipid_species : species) container["species"] += lipid_species;
+    for (auto &kv : study_variables){
+        kv.second.save(container["study_variables"][kv.first]);
+    }
+    for (int val : selected_lipid_indexes) container["selected_lipid_indexes"] += val;
+    for (double val : original_intensities) container["original_intensities"] += val;
+    for (double val : visualization_intensities) container["visualization_intensities"] += val;
+    for (double val : normalized_intensities) container["normalized_intensities"] += val;
+    for (double val : PCA_intensities) container["PCA_intensities"] += val;
+
+    m.save(container["m"]);
 
 }
 
@@ -710,7 +721,7 @@ DendrogramNode::DendrogramNode(DendrogramNode* n1, DendrogramNode* n2, double d)
 
 
 DendrogramNode::DendrogramNode(json &container){
-    for (string field : {"order", "left_child", "right_child", "distance", "x_left", "x_right", "study_variables", "y", "depth"}){
+    for (string field : {"order", "left_child", "right_child", "distance", "x_left", "x_right", "y", "depth"}){
         if (!contains_val(container, field)){
             throw LipidException("Error: field '" + field + "' not found in class 'DendrogramNode'.");
         }

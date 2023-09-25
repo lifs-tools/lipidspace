@@ -968,7 +968,7 @@ void LipidSpaceGUI::updateView(int){
 
     // load new data
     SortVector<string, double> &sort_species_labels = sortings[0][sorting_boxes[0]->currentText().toStdString()];
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
     for (int i = 0; i < (int)sort_species_labels.size(); ++i){
         string lipid_name = sort_species_labels[i].first;
         ListItem *item = new ListItem(translations[lipid_name], SPECIES_ITEM, ui->speciesList, lipid_name);
@@ -1162,15 +1162,7 @@ void LipidSpaceGUI::checkBenford(){
 
 
 void LipidSpaceGUI::runAnalysis(){
-    string species_selection = GlobalData::gui_string_var["species_selection"];
-    string study_var = GlobalData::gui_string_var["study_var"];
-    string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
-
-
-    //lipidomes_from_previous_analysis.clear();
-    //for (auto lipidome : lipid_space->selected_lipidomes) lipidomes_from_previous_analysis.insert(lipidome->cleaned_name);
     set<QString> selected_tiles;
-
 
     // clear all windows with canvases
     ui->dendrogramView->clear();
@@ -1199,6 +1191,15 @@ void LipidSpaceGUI::runAnalysis(){
     lipid_space->start();
     progressbar->exec(); // waiting for the progress bar to finish
 
+    visualizeFinishedAnalysis(selected_tiles);
+}
+
+
+void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles){
+    string species_selection = GlobalData::gui_string_var["species_selection"];
+    string study_var = GlobalData::gui_string_var["study_var"];
+    string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
+
     if (GlobalData::benford_warning){
         QMessageBox::warning(this, "Warning", "Please be aware that your current raw data do not conform to Benfords law. For further details, please have a look in the logs (Help → Log messages).");
         Logging::write_log("Your data does not conform to Benfords law. The law says that for real datsets with empirical or measured data ranging over several orders the distribution of the first digit frequency is reciprocal, not equally distributed. Deviations from the rule may be caused by several factors:\n - The data is in low orders of magnitude range\n - The data contains only few data points\n - Incorrect data imputation was previously performed\nIn any case, please check your raw data manually in the 'Raw data table' tab for abnormalities before continuing your analysis.");
@@ -1218,6 +1219,7 @@ void LipidSpaceGUI::runAnalysis(){
         msg.exec();
         GlobalData::gui_num_var["dont_less_3_message"] = check_box->isChecked();
     }
+
 
     // reset parameters
     GlobalData::color_counter = 0;
@@ -1975,7 +1977,21 @@ void LipidSpaceGUI::loadSession(){
     resetAnalysis();
 
     try {
-        if (lipid_space->load_session(file_name.toStdString())) runAnalysis();
+        ui->normalizationComboBox->clear();
+        ui->normalizationComboBox->addItem("Absolute normalization", "absolute");
+        GlobalData::normalization = "absolute";
+        ui->normalizationComboBox->addItem("Relative normalization", "relative");
+
+        if (lipid_space->load_session(file_name.toStdString())){
+            for (auto study_variable : lipid_space->study_variable_values){
+                if (study_variable.second.study_variable_type == NumericalStudyVariable) continue;
+                ui->normalizationComboBox->addItem(QString("%1 grouped normalization").arg(study_variable.first.c_str()), QVariant(study_variable.first.c_str()));
+            }
+            set<QString> selected_tiles;
+            updateSelectionView();
+            checkBenford();
+            visualizeFinishedAnalysis(selected_tiles);
+        }
         else {
             QMessageBox::warning(this, "Load session", "An error occurred, session file could not be read.");
         }
@@ -2368,7 +2384,7 @@ void LipidSpaceGUI::export_list(){
     }
 
     ofstream output_stream(outputFile.toStdString().c_str());
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
 
     vector<pair<string, double>> &sort_species_labels = sortings[selection][sorting_boxes[selection]->currentText().toStdString()];
     map<string, bool> &selection_map = lipid_space->selection[selection];
@@ -2989,7 +3005,8 @@ void RawDataModel::reload(){
     row_sizes.resize(rows);
 
 
-    map<string, string> &translations = lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+
     set<string> present_lipids;
     set<string> present_lipidomes;
     map<string, int> column_map;

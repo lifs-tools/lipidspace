@@ -216,6 +216,7 @@ public slots:
     void setSecondarySorting();
     void updateSecondarySorting(int);
     void runAnalysis();
+    void visualizeFinishedAnalysis(set<QString> &selected_tiles);
     void completeFeatureAnalysis();
     void setTransforming(QRectF f);
     void setExport();

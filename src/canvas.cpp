@@ -786,7 +786,7 @@ void PointSet::loadPoints(){
 
     // we need at least three lipids to span a lipid space
     if (view->lipid_space->global_lipidome->lipids.size() <= 2) return;
-    map<string, string> &translations = view->lipid_space->lipid_name_translations[GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = view->lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
     Lipidome *lipidome = view->lipidome;
 
     for (uint rr = 0; rr < lipidome->selected_lipid_indexes.size(); ++rr){
