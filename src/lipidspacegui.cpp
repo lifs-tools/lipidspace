@@ -2210,10 +2210,16 @@ void LipidSpaceGUI::ShowContextMenuDendrogram(const QPoint pos, set<int> *select
     }
     else {
         QMenu *menu = new QMenu(this);
-        QAction *exportAsPdf = new QAction("Export as pdf", this);
-        menu->addAction(exportAsPdf);
+        QMenu *exportAs = new QMenu(menu);
+        exportAs->setTitle("Export figure as");
+        QAction *exportAsPdf = new QAction("pdf", this);
+        QAction *exportAsSvg = new QAction("svg", this);
+        menu->addAction(exportAs->menuAction());
+        exportAs->addAction(exportAsPdf);
+        exportAs->addAction(exportAsSvg);
         menu->popup(ui->dendrogramView->viewport()->mapToGlobal(pos));
         connect(exportAsPdf, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsPdf);
+        connect(exportAsSvg, &QAction::triggered, ui->dendrogramView, &Canvas::exportAsSvg);
     }
 
 }
@@ -2271,11 +2277,18 @@ void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
         menu->addAction(action_selectLipids->menuAction());
         menu->addAction(action_deselectLipids->menuAction());
     }
-    QAction *exportAsPdf = new QAction("Export as pdf", this);
+
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
     exportAsPdf->setEnabled(!GlobalData::in_tutorial);
-    menu->addAction(exportAsPdf);
     menu->popup(canvas->viewport()->mapToGlobal(pos));
     connect(exportAsPdf, &QAction::triggered, canvas, &Canvas::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, canvas, &Canvas::exportAsSvg);
 }
 
 
@@ -2407,15 +2420,23 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot(const QPoint pos){
     QMenu *menu = new QMenu(this);
     QAction *actionShowData = new QAction("Show data", this);
     QAction *actionData = new QAction("Export data", this);
-    QAction *actionExportPdf = new QAction("Export as pdf", this);
+
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
+
     actionShowData->setCheckable(true);
     actionShowData->setChecked(statisticsBoxPlot.show_data);
     menu->addAction(actionShowData);
     menu->addAction(actionData);
-    menu->addAction(actionExportPdf);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
     connect(actionShowData, &QAction::triggered, &statisticsBoxPlot, &Statistics::setShowDataBoxPlot);
     connect(actionData, &QAction::triggered, &statisticsBoxPlot, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, &statisticsBoxPlot, &Statistics::exportAsPdf);
+    connect(exportAsPdf, &QAction::triggered, &statisticsBoxPlot, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsBoxPlot, &Statistics::exportAsSvg);
     menu->popup(ui->statisticsBoxPlot->viewport()->mapToGlobal(pos));
 }
 
@@ -2424,11 +2445,17 @@ void LipidSpaceGUI::ShowContextMenuStatisticsROCCurve(const QPoint pos){
     if (statisticsROCCurve.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
     QAction *actionData = new QAction("Export data", this);
-    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
     menu->addAction(actionData);
-    menu->addAction(actionExportPdf);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
     connect(actionData, &QAction::triggered, &statisticsROCCurve, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, &statisticsROCCurve, &Statistics::exportAsPdf);
+    connect(exportAsPdf, &QAction::triggered, &statisticsROCCurve, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsROCCurve, &Statistics::exportAsSvg);
     menu->popup(ui->statisticsROCCurve->viewport()->mapToGlobal(pos));
 }
 
@@ -2437,11 +2464,17 @@ void LipidSpaceGUI::ShowContextMenuStatisticsPCA(const QPoint pos){
     if (statisticsPCA.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
     QAction *actionData = new QAction("Export data", this);
-    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
     menu->addAction(actionData);
-    menu->addAction(actionExportPdf);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
     connect(actionData, &QAction::triggered, &statisticsPCA, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, &statisticsPCA, &Statistics::exportAsPdf);
+    connect(exportAsPdf, &QAction::triggered, &statisticsPCA, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsPCA, &Statistics::exportAsSvg);
     menu->popup(ui->statisticsPCA->viewport()->mapToGlobal(pos));
 }
 
@@ -2486,12 +2519,18 @@ void LipidSpaceGUI::ShowContextMenuStatisticsPVal(const QPoint pos){
     }
 
     QAction *actionData = new QAction("Export data", this);
-    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
     menu->addMenu(menuTest);
     menu->addAction(actionData);
-    menu->addAction(actionExportPdf);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
     connect(actionData, &QAction::triggered, &statisticsPVal, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, &statisticsPVal, &Statistics::exportAsPdf);
+    connect(exportAsPdf, &QAction::triggered, &statisticsPVal, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsPVal, &Statistics::exportAsSvg);
     menu->popup(ui->statisticsPVal->viewport()->mapToGlobal(pos));
 }
 
@@ -2604,15 +2643,21 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
 
 
     QAction *actionData = new QAction("Export data", this);
-    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
     menu->addAction(actionData);
-    menu->addAction(actionExportPdf);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
 
 
 
     if (actionSelectLipid) connect(actionSelectLipid, &QAction::triggered, this, &LipidSpaceGUI::deselectHoveredLipid);
     connect(actionData, &QAction::triggered, &statisticsVolcano, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, &statisticsVolcano, &Statistics::exportAsPdf);
+    connect(exportAsPdf, &QAction::triggered, &statisticsVolcano, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsVolcano, &Statistics::exportAsSvg);
 
 
     connect(actionSelDown, &QAction::triggered, this, [=](){ changeVolcanoSelection(true, "down"); });
@@ -2708,7 +2753,10 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
     QAction *actionPValues = new QAction("Show statistical results", this);
     QAction *actionShowData = new QAction("Show data", this);
     QAction *actionData = new QAction("Export data", this);
-    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
     actionLogScale->setCheckable(true);
     actionLogScale->setChecked(statisticsBarPlot.log_scale);
     actionPValues->setCheckable(true);
@@ -2720,13 +2768,16 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
     menu->addAction(actionPValues);
     menu->addAction(actionShowData);
     menu->addAction(actionData);
-    menu->addAction(actionExportPdf);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
     if (actionSelectLipid) connect(actionSelectLipid, &QAction::triggered, this, &LipidSpaceGUI::deselectHoveredLipid);
     connect(actionPValues, &QAction::triggered, &statisticsBarPlot, &Statistics::setStatResults);
     connect(actionLogScale, &QAction::triggered, &statisticsBarPlot, &Statistics::setLogScaleBarPlot);
     connect(actionShowData, &QAction::triggered, &statisticsBarPlot, &Statistics::setShowDataBarPlot);
     connect(actionData, &QAction::triggered, &statisticsBarPlot, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, &statisticsBarPlot, &Statistics::exportAsPdf);
+    connect(exportAsPdf, &QAction::triggered, &statisticsBarPlot, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsBarPlot, &Statistics::exportAsSvg);
     menu->popup(ui->statisticsBarPlot->viewport()->mapToGlobal(pos));
 }
 
@@ -2746,11 +2797,17 @@ void LipidSpaceGUI::ShowContextMenuStatisticsHistogram(const QPoint pos){
     if (statisticsHistogram.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
     QAction *actionData = new QAction("Export data", this);
-    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
     menu->addAction(actionData);
-    menu->addAction(actionExportPdf);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
     connect(actionData, &QAction::triggered, &statisticsHistogram, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, &statisticsHistogram, &Statistics::exportAsPdf);
+    connect(exportAsPdf, &QAction::triggered, &statisticsHistogram, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsHistogram, &Statistics::exportAsSvg);
     menu->popup(ui->statisticsHistogram->viewport()->mapToGlobal(pos));
 }
 
@@ -2760,11 +2817,17 @@ void LipidSpaceGUI::ShowContextMenuStatisticsSpeciesCV(const QPoint pos){
     if (statisticsSpeciesCV.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
     QAction *actionData = new QAction("Export data", this);
-    QAction *actionExportPdf = new QAction("Export as pdf", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
     menu->addAction(actionData);
-    menu->addAction(actionExportPdf);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
     connect(actionData, &QAction::triggered, &statisticsSpeciesCV, &Statistics::exportData);
-    connect(actionExportPdf, &QAction::triggered, &statisticsSpeciesCV, &Statistics::exportAsPdf);
+    connect(exportAsPdf, &QAction::triggered, &statisticsSpeciesCV, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsSpeciesCV, &Statistics::exportAsSvg);
     menu->popup(ui->statisticsSpeciesCV->viewport()->mapToGlobal(pos));
 }
 

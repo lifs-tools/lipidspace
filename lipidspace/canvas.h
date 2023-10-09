@@ -24,6 +24,7 @@
 #include <QGraphicsSvgItem>
 #include <QGraphicsTextItem>
 #include <QSvgRenderer>
+#include <QSvgGenerator>
 #include <QPrinter>
 #include <QCursor>
 #include <QDesktopServices>
@@ -306,6 +307,7 @@ public slots:
     void setTransforming(QRectF f);
     void setUpdate();
     void exportAsPdf();
+    void exportAsSvg();
     void hoverOver();
     void setSwap(int source);
     void reloadPoints();

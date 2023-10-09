@@ -1510,6 +1510,27 @@ void Canvas::exportAsPdf(){
 
 
 
+void Canvas::exportAsSvg(){
+    if (!pointSet && !dendrogram) return;
+    QString file_name = QFileDialog::getSaveFileName(this, "Export as svg", GlobalData::last_folder, "*.svg (*.svg)");
+    if (!file_name.length()) return;
+
+    QFileInfo fi(file_name);
+    GlobalData::last_folder = fi.absoluteDir().absolutePath();
+
+    QSvgGenerator generator;
+    generator.setFileName(file_name);
+    generator.setSize(QSize(viewport()->width(), viewport()->height()));
+    generator.setViewBox(QRect(0, 0, viewport()->width(), viewport()->height()));
+    QPainter painter;
+    painter.begin(&generator);
+    render(&painter);
+    painter.end();
+    QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+}
+
+
+
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent *){
     if ((!dendrogram && !pointSet) || GlobalData::selected_view) return;

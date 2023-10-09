@@ -276,6 +276,33 @@ void Statistics::exportAsPdf(){
 
 
 
+void Statistics::exportAsSvg(){
+    if (chart->chart_plots.size() == 0) return;
+    QString file_name = QFileDialog::getSaveFileName(chart, "Export as svg", GlobalData::last_folder, "*.svg (*.svg)");
+    if (!file_name.length()) return;
+
+    try {
+        QFileInfo fi(file_name);
+        GlobalData::last_folder = fi.absoluteDir().absolutePath();
+
+        QSvgGenerator generator;
+        generator.setFileName(file_name);
+        generator.setSize(QSize(chart->viewport()->width(), chart->viewport()->height()));
+        generator.setViewBox(QRect(0, 0, chart->viewport()->width(), chart->viewport()->height()));
+        QPainter painter;
+        painter.begin(&generator);
+        chart->render(&painter);
+        painter.end();
+
+        QMessageBox::information(chart, "Export completed", "The export is completed into the file '" + file_name + "'.");
+    }
+    catch(exception &){
+        QMessageBox::critical(chart, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
+    }
+}
+
+
+
 
 
 

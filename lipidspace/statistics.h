@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QGraphicsLayout>
+#include <QSvgGenerator>
 
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/chart.h"
@@ -50,6 +51,7 @@ public slots:
     void updatePVal();
     void updateVolcano();
     void exportAsPdf();
+    void exportAsSvg();
     void exportData();
     void setLegendSize(int);
     void setTickSize(int);
