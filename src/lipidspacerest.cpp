@@ -37,6 +37,9 @@ public:
                  {
                if (req.get_header_value("Content-Type") == "application/json")
                {
+                 if (GlobalData::debug) {
+                   qInfo() << "Received request: '" << req.body.c_str() << "'";
+                 }
                  QString callId = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
                  // ensure we have a unique directory for each REST call to allow for parallel processing
                  QString dirPath = QString::fromStdString(GlobalData::rest_temp_folder) + "/" + callId + "/";
@@ -143,6 +146,9 @@ public:
                    table_file << pcaRequest["Table"].toString().toStdString();
                    table_file.flush();
 
+                   if (GlobalData::debug) {
+                    qInfo() << "Preparing LipidSpace analysis with table file '" << table_file_name << "'";
+                   }
                    // retrieve data from the request
                    TableType table_type = TableTypeMap.at(pcaRequest["TableType"].toString().toStdString());
                    vector<TableColumnType> *column_types = new vector<TableColumnType>();
@@ -160,6 +166,9 @@ public:
 
                    try
                    {
+                     if (GlobalData::debug) {
+                       qInfo() << "Preparing ImportData";
+                     }
                      import_data = new ImportData(table_file_name.toStdString(), "", table_type, column_types);
                    }
                    catch (LipidSpaceException &e)
@@ -180,6 +189,9 @@ public:
 
                    try
                    {
+                       if (GlobalData::debug) {
+                         qInfo() << "Loading table";
+                       }
                        lipid_space.load_table(import_data);
                    }
                    catch (LipidSpaceException &e)
@@ -199,7 +211,11 @@ public:
                    if (import_data) delete import_data;
 
 
-                   try{
+                   try
+                   {
+                     if (GlobalData::debug) {
+                       qInfo() << "Calling run_analysis";
+                     }
                      lipid_space.run_analysis();
                    }
                    catch (LipidSpaceException &e)
@@ -346,7 +362,7 @@ int main(int argc, char *argv[])
     parser.addOption(portOption);
     QCommandLineOption tmpOption({"t", "tmp_folder"}, QCoreApplication::translate("main", "Temp folder <tmp_folder> path."), "tmp_folder", ".");
     parser.addOption(tmpOption);
-    QCommandLineOption debugOption({"d", "debug"}, QCoreApplication::translate("main", "Set the server to run in mode. Saves incoming and outgoing JSON requests."));
+    QCommandLineOption debugOption({"d", "debug"}, QCoreApplication::translate("main", "Set the server to run in debug mode. Saves incoming and outgoing JSON requests."));
     parser.addOption(debugOption);
 
     QCoreApplication app(argc, argv);

@@ -38,6 +38,9 @@ DEPENDPATH += $$PWD/libraries/OpenBLAS/include
 INCLUDEPATH += $$PWD/libraries/cppgoslin
 DEPENDPATH += $$PWD/libraries/cppgoslin
 
+INCLUDEPATH += $$PWD/libraries/nlohmann
+DEPENDPATH += $$PWD/libraries/nlohmann
+
 INCLUDEPATH += $$PWD/libraries/cpp-httplib
 DEPENDPATH += $$PWD/libraries/cpp-httplib
 
