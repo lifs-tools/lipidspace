@@ -1,7 +1,7 @@
 QT       += core widgets network
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -std=c++17 -march=native -Wno-unknown-pragmas
+QMAKE_CXXFLAGS += -fopenmp -std=c++17 -Wno-unknown-pragmas
 
 
 # The following define makes your compiler emit warnings if you use
