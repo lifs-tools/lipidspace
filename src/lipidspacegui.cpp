@@ -1984,6 +1984,7 @@ void LipidSpaceGUI::loadSession(){
         ui->normalizationComboBox->clear();
         ui->normalizationComboBox->addItem("Absolute normalization", "absolute");
         GlobalData::normalization = "absolute";
+    connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
         ui->normalizationComboBox->addItem("Relative normalization", "relative");
 
         if (lipid_space->load_session(file_name.toStdString())){
@@ -1991,6 +1992,31 @@ void LipidSpaceGUI::loadSession(){
                 if (study_variable.second.study_variable_type == NumericalStudyVariable) continue;
                 ui->normalizationComboBox->addItem(QString("%1 grouped normalization").arg(study_variable.first.c_str()), QVariant(study_variable.first.c_str()));
             }
+
+            disconnect(ui->actionUnbound_lipid_distance_metric, &QAction::triggered, 0, 0);
+            ui->actionUnbound_lipid_distance_metric->setChecked(lipid_space->unboundend_distance);
+            connect(ui->actionUnbound_lipid_distance_metric, &QAction::triggered, this, &LipidSpaceGUI::toggleBoundMetric);
+
+            disconnect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, 0, 0);
+            ui->actionIgnoring_lipid_sn_positions->setChecked(!lipid_space->keep_sn_position);
+            connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
+
+            disconnect(ui->actionIgnore_quantitative_information, &QAction::triggered, 0, 0);
+            ui->actionIgnore_quantitative_information->setChecked(lipid_space->without_quant);
+            connect(ui->actionIgnore_quantitative_information, &QAction::triggered, this, &LipidSpaceGUI::toggleQuant);
+
+
+            disconnect(ui->actionComplete_linkage_clustering, &QAction::triggered, 0, 0);
+            disconnect(ui->actionAverage_linkage_clustering, &QAction::triggered, 0, 0);
+            disconnect(ui->actionSingle_linkage_clustering, &QAction::triggered, 0, 0);
+            ui->actionSingle_linkage_clustering->setChecked(GlobalData::linkage == SingleLinkage);
+            ui->actionComplete_linkage_clustering->setChecked(GlobalData::linkage == CompleteLinkage);
+            ui->actionAverage_linkage_clustering->setChecked(GlobalData::linkage == AverageLinkage);
+            connect(ui->actionComplete_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setCompleteLinkage);
+            connect(ui->actionAverage_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setAverageLinkage);
+            connect(ui->actionSingle_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setSingleLinkage);
+
+
             set<QString> selected_tiles;
             updateSelectionView();
             checkBenford();
