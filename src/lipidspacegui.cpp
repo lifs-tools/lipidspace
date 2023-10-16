@@ -281,7 +281,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     showGroupLipidomes = false;
     showGlobalLipidome = true;
     updating = false;
-    GlobalData::color_counter = 0;
     ui->frame->setVisible(false);
     table_transposed = false;
 
@@ -864,6 +863,7 @@ void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
                 if (study_variable.second.study_variable_type == NumericalStudyVariable) continue;
                 ui->normalizationComboBox->addItem(QString("%1 grouped normalization").arg(study_variable.first.c_str()), QVariant(study_variable.first.c_str()));
             }
+            updateColorMap();
             repeat_loading = false;
         }
         catch (LipidSpaceException &e) {
@@ -946,6 +946,72 @@ void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
 }
 
 
+
+void LipidSpaceGUI::updateColorMap(){
+    // store old values to reuse them
+    map<string, QColor> colorMap_tmp;
+    map<string, QColor> colorMapStudyVariables_tmp;
+    for(auto &kv : GlobalData::colorMap) colorMap_tmp.insert({kv.first, kv.second});
+    for(auto &kv : GlobalData::colorMapStudyVariables) colorMapStudyVariables_tmp.insert({kv.first, kv.second});
+
+    // define colors of lipid categories and study variables
+    int color_counter = 0;
+    int study_variable_counter = 0;
+    GlobalData::colorMap.clear();
+    GlobalData::colorMapStudyVariables.clear();
+
+    for (auto lipid_class : lipid_space->global_lipidome->classes){
+        if (uncontains_val(GlobalData::colorMap, lipid_class)){
+            if (contains_val(colorMap_tmp, lipid_class)){
+                GlobalData::colorMap.insert({lipid_class, colorMap_tmp[lipid_class]});
+            }
+            else {
+                GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[color_counter++ % GlobalData::COLORS.size()]});
+            }
+        }
+    }
+
+    for (auto kv : lipid_space->study_variable_values){
+        if (kv.second.study_variable_type == NominalStudyVariable){
+            string study_variable_prefix = kv.first + "_";
+            for (auto &kv_nom : kv.second.nominal_values){
+                string study_variable = study_variable_prefix + kv_nom.first;
+                if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable)){
+                    if (contains_val(colorMapStudyVariables_tmp, study_variable)){
+                        GlobalData::colorMapStudyVariables.insert({study_variable, colorMapStudyVariables_tmp[study_variable]});
+                    }
+                    else {
+                        GlobalData::colorMapStudyVariables.insert({study_variable, GlobalData::COLORS[study_variable_counter++ % GlobalData::COLORS.size()]});
+                    }
+                }
+            }
+        }
+        else {
+            string study_variable_le = kv.first + "_le";
+            if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable_le)){
+                if (contains_val(colorMapStudyVariables_tmp, study_variable_le)){
+                    GlobalData::colorMapStudyVariables.insert({study_variable_le, colorMapStudyVariables_tmp[study_variable_le]});
+                }
+                else {
+                    GlobalData::colorMapStudyVariables.insert({study_variable_le, GlobalData::COLORS[study_variable_counter++ % GlobalData::COLORS.size()]});
+                }
+            }
+            string study_variable_gr = kv.first + "_gr";
+            if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable_gr)){
+                if (contains_val(colorMapStudyVariables_tmp, study_variable_gr)){
+                    GlobalData::colorMapStudyVariables.insert({study_variable_gr, colorMapStudyVariables_tmp[study_variable_gr]});
+                }
+                else {
+                    GlobalData::colorMapStudyVariables.insert({study_variable_gr, GlobalData::COLORS[study_variable_counter++ % GlobalData::COLORS.size()]});
+                }
+            }
+        }
+    }
+}
+
+
+
+
 void LipidSpaceGUI::startFeatureAnalysis(){
     lipid_space->target_variable = ui->studyVariableComboBox->currentText().toStdString();
     lipid_space->process_id = 2;
@@ -1024,19 +1090,7 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
     }
 
 
-    // reset parameters
-    GlobalData::color_counter = 0;
-    GlobalData::study_variable_counter = 0;
-    GlobalData::colorMap.clear();
-    GlobalData::colorMapStudyVariables.clear();
-
     // setup all space canvases
-    for (auto lipid_class : lipid_space->global_lipidome->classes){
-        if (uncontains_val(GlobalData::colorMap, lipid_class)){
-            GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[GlobalData::color_counter++ % GlobalData::COLORS.size()]});
-        }
-    }
-
     ui->dendrogramView->resetDendrogram();
     int n = 0;
 
@@ -1131,30 +1185,6 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
         setSelectedTilesMode();
     }
 
-
-    // define colors of study variables
-    for (auto kv : lipid_space->study_variable_values){
-        if (kv.second.study_variable_type == NominalStudyVariable){
-            string study_variable_prefix = kv.first + "_";
-            for (auto &kv_nom : kv.second.nominal_values){
-                string study_variable = study_variable_prefix + kv_nom.first;
-                if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable)){
-                    GlobalData::colorMapStudyVariables.insert({study_variable, GlobalData::COLORS[GlobalData::study_variable_counter++ % GlobalData::COLORS.size()]});
-                }
-            }
-        }
-        else {
-            string study_variable_le = kv.first + "_le";
-            if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable_le)){
-                GlobalData::colorMapStudyVariables.insert({study_variable_le, GlobalData::COLORS[GlobalData::study_variable_counter++ % GlobalData::COLORS.size()]});
-            }
-            string study_variable_gr = kv.first + "_gr";
-            if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable_gr)){
-                GlobalData::colorMapStudyVariables.insert({study_variable_gr, GlobalData::COLORS[GlobalData::study_variable_counter++ % GlobalData::COLORS.size()]});
-            }
-        }
-    }
-
     fill_table();
 
     ui->frame->setVisible(true);
@@ -1192,6 +1222,7 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
 
 void LipidSpaceGUI::reassembleSelection(){
     lipid_space->reassembleSelection();
+    updateColorMap();
 }
 
 

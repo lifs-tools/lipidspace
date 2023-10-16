@@ -195,6 +195,7 @@ public slots:
     void resetAnalysis();
     void showMessage(QString message);
     void updateGUI();
+    void updateColorMap();
     void showHideGroupLipidomes();
     void showHideGlobalLipidome();
     void toggleLipidNameTranslation();

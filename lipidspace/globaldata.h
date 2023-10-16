@@ -13,7 +13,6 @@ using namespace std;
 
 class GlobalData {
 public:
-    static int color_counter;
     static const vector<QColor> COLORS;
     static bool showQuant;
     static bool ctrl_pressed;
@@ -24,7 +23,6 @@ public:
     static map<string, QColor> colorMap;
     static int PC1;
     static int PC2;
-    static int study_variable_counter;
     static string rest_temp_folder;
     static map<string, QColor> colorMapStudyVariables;
     static map<string, QColor> colorMapCategories;
