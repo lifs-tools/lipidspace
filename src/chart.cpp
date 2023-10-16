@@ -28,6 +28,8 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     base->setRect(chart_box_inner.x(), chart_box_inner.y(), chart_box_inner.width(), chart_box_inner.height());
 
     timer_id = -1;
+    float_x_precision = DEFAULT_PRECISION;
+    float_y_precision = DEFAULT_PRECISION;
 
     tick_font = QFont("Calibri", GlobalData::gui_num_var["tick_size"]);
     label_font = QFont("Calibri", GlobalData::gui_num_var["tick_size"], QFont::Bold);
@@ -468,7 +470,7 @@ void Chart::update_chart(){
 
                     double tick_value = yrange.x() + (TICK_NUM - 1. - (double)i) / (TICK_NUM - 1) * (yrange.y() - yrange.x());
 
-                    tick->setPlainText(QString("%1").arg(tick_value, 0, 'f', 1));
+                    tick->setPlainText(QString("%1").arg(tick_value, 0, 'f', float_y_precision));
                     double x = chart_box_inner.x() - tick->boundingRect().width() - TICK_SIZE;
                     double y = chart_box_inner.y() + (double)i / (h_grid.size() - 1) * chart_box_inner.height() - tick->boundingRect().height() / 2.;
                     tick->setPos(x, y);
@@ -499,7 +501,7 @@ void Chart::update_chart(){
                     tick->setVisible(true);
                     tick->setFont(tick_font);
 
-                    tick->setPlainText(QString("%1").arg(tick_value, 0, 'f', 1));
+                    tick->setPlainText(QString("%1").arg(tick_value, 0, 'f', float_y_precision));
                     double x = chart_box_inner.x() - tick->boundingRect().width() - TICK_SIZE;
                     double y = chart_box_inner.y() + chart_box_inner.height() - chart_box_inner.height() / (log(yrange.y() / yrange.x()) / log(10)) * (log(tick_value / yrange.x())) / log(10) - tick->boundingRect().height() / 2.;
                     tick->setPos(x, y);
@@ -529,7 +531,7 @@ void Chart::update_chart(){
             if (sum_x_tick_width < chart_box.width() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                 tick->setVisible(true);
                 tick->setFont(tick_font);
-                tick->setPlainText(QString("%1").arg(xrange.x() + (double)i / (TICK_NUM - 1) * (xrange.y() - xrange.x()), 0, 'f', 1));
+                tick->setPlainText(QString("%1").arg(xrange.x() + (double)i / (TICK_NUM - 1) * (xrange.y() - xrange.x()), 0, 'f', float_x_precision));
                 double x = chart_box_inner.x() + (double)i / (TICK_NUM - 1)  * (chart_box_inner.width() - TICK_NUM) - tick->boundingRect().width() / 2.;
                 double y = chart_box_inner.y() + chart_box_inner.height() + TICK_SIZE;
                 tick->setPos(x, y);

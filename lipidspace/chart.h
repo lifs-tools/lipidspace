@@ -20,6 +20,7 @@
 #define TICK_NUM 5
 #define TICK_SIZE 5
 #define TIMER_DURATION 700000.0  // micro seconds
+#define DEFAULT_PRECISION 1
 
 using namespace std;
 using namespace chrono;
@@ -57,6 +58,8 @@ public:
     QPointF xrange;
     QPointF yrange;
     int timer_id;
+    int float_x_precision;
+    int float_y_precision;
     bool loaded;
     bool show_x_axis;
     bool show_y_axis;

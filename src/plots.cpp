@@ -1292,8 +1292,10 @@ void Histogramplot::wheelEvent(QWheelEvent *event){
     double zoom = (event->delta() > 0) ? 1. / 1.1 : 1.1;
 #endif
 
-    if (!chart->chart_box_inner.contains(mouse_pos)) return;
-    double x = mouse_pos.x();
+    if (mouse_pos.y() < chart->chart_box_inner.y() || chart->chart_box_inner.y() + chart->chart_box_inner.height() < mouse_pos.y()) return;
+
+
+    double x = __min(chart->chart_box_inner.x() + chart->chart_box_inner.width(), __max(chart->chart_box_inner.x(), mouse_pos.x()));
     chart->back_translate_x(x);
 
     double left = chart->xrange.x();

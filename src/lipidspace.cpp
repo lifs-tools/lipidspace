@@ -2494,8 +2494,11 @@ void LipidSpace::load_column_table(ImportData *import_data){
                         if (lipids[lipid_counter]){
                             string val = tokens.at(i);
                             if (!contains_val(NA_VALUES, val)){
-                                measurement_lipids.push_back(lipids[lipid_counter]);
-                                intensities.push_back(atof(val.c_str()));
+                                double value = atof(val.c_str());
+                                if (value > 0){
+                                    measurement_lipids.push_back(lipids[lipid_counter]);
+                                    intensities.push_back(value);
+                                }
                             }
                         }
                         lipid_counter++;
