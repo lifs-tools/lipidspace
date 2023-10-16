@@ -19,7 +19,7 @@ string GlobalData::rest_temp_folder = ".";
 string GlobalData::normalization = "absolute";
 NormalizationType GlobalData::normalization_type = AbsoluteNormalization;
 QString GlobalData::last_folder = "";
-bool GlobalData::stat_level_lipidomes = true;
+StatLevel GlobalData::stat_level = LipidomeLevel;
 map<string, QColor> GlobalData::colorMapStudyVariables;
 string GlobalData::vocano_multiple = "bh";
 string GlobalData::volcano_test = "student";

@@ -582,6 +582,7 @@
             <widget class="Chart" name="statisticsHistogram"/>
             <widget class="Chart" name="statisticsSpeciesCV"/>
             <widget class="Chart" name="statisticsPVal"/>
+            <widget class="Chart" name="statisticsBarPlotClasses"/>
            </widget>
            <widget class="QSplitter" name="splitterStatV2">
             <property name="orientation">
@@ -640,7 +641,7 @@
            <widget class="QSpinBox" name="tickSizeSpinBox">
             <property name="geometry">
              <rect>
-              <x>340</x>
+              <x>370</x>
               <y>40</y>
               <width>51</width>
               <height>27</height>
@@ -662,9 +663,9 @@
            <widget class="QSpinBox" name="legendSizeSpinBox">
             <property name="geometry">
              <rect>
-              <x>400</x>
+              <x>430</x>
               <y>40</y>
-              <width>89</width>
+              <width>71</width>
               <height>27</height>
              </rect>
             </property>
@@ -684,9 +685,9 @@
            <widget class="QLabel" name="label_2">
             <property name="geometry">
              <rect>
-              <x>340</x>
+              <x>370</x>
               <y>20</y>
-              <width>141</width>
+              <width>51</width>
               <height>18</height>
              </rect>
             </property>
@@ -697,9 +698,9 @@
            <widget class="QLabel" name="label_3">
             <property name="geometry">
              <rect>
-              <x>400</x>
+              <x>430</x>
               <y>20</y>
-              <width>141</width>
+              <width>81</width>
               <height>18</height>
              </rect>
             </property>
@@ -710,9 +711,9 @@
            <widget class="QSpinBox" name="barNumberSpinBox">
             <property name="geometry">
              <rect>
-              <x>500</x>
+              <x>510</x>
               <y>40</y>
-              <width>89</width>
+              <width>81</width>
               <height>27</height>
              </rect>
             </property>
@@ -732,9 +733,9 @@
            <widget class="QLabel" name="label_4">
             <property name="geometry">
              <rect>
-              <x>500</x>
+              <x>510</x>
               <y>20</y>
-              <width>91</width>
+              <width>81</width>
               <height>18</height>
              </rect>
             </property>
@@ -783,18 +784,23 @@
              <rect>
               <x>190</x>
               <y>40</y>
-              <width>141</width>
+              <width>171</width>
               <height>26</height>
              </rect>
             </property>
             <item>
              <property name="text">
-              <string>Lipidomes</string>
+              <string>Lipidome level</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Lipid species</string>
+              <string>Lipid class level</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Lipid species level</string>
              </property>
             </item>
            </widget>

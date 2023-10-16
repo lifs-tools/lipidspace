@@ -333,7 +333,7 @@ public:
 
     Histogramplot(Chart *_chart);
     ~Histogramplot();
-    void add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors = 0, uint num_bars = 20);
+    void add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors = 0, uint num_bars = 20, double all_min = INFINITY, double all_max = -INFINITY);
     void update_chart();
     void clear();
     void wheelEvent(QWheelEvent *event) override;

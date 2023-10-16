@@ -338,7 +338,7 @@ void Statistics::updateBarPlot(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level_lipidomes){
+    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level != LipidSpeciesLevel){
         chart->setVisible(false);
         return;
     }
@@ -548,6 +548,21 @@ void Statistics::lipidsMarked(set<string> *lipids){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void Statistics::updateSpeciesCV(){
 
     chart->clear();
@@ -573,7 +588,7 @@ void Statistics::updateSpeciesCV(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level_lipidomes){
+    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level != LipidSpeciesLevel){
         chart->setVisible(false);
         return;
     }
@@ -686,6 +701,19 @@ void Statistics::updateSpeciesCV(){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 void Statistics::updateHistogram(){
 
     chart->clear();
@@ -699,7 +727,7 @@ void Statistics::updateHistogram(){
 
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && GlobalData::stat_level_lipidomes;
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == LipidomeLevel);
 
     chart->setVisible(do_continue);
     if (!do_continue) return;
@@ -792,6 +820,18 @@ void Statistics::updateHistogram(){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 void Statistics::updateROCCurve(){
 
     chart->clear();
@@ -804,7 +844,7 @@ void Statistics::updateROCCurve(){
     stat_results.clear();
 
     string target_variable = GlobalData::gui_string_var["study_var_stat"];
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) & GlobalData::stat_level_lipidomes;
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == LipidomeLevel);
 
     chart->setVisible(do_continue);
     if (!do_continue){
@@ -947,6 +987,17 @@ void Statistics::updateROCCurve(){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 void Statistics::updateBoxPlot(){
 
     chart->clear();
@@ -963,7 +1014,7 @@ void Statistics::updateBoxPlot(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() <= 1 || !GlobalData::stat_level_lipidomes){
+    if (lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level != LipidomeLevel){
         chart->setVisible(false);
         return;
     }
@@ -1235,6 +1286,13 @@ void Statistics::updateBoxPlot(){
 
 
 
+
+
+
+
+
+
+
 void Statistics::updatePCA(){
 
     chart->clear();
@@ -1251,7 +1309,7 @@ void Statistics::updatePCA(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable || !GlobalData::stat_level_lipidomes){
+    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable || GlobalData::stat_level != LipidomeLevel){
         chart->setVisible(false);
         return;
     }
@@ -1379,6 +1437,20 @@ void Statistics::updatePCA(){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void Statistics::updatePVal(){
 
     chart->clear();
@@ -1395,7 +1467,7 @@ void Statistics::updatePVal(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level_lipidomes){
+    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level != LipidSpeciesLevel){
         chart->setVisible(false);
         return;
     }
@@ -1508,7 +1580,7 @@ void Statistics::updatePVal(){
     vector<QColor> colors{"#85b3ce"};
 
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
-    histogramplot->add(series, categories, &colors, num_bars);
+    histogramplot->add(series, categories, &colors, num_bars, 0, 1);
     histogramplot->borders.setX(0);
     histogramplot->borders.setY(1);
     chart->add(histogramplot);
@@ -1517,6 +1589,13 @@ void Statistics::updatePVal(){
     chart->update_chart();
     chart->setTitle("P-value distribution");
 }
+
+
+
+
+
+
+
 
 
 
@@ -1552,7 +1631,7 @@ void Statistics::updateVolcano(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level_lipidomes){
+    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level != LipidSpeciesLevel){
         chart->setVisible(false);
         return;
     }

@@ -1279,8 +1279,12 @@ HistogramBox::HistogramBox(Histogramplot *histogram_plot, double _x, double _x_w
 Histogramplot::Histogramplot(Chart *_chart) : Chartplot(_chart) {
 }
 
+
+
+
 Histogramplot::~Histogramplot(){
 }
+
 
 
 void Histogramplot::wheelEvent(QWheelEvent *event){
@@ -1298,14 +1302,17 @@ void Histogramplot::wheelEvent(QWheelEvent *event){
     double x = __min(chart->chart_box_inner.x() + chart->chart_box_inner.width(), __max(chart->chart_box_inner.x(), mouse_pos.x()));
     chart->back_translate_x(x);
 
+
     double left = chart->xrange.x();
     double right = chart->xrange.y();
+
     left = __max(borders.x(), x + zoom * (left - x));
     right = __min(borders.y(), x + zoom * (right - x));
 
     chart->xrange = QPointF(left, right);
     chart->update_chart();
 }
+
 
 
 void Histogramplot::update_chart(){
@@ -1337,11 +1344,8 @@ void Histogramplot::clear(){
 }
 
 
-void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors, uint num_bars){
+void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors, uint num_bars, double all_min, double all_max){
     if (arrays.size() != categories.size() || arrays.size() != colors->size() || num_bars == 0) return;
-
-    double all_min = INFINITY;
-    double all_max = -INFINITY;
 
     for (auto &array : arrays){
         if (array.empty()) continue;

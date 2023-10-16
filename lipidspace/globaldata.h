@@ -24,7 +24,6 @@ public:
     static map<string, QColor> colorMap;
     static int PC1;
     static int PC2;
-    static bool stat_level_lipidomes;
     static int study_variable_counter;
     static NormalizationType normalization_type;
     static string rest_temp_folder;
@@ -42,6 +41,7 @@ public:
     static string volcano_sig;
     static string volcano_log_fc;
     static string pval_test;
+    static StatLevel stat_level;
 };
 
 
