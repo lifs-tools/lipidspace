@@ -1523,7 +1523,7 @@ void LipidSpace::normalize_intensities(){
         global_stdev = 1;
     }
 
-    if (GlobalData::normalization == "absolute" || GlobalData::normalization == ""){
+    if (GlobalData::normalization == "no" || GlobalData::normalization == ""){
 
         Array data;
         for (auto lipidome : selected_lipidomes){

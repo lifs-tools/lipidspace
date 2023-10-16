@@ -67,7 +67,6 @@ enum StudyVariableFilter {NoFilter = 0, LessFilter = 1, GreaterFilter = 2, Equal
 enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 enum LipidNameState {NORMALIZED_NAME = 0, TRANSLATED_NAME = 1, IMPORT_NAME = 2};
 enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, MappingTo, InsertNaN, InsertDefault};
-enum NormalizationType {AbsoluteNormalization, RelativeNormalization, GroupNormalization, UndefinedNormalization};
 enum CanvasType {UndefinedCanvasType, DendrogramCanvas, GlobalSpaceCanvas, GroupSpaceCanvas, SampleSpaceCanvas};
 enum StatLevel {LipidomeLevel = 0, LipidClassLevel = 1, LipidSpeciesLevel = 2};
 

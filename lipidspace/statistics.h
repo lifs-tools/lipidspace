@@ -45,6 +45,7 @@ public slots:
     void updateBoxPlot();
     void updateROCCurve();
     void updateBarPlot();
+    void updateBarPlotClasses();
     void updateHistogram();
     void updateSpeciesCV();
     void updatePCA();

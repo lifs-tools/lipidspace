@@ -116,6 +116,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
+    statisticsBarPlotClasses.load_data(lipid_space, ui->statisticsBarPlotClasses);
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);
     statisticsSpeciesCV.load_data(lipid_space, ui->statisticsSpeciesCV);
     statisticsROCCurve.load_data(lipid_space, ui->statisticsROCCurve);
@@ -158,6 +159,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->sampleList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->statisticsBoxPlot->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsBarPlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statisticsBarPlotClasses->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsHistogram->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsSpeciesCV->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsROCCurve->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -217,6 +219,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlot, &Statistics::setLegendSize);
+    connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlotClasses, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setLegendSize);
@@ -230,6 +233,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlot, &Statistics::setTickSize);
+    connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlotClasses, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsSpeciesCV, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsROCCurve, &Statistics::setTickSize);
@@ -257,6 +261,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->sampleList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
     connect(ui->statisticsBoxPlot, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot);
     connect(ui->statisticsBarPlot, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBarPlot);
+    connect(ui->statisticsBarPlotClasses, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBarPlotClasses);
     connect(ui->statisticsHistogram, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsHistogram);
     connect(ui->statisticsSpeciesCV, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsSpeciesCV);
     connect(ui->statisticsROCCurve, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsROCCurve);
@@ -323,6 +328,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsROCCurve, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsSpeciesCV, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsBarPlot, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsBarPlotClasses, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsPVal, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsVolcano, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->tableView, &CBTableView::openFiles, this, &LipidSpaceGUI::openFiles);
@@ -523,6 +529,7 @@ void LipidSpaceGUI::setStatLevel(int c){
     GlobalData::stat_level = (StatLevel)c;
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
+    statisticsBarPlotClasses.updateBarPlotClasses();
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
@@ -546,6 +553,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
 
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
+    statisticsBarPlotClasses.updateBarPlotClasses();
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
@@ -606,6 +614,7 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
+    statisticsBarPlotClasses.updateBarPlotClasses();
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
@@ -844,8 +853,8 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
 void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
     bool repeat_loading = true;
     ui->normalizationComboBox->clear();
-    ui->normalizationComboBox->addItem("Absolute normalization", "absolute");
-    GlobalData::normalization = "absolute";
+    ui->normalizationComboBox->addItem("No normalization", "no");
+    GlobalData::normalization = "no";
     ui->normalizationComboBox->addItem("Relative normalization", "relative");
     while (repeat_loading){
         try {
@@ -1155,6 +1164,7 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
 
     statisticsBoxPlot.updateBoxPlot();
     statisticsBarPlot.updateBarPlot();
+    statisticsBarPlotClasses.updateBarPlotClasses();
     statisticsHistogram.updateHistogram();
     statisticsSpeciesCV.updateSpeciesCV();
     statisticsROCCurve.updateROCCurve();
@@ -1776,8 +1786,8 @@ void LipidSpaceGUI::loadSession(){
 
     try {
         ui->normalizationComboBox->clear();
-        ui->normalizationComboBox->addItem("Absolute normalization", "absolute");
-        GlobalData::normalization = "absolute";
+        ui->normalizationComboBox->addItem("No normalization", "no");
+        GlobalData::normalization = "no";
     connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
         ui->normalizationComboBox->addItem("Relative normalization", "relative");
 
@@ -2553,6 +2563,45 @@ void LipidSpaceGUI::changeVolcanoFC(string method){
     GlobalData::volcano_log_fc = method;
     statisticsVolcano.updateVolcano();
 }
+
+
+
+
+void LipidSpaceGUI::ShowContextMenuStatisticsBarPlotClasses(const QPoint pos){
+if (statisticsBarPlotClasses.chart->chart_plots.size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionLogScale = new QAction("Y-axis in log scale", this);
+
+    QAction *actionPValues = new QAction("Show statistical results", this);
+    QAction *actionShowData = new QAction("Show data", this);
+    QAction *actionData = new QAction("Export data", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
+    actionLogScale->setCheckable(true);
+    actionLogScale->setChecked(statisticsBarPlotClasses.log_scale);
+    actionPValues->setCheckable(true);
+    actionPValues->setChecked(statisticsBarPlotClasses.show_pvalues);
+    actionShowData->setCheckable(true);
+    actionShowData->setChecked(statisticsBarPlotClasses.show_data);
+    menu->addAction(actionLogScale);
+    menu->addAction(actionPValues);
+    menu->addAction(actionShowData);
+    menu->addAction(actionData);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
+    connect(actionPValues, &QAction::triggered, &statisticsBarPlotClasses, &Statistics::setStatResults);
+    connect(actionLogScale, &QAction::triggered, &statisticsBarPlotClasses, &Statistics::setLogScaleBarPlot);
+    connect(actionShowData, &QAction::triggered, &statisticsBarPlotClasses, &Statistics::setShowDataBarPlot);
+    connect(actionData, &QAction::triggered, &statisticsBarPlotClasses, &Statistics::exportData);
+    connect(exportAsPdf, &QAction::triggered, &statisticsBarPlotClasses, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsBarPlotClasses, &Statistics::exportAsSvg);
+    menu->popup(ui->statisticsBarPlotClasses->viewport()->mapToGlobal(pos));
+}
+
+
 
 
 void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){

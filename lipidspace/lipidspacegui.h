@@ -138,6 +138,7 @@ public:
     Statistics statisticsROCCurve;
     Statistics statisticsSpeciesCV;
     Statistics statisticsBarPlot;
+    Statistics statisticsBarPlotClasses;
     Statistics statisticsPCA;
     Statistics statisticsPVal;
     Statistics statisticsVolcano;
@@ -231,6 +232,7 @@ public slots:
     void ShowContextMenu(const QPoint);
     void ShowContextMenuStatisticsBoxPlot(const QPoint);
     void ShowContextMenuStatisticsBarPlot(const QPoint);
+    void ShowContextMenuStatisticsBarPlotClasses(const QPoint);
     void ShowContextMenuStatisticsHistogram(const QPoint);
     void ShowContextMenuStatisticsSpeciesCV(const QPoint);
     void ShowContextMenuStatisticsROCCurve(const QPoint);
