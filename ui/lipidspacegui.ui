@@ -920,6 +920,7 @@
     </widget>
     <addaction name="actionSet_transparency"/>
     <addaction name="actionSelect_principal_components"/>
+    <addaction name="actionChange_lipid_variable_colors"/>
     <addaction name="menuTile_layout"/>
     <addaction name="separator"/>
     <addaction name="actionTranslate"/>
@@ -1202,6 +1203,11 @@
   <action name="actionSave_session">
    <property name="text">
     <string>Save session</string>
+   </property>
+  </action>
+  <action name="actionChange_lipid_variable_colors">
+   <property name="text">
+    <string>Change lipid/variable colors</string>
    </property>
   </action>
  </widget>

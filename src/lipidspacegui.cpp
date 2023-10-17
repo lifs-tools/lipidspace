@@ -91,6 +91,8 @@ void LipidSpaceGUI::keyPressEvent(QKeyEvent *event){
 
 LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainWindow(parent) {
     lipid_space = _lipid_space;
+    GlobalData::colorMap.clear();
+    GlobalData::colorMapStudyVariables.clear();
     ui = new Ui::LipidSpaceGUI();
     ui->setupUi(this);
     select_lipidomes = new SelectLipidomes(this);
@@ -192,6 +194,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionComplete_feature_analysis, &QAction::triggered, this, &LipidSpaceGUI::completeFeatureAnalysis);
     connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
     connect(ui->actionManage_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::openManageLipidomesWindow);
+    connect(ui->actionChange_lipid_variable_colors, &QAction::triggered, this, &LipidSpaceGUI::openColorDialog);
     connect(ui->actionSet_transparency, &QAction::triggered, this, &LipidSpaceGUI::openSetAlpha);
     connect(ui->actionSet_number_of_principal_components, &QAction::triggered, this, &LipidSpaceGUI::openSetPCnum);
     connect(ui->actionSelect_principal_components, &QAction::triggered, this, &LipidSpaceGUI::openSelectPC);
@@ -434,7 +437,7 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
     QString file_name = QFileDialog::getSaveFileName(this, "Export feature analysis table", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
     if (!file_name.length()) return;
 
-    lipid_space->process_id = 3;
+    lipid_space->process_type = CompleteFeatureAnalysis;
     progress->reset();
     lipid_space->start();
     progressbar->exec();
@@ -858,12 +861,11 @@ void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
     while (repeat_loading){
         try {
             lipid_space->load_table(import_data);
-            if (start_analysis) runAnalysis();
+            if (start_analysis) runAnalysis(true);
             for (auto study_variable : lipid_space->study_variable_values){
                 if (study_variable.second.study_variable_type == NumericalStudyVariable) continue;
                 ui->normalizationComboBox->addItem(QString("%1 grouped normalization").arg(study_variable.first.c_str()), QVariant(study_variable.first.c_str()));
             }
-            updateColorMap();
             repeat_loading = false;
         }
         catch (LipidSpaceException &e) {
@@ -966,7 +968,8 @@ void LipidSpaceGUI::updateColorMap(){
                 GlobalData::colorMap.insert({lipid_class, colorMap_tmp[lipid_class]});
             }
             else {
-                GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[color_counter++ % GlobalData::COLORS.size()]});
+                int pos = (color_counter++) % GlobalData::COLORS.size();
+                GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[pos]});
             }
         }
     }
@@ -1014,7 +1017,7 @@ void LipidSpaceGUI::updateColorMap(){
 
 void LipidSpaceGUI::startFeatureAnalysis(){
     lipid_space->target_variable = ui->studyVariableComboBox->currentText().toStdString();
-    lipid_space->process_id = 2;
+    lipid_space->process_type = FeatureAnalysis;
 
     progress->reset();
     lipid_space->start();
@@ -1030,7 +1033,7 @@ void LipidSpaceGUI::checkBenford(){
 
 
 
-void LipidSpaceGUI::runAnalysis(){
+void LipidSpaceGUI::runAnalysis(bool initial_run){
     string species_selection = GlobalData::gui_string_var["species_selection"];
     string study_var = GlobalData::gui_string_var["study_var"];
     string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
@@ -1039,7 +1042,7 @@ void LipidSpaceGUI::runAnalysis(){
     // clear all windows with canvases
     ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
-    lipid_space->process_id = 1;
+    lipid_space->process_type = LipidAnalysis;
     ui->startAnalysisPushButton->setEnabled(false);
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
@@ -1062,6 +1065,8 @@ void LipidSpaceGUI::runAnalysis(){
     progress->reset();
     lipid_space->start();
     progressbar->exec(); // waiting for the progress bar to finish
+
+    if (initial_run) updateColorMap();
 
     visualizeFinishedAnalysis(selected_tiles, species_selection, study_var, study_var_stat);
 }
@@ -1495,8 +1500,30 @@ void LipidSpaceGUI::setSnPositions(){
 }
 
 
+
+
+void LipidSpaceGUI::openColorDialog(){
+    ChangeColorDialog change_color_dialog(this);
+    change_color_dialog.setModal(true);
+
+    if (change_color_dialog.exec() == QColorDialog::Accepted){
+        for (auto canvas : canvases) canvas->update_alpha();
+        statisticsBoxPlot.updateBoxPlot();
+        statisticsBarPlot.updateBarPlot();
+        statisticsBarPlotClasses.updateBarPlotClasses();
+        statisticsHistogram.updateHistogram();
+        statisticsSpeciesCV.updateSpeciesCV();
+        statisticsROCCurve.updateROCCurve();
+        statisticsPCA.updatePCA();
+        statisticsPVal.updatePVal();
+        statisticsVolcano.updateVolcano();
+    }
+
+}
+
+
 void LipidSpaceGUI::openManageLipidomesWindow(){
-    ManageLipidomes manageLipidomes(lipid_space, this);
+    ManageLipidomes manageLipidomes(this);
     connect(&manageLipidomes, SIGNAL(runAnalysis()), this, SLOT(runAnalysis()));
     connect(&manageLipidomes, SIGNAL(resetAnalysis()), this, SLOT(resetAnalysis()));
     connect(&manageLipidomes, SIGNAL(reassembleSelection()), this, SLOT(reassembleSelection()));
@@ -1508,11 +1535,9 @@ void LipidSpaceGUI::openManageLipidomesWindow(){
 void LipidSpaceGUI::openSetAlpha(){
     SetAlpha setAlpha(this);
     setAlpha.setModal(true);
-    setAlpha.exec();
-    for (auto canvas : canvases){
-        canvas->update_alpha();
+    if (setAlpha.exec() == SetAlpha::Accepted){
+        for (auto canvas : canvases) canvas->update_alpha();
     }
-    updateGUI();
 }
 
 

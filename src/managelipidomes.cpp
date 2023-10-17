@@ -1,9 +1,9 @@
 #include "lipidspace/managelipidomes.h"
 
 
-ManageLipidomes::ManageLipidomes(LipidSpace *_lipid_space, QWidget *parent) : QDialog(parent), ui(new Ui::ManageLipidomes){
+ManageLipidomes::ManageLipidomes(QWidget *parent) : QDialog(parent), ui(new Ui::ManageLipidomes){
     ui->setupUi(this);
-    lipid_space = _lipid_space;
+    lipid_space = ((LipidSpaceGUI*)parent)->lipid_space;
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     setFixedSize(this->width(), this->height());
 

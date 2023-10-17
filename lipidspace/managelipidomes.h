@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/lipidspacegui.h"
 #include <QFileInfo>
 #include "ui_managelipidomes.h"
 #include <vector>
@@ -18,15 +19,15 @@ class ManageLipidomes : public QDialog
     Q_OBJECT
 
 public:
-    explicit ManageLipidomes(LipidSpace *_lipid_space, QWidget *parent = nullptr);
+    explicit ManageLipidomes(QWidget *parent = nullptr);
     ~ManageLipidomes();
-    
+
 signals:
     void runAnalysis();
     void resetAnalysis();
     void reassembleSelection();
-    
-    
+
+
 public slots:
     void removeSelected();
     void removeAll();

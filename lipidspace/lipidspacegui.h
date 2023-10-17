@@ -22,6 +22,7 @@
 #include "lipidspace/AssistanceFunctions.h"
 #include "lipidspace/filterdialog.h"
 #include "lipidspace/Tutorial.h"
+#include "lipidspace/changecolordialog.h"
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/statistics.h"
 #include <thread>
@@ -215,9 +216,10 @@ public slots:
     void setSnPositions();
     void startFeatureAnalysis();
     void openManageLipidomesWindow();
+    void openColorDialog();
     void setSecondarySorting();
     void updateSecondarySorting(int);
-    void runAnalysis();
+    void runAnalysis(bool init = false);
     void visualizeFinishedAnalysis(set<QString> &selected_tiles, string species_selection, string study_var, string study_var_stat);
     void completeFeatureAnalysis();
     void setTransforming(QRectF f);

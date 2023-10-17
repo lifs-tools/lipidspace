@@ -79,7 +79,8 @@ SOURCES += \
     src/chart.cpp \
     src/chartplot.cpp \
     src/plots.cpp \
-    src/studyvariablemapping.cpp
+    src/studyvariablemapping.cpp \
+    src/changecolordialog.cpp
 
 HEADERS += \
     lipidspace/about.h \
@@ -105,8 +106,8 @@ HEADERS += \
     lipidspace/chart.h \
     lipidspace/chartplot.h \
     lipidspace/plots.h \
-    lipidspace/studyvariablemapping.h # \
-    #libraries/cpp-httplib/httplib.h
+    lipidspace/studyvariablemapping.h \
+    lipidspace/changecolordialog.h
 
 FORMS += \
     ui/about.ui \
@@ -120,7 +121,8 @@ FORMS += \
     ui/setalpha.ui \
     ui/setPCnum.ui \
     ui/select_worksheet.ui \
-    ui/studyvariablemapping.ui
+    ui/studyvariablemapping.ui \
+    ui/changecolordialog.ui
 
 release:UI_DIR += objects
 release:MOC_DIR += objects

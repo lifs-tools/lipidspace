@@ -206,7 +206,7 @@ struct PCPoint {
     QPointF point;
     double normalized_intensity;
     double intensity;
-    QColor color;
+    QColor* color;
     QString label;
     QGraphicsEllipseItem *item;
     int ref_lipid_species;

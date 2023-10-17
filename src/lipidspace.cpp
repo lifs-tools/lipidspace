@@ -280,7 +280,7 @@ LipidSpace::LipidSpace() {
     progress = 0;
     analysis_finished = false;
     dendrogram_root = 0;
-    process_id = 0;
+    process_type = NoAnalysis;
     target_variable = "";
     study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
     group_lipidomes.insert({FILE_STUDY_VARIABLE_NAME, vector<Lipidome*>()});
@@ -343,7 +343,7 @@ LipidSpace::LipidSpace(LipidSpace *ls){
     }
     for (auto lipidome : ls->selected_lipidomes) selected_lipidomes.push_back(lipidome_map[lipidome]);
     global_distances.rewrite(ls->global_distances);
-    process_id = ls->process_id;
+    process_type = ls->process_type;
     target_variable = ls->target_variable;
     for (auto value : ls->registered_lipid_classes) registered_lipid_classes.insert(value);
 }
@@ -3682,17 +3682,17 @@ void LipidSpace::complete_feature_analysis(){
 
 
 void LipidSpace::run(){
-    if (process_id == 1){
+    if (process_type == LipidAnalysis){
         analytics("lipid-analysis");
         lipid_analysis();
     }
 
-    else if (process_id == 2 && target_variable != ""){
+    else if (process_type == FeatureAnalysis && target_variable != ""){
         analytics("feature-analysis");
         feature_analysis();
     }
 
-    else if (process_id == 3){
+    else if (process_type == CompleteFeatureAnalysis){
         analytics("complete-feature-analysis");
 
         complete_feature_analysis_table.clear();
@@ -3718,7 +3718,7 @@ void LipidSpace::run(){
         lipid_space_clone.progress = 0;
     }
 
-    process_id = 0;
+    process_type = NoAnalysis;
 }
 
 

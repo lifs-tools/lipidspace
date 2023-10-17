@@ -809,7 +809,7 @@ void PointSet::loadPoints(){
         pc_point.point = QPointF(xval, yval);
         pc_point.normalized_intensity = lipidome->normalized_intensities[r];
         pc_point.intensity = intens;
-        pc_point.color = GlobalData::colorMap[lipidome->classes[r]];
+        pc_point.color = &GlobalData::colorMap[lipidome->classes[r]];
         pc_point.label = translations[lipidome->species[r]].c_str();
         pc_point.ref_lipid_species = r;
 
@@ -904,7 +904,7 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         if (!v.intersects(bubble)) continue;
 
         // setting up pen for painter
-        QColor qcolor = points[i].color;
+        QColor qcolor = *(points[i].color);
         qcolor.setAlpha(255);
         QPainterPath p;
         p.addEllipse(bubble);
@@ -1253,11 +1253,16 @@ Canvas::Canvas(QWidget *parent) : QGraphicsView(parent) {
 void Canvas::update_alpha(){
     if (pointSet){
         for (auto point : pointSet->points){
-            QBrush b = point.item->brush();
-            QColor c = b.color();
+            QBrush brush = point.item->brush();
+            QColor c = QColor(*(point.color));
             c.setAlpha(GlobalData::alpha);
-            b.setColor(c);
-            point.item->setBrush(b);
+            brush.setColor(c);
+            point.item->setBrush(brush);
+
+
+            QPen pen = point.item->pen();
+            pen.setColor(QColor(*(point.color)));
+            point.item->setPen(pen);
         }
     }
 }
