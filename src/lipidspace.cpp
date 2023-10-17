@@ -3808,6 +3808,21 @@ bool LipidSpace::load_session(string session_file_name){
 
     dendrogram_root = new DendrogramNode(container["dendrogram_root"]);
 
+    if (contains_val(container, "colorMap")){
+        GlobalData::colorMap.clear();
+        for (auto &kv : container["colorMap"].items()){
+            GlobalData::colorMap.insert({kv.key(), QColor(kv.value()[0], kv.value()[1], kv.value()[2])});
+        }
+    }
+
+    if (contains_val(container, "colorMapStudyVariables")){
+        GlobalData::colorMapStudyVariables.clear();
+        for (auto &kv : container["colorMapStudyVariables"].items()){
+            GlobalData::colorMapStudyVariables.insert({kv.key(), QColor(kv.value()[0], kv.value()[1], kv.value()[2])});
+        }
+
+    }
+
     return true;
 }
 
@@ -3874,6 +3889,18 @@ bool LipidSpace::save_session(string session_file_name){
     for (auto &kv : study_variable_values) kv.second.save(container["study_variable_values"][kv.first]);
 
     dendrogram_root->save(container["dendrogram_root"]);
+
+    for (auto &kv : GlobalData::colorMap){
+        container["colorMap"][kv.first] += kv.second.red();
+        container["colorMap"][kv.first] += kv.second.green();
+        container["colorMap"][kv.first] += kv.second.blue();
+    }
+
+    for (auto &kv : GlobalData::colorMapStudyVariables){
+        container["colorMapStudyVariables"][kv.first] += kv.second.red();
+        container["colorMapStudyVariables"][kv.first] += kv.second.green();
+        container["colorMapStudyVariables"][kv.first] += kv.second.blue();
+    }
 
 
     ofstream stream_out(session_file_name.c_str());

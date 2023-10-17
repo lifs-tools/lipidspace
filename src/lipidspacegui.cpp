@@ -1907,6 +1907,7 @@ void LipidSpaceGUI::saveSession(){
         if (QFile::exists(file_name)){
             QFile::remove(file_name);
         }
+
         if (lipid_space->save_session(file_name.toStdString())){
             QMessageBox::information(this, "Save session", "Session was successfully saved.");
         }
