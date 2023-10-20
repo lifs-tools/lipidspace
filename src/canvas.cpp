@@ -29,7 +29,7 @@ Citation::Citation(const QString &text, QGraphicsItem *parent) : QGraphicsTextIt
 
 
 void Citation::mousePressEvent(QGraphicsSceneMouseEvent *) {
-    QString link = "https://lifs-tools.org";
+    QString link = "https://pubs.acs.org/doi/full/10.1021/acs.analchem.3c02449";
     QDesktopServices::openUrl(QUrl(link));
 }
 
@@ -97,8 +97,8 @@ void HomeView::resizeEvent(QResizeEvent *) {
 
 
         // TODO: decomment next line
-        //citation = new Citation("Citation: Kopczynski, Dominik et al. The Journal 47(11):08-15, 2022.");
-        citation = new Citation("");
+        citation = new Citation("Citation: Kopczynski, D. et al. Analytical Chemistry 95(41):15236–15244, 2023.");
+        //citation = new Citation("");
 
         citation->setDefaultTextColor(Qt::white);
         scene()->addItem(citation);

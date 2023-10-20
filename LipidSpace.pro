@@ -23,14 +23,14 @@ RC_ICONS = LipidSpace.ico
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 QMAKE_CXXFLAGS_RELEASE += -O3
+QMAKE_EXTRA_TARGETS += build buildclean
 
 unix {
-    LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX" "-lssl" "-lcrypto"
+    LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX"
 }
 
 win32 {
     LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll
-    #$$PWD\libraries\openssl\bin\win64\libssl.dll $$PWD\libraries\openssl\bin\win64\libcrypto.dll
 }
 
 macx {
@@ -127,9 +127,25 @@ FORMS += \
 release:UI_DIR += objects
 release:MOC_DIR += objects
 
-# Default rules for deployment.
-#qnx: target.path = /tmp/$${TARGET}/bin
-#else: unix:!android: target.path = /opt/$${TARGET}/bin
-#!isEmpty(target.path): INSTALLS += target
+unix {
+    build.depends = release
+    build.commands += mkdir -p $$PWD/Build
+    build.commands += && mkdir -p $$PWD/Build/LipidSpace
+    build.commands += && mkdir -p $$PWD/Build/LipidSpace/data
+    build.commands += && mkdir -p $$PWD/Build/LipidSpace/examples
+    build.commands += && cp $$PWD/LipidSpace $$PWD/Build/LipidSpace
+    build.commands += && cp $$PWD/libraries/cppgoslin/bin/linux64/* $$PWD/Build/LipidSpace
+    build.commands += && cp $$PWD/libraries/OpenBLAS/bin/linux64/* $$PWD/Build/LipidSpace
+    build.commands += && cp $$PWD/libraries/OpenXLSX/bin/linux64/* $$PWD/Build/LipidSpace
+    build.commands += && cp $$PWD/libraries/Qt/bin/linux64/* $$PWD/Build/LipidSpace
+    build.commands += && cp $$PWD/data/classes-matrix.csv $$PWD/Build/LipidSpace/data
+    build.commands += && cp -r $$PWD/data/images $$PWD/Build/LipidSpace/data
+    build.commands += && cp $$PWD/examples/Example-Dataset.xlsx $$PWD/Build/LipidSpace/examples
+    build.commands += && cp $$PWD/examples/ThreeStudies.xlsx $$PWD/Build/LipidSpace/examples
+    build.commands += && cp $$PWD/LICENSE* $$PWD/Build/LipidSpace
+    build.commands += && cd $$PWD/Build && zip -9 -r LipidSpace.zip LipidSpace
 
+    buildclean.depends = clean
+    buildclean.commands += rm -rf $$PWD/Build
+}
 
