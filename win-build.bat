@@ -1,3 +1,4 @@
+make -j8
 if not exist "Build" mkdir "Build"
 if not exist "Build/LipidSpace" mkdir "Build/LipidSpace"
 if not exist "Build/LipidSpace/data" mkdir "Build/LipidSpace/data"
