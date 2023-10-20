@@ -1,0 +1,1 @@
+powershell Remove-Item -force -Recurse Build
