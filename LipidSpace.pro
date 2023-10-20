@@ -149,3 +149,10 @@ unix {
     buildclean.commands += rm -rf $$PWD/Build
 }
 
+win32 {
+	#build.depends = release
+	build.commands += .\win-build.bat
+
+    #buildclean.depends = clean
+    buildclean.commands += del /f \"$$PWD/Build\"
+}
