@@ -68,11 +68,15 @@ lipid_pure : gl | pl | sl | sterol | med; /* glycero lipids, phospho lipids, sph
  \n\
 /* adduct information */ \n\
 adduct_info : adduct_sep | adduct_separator adduct_sep; \n\
-adduct_sep : '[M' adduct ']' charge_sign | '[M' adduct ']' charge charge_sign; \n\
+adduct_sep : SOB 'M' adduct SCB adduct_charge | SOB 'M' adduct_heavy adduct SCB adduct_charge | SOB 'M' adduct_heavy SCB; \n\
+adduct_charge : charge_sign | charge charge_sign; \n\
 adduct : adduct_set; \n\
 adduct_set : adduct_element | adduct_element adduct_set; \n\
 adduct_element : element | element number | number element | plus_minus element | plus_minus element number | plus_minus number element; \n\
- \n\
+adduct_heavy : adduct_heavy_component | adduct_heavy adduct_heavy; \n\
+adduct_heavy_component : adduct_heavy_element adduct_heavy_number | adduct_heavy_element; \n\
+adduct_heavy_element: '[2]H' | '[13]C' | '[15]N' | '[17]O' | '[18]O' | '[32]P' | '[33]S' | '[34]S'; \n\
+adduct_heavy_number : number; \n\
  \n\
 /* mediators */ \n\
 med : med_species | med_subspecies; \n\
@@ -131,7 +135,7 @@ stereo_direction : 'R' | 'S'; \n\
 molecular_func_group : molecular_func_group_name | molecular_func_group_name func_group_count; \n\
 func_group_ext_name : round_open_bracket func_group_name round_close_bracket | func_group_name; \n\
 func_group_ext_count_name : round_open_bracket func_group_name round_close_bracket | molecular_func_group_name; \n\
-func_group_name : 'Et' | 'Me' | 'Ac' | 'NO2' | 'My' | 'Ep' | 'OO' | 'dMe' | 'OMe' | 'oxy' | 'NH2' | 'OOH' | 'SH' | 'OH' | 'oxo' | 'CN' | 'Ph' | 'Su' | 'COOH' | 'G' | 'T' | 'COG' | 'COT' | carbohydrate | 'H' | 'Cys' | 'Phe' | 'SGlu' | 'SCys' | 'BOO' | 'MMAs' | 'SMe' | 'NH' | 'SCG' | special_elements; \n\
+func_group_name : 'Et' | 'Me' | 'Ac' | 'NO2' | 'My' | 'Ep' | 'OO' | 'dMe' | 'OMe' | 'oxy' | 'NH2' | 'OOH' | 'SH' | 'OH' | 'oxo' | 'CN' | 'Ph' | 'Su' | 'COOH' | 'G' | 'T' | 'COG' | 'COT' | carbohydrate_sn | carbohydrate_iso | 'H' | 'Cys' | 'Phe' | 'SGlu' | 'SCys' | 'BOO' | 'MMAs' | 'SMe' | 'NH' | 'SCG' | special_elements; \n\
 molecular_func_group_name : elements | special_elements; \n\
 elements : 'O' | 'N' | 'P' | 'S' | 'As'; \n\
 special_elements: 'Br' | 'Cl' | 'F' | 'I'; \n\
@@ -219,24 +223,25 @@ hg_lpim_number : number; \n\
 pl_hg_fa : med; \n\
 pl_hg_alk : fatty_acyl_chain; \n\
  \n\
-carbohydrate_group : carbohydrate | carbohydrate carbohydrate_number; \n\
+carbohydrates : carbohydrate_type | carbohydrate_type carbohydrates; \n\
+carbohydrate_type : carbohydrate_sn_position | carbohydrate_isomeric; \n\
+carbohydrate_sn_position : carbohydrate_iso | carbohydrate_iso carbohydrate_number | carbohydrate_iso carbohydrate_number carbohydrate_separator | carbohydrate_sn | carbohydrate_sn carbohydrate_number | carbohydrate_sn carbohydrate_number carbohydrate_separator | carbohydrate_sn carbohydrate_separator; \n\
+carbohydrate_isomeric : carbohydrate_iso carbohydrate_separator; \n\
 carbohydrate_number : number; \n\
-carbohydrate : 'Hex' | 'Gal' | 'Glc' | 'Man' | 'Neu' | 'HexNAc' | 'GalNAc' | 'GlcNAc' | 'NeuAc' | 'NeuGc' | 'Kdn' | 'GlcA' | 'Xyl' | 'Fuc' | 'NeuAc2' | 'SHex' | 'S' ROB '3' APOSTROPH RCB 'Hex' | 'SGal' | 'S' ROB '3' APOSTROPH RCB 'Gal' | 'HexA' | 'OGlcNAc' | 'OGlc'; \n\
+carbohydrate_sn : 'Hex' | 'SHex' | 'SGal' | 'HexNAc' | 'HexA'; \n\
+carbohydrate_iso : 'Gal' | 'Glc' | 'GalNAc' | 'GlcNAc' | 'S' ROB '3' APOSTROPH RCB 'Hex' | 'S' ROB '3' APOSTROPH RCB 'Gal' | 'Man' | 'Neu' | 'NeuGc' | 'Kdn' | 'GlcA' | 'Xyl' | 'Fuc' | 'OGlcNAc' | 'OGlc' | 'NeuAc'; \n\
  \n\
  \n\
 sl : sl_species | sl_subspecies; \n\
 sl_species : sl_hg_double headgroup_separator lcb | acer_species headgroup_separator lcb; \n\
-sl_subspecies : sl_hg_single headgroup_separator lcb | sl_hg_single sl_hydroxyl headgroup_separator lcb | sl_double; \n\
+sl_subspecies : sl_single | sl_double; \n\
+sl_single : sl_hg_single headgroup_separator lcb | sl_hg_single sl_hydroxyl headgroup_separator lcb | sl_hg_single headgroup_separator lcb '/0:0' | sl_hg_single sl_hydroxyl headgroup_separator lcb '/0:0'; \n\
 sl_double : sl_hg_double headgroup_separator lcb sorted_fa_separator fatty_acyl_chain | sl_hg_double sl_hydroxyl headgroup_separator lcb sorted_fa_separator fatty_acyl_chain; \n\
 sl_hydroxyl : ROB sl_hydroxyl_number RCB; \n\
 sl_hydroxyl_number : number; \n\
-sl_hg_single : 'SPB' | 'SPBP' | 'LIPC' | 'LSM'; \n\
-sl_hg_double : acer_hg | sl_hg_double_name | carbohydrate_structural sl_hg_glyco | carbohydrate_isomeric carbohydrate_separator sl_hg_glyco; \n\
-carbohydrate_structural : carbohydrates; \n\
-carbohydrates : carbohydrate_group | carbohydrate_group carbohydrates; \n\
-carbohydrate_isomeric : carbohydrates_isomeric; \n\
+sl_hg_single : 'SPB' | 'SPBP' | 'LIPC' | 'LSM' | 'LHexCer' | 'LHex2Cer' | 'LHex3Cer'; \n\
+sl_hg_double : acer_hg | sl_hg_double_name | carbohydrates sl_hg_glyco; \n\
 sl_hg_glyco : 'Cer' | 'IPC'; \n\
-carbohydrates_isomeric : carbohydrate | carbohydrate carbohydrate_separator carbohydrates_isomeric; \n\
 sl_hg_double_name : 'SM' | sl_hg_glyco | 'CerP' | acer_hg | 'SL' | 'LacCer' | 'SHexCer' | 'PI-Cer' | 'EPC' | 'PE-Cer' | 'GIPC' | 'MIPC' | 'M(IP)2C' | glyco_sphingo_lipid | 'S' ROB '3' APOSTROPH RCB 'HexCer' | 'S' ROB '3' APOSTROPH RCB 'GalCer'; \n\
 acer_hg : acer_hg_pure ROB med RCB; \n\
 acer_species : acer_hg_pure | acer_hg_pure '(FA)'; \n\
@@ -335,8 +340,13 @@ grammar Goslin; \n\
  \n\
 /* first rule is always start rule */ \n\
 lipid : lipid_eof EOF; \n\
-lipid_eof : lipid_pure | lipid_pure adduct_info; \n\
+lipid_eof : lipid_rule | lipid_rule adduct_info; \n\
+lipid_rule: lipid_pure | lipid_pure isotope; \n\
 lipid_pure : gl | pl | sl | sterol | mediatorc | saccharolipid; \n\
+isotope: SPACE round_open_bracket isotope_pair round_close_bracket | round_open_bracket isotope_pair round_close_bracket | DASH round_open_bracket isotope_pair round_close_bracket | DASH isotope_pair | SPACE isotope_pair | isotope_pair; \n\
+isotope_pair: isotope_element isotope_number; \n\
+isotope_number: number; \n\
+isotope_element: 'd' | 'D'; \n\
  \n\
  \n\
 /* adduct information */ \n\
@@ -437,7 +447,7 @@ sl_species : lcb; \n\
 sl_subspecies : lcb sorted_fa_separator fa; \n\
  \n\
 hg_lslc : hg_lsl | hg_lsl heavy_hg; \n\
-hg_lsl : 'LCB' | 'LCBP' | 'LHexCer' | 'LSM' | 'LIPC' | 'So' | 'Sa' | 'SPH' | 'Sph' | 'LCB' | 'S1P' | 'SPH-P' | 'SIP' | 'Sa1P' | 'SPA1P' | 'SPA'; \n\
+hg_lsl : 'LCB' | 'LCBP' | 'LHexCer' | 'LHex2Cer' | 'LHex3Cer' | 'LSM' | 'LIPC' | 'So' | 'Sa' | 'SPH' | 'Sph' | 'LCB' | 'S1P' | 'SPH-P' | 'SIP' | 'Sa1P' | 'SPA1P' | 'SPA'; \n\
 hg_so_lslc : hg_so_lsl | hg_so_lsl heavy_hg; \n\
 hg_so_lsl : 'So' | 'Sa' | 'Sa1P' | 'S1P'; \n\
 hg_dslc : hg_dsl | hg_dsl heavy_hg; \n\
@@ -467,25 +477,30 @@ hg_stes : 'ChE' | 'CE' | 'ChoE' | 'CholE'; \n\
  \n\
  \n\
 /* mediator lipids (1 class) */ \n\
-mediatorc : mediator | mediator heavy_hg; \n\
-mediator : unstructured_mediator | trivial_mediator | mediator_functional_group mediator_fa mediator_suffix | mediator_functional_group mediator_fa; \n\
+mediatorc : mediator_iso | mediator_iso heavy_hg; \n\
+mediator_iso : mediator | med_iso mediator; \n\
+mediator : unstructured_mediator | trivial_mediator | mediator_functional_group mediator_fa | mediator_functional_group mediator_fa mediator_suffix | mediator_functional_group trivial_mediator; \n\
+med_iso : med_iso_positions med_iso_suffix | med_iso_positions med_iso_suffix '-' | med_iso_positions '-' med_iso_suffix | med_iso_positions '-' med_iso_suffix '-'; \n\
+med_iso_suffix : 'iso'; \n\
+med_iso_positions : number | number ',' med_iso_positions; \n\
 mediator_fa : mediator_carbon mediator_db; \n\
 mediator_carbon : 'H' | 'O' | 'E' | 'Do'; \n\
 mediator_db : 'M' | 'D' | 'Tr' | 'T' | 'P' | 'H'; \n\
 mediator_suffix: 'E'; \n\
-mediator_functional_group : mediator_functional_group_clear | mediator_tetranor mediator_functional_group_clear; \n\
-mediator_tetranor : 'tetranor-'; \n\
+mediator_functional_group : mediator_functional_group_clear | mediator_functional_group_clear '-' | mediator_tetranor mediator_functional_group_clear | mediator_tetranor mediator_functional_group_clear '-'; \n\
+mediator_tetranor : 'tetranor-' | 'Tetranor-'; \n\
 mediator_functional_group_clear: mediator_full_function | mediator_function_unknown_pos; \n\
 mediator_function_unknown_pos : mediator_functions; \n\
 mediator_functions : mediator_mono_functions | mediator_di_functions; \n\
-mediator_mono_functions: 'H' | 'Oxo' | 'Hp'; \n\
+mediator_mono_functions: 'H' | 'Oxo' | 'oxo' | 'OXO' | 'Hp' | 'NO2'; \n\
 mediator_di_functions: 'E' | 'Ep' | 'DH' | 'DiH' | 'diH'; \n\
-mediator_mono_pos: mediator_position; \n\
-mediator_di_pos: mediator_position ',' mediator_position | mediator_position '_' mediator_position | mediator_position '(' mediator_position ')'; \n\
-mediator_full_function : mediator_mono_pos '-' mediator_mono_functions | mediator_di_pos '-' mediator_di_functions; \n\
+mediator_full_function : mediator_position_group '-' mediator_mono_functions | mediator_di_pos '-' mediator_di_functions; \n\
+mediator_di_pos: mediator_position_group ',' mediator_position_group | mediator_position_group '_' mediator_position_group | mediator_position_group '(' mediator_position_group ')'; \n\
+mediator_position_group : mediator_position | mediator_position mediator_position_isotope | mediator_position '(' mediator_position_isotope ')'; \n\
 mediator_position : number; \n\
+mediator_position_isotope : 'S' | 'R'; \n\
  \n\
-trivial_mediator : 'AA' | 'ALA' | 'DHA' | 'EPA' | 'Linoleic acid' | 'TXB1' | 'TXB2' | 'TXB3' | 'Resolvin D1' | 'Resolvin D2' | 'Resolvin D3' | 'Resolvin D5' | 'LTB4' | 'Maresin 1' | 'Palmitic acid' | 'PGB2' | 'PGD2' | 'PGE2' | 'PGF2alpha'; \n\
+trivial_mediator : 'AA' | 'LA' | 'ALA' | 'DHA' | 'EPA' | 'Linoleic acid' | 'Arachidonic acid' | 'TXB1' | 'TXB2' | 'TXB3' | 'Resolvin D1' | 'Resolvin D2' | 'Resolvin D3' | 'Resolvin D5' | 'LTB4' | 'Mar1' | 'Maresin 1' | 'Palmitic acid' | 'PDX' | 'PGB2' | 'PGD2' | 'PGE2' | 'PGF2alpha' | 'PGF1alpha' | 'OA' | 'Oleic acid' | 'iPF2alpha-VI'; \n\
  \n\
 unstructured_mediator : 'alpha-LA' | 'LTC4' | 'LTD4' | 'PGI2'; \n\
  \n\
@@ -531,15 +546,12 @@ number :  digit | digit number; \n\
 digit : '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'; \n\
  \n\
  \n\
+heavy : '(+' adduct_heavy ')'; \n\
+adduct_heavy : adduct_heavy_component | adduct_heavy adduct_heavy; \n\
+adduct_heavy_component : adduct_heavy_element adduct_heavy_number | adduct_heavy_element; \n\
+adduct_heavy_element: '[2]H' | '[13]C' | '[15]N' | '[17]O' | '[18]O' | '[32]P' | '[33]S' | '[34]S'; \n\
+adduct_heavy_number : number; \n\
  \n\
- \n\
- \n\
-heavy : '(+' isotopes  ')'; \n\
-isotopes : isotopes isotopes | isotope; \n\
-isotope : '[' isotope_number ']' isotope_element isotope_count | '[' isotope_number ']' isotope_element; \n\
-isotope_number : number; \n\
-isotope_element : element; \n\
-isotope_count : number; \n\
  \n\
 /* separators */ \n\
 SPACE : ' '; \n\
@@ -609,13 +621,15 @@ lipid_mono: lipid_pure | lipid_pure isoform; \n\
 lipid_pure: pure_fa | gl | pl | sl | pk | sterol | mediator; \n\
 isoform: square_open_bracket isoform_inner square_close_bracket; \n\
 isoform_inner : 'rac' | 'iso' | 'iso' number | 'R'; \n\
-isotope: SPACE round_open_bracket isotope_element number round_close_bracket | DASH round_open_bracket isotope_element number round_close_bracket | DASH isotope_element number; \n\
-isotope_element: 'd'; \n\
+isotope: SPACE round_open_bracket isotope_pair round_close_bracket | round_open_bracket isotope_pair round_close_bracket | DASH round_open_bracket isotope_pair round_close_bracket | DASH isotope_pair | SPACE isotope_pair | isotope_pair; \n\
+isotope_pair: isotope_element isotope_number; \n\
+isotope_number: number; \n\
+isotope_element: 'd' | 'D'; \n\
  \n\
  \n\
 /* adduct information */ \n\
 adduct_info : adduct_sep | adduct_separator adduct_sep; \n\
-adduct_sep : '[M' adduct ']' charge_sign | '[M' adduct ']' charge charge_sign; \n\
+adduct_sep : '[M' adduct ']' | '[M' adduct ']' charge_sign | '[M' adduct ']' charge charge_sign; \n\
 adduct : adduct_set; \n\
 adduct_set : adduct_element | adduct_element adduct_set; \n\
 adduct_element : element | element number | number element | plus_minus element | plus_minus element number | plus_minus number element; \n\
@@ -623,7 +637,7 @@ adduct_element : element | element number | number element | plus_minus element 
  \n\
  \n\
 /* pure fatty acid */ \n\
-pure_fa: hg_fa pure_fa_species | fa_no_hg; \n\
+pure_fa: hg_fa pure_fa_species | hg_fa headgroup_separator pure_fa_species | fa_no_hg; \n\
 fa_no_hg: fa; \n\
 pure_fa_species: round_open_bracket fa round_close_bracket | fa | round_open_bracket fa2 round_close_bracket; \n\
 hg_fa: 'FA' | 'WE' | 'CoA' | 'CAR' | 'FAHFA' | 'CoA'; \n\
@@ -695,15 +709,29 @@ hg_threepl: 'SLBPA' | 'PS-NAc' | 'NAPE'; \n\
  \n\
 /* sphingolipid rules */ \n\
 sl: lsl | dsl; \n\
-lsl: hg_lslc round_open_bracket lcb round_close_bracket | hg_lslc lcb; \n\
+lsl: hg_lslc round_open_bracket lcb round_close_bracket | hg_lslc lcb | sphinga; \n\
 dsl: hg_dslc dsl_species | hg_dslc dsl_subspecies; \n\
 dsl_species: round_open_bracket lcb round_close_bracket | lcb; \n\
 dsl_subspecies: round_open_bracket lcb_fa_sorted round_close_bracket | lcb_fa_sorted; \n\
  \n\
  \n\
+sphinga : sphinga_hg_pure | sphinga_hg headgroup_separator sphinga_bracket_lcb | sphinga_hg sphinga_bracket_lcb | sphinga_C_lcb sphinga_hg_pure | sphinga_C_lcb headgroup_separator sphinga_hg_pure; \n\
+sphinga_hg_pure : sphinga_hg; \n\
+sphinga_hg : sphinga_substr sphinga_suffix | sphinga_prefix sphinga_substr sphinga_suffix | sphinga_substr sphinga_suffix sphinga_phospho_top | sphinga_prefix sphinga_substr sphinga_suffix sphinga_phospho_top; \n\
+sphinga_prefix : 'Phyto'; \n\
+sphinga_substr : 'Sphing' | 'sphing'; \n\
+sphinga_suffix : 'anine' | 'osine' | 'adienine'; \n\
+sphinga_phospho_top : DASH sphinga_phospho | SPACE sphinga_phospho; \n\
+sphinga_phospho : '1-phosphate' | '1-phosphocholine'; \n\
+sphinga_C_lcb : 'C' sphinga_lcb_len; \n\
+sphinga_lcb_len : number; \n\
+sphinga_bracket_lcb : round_open_bracket lcb round_close_bracket | lcb; \n\
+ \n\
+ \n\
+ \n\
 hg_dslc: hg_dsl_global | hg_dsl_global headgroup_separator; \n\
 hg_dsl_global : hg_dsl | special_cer | special_glyco; \n\
-hg_dsl: 'Cer' | 'CerP' | 'EPC' | glyco_sphingo_lipid | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SulfoHexCer' | 'SM' | 'PE-Cer' | 'PI-Cer' | 'GlcCer' | 'FMC-5' | 'FMC-6' | 'LacCer' | 'GalCer' | 'C1P' | '(3\\'-sulfo)Galbeta-Cer' | omega_linoleoyloxy_Cer; \n\
+hg_dsl: 'Cer' | 'CerP' | 'EPC' | glyco_sphingo_lipid | 'CMH' | 'CMH-OH' | 'MHCer' | 'MHCER' | 'CDH' | 'DHCer' | 'DHCER' | 'Hex3Cer' | 'Hex2Cer' | 'HexCer' | 'IPC' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SulfoHexCer' | 'SM' | 'PE-Cer' | 'PI-Cer' | 'GlcCer' | 'FMC-5' | 'FMC-6' | 'LacCer' | 'GalCer' | 'C1P' | '(3\\'-sulfo)Galbeta-Cer' | omega_linoleoyloxy_Cer; \n\
 glyco_sphingo_lipid : 'GA1' | 'Ga1' | 'GA2' | 'Ga2' | \n\
  'GB3' | 'Gb3' | 'GB4' | 'Gb4' | \n\
  'GD1' | 'Gd1' | 'GD2' | 'Gd2' | 'GD3' | 'Gd3' | \n\
@@ -740,7 +768,7 @@ pk_fa : round_open_bracket fa round_close_bracket; \n\
 /* sterol lipids */ \n\
 sterol: chc | chec; \n\
 chc: ch | ch headgroup_separator; \n\
-ch: 'Cholesterol'; \n\
+ch: 'Cholesterol' | 'cholesterol'; \n\
 chec: che | che headgroup_separator | che_fa; \n\
 che: fa headgroup_separator hg_che; \n\
 che_fa: hg_che round_open_bracket fa round_close_bracket; \n\
@@ -762,7 +790,7 @@ mediator_oxo: 'Oxo' | 'oxo'; \n\
  \n\
  \n\
 /* generic rules */ \n\
-fa: fa_unmod | fa_unmod fa_mod | fa_unmod fa_mod_separator fa_mod; \n\
+fa: fa_unmod | fa_unmod fa_mod | fa_unmod fa_mod_separator fa_mod | fa_no_db; \n\
 fa_unmod: round_open_bracket fa_pure ether_suffix round_close_bracket | round_open_bracket ether_prefix fa_pure round_close_bracket | round_open_bracket fa_pure round_close_bracket | ether_prefix fa_pure | fa_pure ether_suffix | fa_pure; \n\
 fa_mod: round_open_bracket modification round_close_bracket; \n\
 modification: modification ',' modification | single_mod; \n\
@@ -775,8 +803,10 @@ mod_text: 'OH' | 'Ke' | 'OOH' | 'My' | 'Me' | 'Br' | 'CHO' | 'COOH' | 'Cp' | 'Ep
 ether_prefix : 'P-' | 'O-'; \n\
 ether_suffix : 'p' | 'e'; \n\
 stereo : 'R' | 'S'; \n\
-fa_pure: carbon carbon_db_separator db | carbon carbon_db_separator db db_hydroxyl_separator hydroxyl; \n\
+fa_no_db: carbon DASH single_mod; \n\
+fa_pure: carbon carbon_db_separator db | carbon carbon_db_separator db db_hydroxyl_separator hydroxyl | additional_modifier carbon carbon_db_separator db | additional_modifier carbon carbon_db_separator db db_hydroxyl_separator hydroxyl; \n\
 lcb_pure_fa : lcb_fa; \n\
+additional_modifier : 'C' | 'h'; \n\
 lcb_fa: lcb_fa_unmod | lcb_fa_unmod lcb_fa_mod; \n\
 lcb_fa_unmod: carbon carbon_db_separator db; \n\
 lcb_fa_mod: round_open_bracket modification round_close_bracket; \n\
@@ -1099,7 +1129,7 @@ adduct_element : element | element number | number element | plus_minus element 
  \n\
  \n\
 /* fatty acyl rules */ \n\
-fa : fa_core | furan_fa | fa_lcb_prefix fa_core | fa_core fa_lcb_suffix | fa_lcb_prefix fa_core fa_lcb_suffix; \n\
+fa : fa_core | furan_fa | fa_lcb_prefix fa_core | fa_core fa_lcb_suffix | fa_lcb_prefix fa_core fa_lcb_suffix | fa_synonym; \n\
 fa_core : carbon carbon_db_separator db | ether carbon carbon_db_separator db | methyl carbon carbon_db_separator db; \n\
  \n\
 furan_fa : furan_fa_mono | furan_fa_di; \n\
@@ -1107,6 +1137,8 @@ furan_fa_mono : furan_first_number 'M' furan_second_number | 'MonoMe(' furan_fir
 furan_fa_di : furan_first_number 'D' furan_second_number | 'DiMe(' furan_first_number ',' furan_second_number ')'; \n\
 furan_first_number : number; \n\
 furan_second_number : number; \n\
+ \n\
+fa_synonym : 'Palmitic acid' | 'Linoleic acid' | 'AA' | 'ALA' | 'EPA' | 'DHA' | 'LTB4' | 'Resolvin D3' | 'Maresin 1' | 'Resolvin D2' | 'Resolvin D5' | 'Resolvin D1' | 'TXB1' | 'TXB2' | 'TXB3' | 'PGF2alpha' | 'PGD2' | 'PGE2' | 'PGB2' | 'PGJ2' | '15d-PGJ2'; \n\
  \n\
 lcb : lcb_core | fa_lcb_prefix lcb_core | lcb_core fa_lcb_suffix | fa_lcb_prefix lcb_core fa_lcb_suffix; \n\
 lcb_core : hydroxyl carbon carbon_db_separator db; \n\
@@ -1126,12 +1158,18 @@ ether_link_pos : number '-'; \n\
 ether_type : 'o-' | 'O-' | 'P-'; \n\
 methyl : 'i-' | 'a-'; \n\
 hydroxyl : 'm' | 'd' | 't'; \n\
-fa_lcb_suffix : fa_lcb_suffix_core | fa_lcb_suffix_separator fa_lcb_suffix_core | ROB fa_lcb_suffix_core RCB; \n\
+fa_lcb_suffix : fa_lcb_suffix_core | fa_lcb_suffix_separator fa_lcb_suffix_core | ROB fa_lcb_suffix_core RCB | fa_lcb_suffix_full; \n\
+fa_lcb_suffix_full : fa_lcb_suffix_full_sep fa_lcb_suffix_number fa_lcb_suffix_types ROB fa_lcb_suffix_positions RCB | fa_lcb_suffix_full_sep fa_lcb_suffix_types ROB fa_lcb_suffix_position_core RCB; \n\
+fa_lcb_suffix_full_sep : fa_lcb_suffix_separator | '+='; \n\
 fa_lcb_suffix_core : fa_lcb_suffix_type | fa_lcb_suffix_number fa_lcb_suffix_type | fa_lcb_suffix_number fa_lcb_suffix_separator fa_lcb_suffix_type; \n\
 fa_lcb_suffix_type : 'OH' | 'me'; \n\
+fa_lcb_suffix_types : 'OH' | 'me' | 'O'; \n\
 fa_lcb_suffix_number : number; \n\
 fa_lcb_prefix : fa_lcb_prefix_type | fa_lcb_prefix_type fa_lcb_prefix_separator; \n\
 fa_lcb_prefix_type : 'iso'; \n\
+fa_lcb_suffix_positions : fa_lcb_suffix_position_core COMMA fa_lcb_suffix_positions | fa_lcb_suffix_position_core; \n\
+fa_lcb_suffix_position_core : fa_lcb_suffix_position | fa_lcb_suffix_position med_suffix; \n\
+fa_lcb_suffix_position : number; \n\
  \n\
 /* different fatty acyl types */ \n\
 fa_species : fa; \n\

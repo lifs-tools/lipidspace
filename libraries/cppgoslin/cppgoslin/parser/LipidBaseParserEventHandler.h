@@ -31,6 +31,7 @@ SOFTWARE.
 #include "cppgoslin/domain/LipidAdduct.h"
 #include "cppgoslin/domain/LipidCompleteStructure.h"
 #include "cppgoslin/domain/FattyAcid.h"
+#include "cppgoslin/domain/Cycle.h"
 #include "cppgoslin/domain/Headgroup.h"
 #include "cppgoslin/domain/FunctionalGroup.h"
 #include "cppgoslin/parser/BaseParserEventHandler.h"
@@ -57,14 +58,16 @@ public:
     bool use_head_group;
     static const set<string> SP_EXCEPTION_CLASSES;
     Adduct* adduct;
-    static const map<string, vector<string> > glyco_table;
+    static const map<string, int> fa_synonyms;
         
     LipidBaseParserEventHandler();
     ~LipidBaseParserEventHandler();
     void set_lipid_level(LipidLevel _level);
     bool sp_regular_lcb();
-    Headgroup* prepare_headgroup_and_checks();
+    Headgroup* prepare_headgroup_and_checks(bool allow_class_shift = true);
     LipidSpecies *assemble_lipid(Headgroup *headgroup);
+    FattyAcid* resolve_fa_synonym(string mediator_name);
+    bool check_full_structure(FunctionalGroup *obj);
 };
 
 

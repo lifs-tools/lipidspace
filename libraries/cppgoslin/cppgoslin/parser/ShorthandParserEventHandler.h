@@ -54,6 +54,8 @@ public:
     static const set<string> special_types;
     bool acer_species;
     bool contains_stereo_information;
+    Element heavy_element;
+    int heavy_element_number;
         
     ShorthandParserEventHandler();
     ~ShorthandParserEventHandler();
@@ -62,7 +64,7 @@ public:
     void add_cycle_element(TreeNode *node);
     void set_headgroup_name(TreeNode *node);
     void set_carbohydrate(TreeNode *node);
-    void set_carbohydrate_structural(TreeNode *node);
+    void set_carbohydrate_sn_position(TreeNode *node);
     void set_carbohydrate_isomeric(TreeNode *node);
     void suffix_decorator_molecular(TreeNode *node);
     void suffix_decorator_species(TreeNode *node);
@@ -125,7 +127,9 @@ public:
     void set_sterol_definition(TreeNode *node);
     void set_carbohydrate_number(TreeNode *node);
     void set_glyco_sphingo_lipid(TreeNode *node);
-    
+    void set_heavy_element(TreeNode *node);
+    void set_heavy_number(TreeNode *node);
+    void add_heavy_component(TreeNode *node);
 };
 
 
