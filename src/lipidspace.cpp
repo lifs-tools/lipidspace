@@ -2021,6 +2021,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
 
 
 void LipidSpace::load_flat_table(ImportData *import_data){
+
     vector<TableColumnType> *column_types = import_data->column_types;
     FileTableHandler *fth = import_data->file_table_handler;
     MappingData *mapping_data = import_data->mapping_data;
@@ -2085,9 +2086,9 @@ void LipidSpace::load_flat_table(ImportData *import_data){
 
             // check if quant information is valid
             string quant_val = tokens.at(quant_column);
-            if (contains_val(NA_VALUES, quant_val)){
-                continue;
-            }
+            double val = atof(quant_val.c_str());
+            if (contains_val(NA_VALUES, quant_val) || val <= 0) continue;
+
 
             // take or create sample / lipidome table
             Lipidome* lipidome = 0;
@@ -2234,7 +2235,6 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             lipidome->species.push_back(lipid_name);
             lipidome->classes.push_back(l->get_lipid_string(CLASS));
             lipidome->categories.push_back(l->get_lipid_string(CATEGORY));
-            double val = atof(quant_val.c_str());
             lipidome->original_intensities.push_back(val);
 
         }
