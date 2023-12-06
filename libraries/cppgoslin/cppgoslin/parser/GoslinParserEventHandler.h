@@ -57,6 +57,7 @@ public:
     bool mediator_suffix;
     Element heavy_element;
     int heavy_element_number;
+    bool trivial_mediator;
     
     static const map<string, int> mediator_FA;
     static const map<string, int> mediator_DB;

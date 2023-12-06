@@ -419,6 +419,24 @@ void LipidSpace::cut_cycle(FattyAcid* fa){
         return;
     }
 
+    for (auto cycle : fa->functional_groups->at("cy")){
+        fa->double_bonds->num_double_bonds += cycle->double_bonds->num_double_bonds;
+        for (auto &kv : cycle->double_bonds->double_bond_positions) fa->double_bonds->double_bond_positions.insert({kv.first, kv.second});
+
+        if (cycle->double_bonds->num_double_bonds != (int)cycle->double_bonds->double_bond_positions.size()) cycle->double_bonds->double_bond_positions.clear();
+
+        for (auto kv : *(cycle->functional_groups)){
+            if (uncontains_val_p(fa->functional_groups, kv.first)) fa->functional_groups->insert({kv.first, {}});
+            for (auto fg : kv.second){
+                fa->functional_groups->at(kv.first).push_back(fg);
+            }
+            cycle->functional_groups->at(kv.first).clear();
+        }
+        delete cycle;
+    }
+    fa->functional_groups->erase("cy");
+
+    /*
     if (((Cycle*)fa->functional_groups->at("cy").at(0))->start > -1){
         int start = ((Cycle*)fa->functional_groups->at("cy").at(0))->start;
 
@@ -489,6 +507,7 @@ void LipidSpace::cut_cycle(FattyAcid* fa){
         }
         fa->functional_groups->clear();
     }
+    */
 }
 
 
@@ -645,7 +664,10 @@ void LipidSpace::fatty_acyl_similarity(FattyAcid* fa1, FattyAcid* fa2, int& unio
 
                 inter_num += inters.size() * naab;
                 union_num += unions.size() * naab;
-
+            }
+            else {
+                for (auto f : fa1->functional_groups->at(key)) union_num += f->count * f->num_atoms;
+                for (auto f : fa2->functional_groups->at(key)) union_num += f->count * f->num_atoms;
             }
         }
         // functional group occurs only in first fatty acid
@@ -2191,10 +2213,10 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                 }
                 for (auto fa : l->lipid->fa_list) cut_cycle(fa);
                 cut_cycle(l->lipid->info);
+
                 l->sort_fatty_acyl_chains();
-
-
                 lipid_name = l->get_lipid_string();
+
 
                 if (contains_val(all_lipids, lipid_name)){
                     delete l;

@@ -49,12 +49,15 @@ int main(int argc, char** argv) {
             cout << "Error: could not parse lipid '" << argv[3] << "'." << endl;
             exit(-1);
         }
+        cout << argv[2] << "(" << l1->get_lipid_string() << ")" << " vs. " << argv[3] << "(" << l2->get_lipid_string() << ")" << endl;
+
+        for (auto fa : l1->lipid->fa_list) lipid_space.cut_cycle(fa);
+        for (auto fa : l2->lipid->fa_list) lipid_space.cut_cycle(fa);
 
 
         int union_num = 0, inter_num = 0;
         lipid_space.lipid_similarity(l1, l2, union_num, inter_num);
 
-        cout << argv[2] << "(" << l1->get_lipid_string() << ")" << " vs. " << argv[3] << "(" << l2->get_lipid_string() << ")" << endl;
         cout << "union: " << union_num << endl;
         cout << "inter: " << inter_num << endl;
     }
