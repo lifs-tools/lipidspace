@@ -631,7 +631,7 @@ void Lipidome::save(json &container){
 
 
 
-string Lipidome::to_json(){
+string Lipidome::to_json(map<string, string> *imported_lipid_names){
     stringstream s;
 
     s << "{\"LipidomeName\": \"" << replace_all(cleaned_name, "\"", "") << "\", ";
@@ -643,10 +643,25 @@ string Lipidome::to_json(){
     }
     s << "], ";
 
+
+    if (imported_lipid_names){
+        s << "\"ImportedLipidNames\": [";
+        for (uint l = 0; l < species.size(); ++l) {
+            if (l) s << ", ";
+            if (contains_val(*imported_lipid_names, species[l])){
+                s << "\"" << replace_all(imported_lipid_names->at(species[l]), "\"", "") << "\"";
+            }
+            else {
+                s << "\"unknown\"";
+            }
+        }
+        s << "], ";
+    }
+
     s << "\"Intensities\": [";
-    for (uint l = 0; l < original_intensities.size(); ++l) {
+    for (uint l = 0; l < normalized_intensities.size(); ++l) {
         if (l) s << ", ";
-        s << original_intensities[l];
+        s << normalized_intensities[l];
     }
     s << "], ";
 
@@ -870,6 +885,21 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     }
     return new double[3]{(x_left + x_right) / 2., y, (double)cnt};
 }
+
+
+
+int DendrogramNode::get_linkages(vector<vector<double>> &linkages, int &index){
+    if (indexes.size() == 1){
+        return (int)(*indexes.begin());
+    }
+
+    int left_index = left_child->get_linkages(linkages, index);
+    int right_index = right_child->get_linkages(linkages, index);
+
+    linkages.push_back({(double)left_index, (double)right_index, y, (double)indexes.size()});
+    return index++;
+}
+
 
 
 

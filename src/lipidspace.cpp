@@ -1653,6 +1653,8 @@ void LipidSpace::normalize_intensities(){
             for (auto lipidome : selected_lipidomes){
                 if (uncontains_val(lipidome->study_variables, group_kv.first) || "'" + group_kv.first + "' group lipidome - " + lipidome->study_variables[group_kv.first].nominal_value != group_lipidome->cleaned_name) continue;
 
+
+
                 for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
                     string lipid_species = lipidome->species[lipidome->selected_lipid_indexes[i]];
                     group_vis_intensities[lipid_species].push_back(lipidome->visualization_intensities[i]);
@@ -1665,6 +1667,7 @@ void LipidSpace::normalize_intensities(){
                     global_norm_intensities[lipid_species].push_back(lipidome->normalized_intensities[i]);
                 }
             }
+
 
             for (uint i = 0; i < group_lipidome->selected_lipid_indexes.size(); ++i){
                 int index = group_lipidome->selected_lipid_indexes[i];
@@ -3096,6 +3099,7 @@ void LipidSpace::run_analysis(){
 
     if (selected_lipidomes.size() > 1){
         compute_hausdorff_matrix();
+        create_dendrogram();
     }
 
     analysis_finished = true;

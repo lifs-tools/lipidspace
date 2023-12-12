@@ -174,6 +174,10 @@ public:
 
                     // setup LipidSpace
                     LipidSpace lipid_space;
+                    lipid_space.ignore_unknown_lipids = true;
+                    lipid_space.ignore_doublette_lipids = true;
+
+
                     stringstream sstream;
 
                     // load the provided table (which is stored on disk)
@@ -269,18 +273,19 @@ public:
                     sstream << "{\"LipidSpaces\": [";
                     int cnt = 0;
 
+                    map<string, string> &imported_lipid_names = lipid_space.lipid_name_translations[IMPORT_NAME];
+
                     // add global lipidome if requested
                     if (requested_spaces.empty() || contains_val(requested_spaces, "global")){
                         cnt++;
-                        sstream << lipid_space.global_lipidome->to_json();
+                        sstream << lipid_space.global_lipidome->to_json(&imported_lipid_names);
                     }
 
                     // add group lipidomes if requested
                     for (auto &kv : lipid_space.group_lipidomes){
-                        cout << kv.first << endl;
                         if (!requested_spaces.empty() && uncontains_val(requested_spaces, kv.first)) continue;
                         for (auto lipidome : kv.second){
-                            sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json();
+                            sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json(&imported_lipid_names);
                         }
                     }
 
@@ -288,12 +293,15 @@ public:
                     for (auto lipidome : lipid_space.lipidomes)
                     {
                         if (requested_spaces.empty() || contains_val(requested_spaces, lipidome->lipidome_name)){
-                            sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json();
+                            sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json(&imported_lipid_names);
                         }
                     }
 
                     // add the lipidome distance matrix
                     sstream << "]";
+
+
+
 
                     if (requested_spaces.empty() || contains_val(requested_spaces, "LipidomeDistanceMatrix")){
 
@@ -313,6 +321,17 @@ public:
                             }
                             sstream << "]";
                         }
+                        sstream << "], \"LinkageMatrix\": [";
+
+                        int index = lipid_space.lipidomes.size();
+                        vector<vector<double>> linkages;
+                        lipid_space.dendrogram_root->get_linkages(linkages, index);
+
+                        int comma = 0;
+                        for (auto &v : linkages){
+                            sstream << (comma++ > 0 ? ", " : "") << "[" << v[0] << ", " << v[1] << ", " << v[2] << ", " << v[3] << "]";
+                        }
+
                         sstream << "]";
                     }
 

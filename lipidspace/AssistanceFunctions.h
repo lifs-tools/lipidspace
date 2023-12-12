@@ -432,7 +432,7 @@ public:
     Lipidome(Lipidome *lipidome);
     Lipidome(json &container, map<string, LipidAdduct*> &all_lipids);
     void save(json &container);
-    string to_json();
+    string to_json(map<string, string> *imported_lipid_names = 0);
 };
 
 
@@ -511,6 +511,7 @@ public:
     pair<double, DendrogramNode*> min_distance;
     int depth = 0;
 
+
     map<string, map<string, int>> study_variable_count_nominal;
     map<string, vector<double>> study_variable_numerical;
     map<string, double> study_variable_numerical_thresholds;
@@ -523,6 +524,7 @@ public:
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);
     void update_distances(set<DendrogramNode*> &nodes, Matrix &m);
+    int get_linkages(vector<vector<double>> &linkages, int &index);
     void save(json &container);
 };
 
