@@ -919,6 +919,33 @@ void LipidSpaceGUI::FADitemChanged(QTreeWidgetItem *item, int column){
 
     FADchangeItem(item, column);
     updating_fad_states = false;
+    FADupdate();
+}
+
+
+
+void LipidSpaceGUI::FADupdate(){
+    GlobalData::FAD_lipid_classes.clear();
+    queue<QTreeWidgetItem*> items_traverse_down;
+    for (int i = 0; i < ui->FAtreeWidget->topLevelItemCount(); ++i){
+        items_traverse_down.push(ui->FAtreeWidget->topLevelItem(i));
+    }
+    while(!items_traverse_down.empty()){
+        auto current_item = items_traverse_down.front();
+        items_traverse_down.pop();
+
+        if (current_item->childCount()){
+            for (int c = 0; c < current_item->childCount(); c++){
+                items_traverse_down.push(current_item->child(c));
+            }
+        }
+        else {
+            if (current_item->checkState(0)){
+                GlobalData::FAD_lipid_classes.insert(current_item->text(0).toStdString());
+            }
+        }
+    }
+    statisticsFAD.updateFAD();
 }
 
 
@@ -1184,7 +1211,6 @@ void LipidSpaceGUI::runAnalysis(bool initial_run){
     progressbar->exec(); // waiting for the progress bar to finish
 
     if (initial_run) updateColorMap();
-
     visualizeFinishedAnalysis(selected_tiles, species_selection, study_var, study_var_stat);
 }
 
@@ -1339,6 +1365,7 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
     ui->splitterStatV2->setSizes(QList<int>{h, h, h, h});
     ui->splitterStat->setSizes(QList<int>{ui->splitterStat->width() >> 1, ui->splitterStat->width() >> 1});
 
+    FADupdate();
     emit analysisCompleted();
 }
 
@@ -2469,17 +2496,34 @@ void LipidSpaceGUI::ShowContextMenuStatisticsROCCurve(const QPoint pos){
 
 
 void LipidSpaceGUI::ShowContextMenuStatisticsFAD(const QPoint pos){
+
     if (statisticsFAD.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
+    QAction *actionLogScale = new QAction("Y-axis in log scale", this);
+
+    QAction *actionPValues = new QAction("Show statistical results", this);
+    QAction *actionShowData = new QAction("Show data", this);
     QAction *actionData = new QAction("Export data", this);
     QMenu *exportAs = new QMenu(menu);
     exportAs->setTitle("Export figure as");
     QAction *exportAsPdf = new QAction("pdf", this);
     QAction *exportAsSvg = new QAction("svg", this);
+    actionLogScale->setCheckable(true);
+    actionLogScale->setChecked(statisticsFAD.log_scale);
+    actionPValues->setCheckable(true);
+    actionPValues->setChecked(statisticsFAD.show_pvalues);
+    actionShowData->setCheckable(true);
+    actionShowData->setChecked(statisticsFAD.show_data);
+    menu->addAction(actionLogScale);
+    menu->addAction(actionPValues);
+    menu->addAction(actionShowData);
     menu->addAction(actionData);
     menu->addAction(exportAs->menuAction());
     exportAs->addAction(exportAsPdf);
     exportAs->addAction(exportAsSvg);
+    connect(actionPValues, &QAction::triggered, &statisticsFAD, &Statistics::setStatResults);
+    connect(actionLogScale, &QAction::triggered, &statisticsFAD, &Statistics::setLogScaleBarPlot);
+    connect(actionShowData, &QAction::triggered, &statisticsFAD, &Statistics::setShowDataBarPlot);
     connect(actionData, &QAction::triggered, &statisticsFAD, &Statistics::exportData);
     connect(exportAsPdf, &QAction::triggered, &statisticsFAD, &Statistics::exportAsPdf);
     connect(exportAsSvg, &QAction::triggered, &statisticsFAD, &Statistics::exportAsSvg);
@@ -2765,7 +2809,7 @@ void LipidSpaceGUI::changeVolcanoFC(string method){
 
 
 void LipidSpaceGUI::ShowContextMenuStatisticsBarPlotClasses(const QPoint pos){
-if (statisticsBarPlotClasses.chart->chart_plots.size() == 0) return;
+    if (statisticsBarPlotClasses.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
     QAction *actionLogScale = new QAction("Y-axis in log scale", this);
 

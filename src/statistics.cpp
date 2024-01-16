@@ -914,7 +914,7 @@ void Statistics::updateFAD(){
     bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == FattyAcylLipid);
 
     chart->setVisible(do_continue);
-    if (!do_continue) return;
+    if (!do_continue || GlobalData::FAD_lipid_classes.empty()) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
@@ -972,10 +972,7 @@ void Statistics::updateFAD(){
             LipidAdduct *lipid = lipidome->lipids[index];
             double value = lipidome->normalized_intensities[index];
 
-            // TODO: filter lipid out, if necessary
-            if (false) continue;
-
-
+            if (uncontains_val(GlobalData::FAD_lipid_classes, lipidome->classes[index])) continue;
 
             for (auto fa : lipid->lipid->fa_list){
                 if (fa->num_carbon == 0 || fa->lipid_FA_bond_type == LCB_REGULAR || fa->lipid_FA_bond_type == LCB_EXCEPTION) continue;
@@ -987,51 +984,25 @@ void Statistics::updateFAD(){
                     fatty_acids_values->push_back(vector<Array>(categories->size(), Array(nominal_target_count[nominal], 0)));
                 }
                 vector<Array> &vec = fatty_acids_values->at(fa_dict.at(fa_string));
-                Array &array = vec.at(is_nominal ? nominal_target_values.at(lipidome->study_variables[target_variable].nominal_value) : 0);
+                int vec_pos = is_nominal ? nominal_target_values.at(lipidome->study_variables[target_variable].nominal_value) : 0;
+                Array &array = vec.at(vec_pos);
 
                 array[array_pos] += value;
+
+                if (lipidome->classes[index] == "SM" && fa_string == "22:0" && nominal == "KO_CRP") cout << lipidome->lipidome_name << " " << fa_string << " " << lipidome->species[index] << " " << nominal << " " << i << " " << index << " " << lipidome->lipids.size() << " " << lipidome->normalized_intensities.size() << " " << value << " " << array_pos << " " << array[array_pos] << endl;
             }
         }
+    }
+
+    // remove all added zero values by the method
+    for (auto &vec : *fatty_acids_values){
+        for (auto &array : vec) array.remove_below(1e-15);
     }
 
 
     Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
     barplot->add(fatty_acids_values, categories, fa_names_list, colors);
     chart->add(barplot);
-
-    /*
-    for lipid in lipids:
-        fa_list.append([fa.to_string(LipidLevel.MOLECULAR_SPECIES) for fa in lipid.lipid.fa_list if fa.lipid_FA_bond_type not in long_chain_bases and fa.num_carbon > 0 and lipid.get_lipid_string(LipidLevel.CLASS) == "PS"])
-
-
-    for (r, row), condition in zip(df_data.iterrows(), conditions):
-        if condition not in fatty_acids_dict: fatty_acids_dict[condition] = {}
-        fa_dict = fatty_acids_dict[condition]
-
-        for v, fas in zip(row, fa_list):
-            if np.isnan(v): continue
-
-            for fa in fas:
-                if fa not in fa_dict: fa_dict[fa] = 0
-                fa_dict[fa] += v
-
-    all_FAs = set()
-    for condition, FAs in fatty_acids_dict.items():
-        number_samples = groups[condition]
-        for fa in FAs:
-            FAs[fa] /= number_samples
-            all_FAs.add(fa)
-
-    fatty_acid_names = sorted(list(all_FAs))
-    all_FAs = {fa: i for i, fa in enumerate(fatty_acid_names)}
-
-    fatty_acid_box_data = {condition: [0] * len(all_FAs) for condition in fatty_acids_dict}
-
-    for condition, FAs in fatty_acids_dict.items():
-        for fa, v in FAs.items():
-            fatty_acid_box_data[condition][all_FAs[fa]] = v
-
-    */
 }
 
 

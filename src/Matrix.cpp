@@ -46,6 +46,16 @@ Array& operator/=(Array &me, const double val){
     return me;
 }
 
+
+void Array::remove_below(double val){
+    Array tmp;
+    tmp.reset(*this);
+    clear();
+    for (double v : tmp){
+        if (v >= val) push_back(v);
+    }
+}
+
 void Array::mult(Matrix &m, Array &a){
     assert(m.cols == (int)a.size());
     clear();

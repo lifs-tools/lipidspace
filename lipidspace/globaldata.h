@@ -39,6 +39,7 @@ public:
     static string volcano_log_fc;
     static string pval_test;
     static StatLevel stat_level;
+    static set<string> FAD_lipid_classes;
 };
 
 

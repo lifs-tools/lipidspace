@@ -173,6 +173,7 @@ public:
     void closeEvent(QCloseEvent *event) override;
     void lipid_selection_changed();
     void FADchangeItem(QTreeWidgetItem *item, int column);
+    void FADupdate();
 
 signals:
     void transforming(QRectF f);

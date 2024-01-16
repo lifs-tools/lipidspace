@@ -48,6 +48,7 @@ public:
     int greatest_less(double key, int L = -1, int R = -1);
     void compute_distances(Array &x, double dx, Array &y, double dy);
     void compute_coefficiants(Matrix &data, Array &values);
+    void remove_below(double val = 0);
     friend Array& operator+=(Array &me, const double val);
     friend Array& operator-=(Array &me, const double val);
     friend Array& operator*=(Array &me, const double val);
