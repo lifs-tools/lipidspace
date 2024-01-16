@@ -90,7 +90,7 @@ jobs:
 
     - name: Test response is expected
       run: |
-        curl -X POST -v -H "Content-Type: application/json" --data-binary "@examples/Rest/Plasma-Singapore-Short.json" localhost:8888/lipidspace/v1/pca
+        curl -X POST -v -H "Content-Type: application/json" --data-binary "@examples/Rest/Plasma-Singapore-Short.json" 127.0.0.1:8888/lipidspace/v1/pca
 
     - name: Stop REST service container
       run: docker stop LipidSpaceRest
