@@ -897,7 +897,142 @@ void Statistics::updateSpeciesCV(){
 
 
 
+void Statistics::updateFAD(){
 
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+    series_titles.clear();
+    series.clear();
+    flat_data.clear();
+    stat_results.clear();
+
+    string numerical_string = "Fatty acyls";
+    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == FattyAcylLipid);
+
+    chart->setVisible(do_continue);
+    if (!do_continue) return;
+
+    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+
+
+    // fa->cat->value(s)
+    vector< vector< Array > > *fatty_acids_values = new vector< vector<Array> >();
+    map<string, int> fa_dict;
+
+    // setup array for target variable values, if nominal then each with incrementing number
+    map<string, int> nominal_target_values;
+    map<string, int> nominal_target_count;
+    map<string, map<Lipidome*, int>> lipidome_map;
+    vector<QString> *categories = new vector<QString>();
+    vector<QColor> *colors = new vector<QColor>();
+    vector<QString> *fa_names_list = new vector<QString>();
+
+    if (is_nominal){
+        for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
+            if (kv.second){
+                nominal_target_values.insert({kv.first, categories->size()});
+                nominal_target_count.insert({kv.first, 0});
+                categories->push_back(kv.first.c_str());
+
+                lipidome_map.insert({kv.first, map<Lipidome*, int>()});
+
+                string color_key = target_variable + "_" + kv.first;
+                colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
+            }
+        }
+
+    }
+    else {
+        nominal_target_values.insert({numerical_string, categories->size()});
+        categories->push_back(numerical_string.c_str());
+        lipidome_map.insert({numerical_string, map<Lipidome*, int>()});
+        colors->push_back(QColor("#F6A611"));
+    }
+
+
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        if (lipidome->study_variables[target_variable].missing) continue;
+
+        string nominal = is_nominal ? lipidome->study_variables[target_variable].nominal_value : numerical_string;
+        lipidome_map[nominal].insert({lipidome, nominal_target_count[nominal]++});
+    }
+
+
+    for (auto lipidome : lipid_space->selected_lipidomes){
+        if (lipidome->study_variables[target_variable].missing) continue;
+
+        string nominal = is_nominal ? lipidome->study_variables[target_variable].nominal_value : numerical_string;
+        int array_pos = lipidome_map[nominal][lipidome];
+        for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
+            int index = lipidome->selected_lipid_indexes[i];
+            LipidAdduct *lipid = lipidome->lipids[index];
+            double value = lipidome->normalized_intensities[index];
+
+            // TODO: filter lipid out, if necessary
+            if (false) continue;
+
+
+
+            for (auto fa : lipid->lipid->fa_list){
+                if (fa->num_carbon == 0 || fa->lipid_FA_bond_type == LCB_REGULAR || fa->lipid_FA_bond_type == LCB_EXCEPTION) continue;
+
+                string fa_string = fa->to_string(MOLECULAR_SPECIES);
+                if (uncontains_val(fa_dict, fa_string)){
+                    fa_dict.insert({fa_string, fa_names_list->size()});
+                    fa_names_list->push_back(fa_string.c_str());
+                    fatty_acids_values->push_back(vector<Array>(categories->size(), Array(nominal_target_count[nominal], 0)));
+                }
+                vector<Array> &vec = fatty_acids_values->at(fa_dict.at(fa_string));
+                Array &array = vec.at(is_nominal ? nominal_target_values.at(lipidome->study_variables[target_variable].nominal_value) : 0);
+
+                array[array_pos] += value;
+            }
+        }
+    }
+
+
+    Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
+    barplot->add(fatty_acids_values, categories, fa_names_list, colors);
+    chart->add(barplot);
+
+    /*
+    for lipid in lipids:
+        fa_list.append([fa.to_string(LipidLevel.MOLECULAR_SPECIES) for fa in lipid.lipid.fa_list if fa.lipid_FA_bond_type not in long_chain_bases and fa.num_carbon > 0 and lipid.get_lipid_string(LipidLevel.CLASS) == "PS"])
+
+
+    for (r, row), condition in zip(df_data.iterrows(), conditions):
+        if condition not in fatty_acids_dict: fatty_acids_dict[condition] = {}
+        fa_dict = fatty_acids_dict[condition]
+
+        for v, fas in zip(row, fa_list):
+            if np.isnan(v): continue
+
+            for fa in fas:
+                if fa not in fa_dict: fa_dict[fa] = 0
+                fa_dict[fa] += v
+
+    all_FAs = set()
+    for condition, FAs in fatty_acids_dict.items():
+        number_samples = groups[condition]
+        for fa in FAs:
+            FAs[fa] /= number_samples
+            all_FAs.add(fa)
+
+    fatty_acid_names = sorted(list(all_FAs))
+    all_FAs = {fa: i for i, fa in enumerate(fatty_acid_names)}
+
+    fatty_acid_box_data = {condition: [0] * len(all_FAs) for condition in fatty_acids_dict}
+
+    for condition, FAs in fatty_acids_dict.items():
+        for fa, v in FAs.items():
+            fatty_acid_box_data[condition][all_FAs[fa]] = v
+
+    */
+}
 
 
 
@@ -948,8 +1083,6 @@ void Statistics::updateHistogram(){
         }
         target_indexes.push_back(nominal_target_values[nominal_value]);
         if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
-
-
     }
 
     Matrix statistics_matrix(lipid_space->statistics_matrix);

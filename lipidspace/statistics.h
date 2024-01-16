@@ -43,6 +43,7 @@ public:
 
 public slots:
     void updateBoxPlot();
+    void updateFAD();
     void updateROCCurve();
     void updateBarPlot();
     void updateBarPlotClasses();

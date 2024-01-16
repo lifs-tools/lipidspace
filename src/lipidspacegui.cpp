@@ -1,5 +1,8 @@
 #include "lipidspace/lipidspacegui.h"
 
+
+
+
 DragLayer::DragLayer(LipidSpaceGUI *_lipid_space_gui, QWidget *parent) : QWidget(parent) {
     lipid_space_gui = _lipid_space_gui;
 
@@ -117,6 +120,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->studyVariableComboBoxStat->setStyleSheet("background-color: white; background: white;");
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
+    statisticsFAD.load_data(lipid_space, ui->statisticsFAD);
     statisticsBarPlot.load_data(lipid_space, ui->statisticsBarPlot);
     statisticsBarPlotClasses.load_data(lipid_space, ui->statisticsBarPlotClasses);
     statisticsHistogram.load_data(lipid_space, ui->statisticsHistogram);
@@ -160,6 +164,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->categoryList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->sampleList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->statisticsBoxPlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->statisticsFAD->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsBarPlot->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsBarPlotClasses->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->statisticsHistogram->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -221,6 +226,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->dendrogramHeightSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setDendrogramHeight);
 
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setLegendSize);
+    connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsFAD, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlotClasses, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setLegendSize);
@@ -235,6 +241,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->barNumberSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsPVal, &Statistics::setBarNumberPvalues);
 
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setTickSize);
+    connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsFAD, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlot, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBarPlotClasses, &Statistics::setTickSize);
     connect(ui->tickSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsHistogram, &Statistics::setTickSize);
@@ -263,6 +270,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->treeWidget, &QTreeWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
     connect(ui->sampleList, &QListWidget::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenu);
     connect(ui->statisticsBoxPlot, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBoxPlot);
+    connect(ui->statisticsFAD, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsFAD);
     connect(ui->statisticsBarPlot, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBarPlot);
     connect(ui->statisticsBarPlotClasses, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsBarPlotClasses);
     connect(ui->statisticsHistogram, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsHistogram);
@@ -325,6 +333,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsTab, &LSWidget::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->dendrogramView, &Canvas::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsBoxPlot, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
+    connect(ui->statisticsFAD, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsHistogram, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsPCA, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->statisticsROCCurve, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
@@ -335,6 +344,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsVolcano, &Chart::openFiles, this, &LipidSpaceGUI::openFiles);
     connect(ui->tableView, &CBTableView::openFiles, this, &LipidSpaceGUI::openFiles);
 
+    connect(ui->FAtreeWidget, &FADTreeWidget::hoverEnter, this, &LipidSpaceGUI::FADenter);
+    connect(ui->FAtreeWidget, &FADTreeWidget::hoverLeave, this, &LipidSpaceGUI::FADleave);
+    connect(ui->FAtreeWidget, &FADTreeWidget::itemChanged, this, &LipidSpaceGUI::FADitemChanged);
+    ui->FAtreeWidget->raise();
+    ui->FAtreeWidget->deltaY = height() - ui->FAtreeWidget->pos().y();
 
     // adding scene for home tab
     QGraphicsScene *scene = new QGraphicsScene();
@@ -379,7 +393,21 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
         }
     }
 
+    ui->FAtreeWidget->headerItem()->setHidden(true);
     updateGUI();
+
+
+
+
+
+    string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
+    vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
+    ct->at(0) = SampleColumn;
+    ct->at(1) = StudyVariableColumnNominal;
+    ct->at(2) = StudyVariableColumnNominal;
+    ct->at(3) = StudyVariableColumnNominal;
+    loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
+
 }
 
 
@@ -428,7 +456,6 @@ void LipidSpaceGUI::openExampleDataset(){
     ct->at(2) = StudyVariableColumnNominal;
     ct->at(3) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
-
 }
 
 
@@ -530,6 +557,7 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
 void LipidSpaceGUI::setStatLevel(int c){
     GlobalData::stat_level = (StatLevel)c;
     statisticsBoxPlot.updateBoxPlot();
+    statisticsFAD.updateFAD();
     statisticsBarPlot.updateBarPlot();
     statisticsBarPlotClasses.updateBarPlotClasses();
     statisticsHistogram.updateHistogram();
@@ -554,6 +582,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
     GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
 
     statisticsBoxPlot.updateBoxPlot();
+    statisticsFAD.updateFAD();
     statisticsBarPlot.updateBarPlot();
     statisticsBarPlotClasses.updateBarPlotClasses();
     statisticsHistogram.updateHistogram();
@@ -615,6 +644,7 @@ void LipidSpaceGUI::openTable(){
 void LipidSpaceGUI::updateSecondarySorting(int){
     GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
     statisticsBoxPlot.updateBoxPlot();
+    statisticsFAD.updateFAD();
     statisticsBarPlot.updateBarPlot();
     statisticsBarPlotClasses.updateBarPlotClasses();
     statisticsHistogram.updateHistogram();
@@ -770,6 +800,7 @@ void LipidSpaceGUI::updateView(int){
     ui->sampleList->clear();
     ui->treeWidget->clear();
 
+    map<string, set<string>> category_to_class;
 
     // load new data
     SortVector<string, double> &sort_species_labels = sortings[0][sorting_boxes[0]->currentText().toStdString()];
@@ -782,25 +813,38 @@ void LipidSpaceGUI::updateView(int){
         ui->speciesList->addItem(item);
     }
 
+    map<string, int> sort_category;
+    SortVector<string, double> &sort_category_labels = sortings[2][sorting_boxes[2]->currentText().toStdString()];
+    for (int i = 0; i < (int)sort_category_labels.size(); ++i){
+        sort_category.insert({sort_category_labels[i].first, i});
+        string category_name = sort_category_labels[i].first;
+        if (uncontains_val(category_to_class, category_name)){
+            category_to_class.insert({category_name, set<string>()});
+        }
+        ListItem *item = new ListItem(category_name, CATEGORY_ITEM, ui->categoryList);
+        item->setCheckState(lipid_space->selection[2][category_name] ? Qt::Checked : Qt::Unchecked);
+        ui->categoryList->addItem(item);
+    }
+
 
     map<string, int> sort_class;
     SortVector<string, double> &sort_class_labels = sortings[1][sorting_boxes[1]->currentText().toStdString()];
     for (int i = 0; i < (int)sort_class_labels.size(); ++i){
         sort_class.insert({sort_class_labels[i].first, i});
         string class_name = sort_class_labels[i].first;
+
+        LipidCategory lipid_category = Headgroup::get_category(class_name);
+        if ((lipid_category != NO_CATEGORY || lipid_category != UNDEFINED) && contains_val(CategoryString, lipid_category)){
+            string lipid_category_str = CategoryString.at(lipid_category);
+            if (contains_val(category_to_class, lipid_category_str)){
+                category_to_class[lipid_category_str].insert(class_name);
+            }
+        }
+
+        Headgroup hg(class_name);
         ListItem *item = new ListItem(class_name, CLASS_ITEM, ui->classList);
         item->setCheckState(lipid_space->selection[1][class_name] ? Qt::Checked : Qt::Unchecked);
         ui->classList->addItem(item);
-    }
-
-    map<string, int> sort_category;
-    SortVector<string, double> &sort_category_labels = sortings[2][sorting_boxes[2]->currentText().toStdString()];
-    for (int i = 0; i < (int)sort_category_labels.size(); ++i){
-        sort_category.insert({sort_category_labels[i].first, i});
-        string category_name = sort_category_labels[i].first;
-        ListItem *item = new ListItem(category_name, CATEGORY_ITEM, ui->categoryList);
-        item->setCheckState(lipid_space->selection[2][category_name] ? Qt::Checked : Qt::Unchecked);
-        ui->categoryList->addItem(item);
     }
 
     map<string, int> sort_sample;
@@ -844,6 +888,79 @@ void LipidSpaceGUI::updateView(int){
     connect(ui->sampleList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
 
     GlobalData::gui_string_var["species_selection"] = ui->speciesComboBox->currentText().toStdString();
+
+
+    ui->FAtreeWidget->clear();
+
+    QTreeWidgetItem *all_categories = new QTreeWidgetItem();
+    all_categories->setText(0, "All lipid categories");
+    all_categories->setCheckState(0, Qt::Checked);
+    ui->FAtreeWidget->addTopLevelItem(all_categories);
+
+    for (auto &kv : category_to_class){
+        QTreeWidgetItem *category_item = new QTreeWidgetItem();
+        category_item->setText(0, kv.first.c_str());
+        category_item->setCheckState(0, Qt::Checked);
+        all_categories->addChild(category_item);
+
+        for (auto class_name : kv.second){
+            QTreeWidgetItem *class_item = new QTreeWidgetItem();
+            class_item->setText(0, class_name.c_str());
+            class_item->setCheckState(0, Qt::Checked);
+            category_item->addChild(class_item);
+        }
+    }
+}
+
+
+
+void LipidSpaceGUI::FADitemChanged(QTreeWidgetItem *item, int column){
+    if (updating_fad_states || (item == 0)) return;
+
+    FADchangeItem(item, column);
+    updating_fad_states = false;
+}
+
+
+void LipidSpaceGUI::FADchangeItem(QTreeWidgetItem *item, int column){
+    if (updating_fad_states || (item == 0)) return;
+    updating_fad_states = true;
+
+    Qt::CheckState state = item->checkState(column);
+
+    // downward traversal
+    queue<QTreeWidgetItem*> items_traverse_down;
+    items_traverse_down.push(item);
+    if (state != Qt::PartiallyChecked) {
+        while (!items_traverse_down.empty()){
+            auto child_item = items_traverse_down.front();
+            items_traverse_down.pop();
+            if (child_item->childCount()){
+                for (int c = 0; c < child_item->childCount(); c++){
+                    child_item->child(c)->setCheckState(column, state);
+                    items_traverse_down.push(child_item->child(c));
+                }
+            }
+        }
+    }
+
+    // upward traversal
+    QTreeWidgetItem *current_item = item;
+    while (current_item){
+
+        QTreeWidgetItem *parent = current_item->parent();
+        if (parent){
+            parent->setCheckState(column, Qt::Unchecked);
+            for (int c = 0; c < parent->childCount(); c++){
+                QTreeWidgetItem *child = parent->child(c);
+                if (child->checkState(column) == Qt::Checked){
+                    parent->setCheckState(column, Qt::Checked);
+                    break;
+                }
+            }
+        }
+        current_item = parent;
+    }
 }
 
 
@@ -1198,6 +1315,7 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
 
 
     statisticsBoxPlot.updateBoxPlot();
+    statisticsFAD.updateFAD();
     statisticsBarPlot.updateBarPlot();
     statisticsBarPlotClasses.updateBarPlotClasses();
     statisticsHistogram.updateHistogram();
@@ -1509,6 +1627,7 @@ void LipidSpaceGUI::openColorDialog(){
     if (change_color_dialog.exec() == QColorDialog::Accepted){
         for (auto canvas : canvases) canvas->update_alpha();
         statisticsBoxPlot.updateBoxPlot();
+        statisticsFAD.updateFAD();
         statisticsBarPlot.updateBarPlot();
         statisticsBarPlotClasses.updateBarPlotClasses();
         statisticsHistogram.updateHistogram();
@@ -1614,6 +1733,8 @@ void LipidSpaceGUI::setKnubbel(){
 
 void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
     emit resizing();
+
+    ui->FAtreeWidget->setGeometry(ui->FAtreeWidget->pos().x(), height() - ui->FAtreeWidget->deltaY, ui->FAtreeWidget->width(), ui->FAtreeWidget->height());
     event->ignore();
 }
 
@@ -2347,6 +2468,25 @@ void LipidSpaceGUI::ShowContextMenuStatisticsROCCurve(const QPoint pos){
 }
 
 
+void LipidSpaceGUI::ShowContextMenuStatisticsFAD(const QPoint pos){
+    if (statisticsFAD.chart->chart_plots.size() == 0) return;
+    QMenu *menu = new QMenu(this);
+    QAction *actionData = new QAction("Export data", this);
+    QMenu *exportAs = new QMenu(menu);
+    exportAs->setTitle("Export figure as");
+    QAction *exportAsPdf = new QAction("pdf", this);
+    QAction *exportAsSvg = new QAction("svg", this);
+    menu->addAction(actionData);
+    menu->addAction(exportAs->menuAction());
+    exportAs->addAction(exportAsPdf);
+    exportAs->addAction(exportAsSvg);
+    connect(actionData, &QAction::triggered, &statisticsFAD, &Statistics::exportData);
+    connect(exportAsPdf, &QAction::triggered, &statisticsFAD, &Statistics::exportAsPdf);
+    connect(exportAsSvg, &QAction::triggered, &statisticsFAD, &Statistics::exportAsSvg);
+    menu->popup(ui->statisticsFAD->viewport()->mapToGlobal(pos));
+}
+
+
 void LipidSpaceGUI::ShowContextMenuStatisticsPCA(const QPoint pos){
     if (statisticsPCA.chart->chart_plots.size() == 0) return;
     QMenu *menu = new QMenu(this);
@@ -2893,6 +3033,18 @@ void LipidSpaceGUI::fill_table(){
     raw_data_model->reload();
     raw_data_model->updateTable();
 }
+
+
+
+void LipidSpaceGUI::FADenter(QEvent*){
+    ui->FAtreeWidget->setGeometry(ui->FAtreeWidget->pos().x(), ui->FAtreeWidget->pos().y() - 150, ui->FAtreeWidget->width(), ui->FAtreeWidget->height() + 150);
+}
+
+void LipidSpaceGUI::FADleave(QEvent*){
+    ui->FAtreeWidget->setGeometry(ui->FAtreeWidget->pos().x(), ui->FAtreeWidget->pos().y() + 150, ui->FAtreeWidget->width(), ui->FAtreeWidget->height() - 150);
+}
+
+
 
 
 HomeItem::HomeItem(QGraphicsView *v) : view(v) {

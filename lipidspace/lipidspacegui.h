@@ -93,7 +93,6 @@ public slots:
 
 
 
-
 class DragLayer : public QWidget {
     Q_OBJECT
 
@@ -135,6 +134,7 @@ public:
     ImportTable import_table;
     SelectLipidomes *select_lipidomes;
     Statistics statisticsBoxPlot;
+    Statistics statisticsFAD;
     Statistics statisticsHistogram;
     Statistics statisticsROCCurve;
     Statistics statisticsSpeciesCV;
@@ -150,6 +150,7 @@ public:
     bool showGlobalLipidome;
     TileLayout tileLayout;
     bool updating;
+    bool updating_fad_states = false;
     bool selected_tiles_mode;
     Progressbar *progressbar;
     string keystrokes;
@@ -171,6 +172,7 @@ public:
     void copy_to_clipboard();
     void closeEvent(QCloseEvent *event) override;
     void lipid_selection_changed();
+    void FADchangeItem(QTreeWidgetItem *item, int column);
 
 signals:
     void transforming(QRectF f);
@@ -234,6 +236,7 @@ public slots:
     void swapLipidomes(int source, int target);
     void ShowContextMenu(const QPoint);
     void ShowContextMenuStatisticsBoxPlot(const QPoint);
+    void ShowContextMenuStatisticsFAD(const QPoint);
     void ShowContextMenuStatisticsBarPlot(const QPoint);
     void ShowContextMenuStatisticsBarPlotClasses(const QPoint);
     void ShowContextMenuStatisticsHistogram(const QPoint);
@@ -284,5 +287,8 @@ public slots:
     void lipidsMarked(set<string> *lipids);
     void loadSession();
     void saveSession();
+    void FADenter(QEvent* event);
+    void FADleave(QEvent* event);
+    void FADitemChanged(QTreeWidgetItem *item, int column);
 };
 #endif // LIPIDSPACEGUI_H

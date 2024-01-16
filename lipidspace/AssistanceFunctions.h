@@ -23,6 +23,7 @@
 #include <thread>
 #include <vector>
 #include <map>
+#include <queue>
 #include <string>
 #include <stdlib.h>
 #include "cppgoslin/cppgoslin.h"
@@ -68,7 +69,7 @@ enum TableType {ROW_PIVOT_TABLE, COLUMN_PIVOT_TABLE, FLAT_TABLE};
 enum LipidNameState {NORMALIZED_NAME = 0, TRANSLATED_NAME = 1, IMPORT_NAME = 2};
 enum MappingAction {NoAction, RegisterNewNaN, RegisterNewDefault, RenameAction, MappingTo, InsertNaN, InsertDefault};
 enum CanvasType {UndefinedCanvasType, DendrogramCanvas, GlobalSpaceCanvas, GroupSpaceCanvas, SampleSpaceCanvas};
-enum StatLevel {LipidomeLevel = 0, LipidClassLevel = 1, LipidSpeciesLevel = 2};
+enum StatLevel {LipidomeLevel = 0, LipidClassLevel = 1, LipidSpeciesLevel = 2, FattyAcylLipid = 3};
 
 static const map<string, TableType> TableTypeMap{{"ROW_PIVOT_TABLE", ROW_PIVOT_TABLE}, {"COLUMN_PIVOT_TABLE", COLUMN_PIVOT_TABLE}, {"FLAT_TABLE", FLAT_TABLE}};
 static const map<string, TableColumnType> TableColumnTypeMap{{"SampleColumn", SampleColumn}, {"QuantColumn", QuantColumn}, {"LipidColumn", LipidColumn}, {"StudyVariableColumnNumerical", StudyVariableColumnNumerical}, {"StudyVariableColumnNominal", StudyVariableColumnNominal}, {"IgnoreColumn", IgnoreColumn}};
@@ -109,6 +110,24 @@ public slots:
 
 
 
+
+
+
+class FADTreeWidget : public QTreeWidget {
+    Q_OBJECT
+
+public:
+    bool mouseOver = false;
+    int deltaY;
+
+    explicit FADTreeWidget(QWidget *parent = 0);
+    void enterEvent(QEvent* event) override;
+    void leaveEvent(QEvent* event) override;
+
+signals:
+    void hoverEnter(QEvent* event);
+    void hoverLeave(QEvent* event);
+};
 
 
 

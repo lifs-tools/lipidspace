@@ -37,6 +37,22 @@ void SingleListWidget::dropEvent(QDropEvent *event){
 
 
 
+FADTreeWidget::FADTreeWidget(QWidget *parent) : QTreeWidget(parent){
+    setMouseTracking(true);
+}
+
+
+void FADTreeWidget::enterEvent(QEvent *event){
+    emit hoverEnter(event);
+}
+
+
+void FADTreeWidget::leaveEvent(QEvent *event){
+    emit hoverLeave(event);
+}
+
+
+
 
 
 CBTableView::CBTableView(QWidget *parent) : QTableView(parent) {

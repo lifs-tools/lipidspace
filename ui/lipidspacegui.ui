@@ -262,7 +262,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -583,6 +583,7 @@
             <widget class="Chart" name="statisticsSpeciesCV"/>
             <widget class="Chart" name="statisticsPVal"/>
             <widget class="Chart" name="statisticsBarPlotClasses"/>
+            <widget class="Chart" name="statisticsFAD"/>
            </widget>
            <widget class="QSplitter" name="splitterStatV2">
             <property name="orientation">
@@ -803,10 +804,46 @@
               <string>Lipid species level</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>Fatty acyl level</string>
+             </property>
+            </item>
+           </widget>
+           <widget class="QLabel" name="FATreeLabel">
+            <property name="geometry">
+             <rect>
+              <x>760</x>
+              <y>20</y>
+              <width>121</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Data level</string>
+            </property>
            </widget>
           </widget>
          </item>
         </layout>
+        <widget class="FADTreeWidget" name="FAtreeWidget">
+         <property name="geometry">
+          <rect>
+           <x>760</x>
+           <y>485</y>
+           <width>170</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <column>
+          <property name="text">
+           <string notr="true">1</string>
+          </property>
+         </column>
+        </widget>
+        <zorder>splitterStat</zorder>
+        <zorder>groupBoxStatistics</zorder>
+        <zorder>FAtreeWidget</zorder>
        </widget>
        <widget class="QWidget" name="rawDataTab">
         <property name="font">
@@ -1215,6 +1252,11 @@
   <customwidget>
    <class>CBTableView</class>
    <extends>QTableView</extends>
+   <header>lipidspace/AssistanceFunctions.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FADTreeWidget</class>
+   <extends>QTreeWidget</extends>
    <header>lipidspace/AssistanceFunctions.h</header>
   </customwidget>
   <customwidget>
