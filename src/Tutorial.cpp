@@ -3,7 +3,7 @@
 
 const vector<FirstSteps> Tutorial::first_tutorial_steps_order{FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatisticsLevel, SStatisticsLipids, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
+const vector<SecondSteps> Tutorial::second_tutorial_steps_order{SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatisticsLevel, SStatisticsClass, SStatisticsLipids, SStatisticsFA, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
 const vector<ThirdSteps> Tutorial::third_tutorial_steps_order{TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
@@ -11,7 +11,37 @@ const vector<FourthSteps> Tutorial::fourth_tutorial_steps_order{DStart, DBenford
 
 
 
+void Tutorial::mouseMoveEvent(QMouseEvent *event){
+    if (dragging_start_position){
+        QPoint pos = QCursor::pos();
+        setGeometry(pos.x() - dragging_start_position->x(), pos.y() - dragging_start_position->y(), width(), height());
+    }
+    else {
+        mouse_over_information = underMouse() && !xLabel->underMouse() && !continuePushButton->underMouse();
+        setCursor(mouse_over_information ? Qt::SizeAllCursor : Qt::ArrowCursor);
+    }
+    QWidget::mouseMoveEvent(event);
+}
+
+
+
+void Tutorial::mousePressEvent(QMouseEvent *event) {
+    if (mouse_over_information && !dragging_start_position) dragging_start_position = new QPoint(QCursor::pos() - QPoint(x(), y()));
+    QWidget::mousePressEvent(event);
+}
+
+
+void Tutorial::mouseReleaseEvent(QMouseEvent *event){
+    QWidget::mouseReleaseEvent(event);
+    if (dragging_start_position){
+        delete dragging_start_position;
+        dragging_start_position = 0;
+    }
+}
+
+
 Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(parent), lipidSpaceGUI(_lipidSpaceGUI) {
+
     setObjectName(QString::fromUtf8("TutorialFrame"));
     setGeometry(QRect(20, 110, 621, 251));
     setStyleSheet(QString::fromUtf8("QFrame#TutorialFrame {\n"
@@ -146,7 +176,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     Ui_LipidSpaceGUI *ui = lipidSpaceGUI->ui;
     Ui_ImportTable *ui_it = lipidSpaceGUI->import_table.ui;
 
-    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_group_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionImport_eample_dataset, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->actionComplete_feature_analysis, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsPCA, false}, {ui->statisticsHistogram, false}, {ui->statisticsROCCurve, false}, {ui->statisticsSpeciesCV, false}, {ui->statisticsBarPlot, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}, {ui->secondaryComboBox, false}, {ui->actionSelection_mode_activated, false}, {ui->studyVariableComboBoxStatLevel, false}, {ui->statisticsPVal, false}, {ui->statisticsVolcano, false}, {ui->actionsend_statistics, false}, {ui->actionChange_lipid_variable_colors, false}, {ui->actionLoad_session, false}, {ui->actionSave_session, false}, {ui->statisticsBarPlotClasses, false}};
+    main_widgets = {{ui->actionLoad_list_s, false}, {ui->actionLoad_table, false}, {ui->actionQuit, false}, {ui->actionRemove_all_lipidomes, false}, {ui->actionSet_transparency, false}, {ui->actionAutomatically, false}, {ui->action2_columns, false}, {ui->action3_columns, false}, {ui->action4_columns, false}, {ui->action5_columns, false}, {ui->actionShow_global_lipidome, false}, {ui->actionShow_group_lipidomes, false}, {ui->action1_column, false}, {ui->action6_columns, false}, {ui->actionAbout, false}, {ui->actionLog_messages, false}, {ui->actionShow_quantitative_information, false}, {ui->actionIgnoring_lipid_sn_positions, false}, {ui->actionManage_lipidomes, false}, {ui->actionIgnore_quantitative_information, false}, {ui->actionUnbound_lipid_distance_metric, false}, {ui->actionExport_Results, false}, {ui->actionSet_number_of_principal_components, false}, {ui->actionSelect_principal_components, false}, {ui->actionImport_data_table, false}, {ui->actionImport_pivot_table, false}, {ui->actionSingle_linkage_clustering, false}, {ui->actionComplete_linkage_clustering, false}, {ui->actionAverage_linkage_clustering, false}, {ui->actionImport_mzTabM, false}, {ui->actionImport_eample_dataset, false}, {ui->actionTranslate, false}, {ui->speciesComboBox, false}, {ui->speciesList, false}, {ui->actionComplete_feature_analysis, false}, {ui->classComboBox, false}, {ui->classList, false}, {ui->categoryComboBox, false}, {ui->categoryList, false}, {ui->treeWidget, false}, {ui->sampleComboBox, false}, {ui->sampleList, false}, {ui->normalizationComboBox, false}, {ui->applyChangesPushButton, false}, {ui->homeGraphicsView->firstTutorialPushButton, false}, {ui->homeGraphicsView->secondTutorialPushButton, false}, {ui->homeGraphicsView->thirdTutorialPushButton, false}, {ui->homeGraphicsView->fourthTutorialPushButton, false}, {ui->dendrogramView, false}, {ui->studyVariableComboBox, false}, {ui->pieTreeSpinBox, false}, {ui->dendrogramHeightSpinBox, false}, {ui->pieSizeSpinBox, false}, {ui->startAnalysisPushButton, false}, {ui->statisticsBoxPlot, false}, {ui->statisticsPCA, false}, {ui->statisticsHistogram, false}, {ui->statisticsROCCurve, false}, {ui->statisticsSpeciesCV, false}, {ui->statisticsBarPlot, false}, {ui->statisticsFAD, false}, {ui->studyVariableComboBoxStat, false}, {ui->tickSizeSpinBox, false}, {ui->legendSizeSpinBox, false}, {ui->barNumberSpinBox, false}, {ui->menubar, false}, {ui->menuLipidSpace, false}, {ui->menuAnalysis, false}, {ui->menuClustering_strategy, false}, {ui->menuView, false}, {ui->menuTile_layout, false}, {ui->menuHelp, false}, {ui->viewsTabWidget, false}, {ui_it->tabWidget, false}, {ui_it->label_15, false}, {ui_it->sampleListWidgetRow, false}, {ui_it->okButtonRow, false}, {ui_it->cancelButtonRow, false}, {ui_it->ignoreListWidgetRow, false}, {ui_it->lipidListWidgetRow, false}, {ui_it->sampleListWidgetCol, false}, {ui_it->cancelButtonCol, false}, {ui_it->lipidListWidgetCol, false}, {ui_it->ignoreListWidgetCol, false}, {ui_it->numericalStudyVariableListWidgetCol, false}, {ui_it->nominalStudyVariableListWidgetCol, false}, {ui_it->flatTab, false}, {ui_it->lipidListWidgetFlat, false}, {ui_it->ignoreListWidgetFlat, false}, {ui_it->quantListWidgetFlat, false}, {ui_it->okButtonFlat, false}, {ui_it->numericalStudyVariableListWidgetFlat, false}, {ui_it->cancelButtonFlat, false}, {ui_it->sampleListWidgetFlat, false}, {ui_it->nominalStudyVariableListWidgetFlat, false}, {ui_it->tableWidget, false}, {ui_it->checkBoxMappingFlat, false}, {ui->itemsTabWidget, false},{ui_it->checkBoxMappingCol, false}, {ui->tableView, false}, {ui->actionSelect_tiles, false}, {ui->labelSizeSpinBox, false}, {ui->secondaryComboBox, false}, {ui->actionSelection_mode_activated, false}, {ui->studyVariableComboBoxStatLevel, false}, {ui->statisticsPVal, false}, {ui->statisticsVolcano, false}, {ui->actionsend_statistics, false}, {ui->actionChange_lipid_variable_colors, false}, {ui->actionLoad_session, false}, {ui->actionSave_session, false}, {ui->statisticsBarPlotClasses, false}, {ui->FAtreeWidget, false}};
 
 
     // window resize event
@@ -184,6 +214,10 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     connect(ui->studyVariableComboBoxStatLevel, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &Tutorial::combobox_changed);
     connect(ui->pieTreeSpinBox,(void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &Tutorial::spinbox_changed);
     connect(ui->pieSizeSpinBox,(void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &Tutorial::spinbox_changed);
+
+    setMouseTracking(true);
+    xLabel->setMouseTracking(true);
+    continuePushButton->setMouseTracking(true);
 }
 
 
@@ -451,7 +485,19 @@ void Tutorial::combobox_changed(int){
                     break;
 
                 case SStatisticsLevel:
+                    if (lipidSpaceGUI->ui->studyVariableComboBoxStatLevel->currentIndex() == 1){
+                        continue_tutorial();
+                    }
+                    break;
+
+                case SStatisticsClass:
                     if (lipidSpaceGUI->ui->studyVariableComboBoxStatLevel->currentIndex() == 2){
+                        continue_tutorial();
+                    }
+                    break;
+
+                case SStatisticsLipids:
+                    if (lipidSpaceGUI->ui->studyVariableComboBoxStatLevel->currentIndex() == 3){
                         continue_tutorial();
                     }
                     break;
@@ -752,6 +798,18 @@ void Tutorial::tab_changed(int index){
                     break;
 
                 case SStatistics:
+                    lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(3);
+                    break;
+
+                case SStatisticsLevel:
+                    lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(3);
+                    break;
+
+                case SStatisticsClass:
+                    lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(3);
+                    break;
+
+                case SStatisticsFA:
                     lipidSpaceGUI->ui->viewsTabWidget->setCurrentIndex(3);
                     break;
 
@@ -1534,7 +1592,7 @@ void Tutorial::second_tutorial_steps(){
 
         case SStatisticsLevel:
             {
-                changeSize(650, 170);
+                changeSize(650, 210);
                 move(20, 40);
                 QWidget *widget = lipidSpaceGUI->ui->studyVariableComboBoxStatLevel;
                 QPoint p = map_widget(widget, lipidSpaceGUI);
@@ -1542,7 +1600,20 @@ void Tutorial::second_tutorial_steps(){
                 lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
                 widget->setEnabled(true);
                 titleLabel->setText("Statistics level - Lipidome");
-                informationLabel->setText("The statistics module offers figures on two levels. You can choose either between statistics on lipidomes or on lipid species. On lipidome level, you have up to four different figures. Please switch to lipid species level.");
+                informationLabel->setText("The statistics module offers figures on four levels. You can choose either between statistics on lipidomes, lipid class, lipid species, or on fatty acyl level. On lipidome level, you have up to four different figures on the separability of the lipidomes with respect to a selected study variable. Please switch to lipid class level.");
+            }
+            break;
+
+
+
+        case SStatisticsClass:
+            {
+                changeSize(650, 170);
+                move(20, 40);
+                titleLabel->setText("Statistics level - Lipid class");
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                lipidSpaceGUI->ui->studyVariableComboBoxStatLevel->setEnabled(true);
+                informationLabel->setText("The figure on this level provides you information on the cumulative abundances of the certain lipid classes with respect to a selected study variable. Please switch to lipid species level.");
             }
             break;
 
@@ -1550,10 +1621,30 @@ void Tutorial::second_tutorial_steps(){
 
         case SStatisticsLipids:
             {
-                changeSize(650, 170);
+                changeSize(650, 230);
                 move(20, 40);
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+                lipidSpaceGUI->ui->studyVariableComboBoxStatLevel->setEnabled(true);
                 titleLabel->setText("Statistics level - Lipid species");
-                informationLabel->setText("Now you can see and interact with statistics figures on lipid species level. Dependent on the type of selected study variable and the number of its values, only the possible figures will be visible.");
+                informationLabel->setText("Now you can see and interact with statistics figures on lipid species level. Dependent on the type of selected study variable and the number of its values, only the possible figures will be visible. That is, when your selected variable is nominal with more than one values, a p-value distribution will be shown. When you have exactly two classes, an interactive volcano plot will be additionally shown. Please switch to fatty acyl level.");
+            }
+            break;
+
+
+
+        case SStatisticsFA:
+            {
+                changeSize(650, 190);
+                move(20, 40);
+
+                QWidget *widget = lipidSpaceGUI->ui->FAtreeWidget;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ABR, lipidSpaceGUI, p.x(), p.y() + widget->height() / 2.);
+                widget->setEnabled(true);
+                lipidSpaceGUI->ui->viewsTabWidget->setEnabled(true);
+
+                titleLabel->setText("Statistics level - Fatty acyl");
+                informationLabel->setText("On fatty acyl level, you have an overview which fatty acyls are involved in your dataset with respect to their abundance. Now you can see and interact with statistics figures on lipid species level. You can select which lipid categories / class may be involved in this figure.");
                 continuePushButton->setEnabled(true);
             }
             break;
@@ -1566,6 +1657,12 @@ void Tutorial::second_tutorial_steps(){
                 changeSize(650, 190);
                 move(20, lipidSpaceGUI->height() - height() - 80);
                 continuePushButton->setEnabled(true);
+
+                QWidget *widget = lipidSpaceGUI->ui->secondaryComboBox;
+                QPoint p = map_widget(widget, lipidSpaceGUI);
+                show_arrow(ABL, lipidSpaceGUI, p.x() + widget->width(), p.y() + widget->height() / 2.);
+                widget->setEnabled(true);
+
                 titleLabel->setText("Statistics view II");
                 informationLabel->setText("In the 'Quantitative data' box, you can select the source of your quantitative data for the figures. With a right click, you can activate additional options, such as showing data points within the box or bar graphs or export either the data of which the respective figure was drawn or the figure itself as pdf.");
             }
@@ -2200,5 +2297,5 @@ void Tutorial::wheelEvent(QWheelEvent *event){
 
     QRect r = geometry();
     changeSize(r.width(), r.height() - 10 + 20 * (event->angleDelta().y() > 0));
-    cout << "Height: " << geometry().height() << endl;
+    cout << "Height: " << geometry().height() << ", x: " << x() << ", y: " << y() << endl;
 }

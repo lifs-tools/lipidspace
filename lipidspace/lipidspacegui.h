@@ -291,5 +291,6 @@ public slots:
     void FADenter(QEvent* event);
     void FADleave(QEvent* event);
     void FADitemChanged(QTreeWidgetItem *item, int column);
+    void tab_changed(int);
 };
 #endif // LIPIDSPACEGUI_H

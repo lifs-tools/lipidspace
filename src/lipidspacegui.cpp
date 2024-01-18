@@ -347,8 +347,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->FAtreeWidget, &FADTreeWidget::hoverEnter, this, &LipidSpaceGUI::FADenter);
     connect(ui->FAtreeWidget, &FADTreeWidget::hoverLeave, this, &LipidSpaceGUI::FADleave);
     connect(ui->FAtreeWidget, &FADTreeWidget::itemChanged, this, &LipidSpaceGUI::FADitemChanged);
+    connect(ui->viewsTabWidget, &QTabWidget::currentChanged, this, &LipidSpaceGUI::tab_changed);
     ui->FAtreeWidget->raise();
-    ui->FAtreeWidget->deltaY = height() - ui->FAtreeWidget->pos().y();
+    ui->FATreeLabel->setVisible(false);
+    ui->FAtreeWidget->setVisible(false);
 
     // adding scene for home tab
     QGraphicsScene *scene = new QGraphicsScene();
@@ -398,8 +400,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
 
-
-
+    /*
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
     ct->at(0) = SampleColumn;
@@ -407,7 +408,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(2) = StudyVariableColumnNominal;
     ct->at(3) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
-
+    */
 }
 
 
@@ -437,9 +438,6 @@ void LipidSpaceGUI::sendStatistics(){
     ofstream off(QCoreApplication::applicationDirPath().toStdString() + "/data/analytics.txt");
     off << (ui->actionsend_statistics->isChecked() ? "1" : "0") << endl;
 }
-
-
-
 
 
 void LipidSpaceGUI::openExampleDataset(){
@@ -566,6 +564,9 @@ void LipidSpaceGUI::setStatLevel(int c){
     statisticsPCA.updatePCA();
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();
+
+    ui->FAtreeWidget->setVisible(GlobalData::stat_level == FattyAcylLipid);
+    ui->FATreeLabel->setVisible(GlobalData::stat_level == FattyAcylLipid);
 }
 
 
@@ -896,6 +897,7 @@ void LipidSpaceGUI::updateView(int){
     all_categories->setText(0, "All lipid categories");
     all_categories->setCheckState(0, Qt::Checked);
     ui->FAtreeWidget->addTopLevelItem(all_categories);
+    all_categories->setExpanded(true);
 
     for (auto &kv : category_to_class){
         QTreeWidgetItem *category_item = new QTreeWidgetItem();
@@ -1758,10 +1760,22 @@ void LipidSpaceGUI::setKnubbel(){
 
 
 
+
+
+
+void LipidSpaceGUI::tab_changed(int){
+    int delta_y = ui->FAtreeWidget->mapToGlobal(QPoint(0, 0)).y() - ui->secondaryComboBox->mapToGlobal(QPoint(0, 0)).y();
+    ui->FAtreeWidget->setGeometry(ui->FAtreeWidget->pos().x(), ui->FAtreeWidget->y() - delta_y, ui->FAtreeWidget->width(), ui->FAtreeWidget->height());
+}
+
+
+
 void LipidSpaceGUI::resizeEvent(QResizeEvent *event){
     emit resizing();
 
-    ui->FAtreeWidget->setGeometry(ui->FAtreeWidget->pos().x(), height() - ui->FAtreeWidget->deltaY, ui->FAtreeWidget->width(), ui->FAtreeWidget->height());
+    int delta_y = ui->FAtreeWidget->mapToGlobal(QPoint(0, 0)).y() - ui->secondaryComboBox->mapToGlobal(QPoint(0, 0)).y();
+    ui->FAtreeWidget->setGeometry(ui->FAtreeWidget->pos().x(), ui->FAtreeWidget->y() - delta_y, ui->FAtreeWidget->width(), ui->FAtreeWidget->height());
+
     event->ignore();
 }
 

@@ -38,7 +38,7 @@ enum TutorialType {NoTutorial, FirstTutorial, SecondTutorial, ThirdTutorial, Fou
 
 enum FirstSteps {FStart, FDescription, FFindImport, FOpenImport, FEnteredImport, FExplainRow, FExplainColumn, FExplainFlat, FShowPreview, FSelectColumnTable, FExplainColumnField, FExplainLipidColumnField, FExplainSampleColumnField, FExplainStudyFields, FSampleEntryAssignment, FStudyVarAssignment, FLipidAssignment, FStudyVarMapping, FFinishImport, FFinish, FEnd};
 
-enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatisticsLevel, SStatisticsLipids, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
+enum SecondSteps {SStart, SLoadTable, SSeletionSection1, SSeletionSection2, SSorting, SSortingBars, SSortingPG, SNormalization, SGoToStudVarFilter, SFilterStudyVar, SLeftPanel, SLipidSpaces, SSpacesOptions, SSpacesSingleView, SSpacesSingleViewExplaination, SDendrogramClick, SDendrogram, SDendrogram2, SStatistics, SStatisticsLevel, SStatisticsClass, SStatisticsLipids, SStatisticsFA, SStatistics2, SRawClick, SRawTable, SFinish, SEnd};
 
 enum ThirdSteps {TStart, TLoadTable, TFeaturePanel, TFeatureVisualization, TSwitchToStat1, TAssessStatistics1, TAssessStatistics2, TFeatureAnalysis, TFeatureAnalysis2, TAssessFeatureAnalysis1, TAssessFeatureAnalysis2, TAssessStatistics3, TAssessStatistics4, TAssessStatistics5, TFinish, TEnd};
 
@@ -98,6 +98,8 @@ public:
     TutorialType tutorialType = NoTutorial;
     int step = -1;
     map<QObject*, bool> main_widgets;
+    bool mouse_over_information = false;
+    QPoint *dragging_start_position = 0;
 
     explicit Tutorial(LipidSpaceGUI *lipidSpaceGUI, QWidget *parent = 0);
     ~Tutorial();
@@ -122,6 +124,9 @@ public:
     void changeSize(int w, int h);
     void item_changed(const QModelIndex &parent, int first, int last);
     void wheelEvent(QWheelEvent *) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 public slots:
     void x_clicked();

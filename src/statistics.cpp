@@ -898,7 +898,6 @@ void Statistics::updateSpeciesCV(){
 
 
 void Statistics::updateFAD(){
-
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);
@@ -953,7 +952,6 @@ void Statistics::updateFAD(){
         colors->push_back(QColor("#F6A611"));
     }
 
-
     for (auto lipidome : lipid_space->selected_lipidomes){
         if (lipidome->study_variables[target_variable].missing) continue;
 
@@ -963,12 +961,14 @@ void Statistics::updateFAD(){
 
 
     for (auto lipidome : lipid_space->selected_lipidomes){
-        if (lipidome->study_variables[target_variable].missing) continue;
+        if (uncontains_val(lipidome->study_variables, target_variable) || lipidome->study_variables[target_variable].missing) continue;
 
         string nominal = is_nominal ? lipidome->study_variables[target_variable].nominal_value : numerical_string;
-        int array_pos = lipidome_map[nominal][lipidome];
-        for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
-            int index = lipidome->selected_lipid_indexes[i];
+        if (uncontains_val(lipidome_map, nominal) || uncontains_val(lipidome_map[nominal], lipidome)) continue;
+
+        uint array_pos = lipidome_map[nominal][lipidome];
+        for (uint index : lipidome->selected_lipid_indexes){
+            if (index >= lipidome->lipids.size() || index >= lipidome->normalized_intensities.size()) continue;
             LipidAdduct *lipid = lipidome->lipids[index];
             double value = lipidome->normalized_intensities[index];
 
@@ -983,13 +983,11 @@ void Statistics::updateFAD(){
                     fa_names_list->push_back(fa_string.c_str());
                     fatty_acids_values->push_back(vector<Array>(categories->size(), Array(nominal_target_count[nominal], 0)));
                 }
+                if (uncontains_val(fa_dict, fa_string) || fa_dict.at(fa_string) >= (int)fatty_acids_values->size()) continue;
                 vector<Array> &vec = fatty_acids_values->at(fa_dict.at(fa_string));
-                int vec_pos = is_nominal ? nominal_target_values.at(lipidome->study_variables[target_variable].nominal_value) : 0;
-                Array &array = vec.at(vec_pos);
+                uint vec_pos = is_nominal ? nominal_target_values.at(lipidome->study_variables[target_variable].nominal_value) : 0;
 
-                array[array_pos] += value;
-
-                if (lipidome->classes[index] == "SM" && fa_string == "22:0" && nominal == "KO_CRP") cout << lipidome->lipidome_name << " " << fa_string << " " << lipidome->species[index] << " " << nominal << " " << i << " " << index << " " << lipidome->lipids.size() << " " << lipidome->normalized_intensities.size() << " " << value << " " << array_pos << " " << array[array_pos] << endl;
+                if (vec_pos < vec.size() && array_pos < vec.at(vec_pos).size()) vec.at(vec_pos)[array_pos] += value;
             }
         }
     }

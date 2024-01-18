@@ -118,7 +118,6 @@ class FADTreeWidget : public QTreeWidget {
 
 public:
     bool mouseOver = false;
-    int deltaY;
 
     explicit FADTreeWidget(QWidget *parent = 0);
     void enterEvent(QEvent* event) override;
