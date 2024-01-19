@@ -118,6 +118,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->sampleComboBox->setStyleSheet("background-color: white; background: white;");
     ui->studyVariableComboBox->setStyleSheet("background-color: white; background: white;");
     ui->studyVariableComboBoxStat->setStyleSheet("background-color: white; background: white;");
+    ui->studyVariableComboBoxEnrichment->setStyleSheet("background-color: white; background: white;");
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsFAD.load_data(lipid_space, ui->statisticsFAD);
@@ -213,6 +214,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->tableView, &QTableView::customContextMenuRequested, this, &LipidSpaceGUI::ShowTableContextMenu);
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+    connect(ui->studyVariableComboBoxEnrichment, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStatLevel, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStatLevel);
     connect(this, &LipidSpaceGUI::studyVariableChanged, ui->dendrogramView, &Canvas::setStudyVariable);
     connect(ui->speciesList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
@@ -224,6 +226,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->applyChangesPushButton, &QPushButton::clicked, this, &LipidSpaceGUI::runAnalysis);
     connect(ui->pieTreeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setPieTree);
     connect(ui->dendrogramHeightSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, this, &LipidSpaceGUI::setDendrogramHeight);
+
+    connect(ui->statTestComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::changeEnrichmentTest);
+    connect(ui->corretionComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::changeEnrichmentCorrection);
 
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsFAD, &Statistics::setLegendSize);
@@ -259,6 +264,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
     connect(ui->actionSelect_tiles, &QAction::triggered, this, &LipidSpaceGUI::openSelectLipidomes);
     connect(ui->actionsend_statistics, &QAction::triggered, this, &LipidSpaceGUI::sendStatistics);
+
+
+    connect(ui->pvalueDoubleSpinBox, (void (QDoubleSpinBox::*)(double))&QDoubleSpinBox::valueChanged, this, &LipidSpaceGUI::changeVolcanoSig);
+    connect(ui->logFCDoubleSpinBox, (void (QDoubleSpinBox::*)(double))&QDoubleSpinBox::valueChanged, this, &LipidSpaceGUI::changeVolcanoFC);
 
     ui->speciesList->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->classList->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -400,7 +409,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
 
-    /*
+
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
     ct->at(0) = SampleColumn;
@@ -408,7 +417,12 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(2) = StudyVariableColumnNominal;
     ct->at(3) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
-    */
+
+    ui->domainCheckboxList->addItem("huhu");
+    ui->domainCheckboxList->addItem("huhu 2");
+    ui->domainCheckboxList->addItem("hallo");
+    ui->domainCheckboxList->addItem("foo");
+    ui->domainCheckboxList->addItem("bar");
 }
 
 
@@ -573,12 +587,14 @@ void LipidSpaceGUI::setStatLevel(int c){
 void LipidSpaceGUI::setStudyVariable(int c){
     disconnect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     disconnect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+    disconnect(ui->studyVariableComboBoxEnrichment, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     disconnect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
 
     ui->studyVariableComboBox->setCurrentIndex(c);
     ui->studyVariableComboBoxStat->setCurrentIndex(c);
-    GlobalData::gui_string_var["study_var"] = ui->studyVariableComboBox->currentText().toStdString();
-    GlobalData::gui_string_var["study_var_stat"] = ui->studyVariableComboBoxStat->currentText().toStdString();
+    ui->studyVariableComboBoxEnrichment->setCurrentIndex(c);
+    string target_variable = ui->studyVariableComboBox->currentText().toStdString();
+    GlobalData::gui_string_var["study_var"] = target_variable;
     setSecondarySorting();
     GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
 
@@ -596,11 +612,24 @@ void LipidSpaceGUI::setStudyVariable(int c){
 
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+    connect(ui->studyVariableComboBoxEnrichment, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
 
     statisticsVolcano.highlightPoints(ui->speciesList);
     statisticsBarPlot.highlightBars(ui->speciesList);
     if (!GlobalData::in_tutorial) ui->studyVariableComboBoxStatLevel->setEnabled(true);
+
+    ui->firstConditionCheckBoxList->clear();
+    ui->secondConditionCheckBoxList->clear();
+
+    if (uncontains_val(lipid_space->study_variable_values, target_variable) || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
+
+    for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
+        if (kv.second){
+            ui->firstConditionCheckBoxList->addItem(kv.first.c_str());
+            ui->secondConditionCheckBoxList->addItem(kv.first.c_str());
+        }
+    }
 }
 
 
@@ -655,7 +684,7 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (uncontains_val(lipid_space->study_variable_values, target_variable)) return;
     if (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable || ui->secondaryComboBox->currentIndex() == 0){
         ui->studyVariableComboBoxStatLevel->setEnabled(true);
@@ -671,7 +700,7 @@ void LipidSpaceGUI::updateSecondarySorting(int){
 
 void LipidSpaceGUI::setSecondarySorting(){
     ui->secondaryComboBox->clear();
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
@@ -1182,7 +1211,6 @@ void LipidSpaceGUI::checkBenford(){
 void LipidSpaceGUI::runAnalysis(bool initial_run){
     string species_selection = GlobalData::gui_string_var["species_selection"];
     string study_var = GlobalData::gui_string_var["study_var"];
-    string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
     set<QString> selected_tiles;
 
     // clear all windows with canvases
@@ -1213,11 +1241,11 @@ void LipidSpaceGUI::runAnalysis(bool initial_run){
     progressbar->exec(); // waiting for the progress bar to finish
 
     if (initial_run) updateColorMap();
-    visualizeFinishedAnalysis(selected_tiles, species_selection, study_var, study_var_stat);
+    visualizeFinishedAnalysis(selected_tiles, species_selection, study_var);
 }
 
 
-void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, string species_selection, string study_var, string study_var_stat){
+void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, string species_selection, string study_var){
 
     if (GlobalData::benford_warning){
         QMessageBox::warning(this, "Warning", "Please be aware that your current raw data do not conform to Benfords law. For further details, please have a look in the logs (Help → Log messages).");
@@ -1357,8 +1385,10 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
     pos = ui->studyVariableComboBox->findText(study_var.c_str());
     if (pos >= 0) ui->studyVariableComboBox->setCurrentIndex(pos);
-    pos = ui->studyVariableComboBoxStat->findText(study_var_stat.c_str());
+    pos = ui->studyVariableComboBoxStat->findText(study_var.c_str());
     if (pos >= 0) ui->studyVariableComboBoxStat->setCurrentIndex(pos);
+    pos = ui->studyVariableComboBoxEnrichment->findText(study_var.c_str());
+    if (pos >= 0) ui->studyVariableComboBoxEnrichment->setCurrentIndex(pos);
     if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
 
     // reset splitters for statistics tile view
@@ -1366,6 +1396,9 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
     ui->splitterStatV1->setSizes(QList<int>{h, h, h, h});
     ui->splitterStatV2->setSizes(QList<int>{h, h, h, h});
     ui->splitterStat->setSizes(QList<int>{ui->splitterStat->width() >> 1, ui->splitterStat->width() >> 1});
+
+    ui->splitterEnrichment->setSizes(QList<int>{ui->splitterEnrichment->height() >> 1, ui->splitterEnrichment->height() >> 1});
+    ui->splitterEnrichmentVert->setSizes(QList<int>{ui->splitterEnrichmentVert->width() >> 1, ui->splitterEnrichment->width() >> 1});
 
     FADupdate();
     emit analysisCompleted();
@@ -1784,10 +1817,11 @@ void LipidSpaceGUI::updateGUI(){
     updating = true;
 
     QTabBar *bar = ui->viewsTabWidget->tabBar();
-    for (int t = 1; t <= 4; ++t) bar->setTabEnabled(t, lipid_space->lipidomes.size() > 0);
+    for (int t = 1; t <= 5; ++t) bar->setTabEnabled(t, lipid_space->lipidomes.size() > 0);
 
     ui->studyVariableComboBox->clear();
     ui->studyVariableComboBoxStat->clear();
+    ui->studyVariableComboBoxEnrichment->clear();
 
     ui->menuAnalysis->setEnabled(lipid_space->lipidomes.size());
     ui->menuView->setEnabled(lipid_space->lipidomes.size());
@@ -1869,6 +1903,7 @@ void LipidSpaceGUI::updateGUI(){
     for (auto kv : lipid_space->study_variable_values){
         ui->studyVariableComboBox->addItem(kv.first.c_str());
         ui->studyVariableComboBoxStat->addItem(kv.first.c_str());
+        ui->studyVariableComboBoxEnrichment->addItem(kv.first.c_str());
     }
 
 
@@ -1987,7 +2022,6 @@ void LipidSpaceGUI::openMzTabM(QString file_name){
 void LipidSpaceGUI::loadSession(){
     string species_selection = GlobalData::gui_string_var["species_selection"];
     string study_var = GlobalData::gui_string_var["study_var"];
-    string study_var_stat = GlobalData::gui_string_var["study_var_stat"];
 
     if (lipid_space->analysis_finished){
         QMessageBox::StandardButton reply;
@@ -2042,7 +2076,7 @@ void LipidSpaceGUI::loadSession(){
             set<QString> selected_tiles;
             updateSelectionView();
             checkBenford();
-            visualizeFinishedAnalysis(selected_tiles, species_selection, study_var, study_var_stat);
+            visualizeFinishedAnalysis(selected_tiles, species_selection, study_var);
         }
         else {
             QMessageBox::warning(this, "Load session", "An error occurred, session file could not be read.");
@@ -2567,48 +2601,17 @@ void LipidSpaceGUI::ShowContextMenuStatisticsPCA(const QPoint pos){
 void LipidSpaceGUI::ShowContextMenuStatisticsPVal(const QPoint pos){
     if (statisticsPVal.chart->chart_plots.size() == 0) return;
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (uncontains_val(lipid_space->study_variable_values, target_variable)) return;
 
     QMenu *menu = new QMenu(this);
-    QMenu *menuTest = new QMenu("Statistical test", this);
 
-    int num_cases = 0;
-    for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
-        num_cases += kv.second;
-    }
-
-    if (num_cases == 2){
-        QAction *actionTestStudent = new QAction("Student T-Test", this); actionTestStudent->setCheckable(true);
-        QAction *actionTestWelch = new QAction("Welch T-Test", this); actionTestWelch->setCheckable(true);
-        QAction *actionTestKS = new QAction("Kolmogorow-Smirnow-Test", this); actionTestKS->setCheckable(true);
-
-        if (GlobalData::pval_test == "student") actionTestStudent->setChecked(true);
-        else if (GlobalData::pval_test == "welch") actionTestWelch->setChecked(true);
-        else actionTestKS->setChecked(true);
-
-        menuTest->addAction(actionTestStudent);
-        menuTest->addAction(actionTestWelch);
-        menuTest->addAction(actionTestKS);
-
-        connect(actionTestStudent, &QAction::triggered, this, [=](){ changePValTest("student"); });
-        connect(actionTestWelch, &QAction::triggered, this, [=](){ changePValTest("welch"); });
-        connect(actionTestKS, &QAction::triggered, this, [=](){ changePValTest("ks"); });
-    }
-    else if (num_cases > 2){
-        QAction *actionAnova = new QAction("ANOVA", this);
-        actionAnova->setCheckable(true);
-        actionAnova->setChecked(true);
-        actionAnova->setEnabled(false);
-        menuTest->addAction(actionAnova);
-    }
 
     QAction *actionData = new QAction("Export data", this);
     QMenu *exportAs = new QMenu(menu);
     exportAs->setTitle("Export figure as");
     QAction *exportAsPdf = new QAction("pdf", this);
     QAction *exportAsSvg = new QAction("svg", this);
-    menu->addMenu(menuTest);
     menu->addAction(actionData);
     menu->addAction(exportAs->menuAction());
     exportAs->addAction(exportAsPdf);
@@ -2624,20 +2627,6 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     if (statisticsVolcano.chart->chart_plots.size() == 0) return;
 
     QMenu *menu = new QMenu(this);
-    QMenu *menuTest = new QMenu("Statistical test", this);
-    QMenu *menuCorrection = new QMenu("Multiple testing correction", this);
-    QMenu *menuSigLevel = new QMenu("Significance level", this);
-    QMenu *menuFC = new QMenu("Log fold change level", this);
-
-
-    QAction *actionSig5 = new QAction("significance < 5%", this); actionSig5->setCheckable(true);
-    QAction *actionSig1 = new QAction("significance < 1%", this); actionSig1->setCheckable(true);
-    QAction *actionSig01 = new QAction("significance < 0.1%", this); actionSig01->setCheckable(true);
-
-    QAction *actionFC1 = new QAction("log(fold change) = +/- 0.5", this); actionFC1->setCheckable(true);
-    QAction *actionFC2 = new QAction("log(fold change) = +/- 1", this); actionFC1->setCheckable(true);
-    QAction *actionFC3 = new QAction("log(fold change) = +/- 2", this); actionFC2->setCheckable(true);
-    QAction *actionFC4 = new QAction("log(fold change) = +/- 3", this); actionFC3->setCheckable(true);
 
     QMenu *menuSelect = new QMenu("Select", this);
     QMenu *menuDeselect = new QMenu("Deselect", this);
@@ -2673,58 +2662,7 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     menu->addSeparator();
 
 
-    if (GlobalData::volcano_sig == "5") actionSig5->setChecked(true);
-    else if (GlobalData::volcano_sig == "1") actionSig1->setChecked(true);
-    else actionSig01->setChecked(true);
-
-    if (GlobalData::volcano_log_fc == "+/- 0.5") actionFC1->setChecked(true);
-    else if (GlobalData::volcano_log_fc == "+/- 1") actionFC2->setChecked(true);
-    else if (GlobalData::volcano_log_fc == "+/- 2") actionFC3->setChecked(true);
-    else actionFC4->setChecked(true);
-
-
-    menuFC->addAction(actionFC1);
-    menuFC->addAction(actionFC2);
-    menuFC->addAction(actionFC3);
-    menuFC->addAction(actionFC4);
-
-    menuSigLevel->addAction(actionSig5);
-    menuSigLevel->addAction(actionSig1);
-    menuSigLevel->addAction(actionSig01);
-
-    menu->addMenu(menuFC);
-    menu->addMenu(menuSigLevel);
-    menu->addSeparator();
-
-
-    QAction *actionTestStudent = new QAction("Student T-Test", this); actionTestStudent->setCheckable(true);
-    QAction *actionTestWelch = new QAction("Welch T-Test", this); actionTestWelch->setCheckable(true);
-    QAction *actionTestKS = new QAction("Kolmogorow-Smirnow-Test", this); actionTestKS->setCheckable(true);
-
-    if (GlobalData::volcano_test == "student") actionTestStudent->setChecked(true);
-    else if (GlobalData::volcano_test == "welch") actionTestWelch->setChecked(true);
-    else actionTestKS->setChecked(true);
-
-    QAction *actionNoCorrection = new QAction("No correction", this); actionNoCorrection->setCheckable(true);
-    QAction *actionBonferoniCorrection = new QAction("Bonferoni method", this); actionBonferoniCorrection->setCheckable(true);
-    QAction *actionBHCorrection = new QAction("Benjamini-Hochberg FDR", this); actionBHCorrection->setCheckable(true);
-
-    if (GlobalData::vocano_multiple == "bh") actionBHCorrection->setChecked(true);
-    else if (GlobalData::vocano_multiple == "bonferoni") actionBonferoniCorrection->setChecked(true);
-    else actionNoCorrection->setChecked(true);
-
     if (actionSelectLipid) menu->addAction(actionSelectLipid);
-    menu->addMenu(menuTest);
-    menu->addMenu(menuCorrection);
-    menu->addSeparator();
-
-    menuTest->addAction(actionTestStudent);
-    menuTest->addAction(actionTestWelch);
-    menuTest->addAction(actionTestKS);
-
-    menuCorrection->addAction(actionNoCorrection);
-    menuCorrection->addAction(actionBonferoniCorrection);
-    menuCorrection->addAction(actionBHCorrection);
 
 
     QAction *actionData = new QAction("Export data", this);
@@ -2753,23 +2691,6 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     connect(actionDeselNon, &QAction::triggered, this, [=](){ changeVolcanoSelection(false, "non"); });
     connect(actionDeselUp, &QAction::triggered, this, [=](){ changeVolcanoSelection(false, "up"); });
 
-    connect(actionNoCorrection, &QAction::triggered, this, [=](){ changeVolcanoMultiple("no"); });
-    connect(actionBonferoniCorrection, &QAction::triggered, this, [=](){ changeVolcanoMultiple("bonferoni"); });
-    connect(actionBHCorrection, &QAction::triggered, this, [=](){ changeVolcanoMultiple("bh"); });
-
-    connect(actionTestStudent, &QAction::triggered, this, [=](){ changeVolcanoTest("student"); });
-    connect(actionTestWelch, &QAction::triggered, this, [=](){ changeVolcanoTest("welch"); });
-    connect(actionTestKS, &QAction::triggered, this, [=](){ changeVolcanoTest("ks"); });
-
-    connect(actionSig5, &QAction::triggered, this, [=](){ changeVolcanoSig("5"); });
-    connect(actionSig1, &QAction::triggered, this, [=](){ changeVolcanoSig("1"); });
-    connect(actionSig01, &QAction::triggered, this, [=](){ changeVolcanoSig("01"); });
-
-    connect(actionFC1, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 0.5"); });
-    connect(actionFC2, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 1"); });
-    connect(actionFC3, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 2"); });
-    connect(actionFC4, &QAction::triggered, this, [=](){ changeVolcanoFC("+/- 3"); });
-
     menu->popup(ui->statisticsVolcano->viewport()->mapToGlobal(pos));
 }
 
@@ -2786,36 +2707,30 @@ void LipidSpaceGUI::changeVolcanoSelection(bool select, string mode){
 
 
 
-void LipidSpaceGUI::changeVolcanoMultiple(string method){
-    GlobalData::vocano_multiple = method;
+void LipidSpaceGUI::changeEnrichmentCorrection(int index){
+    GlobalData::enrichment_correction = index == 0 ? "bh" : (index == 1 ? "bonferoni" : "None");
     statisticsVolcano.updateVolcano();
 }
 
 
 
-void LipidSpaceGUI::changeVolcanoTest(string method){
-    GlobalData::volcano_test = method;
+void LipidSpaceGUI::changeEnrichmentTest(int index){
+    GlobalData::enrichment_test = index == 0 ? "student" : (index == 1 ? "welch" : "ks");
     statisticsVolcano.updateVolcano();
-}
-
-
-
-void LipidSpaceGUI::changePValTest(string method){
-    GlobalData::pval_test = method;
     statisticsPVal.updatePVal();
 }
 
 
 
-void LipidSpaceGUI::changeVolcanoSig(string method){
-    GlobalData::volcano_sig = method;
+void LipidSpaceGUI::changeVolcanoSig(double val){
+    GlobalData::enrichment_sig = val;
     statisticsVolcano.updateVolcano();
 }
 
 
 
-void LipidSpaceGUI::changeVolcanoFC(string method){
-    GlobalData::volcano_log_fc = method;
+void LipidSpaceGUI::changeVolcanoFC(double val){
+    GlobalData::enrichment_log_fc = val;
     statisticsVolcano.updateVolcano();
 }
 

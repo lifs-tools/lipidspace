@@ -33,11 +33,10 @@ public:
     static map<string, string> gui_string_var;
     static map<string, double> gui_num_var;
     static bool in_tutorial;
-    static string vocano_multiple;
-    static string volcano_test;
-    static string volcano_sig;
-    static string volcano_log_fc;
-    static string pval_test;
+    static string enrichment_correction;
+    static string enrichment_test;
+    static double enrichment_sig;
+    static double enrichment_log_fc;
     static StatLevel stat_level;
     static set<string> FAD_lipid_classes;
 };

@@ -223,7 +223,7 @@ public slots:
     void setSecondarySorting();
     void updateSecondarySorting(int);
     void runAnalysis(bool init = false);
-    void visualizeFinishedAnalysis(set<QString> &selected_tiles, string species_selection, string study_var, string study_var_stat);
+    void visualizeFinishedAnalysis(set<QString> &selected_tiles, string species_selection, string study_var);
     void completeFeatureAnalysis();
     void setTransforming(QRectF f);
     void setExport();
@@ -251,11 +251,10 @@ public slots:
     void ShowContextMenuLipidome(Canvas *canvas, const QPoint);
     void reassembleSelection();
     void setStudyVariable(int pos);
-    void changeVolcanoMultiple(string method);
-    void changeVolcanoTest(string method);
-    void changeVolcanoSig(string method);
-    void changeVolcanoFC(string method);
-    void changePValTest(string method);
+    void changeEnrichmentCorrection(int index);
+    void changeEnrichmentTest(int index);
+    void changeVolcanoSig(double val);
+    void changeVolcanoFC(double val);
     void itemChanged(QListWidgetItem *item);
     void studyVariableItemChanged(QTreeWidgetItem *item, int col);
     void studyVariableItemDoubleClicked(QTreeWidgetItem *item, int col);

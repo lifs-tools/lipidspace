@@ -18,13 +18,12 @@ string GlobalData::normalization = "no";
 QString GlobalData::last_folder = "";
 StatLevel GlobalData::stat_level = LipidomeLevel;
 map<string, QColor> GlobalData::colorMapStudyVariables;
-string GlobalData::vocano_multiple = "bh";
-string GlobalData::volcano_test = "student";
-string GlobalData::volcano_sig = "5";
-string GlobalData::volcano_log_fc = "+/- 1";
-string GlobalData::pval_test = "student";
+string GlobalData::enrichment_correction = "bh";
+string GlobalData::enrichment_test = "student";
+double GlobalData::enrichment_sig = 0.05;
+double GlobalData::enrichment_log_fc = 1.;
 set<string> GlobalData::FAD_lipid_classes;
-map<string, string> GlobalData::gui_string_var{{"species_selection", ""}, {"study_var", ""}, {"study_var_stat", ""}, {"secondary_var", ""}};
+map<string, string> GlobalData::gui_string_var{{"species_selection", ""}, {"study_var", ""}, {"secondary_var", ""}};
 map<string, double> GlobalData::gui_num_var{{"pie_tree_depth", 3}, {"dendrogram_height", 100}, {"pie_size", 100}, {"translate", 1}, {"label_size", 18}, {"tick_size", 10}, {"legend_size", 14}, {"dont_less_3_message", 0}, {"bar_number", 20}, {"table_zoom", 10}};
 
 const vector<QColor> GlobalData::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#bcbd22"), QColor("#17becf")};

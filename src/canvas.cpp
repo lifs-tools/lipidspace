@@ -52,6 +52,10 @@ HomeView::HomeView(QWidget *parent) : QGraphicsView(parent){
     fourthTutorialPushButton->setObjectName(QString::fromUtf8("fourthTutorialPushButton"));
     fourthTutorialPushButton->setGeometry(QRect(320, 400, 221, 31));
     fourthTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "4. Tutorial - Quality Control", nullptr));
+    fifthTutorialPushButton = new QPushButton(this);
+    fifthTutorialPushButton->setObjectName(QString::fromUtf8("fifthTutorialPushButton"));
+    fifthTutorialPushButton->setGeometry(QRect(60, 440, 221, 31));
+    fifthTutorialPushButton->setText(QApplication::translate("LipidSpaceGUI", "5. Tutorial - Enrichment Analysis", nullptr));
     banner = 0;
     setAcceptDrops(true);
 }
@@ -116,11 +120,13 @@ void HomeView::resizeEvent(QResizeEvent *) {
     secondTutorialPushButton->setGeometry(QRect(320. * factor, 360. * factor, 221. * factor, 31. * factor));
     thirdTutorialPushButton->setGeometry(QRect(60. * factor, 400. * factor, 221. * factor, 31. * factor));
     fourthTutorialPushButton->setGeometry(QRect(320. * factor, 400. * factor, 221. * factor, 31. * factor));
+    fifthTutorialPushButton->setGeometry(QRect(60. * factor, 440. * factor, 221. * factor, 31. * factor));
 
     firstTutorialPushButton->setFont(font);
     secondTutorialPushButton->setFont(font);
     thirdTutorialPushButton->setFont(font);
     fourthTutorialPushButton->setFont(font);
+    fifthTutorialPushButton->setFont(font);
 
     double banner_factor = 92. / (double)banner->boundingRect().height() * factor;
     banner->setPos(60. * factor, 85. * factor);
@@ -133,7 +139,7 @@ void HomeView::resizeEvent(QResizeEvent *) {
     QFont f = citation->font();
     f.setPointSizeF(11.);
     citation->setFont(f);
-    citation->setPos(60. * factor, 440. * factor);
+    citation->setPos(56. * factor, 470. * factor);
     citation->setCursor(Qt::PointingHandCursor);
     citation->setScale(factor);
 

@@ -316,7 +316,7 @@ void Statistics::updateBarPlotClasses(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
         return;
     }
@@ -518,7 +518,7 @@ void Statistics::updateBarPlot(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
         return;
     }
@@ -768,7 +768,7 @@ void Statistics::updateSpeciesCV(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
         return;
     }
@@ -908,7 +908,7 @@ void Statistics::updateFAD(){
     stat_results.clear();
 
     string numerical_string = "Fatty acyls";
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
 
     bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == FattyAcylLipid);
 
@@ -1024,7 +1024,7 @@ void Statistics::updateHistogram(){
     stat_results.clear();
 
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == LipidomeLevel);
 
     chart->setVisible(do_continue);
@@ -1139,7 +1139,7 @@ void Statistics::updateROCCurve(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == LipidomeLevel);
 
     chart->setVisible(do_continue);
@@ -1305,7 +1305,7 @@ void Statistics::updateBoxPlot(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
@@ -1600,7 +1600,7 @@ void Statistics::updatePCA(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
@@ -1758,13 +1758,13 @@ void Statistics::updatePVal(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level != LipidSpeciesLevel){
-        chart->setVisible(false);
+    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1){
+        //chart->setVisible(false);
         return;
     }
 
@@ -1859,9 +1859,9 @@ void Statistics::updatePVal(){
 
         if (nom_counter == 2){
             double p_value = 0;
-            if (GlobalData::pval_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
-            else if (GlobalData::pval_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
-            else if (GlobalData::pval_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+            if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
+            else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
+            else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
             series.back().push_back(p_value);
         }
         else {
@@ -1922,13 +1922,13 @@ void Statistics::updateVolcano(){
     volcano_data.insert({"non", vector<string>()});
     volcano_data.insert({"up", vector<string>()});
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level != LipidSpeciesLevel){
-        chart->setVisible(false);
+    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1){
+        //chart->setVisible(false);
         return;
     }
 
@@ -2027,9 +2027,9 @@ void Statistics::updateVolcano(){
         if (arrays.size() != 2) continue;
 
         double p_value = 0;
-        if (GlobalData::volcano_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
-        else if (GlobalData::volcano_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
-        else if (GlobalData::volcano_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+        if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
+        else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
+        else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
 
         double fc = arrays[1].mean() / arrays[0].mean();
         if (fc <= 0 || p_value <= 1e-50) continue;
@@ -2039,8 +2039,8 @@ void Statistics::updateVolcano(){
         p_val_lipids.push_back(lipid_name.c_str());
     }
 
-    if (GlobalData::vocano_multiple == "bh") multiple_correction_bh(p_values);
-    else if (GlobalData::vocano_multiple == "bonferoni") multiple_correction_bonferoni(p_values);
+    if (GlobalData::enrichment_correction == "bh") multiple_correction_bh(p_values);
+    else if (GlobalData::enrichment_correction == "bonferoni") multiple_correction_bonferoni(p_values);
 
 
     vector<pair<double, double>> pval_fc_down;
@@ -2050,14 +2050,8 @@ void Statistics::updateVolcano(){
     vector<pair<double, double>> pval_fc_up;
     vector<QString> fc_up_lipids;
 
-    double alpha_level = 0.001;
-    if (GlobalData::volcano_sig == "5") alpha_level = 0.05;
-    else if (GlobalData::volcano_sig == "1") alpha_level = 0.01;
-
-    double log_fc_level = 3;
-    if (GlobalData::volcano_log_fc == "+/- 0.5") log_fc_level = 0.5;
-    if (GlobalData::volcano_log_fc == "+/- 1") log_fc_level = 1;
-    else if (GlobalData::volcano_log_fc == "+/- 2") log_fc_level = 2;
+    double alpha_level = GlobalData::enrichment_sig;
+    double log_fc_level = GlobalData::enrichment_log_fc;
 
 
     for (int i = 0; i < 6; ++i) series.push_back(Array());

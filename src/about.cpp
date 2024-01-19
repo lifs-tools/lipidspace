@@ -32,6 +32,7 @@ About::About(QWidget *parent, bool log_view) : QDialog(parent), ui(new Ui::About
         ui->textBrowser->append("- openXLSX (BSD license)");
         ui->textBrowser->append("- libAnova (MIT license)");
         ui->textBrowser->append("- nlohmann json (MIT license)");
+        ui->textBrowser->append("- Qt-MultiSelectComboBox (MIT license)");
         ui->textBrowser->append("- lambda-lanczos (MIT license)\n\n");
 
 

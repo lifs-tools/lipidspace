@@ -139,6 +139,7 @@ public:
     QPushButton *secondTutorialPushButton;
     QPushButton *thirdTutorialPushButton;
     QPushButton *fourthTutorialPushButton;
+    QPushButton *fifthTutorialPushButton;
     QGraphicsSvgItem *banner;
     QGraphicsSvgItem *LIFS;
     QGraphicsSvgItem *LIFS_monitor;
