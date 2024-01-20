@@ -1746,61 +1746,66 @@ void Statistics::updatePVal(){
     series.clear();
     flat_data.clear();
     stat_results.clear();
+    volcano_data.clear();
+    volcano_data.insert({"down", vector<string>()});
+    volcano_data.insert({"non", vector<string>()});
+    volcano_data.insert({"up", vector<string>()});
 
     string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1){
-        //chart->setVisible(false);
+    if (!is_nominal || GlobalData::first_enrichment_classes.size() == 0 || GlobalData::second_enrichment_classes.size() == 0){
         return;
     }
 
 
     // setup array for target variable values, if nominal then each with incrementing number
-    map<string, double> nominal_target_values;
-    Indexes target_indexes;
-    Array target_values;
-    int nom_counter = 0;
     map<string, string> nominal_values;
-
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
-    bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
+    set<string> nominal_values_list;
+    string first_conditions = "";
+    string second_conditions = "";
 
     for (auto lipidome : lipid_space->selected_lipidomes){
         if (lipidome->study_variables[target_variable].missing) continue;
-        if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
 
         string nominal_value = lipidome->study_variables[target_variable].nominal_value;
-        if (uncontains_val(nominal_target_values, nominal_value)){
-            nominal_target_values.insert({nominal_value, nom_counter++});
-        }
         nominal_values.insert({lipidome->cleaned_name, nominal_value});
-        target_indexes.push_back(nominal_target_values[nominal_value]);
-        if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+    }
+    for (auto condition : GlobalData::first_enrichment_classes){
+        nominal_values_list.insert(condition);
+        if (first_conditions.length()) first_conditions += ", ";
+        first_conditions += condition;
+    }
+    for (auto condition : GlobalData::second_enrichment_classes){
+        nominal_values_list.insert(condition);
+        if (second_conditions.length()) second_conditions += ", ";
+        second_conditions += condition;
     }
 
-    if (nom_counter < 2){
-        chart->setVisible(false);
+    if (nominal_values_list.size() < 2){
         return;
     }
+    series.push_back(Array());
 
 
     Matrix stat_matrix;
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     map<string, int> lipidome_name_map;
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
         LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
         if (uncontains_val(lipid_map, lipid)){
             lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({lipid_space->global_lipidome->species[i], lipid_name_map.size()});
+            string lipid_name = lipid_space->global_lipidome->species[i];
+            if (contains_val(translations, lipid_name)) lipid_name = translations[lipid_name];
+            lipid_name_map.insert({lipid_name, lipid_name_map.size()});
         }
     }
 
-    // set up matrix for multiple linear regression
     stat_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
     stat_matrix += NAN;
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
@@ -1813,22 +1818,24 @@ void Statistics::updatePVal(){
         }
     }
 
-
-    series.push_back(Array());
     flat_data.insert({"Lipid species", vector<QVariant>()});
     flat_data.insert({"Lipidome", vector<QVariant>()});
     flat_data.insert({"Condition", vector<QVariant>()});
     flat_data.insert({"Quantity", vector<QVariant>()});
-
     for (auto &kv : lipid_name_map){
         string lipid_name = kv.first;
         int lipid_col = kv.second;
 
-        vector<Array> arrays(nom_counter, Array());
+        Array first_array;
+        Array second_array;
         for (auto &kv_val : nominal_values){
             string lipidome_name = kv_val.first;
             string nom_value = kv_val.second;
-            int array_index = nominal_target_values[nom_value];
+
+            if (uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
+
+            Array &fill_array = contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array;
+            if (uncontains_val(lipidome_name_map, lipidome_name)) continue;
             int lipidome_row = lipidome_name_map[lipidome_name];
 
             double stat_value = stat_matrix(lipidome_row, lipid_col);
@@ -1837,26 +1844,20 @@ void Statistics::updatePVal(){
                 flat_data["Lipidome"].push_back(lipidome_name.c_str());
                 flat_data["Condition"].push_back(nom_value.c_str());
                 flat_data["Quantity"].push_back(stat_value);
-                arrays[array_index].push_back(stat_value);
+                fill_array.push_back(stat_value);
             }
         }
 
-        for (int i = arrays.size() - 1; i >= 0; --i){
-            if (arrays[i].size() < 2) arrays.erase(arrays.begin() + i);
-        }
-        if (arrays.size() <= 1) continue;
+        if (first_array.size() < 2 || second_array.size() < 2) continue;
 
-        if (nom_counter == 2){
-            double p_value = 0;
-            if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
-            else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
-            else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
-            series.back().push_back(p_value);
-        }
-        else {
-            series.back().push_back(p_value_anova(arrays));
-        }
+        double p_value = 0;
+        if (GlobalData::enrichment_test == "student") p_value = p_value_student(first_array, second_array);
+        else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(first_array, second_array);
+        else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(first_array, second_array);
+        else continue;
+        series.back().push_back(p_value);
     }
+    if (series.back().empty()) return;
 
     series_titles.push_back("P-values");
 
@@ -2015,6 +2016,7 @@ void Statistics::updateVolcano(){
         if (GlobalData::enrichment_test == "student") p_value = p_value_student(first_array, second_array);
         else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(first_array, second_array);
         else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(first_array, second_array);
+        else continue;
 
         double fc = second_array.mean() / first_array.mean();
         if (fc <= 0 || p_value <= 1e-50) continue;

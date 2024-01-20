@@ -600,6 +600,20 @@ void LipidSpaceGUI::setStudyVariable(int c){
     setSecondarySorting();
     GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
 
+    ui->firstConditionCheckBoxList->clear();
+    ui->secondConditionCheckBoxList->clear();
+
+    if (uncontains_val(lipid_space->study_variable_values, target_variable) || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
+
+    GlobalData::first_enrichment_classes.clear();
+    GlobalData::second_enrichment_classes.clear();
+    for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
+        if (kv.second){
+            ui->firstConditionCheckBoxList->addItem(kv.first.c_str());
+            ui->secondConditionCheckBoxList->addItem(kv.first.c_str());
+        }
+    }
+
     statisticsBoxPlot.updateBoxPlot();
     statisticsFAD.updateFAD();
     statisticsBarPlot.updateBarPlot();
@@ -620,20 +634,6 @@ void LipidSpaceGUI::setStudyVariable(int c){
     statisticsVolcano.highlightPoints(ui->speciesList);
     statisticsBarPlot.highlightBars(ui->speciesList);
     if (!GlobalData::in_tutorial) ui->studyVariableComboBoxStatLevel->setEnabled(true);
-
-    ui->firstConditionCheckBoxList->clear();
-    ui->secondConditionCheckBoxList->clear();
-
-    if (uncontains_val(lipid_space->study_variable_values, target_variable) || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
-
-    GlobalData::first_enrichment_classes.clear();
-    GlobalData::second_enrichment_classes.clear();
-    for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
-        if (kv.second){
-            ui->firstConditionCheckBoxList->addItem(kv.first.c_str());
-            ui->secondConditionCheckBoxList->addItem(kv.first.c_str());
-        }
-    }
 }
 
 
