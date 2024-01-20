@@ -39,6 +39,8 @@ public:
     static double enrichment_log_fc;
     static StatLevel stat_level;
     static set<string> FAD_lipid_classes;
+    static set<string> first_enrichment_classes;
+    static set<string> second_enrichment_classes;
 };
 
 

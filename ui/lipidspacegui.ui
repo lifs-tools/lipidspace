@@ -973,12 +973,12 @@
              <rect>
               <x>190</x>
               <y>20</y>
-              <width>121</width>
+              <width>141</width>
               <height>18</height>
              </rect>
             </property>
             <property name="text">
-             <string>First condition(s)</string>
+             <string>Reference condition(s)</string>
             </property>
            </widget>
            <widget class="QLabel" name="label_9">
@@ -991,7 +991,7 @@
              </rect>
             </property>
             <property name="text">
-             <string>Second condition(s)</string>
+             <string>Test condition(s)</string>
             </property>
            </widget>
            <widget class="MultiSelectComboBox" name="firstConditionCheckBoxList">

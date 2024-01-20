@@ -23,6 +23,8 @@ string GlobalData::enrichment_test = "student";
 double GlobalData::enrichment_sig = 0.05;
 double GlobalData::enrichment_log_fc = 1.;
 set<string> GlobalData::FAD_lipid_classes;
+set<string> GlobalData::first_enrichment_classes;
+set<string> GlobalData::second_enrichment_classes;
 map<string, string> GlobalData::gui_string_var{{"species_selection", ""}, {"study_var", ""}, {"secondary_var", ""}};
 map<string, double> GlobalData::gui_num_var{{"pie_tree_depth", 3}, {"dendrogram_height", 100}, {"pie_size", 100}, {"translate", 1}, {"label_size", 18}, {"tick_size", 10}, {"legend_size", 14}, {"dont_less_3_message", 0}, {"bar_number", 20}, {"table_zoom", 10}};
 

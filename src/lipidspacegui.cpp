@@ -229,6 +229,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     connect(ui->statTestComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::changeEnrichmentTest);
     connect(ui->corretionComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::changeEnrichmentCorrection);
+    connect(ui->firstConditionCheckBoxList, &MultiSelectComboBox::selectionChanged, this, &LipidSpaceGUI::changeFirstEnrichmentConditions);
+    connect(ui->secondConditionCheckBoxList, &MultiSelectComboBox::selectionChanged, this, &LipidSpaceGUI::changeSecondEnrichmentConditions);
 
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsFAD, &Statistics::setLegendSize);
@@ -624,6 +626,8 @@ void LipidSpaceGUI::setStudyVariable(int c){
 
     if (uncontains_val(lipid_space->study_variable_values, target_variable) || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
 
+    GlobalData::first_enrichment_classes.clear();
+    GlobalData::second_enrichment_classes.clear();
     for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
         if (kv.second){
             ui->firstConditionCheckBoxList->addItem(kv.first.c_str());
@@ -951,6 +955,26 @@ void LipidSpaceGUI::FADitemChanged(QTreeWidgetItem *item, int column){
     FADchangeItem(item, column);
     updating_fad_states = false;
     FADupdate();
+}
+
+
+void LipidSpaceGUI::changeFirstEnrichmentConditions(){
+    GlobalData::first_enrichment_classes.clear();
+    for (auto condition : ui->firstConditionCheckBoxList->currentText()){
+        GlobalData::first_enrichment_classes.insert(condition.toStdString());
+    }
+    statisticsPVal.updatePVal();
+    statisticsVolcano.updateVolcano();
+}
+
+
+void LipidSpaceGUI::changeSecondEnrichmentConditions(){
+    GlobalData::second_enrichment_classes.clear();
+    for (auto condition : ui->secondConditionCheckBoxList->currentText()){
+        GlobalData::second_enrichment_classes.insert(condition.toStdString());
+    }
+    statisticsPVal.updatePVal();
+    statisticsVolcano.updateVolcano();
 }
 
 

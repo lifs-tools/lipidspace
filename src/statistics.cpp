@@ -746,17 +746,6 @@ void Statistics::lipidsMarked(set<string> *lipids){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 void Statistics::updateSpeciesCV(){
 
     chart->clear();
@@ -1927,38 +1916,34 @@ void Statistics::updateVolcano(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (!is_nominal || lipid_space->selected_lipidomes.size() <= 1){
-        //chart->setVisible(false);
+    if (!is_nominal || GlobalData::first_enrichment_classes.size() == 0 || GlobalData::second_enrichment_classes.size() == 0){
         return;
     }
 
     // setup array for target variable values, if nominal then each with incrementing number
-    map<string, double> nominal_target_values;
-    Indexes target_indexes;
-    Array target_values;
-    int nom_counter = 0;
     map<string, string> nominal_values;
-    vector<string> nominal_values_list;
-
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
-    bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
+    set<string> nominal_values_list;
+    string first_conditions = "";
+    string second_conditions = "";
 
     for (auto lipidome : lipid_space->selected_lipidomes){
         if (lipidome->study_variables[target_variable].missing) continue;
-        if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
 
         string nominal_value = lipidome->study_variables[target_variable].nominal_value;
-        if (uncontains_val(nominal_target_values, nominal_value)){
-            nominal_target_values.insert({nominal_value, nom_counter++});
-            nominal_values_list.push_back(nominal_value);
-        }
         nominal_values.insert({lipidome->cleaned_name, nominal_value});
-        target_indexes.push_back(nominal_target_values[nominal_value]);
-        if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+    }
+    for (auto condition : GlobalData::first_enrichment_classes){
+        nominal_values_list.insert(condition);
+        if (first_conditions.length()) first_conditions += ", ";
+        first_conditions += condition;
+    }
+    for (auto condition : GlobalData::second_enrichment_classes){
+        nominal_values_list.insert(condition);
+        if (second_conditions.length()) second_conditions += ", ";
+        second_conditions += condition;
     }
 
-    if (nom_counter != 2){
-        chart->setVisible(false);
+    if (nominal_values_list.size() < 2){
         return;
     }
 
@@ -1979,7 +1964,6 @@ void Statistics::updateVolcano(){
         }
     }
 
-    // set up matrix for multiple linear regression
     stat_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
     stat_matrix += NAN;
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
@@ -2004,11 +1988,15 @@ void Statistics::updateVolcano(){
         string lipid_name = kv.first;
         int lipid_col = kv.second;
 
-        vector<Array> arrays(nom_counter, Array());
+        Array first_array;
+        Array second_array;
         for (auto &kv_val : nominal_values){
             string lipidome_name = kv_val.first;
             string nom_value = kv_val.second;
-            int array_index = nominal_target_values[nom_value];
+
+            if (uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
+
+            Array &fill_array = contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array;
             int lipidome_row = lipidome_name_map[lipidome_name];
 
             double stat_value = stat_matrix(lipidome_row, lipid_col);
@@ -2017,21 +2005,18 @@ void Statistics::updateVolcano(){
                 flat_data["Lipidome"].push_back(lipidome_name.c_str());
                 flat_data["Condition"].push_back(nom_value.c_str());
                 flat_data["Quantity"].push_back(stat_value);
-                arrays[array_index].push_back(stat_value);
+                fill_array.push_back(stat_value);
             }
         }
 
-        for (int i = arrays.size() - 1; i >= 0; --i){
-            if (arrays[i].size() < 2) arrays.erase(arrays.begin() + i);
-        }
-        if (arrays.size() != 2) continue;
+        if (first_array.size() < 2 || second_array.size() < 2) continue;
 
         double p_value = 0;
-        if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
-        else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
-        else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+        if (GlobalData::enrichment_test == "student") p_value = p_value_student(first_array, second_array);
+        else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(first_array, second_array);
+        else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(first_array, second_array);
 
-        double fc = arrays[1].mean() / arrays[0].mean();
+        double fc = second_array.mean() / first_array.mean();
         if (fc <= 0 || p_value <= 1e-50) continue;
 
         p_values.push_back(p_value);
@@ -2105,15 +2090,19 @@ void Statistics::updateVolcano(){
         max_x = max(max_x, fabs(log_fc));
 
     }
-    string color_key = target_variable + "_" + nominal_values_list[0];
+    string color_key = target_variable + "_" + *GlobalData::first_enrichment_classes.begin();
     QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
-    color_key = target_variable + "_" + nominal_values_list[1];
+    color_key = target_variable + "_" + *GlobalData::second_enrichment_classes.begin();
     QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
 
     Scatterplot* scatterplot = new Scatterplot(chart, true);
     scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
-    scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[0].c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
-    scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values_list[1].c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
+
+
+
+
+    scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(first_conditions.c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
+    scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(second_conditions.c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
     chart->add(scatterplot);
 
     for (auto lipid_name : fc_down_lipids) volcano_data["down"].push_back(lipid_name.toStdString());
