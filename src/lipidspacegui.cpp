@@ -130,6 +130,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     statisticsPCA.load_data(lipid_space, ui->statisticsPCA);
     statisticsPVal.load_data(lipid_space, ui->statisticsPVal);
     statisticsVolcano.load_data(lipid_space, ui->statisticsVolcano);
+    statisticsEnrichment.load_data(lipid_space, ui->statisticsEnrichment);
 
     connect(&statisticsBarPlot, &Statistics::enterLipid, this, &LipidSpaceGUI::lipidEntered);
     connect(&statisticsBarPlot, &Statistics::exitLipid, this, &LipidSpaceGUI::lipidExited);
@@ -290,6 +291,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->statisticsPCA, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsPCA);
     connect(ui->statisticsPVal, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsPVal);
     connect(ui->statisticsVolcano, &Chart::customContextMenuRequested, this, &LipidSpaceGUI::ShowContextMenuStatisticsVolcano);
+    connect(&statisticsVolcano, &Statistics::createdEnrichmentList, &statisticsEnrichment, &Statistics::updateEnrichment);
 
     sorting_boxes.push_back(ui->speciesComboBox);
     sorting_boxes.push_back(ui->classComboBox);

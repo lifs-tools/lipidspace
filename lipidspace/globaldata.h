@@ -42,6 +42,7 @@ public:
     static set<string> first_enrichment_classes;
     static set<string> second_enrichment_classes;
     static ConditionModeEnrichment condition_mode_enrichment;
+    static vector<string> enrichment_list;
 };
 
 

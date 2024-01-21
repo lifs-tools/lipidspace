@@ -887,7 +887,7 @@
             <widget class="Chart" name="statisticsPVal"/>
             <widget class="Chart" name="statisticsVolcano"/>
            </widget>
-           <widget class="Chart" name="statisticsHistogram2"/>
+           <widget class="Chart" name="statisticsEnrichment"/>
           </widget>
          </item>
          <item row="1" column="0">

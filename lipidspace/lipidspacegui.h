@@ -143,6 +143,7 @@ public:
     Statistics statisticsPCA;
     Statistics statisticsPVal;
     Statistics statisticsVolcano;
+    Statistics statisticsEnrichment;
     QLabel *select_tiles_information;
     RawDataModel *raw_data_model;
     set<int> *selected_d_lipidomes;

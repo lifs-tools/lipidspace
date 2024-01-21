@@ -1759,7 +1759,6 @@ void Statistics::updatePVal(){
 
 
 
-
     // setup array for target variable values, if nominal then each with incrementing number
     set<string> nominal_values_list;
     map<string, int> nominal_value_positions;
@@ -1834,11 +1833,12 @@ void Statistics::updatePVal(){
         for (auto &kv_val : lipidome_to_nominal_value){
             string lipidome_name = kv_val.first;
             string nom_value = kv_val.second;
-            if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(nominal_value_positions, nom_value)) continue;
+            if (GlobalData::condition_mode_enrichment == StandardMode && uncontains_val(nominal_value_positions, nom_value)) continue;
 
             int nominal_position = (GlobalData::condition_mode_enrichment == StandardMode) ? nominal_value_positions[nom_value] : -1;
 
             if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
+
 
             Array &fill_array = GlobalData::condition_mode_enrichment == SelectionMode ? (contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array) : arrays[nominal_position];
             if (uncontains_val(lipidome_name_map, lipidome_name)) continue;
@@ -1881,6 +1881,7 @@ void Statistics::updatePVal(){
         series.back().push_back(p_value);
     }
     if (series.back().empty()) return;
+
 
     series_titles.push_back("p-values");
 
@@ -1931,6 +1932,7 @@ void Statistics::updateVolcano(){
     flat_data.clear();
     stat_results.clear();
     volcano_data.clear();
+    GlobalData::enrichment_list.clear();
 
     string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
@@ -2046,7 +2048,7 @@ void Statistics::updateVolcano(){
         for (auto &kv_val : lipidome_to_nominal_value){
             string lipidome_name = kv_val.first;
             string nom_value = kv_val.second;
-            if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(nominal_value_positions, nom_value)) continue;
+            if (GlobalData::condition_mode_enrichment == StandardMode && uncontains_val(nominal_value_positions, nom_value)) continue;
 
             int nominal_position = (GlobalData::condition_mode_enrichment == StandardMode) ? nominal_value_positions[nom_value] : -1;
 
@@ -2130,7 +2132,7 @@ void Statistics::updateVolcano(){
     double log_fc_level = GlobalData::enrichment_log_fc;
 
 
-    if (nominal_value_positions.size() == 2){
+    if (GlobalData::condition_mode_enrichment == SelectionMode || nominal_value_positions.size() == 2){
         for (int i = 0; i < 6; ++i) series.push_back(Array());
         series_titles.push_back("Down regulated - p-value");
         series_titles.push_back("Down regulated - fc");
@@ -2158,6 +2160,7 @@ void Statistics::updateVolcano(){
                 if (log_fc <= -log_fc_level){
                     pval_fc_down.push_back({log_fc, log_p_value});
                     fc_down_lipids.push_back(p_val_lipids[i]);
+                    GlobalData::enrichment_list.push_back(p_val_lipids[i]);
 
                     series[0].push_back(p_value);
                     series[1].push_back(fc);
@@ -2166,6 +2169,7 @@ void Statistics::updateVolcano(){
                 else if (log_fc_level <= log_fc){
                     pval_fc_up.push_back({log_fc, log_p_value});
                     fc_up_lipids.push_back(p_val_lipids[i]);
+                    GlobalData::enrichment_list.push_back(p_val_lipids[i]);
 
                     series[4].push_back(p_value);
                     series[5].push_back(fc);
@@ -2210,6 +2214,7 @@ void Statistics::updateVolcano(){
                 if (log_fc_level <= log_fc){
                     pval_fc_reg.push_back({log_fc, log_p_value});
                     fc_reg_lipids.push_back(p_val_lipids[i]);
+                    GlobalData::enrichment_list.push_back(p_val_lipids[i]);
 
                     series[2].push_back(p_value);
                     series[3].push_back(fc);
@@ -2264,7 +2269,7 @@ void Statistics::updateVolcano(){
             scatterplot = new Scatterplot(chart, true);
             scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
             scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values[0].c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
-            scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values[0].c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
+            scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values[1].c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
             chart->add(scatterplot);
 
             for (auto lipid_name : fc_down_lipids) volcano_data["down"].push_back(lipid_name.toStdString());
@@ -2310,5 +2315,30 @@ void Statistics::updateVolcano(){
     connect(scatterplot, &Scatterplot::exitLipid, this, &Statistics::lipidExited);
     connect(scatterplot, &Scatterplot::markLipid, this, &Statistics::lipidMarked);
     connect(scatterplot, &Scatterplot::markLipids, this, &Statistics::lipidsMarked);
+
+    emit createdEnrichmentList();
+}
+
+
+
+
+
+void Statistics::updateEnrichment(){
+
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+    series_titles.clear();
+    series.clear();
+    flat_data.clear();
+    stat_results.clear();
+
+    string target_variable = GlobalData::gui_string_var["study_var"];
+    if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
+
+    if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
+
+    cout << "update" << endl;
 }
 

@@ -52,6 +52,7 @@ public slots:
     void updatePCA();
     void updatePVal();
     void updateVolcano();
+    void updateEnrichment();
     void exportAsPdf();
     void exportAsSvg();
     void exportData();
@@ -76,6 +77,7 @@ signals:
     void exitLipid();
     void markLipid();
     void markLipids(set<string> *lipids);
+    void createdEnrichmentList();
 };
 
 
