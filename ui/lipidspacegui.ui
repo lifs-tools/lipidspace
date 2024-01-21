@@ -1142,7 +1142,20 @@
              <double>0.050000000000000</double>
             </property>
            </widget>
-           <widget class="MultiSelectComboBox" name="firstConditionCheckBoxList_2">
+           <widget class="QLabel" name="conditionModeLabel">
+            <property name="geometry">
+             <rect>
+              <x>190</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Condition mode*</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="conditionModeComboBox">
             <property name="geometry">
              <rect>
               <x>190</x>
@@ -1161,19 +1174,6 @@
               <string>Selection mode</string>
              </property>
             </item>
-           </widget>
-           <widget class="QLabel" name="conditionModeLabel">
-            <property name="geometry">
-             <rect>
-              <x>190</x>
-              <y>20</y>
-              <width>141</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Condition mode*</string>
-            </property>
            </widget>
           </widget>
          </item>

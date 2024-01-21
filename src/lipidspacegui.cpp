@@ -267,7 +267,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->actionSelect_tiles, &QAction::triggered, this, &LipidSpaceGUI::openSelectLipidomes);
     connect(ui->actionsend_statistics, &QAction::triggered, this, &LipidSpaceGUI::sendStatistics);
 
-
+    connect(ui->conditionModeComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::changeConditionMode);
     connect(ui->pvalueDoubleSpinBox, (void (QDoubleSpinBox::*)(double))&QDoubleSpinBox::valueChanged, this, &LipidSpaceGUI::changeVolcanoSig);
     connect(ui->logFCDoubleSpinBox, (void (QDoubleSpinBox::*)(double))&QDoubleSpinBox::valueChanged, this, &LipidSpaceGUI::changeVolcanoFC);
 
@@ -410,7 +410,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     updateGUI();
 
 
-    //ui->label_8->setToolTip("huhaiea");
+    ui->conditionModeLabel->setToolTip("In 'Standard mode', each nominal value from the study variable is taken as its own condition. In 'Selection mode', the user can assign nominal values to a reference or test condition.");
 
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
@@ -425,6 +425,8 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->domainCheckboxList->addItem("hallo");
     ui->domainCheckboxList->addItem("foo");
     ui->domainCheckboxList->addItem("bar");
+
+    changeConditionMode(0);
 }
 
 
@@ -1050,6 +1052,28 @@ void LipidSpaceGUI::FADchangeItem(QTreeWidgetItem *item, int column){
 void LipidSpaceGUI::loadTable(ImportData *import_data){
     loadTable(import_data, true);
 }
+
+
+void LipidSpaceGUI::changeConditionMode(int mode){
+    if (mode == 0){
+        GlobalData::condition_mode_enrichment = StandardMode;
+        ui->refConditionsLabel->setVisible(false);
+        ui->firstConditionCheckBoxList->setVisible(false);
+        ui->testConditionsLabel->setVisible(false);
+        ui->secondConditionCheckBoxList->setVisible(false);
+    }
+    else {
+        GlobalData::condition_mode_enrichment = SelectionMode;
+        ui->refConditionsLabel->setVisible(true);
+        ui->firstConditionCheckBoxList->setVisible(true);
+        ui->testConditionsLabel->setVisible(true);
+        ui->secondConditionCheckBoxList->setVisible(true);
+    }
+    statisticsPVal.updatePVal();
+    statisticsVolcano.updateVolcano();
+}
+
+
 
 void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
     bool repeat_loading = true;

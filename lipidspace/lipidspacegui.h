@@ -293,5 +293,6 @@ public slots:
     void tab_changed(int);
     void changeFirstEnrichmentConditions();
     void changeSecondEnrichmentConditions();
+    void changeConditionMode(int);
 };
 #endif // LIPIDSPACEGUI_H

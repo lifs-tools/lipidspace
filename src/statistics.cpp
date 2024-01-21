@@ -1738,6 +1738,7 @@ void Statistics::updatePCA(){
 
 void Statistics::updatePVal(){
 
+
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);
@@ -1754,43 +1755,43 @@ void Statistics::updatePVal(){
     string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
 
-    if (!is_nominal || GlobalData::first_enrichment_classes.size() == 0 || GlobalData::second_enrichment_classes.size() == 0){
-        return;
-    }
+
 
 
     // setup array for target variable values, if nominal then each with incrementing number
-    map<string, string> nominal_values;
     set<string> nominal_values_list;
-    string first_conditions = "";
-    string second_conditions = "";
+    map<string, int> nominal_value_positions;
+    map<string, string> lipidome_to_nominal_value;
 
     for (auto lipidome : lipid_space->selected_lipidomes){
         if (lipidome->study_variables[target_variable].missing) continue;
 
         string nominal_value = lipidome->study_variables[target_variable].nominal_value;
-        nominal_values.insert({lipidome->cleaned_name, nominal_value});
-    }
-    for (auto condition : GlobalData::first_enrichment_classes){
-        nominal_values_list.insert(condition);
-        if (first_conditions.length()) first_conditions += ", ";
-        first_conditions += condition;
-    }
-    for (auto condition : GlobalData::second_enrichment_classes){
-        nominal_values_list.insert(condition);
-        if (second_conditions.length()) second_conditions += ", ";
-        second_conditions += condition;
+
+        if (GlobalData::condition_mode_enrichment == StandardMode){
+            if (uncontains_val(nominal_value_positions, nominal_value)) nominal_value_positions.insert({nominal_value, nominal_value_positions.size()});
+            lipidome_to_nominal_value.insert({lipidome->cleaned_name, nominal_value});
+        }
+        else {
+            lipidome_to_nominal_value.insert({lipidome->cleaned_name, nominal_value});
+        }
     }
 
-    if (nominal_values_list.size() < 2){
-        return;
+    if (GlobalData::condition_mode_enrichment == SelectionMode){
+        if (GlobalData::first_enrichment_classes.size() == 0 || GlobalData::second_enrichment_classes.size() == 0) return;
+
+        for (auto condition : GlobalData::first_enrichment_classes) nominal_values_list.insert(condition);
+        for (auto condition : GlobalData::second_enrichment_classes) nominal_values_list.insert(condition);
+        if (nominal_values_list.size() < 2) return;
+
     }
-    series.push_back(Array());
+    else if (nominal_value_positions.size() < 2) return;
 
 
     Matrix stat_matrix;
+    series.push_back(Array());
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     map<string, int> lipidome_name_map;
@@ -1825,16 +1826,21 @@ void Statistics::updatePVal(){
     for (auto &kv : lipid_name_map){
         string lipid_name = kv.first;
         int lipid_col = kv.second;
-
+        double p_value = 0;
+        vector<Array> arrays(nominal_value_positions.size(), Array());
         Array first_array;
         Array second_array;
-        for (auto &kv_val : nominal_values){
+
+        for (auto &kv_val : lipidome_to_nominal_value){
             string lipidome_name = kv_val.first;
             string nom_value = kv_val.second;
+            if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(nominal_value_positions, nom_value)) continue;
 
-            if (uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
+            int nominal_position = (GlobalData::condition_mode_enrichment == StandardMode) ? nominal_value_positions[nom_value] : -1;
 
-            Array &fill_array = contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array;
+            if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
+
+            Array &fill_array = GlobalData::condition_mode_enrichment == SelectionMode ? (contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array) : arrays[nominal_position];
             if (uncontains_val(lipidome_name_map, lipidome_name)) continue;
             int lipidome_row = lipidome_name_map[lipidome_name];
 
@@ -1848,21 +1854,38 @@ void Statistics::updatePVal(){
             }
         }
 
-        if (first_array.size() < 2 || second_array.size() < 2) continue;
+        if (GlobalData::condition_mode_enrichment == SelectionMode){
+            if (first_array.size() < 2 || second_array.size() < 2) continue;
 
-        double p_value = 0;
-        if (GlobalData::enrichment_test == "student") p_value = p_value_student(first_array, second_array);
-        else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(first_array, second_array);
-        else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(first_array, second_array);
-        else continue;
+            if (GlobalData::enrichment_test == "student") p_value = p_value_student(first_array, second_array);
+            else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(first_array, second_array);
+            else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(first_array, second_array);
+            else continue;
+
+        }
+        else {
+            for (int i = arrays.size() - 1; i >= 0; --i){
+                if (arrays[i].size() < 2) arrays.erase(arrays.begin() + i);
+            }
+            if (nominal_value_positions.size() == 2){
+                if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
+                else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
+                else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+            }
+            else if (nominal_value_positions.size() > 2) {
+                p_value = p_value_anova(arrays);
+            }
+            else continue;
+        }
+
         series.back().push_back(p_value);
     }
     if (series.back().empty()) return;
 
-    series_titles.push_back("P-values");
+    series_titles.push_back("p-values");
 
     Histogramplot* histogramplot = new Histogramplot(chart);
-    vector<QString> categories{"P-values"};
+    vector<QString> categories{"p-values"};
     vector<QColor> colors{"#85b3ce"};
 
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
@@ -1873,7 +1896,7 @@ void Statistics::updatePVal(){
     chart->yrange.setX(0);
     chart->float_x_precision = 2;
     chart->update_chart();
-    chart->setTitle("P-value distribution");
+    chart->setTitle("p-value distribution");
 }
 
 
@@ -1908,22 +1931,17 @@ void Statistics::updateVolcano(){
     flat_data.clear();
     stat_results.clear();
     volcano_data.clear();
-    volcano_data.insert({"down", vector<string>()});
-    volcano_data.insert({"non", vector<string>()});
-    volcano_data.insert({"up", vector<string>()});
 
     string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
-
-    if (!is_nominal || GlobalData::first_enrichment_classes.size() == 0 || GlobalData::second_enrichment_classes.size() == 0){
-        return;
-    }
+    if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
 
     // setup array for target variable values, if nominal then each with incrementing number
-    map<string, string> nominal_values;
+    map<string, string> lipidome_to_nominal_value;
     set<string> nominal_values_list;
+    map<string, int> nominal_value_positions;
+    vector<string> nominal_values;
     string first_conditions = "";
     string second_conditions = "";
 
@@ -1931,22 +1949,53 @@ void Statistics::updateVolcano(){
         if (lipidome->study_variables[target_variable].missing) continue;
 
         string nominal_value = lipidome->study_variables[target_variable].nominal_value;
-        nominal_values.insert({lipidome->cleaned_name, nominal_value});
-    }
-    for (auto condition : GlobalData::first_enrichment_classes){
-        nominal_values_list.insert(condition);
-        if (first_conditions.length()) first_conditions += ", ";
-        first_conditions += condition;
-    }
-    for (auto condition : GlobalData::second_enrichment_classes){
-        nominal_values_list.insert(condition);
-        if (second_conditions.length()) second_conditions += ", ";
-        second_conditions += condition;
+
+        if (GlobalData::condition_mode_enrichment == StandardMode){
+            if (uncontains_val(nominal_value_positions, nominal_value)){
+                nominal_value_positions.insert({nominal_value, nominal_value_positions.size()});
+                nominal_values.push_back(nominal_value);
+            }
+            lipidome_to_nominal_value.insert({lipidome->cleaned_name, nominal_value});
+        }
+        else {
+            lipidome_to_nominal_value.insert({lipidome->cleaned_name, nominal_value});
+        }
     }
 
-    if (nominal_values_list.size() < 2){
-        return;
+
+    if (GlobalData::condition_mode_enrichment == SelectionMode){
+        for (auto condition : GlobalData::first_enrichment_classes){
+            nominal_values_list.insert(condition);
+            if (first_conditions.length()) first_conditions += ", ";
+            first_conditions += condition;
+        }
+        for (auto condition : GlobalData::second_enrichment_classes){
+            nominal_values_list.insert(condition);
+            if (second_conditions.length()) second_conditions += ", ";
+            second_conditions += condition;
+        }
+
+        if (nominal_values_list.size() < 2) return;
+
+        volcano_data.insert({"down", vector<string>()});
+        volcano_data.insert({"non", vector<string>()});
+        volcano_data.insert({"up", vector<string>()});
+
     }
+    else {
+        if (nominal_value_positions.size() < 2) return;
+        if (nominal_value_positions.size() == 2){
+            volcano_data.insert({"down", vector<string>()});
+            volcano_data.insert({"non", vector<string>()});
+            volcano_data.insert({"up", vector<string>()});
+        }
+        else {
+            volcano_data.insert({"non", vector<string>()});
+            volcano_data.insert({"reg", vector<string>()});
+        }
+    }
+
+
 
 
     Matrix stat_matrix;
@@ -1978,6 +2027,7 @@ void Statistics::updateVolcano(){
     }
 
     double max_x = 0;
+    double min_x = 0;
     Array p_values;
     Array fold_changes;
     vector<QString> p_val_lipids;
@@ -1988,16 +2038,22 @@ void Statistics::updateVolcano(){
     for (auto &kv : lipid_name_map){
         string lipid_name = kv.first;
         int lipid_col = kv.second;
-
+        vector<Array> arrays(nominal_value_positions.size(), Array());
         Array first_array;
         Array second_array;
-        for (auto &kv_val : nominal_values){
+
+
+        for (auto &kv_val : lipidome_to_nominal_value){
             string lipidome_name = kv_val.first;
             string nom_value = kv_val.second;
+            if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(nominal_value_positions, nom_value)) continue;
 
-            if (uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
+            int nominal_position = (GlobalData::condition_mode_enrichment == StandardMode) ? nominal_value_positions[nom_value] : -1;
 
-            Array &fill_array = contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array;
+            if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
+
+            Array &fill_array = GlobalData::condition_mode_enrichment == SelectionMode ? (contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array) : arrays[nominal_position];
+            if (uncontains_val(lipidome_name_map, lipidome_name)) continue;
             int lipidome_row = lipidome_name_map[lipidome_name];
 
             double stat_value = stat_matrix(lipidome_row, lipid_col);
@@ -2010,15 +2066,46 @@ void Statistics::updateVolcano(){
             }
         }
 
-        if (first_array.size() < 2 || second_array.size() < 2) continue;
+        double fc = -1;
+        double p_value = -1;
+        if (GlobalData::condition_mode_enrichment == SelectionMode){
+            if (first_array.size() < 2 || second_array.size() < 2) continue;
 
-        double p_value = 0;
-        if (GlobalData::enrichment_test == "student") p_value = p_value_student(first_array, second_array);
-        else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(first_array, second_array);
-        else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(first_array, second_array);
-        else continue;
+            if (GlobalData::enrichment_test == "student") p_value = p_value_student(first_array, second_array);
+            else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(first_array, second_array);
+            else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(first_array, second_array);
+            else continue;
 
-        double fc = second_array.mean() / first_array.mean();
+            fc = second_array.mean() / first_array.mean();
+
+        }
+        else {
+
+            for (int i = arrays.size() - 1; i >= 0; --i){
+                if (arrays[i].size() < 2) arrays.erase(arrays.begin() + i);
+            }
+            if (nominal_value_positions.size() == 2){
+                if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
+                else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
+                else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+            }
+            else if (nominal_value_positions.size() > 2) {
+                p_value = p_value_anova(arrays);
+            }
+            else continue;
+
+            if (nominal_value_positions.size() == 2){
+                fc = arrays[1].mean() / arrays[0].mean();
+            }
+            else {
+                Array cv_array;
+                for (auto &array : arrays){
+                    for (auto val : array) cv_array.push_back(val);
+                }
+                fc = cv_array.stdev() / cv_array.mean();
+            }
+        }
+
         if (fc <= 0 || p_value <= 1e-50) continue;
 
         p_values.push_back(p_value);
@@ -2036,87 +2123,184 @@ void Statistics::updateVolcano(){
     vector<QString> fc_non_lipids;
     vector<pair<double, double>> pval_fc_up;
     vector<QString> fc_up_lipids;
+    vector<pair<double, double>> pval_fc_reg;
+    vector<QString> fc_reg_lipids;
 
     double alpha_level = GlobalData::enrichment_sig;
     double log_fc_level = GlobalData::enrichment_log_fc;
 
 
-    for (int i = 0; i < 6; ++i) series.push_back(Array());
-    series_titles.push_back("Down regulated - p-value");
-    series_titles.push_back("Down regulated - fc");
-    series_titles.push_back("Not regulated - p-value");
-    series_titles.push_back("Not regulated - fc");
-    series_titles.push_back("Up regulated - p-value");
-    series_titles.push_back("Up regulated - fc");
+    if (nominal_value_positions.size() == 2){
+        for (int i = 0; i < 6; ++i) series.push_back(Array());
+        series_titles.push_back("Down regulated - p-value");
+        series_titles.push_back("Down regulated - fc");
+        series_titles.push_back("Not regulated - p-value");
+        series_titles.push_back("Not regulated - fc");
+        series_titles.push_back("Up regulated - p-value");
+        series_titles.push_back("Up regulated - fc");
 
 
-    for (int i = 0; i < (int)p_values.size(); ++i){
-        double p_value = p_values[i];
-        double fc = fold_changes[i];
+        for (int i = 0; i < (int)p_values.size(); ++i){
+            double p_value = p_values[i];
+            double fc = fold_changes[i];
 
-        double log_p_value = -log10(p_value);
-        double log_fc = log2(fc);
+            double log_p_value = -log10(p_value);
+            double log_fc = log2(fc);
 
-        if (alpha_level < p_value){
-            pval_fc_non.push_back({log_fc, log_p_value});
-            fc_non_lipids.push_back(p_val_lipids[i]);
-
-            series[2].push_back(p_value);
-            series[3].push_back(fc);
-        }
-        else {
-            if (log_fc <= -log_fc_level){
-                pval_fc_down.push_back({log_fc, log_p_value});
-                fc_down_lipids.push_back(p_val_lipids[i]);
-
-                series[0].push_back(p_value);
-                series[1].push_back(fc);
-            }
-
-            else if (log_fc_level <= log_fc){
-                pval_fc_up.push_back({log_fc, log_p_value});
-                fc_up_lipids.push_back(p_val_lipids[i]);
-
-                series[4].push_back(p_value);
-                series[5].push_back(fc);
-            }
-
-            else {
+            if (alpha_level < p_value){
                 pval_fc_non.push_back({log_fc, log_p_value});
                 fc_non_lipids.push_back(p_val_lipids[i]);
 
                 series[2].push_back(p_value);
                 series[3].push_back(fc);
             }
+            else {
+                if (log_fc <= -log_fc_level){
+                    pval_fc_down.push_back({log_fc, log_p_value});
+                    fc_down_lipids.push_back(p_val_lipids[i]);
+
+                    series[0].push_back(p_value);
+                    series[1].push_back(fc);
+                }
+
+                else if (log_fc_level <= log_fc){
+                    pval_fc_up.push_back({log_fc, log_p_value});
+                    fc_up_lipids.push_back(p_val_lipids[i]);
+
+                    series[4].push_back(p_value);
+                    series[5].push_back(fc);
+                }
+
+                else {
+                    pval_fc_non.push_back({log_fc, log_p_value});
+                    fc_non_lipids.push_back(p_val_lipids[i]);
+
+                    series[2].push_back(p_value);
+                    series[3].push_back(fc);
+                }
+            }
+            max_x = max(max_x, fabs(log_fc));
         }
-        max_x = max(max_x, fabs(log_fc));
+        min_x = -max_x;
+    }
+    else {
+        for (int i = 0; i < 4; ++i) series.push_back(Array());
+        series_titles.push_back("Not regulated - p-value");
+        series_titles.push_back("Not regulated - fc");
+        series_titles.push_back("Regulated - p-value");
+        series_titles.push_back("Regulated - fc");
+
+        log_fc_level = (pow(2, log_fc_level) - 1.) / (pow(2, log_fc_level) + 1);
+
+        for (int i = 0; i < (int)p_values.size(); ++i){
+            double p_value = p_values[i];
+            double fc = fold_changes[i];
+
+            double log_p_value = -log10(p_value);
+            double log_fc = fc;
+
+            if (alpha_level < p_value){
+                pval_fc_non.push_back({log_fc, log_p_value});
+                fc_non_lipids.push_back(p_val_lipids[i]);
+
+                series[0].push_back(p_value);
+                series[1].push_back(fc);
+            }
+            else {
+                if (log_fc_level <= log_fc){
+                    pval_fc_reg.push_back({log_fc, log_p_value});
+                    fc_reg_lipids.push_back(p_val_lipids[i]);
+
+                    series[2].push_back(p_value);
+                    series[3].push_back(fc);
+                }
+
+                else {
+                    pval_fc_non.push_back({log_fc, log_p_value});
+                    fc_non_lipids.push_back(p_val_lipids[i]);
+
+                    series[0].push_back(p_value);
+                    series[1].push_back(fc);
+                }
+            }
+            max_x = max(max_x, fabs(log_fc));
+        }
+    }
+
+    Scatterplot* scatterplot = 0;
+    Lineplot *line_plot = 0;
+    vector< pair< pair<double, double>, pair<double, double> > > boundaries;
+    if (GlobalData::condition_mode_enrichment == SelectionMode){
+
+        string color_key = target_variable + "_" + *GlobalData::first_enrichment_classes.begin();
+        QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+        color_key = target_variable + "_" + *GlobalData::second_enrichment_classes.begin();
+        QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+
+        scatterplot = new Scatterplot(chart, true);
+        scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
+        scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(first_conditions.c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
+        scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(second_conditions.c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
+        chart->add(scatterplot);
+
+        for (auto lipid_name : fc_down_lipids) volcano_data["down"].push_back(lipid_name.toStdString());
+        for (auto lipid_name : fc_non_lipids) volcano_data["non"].push_back(lipid_name.toStdString());
+        for (auto lipid_name : fc_up_lipids) volcano_data["up"].push_back(lipid_name.toStdString());
+
+        line_plot = new Lineplot(chart, true);
+        boundaries.push_back({{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}});
+        boundaries.push_back({{-log_fc_level, -1e5}, {-log_fc_level, 1e5}});
+        boundaries.push_back({{log_fc_level, -1e5}, {log_fc_level, 1e5}});
+    }
+
+    else {
+
+        if (nominal_value_positions.size() == 2){
+            string color_key = target_variable + "_" + nominal_values[0];
+            QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+            color_key = target_variable + "_" + nominal_values[1];
+            QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+
+            scatterplot = new Scatterplot(chart, true);
+            scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
+            scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values[0].c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
+            scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values[0].c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
+            chart->add(scatterplot);
+
+            for (auto lipid_name : fc_down_lipids) volcano_data["down"].push_back(lipid_name.toStdString());
+            for (auto lipid_name : fc_non_lipids) volcano_data["non"].push_back(lipid_name.toStdString());
+            for (auto lipid_name : fc_up_lipids) volcano_data["up"].push_back(lipid_name.toStdString());
+
+            line_plot = new Lineplot(chart, true);
+            boundaries.push_back({{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}});
+            boundaries.push_back({{-log_fc_level, -1e5}, {-log_fc_level, 1e5}});
+            boundaries.push_back({{log_fc_level, -1e5}, {log_fc_level, 1e5}});
+        }
+        else {
+            string color_key = target_variable + "_" + nominal_values[0];
+            QColor color_reg = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+
+            scatterplot = new Scatterplot(chart, true);
+            scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
+            scatterplot->add(pval_fc_reg, QString("Sig. regulated (%1)").arg(pval_fc_reg.size()), color_reg, &fc_reg_lipids);
+            chart->add(scatterplot);
+
+            for (auto lipid_name : fc_non_lipids) volcano_data["non"].push_back(lipid_name.toStdString());
+            for (auto lipid_name : fc_reg_lipids) volcano_data["reg"].push_back(lipid_name.toStdString());
+
+            line_plot = new Lineplot(chart, true);
+            boundaries.push_back({{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}});
+            boundaries.push_back({{log_fc_level, -1e5}, {log_fc_level, 1e5}});
+        }
 
     }
-    string color_key = target_variable + "_" + *GlobalData::first_enrichment_classes.begin();
-    QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
-    color_key = target_variable + "_" + *GlobalData::second_enrichment_classes.begin();
-    QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
-
-    Scatterplot* scatterplot = new Scatterplot(chart, true);
-    scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
 
 
 
-
-    scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(first_conditions.c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
-    scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(second_conditions.c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
-    chart->add(scatterplot);
-
-    for (auto lipid_name : fc_down_lipids) volcano_data["down"].push_back(lipid_name.toStdString());
-    for (auto lipid_name : fc_non_lipids) volcano_data["non"].push_back(lipid_name.toStdString());
-    for (auto lipid_name : fc_up_lipids) volcano_data["up"].push_back(lipid_name.toStdString());
-
-    Lineplot *line_plot = new Lineplot(chart, true);
-    vector< pair< pair<double, double>, pair<double, double> > > boundaries{{{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}}, {{-log_fc_level, -1e5}, {-log_fc_level, 1e5}}, {{log_fc_level, -1e5}, {log_fc_level, 1e5}}};
     line_plot->add(boundaries, "", "#ff0000");
     chart->add(line_plot);
 
-    chart->xrange.setX(-max_x * 1.05);
+    chart->xrange.setX(min_x * 1.05);
     chart->xrange.setY(max_x * 1.05);
     chart->yrange.setX(-0.1);
     chart->setTitle("Volcano plot");
