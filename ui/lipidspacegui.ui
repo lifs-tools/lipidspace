@@ -917,7 +917,7 @@
              </rect>
             </property>
            </widget>
-           <widget class="QLabel" name="label_6">
+           <widget class="QLabel" name="studyVarEnrichmentLabel">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -930,10 +930,10 @@
              <string>Study variable</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_7">
+           <widget class="QLabel" name="pvalCorrectionLabel">
             <property name="geometry">
              <rect>
-              <x>10</x>
+              <x>190</x>
               <y>70</y>
               <width>141</width>
               <height>18</height>
@@ -946,7 +946,7 @@
            <widget class="QComboBox" name="corretionComboBox">
             <property name="geometry">
              <rect>
-              <x>10</x>
+              <x>190</x>
               <y>90</y>
               <width>171</width>
               <height>26</height>
@@ -968,10 +968,10 @@
              </property>
             </item>
            </widget>
-           <widget class="QLabel" name="label_8">
+           <widget class="QLabel" name="refConditionsLabel">
             <property name="geometry">
              <rect>
-              <x>190</x>
+              <x>370</x>
               <y>20</y>
               <width>141</width>
               <height>18</height>
@@ -981,10 +981,10 @@
              <string>Reference condition(s)</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_9">
+           <widget class="QLabel" name="testConditionsLabel">
             <property name="geometry">
              <rect>
-              <x>370</x>
+              <x>550</x>
               <y>20</y>
               <width>141</width>
               <height>18</height>
@@ -997,7 +997,7 @@
            <widget class="MultiSelectComboBox" name="firstConditionCheckBoxList">
             <property name="geometry">
              <rect>
-              <x>190</x>
+              <x>370</x>
               <y>40</y>
               <width>171</width>
               <height>26</height>
@@ -1007,7 +1007,7 @@
            <widget class="MultiSelectComboBox" name="secondConditionCheckBoxList">
             <property name="geometry">
              <rect>
-              <x>370</x>
+              <x>550</x>
               <y>40</y>
               <width>171</width>
               <height>26</height>
@@ -1017,8 +1017,8 @@
            <widget class="QComboBox" name="statTestComboBox">
             <property name="geometry">
              <rect>
-              <x>550</x>
-              <y>40</y>
+              <x>10</x>
+              <y>90</y>
               <width>171</width>
               <height>26</height>
              </rect>
@@ -1039,11 +1039,11 @@
              </property>
             </item>
            </widget>
-           <widget class="QLabel" name="label_10">
+           <widget class="QLabel" name="statTestLabel">
             <property name="geometry">
              <rect>
-              <x>550</x>
-              <y>20</y>
+              <x>10</x>
+              <y>70</y>
               <width>101</width>
               <height>18</height>
              </rect>
@@ -1052,10 +1052,10 @@
              <string>Statistical test</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_11">
+           <widget class="QLabel" name="pvalThresholdLabel">
             <property name="geometry">
              <rect>
-              <x>190</x>
+              <x>370</x>
               <y>70</y>
               <width>121</width>
               <height>18</height>
@@ -1065,23 +1065,23 @@
              <string>p-value threshold</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_12">
+           <widget class="QLabel" name="logFCLabel">
             <property name="geometry">
              <rect>
-              <x>370</x>
+              <x>550</x>
               <y>70</y>
               <width>171</width>
               <height>18</height>
              </rect>
             </property>
             <property name="text">
-             <string>log fold-change threshold</string>
+             <string>log&lt;sub&gt;2&lt;/sub&gt; fold-change threshold</string>
             </property>
            </widget>
            <widget class="QDoubleSpinBox" name="logFCDoubleSpinBox">
             <property name="geometry">
              <rect>
-              <x>370</x>
+              <x>550</x>
               <y>90</y>
               <width>171</width>
               <height>27</height>
@@ -1097,10 +1097,10 @@
              <double>1.000000000000000</double>
             </property>
            </widget>
-           <widget class="QLabel" name="label_13">
+           <widget class="QLabel" name="domainLabel">
             <property name="geometry">
              <rect>
-              <x>550</x>
+              <x>730</x>
               <y>70</y>
               <width>171</width>
               <height>18</height>
@@ -1113,7 +1113,7 @@
            <widget class="MultiSelectComboBox" name="domainCheckboxList">
             <property name="geometry">
              <rect>
-              <x>550</x>
+              <x>730</x>
               <y>90</y>
               <width>171</width>
               <height>26</height>
@@ -1123,7 +1123,7 @@
            <widget class="QDoubleSpinBox" name="pvalueDoubleSpinBox">
             <property name="geometry">
              <rect>
-              <x>190</x>
+              <x>370</x>
               <y>90</y>
               <width>171</width>
               <height>27</height>
@@ -1140,6 +1140,39 @@
             </property>
             <property name="value">
              <double>0.050000000000000</double>
+            </property>
+           </widget>
+           <widget class="MultiSelectComboBox" name="firstConditionCheckBoxList_2">
+            <property name="geometry">
+             <rect>
+              <x>190</x>
+              <y>40</y>
+              <width>171</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <item>
+             <property name="text">
+              <string>Standard mode</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Selection mode</string>
+             </property>
+            </item>
+           </widget>
+           <widget class="QLabel" name="conditionModeLabel">
+            <property name="geometry">
+             <rect>
+              <x>190</x>
+              <y>20</y>
+              <width>141</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Condition mode*</string>
             </property>
            </widget>
           </widget>
