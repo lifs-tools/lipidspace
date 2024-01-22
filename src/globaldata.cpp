@@ -34,3 +34,4 @@ map<string, double> GlobalData::gui_num_var{{"pie_tree_depth", 3}, {"dendrogram_
 const vector<QColor> GlobalData::COLORS{QColor("#1f77b4"), QColor("#ff7f0e"), QColor("#2ca02c"), QColor("#d62728"), QColor("#9467bd"), QColor("#8c564b"), QColor("#e377c2"), QColor("#bcbd22"), QColor("#17becf")};
 
 map<string, QColor> GlobalData::colorMapCategories{{"GL", QColor("#3B73B8")}, {"GP", QColor("#93C01F")}, {"SP", QColor("#F6A611")}, {"ST",  QColor("#86134E")}, {"FA", QColor("#ca26d3")}, {"SL", QColor("#ff7f0e")}};
+

@@ -2160,7 +2160,7 @@ void Statistics::updateVolcano(){
                 if (log_fc <= -log_fc_level){
                     pval_fc_down.push_back({log_fc, log_p_value});
                     fc_down_lipids.push_back(p_val_lipids[i]);
-                    GlobalData::enrichment_list.push_back(p_val_lipids[i]);
+                    GlobalData::enrichment_list.push_back(p_val_lipids[i].toStdString());
 
                     series[0].push_back(p_value);
                     series[1].push_back(fc);
@@ -2169,7 +2169,7 @@ void Statistics::updateVolcano(){
                 else if (log_fc_level <= log_fc){
                     pval_fc_up.push_back({log_fc, log_p_value});
                     fc_up_lipids.push_back(p_val_lipids[i]);
-                    GlobalData::enrichment_list.push_back(p_val_lipids[i]);
+                    GlobalData::enrichment_list.push_back(p_val_lipids[i].toStdString());
 
                     series[4].push_back(p_value);
                     series[5].push_back(fc);
@@ -2214,7 +2214,7 @@ void Statistics::updateVolcano(){
                 if (log_fc_level <= log_fc){
                     pval_fc_reg.push_back({log_fc, log_p_value});
                     fc_reg_lipids.push_back(p_val_lipids[i]);
-                    GlobalData::enrichment_list.push_back(p_val_lipids[i]);
+                    GlobalData::enrichment_list.push_back(p_val_lipids[i].toStdString());
 
                     series[2].push_back(p_value);
                     series[3].push_back(fc);
@@ -2339,6 +2339,7 @@ void Statistics::updateEnrichment(){
 
     if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
 
-    cout << "update" << endl;
+    LIONEnrichment &lion_enrichment = lipid_space->lion_enrichment;
+    cout << "update " << lion_enrichment.lion_terms.size() << endl;
 }
 

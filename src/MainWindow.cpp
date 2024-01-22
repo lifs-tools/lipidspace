@@ -129,6 +129,7 @@ int main(int argc, char** argv) {
     }
     else if (argc > 2 && string(argv[1]) == "identify"){
         QApplication application(argc, argv);
+
         LipidSpace lipid_space;
         string lipid_name = goslin::strip(argv[2], '"');
         LipidParser p;

@@ -269,8 +269,7 @@ void LipidSpace::create_dendrogram(){
 
 
 
-
-LipidSpace::LipidSpace() {
+LipidSpace::LipidSpace() : lion_enrichment() {
     keep_sn_position = true;
     ignore_unknown_lipids = false;
     ignore_doublette_lipids = false;

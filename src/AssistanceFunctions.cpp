@@ -15,6 +15,96 @@ namespace {
 
 
 
+LIONTerm::LIONTerm(string _lion_id, string _name, bool _is_lipid, set<string> &_relations){
+    lion_id = _lion_id;
+    name = _name;
+    is_lipid = _is_lipid;
+    for (auto rel : _relations) relations.push_back(rel);
+}
+
+
+LIONEnrichment::LIONEnrichment(){
+    ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/LION_LS.obo");
+    if (!infile.good()){
+        Logging::write_log("Error: file 'data/LION_LS.obo' not found.");
+        throw LipidException("Error: file 'data/LION_LS.obo' not found. Please check the log message.");
+    }
+    string line;
+
+    string lion_id = "";
+    string name = "";
+    bool is_lipid = false;
+    set<string> relations;
+
+    while (getline(infile, line)){
+        if (!line.length()) continue;
+
+        if (line == "[Term]"){
+            if (lion_id != "" && name != ""){
+                LIONTerm *term = new LIONTerm(lion_id, name, is_lipid, relations);
+                if (is_lipid){
+                    lipids.insert({name, term});
+                }
+                lion_terms.insert({lion_id, term});
+            }
+            lion_id = "";
+            name = "";
+            is_lipid = false;
+            relations.clear();
+        }
+
+        else if (line.substr(0, 4) == "id: "){
+            lion_id = line.substr(4);
+        }
+
+        else if (line.substr(0, 6) == "name: "){
+            name = line.substr(6);
+        }
+
+        else if (line == "is_lipid: true"){
+            is_lipid = true;
+        }
+
+        else if (line.substr(0, 6) == "is_a: "){
+            line = line.substr(6);
+            int pos = line.find(" ! ");
+            relations.insert(line.substr(0, pos));
+        }
+
+        else if (line == "is_obsolete: true"){
+            lion_id = "";
+            name = "";
+        }
+    }
+
+    if (lion_id != "" && name != ""){
+        LIONTerm *term = new LIONTerm(lion_id, name, is_lipid, relations);
+        if (is_lipid){
+            lipids.insert({name, term});
+        }
+        lion_terms.insert({lion_id, term});
+    }
+
+
+    for (auto &kv : lion_terms){
+        string term_id = kv.first;
+        LIONTerm *term = kv.second;
+        if (term->is_lipid){
+            for (string parent_term_id : term->relations){
+                if (uncontains_val(search_terms, parent_term_id)){
+                    search_terms.insert({parent_term_id, {0, 0}});
+                }
+            }
+        }
+    }
+}
+
+
+LIONEnrichment::~LIONEnrichment(){
+    for (auto &kv : lion_terms) delete kv.second;
+}
+
+
 
 MultiSelectComboBox::MultiSelectComboBox(QWidget* aParent) :
     QComboBox(aParent),

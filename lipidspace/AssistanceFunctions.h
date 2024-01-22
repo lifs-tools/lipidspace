@@ -113,6 +113,29 @@ public slots:
 
 
 
+class LIONTerm {
+public:
+    string lion_id;
+    string name;
+    bool is_lipid;
+    vector<string> relations;
+
+    LIONTerm(string _lion_id, string _name, bool _is_lipid, set<string> &_relations);
+};
+
+
+class LIONEnrichment {
+public:
+    map<string, LIONTerm*> lion_terms;
+    map<string, LIONTerm*> lipids;
+    map<string, pair<int, int> > search_terms;
+
+    LIONEnrichment();
+    ~LIONEnrichment();
+};
+
+
+
 class MultiSelectComboBox : public QComboBox
 {
     Q_OBJECT
