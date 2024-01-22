@@ -123,15 +123,29 @@ public:
     LIONTerm(string _lion_id, string _name, bool _is_lipid, set<string> &_relations);
 };
 
+struct LIONResult {
+    LIONTerm *term;
+    int number_background;
+    int number_background_events;
+    int number_target;
+    int number_target_events;
+    double pvalue;
+};
+
 
 class LIONEnrichment {
 public:
     map<string, LIONTerm*> lion_terms;
     map<string, LIONTerm*> lipids;
-    map<string, pair<int, int> > search_terms;
+    map<string, int> search_terms;
+    LipidParser *lipid_parser;
+    int num_background = 0;
 
-    LIONEnrichment();
+    LIONEnrichment(LipidParser *l);
     ~LIONEnrichment();
+    void set_background_lipids(vector<string> &lipid_list);
+    void compute_event_occurrance(vector<string> &lipid_list, map<string, int> &occ_list);
+    void enrichment_analysis(vector<string> &target_list, vector<LIONResult> &result_list);
 };
 
 
@@ -375,6 +389,8 @@ double p_value_welch(Array &a, Array &b);
 double p_value_anova(vector<Array> &v);
 double p_value_chi_sq(Array &a, Array &b);
 double cosine_similarity(Array &a, Array &b);
+double hypergeometricProb(int a, int b, int c, int d);
+double exact_fischer(int num_bg, int num_event, int num_target, int num_target_event);
 void multiple_correction_bonferoni(Array &a);
 void multiple_correction_bh(Array &a);
 bool test_benford(Array &a);

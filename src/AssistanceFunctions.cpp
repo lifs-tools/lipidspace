@@ -23,18 +23,20 @@ LIONTerm::LIONTerm(string _lion_id, string _name, bool _is_lipid, set<string> &_
 }
 
 
-LIONEnrichment::LIONEnrichment(){
+LIONEnrichment::LIONEnrichment(LipidParser *l){
     ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/LION_LS.obo");
     if (!infile.good()){
         Logging::write_log("Error: file 'data/LION_LS.obo' not found.");
         throw LipidException("Error: file 'data/LION_LS.obo' not found. Please check the log message.");
     }
     string line;
+    lipid_parser = l;
 
     string lion_id = "";
     string name = "";
     bool is_lipid = false;
     set<string> relations;
+    set<string> lipid_ids;
 
     while (getline(infile, line)){
         if (!line.length()) continue;
@@ -44,6 +46,7 @@ LIONEnrichment::LIONEnrichment(){
                 LIONTerm *term = new LIONTerm(lion_id, name, is_lipid, relations);
                 if (is_lipid){
                     lipids.insert({name, term});
+                    lipid_ids.insert(lion_id);
                 }
                 lion_terms.insert({lion_id, term});
             }
@@ -81,6 +84,7 @@ LIONEnrichment::LIONEnrichment(){
         LIONTerm *term = new LIONTerm(lion_id, name, is_lipid, relations);
         if (is_lipid){
             lipids.insert({name, term});
+            lipid_ids.insert(lion_id);
         }
         lion_terms.insert({lion_id, term});
     }
@@ -91,8 +95,8 @@ LIONEnrichment::LIONEnrichment(){
         LIONTerm *term = kv.second;
         if (term->is_lipid){
             for (string parent_term_id : term->relations){
-                if (uncontains_val(search_terms, parent_term_id)){
-                    search_terms.insert({parent_term_id, {0, 0}});
+                if (uncontains_val(lipid_ids, parent_term_id) && uncontains_val(search_terms, parent_term_id)){
+                    search_terms.insert({parent_term_id, 0});
                 }
             }
         }
@@ -102,6 +106,65 @@ LIONEnrichment::LIONEnrichment(){
 
 LIONEnrichment::~LIONEnrichment(){
     for (auto &kv : lion_terms) delete kv.second;
+}
+
+
+void LIONEnrichment::set_background_lipids(vector<string> &lipid_list){
+    for (auto &kv : search_terms) kv.second = 0;
+    compute_event_occurrance(lipid_list, search_terms);
+    num_background = (int)lipid_list.size();
+}
+
+
+
+void LIONEnrichment::compute_event_occurrance(vector<string> &lipid_list, map<string, int> &occ_list){
+    for (string lipid_input_name : lipid_list){
+        try {
+            LipidAdduct *lipid = lipid_parser->parse(lipid_input_name);
+            if (lipid->lipid->info->level > MOLECULAR_SPECIES) lipid->lipid->info->level = MOLECULAR_SPECIES;
+            lipid->sort_fatty_acyl_chains();
+            string lipid_name = lipid->get_lipid_string();
+            string lipid_name_species = lipid->get_lipid_string(SPECIES);
+            delete lipid;
+
+            if (uncontains_val(lipids, lipid_name) && uncontains_val(lipids, lipid_name_species)) continue;
+            if (uncontains_val(lipids, lipid_name)) lipid_name = lipid_name_species;
+
+            set<string> visited_terms;
+            queue<string> term_queue;
+            for (string lion_id : lipids[lipid_name]->relations) term_queue.push(lion_id);
+
+            while (!term_queue.empty()){
+                string parent_term_id = term_queue.front();
+                term_queue.pop();
+                if (contains_val(occ_list, parent_term_id) && uncontains_val(visited_terms, parent_term_id)){
+                    occ_list.at(parent_term_id) += 1;
+                    visited_terms.insert(parent_term_id);
+                }
+                for (string lion_id : lion_terms[parent_term_id]->relations) term_queue.push(lion_id);
+            }
+        }
+        catch (exception &){
+
+        }
+    }
+}
+
+
+
+void LIONEnrichment::enrichment_analysis(vector<string> &target_list, vector<LIONResult> &result_list){
+    if (num_background == 0) return;
+    map<string, int> search_target_terms;
+    for (auto &kv : search_terms) search_target_terms.insert({kv.first, 0});
+    compute_event_occurrance(target_list, search_target_terms);
+
+
+    for (auto &kv : search_terms){
+        string term_id = kv.first;
+        if (kv.second == 0) continue;
+        double p_hyp = exact_fischer(num_background, kv.second, (int)target_list.size(), search_target_terms[kv.first]);
+        result_list.push_back(LIONResult{lion_terms[term_id], num_background, kv.second, (int)target_list.size(), search_target_terms[kv.first], p_hyp});
+    }
 }
 
 
@@ -1711,6 +1774,39 @@ double p_value_student(Array &sample1, Array &sample2){
     double s = sqrt(((n - 1) * sq(s1) + (m - 1) * sq(s2)) / (n + m - 2));
     double t = __abs(sqrt(n * m / (n + m)) * ((m1 - m2) / s));
     return max(0., min(1., t_distribution_cdf(t, n + m - 2.)));
+}
+
+inline double logbinom(double n, double k) noexcept
+{
+    return lgamma(n + 1) - lgamma(n - k + 1) - lgamma(k + 1);
+}
+
+inline double binom(double n, double k) noexcept
+{
+    return exp(logbinom(n,k));
+}
+
+
+double hypergeometricProb(int a, int b, int c, int d){
+    return exp(logbinom(a + c, a) + logbinom(b + d, b) - logbinom(a + b + c + d, a + b));
+}
+
+
+
+double exact_fischer(int num_bg, int num_event, int num_target, int num_target_event){
+    int a = num_target_event;
+    int b = num_event - num_target_event;
+    int c = num_target - num_target_event;
+    int d = num_bg - num_event - num_target + num_target_event;
+    double pCutoff = hypergeometricProb(a, b, c, d);
+    double pValue = 0;
+    for (int x = 0; x <= min(num_event, num_target); ++x){
+        if (a + b - x >= 0 && a + c - x >= 0 && d - a + x >= 0){
+            double p = hypergeometricProb(x, a + b - x, a + c - x, d - a + x);
+            if (p <= pCutoff) pValue += p;
+        }
+    }
+    return max(0., min(1., pValue));
 }
 
 

@@ -269,7 +269,8 @@ void LipidSpace::create_dendrogram(){
 
 
 
-LipidSpace::LipidSpace() : lion_enrichment() {
+LipidSpace::LipidSpace() {
+    lion_enrichment = new LIONEnrichment(&parser);
     keep_sn_position = true;
     ignore_unknown_lipids = false;
     ignore_doublette_lipids = false;
@@ -406,6 +407,7 @@ const vector< vector< vector< pair<int, int> > > > LipidSpace::orders {
 LipidSpace::~LipidSpace(){
     reset_analysis();
     delete global_lipidome;
+    delete lion_enrichment;
 }
 
 
@@ -3231,6 +3233,8 @@ void LipidSpace::lipid_analysis(bool report_progress){
         for (auto kv : lipid_name_map) statistics_lipids[kv.second] = kv.first;
 
     }
+
+    lion_enrichment->set_background_lipids(global_lipidome->species);
 
     analysis_finished = true;
 

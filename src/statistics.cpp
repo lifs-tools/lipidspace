@@ -2339,7 +2339,12 @@ void Statistics::updateEnrichment(){
 
     if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
 
-    LIONEnrichment &lion_enrichment = lipid_space->lion_enrichment;
-    cout << "update " << lion_enrichment.lion_terms.size() << endl;
+    LIONEnrichment *lion_enrichment = lipid_space->lion_enrichment;
+    vector<LIONResult> results;
+    lion_enrichment->enrichment_analysis(GlobalData::enrichment_list, results);
+    for (auto &result : results){
+        cout << result.term->name << " " << result.pvalue << endl;
+    }
+
 }
 
