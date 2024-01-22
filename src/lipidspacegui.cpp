@@ -607,7 +607,15 @@ void LipidSpaceGUI::setStudyVariable(int c){
     ui->firstConditionCheckBoxList->clear();
     ui->secondConditionCheckBoxList->clear();
 
-    if (uncontains_val(lipid_space->study_variable_values, target_variable) || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
+    if (uncontains_val(lipid_space->study_variable_values, target_variable)) {
+        for (auto &kv : lipid_space->study_variable_values) cout << kv.first << " " << target_variable << endl;
+
+        connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+        connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+        connect(ui->studyVariableComboBoxEnrichment, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
+        connect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
+        return;
+    }
 
     GlobalData::first_enrichment_classes.clear();
     GlobalData::second_enrichment_classes.clear();

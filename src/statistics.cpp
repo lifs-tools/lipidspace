@@ -2101,9 +2101,7 @@ void Statistics::updateVolcano(){
             }
             else {
                 Array cv_array;
-                for (auto &array : arrays){
-                    for (auto val : array) cv_array.push_back(val);
-                }
+                for (auto &array : arrays) cv_array.push_back(array.mean());
                 fc = cv_array.stdev() / cv_array.mean();
             }
         }
