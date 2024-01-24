@@ -414,7 +414,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
     ui->conditionModeLabel->setToolTip("To obtain a target list of lipids, three modes are available. In 'Standard mode', each nominal value from the study variable is taken as its own condition. In 'Selection mode', the user can assign nominal values to a reference or test condition. When selecting 'Lipid species list selection', the lipid species list on the left-hand side will directly by taken.");
 
-    /*
+
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
     ct->at(0) = SampleColumn;
@@ -422,11 +422,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(2) = StudyVariableColumnNominal;
     ct->at(3) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
-    */
 
+
+    /*
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/PFD.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(330, LipidColumn);
-
     ct->at(0) = SampleColumn;
     ct->at(1) = IgnoreColumn;
     ct->at(2) = IgnoreColumn;
@@ -441,7 +441,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(11) = StudyVariableColumnNominal;
     ct->at(12) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Sheet1", COLUMN_PIVOT_TABLE, ct));
-
+    */
 
 
 
@@ -652,6 +652,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
         }
     }
 
+    statisticsEnrichment.clean();
     statisticsBoxPlot.updateBoxPlot();
     statisticsFAD.updateFAD();
     statisticsBarPlot.updateBarPlot();
@@ -1122,6 +1123,8 @@ void LipidSpaceGUI::changeConditionMode(int mode){
     else {
         GlobalData::condition_mode_enrichment = LipidSpeciesListMode;
         ui->studyVarEnrichmentLabel->setVisible(false);
+        ui->testConditionsLabel->setVisible(false);
+        ui->refConditionsLabel->setVisible(false);
         ui->statTestLabel->setVisible(false);
         ui->pvalCorrectionLabel->setVisible(false);
         ui->pvalThresholdLabel->setVisible(false);
@@ -1136,6 +1139,7 @@ void LipidSpaceGUI::changeConditionMode(int mode){
     }
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();
+    statisticsEnrichment.updateEnrichment();
 }
 
 
@@ -1311,6 +1315,9 @@ void LipidSpaceGUI::startFeatureAnalysis(){
     lipid_space->start();
     progressbar->exec();
     ui->itemsTabWidget->setCurrentIndex(0);
+    if (GlobalData::condition_mode_enrichment == LipidSpeciesListMode){
+        statisticsEnrichment.updateEnrichment();
+    }
 }
 
 
@@ -1537,6 +1544,9 @@ void LipidSpaceGUI::itemChanged(QListWidgetItem *item){
     else {
         Logging::write_log("Error: selection element '" + entity + "' was not found in the seletion map.");
         QMessageBox::critical(this, "Damn it, error", "Oh no, when you read this, an error happened that should never be expected to happen. Please check the log messages and send them to the developers. Thank you and sorry.");
+    }
+    if (lit == SPECIES_ITEM && GlobalData::condition_mode_enrichment == LipidSpeciesListMode){
+        statisticsEnrichment.updateEnrichment();
     }
 }
 

@@ -74,7 +74,12 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
     background->setZValue(1);
     data_cloud->setZValue(100);
 
-    rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
+    if (error >= 0){
+        rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
+    }
+    else {
+        rect = new HoverRectItem(QString("%1: %2").arg(_label).arg(value, 0, 'f', 1), _label.toStdString());
+    }
     rect->setZValue(100);
     rect->setAcceptHoverEvents(true);
     connect(&(rect->hover_signal), &HoverSignal::enterLipid, this, &BarBox::lipidEntered);
@@ -149,9 +154,10 @@ void HoverRectItem::mousePressEvent(QGraphicsSceneMouseEvent *event){
 }
 
 
-Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data, bool _show_pvalues) : Chartplot(_chart) {
+Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data, bool _show_pvalues, bool _sorting) : Chartplot(_chart) {
     y_log_scale = _log_scale;
     show_data = _show_data;
+    with_sorting = _sorting;
     show_pvalues = _show_pvalues;
     min_log_value = 0.1;
     mouse_shift_start = QPointF(-1, -1);
@@ -184,7 +190,6 @@ void Barplot::update_chart(){
                 double xs = b + (double)s / (double)bar_set->size();
                 double xe = b + (double)(s + 1) / (double)bar_set->size();
 
-                // draw error line
                 double x1 = xs + (xe - xs) / 4.;
                 double y1 = (bar->value + bar->error) * animation_length;
                 double x2 = xe - (xe - xs) / 4.;
@@ -192,14 +197,21 @@ void Barplot::update_chart(){
                 chart->translate(x1, y1);
                 chart->translate(x2, y2);
                 bool lines_visible = (x2 - x1) > 3;
-                bar->upper_error_line->setLine(x1, y1, x2, y2);
-                bar->upper_error_line->setVisible(lines_visible);
                 QPen line_pen;
                 if (show_data && lines_visible){
                     line_pen.setColor(QColor(200, 0, 0));
                     line_pen.setWidthF(2);
                 }
-                bar->upper_error_line->setPen(line_pen);
+
+                // draw error line
+                if (bar->error >= 0){
+                    bar->upper_error_line->setLine(x1, y1, x2, y2);
+                    bar->upper_error_line->setVisible(lines_visible);
+                    bar->upper_error_line->setPen(line_pen);
+                }
+                else {
+                    bar->upper_error_line->setVisible(false);
+                }
 
                 // draw bar
                 x1 = xs;
@@ -234,26 +246,36 @@ void Barplot::update_chart(){
                 }
 
                 // draw lower error line
-                x1 = xs + (xe - xs) / 4.;
-                y1 = (bar->value - bar->error) * animation_length;
-                x2 = xe - (xe - xs) / 4.;
-                y2 = (bar->value - bar->error) * animation_length;
-                chart->translate(x1, y1);
-                chart->translate(x2, y2);
-                bar->lower_error_line->setLine(x1, y1, x2, y2);
-                bar->lower_error_line->setVisible(lines_visible);
-                bar->lower_error_line->setPen(line_pen);
+                if (bar->error >= 0){
+                    x1 = xs + (xe - xs) / 4.;
+                    y1 = (bar->value - bar->error) * animation_length;
+                    x2 = xe - (xe - xs) / 4.;
+                    y2 = (bar->value - bar->error) * animation_length;
+                    chart->translate(x1, y1);
+                    chart->translate(x2, y2);
+                    bar->lower_error_line->setLine(x1, y1, x2, y2);
+                    bar->lower_error_line->setVisible(lines_visible);
+                    bar->lower_error_line->setPen(line_pen);
+                }
+                else {
+                    bar->lower_error_line->setVisible(false);
+                }
 
-                // draw upper error line
-                x1 = (xs + xe) / 2.0;
-                y1 = (bar->value - bar->error) * animation_length;
-                x2 = (xs + xe) / 2.0;
-                y2 = (bar->value + bar->error) * animation_length;
-                chart->translate(x1, y1);
-                chart->translate(x2, y2);
-                bar->base_line->setLine(x1, y1, x2, y2);
-                bar->base_line->setVisible(lines_visible);
-                bar->base_line->setPen(line_pen);
+                // draw base error line
+                if (bar->error >= 0){
+                    x1 = (xs + xe) / 2.0;
+                    y1 = (bar->value - bar->error) * animation_length;
+                    x2 = (xs + xe) / 2.0;
+                    y2 = (bar->value + bar->error) * animation_length;
+                    chart->translate(x1, y1);
+                    chart->translate(x2, y2);
+                    bar->base_line->setLine(x1, y1, x2, y2);
+                    bar->base_line->setVisible(lines_visible);
+                    bar->base_line->setPen(line_pen);
+                }
+                else {
+                    bar->base_line->setVisible(false);
+                }
 
                 // draw data points
                 bar->data_cloud->setNewPosition((xs + xe) / 2.0, (xe - xs) / 2.0 * 0.8, 0, animation_length);
@@ -470,14 +492,15 @@ void Barplot::recompute_hights(){
 
 
 void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors){
-    if (bars.size() > 0 || data->size() == 0 || data->size() != labels->size() || (colors != 0 && categories->size() != colors->size())){
-        delete data;
-        delete categories;
-        delete labels;
-        delete colors;
+    if (bars.size() > 0 || data->size() == 0 || categories == 0 || categories->empty() || data->size() != labels->size() || (colors != 0 && (categories->size() != colors->size() && colors->size() != labels->size()))){
+        if (data) delete data;
+        if (categories) delete categories;
+        if (labels) delete labels;
+        if (colors) delete colors;
         return;
     }
 
+    bool label_coloring = colors != 0 && colors->size() == labels->size();
     QFontMetrics fm(stars_font);
 
     for (auto category_data : *data){
@@ -486,8 +509,9 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
 
     SortVector<string, int> sorted_indexes;
     for (uint i = 0; i < labels->size(); ++i) sorted_indexes.push_back({labels->at(i).toStdString(), i});
-    sorted_indexes.sort_asc();
+    if (with_sorting) sorted_indexes.sort_asc();
 
+    QColor color = Qt::white;
     double ymin = chart->yrange.x();
     double ymax = chart->yrange.y();
     for (uint si = 0; si < data->size(); ++si){
@@ -496,14 +520,24 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
         auto *bar_set = new vector<BarBox*>();
         bars.push_back(bar_set);
         bar_map.insert({labels->at(s), bar_set});
+        if (label_coloring) color = colors->at(si);
 
         double group_max = 0;
         for (uint c = 0; c < data_set.size(); c++){
-            QColor color = (colors != 0) ? colors->at(c) : Qt::white;
+            if (!label_coloring) color = (colors != 0) ? colors->at(c) : Qt::white;
             auto values = data_set[c];
+            int n = values.size();
 
-            double mean = values.mean();
-            double error = values.stdev();
+            double mean = 0;
+            double error = -1;
+
+            if (n > 1){
+                mean = values.mean();
+                error = values.stdev();
+            }
+            else {
+                mean = values.empty() ? 0 : values[0];
+            }
             if (isnan(mean) || isinf(mean)) mean = 0;
             if (isnan(error) || isinf(error)) error = 0;
             if (mean > 0) ymin = __min(ymin, mean);
@@ -512,66 +546,71 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
 
             SortVector<double, double> orig_data;
             // distribute the data around the center
-            int n = values.size();
 
-            Array X(n, 0);
-            Array Y;
-            for (auto value : values) Y.push_back(value);
+            if (n > 1){
+                Array X(n, 0);
+                Array Y;
+                for (auto value : values) Y.push_back(value);
 
-            double mue = Y.mean();
-            double sigma = Y.sample_stdev();
+                double mue = Y.mean();
+                double sigma = Y.sample_stdev();
 
-            for (int i = 0; i < n; ++i){
-                X[i] = randnum() * 0.002 - 0.001;
-                Y[i] = (Y[i] - mue) / sigma;
-            }
-            double max_x = 0;
-
-            int n4 = n;
-            while (n4 & 3){
-                X.push_back(0);
-                Y.push_back(0);
-                n4++;
-            }
-
-            Array xx(n, 0);
-            const __m256d one = {1., 1., 1., 1.};
-            const __m256d o_three = {0.30482918, 0.30482918, 0.30482918, 0.30482918};
-            for (int i = 0; i < n; ++i){
-                __m256d fx4 = {0., 0., 0., 0., };
-                __m256d xi = {X[i], X[i], X[i], X[i]};
-                __m256d yi = {Y[i], Y[i], Y[i], Y[i]};
-                for (int j = 0; j < n4; j += 4){
-
-                    __m256d xj = *(__m256d*)(X.data() + j);
-                    __m256d yj = *(__m256d*)(Y.data() + j);
-
-                    __m256d x_diff = xi - xj;
-                    __m256d y_diff = yi - yj;
-
-                    __m256d d = {0., 0., 0., 0.};
-                    d = d + x_diff * x_diff;
-                    d = d + y_diff * y_diff;
-
-                    x_diff = xj - xi;
-
-                    d = -d * o_three;
-                    d = d - one;
-                    d = d * d;
-                    d = d * d;
-                    d = one / d;
-
-                    fx4 = fx4 + x_diff * d;
+                for (int i = 0; i < n; ++i){
+                    X[i] = randnum() * 0.002 - 0.001;
+                    Y[i] = (Y[i] - mue) / sigma;
                 }
-                double fx = fx4[0] + fx4[1] + fx4[2] + fx4[3];
-                xx[i] = X[i] - fx / sq(sq(0.30482918 * (-sq(fx)) - 1.));
-                max_x = max(max_x, abs(xx[i]));
+                double max_x = 0;
+
+                int n4 = n;
+                while (n4 & 3){
+                    X.push_back(0);
+                    Y.push_back(0);
+                    n4++;
+                }
+
+                Array xx(n, 0);
+                const __m256d one = {1., 1., 1., 1.};
+                const __m256d o_three = {0.30482918, 0.30482918, 0.30482918, 0.30482918};
+                for (int i = 0; i < n; ++i){
+                    __m256d fx4 = {0., 0., 0., 0., };
+                    __m256d xi = {X[i], X[i], X[i], X[i]};
+                    __m256d yi = {Y[i], Y[i], Y[i], Y[i]};
+                    for (int j = 0; j < n4; j += 4){
+
+                        __m256d xj = *(__m256d*)(X.data() + j);
+                        __m256d yj = *(__m256d*)(Y.data() + j);
+
+                        __m256d x_diff = xi - xj;
+                        __m256d y_diff = yi - yj;
+
+                        __m256d d = {0., 0., 0., 0.};
+                        d = d + x_diff * x_diff;
+                        d = d + y_diff * y_diff;
+
+                        x_diff = xj - xi;
+
+                        d = -d * o_three;
+                        d = d - one;
+                        d = d * d;
+                        d = d * d;
+                        d = one / d;
+
+                        fx4 = fx4 + x_diff * d;
+                    }
+                    double fx = fx4[0] + fx4[1] + fx4[2] + fx4[3];
+                    xx[i] = X[i] - fx / sq(sq(0.30482918 * (-sq(fx)) - 1.));
+                    max_x = max(max_x, abs(xx[i]));
+                }
+
+                for (int i = 0; i < n; ++i){
+                    orig_data.push_back({values[i], xx[i] / max_x});
+                    ymax = max(ymax, values[i]);
+                }
+            }
+            else  {
+                orig_data.push_back({n == 0 ? 0 : values[0], 0});
             }
 
-            for (int i = 0; i < n; ++i){
-                orig_data.push_back({values[i], xx[i] / max_x});
-                ymax = max(ymax, values[i]);
-            }
             bar_set->push_back(new BarBox(chart, mean, error, labels->at(s), color, &orig_data));
             connect(bar_set->back(), &BarBox::enterLipid, this, &Barplot::lipidEntered);
             connect(bar_set->back(), &BarBox::exitLipid, this, &Barplot::lipidExited);
@@ -627,10 +666,10 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
         }
     }
 
-    delete data;
-    delete categories;
-    delete labels;
-    delete colors;
+    if (data) delete data;
+    if (categories) delete categories;
+    if (labels) delete labels;
+    if (colors) delete colors;
 
     chart->create_y_numerical_axis(y_log_scale);
     chart->create_x_nominal_axis();
@@ -903,7 +942,10 @@ void Lineplot::update_chart(){
             pen.setStyle(Qt::DashLine);
             line.line->setZValue(10000);
         }
-        else pen.setWidthF(2);
+        else {
+            line.line->setZValue(200);
+            pen.setWidthF(2);
+        }
         line.line->setPen(pen);
         line.line->setLine(x1, y1, x2, y2);
         line.line->setVisible(visible && (i <= animation_length));
@@ -921,6 +963,7 @@ void Lineplot::add(vector< pair< pair<double, double>, pair<double, double> > > 
     double xmax = chart->xrange.y();
     double ymin = chart->yrange.x();
     double ymax = chart->yrange.y();
+
     for (auto line : _lines){
         double x1 = line.first.first;
         double y1 = line.first.second;

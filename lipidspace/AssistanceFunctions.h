@@ -51,6 +51,9 @@
 #define MASK32 4294967295ull
 #define ulong unsigned long long
 #define BENFORD_THRESHOLD 0.01
+#define M_LOG10_005 1.3010299956639813
+#define M_LOG10_001 2
+#define M_LOG10_0001 3
 
 template<typename Base, typename T>
 inline bool instanceof(const T *ptr) {

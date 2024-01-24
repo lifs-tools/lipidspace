@@ -127,12 +127,13 @@ public:
     QPointF mouse_shift_start;
     QPointF shift_start;
     int zoom;
+    bool with_sorting;
     vector< StatTestLine > stat_test_lines;
     static QFont stars_font;
     double stars_offset;
     double show_pvalues;
 
-    Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false, bool _show_pvalues = false);
+    Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false, bool _show_pvalues = false, bool _sorting = true);
     ~Barplot();
     void add(vector< vector< Array > > *_data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors);
     void update_chart();

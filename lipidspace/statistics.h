@@ -36,6 +36,7 @@ public:
     bool show_data;
     bool show_pvalues;
     map<string, vector<string>> volcano_data;
+    void clean();
 
     Statistics();
     void load_data(LipidSpace *_lipid_space, Chart *_chart);

@@ -12,6 +12,20 @@ Statistics::Statistics() {
 }
 
 
+
+void Statistics::clean(){
+    chart->clear();
+    chart->setTitle("");
+    chart->setVisible(true);
+
+    series_titles.clear();
+    series.clear();
+    flat_data.clear();
+    stat_results.clear();
+}
+
+
+
 void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
     lipid_space = _lipid_space;
     chart = _chart;
@@ -500,6 +514,7 @@ void Statistics::updateBarPlotClasses(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
     barplot->add(barplot_data, categories, lipid_class_names, colors);
     chart->add(barplot);
+
 
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
     connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);
@@ -2352,40 +2367,83 @@ void Statistics::updateEnrichment(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
-    if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
+    if (GlobalData::condition_mode_enrichment != LipidSpeciesListMode){
+        string target_variable = GlobalData::gui_string_var["study_var"];
+        if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
+        if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
+    }
 
-    if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
 
     LIONEnrichment *lion_enrichment = lipid_space->lion_enrichment;
     vector<LIONResult> results;
-    lion_enrichment->enrichment_analysis(GlobalData::enrichment_list, results);
+
+    if (GlobalData::condition_mode_enrichment != LipidSpeciesListMode){
+        if (GlobalData::enrichment_list.empty()) return;
+        lion_enrichment->enrichment_analysis(GlobalData::enrichment_list, results);
+    }
+    else {
+        vector<string> target_list;
+        map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+        map<string, bool> &selection_map = lipid_space->selection[SPECIES_ITEM];
+        for (auto &kv : selection_map){
+            if (kv.second){
+                if (contains_val(translations, kv.first)) target_list.push_back(translations[kv.first]);
+                else target_list.push_back(kv.first);
+            }
+        }
+        if (target_list.empty()) return;
+        lion_enrichment->enrichment_analysis(target_list, results);
+    }
+
 
     sort(results.begin(), results.end(), [](const LIONResult &a, LIONResult &b) -> bool {
-        return a.pvalue > b.pvalue;
+        return a.pvalue < b.pvalue;
     });
-
-    // add pvalue line
-    vector< pair< pair<double, double>, pair<double, double> > > pvalue_line;
-    pvalue_line.push_back({{-1e10, -log10(GlobalData::enrichment_sig)}, {1e10, -log10(GlobalData::enrichment_sig)}});
 
     vector<QString> *terms = new vector<QString>();
     vector<QString> *categories = new vector<QString>();
-    categories->push_back("foo");
+    categories->push_back("");
     vector<QColor> *colors = new vector<QColor>();
     vector< vector< Array > > *barplot_data = new vector< vector<Array> >();
-    colors->push_back("#dddddd");
+
 
     for (auto &result : results){
+        double pvalue = result.pvalue;
+        if (pvalue <= 0 || 0.999999 < pvalue) continue;
+        pvalue = -log10(pvalue);
         terms->push_back(result.term->name.c_str());
         barplot_data->push_back({Array()});
-        barplot_data->front().front().push_back(-log10(result.pvalue));
+        barplot_data->back().front().push_back(pvalue);
+
+        QString hexRGB = "";
+        if (pvalue < M_LOG10_005){
+            hexRGB = QColor::fromHsl(240, 255, 255 - (int)(128. * pvalue / M_LOG10_005)).name();
+        }
+        else if (pvalue < M_LOG10_001){
+            hexRGB = QColor::fromHsl(240 + (int)(119. * (pvalue - M_LOG10_005) / (M_LOG10_001 - M_LOG10_005)), 255, 128).name();
+        }
+        else if (pvalue < M_LOG10_0001){
+            hexRGB = QColor::fromHsl((int)(60. * (pvalue - M_LOG10_001) / (M_LOG10_0001 - M_LOG10_001)), 255, 128).name();
+        }
+        else {
+            hexRGB = "#ffff00";
+        }
+
+        colors->push_back(hexRGB);
     }
 
-    Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
-    //Lineplot *lineplot = new Lineplot(chart);
-    //lineplot->add(pvalue_line, "", QColor("#209fdf"));
+
+    // add pvalue line
+    vector< pair< pair<double, double>, pair<double, double> > > pvalue_line;
+    double ths_pvalue = -log10(GlobalData::enrichment_sig);
+    pvalue_line.push_back({{0, ths_pvalue}, {terms->size(), ths_pvalue}});
+
+    Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues, false);
     barplot->add(barplot_data, categories, terms, colors);
     chart->add(barplot);
+
+    Lineplot *lineplot = new Lineplot(chart);
+    lineplot->add(pvalue_line, "", QColor("#209fdf"));
+    chart->add(lineplot);
 }
 
