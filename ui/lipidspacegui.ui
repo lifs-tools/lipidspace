@@ -910,7 +910,7 @@
            <widget class="QComboBox" name="studyVariableComboBoxEnrichment">
             <property name="geometry">
              <rect>
-              <x>10</x>
+              <x>190</x>
               <y>40</y>
               <width>171</width>
               <height>26</height>
@@ -920,7 +920,7 @@
            <widget class="QLabel" name="studyVarEnrichmentLabel">
             <property name="geometry">
              <rect>
-              <x>10</x>
+              <x>190</x>
               <y>20</y>
               <width>141</width>
               <height>18</height>
@@ -1145,7 +1145,7 @@
            <widget class="QLabel" name="conditionModeLabel">
             <property name="geometry">
              <rect>
-              <x>190</x>
+              <x>10</x>
               <y>20</y>
               <width>141</width>
               <height>18</height>
@@ -1158,7 +1158,7 @@
            <widget class="QComboBox" name="conditionModeComboBox">
             <property name="geometry">
              <rect>
-              <x>190</x>
+              <x>10</x>
               <y>40</y>
               <width>171</width>
               <height>26</height>
@@ -1172,6 +1172,11 @@
             <item>
              <property name="text">
               <string>Selection mode</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Lipid species list selection</string>
              </property>
             </item>
            </widget>

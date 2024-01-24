@@ -64,6 +64,7 @@ public:
     bool show_x_axis;
     bool show_y_axis;
     bool is_x_category_axis;
+    bool x_labels_rotated;
     bool log_x_axis;
     bool log_y_axis;
     vector<LegendCategory> legend_categories;

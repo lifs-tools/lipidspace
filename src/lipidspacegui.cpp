@@ -412,8 +412,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     updateGUI();
 
 
-    ui->conditionModeLabel->setToolTip("In 'Standard mode', each nominal value from the study variable is taken as its own condition. In 'Selection mode', the user can assign nominal values to a reference or test condition.");
+    ui->conditionModeLabel->setToolTip("To obtain a target list of lipids, three modes are available. In 'Standard mode', each nominal value from the study variable is taken as its own condition. In 'Selection mode', the user can assign nominal values to a reference or test condition. When selecting 'Lipid species list selection', the lipid species list on the left-hand side will directly by taken.");
 
+    /*
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
     ct->at(0) = SampleColumn;
@@ -421,12 +422,37 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(2) = StudyVariableColumnNominal;
     ct->at(3) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
+    */
+
+    string file_name = QCoreApplication::applicationDirPath().toStdString() + "/PFD.xlsx";
+    vector<TableColumnType> *ct = new vector<TableColumnType>(330, LipidColumn);
+
+    ct->at(0) = SampleColumn;
+    ct->at(1) = IgnoreColumn;
+    ct->at(2) = IgnoreColumn;
+    ct->at(3) = StudyVariableColumnNominal;
+    ct->at(4) = StudyVariableColumnNominal;
+    ct->at(5) = StudyVariableColumnNumerical;
+    ct->at(6) = StudyVariableColumnNumerical;
+    ct->at(7) = IgnoreColumn;
+    ct->at(8) = IgnoreColumn;
+    ct->at(9) = IgnoreColumn;
+    ct->at(10) = IgnoreColumn;
+    ct->at(11) = StudyVariableColumnNominal;
+    ct->at(12) = StudyVariableColumnNominal;
+    loadTable(new ImportData(file_name, "Sheet1", COLUMN_PIVOT_TABLE, ct));
+
+
+
 
     ui->domainCheckboxList->addItem("huhu");
     ui->domainCheckboxList->addItem("huhu 2");
     ui->domainCheckboxList->addItem("hallo");
     ui->domainCheckboxList->addItem("foo");
     ui->domainCheckboxList->addItem("bar");
+
+
+
 
     changeConditionMode(0);
 }
@@ -1065,6 +1091,24 @@ void LipidSpaceGUI::loadTable(ImportData *import_data){
 
 
 void LipidSpaceGUI::changeConditionMode(int mode){
+    // show all labels
+    ui->refConditionsLabel->setVisible(true);
+    ui->testConditionsLabel->setVisible(true);
+    ui->studyVarEnrichmentLabel->setVisible(true);
+    ui->statTestLabel->setVisible(true);
+    ui->pvalCorrectionLabel->setVisible(true);
+    ui->pvalThresholdLabel->setVisible(true);
+    ui->logFCLabel->setVisible(true);
+
+    // show all combo boxes
+    ui->firstConditionCheckBoxList->setVisible(true);
+    ui->secondConditionCheckBoxList->setVisible(true);
+    ui->studyVariableComboBoxEnrichment->setVisible(true);
+    ui->statTestComboBox->setVisible(true);
+    ui->corretionComboBox->setVisible(true);
+    ui->pvalueDoubleSpinBox->setVisible(true);
+    ui->logFCDoubleSpinBox->setVisible(true);
+
     if (mode == 0){
         GlobalData::condition_mode_enrichment = StandardMode;
         ui->refConditionsLabel->setVisible(false);
@@ -1072,12 +1116,23 @@ void LipidSpaceGUI::changeConditionMode(int mode){
         ui->testConditionsLabel->setVisible(false);
         ui->secondConditionCheckBoxList->setVisible(false);
     }
-    else {
+    else if (mode == 1) {
         GlobalData::condition_mode_enrichment = SelectionMode;
-        ui->refConditionsLabel->setVisible(true);
-        ui->firstConditionCheckBoxList->setVisible(true);
-        ui->testConditionsLabel->setVisible(true);
-        ui->secondConditionCheckBoxList->setVisible(true);
+    }
+    else {
+        GlobalData::condition_mode_enrichment = LipidSpeciesListMode;
+        ui->studyVarEnrichmentLabel->setVisible(false);
+        ui->statTestLabel->setVisible(false);
+        ui->pvalCorrectionLabel->setVisible(false);
+        ui->pvalThresholdLabel->setVisible(false);
+        ui->logFCLabel->setVisible(false);
+        ui->firstConditionCheckBoxList->setVisible(false);
+        ui->secondConditionCheckBoxList->setVisible(false);
+        ui->studyVariableComboBoxEnrichment->setVisible(false);
+        ui->statTestComboBox->setVisible(false);
+        ui->corretionComboBox->setVisible(false);
+        ui->pvalueDoubleSpinBox->setVisible(false);
+        ui->logFCDoubleSpinBox->setVisible(false);
     }
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();

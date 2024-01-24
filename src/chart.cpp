@@ -48,6 +48,7 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     show_x_axis = false;
     show_y_axis = false;
     is_x_category_axis = false;
+    x_labels_rotated = false;
 
     scene.setSceneRect(0, 0, width(), height());
 
@@ -158,6 +159,7 @@ void Chart::create_x_nominal_axis(){
     if (show_x_axis) return;
 
     is_x_category_axis = true;
+    x_labels_rotated = false;
     show_x_axis = true;
     QGraphicsLineItem* l = new QGraphicsLineItem(QLineF(0, 0, 0, 0));
     v_grid.push_back(l);
@@ -236,6 +238,7 @@ void Chart::clear(){
     show_x_axis = false;
     show_y_axis = false;
     is_x_category_axis = false;
+    x_labels_rotated = false;
 
     legend_categories.clear();
 
@@ -430,6 +433,7 @@ void Chart::update_chart(){
 
     chart_box.setRect(ylabel_box.x() + ylabel_box.width(), title_box.y() + title_box.height(), width() - ylabel_box.width(), ylabel_box.height());
 
+    bool show_x_ticks = true;
     double max_tick_width = 0;
     double sum_x_tick_width = 0;
     for (int i = 0; i < TICK_NUM; ++i){
@@ -441,11 +445,23 @@ void Chart::update_chart(){
         sum_x_tick_width += x_tick.boundingRect().width();
     }
     max_tick_width += TICK_SIZE;
+    show_x_ticks = sum_x_tick_width <= chart_box.width();
 
     QGraphicsTextItem max_x_tick(QString("%1").arg(xrange.y(), 1, 'g'));
     double max_x_tick_width = max(max_x_tick.boundingRect().width() / 2., 20.);
 
-    chart_box_inner.setRect(chart_box.x() + max_tick_width, chart_box.y() + tick_rect.height() / 2, chart_box.width() - max_tick_width - max_x_tick_width, chart_box.height() - 1.5 * tick_rect.height());
+    if (!is_x_category_axis || !x_labels_rotated){
+        chart_box_inner.setRect(chart_box.x() + max_tick_width, chart_box.y() + tick_rect.height() / 2, chart_box.width() - max_tick_width - max_x_tick_width, chart_box.height() - 1.5 * tick_rect.height());
+    }
+    else {
+        double max_tick_height = 0;
+        for (uint i = 0; i < x_categories.size(); ++i){
+            max_tick_height = max(max_tick_height, (double)x_ticks[i]->boundingRect().height());
+        }
+        max_tick_height = min(max_tick_height, (double)chart_box.height() * 0.2);
+
+        chart_box_inner.setRect(chart_box.x() + max_tick_width, chart_box.y() + max_tick_height / 2, chart_box.width() - 2 * max_tick_height, chart_box.height() - 1.5 * label_rect.width());
+    }
 
 
 
@@ -528,7 +544,7 @@ void Chart::update_chart(){
             }
 
             auto tick = x_ticks[i];
-            if (sum_x_tick_width < chart_box.width() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
+            if (show_x_ticks && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                 tick->setVisible(true);
                 tick->setFont(tick_font);
                 tick->setPlainText(QString("%1").arg(xrange.x() + (double)i / (TICK_NUM - 1) * (xrange.y() - xrange.x()), 0, 'f', float_x_precision));
@@ -548,6 +564,16 @@ void Chart::update_chart(){
             auto x_tick = x_ticks[i];
             x_tick->setFont(tick_font);
             x_tick->setHtml(x_categories[i]);
+            if (x_labels_rotated){
+                QTransform t;
+                QPointF xlate = x_tick->boundingRect().center();
+                t.translate(xlate.x(), xlate.y());
+                t.rotate(-55);
+                t.translate(-xlate.x(), -xlate.y());
+                x_tick->setTransform(t);
+
+            }
+
             bool vis = xrange.x() <= i && i < xrange.y();
             if (x_tick->boundingRect().width() <= single_group_width && vis){
                 x_tick->setVisible(true);
@@ -567,6 +593,7 @@ void Chart::update_chart(){
             else {
                 x_tick->setVisible(false);
             }
+
 
             auto line = v_grid[i];
             if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && (single_group_width > 5 || i == 0) && i < (xrange.y() - xrange.x())){

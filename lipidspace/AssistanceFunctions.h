@@ -62,7 +62,7 @@ using namespace std;
 using json = nlohmann::json;
 
 enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
-enum ConditionModeEnrichment {StandardMode, SelectionMode};
+enum ConditionModeEnrichment {StandardMode, SelectionMode, LipidSpeciesListMode};
 enum StudyVariableType {NumericalStudyVariable, NominalStudyVariable, NominalValue};
 enum ListItemType {SPECIES_ITEM = 0, CLASS_ITEM = 1, CATEGORY_ITEM = 2, SAMPLE_ITEM = 3};
 enum TableColumnType {SampleColumn, QuantColumn, LipidColumn, StudyVariableColumnNumerical, StudyVariableColumnNominal, IgnoreColumn};

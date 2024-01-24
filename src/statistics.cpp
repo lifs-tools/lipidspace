@@ -316,6 +316,11 @@ void Statistics::updateBarPlotClasses(){
     flat_data.clear();
     stat_results.clear();
 
+    if (GlobalData::stat_level != LipidClassLevel){
+        chart->setVisible(false);
+        return;
+    }
+
     string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
         return;
@@ -330,8 +335,7 @@ void Statistics::updateBarPlotClasses(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level != LipidClassLevel){
-        chart->setVisible(false);
+    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary){
         return;
     }
 
@@ -388,21 +392,23 @@ void Statistics::updateBarPlotClasses(){
     }
 
     map<LipidAdduct*, int> lipid_class_pos;
-    map<string, int> lipid_class_map;
+    map<string, int> registered_lipid_classes;
+    vector<QString> *lipid_class_names = new vector<QString>();
 
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
         LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
         string ex_lipid_class = lipid->get_extended_class();
-        if (uncontains_val(lipid_class_map, ex_lipid_class)){
-            lipid_class_pos.insert({lipid, lipid_class_pos.size()});
-            lipid_class_map.insert({ex_lipid_class, lipid_class_map.size()});
+        if (uncontains_val(registered_lipid_classes, ex_lipid_class)){
+            lipid_class_names->push_back(ex_lipid_class.c_str());
+            registered_lipid_classes.insert({ex_lipid_class, registered_lipid_classes.size()});
         }
+        lipid_class_pos.insert({lipid, registered_lipid_classes[ex_lipid_class]});
     }
 
     // set up matrix for multiple linear regression
     Matrix stat_matrix;
-    stat_matrix.reset(valid_lipidomes, lipid_class_pos.size());
+    stat_matrix.reset(valid_lipidomes, registered_lipid_classes.size());
     for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
 
@@ -419,8 +425,6 @@ void Statistics::updateBarPlotClasses(){
         rr++;
     }
 
-    vector<QString> *lipid_class_names = new vector<QString>(lipid_class_pos.size(), "");
-    for (auto kv : lipid_class_map) lipid_class_names->at(kv.second) = kv.first.c_str();
     vector< vector<Array> > data_series(nom_counter);
 
     for (int t = 0; t < nom_counter; ++t){
@@ -899,9 +903,13 @@ void Statistics::updateFAD(){
     string numerical_string = "Fatty acyls";
     string target_variable = GlobalData::gui_string_var["study_var"];
 
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == FattyAcylLipid);
+    if (GlobalData::stat_level != FattyAcylLipid){
+        chart->setVisible(false);
+        return;
+    }
 
-    chart->setVisible(do_continue);
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->selected_lipidomes.size() > 1);
+
     if (!do_continue || GlobalData::FAD_lipid_classes.empty()) return;
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
@@ -1752,6 +1760,11 @@ void Statistics::updatePVal(){
     volcano_data.insert({"non", vector<string>()});
     volcano_data.insert({"up", vector<string>()});
 
+    if (GlobalData::condition_mode_enrichment == LipidSpeciesListMode){
+        chart->setVisible(false);
+        return;
+    }
+
     string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
@@ -1933,6 +1946,13 @@ void Statistics::updateVolcano(){
     stat_results.clear();
     volcano_data.clear();
     GlobalData::enrichment_list.clear();
+
+
+
+    if (GlobalData::condition_mode_enrichment == LipidSpeciesListMode){
+        chart->setVisible(false);
+        return;
+    }
 
     string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
@@ -2340,9 +2360,32 @@ void Statistics::updateEnrichment(){
     LIONEnrichment *lion_enrichment = lipid_space->lion_enrichment;
     vector<LIONResult> results;
     lion_enrichment->enrichment_analysis(GlobalData::enrichment_list, results);
+
+    sort(results.begin(), results.end(), [](const LIONResult &a, LIONResult &b) -> bool {
+        return a.pvalue > b.pvalue;
+    });
+
+    // add pvalue line
+    vector< pair< pair<double, double>, pair<double, double> > > pvalue_line;
+    pvalue_line.push_back({{-1e10, -log10(GlobalData::enrichment_sig)}, {1e10, -log10(GlobalData::enrichment_sig)}});
+
+    vector<QString> *terms = new vector<QString>();
+    vector<QString> *categories = new vector<QString>();
+    categories->push_back("foo");
+    vector<QColor> *colors = new vector<QColor>();
+    vector< vector< Array > > *barplot_data = new vector< vector<Array> >();
+    colors->push_back("#dddddd");
+
     for (auto &result : results){
-        cout << result.term->name << " " << result.pvalue << endl;
+        terms->push_back(result.term->name.c_str());
+        barplot_data->push_back({Array()});
+        barplot_data->front().front().push_back(-log10(result.pvalue));
     }
 
+    Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
+    //Lineplot *lineplot = new Lineplot(chart);
+    //lineplot->add(pvalue_line, "", QColor("#209fdf"));
+    barplot->add(barplot_data, categories, terms, colors);
+    chart->add(barplot);
 }
 
