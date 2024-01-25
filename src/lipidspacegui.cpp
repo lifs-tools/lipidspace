@@ -232,6 +232,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->corretionComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::changeEnrichmentCorrection);
     connect(ui->firstConditionCheckBoxList, &MultiSelectComboBox::selectionChanged, this, &LipidSpaceGUI::changeFirstEnrichmentConditions);
     connect(ui->secondConditionCheckBoxList, &MultiSelectComboBox::selectionChanged, this, &LipidSpaceGUI::changeSecondEnrichmentConditions);
+    connect(ui->domainCheckboxList, &MultiSelectComboBox::selectionChanged, this, &LipidSpaceGUI::changeEnrichmentDomains);
 
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsBoxPlot, &Statistics::setLegendSize);
     connect(ui->legendSizeSpinBox, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, &statisticsFAD, &Statistics::setLegendSize);
@@ -445,14 +446,11 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     */
 
 
-    ui->domainCheckboxList->addItem("huhu");
-    ui->domainCheckboxList->addItem("huhu 2");
-    ui->domainCheckboxList->addItem("hallo");
-    ui->domainCheckboxList->addItem("foo");
-    ui->domainCheckboxList->addItem("bar");
-
-
-
+    for (auto &kv : lipid_space->lion_enrichment->domains){
+        string domain = kv.second->name;
+        ui->domainCheckboxList->addItem(domain.c_str(), QVariant(), true);
+        GlobalData::enrichment_domains.insert(domain);
+    }
 
     changeConditionMode(0);
 }
@@ -1002,6 +1000,15 @@ void LipidSpaceGUI::changeFirstEnrichmentConditions(){
     }
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();
+}
+
+
+void LipidSpaceGUI::changeEnrichmentDomains(){
+    GlobalData::enrichment_domains.clear();
+    for (auto condition : ui->domainCheckboxList->currentText()){
+        GlobalData::enrichment_domains.insert(condition.toStdString());
+    }
+    statisticsEnrichment.updateEnrichment();
 }
 
 

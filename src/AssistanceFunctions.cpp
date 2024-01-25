@@ -15,11 +15,23 @@ namespace {
 
 
 
-LIONTerm::LIONTerm(string _lion_id, string _name, bool _is_lipid, set<string> &_relations){
+LIONTerm::LIONTerm(string _lion_id, string _name, set<string> &_relations){
     lion_id = _lion_id;
     name = _name;
-    is_lipid = _is_lipid;
     for (auto rel : _relations) relations.push_back(rel);
+}
+
+
+
+void LIONEnrichment::determine_domain(LIONTerm* term, set<string> &visited_terms){
+    if (contains_val(domains, term->name)) return;
+
+    visited_terms.insert(term->lion_id);
+    for (auto parent_term_id : term->relations){
+        LIONTerm *parent_term = lion_terms[parent_term_id];
+        if (uncontains_val(visited_terms, parent_term_id)) determine_domain(parent_term, visited_terms);
+        for (auto domain : parent_term->domains) term->domains.insert(domain);
+    }
 }
 
 
@@ -35,6 +47,8 @@ LIONEnrichment::LIONEnrichment(LipidParser *l){
     string lion_id = "";
     string name = "";
     bool is_lipid = false;
+    bool is_lipid_class = false;
+    bool is_domain = false;
     set<string> relations;
     set<string> lipid_ids;
 
@@ -43,16 +57,28 @@ LIONEnrichment::LIONEnrichment(LipidParser *l){
 
         if (line == "[Term]"){
             if (lion_id != "" && name != ""){
-                LIONTerm *term = new LIONTerm(lion_id, name, is_lipid, relations);
+                if (contains_val(lion_terms, lion_id)){
+                    throw LipidSpaceException("Term id '" + lion_id + "' in lipid ontology already defined.");
+                }
+                LIONTerm *term = new LIONTerm(lion_id, name, relations);
                 if (is_lipid){
                     lipids.insert({name, term});
                     lipid_ids.insert(lion_id);
+                }
+                if (is_lipid_class){
+                    lipid_classes.insert({name, term});
+                }
+                if (is_domain){
+                    term->domains.insert(term->name);
+                    domains.insert({name, term});
                 }
                 lion_terms.insert({lion_id, term});
             }
             lion_id = "";
             name = "";
             is_lipid = false;
+            is_lipid_class = false;
+            is_domain = false;
             relations.clear();
         }
 
@@ -68,6 +94,14 @@ LIONEnrichment::LIONEnrichment(LipidParser *l){
             is_lipid = true;
         }
 
+        else if (line == "is_lipid_class: true"){
+            is_lipid_class = true;
+        }
+
+        else if (line == "is_domain: true"){
+            is_domain = true;
+        }
+
         else if (line.substr(0, 6) == "is_a: "){
             line = line.substr(6);
             int pos = line.find(" ! ");
@@ -81,23 +115,42 @@ LIONEnrichment::LIONEnrichment(LipidParser *l){
     }
 
     if (lion_id != "" && name != ""){
-        LIONTerm *term = new LIONTerm(lion_id, name, is_lipid, relations);
+        LIONTerm *term = new LIONTerm(lion_id, name, relations);
         if (is_lipid){
             lipids.insert({name, term});
             lipid_ids.insert(lion_id);
+        }
+        if (is_lipid_class){
+            lipid_classes.insert({name, term});
+        }
+        if (is_domain){
+            term->domains.insert(term->name);
+            domains.insert({name, term});
         }
         lion_terms.insert({lion_id, term});
     }
 
 
     for (auto &kv : lion_terms){
-        string term_id = kv.first;
+        for (auto parent_term_id : kv.second->relations){
+            if (uncontains_val(lion_terms, parent_term_id)){
+                throw LipidSpaceException("Parent term '" + parent_term_id + "' for term '" + kv.second->lion_id + "' not defined.");
+            }
+        }
+    }
+
+
+    set<string> visited_terms;
+    for (auto &kv : lion_terms){
+        determine_domain(kv.second, visited_terms);
+    }
+
+
+    for (auto &kv : lipids){
         LIONTerm *term = kv.second;
-        if (term->is_lipid){
-            for (string parent_term_id : term->relations){
-                if (uncontains_val(lipid_ids, parent_term_id) && uncontains_val(search_terms, parent_term_id)){
-                    search_terms.insert({parent_term_id, 0});
-                }
+        for (string parent_term_id : term->relations){
+            if (uncontains_val(lipid_ids, parent_term_id) && uncontains_val(search_terms, parent_term_id)){
+                search_terms.insert({parent_term_id, 0});
             }
         }
     }
@@ -125,15 +178,21 @@ void LIONEnrichment::compute_event_occurrance(vector<string> &lipid_list, map<st
             lipid->sort_fatty_acyl_chains();
             string lipid_name = lipid->get_lipid_string();
             string lipid_name_species = lipid->get_lipid_string(SPECIES);
+            string lipid_name_class = lipid->get_extended_class();
             delete lipid;
 
-            if (uncontains_val(lipids, lipid_name) && uncontains_val(lipids, lipid_name_species)) continue;
-            if (uncontains_val(lipids, lipid_name)) lipid_name = lipid_name_species;
+            queue<string> term_queue;
+            if (contains_val(lipids, lipid_name)){
+                for (string lion_id : lipids[lipid_name]->relations) term_queue.push(lion_id);
+            }
+            else if (contains_val(lipids, lipid_name_species)){
+                for (string lion_id : lipids[lipid_name_species]->relations) term_queue.push(lion_id);
+            }
+            else if (contains_val(lipid_classes, lipid_name_class)){
+                for (string lion_id : lipid_classes[lipid_name_class]->relations) term_queue.push(lion_id);
+            }
 
             set<string> visited_terms;
-            queue<string> term_queue;
-            for (string lion_id : lipids[lipid_name]->relations) term_queue.push(lion_id);
-
             while (!term_queue.empty()){
                 string parent_term_id = term_queue.front();
                 term_queue.pop();
@@ -162,6 +221,17 @@ void LIONEnrichment::enrichment_analysis(vector<string> &target_list, vector<LIO
     for (auto &kv : search_terms){
         string term_id = kv.first;
         if (kv.second == 0) continue;
+
+        bool contains_domain = false;
+        LIONTerm *term = lion_terms[term_id];
+        for (auto domain : term->domains){
+            if (contains_val(GlobalData::enrichment_domains, domain)){
+                contains_domain = true;
+                break;
+            }
+        }
+        if (!contains_domain) continue;
+
         double p_hyp = exact_fischer(num_background, kv.second, (int)target_list.size(), search_target_terms[kv.first]);
         result_list.push_back(LIONResult{lion_terms[term_id], num_background, kv.second, (int)target_list.size(), search_target_terms[kv.first], p_hyp});
     }
@@ -240,15 +310,17 @@ void MultiSelectComboBox::stateChanged(int aState)
     emit selectionChanged();
 }
 
-void MultiSelectComboBox::addItem(const QString& aText, const QVariant& aUserData)
+void MultiSelectComboBox::addItem(const QString& aText, const QVariant& aUserData, bool checked)
 {
     Q_UNUSED(aUserData);
     QListWidgetItem* listWidgetItem = new QListWidgetItem(mListWidget);
     QCheckBox* checkBox = new QCheckBox(this);
     checkBox->setText(aText);
+    if (checked) checkBox->setCheckState(Qt::Checked);
     mListWidget->addItem(listWidgetItem);
     mListWidget->setItemWidget(listWidgetItem, checkBox);
     connect(checkBox, &QCheckBox::stateChanged, this, &MultiSelectComboBox::stateChanged);
+    if (checked) stateChanged(0);
 }
 
 QStringList MultiSelectComboBox::currentText()

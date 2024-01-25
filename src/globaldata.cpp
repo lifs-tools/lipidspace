@@ -25,6 +25,7 @@ double GlobalData::enrichment_log_fc = 1.;
 set<string> GlobalData::FAD_lipid_classes;
 set<string> GlobalData::first_enrichment_classes;
 set<string> GlobalData::second_enrichment_classes;
+set<string> GlobalData::enrichment_domains;
 ConditionModeEnrichment GlobalData::condition_mode_enrichment = StandardMode;
 vector<string> GlobalData::enrichment_list;
 

@@ -2406,7 +2406,6 @@ void Statistics::updateEnrichment(){
         lion_enrichment->enrichment_analysis(target_list, results);
     }
 
-
     if (GlobalData::enrichment_correction == "bh" || GlobalData::enrichment_correction == "bonferoni"){
         Array p_values;
         for (auto &result : results) p_values.push_back(result.pvalue);

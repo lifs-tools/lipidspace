@@ -41,6 +41,7 @@ public:
     static set<string> FAD_lipid_classes;
     static set<string> first_enrichment_classes;
     static set<string> second_enrichment_classes;
+    static set<string> enrichment_domains;
     static ConditionModeEnrichment condition_mode_enrichment;
     static vector<string> enrichment_list;
 };

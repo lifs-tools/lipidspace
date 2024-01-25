@@ -120,10 +120,10 @@ class LIONTerm {
 public:
     string lion_id;
     string name;
-    bool is_lipid;
     vector<string> relations;
+    set<string> domains;
 
-    LIONTerm(string _lion_id, string _name, bool _is_lipid, set<string> &_relations);
+    LIONTerm(string _lion_id, string _name, set<string> &_relations);
 };
 
 struct LIONResult {
@@ -140,6 +140,10 @@ class LIONEnrichment {
 public:
     map<string, LIONTerm*> lion_terms;
     map<string, LIONTerm*> lipids;
+    map<string, LIONTerm*> lipid_classes;
+    map<string, LIONTerm*> carbon_chains;
+    map<string, LIONTerm*> domains;
+
     map<string, int> search_terms;
     LipidParser *lipid_parser;
     int num_background = 0;
@@ -149,6 +153,7 @@ public:
     void set_background_lipids(vector<string> &lipid_list);
     void compute_event_occurrance(vector<string> &lipid_list, map<string, int> &occ_list);
     void enrichment_analysis(vector<string> &target_list, vector<LIONResult> &result_list);
+    void determine_domain(LIONTerm* term, set<string> &visited_terms);
 };
 
 
@@ -159,7 +164,7 @@ class MultiSelectComboBox : public QComboBox
 
 public:
     MultiSelectComboBox(QWidget* aParent = Q_NULLPTR);
-    void addItem(const QString& aText, const QVariant& aUserData = QVariant());
+    void addItem(const QString& aText, const QVariant& aUserData = QVariant(), bool checked = false);
     void addItems(const QStringList& aTexts);
     QStringList currentText();
     int count() const;
