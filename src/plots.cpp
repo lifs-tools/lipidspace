@@ -78,7 +78,7 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
         rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
     }
     else {
-        rect = new HoverRectItem(QString("%1: %2").arg(_label).arg(value, 0, 'f', 1), _label.toStdString());
+        rect = new HoverRectItem(QString("%1:\np-value: %2").arg(_label).arg(value, 0, 'f', 1), _label.toStdString());
     }
     rect->setZValue(100);
     rect->setAcceptHoverEvents(true);
@@ -169,6 +169,7 @@ Barplot::Barplot(Chart *_chart, bool _log_scale, bool _show_data, bool _show_pva
     stars_offset = 0;
     stars_font.setKerning(true);
 }
+
 
 Barplot::~Barplot(){
     clear();
@@ -341,9 +342,11 @@ void Barplot::lipidEntered(string lipid_name){
     emit enterLipid(lipid_name);
 }
 
+
 void Barplot::lipidExited(){
     emit exitLipid();
 }
+
 
 void Barplot::lipidMarked(){
     emit markLipid();
@@ -437,11 +440,9 @@ void Barplot::mouseMoveEvent(QMouseEvent *event){
 }
 
 
-
 void Barplot::resizeEvent(){
     recompute_hights();
 }
-
 
 
 void Barplot::recompute_hights(){
@@ -488,7 +489,6 @@ void Barplot::recompute_hights(){
 
     chart->update_chart();
 }
-
 
 
 void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors){
@@ -677,15 +677,6 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
 }
 
 
-
-
-
-
-
-
-
-
-
 WhiskerBox::WhiskerBox(Chart *chart, SortVector<double, double> *data){
     upper_extreme_line = new QGraphicsLineItem();
     lower_extreme_line = new QGraphicsLineItem();
@@ -709,7 +700,6 @@ WhiskerBox::WhiskerBox(Chart *chart, SortVector<double, double> *data){
     chart->scene.addItem(data_cloud);
     color = Qt::white;
 }
-
 
 
 Boxplot::Boxplot(Chart *_chart, bool _show_data) : Chartplot(_chart) {

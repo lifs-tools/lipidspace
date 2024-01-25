@@ -1914,7 +1914,7 @@ void Statistics::updatePVal(){
     series_titles.push_back("p-values");
 
     Histogramplot* histogramplot = new Histogramplot(chart);
-    vector<QString> categories{"p-values"};
+    vector<QString> categories{""};
     vector<QColor> colors{"#85b3ce"};
 
     double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
@@ -1922,6 +1922,8 @@ void Statistics::updatePVal(){
     histogramplot->borders.setX(0);
     histogramplot->borders.setY(1);
     chart->add(histogramplot);
+    chart->setXLabel("p-value");
+    chart->setXLabel("# of occurrences");
     chart->yrange.setX(0);
     chart->float_x_precision = 2;
     chart->update_chart();
@@ -2340,6 +2342,8 @@ void Statistics::updateVolcano(){
 
     chart->xrange.setX(min_x * 1.05);
     chart->xrange.setY(max_x * 1.05);
+    chart->setXLabel("log<sub>2</sub>(fold change)");
+    chart->setYLabel("-log<sub>10</sub>(p-value)");
     chart->yrange.setX(-0.1);
     chart->setTitle("Volcano plot");
 
@@ -2396,6 +2400,16 @@ void Statistics::updateEnrichment(){
     }
 
 
+    if (GlobalData::enrichment_correction == "bh" || GlobalData::enrichment_correction == "bonferoni"){
+        Array p_values;
+        for (auto &result : results) p_values.push_back(result.pvalue);
+
+        if (GlobalData::enrichment_correction == "bh") multiple_correction_bh(p_values);
+        else if (GlobalData::enrichment_correction == "bonferoni") multiple_correction_bonferoni(p_values);
+
+        for (uint i = 0; i < results.size(); ++i) results[i].pvalue = p_values[i];
+    }
+
     sort(results.begin(), results.end(), [](const LIONResult &a, LIONResult &b) -> bool {
         return a.pvalue < b.pvalue;
     });
@@ -2405,6 +2419,7 @@ void Statistics::updateEnrichment(){
     categories->push_back("");
     vector<QColor> *colors = new vector<QColor>();
     vector< vector< Array > > *barplot_data = new vector< vector<Array> >();
+
 
 
     for (auto &result : results){
@@ -2441,6 +2456,9 @@ void Statistics::updateEnrichment(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues, false);
     barplot->add(barplot_data, categories, terms, colors);
     chart->add(barplot);
+    chart->setXLabel("Lipid ontology terms");
+    chart->setYLabel("-log<sub>10</sub>(p-value)");
+    chart->setTitle("Term enrichment analysis");
 
     Lineplot *lineplot = new Lineplot(chart);
     lineplot->add(pvalue_line, "", QColor("#209fdf"));

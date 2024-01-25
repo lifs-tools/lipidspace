@@ -415,6 +415,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->conditionModeLabel->setToolTip("To obtain a target list of lipids, three modes are available. In 'Standard mode', each nominal value from the study variable is taken as its own condition. In 'Selection mode', the user can assign nominal values to a reference or test condition. When selecting 'Lipid species list selection', the lipid species list on the left-hand side will directly by taken.");
 
 
+
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
     ct->at(0) = SampleColumn;
@@ -442,7 +443,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(12) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Sheet1", COLUMN_PIVOT_TABLE, ct));
     */
-
 
 
     ui->domainCheckboxList->addItem("huhu");
@@ -634,8 +634,6 @@ void LipidSpaceGUI::setStudyVariable(int c){
     ui->secondConditionCheckBoxList->clear();
 
     if (uncontains_val(lipid_space->study_variable_values, target_variable)) {
-        for (auto &kv : lipid_space->study_variable_values) cout << kv.first << " " << target_variable << endl;
-
         connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
         connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
         connect(ui->studyVariableComboBoxEnrichment, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
@@ -1097,7 +1095,6 @@ void LipidSpaceGUI::changeConditionMode(int mode){
     ui->testConditionsLabel->setVisible(true);
     ui->studyVarEnrichmentLabel->setVisible(true);
     ui->statTestLabel->setVisible(true);
-    ui->pvalCorrectionLabel->setVisible(true);
     ui->pvalThresholdLabel->setVisible(true);
     ui->logFCLabel->setVisible(true);
 
@@ -1106,7 +1103,6 @@ void LipidSpaceGUI::changeConditionMode(int mode){
     ui->secondConditionCheckBoxList->setVisible(true);
     ui->studyVariableComboBoxEnrichment->setVisible(true);
     ui->statTestComboBox->setVisible(true);
-    ui->corretionComboBox->setVisible(true);
     ui->pvalueDoubleSpinBox->setVisible(true);
     ui->logFCDoubleSpinBox->setVisible(true);
 
@@ -1126,14 +1122,12 @@ void LipidSpaceGUI::changeConditionMode(int mode){
         ui->testConditionsLabel->setVisible(false);
         ui->refConditionsLabel->setVisible(false);
         ui->statTestLabel->setVisible(false);
-        ui->pvalCorrectionLabel->setVisible(false);
         ui->pvalThresholdLabel->setVisible(false);
         ui->logFCLabel->setVisible(false);
         ui->firstConditionCheckBoxList->setVisible(false);
         ui->secondConditionCheckBoxList->setVisible(false);
         ui->studyVariableComboBoxEnrichment->setVisible(false);
         ui->statTestComboBox->setVisible(false);
-        ui->corretionComboBox->setVisible(false);
         ui->pvalueDoubleSpinBox->setVisible(false);
         ui->logFCDoubleSpinBox->setVisible(false);
     }
@@ -2833,6 +2827,7 @@ void LipidSpaceGUI::changeVolcanoSelection(bool select, string mode){
 void LipidSpaceGUI::changeEnrichmentCorrection(int index){
     GlobalData::enrichment_correction = index == 0 ? "bh" : (index == 1 ? "bonferoni" : "None");
     statisticsVolcano.updateVolcano();
+    statisticsEnrichment.updateEnrichment();
 }
 
 

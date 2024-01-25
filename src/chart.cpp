@@ -399,9 +399,11 @@ void Chart::update_chart(){
 
 
     legend_box.setRect(0, height(), width(), 0);
-    if (legend_categories.size() > 0){
+    bool show_legend = false;
+    if (legend_categories.size() > 1 || (legend_categories.size() == 1 && legend_categories.front().category->toPlainText().length() > 0)){
         legend_box.setY(legend_box.y() - title_rect.height());
         legend_box.setHeight(title_rect.height());
+        show_legend = true;
     }
 
 
@@ -619,35 +621,36 @@ void Chart::update_chart(){
 
 
 
+    if (show_legend){
+        double legend_size = GlobalData::gui_num_var["legend_size"];
+        double xlegend_width = (GlobalData::gui_num_var["legend_size"] + 5) * legend_categories.size();
+        int include_legend = legend_categories.size();
+        for (auto category : legend_categories){
+            category.category->setHtml(category.category_string);
+            category.category->setFont(title_legend_font);
+            xlegend_width += category.category->boundingRect().width();
+        }
 
-    double legend_size = GlobalData::gui_num_var["legend_size"];
-    double xlegend_width = (GlobalData::gui_num_var["legend_size"] + 5) * legend_categories.size();
-    int include_legend = legend_categories.size();
-    for (auto category : legend_categories){
-        category.category->setHtml(category.category_string);
-        category.category->setFont(title_legend_font);
-        xlegend_width += category.category->boundingRect().width();
-    }
+        QGraphicsTextItem ppp("...");
+        while (include_legend > 0 && xlegend_width > legend_box.width()){
+            auto category = legend_categories[--include_legend];
+            xlegend_width += ppp.boundingRect().width() - category.category->boundingRect().width();
+        }
 
-    QGraphicsTextItem ppp("...");
-    while (include_legend > 0 && xlegend_width > legend_box.width()){
-        auto category = legend_categories[--include_legend];
-        xlegend_width += ppp.boundingRect().width() - category.category->boundingRect().width();
-    }
+        int included_legends = 0;
+        double x = (legend_box.width() - xlegend_width) / 2.;
+        for (auto category : legend_categories){
+            double y_box = legend_box.y() + (legend_box.height() - legend_size) / 2.;
+            double y_text = legend_box.y();
 
-    int included_legends = 0;
-    double x = (legend_box.width() - xlegend_width) / 2.;
-    for (auto category : legend_categories){
-        double y_box = legend_box.y() + (legend_box.height() - legend_size) / 2.;
-        double y_text = legend_box.y();
-
-        category.rect->setBrush(QColor(category.color));
-        category.rect->setRect(x, y_box, legend_size, legend_size);
-        x += legend_size + 5;
-        category.category->setHtml(included_legends++ < include_legend ? category.category_string : "...");
-        category.category->setFont(title_legend_font);
-        category.category->setPos(x, y_text);
-        x += category.category->boundingRect().width() + 10;
+            category.rect->setBrush(QColor(category.color));
+            category.rect->setRect(x, y_box, legend_size, legend_size);
+            x += legend_size + 5;
+            category.category->setHtml(included_legends++ < include_legend ? category.category_string : "...");
+            category.category->setFont(title_legend_font);
+            category.category->setPos(x, y_text);
+            x += category.category->boundingRect().width() + 10;
+        }
     }
 
     for (auto plot : chart_plots) plot->update_chart();
