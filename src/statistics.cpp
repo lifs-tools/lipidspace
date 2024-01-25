@@ -514,6 +514,7 @@ void Statistics::updateBarPlotClasses(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
     barplot->add(barplot_data, categories, lipid_class_names, colors);
     chart->add(barplot);
+    chart->setYLabel("Summed abundance [A.U.]");
 
 
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
@@ -717,6 +718,7 @@ void Statistics::updateBarPlot(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
     barplot->add(barplot_data, categories, lipid_names, colors);
     chart->add(barplot);
+    chart->setYLabel("Abundance [A.U.]");
 
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
     connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);
@@ -847,6 +849,7 @@ void Statistics::updateSpeciesCV(){
     vector<QColor> colors;
     double min_value = INFINITY;
     double max_value = -INFINITY;
+
     for (uint i = 0; i < nominal_values.size(); ++i){
         auto nominal_value = nominal_values[i];
         auto lipid_cat_map = lipid_map[i];
@@ -886,6 +889,8 @@ void Statistics::updateSpeciesCV(){
     histogramplot->add(series, categories, &colors, num_bars);
     histogramplot->borders.setX(0);
     chart->xrange.setX(0);
+    chart->setXLabel("Coefficient of variation");
+    chart->setYLabel("# of lipids");
     chart->add(histogramplot);
 }
 
@@ -1115,6 +1120,8 @@ void Statistics::updateHistogram(){
     double accuracy = compute_accuracy(series);
     stat_results.push_back({"accuracy", accuracy});
     chart->setTitle(QString("accuracy = %1").arg(QString::number(accuracy, 'g', 3)));
+    chart->setXLabel("Abundance [A.U.]");
+    chart->setYLabel("# of lipidomes");
 }
 
 
@@ -1462,7 +1469,7 @@ void Statistics::updateBoxPlot(){
             }
         }
 
-        chart->setYLabel("Arbitrary units [A.U.]");
+        chart->setYLabel("Abundance [A.U.]");
     }
     else {
 
@@ -1923,7 +1930,7 @@ void Statistics::updatePVal(){
     histogramplot->borders.setY(1);
     chart->add(histogramplot);
     chart->setXLabel("p-value");
-    chart->setXLabel("# of occurrences");
+    chart->setYLabel("# of occurrences");
     chart->yrange.setX(0);
     chart->float_x_precision = 2;
     chart->update_chart();

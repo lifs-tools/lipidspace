@@ -1357,6 +1357,7 @@ void Histogramplot::update_chart(){
         double y1 = 0;
         double x2 = box.x + box.x_width * 0.5;
         double y2 = box.y * animation_length;
+
         chart->translate(x1, y1);
         chart->translate(x2, y2);
         box.rect->setRect(x1, y1, x2 - x1, y2 - y1);
@@ -1397,9 +1398,10 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
 
         vector<int> counts(num_bars + 1, 0);
         for (auto val : array){
-            int pos = __min(num_bars, __max(int(0), int((val - all_min) / bar_size)));
-            max_hist = __max(max_hist, ++counts[pos]);
+            int pos = max(0, __min((int)num_bars, __max(int(0), int((val - all_min) / bar_size))));
+            max_hist = max(max_hist, ++counts[pos]);
         }
+
 
         for (uint i = 0; i <= num_bars; ++i){
             if (counts[i]) boxes.push_back(HistogramBox(this, all_min + bar_size * (double)i, bar_size, counts[i], color, true));
