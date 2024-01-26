@@ -185,7 +185,6 @@ void LIONEnrichment::compute_event_occurrance(vector<string> &lipid_list, map<st
             string lipid_name = lipid->get_lipid_string();
             string lipid_name_species = lipid->get_lipid_string(SPECIES);
             string lipid_name_class = lipid->get_extended_class();
-            delete lipid;
 
             queue<string> term_queue;
             if (contains_val(lipids, lipid_name)){
@@ -197,6 +196,27 @@ void LIONEnrichment::compute_event_occurrance(vector<string> &lipid_list, map<st
             else if (contains_val(lipid_classes, lipid_name_class)){
                 for (string lion_id : lipid_classes[lipid_name_class]->relations) term_queue.push(lion_id);
             }
+
+            if (lipid != nullptr && lipid->lipid != nullptr){
+                for (auto fa : lipid->lipid->fa_list){
+                    if (fa->num_carbon == 0) continue;
+
+                    string fa_string = (fa->lipid_FA_bond_type == LCB_REGULAR || fa->lipid_FA_bond_type == LCB_EXCEPTION) ? "d" : "C";
+                    if
+                        string fa_string = "C" + fa->to_string(MOLECULAR_SPECIES);
+                        if (contains_val(fa_chains, fa_string)){
+                            for (string lion_id : fa_chains[fa_string]->relations) term_queue.push(lion_id);
+                        }
+                    }
+                    else if {
+                        string fa_string = "C" + fa->to_string(MOLECULAR_SPECIES);
+                        if (contains_val(fa_chains, fa_string)){
+                            for (string lion_id : fa_chains[fa_string]->relations) term_queue.push(lion_id);
+                        }
+                    }
+                }
+            }
+            delete lipid;
 
             set<string> visited_terms;
             while (!term_queue.empty()){
