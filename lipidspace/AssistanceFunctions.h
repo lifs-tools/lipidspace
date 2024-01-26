@@ -141,7 +141,7 @@ public:
     map<string, LIONTerm*> lion_terms;
     map<string, LIONTerm*> lipids;
     map<string, LIONTerm*> lipid_classes;
-    map<string, LIONTerm*> carbon_chains;
+    map<string, LIONTerm*> fa_chains;
     map<string, LIONTerm*> domains;
 
     map<string, int> search_terms;

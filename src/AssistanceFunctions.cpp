@@ -30,7 +30,9 @@ void LIONEnrichment::determine_domain(LIONTerm* term, set<string> &visited_terms
     for (auto parent_term_id : term->relations){
         LIONTerm *parent_term = lion_terms[parent_term_id];
         if (uncontains_val(visited_terms, parent_term_id)) determine_domain(parent_term, visited_terms);
-        for (auto domain : parent_term->domains) term->domains.insert(domain);
+        for (auto domain : parent_term->domains){
+            term->domains.insert(domain);
+        }
     }
 }
 
@@ -69,7 +71,7 @@ LIONEnrichment::LIONEnrichment(LipidParser *l){
                     lipid_classes.insert({name, term});
                 }
                 if (is_domain){
-                    term->domains.insert(term->name);
+                    term->domains.insert(name);
                     domains.insert({name, term});
                 }
                 lion_terms.insert({lion_id, term});
@@ -124,7 +126,7 @@ LIONEnrichment::LIONEnrichment(LipidParser *l){
             lipid_classes.insert({name, term});
         }
         if (is_domain){
-            term->domains.insert(term->name);
+            term->domains.insert(name);
             domains.insert({name, term});
         }
         lion_terms.insert({lion_id, term});
@@ -132,6 +134,10 @@ LIONEnrichment::LIONEnrichment(LipidParser *l){
 
 
     for (auto &kv : lion_terms){
+        if (uncontains_val(domains, kv.second->name) && kv.second->relations.empty()){
+            throw LipidSpaceException("Lipid ontology term '" + kv.first + "' has no parent.");
+        }
+
         for (auto parent_term_id : kv.second->relations){
             if (uncontains_val(lion_terms, parent_term_id)){
                 throw LipidSpaceException("Parent term '" + parent_term_id + "' for term '" + kv.second->lion_id + "' not defined.");
