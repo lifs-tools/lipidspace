@@ -104,6 +104,12 @@ jobs:
         qmake LipidSpace.pro
       shell: cmd
 
+    - name: Attach makefile as build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Makefile.release
+        path: Makefile.Release
+
     - name: Clean LipidSpace
       run: |
         win-clean.bat
