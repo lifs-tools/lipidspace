@@ -101,7 +101,7 @@ jobs:
 
     - name: Prepare QT Project makefiles
       run: |
-        qmake LipidSpace.pro
+        qmake LipidSpace.pro -spec %YOUR_QTPATH%\mkspecs\win32-msvc
       shell: cmd
 
     - name: Attach makefile as build artifact
