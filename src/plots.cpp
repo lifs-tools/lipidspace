@@ -1365,7 +1365,8 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
         vector<int> counts(num_bars + 1, 0);
         for (auto val : array){
             int pos = __min(num_bars, __max(int(0), int((val - all_min) / bar_size)));
-            max_hist = __max(max_hist, ++counts[pos]);
+            counts[pos]++;
+            max_hist = __max(max_hist, counts[pos]);
         }
 
         for (uint i = 0; i <= num_bars; ++i){

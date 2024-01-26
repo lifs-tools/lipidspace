@@ -42,8 +42,12 @@ FADTreeWidget::FADTreeWidget(QWidget *parent) : QTreeWidget(parent){
 }
 
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void FADTreeWidget::enterEvent(QEnterEvent *event){
+#else
 void FADTreeWidget::enterEvent(QEvent *event){
-    emit hoverEnter(event);
+#endif
+    emit hoverEnter((QEvent*)event);
 }
 
 

@@ -316,7 +316,12 @@ void Statistics::updateBarPlotClasses(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var_stat"];
+    if (GlobalData::stat_level != LipidClassLevel){
+        chart->setVisible(false);
+        return;
+    }
+
+    string target_variable = GlobalData::gui_string_var["study_var"];
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
         return;
     }
@@ -330,8 +335,7 @@ void Statistics::updateBarPlotClasses(){
 
     bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level != LipidClassLevel){
-        chart->setVisible(false);
+    if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary){
         return;
     }
 
@@ -388,21 +392,23 @@ void Statistics::updateBarPlotClasses(){
     }
 
     map<LipidAdduct*, int> lipid_class_pos;
-    map<string, int> lipid_class_map;
+    map<string, int> registered_lipid_classes;
+    vector<QString> *lipid_class_names = new vector<QString>();
 
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
         LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
         string ex_lipid_class = lipid->get_extended_class();
-        if (uncontains_val(lipid_class_map, ex_lipid_class)){
-            lipid_class_pos.insert({lipid, lipid_class_pos.size()});
-            lipid_class_map.insert({ex_lipid_class, lipid_class_map.size()});
+        if (uncontains_val(registered_lipid_classes, ex_lipid_class)){
+            lipid_class_names->push_back(ex_lipid_class.c_str());
+            registered_lipid_classes.insert({ex_lipid_class, registered_lipid_classes.size()});
         }
+        lipid_class_pos.insert({lipid, registered_lipid_classes[ex_lipid_class]});
     }
 
     // set up matrix for multiple linear regression
     Matrix stat_matrix;
-    stat_matrix.reset(valid_lipidomes, lipid_class_pos.size());
+    stat_matrix.reset(valid_lipidomes, registered_lipid_classes.size());
     for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
         Lipidome* lipidome = lipid_space->selected_lipidomes[r];
 
@@ -419,8 +425,6 @@ void Statistics::updateBarPlotClasses(){
         rr++;
     }
 
-    vector<QString> *lipid_class_names = new vector<QString>(lipid_class_pos.size(), "");
-    for (auto kv : lipid_class_map) lipid_class_names->at(kv.second) = kv.first.c_str();
     vector< vector<Array> > data_series(nom_counter);
 
     for (int t = 0; t < nom_counter; ++t){
@@ -496,6 +500,8 @@ void Statistics::updateBarPlotClasses(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
     barplot->add(barplot_data, categories, lipid_class_names, colors);
     chart->add(barplot);
+    chart->setYLabel("Summed abundance [A.U.]");
+
 
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
     connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);
