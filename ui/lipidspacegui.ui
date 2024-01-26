@@ -804,11 +804,6 @@
               <string>Lipid species level</string>
              </property>
             </item>
-            <item>
-             <property name="text">
-              <string>Fatty acyl level</string>
-             </property>
-            </item>
            </widget>
            <widget class="QLabel" name="FATreeLabel">
             <property name="geometry">
