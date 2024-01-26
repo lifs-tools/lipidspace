@@ -72,6 +72,10 @@ jobs:
         OS: "Windows"
         QT_VERSION: "6.5.3"
     steps:
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
