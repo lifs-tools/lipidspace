@@ -83,7 +83,7 @@ jobs:
         cache-key-prefix: "install-qt"
         set-env: "true"
         dir: ${{ runner.temp }}
-        modules: "core gui printsupport widgets svg svgwidgets network"
+        #modules: "core gui printsupport widgets svg svgwidgets network"
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
