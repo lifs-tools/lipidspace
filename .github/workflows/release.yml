@@ -65,7 +65,7 @@ jobs:
         file_glob: true
 
   build-windows:
-    runs-on: "windows-latest"
+    runs-on: "windows-2019"
     env:
         BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
         RELEASE_VERSION: ${{ github.ref_name }}
@@ -76,7 +76,7 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: win64
-        vsversion: "2022"
+        vsversion: "2019"
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
