@@ -132,12 +132,7 @@ jobs:
         copy LICENSE* "Build/LipidSpace"
         copy .\release\LipidSpace.exe "Build/LipidSpace"
         powershell Copy-Item "libraries/Qt/bin/win64"\* -Destination "Build/LipidSpace" -Recurse -force
-        powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace.zip" -force
-      shell: cmd
-
-    - name: Rename LipidSpace.zip to include RELEASE_VERSION
-      run: |
-        move Build/LipidSpace.zip Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
+        powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip" -force
       shell: cmd
 
     - name: Upload binaries to release
