@@ -117,7 +117,6 @@ jobs:
 
     - name: Build LipidSpace
       run: |
-        vcvarsx86_amd64.bat
         nmake.exe /f Makefile.Release
         if not exist "Build" mkdir "Build"
         if not exist "Build/LipidSpace" mkdir "Build/LipidSpace"
