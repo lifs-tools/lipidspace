@@ -1,4 +1,4 @@
-qmake
+qmake LipidSpace.pro
 make -j8
 if not exist "Build" mkdir "Build"
 if not exist "Build/LipidSpace" mkdir "Build/LipidSpace"

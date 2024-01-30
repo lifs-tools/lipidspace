@@ -75,7 +75,10 @@ jobs:
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: x64
+        arch: win64
+        sdk: "10"
+        toolset: "17.0"
+        vsversion: "2022"
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
@@ -87,7 +90,6 @@ jobs:
         cache: "true"
         cache-key-prefix: "install-qt"
         set-env: "true"
-        dir: ${{ runner.temp }}
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
