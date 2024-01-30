@@ -116,44 +116,45 @@ public slots:
 
 
 
-class LIONTerm {
+class OntologyTerm {
 public:
-    string lion_id;
+    string term_id;
     string name;
     vector<string> relations;
-    set<string> domains;
+    string domain;
 
-    LIONTerm(string _lion_id, string _name, set<string> &_relations);
+    OntologyTerm(string _term_id, string _name, set<string> &_relations);
+    OntologyTerm(string _term_id, string _name, set<string> &_relations, string _domain);
 };
 
-struct LIONResult {
-    LIONTerm *term;
+struct OntologyResult {
+    OntologyTerm *term;
     int number_background;
     int number_background_events;
-    int number_target;
-    int number_target_events;
+    int targets;
+    set<string> target_events;
     double pvalue;
 };
 
 
-class LIONEnrichment {
+class OntologyEnrichment {
 public:
-    map<string, LIONTerm*> lion_terms;
-    map<string, LIONTerm*> lipids;
-    map<string, LIONTerm*> lipid_classes;
-    map<string, LIONTerm*> fa_chains;
-    map<string, LIONTerm*> domains;
+    map<string, OntologyTerm*> ontology_terms;
+    map<string, OntologyTerm*> lipids;
+    map<string, vector<OntologyTerm*>> lipid_classes;
+    map<string, OntologyTerm*> carbon_chains;
+    set<string> domains;
 
-    map<string, int> search_terms;
+    map<string, set<string>> search_terms;
     LipidParser *lipid_parser;
     int num_background = 0;
 
-    LIONEnrichment(LipidParser *l);
-    ~LIONEnrichment();
+    OntologyEnrichment(LipidParser *l);
+    ~OntologyEnrichment();
     void set_background_lipids(vector<string> &lipid_list);
-    void compute_event_occurrance(vector<string> &lipid_list, map<string, int> &occ_list);
-    void enrichment_analysis(vector<string> &target_list, vector<LIONResult> &result_list);
-    void determine_domain(LIONTerm* term, set<string> &visited_terms);
+    void compute_event_occurrance(vector<string> &lipid_list, map<string, set<string>> &occ_list);
+    void enrichment_analysis(vector<string> &target_list, vector<OntologyResult> &result_list);
+    void recursive_event_adding(string lipid_input_name, string term_id, set<string> &visited_terms, map<string, set<string>> &occ_list, int recursion = 0);
 };
 
 

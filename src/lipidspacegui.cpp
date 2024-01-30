@@ -446,8 +446,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     */
 
 
-    for (auto &kv : lipid_space->lion_enrichment->domains){
-        string domain = kv.second->name;
+    for (string domain : lipid_space->ontology_enrichment->domains){
         ui->domainCheckboxList->addItem(domain.c_str(), QVariant(), true);
         GlobalData::enrichment_domains.insert(domain);
     }

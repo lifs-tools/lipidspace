@@ -78,7 +78,7 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
         rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
     }
     else {
-        rect = new HoverRectItem(QString("%1:\np-value: %2").arg(_label).arg(value, 0, 'f', 1), _label.toStdString());
+        rect = new HoverRectItem(QString("%1\np-value: %2").arg(_label).arg(value, 0, 'f', 1), _label.toStdString());
     }
     rect->setZValue(100);
     rect->setAcceptHoverEvents(true);

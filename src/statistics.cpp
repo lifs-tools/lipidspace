@@ -2385,12 +2385,12 @@ void Statistics::updateEnrichment(){
     }
 
 
-    LIONEnrichment *lion_enrichment = lipid_space->lion_enrichment;
-    vector<LIONResult> results;
+    OntologyEnrichment *ontology_enrichment = lipid_space->ontology_enrichment;
+    vector<OntologyResult> results;
 
     if (GlobalData::condition_mode_enrichment != LipidSpeciesListMode){
         if (GlobalData::enrichment_list.empty()) return;
-        lion_enrichment->enrichment_analysis(GlobalData::enrichment_list, results);
+        ontology_enrichment->enrichment_analysis(GlobalData::enrichment_list, results);
     }
     else {
         vector<string> target_list;
@@ -2403,7 +2403,7 @@ void Statistics::updateEnrichment(){
             }
         }
         if (target_list.empty()) return;
-        lion_enrichment->enrichment_analysis(target_list, results);
+        ontology_enrichment->enrichment_analysis(target_list, results);
     }
 
     if (GlobalData::enrichment_correction == "bh" || GlobalData::enrichment_correction == "bonferoni"){
@@ -2416,7 +2416,9 @@ void Statistics::updateEnrichment(){
         for (uint i = 0; i < results.size(); ++i) results[i].pvalue = p_values[i];
     }
 
-    sort(results.begin(), results.end(), [](const LIONResult &a, LIONResult &b) -> bool {
+    cout << results.size() << endl;
+
+    sort(results.begin(), results.end(), [](const OntologyResult &a, OntologyResult &b) -> bool {
         return a.pvalue < b.pvalue;
     });
 
@@ -2432,7 +2434,7 @@ void Statistics::updateEnrichment(){
         double pvalue = result.pvalue;
         if (pvalue <= 0 || 0.999999 < pvalue) continue;
         pvalue = -log10(pvalue);
-        terms->push_back(result.term->name.c_str());
+        terms->push_back((result.term->name + "\n" + result.term->term_id).c_str());
         barplot_data->push_back({Array()});
         barplot_data->back().front().push_back(pvalue);
 
@@ -2448,6 +2450,16 @@ void Statistics::updateEnrichment(){
         }
         else {
             hexRGB = "#ffff00";
+        }
+
+        if (pvalue > M_LOG10_005){
+            cout << result.term->term_id << " " << result.term->name << endl;
+            if (result.target_events.size() > 0){
+                for (auto lipid_name : result.target_events){
+                    cout << lipid_name << ", ";
+                }
+                cout << endl << endl;
+            }
         }
 
         colors->push_back(hexRGB);

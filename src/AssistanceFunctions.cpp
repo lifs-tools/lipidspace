@@ -15,30 +15,23 @@ namespace {
 
 
 
-LIONTerm::LIONTerm(string _lion_id, string _name, set<string> &_relations){
-    lion_id = _lion_id;
+OntologyTerm::OntologyTerm(string _term_id, string _name, set<string> &_relations){
+    term_id = _term_id;
     name = _name;
     for (auto rel : _relations) relations.push_back(rel);
 }
 
 
 
-void LIONEnrichment::determine_domain(LIONTerm* term, set<string> &visited_terms){
-    if (contains_val(domains, term->name)) return;
-
-    visited_terms.insert(term->lion_id);
-    for (auto parent_term_id : term->relations){
-        LIONTerm *parent_term = lion_terms[parent_term_id];
-        if (uncontains_val(visited_terms, parent_term_id)) determine_domain(parent_term, visited_terms);
-        for (auto domain : parent_term->domains){
-            term->domains.insert(domain);
-        }
-    }
+OntologyTerm::OntologyTerm(string _term_id, string _name, set<string> &_relations, string _domain) : OntologyTerm(_term_id, _name, _relations){
+    domain = _domain;
 }
 
 
-LIONEnrichment::LIONEnrichment(LipidParser *l){
-    ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/LION_LS.obo");
+
+OntologyEnrichment::OntologyEnrichment(LipidParser *l){
+    //ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/LION_LS.obo");
+    ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/complete.obo");
     if (!infile.good()){
         Logging::write_log("Error: file 'data/LION_LS.obo' not found.");
         throw LipidException("Error: file 'data/LION_LS.obo' not found. Please check the log message.");
@@ -46,137 +39,174 @@ LIONEnrichment::LIONEnrichment(LipidParser *l){
     string line;
     lipid_parser = l;
 
-    string lion_id = "";
+    string term_id = "";
     string name = "";
-    bool is_lipid = false;
+    bool is_lipid_species = false;
     bool is_lipid_class = false;
-    bool is_domain = false;
+    bool is_carbon_chain = false;
+    string domain = "";
     set<string> relations;
-    set<string> lipid_ids;
+    vector<string> synonyms;
 
     while (getline(infile, line)){
         if (!line.length()) continue;
 
         if (line == "[Term]"){
-            if (lion_id != "" && name != ""){
-                if (contains_val(lion_terms, lion_id)){
-                    throw LipidSpaceException("Term id '" + lion_id + "' in lipid ontology already defined.");
+            if (term_id != "" && name != ""){
+
+                if (contains_val(ontology_terms, term_id)){
+                    throw LipidSpaceException("Term id '" + term_id + "' in lipid ontology already defined.");
                 }
-                LIONTerm *term = new LIONTerm(lion_id, name, relations);
-                if (is_lipid){
-                    lipids.insert({name, term});
-                    lipid_ids.insert(lion_id);
+                OntologyTerm *term = domain.length() > 0 ? new OntologyTerm(term_id, name, relations, domain) : new OntologyTerm(term_id, name, relations);
+
+                if (is_lipid_species){
+                    if (uncontains_val(lipids, name)) lipids.insert({name, term});
                 }
                 if (is_lipid_class){
-                    lipid_classes.insert({name, term});
+                    for (auto synonym : synonyms){
+                        if (uncontains_val(lipid_classes, synonym)) lipid_classes.insert({synonym, vector<OntologyTerm*>()});
+                        lipid_classes[synonym].push_back(term);
+                    }
                 }
-                if (is_domain){
-                    term->domains.insert(name);
-                    domains.insert({name, term});
+                if (is_carbon_chain){
+                    for (auto synonym : synonyms){
+                        if (uncontains_val(carbon_chains, synonym)) lipids.insert({synonym, term});
+                    }
                 }
-                lion_terms.insert({lion_id, term});
+
+                if (domain.length() > 0){
+                    search_terms.insert({term_id, set<string>()});
+                    domains.insert(domain);
+                }
+
+                ontology_terms.insert({term_id, term});
             }
-            lion_id = "";
+            term_id = "";
             name = "";
-            is_lipid = false;
+            domain = "";
+            is_lipid_species = false;
             is_lipid_class = false;
-            is_domain = false;
+            is_carbon_chain = false;
+            synonyms.clear();
             relations.clear();
         }
 
         else if (line.substr(0, 4) == "id: "){
-            lion_id = line.substr(4);
+            term_id = line.substr(4);
         }
 
         else if (line.substr(0, 6) == "name: "){
             name = line.substr(6);
         }
 
-        else if (line == "is_lipid: true"){
-            is_lipid = true;
-        }
-
-        else if (line == "is_lipid_class: true"){
-            is_lipid_class = true;
-        }
-
-        else if (line == "is_domain: true"){
-            is_domain = true;
-        }
-
         else if (line.substr(0, 6) == "is_a: "){
             line = line.substr(6);
-            int pos = line.find(" ! ");
-            relations.insert(line.substr(0, pos));
+            uint pos = line.find(" ! ");
+            string relation = line.substr(0, pos);
+            relations.insert(relation);
+
+            if (relation == "LS:0000001") is_lipid_class = true;
+            else if (relation == "LS:0000002") is_lipid_species = true;
+            else if (relation == "LS:0000003") is_carbon_chain = true;
+        }
+
+        else if (line.substr(0, 14) == "relationship: "){
+            line = line.substr(14);
+            uint pos = line.find(" ");
+            if (pos != string::npos){
+                line = line.substr(pos + 1);
+                pos = line.find(" ! ");
+                line = line.substr(0, pos);
+                relations.insert(line);
+            }
+        }
+
+        else if (line.substr(0, 11) == "namespace: "){
+            domain = line.substr(11);
+        }
+
+        else if (line.substr(0, 8) == "synonym:"){
+            vector<string>* tokens = goslin::split_string(line, '"', '|');
+            if (tokens->size() >= 2) synonyms.push_back(tokens->at(1));
+            delete tokens;
         }
 
         else if (line == "is_obsolete: true"){
-            lion_id = "";
+            term_id = "";
             name = "";
         }
     }
 
-    if (lion_id != "" && name != ""){
-        LIONTerm *term = new LIONTerm(lion_id, name, relations);
-        if (is_lipid){
-            lipids.insert({name, term});
-            lipid_ids.insert(lion_id);
+    if (term_id != "" && name != ""){
+        if (contains_val(ontology_terms, term_id)){
+            throw LipidSpaceException("Term id '" + term_id + "' in lipid ontology already defined.");
+        }
+        OntologyTerm *term = domain.length() > 0 ? new OntologyTerm(term_id, name, relations, domain) : new OntologyTerm(term_id, name, relations);
+
+        if (is_lipid_species){
+            if (uncontains_val(lipids, name)) lipids.insert({name, term});
         }
         if (is_lipid_class){
-            lipid_classes.insert({name, term});
-        }
-        if (is_domain){
-            term->domains.insert(name);
-            domains.insert({name, term});
-        }
-        lion_terms.insert({lion_id, term});
-    }
-
-
-    for (auto &kv : lion_terms){
-        if (uncontains_val(domains, kv.second->name) && kv.second->relations.empty()){
-            throw LipidSpaceException("Lipid ontology term '" + kv.first + "' has no parent.");
-        }
-
-        for (auto parent_term_id : kv.second->relations){
-            if (uncontains_val(lion_terms, parent_term_id)){
-                throw LipidSpaceException("Parent term '" + parent_term_id + "' for term '" + kv.second->lion_id + "' not defined.");
+            for (auto synonym : synonyms){
+                if (uncontains_val(lipid_classes, synonym)) lipid_classes.insert({synonym, vector<OntologyTerm*>()});
+                lipid_classes[synonym].push_back(term);
             }
         }
-    }
-
-
-    set<string> visited_terms;
-    for (auto &kv : lion_terms){
-        determine_domain(kv.second, visited_terms);
-    }
-
-
-    for (auto &kv : lipids){
-        LIONTerm *term = kv.second;
-        for (string parent_term_id : term->relations){
-            if (uncontains_val(lipid_ids, parent_term_id) && uncontains_val(search_terms, parent_term_id)){
-                search_terms.insert({parent_term_id, 0});
+        if (is_carbon_chain){
+            for (auto synonym : synonyms){
+                if (uncontains_val(carbon_chains, synonym)) lipids.insert({synonym, term});
             }
         }
+
+        if (domain.length() > 0){
+            search_terms.insert({term_id, set<string>()});
+            domains.insert(domain);
+        }
+
+        ontology_terms.insert({term_id, term});
     }
+
+
+    if (contains_val(domains, "external")) domains.erase("external");
+
 }
 
 
-LIONEnrichment::~LIONEnrichment(){
-    for (auto &kv : lion_terms) delete kv.second;
+OntologyEnrichment::~OntologyEnrichment(){
+    for (auto &kv : ontology_terms) delete kv.second;
 }
 
 
-void LIONEnrichment::set_background_lipids(vector<string> &lipid_list){
-    for (auto &kv : search_terms) kv.second = 0;
+void OntologyEnrichment::set_background_lipids(vector<string> &lipid_list){
+    for (auto &kv : search_terms) kv.second.clear();
     compute_event_occurrance(lipid_list, search_terms);
     num_background = (int)lipid_list.size();
 }
 
 
 
-void LIONEnrichment::compute_event_occurrance(vector<string> &lipid_list, map<string, int> &occ_list){
+void OntologyEnrichment::recursive_event_adding(string lipid_input_name, string term_id, set<string> &visited_terms, map<string, set<string>> &occ_list, int recursion){
+    if (recursion > 0) return;
+
+    if (contains_val(occ_list, term_id)){
+        occ_list.at(term_id).insert(lipid_input_name);
+    }
+
+    if (uncontains_val(ontology_terms, term_id)) return;
+
+    int next_recursion = recursion + contains_val(domains, ontology_terms[term_id]->domain);
+    for (string parent_term_id : ontology_terms[term_id]->relations){
+        if (uncontains_val(visited_terms, parent_term_id)){
+            visited_terms.insert(parent_term_id);
+
+            recursive_event_adding(lipid_input_name, parent_term_id, visited_terms, occ_list, next_recursion);
+        }
+    }
+}
+
+
+
+void OntologyEnrichment::compute_event_occurrance(vector<string> &lipid_list, map<string, set<string>> &occ_list){
     for (string lipid_input_name : lipid_list){
         try {
             LipidAdduct *lipid = lipid_parser->parse(lipid_input_name);
@@ -186,48 +216,64 @@ void LIONEnrichment::compute_event_occurrance(vector<string> &lipid_list, map<st
             string lipid_name_species = lipid->get_lipid_string(SPECIES);
             string lipid_name_class = lipid->get_extended_class();
 
-            queue<string> term_queue;
+            set<string> visited_terms;
             if (contains_val(lipids, lipid_name)){
-                for (string lion_id : lipids[lipid_name]->relations) term_queue.push(lion_id);
+                if (uncontains_val(visited_terms, lipids[lipid_name]->term_id)){
+                    visited_terms.insert(lipids[lipid_name]->term_id);
+                    recursive_event_adding(lipid_input_name, lipids[lipid_name]->term_id, visited_terms, occ_list);
+                }
             }
-            else if (contains_val(lipids, lipid_name_species)){
-                for (string lion_id : lipids[lipid_name_species]->relations) term_queue.push(lion_id);
+            if (contains_val(lipids, lipid_name_species)){
+                if (uncontains_val(visited_terms, lipids[lipid_name_species]->term_id)){
+                    visited_terms.insert(lipids[lipid_name_species]->term_id);
+                    recursive_event_adding(lipid_input_name, lipids[lipid_name_species]->term_id, visited_terms, occ_list);
+                }
             }
-            else if (contains_val(lipid_classes, lipid_name_class)){
-                for (string lion_id : lipid_classes[lipid_name_class]->relations) term_queue.push(lion_id);
+            if (contains_val(lipid_classes, lipid_name_class)){
+                for (auto term : lipid_classes[lipid_name_class]){
+                    if (uncontains_val(visited_terms, term->term_id)){
+                        visited_terms.insert(term->term_id);
+                        recursive_event_adding(lipid_input_name, term->term_id, visited_terms, occ_list);
+                    }
+                }
             }
 
             if (lipid != nullptr && lipid->lipid != nullptr){
                 for (auto fa : lipid->lipid->fa_list){
                     if (fa->num_carbon == 0) continue;
 
-                    string fa_string = (fa->lipid_FA_bond_type == LCB_REGULAR || fa->lipid_FA_bond_type == LCB_EXCEPTION) ? "d" : "C";
-                    if
-                        string fa_string = "C" + fa->to_string(MOLECULAR_SPECIES);
-                        if (contains_val(fa_chains, fa_string)){
-                            for (string lion_id : fa_chains[fa_string]->relations) term_queue.push(lion_id);
-                        }
-                    }
-                    else if {
-                        string fa_string = "C" + fa->to_string(MOLECULAR_SPECIES);
-                        if (contains_val(fa_chains, fa_string)){
-                            for (string lion_id : fa_chains[fa_string]->relations) term_queue.push(lion_id);
-                        }
+                    string fa_string = ((fa->lipid_FA_bond_type == LCB_REGULAR || fa->lipid_FA_bond_type == LCB_EXCEPTION) ? "L" : "C") + fa->to_string(MOLECULAR_SPECIES);
+                    if (contains_val(carbon_chains, fa_string)){
+                        visited_terms.insert(carbon_chains[fa_string]->term_id);
+                        recursive_event_adding(lipid_input_name, carbon_chains[fa_string]->term_id, visited_terms, occ_list);
                     }
                 }
             }
             delete lipid;
 
-            set<string> visited_terms;
+
+            /*
             while (!term_queue.empty()){
-                string parent_term_id = term_queue.front();
+                string term_id = term_queue.front();
                 term_queue.pop();
-                if (contains_val(occ_list, parent_term_id) && uncontains_val(visited_terms, parent_term_id)){
-                    occ_list.at(parent_term_id) += 1;
-                    visited_terms.insert(parent_term_id);
+                if (contains_val(occ_list, term_id)){
+
+                    if (lipid_name == "PG 18:1_18:2" && contains_val(ontology_terms, term_id)) cout << "add: " << ontology_terms[term_id]->term_id << ": " << ontology_terms[term_id]->name << endl;
+                    occ_list.at(term_id).insert(lipid_input_name);
                 }
-                for (string lion_id : lion_terms[parent_term_id]->relations) term_queue.push(lion_id);
+                visited_terms.insert(term_id);
+
+                if (uncontains_val(ontology_terms, term_id)){
+                    continue;
+                }
+                for (string parent_term_id : ontology_terms[term_id]->relations){
+                    if (uncontains_val(visited_terms, parent_term_id)){
+                        term_queue.push(parent_term_id);
+                        visited_terms.insert(parent_term_id);
+                    }
+                }
             }
+            */
         }
         catch (exception &){
 
@@ -237,29 +283,23 @@ void LIONEnrichment::compute_event_occurrance(vector<string> &lipid_list, map<st
 
 
 
-void LIONEnrichment::enrichment_analysis(vector<string> &target_list, vector<LIONResult> &result_list){
+void OntologyEnrichment::enrichment_analysis(vector<string> &target_list, vector<OntologyResult> &result_list){
     if (num_background == 0) return;
-    map<string, int> search_target_terms;
-    for (auto &kv : search_terms) search_target_terms.insert({kv.first, 0});
+    map<string, set<string>> search_target_terms;
+    for (auto &kv : search_terms) search_target_terms.insert({kv.first, set<string>()});
     compute_event_occurrance(target_list, search_target_terms);
 
 
     for (auto &kv : search_terms){
         string term_id = kv.first;
-        if (kv.second == 0) continue;
 
-        bool contains_domain = false;
-        LIONTerm *term = lion_terms[term_id];
-        for (auto domain : term->domains){
-            if (contains_val(GlobalData::enrichment_domains, domain)){
-                contains_domain = true;
-                break;
-            }
-        }
-        if (!contains_domain) continue;
+        cout << kv.first << " " << kv.second.size() << " " << search_target_terms[kv.first].size() << endl;
 
-        double p_hyp = exact_fischer(num_background, kv.second, (int)target_list.size(), search_target_terms[kv.first]);
-        result_list.push_back(LIONResult{lion_terms[term_id], num_background, kv.second, (int)target_list.size(), search_target_terms[kv.first], p_hyp});
+        if (kv.second.size() == 0 || uncontains_val(ontology_terms, term_id) || uncontains_val(GlobalData::enrichment_domains, ontology_terms[term_id]->domain)) continue;
+
+        double p_hyp = exact_fischer(num_background, kv.second.size(), (int)target_list.size(), search_target_terms[kv.first].size());
+        result_list.push_back(OntologyResult{ontology_terms[term_id], num_background, (int)kv.second.size(), (int)target_list.size(), set<string>(), p_hyp});
+        for (auto lipid_name : search_target_terms[kv.first]) result_list.back().target_events.insert(lipid_name);
     }
 }
 
