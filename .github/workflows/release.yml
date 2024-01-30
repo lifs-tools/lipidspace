@@ -52,6 +52,12 @@ jobs:
       run: |
         mv Build/LipidSpace.zip Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
 
+    - name: Attach Binaries to Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: "LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip"
+        path: "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip"
+
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       # only upload binaries on release creation, not on manual trigger
@@ -104,12 +110,6 @@ jobs:
         qmake LipidSpace.pro
       shell: cmd
 
-    - name: Attach makefile as build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Makefile.release
-        path: Makefile.Release
-
     - name: Clean LipidSpace
       run: |
         win-clean.bat
@@ -134,6 +134,12 @@ jobs:
         powershell Copy-Item "libraries/Qt/bin/win64"\* -Destination "Build/LipidSpace" -Recurse -force
         powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip" -force
       shell: cmd
+
+    - name: Attach Binaries to Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: "LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip"
+        path: "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip"
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
