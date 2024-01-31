@@ -48,16 +48,12 @@ jobs:
         make clean
         make build
 
-    - name: Rename LipidSpace Build output to include RELEASE_VERSION
-      run: |
-        mv Build/LipidSpace Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}
-
     - name: Attach Binaries to Build
       uses: actions/upload-artifact@v4
       # action zips automatically
       with:
         name: "LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}"
-        path: "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}"
+        path: "Build/LipidSpace"
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
@@ -132,8 +128,8 @@ jobs:
         copy .\examples\ThreeStudies.xlsx "Build/LipidSpace/examples"
         copy LICENSE* "Build/LipidSpace"
         copy .\release\LipidSpace.exe "Build/LipidSpace"
-        powershell Copy-Item "libraries/Qt/bin/win64"\* -Destination "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}" -Recurse -force
-        powershell Compress-Archive "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}" "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip" -force
+        powershell Copy-Item "libraries/Qt/bin/win64"\* -Destination "Build/LipidSpace" -Recurse -force
+        powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip" -force
       shell: cmd
 
     - name: Attach Binaries to Build
@@ -141,7 +137,7 @@ jobs:
       # action zips automatically
       with:
         name: "LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}"
-        path: "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}"
+        path: "Build/LipidSpace"
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
