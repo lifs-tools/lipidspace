@@ -92,14 +92,7 @@ jobs:
         cache: "true"
         cache-key-prefix: "install-qt"
         set-env: "true"
-        dir: "${{ github.workspace }}"
-
-    - name: Attach QT directory to Build
-      uses: actions/upload-artifact@v4
-      # action zips automatically
-      with:
-        name: "Qt-${{ env.QT_VERSION }}"
-        path: "${{ github.workspace }}/Qt"
+        dir: ${{ runner.workspace }}
 
     - uses: actions/checkout@v3
       with:
@@ -138,8 +131,22 @@ jobs:
         copy .\examples\ThreeStudies.xlsx "Build/LipidSpace/examples"
         copy LICENSE* "Build/LipidSpace"
         copy .\release\LipidSpace.exe "Build/LipidSpace"
-        ls "${{ github.workspace }}/Qt/"
-        powershell Copy-Item "${{ github.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}"\* -Destination "Build/LipidSpace" -Recurse -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/plugins/platforms" -Destination "Build/LipidSpace" -Recurse -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/d3dcompiler_47.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/libgcc_s_seh-1.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/libgomp-1.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/libstdc++-6.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/libwinpthread-1.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/opengl32sw.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6Core.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6Gui.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6Network.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6OpenGL.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6OpenGLWidgets.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6PrintSupport.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6Svg.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6SvgWidgets.dll" -Destination "Build/LipidSpace" -force
+        powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}/bin/Qt6Widgets.dll" -Destination "Build/LipidSpace" -force
         powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip" -force
       shell: cmd
 
