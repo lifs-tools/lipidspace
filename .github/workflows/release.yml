@@ -65,7 +65,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
-        asset_name: LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
+        asset_name: LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}
         tag: ${{ github.ref }}
         overwrite: true
         file_glob: true
@@ -148,7 +148,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
-        asset_name: LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
+        asset_name: LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}
         tag: ${{ github.ref }}
         overwrite: true
         file_glob: true
