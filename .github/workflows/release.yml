@@ -110,6 +110,13 @@ jobs:
         qmake LipidSpace.pro
       shell: cmd
 
+    - name: Attach Makefile.Release to Build
+      uses: actions/upload-artifact@v4
+      # action zips automatically
+      with:
+        name: "Makefile.Release"
+        path: "Makefile.Release"
+
     - name: Clean LipidSpace
       run: |
         win-clean.bat
