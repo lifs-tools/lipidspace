@@ -92,13 +92,14 @@ jobs:
         cache: "true"
         cache-key-prefix: "install-qt"
         set-env: "true"
+        dir: "${{ github.workspace }}"
 
     - name: Attach QT directory to Build
       uses: actions/upload-artifact@v4
       # action zips automatically
       with:
         name: "Qt-${{ env.QT_VERSION }}"
-        path: "${{ github.workspace }}/../Qt"
+        path: "${{ github.workspace }}/Qt"
 
     - uses: actions/checkout@v3
       with:
@@ -138,7 +139,7 @@ jobs:
         copy LICENSE* "Build/LipidSpace"
         copy .\release\LipidSpace.exe "Build/LipidSpace"
         ls "${{ github.workspace }}/Qt/"
-        powershell Copy-Item "${{ github.workspace }}/../Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}"\* -Destination "Build/LipidSpace" -Recurse -force
+        powershell Copy-Item "${{ github.workspace }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_ARCH }}"\* -Destination "Build/LipidSpace" -Recurse -force
         powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip" -force
       shell: cmd
 
