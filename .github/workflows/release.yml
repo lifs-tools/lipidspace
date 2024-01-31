@@ -73,7 +73,7 @@ jobs:
         BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
         RELEASE_VERSION: ${{ github.ref_name }}
         OS: "Windows"
-        QT_VERSION: "6.2.4"
+        QT_VERSION: "6.2.1"
     steps:
     - name: Set up MinGW
       uses: egor-tensin/setup-mingw@v2.2.0
@@ -114,7 +114,7 @@ jobs:
 
     - name: Build LipidSpace
       run: |
-        make build
+        make
         if not exist "Build" mkdir "Build"
         if not exist "Build/LipidSpace" mkdir "Build/LipidSpace"
         if not exist "Build/LipidSpace/data" mkdir "Build/LipidSpace/data"
