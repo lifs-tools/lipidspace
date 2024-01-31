@@ -73,7 +73,8 @@ jobs:
         BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
         RELEASE_VERSION: ${{ github.ref_name }}
         OS: "Windows"
-        QT_VERSION: "6.2.1"
+        QT_VERSION: "6.2.4"
+        QT_ARCH: "win64_mingw"
     steps:
     - name: Set up MinGW
       uses: egor-tensin/setup-mingw@v2.2.0
@@ -87,7 +88,7 @@ jobs:
         version: ${{ env.QT_VERSION }}
         target: "desktop"
         host: "windows"
-        arch: "win64_mingw"
+        arch: ${{ env.QT_ARCH }}
         cache: "true"
         cache-key-prefix: "install-qt"
         set-env: "true"
@@ -128,7 +129,8 @@ jobs:
         copy .\examples\ThreeStudies.xlsx "Build/LipidSpace/examples"
         copy LICENSE* "Build/LipidSpace"
         copy .\release\LipidSpace.exe "Build/LipidSpace"
-        powershell Copy-Item "libraries/Qt/bin/win64"\* -Destination "Build/LipidSpace" -Recurse -force
+        ls "${{ github.workspace }}/Qt/"
+        powershell Copy-Item "${{ github.workspace }}/Qt/${{ env.QT_VERSION }}/bin/${{ env.QT_ARCH }}"\* -Destination "Build/LipidSpace" -Recurse -force
         powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip" -force
       shell: cmd
 
