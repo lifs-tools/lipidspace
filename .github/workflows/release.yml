@@ -120,6 +120,14 @@ jobs:
     - name: Build LipidSpace
       run: |
         make
+
+    - name: Ensure that .\release\LipidSpace.exe exists
+      run: |
+        if not exist ".\release\LipidSpace.exe" exit 1
+      shell: cmd
+
+    - name: Create Distribution Build Directory
+      run: |
         if not exist "Build" mkdir "Build"
         if not exist "Build/LipidSpace" mkdir "Build/LipidSpace"
         if not exist "Build/LipidSpace/data" mkdir "Build/LipidSpace/data"
@@ -133,6 +141,10 @@ jobs:
         copy .\examples\ThreeStudies.xlsx "Build/LipidSpace/examples"
         copy LICENSE* "Build/LipidSpace"
         copy .\release\LipidSpace.exe "Build/LipidSpace"
+      shell: cmd
+
+    - name: Copy Qt DLLs
+      run: |
         powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/mingw_64/plugins/platforms" -Destination "Build/LipidSpace" -Recurse -force
         powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/mingw_64/bin/d3dcompiler_47.dll" -Destination "Build/LipidSpace" -force
         powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/mingw_64/bin/libgcc_s_seh-1.dll" -Destination "Build/LipidSpace" -force
@@ -148,6 +160,9 @@ jobs:
         powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/mingw_64/bin/Qt6Svg.dll" -Destination "Build/LipidSpace" -force
         powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/mingw_64/bin/Qt6SvgWidgets.dll" -Destination "Build/LipidSpace" -force
         powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/mingw_64/bin/Qt6Widgets.dll" -Destination "Build/LipidSpace" -force
+      shell: cmd
+    - name: Create Distribution Zip
+      run: |
         powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip" -force
       shell: cmd
 
