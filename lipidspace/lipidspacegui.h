@@ -7,10 +7,10 @@
 #include <QPushButton>
 #include <QThread>
 #include <QClipboard>
+#include <QProgressDialog>
 #include "ui_lipidspacegui.h"
 #include "lipidspace/lipidspace.h"
 #include "lipidspace/canvas.h"
-#include "lipidspace/progressbar.h"
 #include "lipidspace/managelipidomes.h"
 #include "lipidspace/setalpha.h"
 #include "lipidspace/setPCnum.h"
@@ -40,6 +40,8 @@ class Canvas;
 class Tutorial;
 class LipidSpaceGUI;
 class SelectLipidomes;
+
+
 
 
 class HomeItem : public QGraphicsItem {
@@ -153,7 +155,8 @@ public:
     bool updating;
     bool updating_fad_states = false;
     bool selected_tiles_mode;
-    Progressbar *progressbar;
+    //Progressbar *progressbar;
+    QProgressDialog *progress_dialog;
     string keystrokes;
     Progress *progress;
     DragLayer *dragLayer;
@@ -166,6 +169,10 @@ public:
     string lipid_for_deselect;
     vector<string> lipids_for_selection;
     vector<string> lipids_for_selection_menu;
+    set<QString> selected_tiles;
+    QString complete_feature_analysis_file_name;
+    string species_selection_tmp;
+    string study_var_tmp;
 
     void resizeEvent(QResizeEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -180,7 +187,7 @@ signals:
     void transforming(QRectF f);
     void updateCanvas();
     void exporting(string);
-    void studyVariableChanged(string);
+    void studyVariableChanged();
     void updateHighlightedPoints(vector<QString> *);
     void analysisCompleted();
     void resizing();
@@ -189,6 +196,7 @@ signals:
 
 public slots:
     void quitProgram();
+    void processFinished();
     void openLists();
     void openTable();
     void openMzTabM();
@@ -219,13 +227,15 @@ public slots:
     void set6ColumnLayout();
     void setSnPositions();
     void startFeatureAnalysis();
+    void finishFeatureAnalysis();
     void openManageLipidomesWindow();
     void openColorDialog();
     void setSecondarySorting();
     void updateSecondarySorting(int);
     void runAnalysis(bool init = false);
-    void visualizeFinishedAnalysis(set<QString> &selected_tiles, string species_selection, string study_var);
+    void visualizeFinishedAnalysis();
     void completeFeatureAnalysis();
+    void finishCompleteFeatureAnalysis();
     void setTransforming(QRectF f);
     void setExport();
     void openSetAlpha();

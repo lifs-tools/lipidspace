@@ -31,9 +31,9 @@ Chart::Chart(QWidget *parent) : QGraphicsView(parent), loaded(false) {
     float_x_precision = DEFAULT_PRECISION;
     float_y_precision = DEFAULT_PRECISION;
 
-    tick_font = QFont("Calibri", GlobalData::gui_num_var["tick_size"]);
-    label_font = QFont("Calibri", GlobalData::gui_num_var["tick_size"], QFont::Bold);
-    title_legend_font = QFont("Calibri", GlobalData::gui_num_var["legend_size"]);
+    tick_font = QFont("Calibri", GlobalData::gui_num_var.at("tick_size"));
+    label_font = QFont("Calibri", GlobalData::gui_num_var.at("tick_size"), QFont::Bold);
+    title_legend_font = QFont("Calibri", GlobalData::gui_num_var.at("legend_size"));
 
     title = new QGraphicsTextItem("");
     xlabel = new QGraphicsTextItem("");
@@ -458,7 +458,7 @@ void Chart::update_chart(){
     else {
         double max_tick_height = 0;
         for (uint i = 0; i < x_categories.size(); ++i){
-            max_tick_height = max(max_tick_height, (double)x_ticks[i]->boundingRect().height());
+            max_tick_height = max(max_tick_height, (double)x_ticks.at(i)->boundingRect().height());
         }
         max_tick_height = min(max_tick_height, (double)chart_box.height() * 0.2);
 
@@ -471,7 +471,7 @@ void Chart::update_chart(){
         if (!log_y_axis){
 
             for (uint i = 0; i < h_grid.size(); ++i){
-                auto line = h_grid[i];
+                auto line = h_grid.at(i);
                 if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                     line->setVisible(true);
                     double h = chart_box_inner.y() + (double)i / (h_grid.size() - 1) * chart_box_inner.height();
@@ -481,7 +481,7 @@ void Chart::update_chart(){
                     line->setVisible(false);
                 }
 
-                auto tick = y_ticks[i];
+                auto tick = y_ticks.at(i);
                 if (tick_rect.height() * h_grid.size() * 0.7 < chart_box.height() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                     tick->setVisible(true);
                     tick->setFont(tick_font);
@@ -502,7 +502,7 @@ void Chart::update_chart(){
             int u = floor(log(yrange.y()) / log(10.));
             double tick_value = log_y_axis ? pow(10., u) : 0;
             for (uint i = 0; i < h_grid.size(); ++i){
-                auto line = h_grid[i];
+                auto line = h_grid.at(i);
                 if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                     line->setVisible(true);
 
@@ -514,7 +514,7 @@ void Chart::update_chart(){
                     line->setVisible(false);
                 }
 
-                auto tick = y_ticks[i];
+                auto tick = y_ticks.at(i);
                 if (tick_rect.height() * h_grid.size() * 0.7 < chart_box.height() && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                     tick->setVisible(true);
                     tick->setFont(tick_font);
@@ -535,7 +535,7 @@ void Chart::update_chart(){
 
     if (show_x_axis && !is_x_category_axis){
         for (uint i = 0; i < v_grid.size(); ++i){
-            auto line = v_grid[i];
+            auto line = v_grid.at(i);
             if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                 line->setVisible(true);
                 double w = chart_box_inner.x() + (double)i / (TICK_NUM - 1)  * chart_box_inner.width();
@@ -545,7 +545,7 @@ void Chart::update_chart(){
                 line->setVisible(false);
             }
 
-            auto tick = x_ticks[i];
+            auto tick = x_ticks.at(i);
             if (show_x_ticks && chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
                 tick->setVisible(true);
                 tick->setFont(tick_font);
@@ -563,9 +563,9 @@ void Chart::update_chart(){
     if (show_x_axis && is_x_category_axis){
         double single_group_width = chart_box_inner.width() / (double)(xrange.y() - xrange.x());
         for (uint i = 0; i < x_categories.size(); ++i){
-            auto x_tick = x_ticks[i];
+            auto x_tick = x_ticks.at(i);
             x_tick->setFont(tick_font);
-            x_tick->setHtml(x_categories[i]);
+            x_tick->setHtml(x_categories.at(i));
             if (x_labels_rotated){
                 QTransform t;
                 QPointF xlate = x_tick->boundingRect().center();
@@ -597,7 +597,7 @@ void Chart::update_chart(){
             }
 
 
-            auto line = v_grid[i];
+            auto line = v_grid.at(i);
             if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0 && (single_group_width > 5 || i == 0) && i < (xrange.y() - xrange.x())){
                 line->setVisible(true);
                 double w = chart_box_inner.x() + (double)i * single_group_width;
@@ -607,7 +607,7 @@ void Chart::update_chart(){
                 line->setVisible(false);
             }
         }
-        auto line = v_grid[x_categories.size()];
+        auto line = v_grid.at(x_categories.size());
         if (chart_box_inner.width() > 0 && chart_box_inner.height() > 0){
             line->setVisible(true);
             double w = chart_box_inner.x() + chart_box_inner.width();
@@ -622,8 +622,8 @@ void Chart::update_chart(){
 
 
     if (show_legend){
-        double legend_size = GlobalData::gui_num_var["legend_size"];
-        double xlegend_width = (GlobalData::gui_num_var["legend_size"] + 5) * legend_categories.size();
+        double legend_size = GlobalData::gui_num_var.at("legend_size");
+        double xlegend_width = (GlobalData::gui_num_var.at("legend_size") + 5) * legend_categories.size();
         int include_legend = legend_categories.size();
         for (auto category : legend_categories){
             category.category->setHtml(category.category_string);
@@ -633,7 +633,7 @@ void Chart::update_chart(){
 
         QGraphicsTextItem ppp("...");
         while (include_legend > 0 && xlegend_width > legend_box.width()){
-            auto category = legend_categories[--include_legend];
+            auto category = legend_categories.at(--include_legend);
             xlegend_width += ppp.boundingRect().width() - category.category->boundingRect().width();
         }
 

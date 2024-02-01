@@ -329,7 +329,7 @@ void Tutorial::show_arrow(Arrow a, QWidget *widget, QPoint p){
 
 
 void Tutorial::show_arrow(Arrow a, QWidget *widget, int x, int y){
-    ImageWidget* arrow = arrows[a];
+    ImageWidget* arrow = arrows.at(a);
     int offset = 26;
     switch(a){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -450,7 +450,7 @@ void Tutorial::tile_selection_changed(){
 
     switch(tutorialType){
         case SecondTutorial: {
-            if (second_tutorial_steps_order[step] == SSpacesOptions){
+            if (second_tutorial_steps_order.at(step) == SSpacesOptions){
                 int selected = 0;
                 for (auto canvas : lipidSpaceGUI->canvases) selected += canvas->marked_for_selected_view;
                 continuePushButton->setEnabled(selected == 2);
@@ -470,7 +470,7 @@ void Tutorial::combobox_changed(int){
 
     switch(tutorialType){
         case SecondTutorial: {
-            SecondSteps s_step = second_tutorial_steps_order[step];
+            SecondSteps s_step = second_tutorial_steps_order.at(step);
             switch(s_step){
                 case SSorting:
                     if (lipidSpaceGUI->ui->speciesComboBox->currentText() == "Type classification (Desc)"){
@@ -510,7 +510,7 @@ void Tutorial::combobox_changed(int){
 
 
         case ThirdTutorial: {
-            ThirdSteps t_step = third_tutorial_steps_order[step];
+            ThirdSteps t_step = third_tutorial_steps_order.at(step);
             switch(t_step){
                 case TFeaturePanel:
                     if (lipidSpaceGUI->ui->studyVariableComboBox->currentText() == "Treatment"){
@@ -533,7 +533,7 @@ void Tutorial::combobox_changed(int){
 
 
         case FourthTutorial: {
-            FourthSteps d_step = fourth_tutorial_steps_order[step];
+            FourthSteps d_step = fourth_tutorial_steps_order.at(step);
             switch(d_step){
                 case DLoadData:
                     continuePushButton->setEnabled(lipidSpaceGUI->ui->studyVariableComboBox->currentText() == "Origin" && lipidSpaceGUI->ui->pieTreeSpinBox->value() >= 10 && lipidSpaceGUI->ui->pieSizeSpinBox->value() == 200);
@@ -572,7 +572,7 @@ void Tutorial::spinbox_changed(int){
 
     switch(tutorialType){
         case ThirdTutorial: {
-            ThirdSteps t_step = third_tutorial_steps_order[step];
+            ThirdSteps t_step = third_tutorial_steps_order.at(step);
             switch(t_step){
                 case TFeatureVisualization:
                     if (lipidSpaceGUI->ui->pieTreeSpinBox->value() == 6){
@@ -593,7 +593,7 @@ void Tutorial::spinbox_changed(int){
 
     switch(tutorialType){
         case FourthTutorial: {
-            FourthSteps d_step = fourth_tutorial_steps_order[step];
+            FourthSteps d_step = fourth_tutorial_steps_order.at(step);
             switch(d_step){
                 case DLoadData:
                     continuePushButton->setEnabled(lipidSpaceGUI->ui->studyVariableComboBox->currentText() == "Origin" && lipidSpaceGUI->ui->pieTreeSpinBox->value() >= 10 && lipidSpaceGUI->ui->pieSizeSpinBox->value() == 200);
@@ -618,7 +618,7 @@ void Tutorial::action_performed(){
 
     switch(tutorialType){
         case FirstTutorial: {
-            FirstSteps f_step = first_tutorial_steps_order[step];
+            FirstSteps f_step = first_tutorial_steps_order.at(step);
 
             switch(f_step){
                 case FOpenImport:
@@ -647,7 +647,7 @@ void Tutorial::action_performed(){
         } break;
 
         case SecondTutorial: {
-            SecondSteps s_step = second_tutorial_steps_order[step];
+            SecondSteps s_step = second_tutorial_steps_order.at(step);
 
             switch(s_step){
                 case SSpacesSingleView:
@@ -660,7 +660,7 @@ void Tutorial::action_performed(){
         } break;
 
         case ThirdTutorial: {
-            ThirdSteps t_step = third_tutorial_steps_order[step];
+            ThirdSteps t_step = third_tutorial_steps_order.at(step);
 
             switch(t_step){
                 case TFeatureAnalysis:
@@ -674,7 +674,7 @@ void Tutorial::action_performed(){
         } break;
 
         case FourthTutorial: {
-            FourthSteps d_step = fourth_tutorial_steps_order[step];
+            FourthSteps d_step = fourth_tutorial_steps_order.at(step);
 
             switch(d_step){
                 case DNormalization:
@@ -720,7 +720,7 @@ void Tutorial::tab_changed(int index){
 
     switch(tutorialType){
         case FirstTutorial: {
-            FirstSteps f_step = first_tutorial_steps_order[step];
+            FirstSteps f_step = first_tutorial_steps_order.at(step);
 
             switch(f_step){
                 case FSelectColumnTable:
@@ -739,7 +739,7 @@ void Tutorial::tab_changed(int index){
         } break;
 
         case SecondTutorial: {
-            SecondSteps s_step = second_tutorial_steps_order[step];
+            SecondSteps s_step = second_tutorial_steps_order.at(step);
 
             switch(s_step){
                 case SSorting:
@@ -832,7 +832,7 @@ void Tutorial::tab_changed(int index){
 
 
         case ThirdTutorial: {
-            ThirdSteps t_step = third_tutorial_steps_order[step];
+            ThirdSteps t_step = third_tutorial_steps_order.at(step);
 
             switch(t_step){
                 case TFeaturePanel:
@@ -875,7 +875,7 @@ void Tutorial::tab_changed(int index){
 
 
         case FourthTutorial: {
-            FourthSteps d_step = fourth_tutorial_steps_order[step];
+            FourthSteps d_step = fourth_tutorial_steps_order.at(step);
 
             switch(d_step){
                 case DLoadData:
@@ -930,7 +930,7 @@ void Tutorial::item_changed(const QModelIndex &, int, int){
 
     switch(tutorialType){
         case FirstTutorial: {
-            FirstSteps f_step = first_tutorial_steps_order[step];
+            FirstSteps f_step = first_tutorial_steps_order.at(step);
 
             switch(f_step){
                 case FSampleEntryAssignment:
@@ -1016,7 +1016,7 @@ void Tutorial::first_tutorial_steps(){
     informationLabel->setText("");
     QFontMetrics font_metrics(QApplication::font());
 
-    FirstSteps f_step = first_tutorial_steps_order[step];
+    FirstSteps f_step = first_tutorial_steps_order.at(step);
 
     switch(f_step){
         case FStart:
@@ -1300,7 +1300,7 @@ void Tutorial::second_tutorial_steps(){
     titleLabel->setText("");
     informationLabel->setText("");
     QFontMetrics font_metrics(QApplication::font());
-    SecondSteps s_step = second_tutorial_steps_order[step];
+    SecondSteps s_step = second_tutorial_steps_order.at(step);
 
     switch(s_step){
         case SStart:
@@ -1327,12 +1327,12 @@ void Tutorial::second_tutorial_steps(){
                     string path_to_example = QCoreApplication::applicationDirPath().toStdString();
                     lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
-                    main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
-                    main_widgets[lipidSpaceGUI->ui->menuView] = true;
-                    main_widgets[lipidSpaceGUI->ui->actionExport_Results] = true;
-                    main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
-                    main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
-                    main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuAnalysis) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuView) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->actionExport_Results) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuClustering_strategy) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuTile_layout) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuSelected_tiles_mode) = true;
 
                     for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
                 }
@@ -1740,7 +1740,7 @@ void Tutorial::third_tutorial_steps(){
     titleLabel->setText("");
     informationLabel->setText("");
     QFontMetrics font_metrics(QApplication::font());
-    ThirdSteps t_step = third_tutorial_steps_order[step];
+    ThirdSteps t_step = third_tutorial_steps_order.at(step);
 
     switch(t_step){
         case TStart:
@@ -1769,13 +1769,13 @@ void Tutorial::third_tutorial_steps(){
                     string path_to_example = QCoreApplication::applicationDirPath().toStdString();
                     lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
-                    main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
-                    main_widgets[lipidSpaceGUI->ui->menuView] = true;
-                    main_widgets[lipidSpaceGUI->ui->actionExport_Results] = true;
-                    main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
-                    main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
-                    main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
-                    main_widgets[lipidSpaceGUI->ui->startAnalysisPushButton] = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuAnalysis) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuView) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->actionExport_Results) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuClustering_strategy) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuTile_layout) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->menuSelected_tiles_mode) = true;
+                    main_widgets.at(lipidSpaceGUI->ui->startAnalysisPushButton) = true;
 
                     for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
                 }
@@ -2008,7 +2008,7 @@ void Tutorial::fourth_tutorial_steps(){
     titleLabel->setText("");
     informationLabel->setText("");
     QFontMetrics font_metrics(QApplication::font());
-    FourthSteps d_step = fourth_tutorial_steps_order[step];
+    FourthSteps d_step = fourth_tutorial_steps_order.at(step);
 
     switch(d_step){
         case DStart:
@@ -2064,13 +2064,13 @@ void Tutorial::fourth_tutorial_steps(){
                 ct_3->at(1) = StudyVariableColumnNominal;
                 lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/ThreeStudies.xlsx", "Study3", COLUMN_PIVOT_TABLE, ct_3));
 
-                main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
-                main_widgets[lipidSpaceGUI->ui->menuView] = true;
-                main_widgets[lipidSpaceGUI->ui->actionExport_Results] = true;
-                main_widgets[lipidSpaceGUI->ui->menuClustering_strategy] = true;
-                main_widgets[lipidSpaceGUI->ui->menuTile_layout] = true;
-                main_widgets[lipidSpaceGUI->ui->menuSelected_tiles_mode] = true;
-                main_widgets[lipidSpaceGUI->ui->startAnalysisPushButton] = true;
+                main_widgets.at(lipidSpaceGUI->ui->menuAnalysis) = true;
+                main_widgets.at(lipidSpaceGUI->ui->menuView) = true;
+                main_widgets.at(lipidSpaceGUI->ui->actionExport_Results) = true;
+                main_widgets.at(lipidSpaceGUI->ui->menuClustering_strategy) = true;
+                main_widgets.at(lipidSpaceGUI->ui->menuTile_layout) = true;
+                main_widgets.at(lipidSpaceGUI->ui->menuSelected_tiles_mode) = true;
+                main_widgets.at(lipidSpaceGUI->ui->startAnalysisPushButton) = true;
 
                 for (auto canvas : lipidSpaceGUI->canvases) connect(canvas, &Canvas::tileSelected, this, &Tutorial::tile_selection_changed);
             }

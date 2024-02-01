@@ -64,6 +64,9 @@ using namespace OpenXLSX;
 using namespace std;
 using json = nlohmann::json;
 
+
+enum ProcessType {NoAnalysis, LipidAnalysis, LipidAnalysisInitial, FeatureAnalysis, CompleteFeatureAnalysis};
+enum LipidSpaceTab {LipidSpaceHomeTab = 0, LipidSpaceTileTab = 1, LipidSpaceDendrogramTab = 2, LipidSpaceStatisticsTab = 3, LipidSpaceEnrichmentTab = 4, LipidSpaceRawTab = 5};
 enum Linkage {SingleLinkage, AverageLinkage, CompleteLinkage};
 enum ConditionModeEnrichment {StandardMode, SelectionMode, LipidSpeciesListMode};
 enum StudyVariableType {NumericalStudyVariable, NominalStudyVariable, NominalValue};
@@ -581,6 +584,7 @@ class Progress : public QObject {
     Q_OBJECT
 
 public:
+    ProcessType process_type;
     int current_progress;
     int max_progress;
     bool stop_progress;
@@ -593,7 +597,7 @@ public slots:
     void increment();
     void setError(QString);
     void prepare(int max);
-    void reset();
+    void reset(ProcessType _process_type);
 
 
 

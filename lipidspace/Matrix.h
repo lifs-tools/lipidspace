@@ -113,7 +113,7 @@ public:
     friend ostream& operator << (ostream& os, const Matrix& m){
         for (int r = 0; r < m.rows; ++r){
             for (int c = 0; c < m.cols; c++){
-                os << m.m[c * m.rows + r] << " ";
+                os << m.m.at(c * m.rows + r) << " ";
             } os << endl;
         }
         return os;
@@ -123,14 +123,14 @@ public:
         if (r < 0 || rows <= r || c < 0 || cols <= c){
             throw "Constrain violation, 0 <= r <=" + std::to_string(rows) + ", 0 <= c <= " + std::to_string(cols);
         }
-        return m[c * rows + r];
+        return m.at(c * rows + r);
     }
 
     inline double& operator ()(int r, int c){
         if (r < 0 || rows <= r || c < 0 || cols <= c){
             throw "Constrain violation, 0 <= r <=" + std::to_string(rows) + ", 0 <= c <= " + std::to_string(cols);
         }
-        return m[c * rows + r];
+        return m.at(c * rows + r);
     }
 
     void random(int r, int c){

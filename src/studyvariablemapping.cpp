@@ -35,7 +35,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
     for (uint i = 0; i < ct->size(); ++i){
         if (ct->at(i) != StudyVariableColumnNumerical && ct->at(i) != StudyVariableColumnNominal) continue;
 
-        string header = file_table_handler->headers[i];
+        string header = file_table_handler->headers.at(i);
         if (ct->at(i) == StudyVariableColumnNumerical){
             mapping_data->at(NumericalStudyVariable).insert({header, Mapping(header, NumericalStudyVariable)});
             continue;
@@ -44,10 +44,10 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
 
         // TODO: check if header is already registered in nom_values;
         nom_values.insert({header, set<string>()});
-        set<string> &value_set = nom_values[header];
+        set<string> &value_set = nom_values.at(header);
 
         for (auto row : file_table_handler->rows){
-            value_set.insert(row[i]);
+            value_set.insert(row.at(i));
         }
     }
 
@@ -56,7 +56,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
         for (auto value : kv.second){
             string key = kv.first + "/" + value;
             mapping_data->at(NominalValue).insert({key, Mapping(value, NominalValue)});
-            mapping_data->at(NominalValue)[key].parent = kv.first;
+            mapping_data->at(NominalValue).at(key).parent = kv.first;
         }
     }
 
@@ -205,7 +205,7 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
             t->setCellWidget(row_cnt, 3, le);
             le->setText("");
 
-            variable_to_values[variable_index].insert(row_cnt);
+            variable_to_values.at(variable_index).insert(row_cnt);
             value_to_variable.insert({row_cnt, variable_index});
             row_cnt++;
             names_for_registration.push_back(kv2.first);
@@ -223,9 +223,9 @@ StudyVariableMapping::StudyVariableMapping(FileTableHandler *fth, MappingData *m
 
 void StudyVariableMapping::lineEditChanged(SignalLineEdit *edit, QString txt){
     int line_index = edit->row;
-    string line_name = names_for_registration[line_index];
+    string line_name = names_for_registration.at(line_index);
     StudyVariableType ft = edit->study_variable_type;
-    mapping_data->at(ft)[line_name].mapping = txt.toStdString();
+    mapping_data->at(ft).at(line_name).mapping = txt.toStdString();
 }
 
 
@@ -344,7 +344,7 @@ void StudyVariableMapping::comboVariableChanged(SignalCombobox *combo){
 void StudyVariableMapping::comboChanged(SignalCombobox *combo){
     int combo_index = combo->currentIndex();
     int row = combo->itemData(1).toInt();
-    string combo_name = names_for_registration[row];
+    string combo_name = names_for_registration.at(row);
     StudyVariableType ft = (StudyVariableType)combo->itemData(0).toInt();
     SignalLineEdit *le = (SignalLineEdit*)ui->tableWidget->cellWidget(row, 3);
     le->study_variable_type = ft;
@@ -362,9 +362,9 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
             default: action = MappingTo; break;
         }
 
-        mapping_data->at(NumericalStudyVariable)[combo_name].mapping = "";
-        mapping_data->at(NumericalStudyVariable)[combo_name].action = action;
-        if (action == MappingTo) mapping_data->at(NumericalStudyVariable)[combo_name].mapping = combo->itemData(combo_index).toString().toStdString();
+        mapping_data->at(NumericalStudyVariable).at(combo_name).mapping = "";
+        mapping_data->at(NumericalStudyVariable).at(combo_name).action = action;
+        if (action == MappingTo) mapping_data->at(NumericalStudyVariable).at(combo_name).mapping = combo->itemData(combo_index).toString().toStdString();
 
         le->setEnabled(combo_index == 1 || combo_index == 3);
         le->setText("");
@@ -378,15 +378,15 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
             default: action = MappingTo; break;
         }
 
-        mapping_data->at(NominalStudyVariable)[combo_name].mapping = "";
-        mapping_data->at(NominalStudyVariable)[combo_name].action = action;
+        mapping_data->at(NominalStudyVariable).at(combo_name).mapping = "";
+        mapping_data->at(NominalStudyVariable).at(combo_name).action = action;
         if (action == MappingTo){
             string study_variable = combo->itemData(combo_index).toString().toStdString();
-            mapping_data->at(NominalStudyVariable)[combo_name].mapping = study_variable;
+            mapping_data->at(NominalStudyVariable).at(combo_name).mapping = study_variable;
 
             QStringList sl;
             if (contains_val(lipid_space->study_variable_values, study_variable)){
-                for (auto value : lipid_space->study_variable_values[study_variable].nominal_values){
+                for (auto value : lipid_space->study_variable_values.at(study_variable).nominal_values){
                     QString s = value.first.c_str();
                     sl << s;
                 }
@@ -397,7 +397,7 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
         le->setEnabled(combo_index == 1 || combo_index == 3);
         le->setText("");
 
-        for (int value_index : variable_to_values[row]){
+        for (int value_index : variable_to_values.at(row)){
             SignalCombobox *sc = ((SignalCombobox*)ui->tableWidget->cellWidget(value_index, 2));
             int value_current_index = sc->currentIndex();
             if (value_current_index > 2) value_current_index = 0;
@@ -413,7 +413,7 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
                 int var_cnt = 2;
                 string study_variable = combo->itemData(combo_index).toString().toStdString();
                 if (contains_val(lipid_space->study_variable_values, study_variable)){
-                    for (auto kv2 : lipid_space->study_variable_values[study_variable].nominal_values){
+                    for (auto kv2 : lipid_space->study_variable_values.at(study_variable).nominal_values){
                         QString s = kv2.first.c_str();
                         sc->addItem(QString("Rename to %1").arg(s));
                         sc->setItemData(var_cnt++, s);
@@ -432,11 +432,11 @@ void StudyVariableMapping::comboChanged(SignalCombobox *combo){
             case 1: action = RenameAction; break;
             default: action = MappingTo; break;
         }
-        mapping_data->at(NominalValue)[combo_name].mapping = "";
-        mapping_data->at(NominalValue)[combo_name].action = action;
+        mapping_data->at(NominalValue).at(combo_name).mapping = "";
+        mapping_data->at(NominalValue).at(combo_name).action = action;
         if (action == MappingTo){
             string nominal_value = combo->itemData(combo_index).toString().toStdString();
-            mapping_data->at(NominalValue)[combo_name].mapping = nominal_value;
+            mapping_data->at(NominalValue).at(combo_name).mapping = nominal_value;
         }
     }
 }
@@ -643,8 +643,8 @@ void StudyVariableMapping::doContinue() {
         MappingAction action = (cb->currentIndex() & 1) ? InsertDefault : InsertNaN;
 
         mapping_data->at(ft).insert({name, Mapping(name, ft)});
-        mapping_data->at(ft)[name].action = action;
-        if (action == InsertDefault) mapping_data->at(ft)[name].mapping = ((SignalLineEdit*)t->cellWidget(row, 3))->text().toStdString();
+        mapping_data->at(ft).at(name).action = action;
+        if (action == InsertDefault) mapping_data->at(ft).at(name).mapping = ((SignalLineEdit*)t->cellWidget(row, 3))->text().toStdString();
     }
 
     accept();

@@ -100,9 +100,7 @@ void HomeView::resizeEvent(QResizeEvent *) {
         scene()->addItem(LIFS);
 
 
-        // TODO: decomment next line
         citation = new Citation("Citation: Kopczynski, D. et al. Analytical Chemistry 95(41):15236–15244, 2023.");
-        //citation = new Citation("");
 
         citation->setDefaultTextColor(Qt::white);
         scene()->addItem(citation);
@@ -227,7 +225,7 @@ void DendrogramLine::make_permanent(bool p){
     setPen(dpen);
     if (next_line) next_line->make_permanent(p);
     if (second_line) second_line->make_permanent(p);
-    if (node >= 0) dendrogram->dendrogram_titles[node].permanent = p;
+    if (node >= 0) dendrogram->dendrogram_titles.at(node).permanent = p;
 }
 
 void DendrogramLine::highlight(bool h){
@@ -236,7 +234,7 @@ void DendrogramLine::highlight(bool h){
     setPen(dpen);
     if (next_line) next_line->highlight(h);
     if (second_line) second_line->highlight(h);
-    if (node >= 0) dendrogram->dendrogram_titles[node].highlighted = h;
+    if (node >= 0) dendrogram->dendrogram_titles.at(node).highlighted = h;
 }
 
 
@@ -282,7 +280,6 @@ void DendrogramLine::update_height_factor(double update_factor, QPointF *max_val
 
 
 Dendrogram::Dendrogram(Canvas *_view) : view(_view) {
-    study_variable = "";
     setZValue(100);
     top_line = 0;
     highlighted_for_selection = 0;
@@ -377,11 +374,11 @@ void Dendrogram::load(){
 
 
     max_title_width = 0;
-    QFontMetrics fm(QFont("Helvetica", GlobalData::gui_num_var["label_size"]));
-    bool multiple_origins = lipid_space->study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values.size() > 1;
+    QFontMetrics fm(QFont("Helvetica", GlobalData::gui_num_var.at("label_size")));
+    bool multiple_origins = lipid_space->study_variable_values.at(FILE_STUDY_VARIABLE_NAME).nominal_values.size() > 1;
     for (int i : lipid_space->dendrogram_sorting){
 
-        string lipidome_name = lipid_space->selected_lipidomes[i]->lipidome_name + (multiple_origins ? lipid_space->selected_lipidomes[i]->suffix : "");
+        string lipidome_name = lipid_space->selected_lipidomes.at(i)->lipidome_name + (multiple_origins ? lipid_space->selected_lipidomes.at(i)->suffix : "");
 
         dendrogram_titles.push_back(DendrogramTitle(QString(lipidome_name.c_str())));
         max_title_width = max(max_title_width, (double)fm.horizontalAdvance(dendrogram_titles.back().title));
@@ -393,21 +390,21 @@ void Dendrogram::load(){
     y_max_d = 0;
 
     for (int i = 0; i < (int)lipid_space->dendrogram_points.size(); i += 4){
-        lines.push_back(QLineF(lipid_space->dendrogram_points[i], -lipid_space->dendrogram_points[i + 1], lipid_space->dendrogram_points[i + 2], -lipid_space->dendrogram_points[i + 3]));
+        lines.push_back(QLineF(lipid_space->dendrogram_points.at(i), -lipid_space->dendrogram_points.at(i + 1), lipid_space->dendrogram_points.at(i + 2), -lipid_space->dendrogram_points.at(i + 3)));
 
-        x_min_d = min(x_min_d, lipid_space->dendrogram_points[i]);
-        x_max_d = max(x_max_d, lipid_space->dendrogram_points[i]);
-        x_min_d = min(x_min_d, lipid_space->dendrogram_points[i + 2]);
-        x_max_d = max(x_max_d, lipid_space->dendrogram_points[i + 2]);
+        x_min_d = min(x_min_d, lipid_space->dendrogram_points.at(i));
+        x_max_d = max(x_max_d, lipid_space->dendrogram_points.at(i));
+        x_min_d = min(x_min_d, lipid_space->dendrogram_points.at(i + 2));
+        x_max_d = max(x_max_d, lipid_space->dendrogram_points.at(i + 2));
 
-        y_min_d = min(y_min_d, lipid_space->dendrogram_points[i + 1]);
-        y_max_d = max(y_max_d, lipid_space->dendrogram_points[i + 1]);
-        y_min_d = min(y_min_d, lipid_space->dendrogram_points[i + 3]);
-        y_max_d = max(y_max_d, lipid_space->dendrogram_points[i + 3]);
+        y_min_d = min(y_min_d, lipid_space->dendrogram_points.at(i + 1));
+        y_max_d = max(y_max_d, lipid_space->dendrogram_points.at(i + 1));
+        y_min_d = min(y_min_d, lipid_space->dendrogram_points.at(i + 3));
+        y_max_d = max(y_max_d, lipid_space->dendrogram_points.at(i + 3));
     }
 
     dendrogram_x_factor = 100;
-    dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
+    dendrogram_y_factor = GlobalData::gui_num_var.at("dendrogram_height");
     ratio = 1;
 
     dwidth = (lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor;
@@ -416,7 +413,7 @@ void Dendrogram::load(){
     dendrogram_y_offset = y_max_d;
 
 
-    double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var["pie_size"] / 100.;
+    double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var.at("pie_size") / 100.;
     double x_l = max(max_title_width * 0.85, pie_radius);
     double y_b = max(max_title_width * 0.7, pie_radius);
     bound.setX(-x_l);
@@ -444,22 +441,25 @@ QRectF Dendrogram::boundingRect() const {
 
 
 void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double threshold, double pie_x, double pie_y, LabelDirection direction){
-    double resize_factor = GlobalData::gui_num_var["pie_size"] / 100.;
+    string study_variable = GlobalData::gui_string_var.at("study_var");
+    if (uncontains_val(view->lipid_space->study_variable_values, study_variable)) return;
+
+    double resize_factor = GlobalData::gui_num_var.at("pie_size") / 100.;
     double pie_radius = PIE_BASE_RADIUS * resize_factor;
     int angle_start = 16 * 90;
     QFont pie_font("Helvetica");
     pie_font.setPointSizeF(10. * resize_factor);
-    if (view->lipid_space->study_variable_values[study_variable].study_variable_type == NominalStudyVariable){
+    if (view->lipid_space->study_variable_values.at(study_variable).study_variable_type == NominalStudyVariable){
         double sum = 0;
-        for (auto kv : node->study_variable_count_nominal[study_variable]){
+        for (auto kv : node->study_variable_count_nominal.at(study_variable)){
             sum += kv.second;
         }
 
 
-        for (auto kv : node->study_variable_count_nominal[study_variable]){
+        for (auto kv : node->study_variable_count_nominal.at(study_variable)){
             if (kv.second == 0) continue;
             int span = 16. * 360. * (double)kv.second / sum;
-            QBrush brush(GlobalData::colorMapStudyVariables[study_variable + "_" + kv.first]);
+            QBrush brush(GlobalData::colorMapStudyVariables.at(study_variable + "_" + kv.first));
             QPen piePen(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
@@ -472,13 +472,13 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
         string study_variable_gr = study_variable + "_gr";
 
         int num = 0;
-        if (uncontains_val(node->study_variable_numerical, study_variable) || node->study_variable_numerical[study_variable].size() == 0) return;
-        for (double val : node->study_variable_numerical[study_variable]){
+        if (uncontains_val(node->study_variable_numerical, study_variable) || node->study_variable_numerical.at(study_variable).size() == 0) return;
+        for (double val : node->study_variable_numerical.at(study_variable)){
             num += val <= threshold;
         }
 
-        int span = 16. * 360. * (double)num / (double)node->study_variable_numerical[study_variable].size();
-        QBrush brush(GlobalData::colorMapStudyVariables[study_variable_le]);
+        int span = 16. * 360. * (double)num / (double)node->study_variable_numerical.at(study_variable).size();
+        QBrush brush(GlobalData::colorMapStudyVariables.at(study_variable_le));
         QPen piePen(brush.color());
         painter->setPen(piePen);
         painter->setBrush(brush);
@@ -487,7 +487,7 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
 
         angle_start = (angle_start + span) % 5760;
         span = 5760 - span;
-        brush.setColor(GlobalData::colorMapStudyVariables[study_variable_gr]);
+        brush.setColor(GlobalData::colorMapStudyVariables.at(study_variable_gr));
         piePen.setColor(brush.color());
         painter->setPen(piePen);
         painter->setBrush(brush);
@@ -499,13 +499,13 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
             double y = pie_y;
 
             // drawing the legend squares
-            QBrush brush(GlobalData::colorMapStudyVariables[study_variable_le]);
+            QBrush brush(GlobalData::colorMapStudyVariables.at(study_variable_le));
             QPen piePen(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
             painter->drawRect(x - 15 * resize_factor, y - 20 * resize_factor, 15 * resize_factor, 15 * resize_factor);
 
-            brush.setColor(GlobalData::colorMapStudyVariables[study_variable_gr]);
+            brush.setColor(GlobalData::colorMapStudyVariables.at(study_variable_gr));
             piePen.setBrush(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
@@ -524,13 +524,13 @@ void Dendrogram::draw_pie(QPainter *painter, DendrogramNode *node, double thresh
             double y = pie_y;
 
             // drawing the legend squares
-            QBrush brush(GlobalData::colorMapStudyVariables[study_variable_le]);
+            QBrush brush(GlobalData::colorMapStudyVariables.at(study_variable_le));
             QPen piePen(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
             painter->drawRect(x, y - 20 * resize_factor, 15 * resize_factor, 15 * resize_factor);
 
-            brush.setColor(GlobalData::colorMapStudyVariables[study_variable_gr]);
+            brush.setColor(GlobalData::colorMapStudyVariables.at(study_variable_gr));
             piePen.setBrush(brush.color());
             painter->setPen(piePen);
             painter->setBrush(brush);
@@ -563,7 +563,7 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     if (!lipid_space->dendrogram_root) return;
 
     QFont f("Helvetica");
-    f.setPointSizeF(GlobalData::gui_num_var["label_size"]);
+    f.setPointSizeF(GlobalData::gui_num_var.at("label_size"));
     painter->setFont(f);
     double dx = 0;
     double dy = 10 + (((lipid_space->selected_lipidomes.size() - 1) * dendrogram_x_factor) * ratio) * dendrogram_y_factor / 100;
@@ -573,66 +573,68 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
         painter->rotate(-35);
         QPen pen((dtitle.highlighted || dtitle.permanent) ? Qt::red : Qt::black);
         painter->setPen(pen);
-        painter->drawText(QRectF(-max_title_width, -GlobalData::gui_num_var["label_size"], max_title_width, GlobalData::gui_num_var["label_size"] * 2), Qt::AlignVCenter | Qt::AlignRight, dtitle.title);
+        painter->drawText(QRectF(-max_title_width, -GlobalData::gui_num_var.at("label_size"), max_title_width, GlobalData::gui_num_var.at("label_size") * 2), Qt::AlignVCenter | Qt::AlignRight, dtitle.title);
         dx += dendrogram_x_factor;
         painter->restore();
     }
 
-
+    string study_variable = GlobalData::gui_string_var.at("study_var");
     if (lipid_space && lipid_space->dendrogram_root){
         if (study_variable != ""){
-            recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::gui_num_var["pie_tree_depth"]);
+            recursive_paint(painter, lipid_space->dendrogram_root, GlobalData::gui_num_var.at("pie_tree_depth"));
 
+            if (contains_val(lipid_space->study_variable_values, study_variable)){
                 // Draw global pie chart
-            if (contains_val(lipid_space->study_variable_values, study_variable) && lipid_space->study_variable_values[study_variable].study_variable_type == NominalStudyVariable){
-                int angle_start = 16 * 90;
-                double sum = 0;
-                DendrogramNode* node = lipid_space->dendrogram_root;
-                for (auto kv : node->study_variable_count_nominal[study_variable]){
-                    sum += kv.second;
+                if (lipid_space->study_variable_values.at(study_variable).study_variable_type == NominalStudyVariable){
+                    int angle_start = 16 * 90;
+                    double sum = 0;
+                    DendrogramNode* node = lipid_space->dendrogram_root;
+                    for (auto kv : node->study_variable_count_nominal.at(study_variable)){
+                        sum += kv.second;
+                    }
+
+                    double pie_radius = 15;
+                    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+                    double pie_x = view->width() - 25;
+                    double pie_y = 20;
+                    QTransform qtrans = view->transform();
+                    painter->save();
+                    painter->translate(QPointF(v.x(), v.y()));
+                    painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+                    for (auto kv : node->study_variable_count_nominal.at(study_variable)){
+                        if (kv.second == 0) continue;
+                        int span = 16. * 360. * (double)kv.second / sum;
+                        QBrush brush(GlobalData::colorMapStudyVariables.at(study_variable + "_" + kv.first));
+                        QPen piePen(brush.color());
+                        painter->setPen(piePen);
+                        painter->setBrush(brush);
+                        painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
+                        angle_start = (angle_start + span) % 5760; // 360 * 16
+                    }
+                    painter->restore();
+
                 }
 
-                double pie_radius = 15;
-                QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
-                double pie_x = view->width() - 25;
-                double pie_y = 20;
-                QTransform qtrans = view->transform();
-                painter->save();
-                painter->translate(QPointF(v.x(), v.y()));
-                painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
-                for (auto kv : node->study_variable_count_nominal[study_variable]){
-                    if (kv.second == 0) continue;
-                    int span = 16. * 360. * (double)kv.second / sum;
-                    QBrush brush(GlobalData::colorMapStudyVariables[study_variable + "_" + kv.first]);
-                    QPen piePen(brush.color());
-                    painter->setPen(piePen);
-                    painter->setBrush(brush);
-                    painter->drawPie(pie_x - pie_radius, pie_y - pie_radius, pie_radius * 2, pie_radius * 2, angle_start, span);
-                    angle_start = (angle_start + span) % 5760; // 360 * 16
+
+                // print the study variable legend
+                QFont legend_font("Helvetica", 8);
+                int num_study_variable = 0;
+                for (auto study_variable_value_kv : lipid_space->study_variable_values.at(study_variable).nominal_values){
+                    QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
+                    QTransform qtrans = view->transform();
+                    painter->save();
+                    painter->translate(QPointF(v.x(), v.y()));
+                    painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
+                    if (contains_val(GlobalData::colorMapStudyVariables, study_variable + "_" + study_variable_value_kv.first)){
+                        painter->fillRect(QRectF(view->viewport()->geometry().width() - 20, 40 + 20 * num_study_variable, 15, 15), GlobalData::colorMapStudyVariables.at(study_variable + "_" + study_variable_value_kv.first));
+                    }
+                    painter->setFont(legend_font);
+                    string label_text = study_variable_value_kv.first + " (" + std::to_string(lipid_space->dendrogram_root->study_variable_count_nominal.at(study_variable).at(study_variable_value_kv.first)) + ")";
+                    painter->drawText(QRectF(view->viewport()->geometry().width() - 525, 40 + 20 * num_study_variable, 500, 30), Qt::AlignTop | Qt::AlignRight, label_text.c_str());
+
+                    painter->restore();
+                    ++num_study_variable;
                 }
-                painter->restore();
-
-            }
-
-
-            // print the study variable legend
-            QFont legend_font("Helvetica", 8);
-            int num_study_variable = 0;
-            for (auto study_variable_value_kv : lipid_space->study_variable_values.at(study_variable).nominal_values){
-                QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
-                QTransform qtrans = view->transform();
-                painter->save();
-                painter->translate(QPointF(v.x(), v.y()));
-                painter->scale(1. / qtrans.m11(), 1. / qtrans.m22());
-                if (contains_val(GlobalData::colorMapStudyVariables, study_variable + "_" + study_variable_value_kv.first)){
-                    painter->fillRect(QRectF(view->viewport()->geometry().width() - 20, 40 + 20 * num_study_variable, 15, 15), GlobalData::colorMapStudyVariables[study_variable + "_" + study_variable_value_kv.first]);
-                }
-                painter->setFont(legend_font);
-                string label_text = study_variable_value_kv.first + " (" + std::to_string(lipid_space->dendrogram_root->study_variable_count_nominal[study_variable][study_variable_value_kv.first]) + ")";
-                painter->drawText(QRectF(view->viewport()->geometry().width() - 525, 40 + 20 * num_study_variable, 500, 30), Qt::AlignTop | Qt::AlignRight, label_text.c_str());
-
-                painter->restore();
-                ++num_study_variable;
             }
         }
 
@@ -654,12 +656,15 @@ void Dendrogram::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int max_recursions, int recursion){
     if (recursion == max_recursions || node == 0) return;
 
+    string study_variable = GlobalData::gui_string_var.at("study_var");
+    double threshold = contains_val(node->study_variable_numerical_thresholds, study_variable) ? node->study_variable_numerical_thresholds.at(study_variable) : 0;
+
     // processing left child
     if (node->left_child != 0 && node->left_child->indexes.size() > 0){
         double pie_x = node->x_left * dendrogram_x_factor;
         double pie_y = (-node->y + dendrogram_y_offset) * dendrogram_height * dendrogram_y_factor / 100.;
 
-        draw_pie(painter, node->left_child, node->study_variable_numerical_thresholds[study_variable], pie_x, pie_y, LabelLeft);
+        draw_pie(painter, node->left_child, threshold, pie_x, pie_y, LabelLeft);
         recursive_paint(painter, node->left_child, max_recursions, recursion + 1);
     }
 
@@ -668,7 +673,7 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
         double pie_x = node->x_right * dendrogram_x_factor;
         double pie_y = (-node->y + dendrogram_y_offset) * dendrogram_height * dendrogram_y_factor / 100.;
 
-        draw_pie(painter, node->right_child, node->study_variable_numerical_thresholds[study_variable], pie_x, pie_y, LabelRight);
+        draw_pie(painter, node->right_child, threshold, pie_x, pie_y, LabelRight);
         recursive_paint(painter, node->right_child, max_recursions, recursion + 1);
     }
 }
@@ -676,15 +681,15 @@ void Dendrogram::recursive_paint(QPainter *painter, DendrogramNode *node, int ma
 
 void Dendrogram::update_bounds(bool complete){
     double tmp_factor = dendrogram_y_factor;
-    dendrogram_y_factor = GlobalData::gui_num_var["dendrogram_height"];
+    dendrogram_y_factor = GlobalData::gui_num_var.at("dendrogram_height");
     if (isinf(dendrogram_y_factor) || isnan(dendrogram_y_factor) || isinf(tmp_factor) || isnan(tmp_factor) || isinf(dendrogram_y_factor / tmp_factor) || isnan(dendrogram_y_factor / tmp_factor)) return;
 
     max_title_width = 0;
-    QFontMetrics fm(QFont("Helvetica", GlobalData::gui_num_var["label_size"]));
+    QFontMetrics fm(QFont("Helvetica", GlobalData::gui_num_var.at("label_size")));
     for (auto dendrogram_title : dendrogram_titles){
         max_title_width = max(max_title_width, (double)fm.horizontalAdvance(dendrogram_title.title));
     }
-    double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var["pie_size"] / 100.;
+    double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var.at("pie_size") / 100.;
 
     if (complete){
         double tmp_ratio = ratio;
@@ -719,7 +724,7 @@ void Dendrogram::update_bounds(bool complete){
         view->graphics_scene.setSceneRect(-10 * w, -10 * h, 20 * w, 20 * h);
     }
     else {
-        double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var["pie_size"] / 100.;
+        double pie_radius = PIE_BASE_RADIUS * GlobalData::gui_num_var.at("pie_size") / 100.;
         double x_l = max(max_title_width * 0.82, pie_radius);
         double y_b = max(max_title_width * 0.62, pie_radius);
         bound.setX(-x_l);
@@ -793,16 +798,16 @@ void PointSet::loadPoints(){
 
     // we need at least three lipids to span a lipid space
     if (view->lipid_space->global_lipidome->lipids.size() <= 2) return;
-    map<string, string> &translations = view->lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = view->lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
     Lipidome *lipidome = view->lipidome;
 
     for (uint rr = 0; rr < lipidome->selected_lipid_indexes.size(); ++rr){
-        int r = lipidome->selected_lipid_indexes[rr];
+        int r = lipidome->selected_lipid_indexes.at(rr);
         double f = compute_scale(lipidome, rr);
 
         double xval = lipidome->m(rr, GlobalData::PC1) * f * POINT_BASE_FACTOR;
         double yval = lipidome->m(rr, GlobalData::PC2) * f * POINT_BASE_FACTOR;
-        double intens = (GlobalData::showQuant && !view->lipid_space->without_quant) ? lipidome->visualization_intensities[rr] : POINT_BASE_SIZE;
+        double intens = (GlobalData::showQuant && !view->lipid_space->without_quant) ? lipidome->visualization_intensities.at(rr) : POINT_BASE_SIZE;
         double intens_boundery = intens * 0.5;
 
         x_min = __min(x_min, xval - intens_boundery);
@@ -813,16 +818,16 @@ void PointSet::loadPoints(){
         points.push_back(PCPoint());
         PCPoint &pc_point = points.back();
         pc_point.point = QPointF(xval, yval);
-        pc_point.normalized_intensity = lipidome->normalized_intensities[r];
+        pc_point.normalized_intensity = lipidome->normalized_intensities.at(r);
         pc_point.intensity = intens;
-        pc_point.color = &GlobalData::colorMap[lipidome->classes[r]];
-        pc_point.label = translations[lipidome->species[r]].c_str();
+        pc_point.color = &GlobalData::colorMap.at(lipidome->classes.at(r));
+        pc_point.label = translations.at(lipidome->species.at(r)).c_str();
         pc_point.ref_lipid_species = r;
 
         QRectF bubble(xval - intens * 0.5, yval - intens * 0.5,  intens, intens);
 
         // setting up pen for painter
-        QColor qcolor = GlobalData::colorMap[lipidome->classes[r]];
+        QColor qcolor = GlobalData::colorMap.at(lipidome->classes.at(r));
         qcolor.setAlpha(GlobalData::alpha);
 
         QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem(bubble);
@@ -902,15 +907,15 @@ void PointSet::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     QRectF v = view->mapToScene(view->viewport()->geometry()).boundingRect();
 
     // print highlighted points on top
-    for (int i = 0; i < (int)points.size(); ++i){
-        if (uncontains_val(highlighted_points, points[i].label)) continue;
+    for (auto &point : points){
+        if (uncontains_val(highlighted_points, point.label)) continue;
 
-        double intens = (GlobalData::showQuant && !view->lipid_space->without_quant) ? points[i].intensity : POINT_BASE_SIZE;
-        QRectF bubble(points[i].point.x() - intens * 0.5, points[i].point.y() - intens * 0.5,  intens, intens);
+        double intens = (GlobalData::showQuant && !view->lipid_space->without_quant) ? point.intensity : POINT_BASE_SIZE;
+        QRectF bubble(point.point.x() - intens * 0.5, point.point.y() - intens * 0.5,  intens, intens);
         if (!v.intersects(bubble)) continue;
 
         // setting up pen for painter
-        QColor qcolor = *(points[i].color);
+        QColor qcolor = *(point.color);
         qcolor.setAlpha(255);
         QPainterPath p;
         p.addEllipse(bubble);
@@ -1008,7 +1013,7 @@ void PointSet::set_point_size(){
         double intens = (GlobalData::showQuant && !view->lipid_space->without_quant) ? pc_point.intensity : POINT_BASE_SIZE;
 
         QRectF bubble(xval - intens * 0.5, yval - intens * 0.5,  intens, intens);
-        points[rr].item->setRect(bubble);
+        points.at(rr).item->setRect(bubble);
     }
 }
 
@@ -1033,6 +1038,7 @@ double pairwise_sum(Matrix &m){
 
 
 void PointSet::set_labels(){
+
     Lipidome *lipidome = view->lipidome;
     if (lipidome->m.rows == 0 || lipidome->m.cols == 0) return;
     set<LipidAdduct*> selected_lipids;
@@ -1040,7 +1046,7 @@ void PointSet::set_labels(){
 
     map<string, vector<int>> indexes;
     for (int i = 0, j = 0; i < (int)lipidome->lipids.size(); ++i){
-        if (uncontains_val(selected_lipids, lipidome->lipids[i])) continue;
+        if (uncontains_val(selected_lipids, lipidome->lipids.at(i))) continue;
         string lipid_class = lipidome->lipids.at(i)->get_extended_class();
         if (uncontains_val(indexes, lipid_class)) indexes.insert({lipid_class, vector<int>()});
         indexes.at(lipid_class).push_back(j++);
@@ -1118,8 +1124,8 @@ void PointSet::automated_annotation(Array &xx, Array &yy){
         Array new_xx(l, 0);
         Array new_yy(l, 0);
         for (int ii = 0; ii < l; ++ii){
-            double l_xx = label_xx[ii];
-            double l_yy = label_yy[ii];
+            double l_xx = label_xx.at(ii);
+            double l_yy = label_yy.at(ii);
 
             Array distances;
             distances.compute_distances(all_xx, l_xx, all_yy, l_yy);
@@ -1147,7 +1153,7 @@ void PointSet::automated_annotation(Array &xx, Array &yy){
     }
 
     for (int r = 0; r < (int)labels.size(); ++r){
-        labels[r].label_point = QPointF(label_xx[r], label_yy[r]);
+        labels.at(r).label_point = QPointF(label_xx.at(r), label_yy.at(r));
     }
 }
 
@@ -1291,7 +1297,7 @@ void Canvas::resetDendrogram(){
 
 
 void Canvas::setLabelSize(int font_size){
-    GlobalData::gui_num_var["label_size"] = font_size;
+    GlobalData::gui_num_var.at("label_size") = font_size;
     if (dendrogram) dendrogram->update_bounds(false);
 }
 
@@ -1342,33 +1348,33 @@ Canvas::Canvas(LipidSpace *_lipid_space, int _canvas_id, int num, CanvasType _ca
 
         Array vars;
         LipidSpace::compute_PCA_variances(lipid_space->global_lipidome->m, vars);
-        pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+        pointSet->variances = ((int)vars.size() > max(GlobalData::PC1,GlobalData::PC2)) ? QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars.at(GlobalData::PC1) * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars.at(GlobalData::PC2) * 100., 0, 'G', 3) : "";
         decoration = new Decoration(this, pointSet->title, pointSet->variances);
         graphics_scene.addItem(decoration);
     }
     else if (canvas_type == GroupSpaceCanvas){ // group lipidomes
         pointSet = new PointSet(this);
-        lipidome = lipid_space->group_lipidomes[lipidome_group_name][num];
+        lipidome = lipid_space->group_lipidomes.at(lipidome_group_name).at(num);
         graphics_scene.addItem(pointSet);
-        pointSet->title = QString(lipid_space->group_lipidomes[lipidome_group_name][num]->cleaned_name.c_str());
+        pointSet->title = QString(lipidome->cleaned_name.c_str());
         pointSet->loadPoints();
 
         Array vars;
-        LipidSpace::compute_PCA_variances(lipid_space->group_lipidomes[lipidome_group_name][num]->m, vars);
-        pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+        LipidSpace::compute_PCA_variances(lipidome->m, vars);
+        pointSet->variances = ((int)vars.size() > max(GlobalData::PC1,GlobalData::PC2)) ? QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3) : "";
         decoration = new Decoration(this, pointSet->title, pointSet->variances);
         graphics_scene.addItem(decoration);
     }
     else { // regular lipidome
         pointSet = new PointSet(this);
-        lipidome = lipid_space->selected_lipidomes[num];
+        lipidome = lipid_space->selected_lipidomes.at(num);
         graphics_scene.addItem(pointSet);
-        pointSet->title = QString(lipid_space->selected_lipidomes[num]->cleaned_name.c_str());
+        pointSet->title = QString(lipidome->cleaned_name.c_str());
         pointSet->loadPoints();
 
         Array vars;
-        LipidSpace::compute_PCA_variances(lipid_space->selected_lipidomes[num]->m, vars);
-        pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+        LipidSpace::compute_PCA_variances(lipidome->m, vars);
+        pointSet->variances = ((int)vars.size() > max(GlobalData::PC1,GlobalData::PC2)) ? QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars.at(GlobalData::PC1) * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars.at(GlobalData::PC2) * 100., 0, 'G', 3) : "";
         decoration = new Decoration(this, pointSet->title, pointSet->variances);
         graphics_scene.addItem(decoration);
     }
@@ -1605,12 +1611,12 @@ void Canvas::mouseMoveEvent(QMouseEvent *event){
 
             QStringList lipid_names;
             vector<string> lipids_for_selection;
-            for (int i = 0; i < (int)pointSet->points.size(); ++i){
-                double intens = (GlobalData::showQuant && !lipid_space->without_quant) ? pointSet->points[i].intensity : POINT_BASE_SIZE;
+            for (auto &point : pointSet->points){
+                double intens = (GlobalData::showQuant && !lipid_space->without_quant) ? point.intensity : POINT_BASE_SIZE;
                 double margin = sq(0.5 * intens);
-                if (sq(relative_mouse.x() - pointSet->points[i].point.x()) + sq(relative_mouse.y() - pointSet->points[i].point.y()) <= margin){
-                    lipid_names.push_back(QString("%1 (%2)").arg(pointSet->points[i].label).arg(pointSet->points[i].normalized_intensity));
-                    lipids_for_selection.push_back(pointSet->points[i].label.toStdString());
+                if (sq(relative_mouse.x() - point.point.x()) + sq(relative_mouse.y() - point.point.y()) <= margin){
+                    lipid_names.push_back(QString("%1 (%2)").arg(point.label).arg(point.normalized_intensity));
+                    lipids_for_selection.push_back(point.label.toStdString());
                 }
             }
 
@@ -1636,14 +1642,6 @@ void Canvas::setUpdate(){
 
 void Canvas::updateDendrogram(){
     if (dendrogram){
-        dendrogram->update_bounds(false);
-    }
-}
-
-
-void Canvas::setStudyVariable(string _study_variable){
-    if (dendrogram){
-        dendrogram->study_variable = _study_variable;
         dendrogram->update_bounds(false);
     }
 }
@@ -1742,7 +1740,7 @@ void Canvas::reloadPoints(){
         Array vars;
         LipidSpace::compute_PCA_variances(lipidome->m, vars);
 
-        pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3);
+        pointSet->variances = QStringLiteral("Variances - PC%1: %2%, PC%3: %4%").arg(GlobalData::PC1 + 1).arg(vars.at(GlobalData::PC1) * 100., 0, 'G', 3).arg(GlobalData::PC2 + 1).arg(vars.at(GlobalData::PC2) * 100., 0, 'G', 3);
         decoration->footer = pointSet->variances;
     }
     else if (dendrogram){

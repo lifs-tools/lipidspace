@@ -61,7 +61,7 @@ void Array::mult(Matrix &m, Array &a){
     clear();
     for (int r = 0; r < m.rows; ++r){
         double sum = 0;
-        for (int c = 0; c < (int)a.size(); c++) sum += m(r, c) * a[c];
+        for (int c = 0; c < (int)a.size(); c++) sum += m(r, c) * a.at(c);
         push_back(sum);
     }
 }
@@ -382,9 +382,8 @@ Matrix::Matrix(int _rows, int _cols){
 void Matrix::reset(int _rows, int _cols){
     rows = _rows;
     cols = _cols;
-    m.clear();
-    m.reserve(cols * rows);
-    for (int i = 0; i < cols * rows; ++i) m.push_back(0);
+    if (!m.empty()) m.clear();
+    m.resize(cols * rows, 0);
 }
 
 

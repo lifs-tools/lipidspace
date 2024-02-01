@@ -221,7 +221,7 @@ void ImportTable::show(LipidSpace *_lipid_space, bool file_request){
             doublettes.insert({qheader, 1});
         }
         else {
-            qheader += "." + QString::number(++doublettes[qheader]);
+            qheader += "." + QString::number(++doublettes.at(qheader));
         }
 
         original_column_index.insert({qheader, c});
@@ -387,10 +387,10 @@ void ImportTable::okRow(){
             vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
             for (int i = 0; i < (int)ui->sampleListWidgetRow->count(); ++i){
-                column_types->at(original_column_index[ui->sampleListWidgetRow->item(i)->text()]) = SampleColumn;
+                column_types->at(original_column_index.at(ui->sampleListWidgetRow->item(i)->text())) = SampleColumn;
             }
 
-            column_types->at(original_column_index[ui->lipidListWidgetRow->item(0)->text()]) = LipidColumn;
+            column_types->at(original_column_index.at(ui->lipidListWidgetRow->item(0)->text())) = LipidColumn;
 
             accept();
             importTable(new ImportData(data_table_file, sheet, ROW_PIVOT_TABLE, column_types, file_table_handler));
@@ -413,18 +413,18 @@ void ImportTable::okCol(){
         if (mapping_of_study_variables || checkStudyVariables()){
             vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
-            column_types->at(original_column_index[ui->sampleListWidgetCol->item(0)->text()]) = SampleColumn;
+            column_types->at(original_column_index.at(ui->sampleListWidgetCol->item(0)->text())) = SampleColumn;
 
             for (int i = 0; i < (int)ui->lipidListWidgetCol->count(); ++i){
-                column_types->at(original_column_index[ui->lipidListWidgetCol->item(i)->text()]) = LipidColumn;
+                column_types->at(original_column_index.at(ui->lipidListWidgetCol->item(i)->text())) = LipidColumn;
             }
 
             for (int i = 0; i < (int)ui->numericalStudyVariableListWidgetCol->count(); ++i){
-                column_types->at(original_column_index[ui->numericalStudyVariableListWidgetCol->item(i)->text()]) = StudyVariableColumnNumerical;
+                column_types->at(original_column_index.at(ui->numericalStudyVariableListWidgetCol->item(i)->text())) = StudyVariableColumnNumerical;
             }
 
             for (int i = 0; i < (int)ui->nominalStudyVariableListWidgetCol->count(); ++i){
-                column_types->at(original_column_index[ui->nominalStudyVariableListWidgetCol->item(i)->text()]) = StudyVariableColumnNominal;
+                column_types->at(original_column_index.at(ui->nominalStudyVariableListWidgetCol->item(i)->text())) = StudyVariableColumnNominal;
             }
 
             if (mapping_of_study_variables){
@@ -463,19 +463,19 @@ void ImportTable::okFlat(){
             vector<TableColumnType> *column_types = new vector<TableColumnType>(original_column_index.size(), IgnoreColumn);
 
             for (int i = 0; i < (int)ui->sampleListWidgetFlat->count(); ++i){
-                column_types->at(original_column_index[ui->sampleListWidgetFlat->item(i)->text()]) = SampleColumn;
+                column_types->at(original_column_index.at(ui->sampleListWidgetFlat->item(i)->text())) = SampleColumn;
             }
 
-            column_types->at(original_column_index[ui->lipidListWidgetFlat->item(0)->text()]) = LipidColumn;
+            column_types->at(original_column_index.at(ui->lipidListWidgetFlat->item(0)->text())) = LipidColumn;
 
-            column_types->at(original_column_index[ui->quantListWidgetFlat->item(0)->text()]) = QuantColumn;
+            column_types->at(original_column_index.at(ui->quantListWidgetFlat->item(0)->text())) = QuantColumn;
 
             for (int i = 0; i < (int)ui->numericalStudyVariableListWidgetFlat->count(); ++i){
-                column_types->at(original_column_index[ui->numericalStudyVariableListWidgetFlat->item(i)->text()]) = StudyVariableColumnNumerical;
+                column_types->at(original_column_index.at(ui->numericalStudyVariableListWidgetFlat->item(i)->text())) = StudyVariableColumnNumerical;
             }
 
             for (int i = 0; i < (int)ui->nominalStudyVariableListWidgetFlat->count(); ++i){
-                column_types->at(original_column_index[ui->nominalStudyVariableListWidgetFlat->item(i)->text()]) = StudyVariableColumnNominal;
+                column_types->at(original_column_index.at(ui->nominalStudyVariableListWidgetFlat->item(i)->text())) = StudyVariableColumnNominal;
             }
 
             if (mapping_of_study_variables){

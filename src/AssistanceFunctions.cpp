@@ -19,6 +19,7 @@ OntologyTerm::OntologyTerm(string _term_id, string _name, set<string> &_relation
     term_id = _term_id;
     name = _name;
     for (auto rel : _relations) relations.push_back(rel);
+    domain = "";
 }
 
 
@@ -65,7 +66,7 @@ OntologyEnrichment::OntologyEnrichment(LipidParser *l){
                 if (is_lipid_class){
                     for (auto synonym : synonyms){
                         if (uncontains_val(lipid_classes, synonym)) lipid_classes.insert({synonym, vector<OntologyTerm*>()});
-                        lipid_classes[synonym].push_back(term);
+                        lipid_classes.at(synonym).push_back(term);
                     }
                 }
                 if (is_carbon_chain){
@@ -149,7 +150,7 @@ OntologyEnrichment::OntologyEnrichment(LipidParser *l){
         if (is_lipid_class){
             for (auto synonym : synonyms){
                 if (uncontains_val(lipid_classes, synonym)) lipid_classes.insert({synonym, vector<OntologyTerm*>()});
-                lipid_classes[synonym].push_back(term);
+                lipid_classes.at(synonym).push_back(term);
             }
         }
         if (is_carbon_chain){
@@ -189,13 +190,14 @@ void OntologyEnrichment::recursive_event_adding(string lipid_input_name, string 
     if (recursion > 0) return;
 
     if (contains_val(occ_list, term_id)){
+        //if (lipid_input_name == "LPE 18:0" && contains_val(ontology_terms, term_id)) cout << "add: " << ontology_terms[term_id]->term_id << ": " << ontology_terms[term_id]->name << endl;
         occ_list.at(term_id).insert(lipid_input_name);
     }
 
     if (uncontains_val(ontology_terms, term_id)) return;
 
-    int next_recursion = recursion + contains_val(domains, ontology_terms[term_id]->domain);
-    for (string parent_term_id : ontology_terms[term_id]->relations){
+    int next_recursion = recursion + contains_val(domains, ontology_terms.at(term_id)->domain);
+    for (string parent_term_id : ontology_terms.at(term_id)->relations){
         if (uncontains_val(visited_terms, parent_term_id)){
             visited_terms.insert(parent_term_id);
 
@@ -218,19 +220,21 @@ void OntologyEnrichment::compute_event_occurrance(vector<string> &lipid_list, ma
 
             set<string> visited_terms;
             if (contains_val(lipids, lipid_name)){
-                if (uncontains_val(visited_terms, lipids[lipid_name]->term_id)){
-                    visited_terms.insert(lipids[lipid_name]->term_id);
-                    recursive_event_adding(lipid_input_name, lipids[lipid_name]->term_id, visited_terms, occ_list);
+                OntologyTerm *term = lipids.at(lipid_name);
+                if (uncontains_val(visited_terms, term->term_id)){
+                    visited_terms.insert(term->term_id);
+                    recursive_event_adding(lipid_input_name, term->term_id, visited_terms, occ_list);
                 }
             }
             if (contains_val(lipids, lipid_name_species)){
-                if (uncontains_val(visited_terms, lipids[lipid_name_species]->term_id)){
-                    visited_terms.insert(lipids[lipid_name_species]->term_id);
-                    recursive_event_adding(lipid_input_name, lipids[lipid_name_species]->term_id, visited_terms, occ_list);
+                OntologyTerm *term = lipids.at(lipid_name_species);
+                if (uncontains_val(visited_terms, term->term_id)){
+                    visited_terms.insert(term->term_id);
+                    recursive_event_adding(lipid_input_name, term->term_id, visited_terms, occ_list);
                 }
             }
             if (contains_val(lipid_classes, lipid_name_class)){
-                for (auto term : lipid_classes[lipid_name_class]){
+                for (auto term : lipid_classes.at(lipid_name_class)){
                     if (uncontains_val(visited_terms, term->term_id)){
                         visited_terms.insert(term->term_id);
                         recursive_event_adding(lipid_input_name, term->term_id, visited_terms, occ_list);
@@ -244,8 +248,8 @@ void OntologyEnrichment::compute_event_occurrance(vector<string> &lipid_list, ma
 
                     string fa_string = ((fa->lipid_FA_bond_type == LCB_REGULAR || fa->lipid_FA_bond_type == LCB_EXCEPTION) ? "L" : "C") + fa->to_string(MOLECULAR_SPECIES);
                     if (contains_val(carbon_chains, fa_string)){
-                        visited_terms.insert(carbon_chains[fa_string]->term_id);
-                        recursive_event_adding(lipid_input_name, carbon_chains[fa_string]->term_id, visited_terms, occ_list);
+                        visited_terms.insert(carbon_chains.at(fa_string)->term_id);
+                        recursive_event_adding(lipid_input_name, carbon_chains.at(fa_string)->term_id, visited_terms, occ_list);
                     }
                 }
             }
@@ -285,6 +289,7 @@ void OntologyEnrichment::compute_event_occurrance(vector<string> &lipid_list, ma
 
 void OntologyEnrichment::enrichment_analysis(vector<string> &target_list, vector<OntologyResult> &result_list){
     if (num_background == 0) return;
+
     map<string, set<string>> search_target_terms;
     for (auto &kv : search_terms) search_target_terms.insert({kv.first, set<string>()});
     compute_event_occurrance(target_list, search_target_terms);
@@ -293,15 +298,17 @@ void OntologyEnrichment::enrichment_analysis(vector<string> &target_list, vector
     for (auto &kv : search_terms){
         string term_id = kv.first;
 
-        cout << kv.first << " " << kv.second.size() << " " << search_target_terms[kv.first].size() << endl;
+        if (kv.second.size() == 0 || uncontains_val(ontology_terms, term_id) || uncontains_val(GlobalData::enrichment_domains, ontology_terms.at(term_id)->domain)) continue;
 
-        if (kv.second.size() == 0 || uncontains_val(ontology_terms, term_id) || uncontains_val(GlobalData::enrichment_domains, ontology_terms[term_id]->domain)) continue;
-
-        double p_hyp = exact_fischer(num_background, kv.second.size(), (int)target_list.size(), search_target_terms[kv.first].size());
-        result_list.push_back(OntologyResult{ontology_terms[term_id], num_background, (int)kv.second.size(), (int)target_list.size(), set<string>(), p_hyp});
-        for (auto lipid_name : search_target_terms[kv.first]) result_list.back().target_events.insert(lipid_name);
+        double p_hyp = exact_fischer(num_background, kv.second.size(), (int)target_list.size(), search_target_terms.at(kv.first).size());
+        cout << p_hyp << endl;
+        result_list.push_back(OntologyResult{ontology_terms.at(term_id), num_background, (int)kv.second.size(), (int)target_list.size(), set<string>(), p_hyp});
+        for (auto lipid_name : search_target_terms.at(kv.first)) result_list.back().target_events.insert(lipid_name);
     }
 }
+
+
+
 
 
 
@@ -589,8 +596,8 @@ void CBTableView::wheelEvent(QWheelEvent* event){
 #else
         bool zoom_in = event->delta() > 0;
 #endif
-        int zoom_value = max(1, (int)GlobalData::gui_num_var["table_zoom"] + (2 * zoom_in - 1));
-        GlobalData::gui_num_var["table_zoom"] = zoom_value;
+        int zoom_value = max(1, (int)GlobalData::gui_num_var.at("table_zoom") + (2 * zoom_in - 1));
+        GlobalData::gui_num_var.at("table_zoom") = zoom_value;
         QFont item_font("Helvetica", zoom_value);
         transpose_label->setFont(item_font);
         emit zooming();
@@ -727,6 +734,7 @@ void KeyTableWidget::keyPressEvent(QKeyEvent *event) {
 StudyVariableSet::StudyVariableSet(string _name, StudyVariableType v_type){
     name = _name;
     study_variable_type = v_type;
+    numerical_filter = {NoFilter, vector<double>()};
 }
 
 
@@ -756,30 +764,30 @@ StudyVariableSet::StudyVariableSet(json &container){
     }
     numerical_filter = {NoFilter, vector<double>()};
 
-    name = (string)container["name"];
-    study_variable_type = container["study_variable_type"];
+    name = (string)container.at("name");
+    study_variable_type = container.at("study_variable_type");
     if (study_variable_type == NominalStudyVariable){
 
         if (!contains_val(container, "nominal_values")){
             throw LipidException("Error: field 'nominal_values' not found in class 'StudyVariableSet'.");
         }
 
-        for (auto &kv : container["nominal_values"].items()){
+        for (auto &kv : container.at("nominal_values").items()){
             nominal_values.insert({(string)kv.key(), (bool)kv.value()});
         }
         numerical_filter = {NoFilter, vector<double>()};
     }
     else {
         if (contains_val(container, "numerical_values")){
-            for (double val : container["numerical_values"]) numerical_values.insert(val);
+            for (double val : container.at("numerical_values")) numerical_values.insert(val);
         }
 
 
         if (contains_val(container, "numerical_filter")){
-            if (contains_val(container["numerical_filter"], "key")) numerical_filter.first = container["numerical_filter"]["key"];
+            if (contains_val(container.at("numerical_filter"), "key")) numerical_filter.first = container.at("numerical_filter").at("key");
 
-            if (contains_val(container["numerical_filter"], "value")){
-                for (auto val : container["numerical_filter"]["value"]) numerical_filter.second.push_back(val);
+            if (contains_val(container.at("numerical_filter"), "value")){
+                for (auto val : container.at("numerical_filter").at("value")) numerical_filter.second.push_back(val);
             }
         }
     }
@@ -788,17 +796,17 @@ StudyVariableSet::StudyVariableSet(json &container){
 
 
 void StudyVariableSet::save(json &container){
-    container["name"] = name;
-    container["study_variable_type"] = study_variable_type;
+    container.at("name") = name;
+    container.at("study_variable_type") = study_variable_type;
     if (study_variable_type == NominalStudyVariable){
         for (auto &kv : nominal_values){
-            container["nominal_values"][kv.first] = kv.second;
+            container.at("nominal_values").at(kv.first) = kv.second;
         }
     }
     else {
-        for (double val : numerical_values) container["numerical_values"] += val;
-        container["numerical_filter"]["key"] = numerical_filter.first;
-        for (double val: numerical_filter.second) container["numerical_filter"]["value"] += val;
+        for (double val : numerical_values) container.at("numerical_values") += val;
+        container.at("numerical_filter").at("key") = numerical_filter.first;
+        for (double val: numerical_filter.second) container.at("numerical_filter").at("value") += val;
     }
 }
 
@@ -845,21 +853,21 @@ StudyVariable::StudyVariable (json &container){
         }
     }
 
-    name = container["name"];
-    study_variable_type = container["study_variable_type"];
-    numerical_value = (double)container["numerical_value"];
-    nominal_value = (string)container["nominal_value"];
-    missing = (bool)container["missing"];
+    name = container.at("name");
+    study_variable_type = container.at("study_variable_type");
+    numerical_value = (double)container.at("numerical_value");
+    nominal_value = (string)container.at("nominal_value");
+    missing = (bool)container.at("missing");
 }
 
 
 
 void StudyVariable::save(json &container){
-    container["name"] = name;
-    container["study_variable_type"] = study_variable_type;
-    container["numerical_value"] = numerical_value;
-    container["nominal_value"] = nominal_value;
-    container["missing"] = missing;
+    container.at("name") = name;
+    container.at("study_variable_type") = study_variable_type;
+    container.at("numerical_value") = numerical_value;
+    container.at("nominal_value") = nominal_value;
+    container.at("missing") = missing;
 }
 
 
@@ -1081,70 +1089,70 @@ Lipidome::Lipidome (json &container, map<string, LipidAdduct*> &all_lipids){
     }
 
 
-    file_name = (string)container["file_name"];
-    cleaned_name = (string)container["cleaned_name"];
-    lipidome_name = (string)container["lipidome_name"];
-    suffix = (string)container["suffix"];
-    for (string lipid_species : container["species"]){
+    file_name = (string)container.at("file_name");
+    cleaned_name = (string)container.at("cleaned_name");
+    lipidome_name = (string)container.at("lipidome_name");
+    suffix = (string)container.at("suffix");
+    for (string lipid_species : container.at("species")){
         if (!contains_val(all_lipids, lipid_species)){
             throw LipidException("Error: lipid '" + lipid_species + "' in lipidome not registered in lipidome '" + cleaned_name + "'.");
         }
-        LipidAdduct* l = all_lipids[lipid_species];
+        LipidAdduct* l = all_lipids.at(lipid_species);
         lipids.push_back(l);
         species.push_back(lipid_species);
         classes.push_back(l->get_lipid_string(CLASS));
         categories.push_back(l->get_lipid_string(CATEGORY));
     }
-    for (double val : container["original_intensities"]){
+    for (double val : container.at("original_intensities")){
         original_intensities.push_back(val);
     }
     if (contains_val(container, "visualization_intensities")){
-        for (double val : container["visualization_intensities"]){
+        for (double val : container.at("visualization_intensities")){
             visualization_intensities.push_back(val);
         }
     }
     if (contains_val(container, "selected_lipid_indexes")){
-        for (double val : container["selected_lipid_indexes"]){
+        for (double val : container.at("selected_lipid_indexes")){
             selected_lipid_indexes.push_back(val);
         }
     }
     if (contains_val(container, "normalized_intensities")){
-        for (double val : container["normalized_intensities"]){
+        for (double val : container.at("normalized_intensities")){
             normalized_intensities.push_back(val);
         }
     }
     if (contains_val(container, "PCA_intensities")){
-        for (double val : container["PCA_intensities"]){
+        for (double val : container.at("PCA_intensities")){
             PCA_intensities.push_back(val);
         }
     }
 
-    for (auto &kv : container["study_variables"].items()){
+    for (auto &kv : container.at("study_variables").items()){
         study_variables.insert({(string)kv.key(), StudyVariable(kv.value())});
     }
 
-    m.load(container["m"]);
+    m.load(container.at("m"));
 }
 
 
 void Lipidome::save(json &container){
-    container["file_name"] = file_name;
-    container["cleaned_name"] = cleaned_name;
-    container["lipidome_name"] = lipidome_name;
-    container["suffix"] = suffix;
+    container.at("file_name") = file_name;
+    container.at("cleaned_name") = cleaned_name;
+    container.at("lipidome_name") = lipidome_name;
+    container.at("suffix") = suffix;
 
-    for (auto lipid_species : species) container["species"] += lipid_species;
+    for (auto lipid_species : species) container.at("species") += lipid_species;
     for (auto &kv : study_variables){
-        kv.second.save(container["study_variables"][kv.first]);
+        kv.second.save(container.at("study_variables").at(kv.first));
     }
 
-    for (int val : selected_lipid_indexes) container["selected_lipid_indexes"] += val;
-    for (double val : original_intensities) container["original_intensities"] += val;
-    for (double val : visualization_intensities) container["visualization_intensities"] += val;
-    for (double val : normalized_intensities) container["normalized_intensities"] += val;
-    for (double val : PCA_intensities) container["PCA_intensities"] += val;
+    for (int val : selected_lipid_indexes) container.at("selected_lipid_indexes") += val;
+    for (double val : original_intensities) container.at("original_intensities") += val;
+    for (double val : visualization_intensities) container.at("visualization_intensities") += val;
+    for (double val : normalized_intensities) container.at("normalized_intensities") += val;
+    for (double val : PCA_intensities) container.at("PCA_intensities") += val;
 
-    m.save(container["m"]);
+    m.save(container.at("m"));
 
 }
 
@@ -1159,7 +1167,7 @@ string Lipidome::to_json(map<string, string> *imported_lipid_names){
     s << "\"LipidNames\": [";
     for (uint l = 0; l < species.size(); ++l) {
         if (l) s << ", ";
-        s << "\"" << replace_all(species[l], "\"", "") << "\"";
+        s << "\"" << replace_all(species.at(l), "\"", "") << "\"";
     }
     s << "], ";
 
@@ -1168,8 +1176,8 @@ string Lipidome::to_json(map<string, string> *imported_lipid_names){
         s << "\"ImportedLipidNames\": [";
         for (uint l = 0; l < species.size(); ++l) {
             if (l) s << ", ";
-            if (contains_val(*imported_lipid_names, species[l])){
-                s << "\"" << replace_all(imported_lipid_names->at(species[l]), "\"", "") << "\"";
+            if (contains_val(*imported_lipid_names, species.at(l))){
+                s << "\"" << replace_all(imported_lipid_names->at(species.at(l)), "\"", "") << "\"";
             }
             else {
                 s << "\"unknown\"";
@@ -1181,7 +1189,7 @@ string Lipidome::to_json(map<string, string> *imported_lipid_names){
     s << "\"Intensities\": [";
     for (uint l = 0; l < normalized_intensities.size(); ++l) {
         if (l) s << ", ";
-        s << normalized_intensities[l];
+        s << normalized_intensities.at(l);
     }
     s << "], ";
 
@@ -1225,7 +1233,7 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
         if (kv.second.study_variable_type == NominalStudyVariable){
             study_variable_count_nominal.insert({kv.first, map<string, int>()});
             for (auto kv_nom : kv.second.nominal_values){
-                study_variable_count_nominal[kv.first].insert({kv_nom.first, 0});
+                study_variable_count_nominal.at(kv.first).insert({kv_nom.first, 0});
             }
         }
         else {
@@ -1235,10 +1243,10 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
 
     for (auto kv : lipidome->study_variables){
         if (kv.second.study_variable_type == NominalStudyVariable){
-            study_variable_count_nominal[kv.first][kv.second.nominal_value] = 1;
+            study_variable_count_nominal.at(kv.first).at(kv.second.nominal_value) = 1;
         }
         else {
-            study_variable_numerical[kv.first].push_back(kv.second.numerical_value);
+            study_variable_numerical.at(kv.first).push_back(kv.second.numerical_value);
         }
     }
 }
@@ -1272,37 +1280,37 @@ DendrogramNode::DendrogramNode(json &container){
     }
 
     if (contains_val(container, "indexes")){
-        for (auto val : container["indexes"]) indexes.insert((int)val);
+        for (auto val : container.at("indexes")) indexes.insert((int)val);
     }
 
-    order = container["order"];
-    distance = container["distance"];
-    x_left = container["x_left"];
-    x_right = container["x_right"];
-    y = container["y"];
-    depth = container["depth"];
+    order = container.at("order");
+    distance = container.at("distance");
+    x_left = container.at("x_left");
+    x_right = container.at("x_right");
+    y = container.at("y");
+    depth = container.at("depth");
 
-    left_child = container["left_child"].is_number() ? 0 : new DendrogramNode(container["left_child"]);
-    right_child = container["right_child"].is_number() ? 0 : new DendrogramNode(container["right_child"]);
+    left_child = container.at("left_child").is_number() ? 0 : new DendrogramNode(container.at("left_child"));
+    right_child = container.at("right_child").is_number() ? 0 : new DendrogramNode(container.at("right_child"));
 
     if (contains_val(container, "study_variable_count_nominal")){
-        for (auto &kv : container["study_variable_count_nominal"].items()){
+        for (auto &kv : container.at("study_variable_count_nominal").items()){
             study_variable_count_nominal.insert({(string)kv.key(), map<string, int>()});
-            map<string, int> &m = study_variable_count_nominal[kv.key()];
+            map<string, int> &m = study_variable_count_nominal.at(kv.key());
             for (auto &kv2 : kv.value().items()) m.insert({(string)kv2.key(), (int)kv2.value()});
         }
     }
 
     if (contains_val(container, "study_variable_numerical")){
-        for (auto &kv : container["study_variable_numerical"].items()){
+        for (auto &kv : container.at("study_variable_numerical").items()){
             study_variable_numerical.insert({(string)kv.key(), vector<double>()});
-            vector<double> &v = study_variable_numerical[kv.key()];
+            vector<double> &v = study_variable_numerical.at(kv.key());
             for (double val : kv.value()) v.push_back(val);
         }
     }
 
     if (contains_val(container, "study_variable_numerical_thresholds")){
-        for (auto &kv : container["study_variable_numerical_thresholds"].items()){
+        for (auto &kv : container.at("study_variable_numerical_thresholds").items()){
             study_variable_numerical_thresholds.insert({(string)kv.key(), (double)kv.value()});
         }
     }
@@ -1310,33 +1318,33 @@ DendrogramNode::DendrogramNode(json &container){
 
 
 void DendrogramNode::save(json &container){
-    for (auto val : indexes) container["indexes"] += val;
+    for (auto val : indexes) container.at("indexes") += val;
 
-    container["order"] = order;
-    container["distance"] = distance;
-    container["x_left"] = x_left;
-    container["x_right"] = x_right;
-    container["y"] = y;
-    container["depth"] = depth;
+    container.at("order") = order;
+    container.at("distance") = distance;
+    container.at("x_left") = x_left;
+    container.at("x_right") = x_right;
+    container.at("y") = y;
+    container.at("depth") = depth;
 
-    if (left_child) left_child->save(container["left_child"]);
-    else container["left_child"] = 0;
+    if (left_child) left_child->save(container.at("left_child"));
+    else container.at("left_child") = 0;
 
-    if (right_child) right_child->save(container["right_child"]);
-    else container["right_child"] = 0;
+    if (right_child) right_child->save(container.at("right_child"));
+    else container.at("right_child") = 0;
 
     for (auto &kv : study_variable_count_nominal){
         for (auto &kv2 : kv.second){
-            container["study_variable_count_nominal"][kv.first][kv2.first] = kv2.second;
+            container.at("study_variable_count_nominal").at(kv.first).at(kv2.first) = kv2.second;
         }
     }
 
     for (auto &kv : study_variable_numerical){
-        for (double val : kv.second) container["study_variable_numerical"][kv.first] += val;
+        for (double val : kv.second) container.at("study_variable_numerical").at(kv.first) += val;
     }
 
     for (auto &kv : study_variable_numerical_thresholds){
-        container["study_variable_numerical_thresholds"][kv.first] = kv.second;
+        container.at("study_variable_numerical_thresholds").at(kv.first) = kv.second;
     }
 }
 
@@ -1382,14 +1390,14 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     for (auto kv : left_child->study_variable_count_nominal){
         study_variable_count_nominal.insert({kv.first, map<string, int>()});
         for (auto kv2 : kv.second){
-            study_variable_count_nominal[kv.first].insert({kv2.first, kv2.second + right_child->study_variable_count_nominal[kv.first][kv2.first]});
+            study_variable_count_nominal.at(kv.first).insert({kv2.first, kv2.second + right_child->study_variable_count_nominal.at(kv.first).at(kv2.first)});
         }
     }
 
     for (auto kv : left_child->study_variable_numerical){
         // find intersection points for numerical study variables
         vector<double> &set1 = kv.second;
-        vector<double> &set2 = right_child->study_variable_numerical[kv.first];
+        vector<double> &set2 = right_child->study_variable_numerical.at(kv.first);
 
         double pos_max = 0, d = 0;
         ks_separation_value(set1, set2, d, pos_max);
@@ -1397,10 +1405,10 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
 
         study_variable_numerical.insert({kv.first, vector<double>()});
         for(double val : kv.second){
-            study_variable_numerical[kv.first].push_back(val);
+            study_variable_numerical.at(kv.first).push_back(val);
         }
-        for(double val : right_child->study_variable_numerical[kv.first]){
-            study_variable_numerical[kv.first].push_back(val);
+        for(double val : right_child->study_variable_numerical.at(kv.first)){
+            study_variable_numerical.at(kv.first).push_back(val);
         }
     }
     return new double[3]{(x_left + x_right) / 2., y, (double)cnt};
@@ -1430,7 +1438,7 @@ void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
 
         double dist = INFINITY;
         if (contains_val(distances, node)){
-            dist = distances[node];
+            dist = distances.at(node);
         }
         else {
             Linkage lnk = GlobalData::linkage;
@@ -1455,7 +1463,7 @@ void DendrogramNode::update_distances(set<DendrogramNode*> &nodes, Matrix &m){
             }
             distances.insert({node, dist});
             if (uncontains_val(node->distances, this)) node->distances.insert({this, dist});
-            else node->distances[this] = dist;
+            else node->distances.at(this) = dist;
         }
 
         if (min_distance.first == INFINITY || dist < min_distance.first || (dist == min_distance.first && node->depth < min_distance.second->depth)){
@@ -1471,28 +1479,29 @@ double compute_accuracy(vector<Array> &arrays){
 
     // remove empty arrays
     for (int i = (int)arrays.size() - 1; i >= 0; --i){
-        if (arrays[i].size() == 0){
+        if (arrays.at(i).size() == 0){
             arrays.erase(arrays.begin() + i);
         }
     }
     if (arrays.size() < 2) return 1;
 
+
     set<uint> indexes;
     Indexes medians;
     double all = 0;
     for (uint i = 0; i < arrays.size(); ++i){
-        auto &array = arrays[i];
+        auto &array = arrays.at(i);
         sort(array.begin(), array.end());
         medians.push_back(array.median(-1, -1, true));
         indexes.insert(i);
         all += array.size();
     }
     // compute all separation positions for each pair of set
-    vector< vector<double> > border_matrix(arrays.size(), vector<double>(arrays.size()));
+    vector< vector<double> > border_matrix(arrays.size(), vector<double>(arrays.size(), 0));
     double d = 0;
     for (uint i = 0; i < arrays.size() - 1; ++i){
         for (uint j = i + 1; j < arrays.size(); ++j){
-            ks_separation_value(arrays[i], arrays[j], d, border_matrix[i][j]);
+            ks_separation_value(arrays.at(i), arrays.at(j), d, border_matrix.at(i).at(j));
         }
     }
 
@@ -1508,16 +1517,16 @@ double compute_accuracy(vector<Array> &arrays){
         for (auto i : indexes){
             for (auto j : indexes){
                 if (i >= j) continue;
-                if (min_value == INFINITY || min_value > border_matrix[i][j]) {
+                if (min_value == INFINITY || min_value > border_matrix.at(i).at(j)) {
                     min_i = i;
                     min_j = j;
-                    min_value = border_matrix[i][j];
+                    min_value = border_matrix.at(i).at(j);
                 }
             }
         }
 
         borders.push_back(min_value);
-        if (medians[min_i] < medians[min_j]){
+        if (medians.at(min_i) < medians.at(min_j)){
             indexes.erase(min_i);
             array_order.push_back(min_i);
         }
@@ -1532,10 +1541,10 @@ double compute_accuracy(vector<Array> &arrays){
     // count all true hits
     double true_hits = 0;
     for (uint i = 0; i < borders.size() - 1; ++i){
-        double border_lower = borders[i];
-        double border_upper = borders[i + 1];
-        int left = arrays[array_order[i]].greatest_less(border_lower) + 1;
-        int right = arrays[array_order[i]].greatest_less(border_upper);
+        double border_lower = borders.at(i);
+        double border_upper = borders.at(i + 1);
+        int left = arrays.at(array_order.at(i)).greatest_less(border_lower) + 1;
+        int right = arrays.at(array_order.at(i)).greatest_less(border_upper);
         true_hits += right - left + 1;
     }
 
@@ -1560,11 +1569,11 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
             ROC->first.push_back((num1 - ptr1) * inv_m);
             ROC->second.push_back((num2 - ptr2) * inv_n);
         }
-        if (a[ptr1] <= b[ptr2]){
+        if (a.at(ptr1) <= b.at(ptr2)){
             cdf1 += inv_m;
             if (d < __abs(cdf1 - cdf2)){
                 d = __abs(cdf1 - cdf2);
-                pos_max = a[ptr1];
+                pos_max = a.at(ptr1);
             }
             ptr1 += 1;
         }
@@ -1572,7 +1581,7 @@ void ks_separation_value(vector<double> &a, vector<double> &b, double &d, double
             cdf2 += inv_n;
             if (d < __abs(cdf1 - cdf2)){
                 d = __abs(cdf1 - cdf2);
-                pos_max = b[ptr2];
+                pos_max = b.at(ptr2);
             }
             ptr2 += 1;
         }
@@ -1736,7 +1745,7 @@ double p_value_chi_sq(Array &a, Array &b){
 
     double x2 = 0;
     for (int r = 0; r < n; ++r){
-        x2 += sq(a[r] - b[r]) / b[r];
+        x2 += sq(a.at(r) - b.at(r)) / b.at(r);
     }
 
 
@@ -1758,9 +1767,9 @@ double cosine_similarity(Array &a, Array &b){
 
     double cs = 0, tmp_a = 0, tmp_b = 0;
     for (uint i = 0; i < a.size(); ++i){
-        cs += a[i] * b[i];
-        tmp_a += sq(a[i]);
-        tmp_b += sq(b[i]);
+        cs += a.at(i) * b.at(i);
+        tmp_a += sq(a.at(i));
+        tmp_b += sq(b.at(i));
     }
     return cs / (sqrt(tmp_a) * sqrt(tmp_b));
 }
@@ -1783,15 +1792,15 @@ bool test_benford(Array &a){
     Array leading_digits(10, 0);
     for (auto val : a){
         if (val <= 0) continue;
-        leading_digits[(int)(val / pow(10,(floor(log(val) / log(10)))))]++;
+        leading_digits.at((int)(val / pow(10,(floor(log(val) / log(10))))))++;
         total_sum += 1;
     }
     leading_digits.erase(leading_digits.begin());
 
     double d = 0;
     for (uint i = 0; i < benford.size(); ++i){
-        if (i > 0 && leading_digits[i - 1] < leading_digits[i]) return false;
-        d += sq(benford[i] - leading_digits[i] / total_sum);
+        if (i > 0 && leading_digits.at(i - 1) < leading_digits.at(i)) return false;
+        d += sq(benford.at(i) - leading_digits.at(i) / total_sum);
     }
 
     return sqrt(d) / 21.04527783158751 <= BENFORD_THRESHOLD;
@@ -1818,7 +1827,7 @@ bool test_benford(Matrix &m){
         for (int r = 0; r < m.rows; ++r){
             double val = m(r, c);
             if (val <= 0) continue;
-            leading_digits[(int)(val / pow(10, floor(log(val) / log(10))))]++;
+            leading_digits.at((int)(val / pow(10, floor(log(val) / log(10)))))++;
             total_sum += 1;
         }
     }
@@ -1826,8 +1835,8 @@ bool test_benford(Matrix &m){
 
     double d = 0;
     for (uint i = 0; i < benford.size(); ++i){
-        if (i > 0 && leading_digits[i - 1] < leading_digits[i]) return false;
-        d += sq(benford[i] - leading_digits[i] / total_sum);
+        if (i > 0 && leading_digits.at(i - 1) < leading_digits.at(i)) return false;
+        d += sq(benford.at(i) - leading_digits.at(i) / total_sum);
     }
 
     return sqrt(d) / 21.04527783158751 <= BENFORD_THRESHOLD;
@@ -1853,7 +1862,7 @@ bool test_benford(vector<Lipidome*> &l){
     for (auto lipidome : l){
         for (auto val : lipidome->original_intensities){
             if (val <= 0) continue;
-            leading_digits[(int)(val / pow(10, floor(log(val) / log(10))))]++;
+            leading_digits.at((int)(val / pow(10, floor(log(val) / log(10)))))++;
             total_sum += 1;
         }
     }
@@ -1861,8 +1870,8 @@ bool test_benford(vector<Lipidome*> &l){
 
     double d = 0;
     for (uint i = 0; i < benford.size(); ++i){
-        if (i > 0 && leading_digits[i - 1] < leading_digits[i]) return false;
-        d += sq((benford[i] - leading_digits[i] / total_sum) / benford[i]);
+        if (i > 0 && leading_digits.at(i - 1) < leading_digits.at(i)) return false;
+        d += sq((benford.at(i) - leading_digits.at(i) / total_sum) / benford.at(i));
     }
 
     return sqrt(d) / 21.04527783158751 <= BENFORD_THRESHOLD;
@@ -1880,17 +1889,17 @@ void multiple_correction_bonferoni(Array &a){
 
 void multiple_correction_bh(Array &arr){
     vector<pair<double, double>> data;
-    for (int i = 0; i < (int)arr.size(); ++i) data.push_back({arr[i], i});
+    for (int i = 0; i < (int)arr.size(); ++i) data.push_back({arr.at(i), i});
 
     sort(data.begin(), data.end(),
     [](const pair<double, double> &a, const pair<double, double> &b) -> bool {
         return a.first < b.first;
     });
     for (int i = data.size() - 2; i >= 0; i--){
-        data[i].first = min(data[i + 1].first, data[i].first * data.size() / (i + 1));
+        data.at(i).first = min(data.at(i + 1).first, data.at(i).first * data.size() / (i + 1));
     }
     for (auto &kv : data){
-        arr[kv.second] = kv.first;
+        arr.at(kv.second) = kv.first;
     }
 }
 
@@ -1964,7 +1973,7 @@ double p_value_kolmogorov_smirnov(Array &sample1, Array &sample2){
     double inv_n = 1. / (double)n;
 
     while (ptr1 < m && ptr2 < n){
-        if (sample1[ptr1] < sample2[ptr2]){
+        if (sample1.at(ptr1) < sample2.at(ptr2)){
             cdf1 += inv_m;
             ptr1 += 1;
         }
@@ -2031,8 +2040,8 @@ double p_value_anova(vector<Array> &arrays){
         MSB += sums.back() * means.back();
     }
     for (uint i = 0; i < arrays.size(); ++i){
-        auto a = arrays[i];
-        double m = means[i];
+        auto a = arrays.at(i);
+        double m = means.at(i);
         for (auto v : a){
             MSW += sq(v - m);
         }
@@ -2056,19 +2065,20 @@ Progress::Progress(){
     stop_progress = false;
     connected = false;
     step_size = 0;
+    process_type = NoAnalysis;
 }
 
 
 
 void Progress::increment(){
     current_progress += 1;
-    set_current(current_progress);
+    emit set_current(current_progress);
 }
 
 
 void Progress::setError(QString interrupt_message){
     stop_progress = true;
-    error(interrupt_message);
+    emit error(interrupt_message);
 }
 
 
@@ -2078,7 +2088,8 @@ void Progress::interrupt(){
 
 
 
-void Progress::reset(){
+void Progress::reset(ProcessType _process_type){
+    process_type = _process_type;
     stop_progress = false;
     current_progress = 0;
 }
@@ -2088,7 +2099,7 @@ void Progress::reset(){
 void Progress::prepare(int max_val){
     max_progress = max_val;
     current_progress = 0;
-    set_max(max_progress);
+    emit set_max(max_progress);
 }
 
 
@@ -2097,7 +2108,7 @@ double compute_aic(Matrix &data, Array &coefficiants, Array &values){
     Array S;
     S.mult(data, coefficiants);
     double s = 0;
-    for (int i = 0; i < (int)S.size(); ++i) s += sq(S[i] - values[i]);
+    for (int i = 0; i < (int)S.size(); ++i) s += sq(S.at(i) - values.at(i));
     if (s == 0) return s;
 
     int k = data.cols;
@@ -2172,7 +2183,7 @@ Gene::Gene(Gene *gene){
 Gene::Gene(Gene *g1, Gene *g2, double mutation_rate){
     score = -1;
     for (int i = 0; i < (int)g1->gene_code.size(); ++i){
-        bool feature = randnum() < 0.5 ? g1->gene_code[i] : g2->gene_code[i];
+        bool feature = randnum() < 0.5 ? g1->gene_code.at(i) : g2->gene_code.at(i);
         if (randnum() < mutation_rate) feature = !feature;
         gene_code.push_back(feature);
     }
@@ -2181,6 +2192,6 @@ Gene::Gene(Gene *g1, Gene *g2, double mutation_rate){
 void Gene::get_indexes(Indexes &indexes){
     indexes.clear();
     for (int i = 0; i < (int)gene_code.size(); ++i){
-        if (gene_code[i]) indexes.push_back(i);
+        if (gene_code.at(i)) indexes.push_back(i);
     }
 }

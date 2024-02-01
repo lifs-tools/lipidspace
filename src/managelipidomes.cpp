@@ -38,8 +38,8 @@ void ManageLipidomes::ok(){
         else {
             sort(removeItems.begin(), removeItems.end());
             for (int i = removeItems.size() - 1; i >= 0; i--){
-                delete lipid_space->lipidomes[removeItems[i]];
-                lipid_space->lipidomes.erase(lipid_space->lipidomes.begin() + removeItems[i]);
+                delete lipid_space->lipidomes.at(removeItems.at(i));
+                lipid_space->lipidomes.erase(lipid_space->lipidomes.begin() + removeItems.at(i));
             }
             reassembleSelection();
             runAnalysis();
@@ -53,7 +53,7 @@ void ManageLipidomes::removeSelected(){
     removeItems.clear();
     for (auto qitem : ui->listView->selectedItems()){
         QString title = qitem->text();
-        removeItems.push_back(itemIndex[title]);
+        removeItems.push_back(itemIndex.at(title));
         ui->listView->takeItem(ui->listView->row(qitem));
     }
 }
@@ -63,6 +63,6 @@ void ManageLipidomes::removeAll(){
     removeItems.clear();
     while (ui->listView->count()){
         QString title = ui->listView->takeItem(0)->text();
-        removeItems.push_back(itemIndex[title]);
+        removeItems.push_back(itemIndex.at(title));
     }
 }

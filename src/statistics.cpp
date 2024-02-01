@@ -30,8 +30,8 @@ void Statistics::load_data(LipidSpace *_lipid_space, Chart *_chart){
     lipid_space = _lipid_space;
     chart = _chart;
 	chart->setRenderHint(QPainter::Antialiasing);
-    chart->setTickSize(GlobalData::gui_num_var["tick_size"]);
-    chart->setTitleSize(GlobalData::gui_num_var["legend_size"]);
+    chart->setTickSize(GlobalData::gui_num_var.at("tick_size"));
+    chart->setTitleSize(GlobalData::gui_num_var.at("legend_size"));
 }
 
 
@@ -64,35 +64,35 @@ void Statistics::setShowDataBarPlot(){
 
 
 void Statistics::setLegendSize(int font_size){
-    GlobalData::gui_num_var["legend_size"] = font_size;
+    GlobalData::gui_num_var.at("legend_size") = font_size;
     chart->setTitleSize(font_size);
 }
 
 
 
 void Statistics::setTickSize(int font_size){
-    GlobalData::gui_num_var["tick_size"] = font_size;
+    GlobalData::gui_num_var.at("tick_size") = font_size;
     chart->setTickSize(font_size);
 }
 
 
 
 void Statistics::setBarNumberHistogram(int bar_number){
-    GlobalData::gui_num_var["bar_number"] = bar_number;
+    GlobalData::gui_num_var.at("bar_number") = bar_number;
     updateHistogram();
 }
 
 
 
 void Statistics::setBarNumberSpeciesCV(int bar_number){
-    GlobalData::gui_num_var["bar_number"] = bar_number;
+    GlobalData::gui_num_var.at("bar_number") = bar_number;
     updateSpeciesCV();
 }
 
 
 
 void Statistics::setBarNumberPvalues(int bar_number){
-    GlobalData::gui_num_var["bar_number"] = bar_number;
+    GlobalData::gui_num_var.at("bar_number") = bar_number;
     updatePVal();
 }
 
@@ -100,15 +100,15 @@ void Statistics::setBarNumberPvalues(int bar_number){
 
 void Statistics::highlightPoints(QListWidget* speciesList){
     if (chart->chart_plots.empty()) return;
-    if (!instanceof<Scatterplot>(chart->chart_plots[0])) return;
+    if (!instanceof<Scatterplot>(chart->chart_plots.at(0))) return;
 
-    map<QString, ScPoint*> points = ((Scatterplot*)chart->chart_plots[0])->point_map;
+    map<QString, ScPoint*> points = ((Scatterplot*)chart->chart_plots.at(0))->point_map;
     for (auto &kv : points) kv.second->highlight = false;
 
     for (auto item : speciesList->selectedItems()){
         QString lipid_name = item->text();
         if (contains_val(points, lipid_name)){
-            points[lipid_name]->highlight = true;
+            points.at(lipid_name)->highlight = true;
         }
     }
     chart->update_chart();
@@ -118,9 +118,9 @@ void Statistics::highlightPoints(QListWidget* speciesList){
 
 void Statistics::highlightBars(QListWidget* speciesList){
     if (chart->chart_plots.empty()) return;
-    if (!instanceof<Barplot>(chart->chart_plots[0])) return;
+    if (!instanceof<Barplot>(chart->chart_plots.at(0))) return;
 
-    map<QString, vector<BarBox*>*> bars = ((Barplot*)chart->chart_plots[0])->bar_map;
+    map<QString, vector<BarBox*>*> bars = ((Barplot*)chart->chart_plots.at(0))->bar_map;
     for (auto &kv : bars){
         for (auto bar : *(kv.second)){
             bar->highlight = false;
@@ -130,7 +130,7 @@ void Statistics::highlightBars(QListWidget* speciesList){
     for (auto item : speciesList->selectedItems()){
         QString lipid_name = item->text();
         if (contains_val(bars, lipid_name)){
-            for (auto bar : *(bars[lipid_name])){
+            for (auto bar : *(bars.at(lipid_name))){
                 bar->highlight = true;
             }
         }
@@ -152,7 +152,7 @@ void Statistics::exportData(){
 
         SortVector<string, Array*> sorted_series;
         for (uint i = 0; i < series_titles.size(); ++i){
-            sorted_series.push_back({series_titles[i], &(series[i])});
+            sorted_series.push_back({series_titles.at(i), &(series.at(i))});
         }
         sorted_series.sort_asc();
 
@@ -162,7 +162,7 @@ void Statistics::exportData(){
 
             ofstream off(file_name.toStdString().c_str());
             for (uint i = 0; i < sorted_series.size(); ++i){
-                off << sorted_series[i].first;
+                off << sorted_series.at(i).first;
                 if (i < sorted_series.size() - 1) off << sep;
             }
             off << endl;
@@ -171,8 +171,8 @@ void Statistics::exportData(){
             for (auto s : sorted_series) num_rows = max(num_rows, (uint)s.second->size());
             for (uint i = 0; i < num_rows; ++i){
                 for (uint j = 0; j < sorted_series.size(); ++j){
-                    if (i < sorted_series[j].second->size()){
-                        off << sorted_series[j].second->at(i);
+                    if (i < sorted_series.at(j).second->size()){
+                        off << sorted_series.at(j).second->at(i);
                         if (j < sorted_series.size() - 1) off << sep;
                     }
                     else if (j < sorted_series.size() - 1) off << sep;
@@ -194,7 +194,7 @@ void Statistics::exportData(){
 
             for (col = 0; col < sorted_series.size(); ++col){
                 int row = 2;
-                for (auto s : *(sorted_series[col].second)) wks_data.cell(row++, col + 1).value() = s;
+                for (auto s : *(sorted_series.at(col).second)) wks_data.cell(row++, col + 1).value() = s;
             }
 
             auto wks_stat = doc.workbook().worksheet("Statistics");
@@ -210,7 +210,7 @@ void Statistics::exportData(){
                 for (auto kv : flat_data){
                     wks_flat.cell(1, col).value() = kv.first;
                     for (uint row = 0; row < kv.second.size(); ++row){
-                        QVariant var = kv.second[row];
+                        QVariant var = kv.second.at(row);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                         if (var.typeId() == QMetaType::QString){
 #else
@@ -335,19 +335,19 @@ void Statistics::updateBarPlotClasses(){
         return;
     }
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
         return;
     }
 
 
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    string secondary_target_variable = GlobalData::gui_string_var.at("secondary_var");
     SecondaryType secondary_type = NoSecondary;
     if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
-        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+        secondary_type = (lipid_space->study_variable_values.at(secondary_target_variable).study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
     }
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
 
     if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary){
         return;
@@ -368,38 +368,38 @@ void Statistics::updateBarPlotClasses(){
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
             valid_lipidomes++;
 
-            string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+            string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
             if (uncontains_val(nominal_target_values, nominal_value)){
                 nominal_target_values.insert({nominal_value, nom_counter++});
                 nominal_values.push_back(nominal_value);
             }
-            target_indexes.push_back(nominal_target_values[nominal_value]);
-            if (secondary_type != NoSecondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+            target_indexes.push_back(nominal_target_values.at(nominal_value));
+            if (secondary_type != NoSecondary) target_values.push_back(lipidome->study_variables.at(secondary_target_variable).numerical_value);
 
 
         }
     }
     else {
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
             valid_lipidomes++;
 
-            target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
+            target_values.push_back(lipidome->study_variables.at(target_variable).numerical_value);
 
             if (secondary_type == NominalSecondary){
-                string nominal_value = lipidome->study_variables[secondary_target_variable].nominal_value;
+                string nominal_value = lipidome->study_variables.at(secondary_target_variable).nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                     nominal_values.push_back(nominal_value);
                 }
-                target_indexes.push_back(nominal_target_values[nominal_value]);
+                target_indexes.push_back(nominal_target_values.at(nominal_value));
             }
         }
         if (secondary_type != NominalSecondary) nom_counter += 1;
@@ -411,29 +411,29 @@ void Statistics::updateBarPlotClasses(){
 
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
+        LipidAdduct* lipid = lipid_space->global_lipidome->lipids.at(i);
         string ex_lipid_class = lipid->get_extended_class();
         if (uncontains_val(registered_lipid_classes, ex_lipid_class)){
             lipid_class_names->push_back(ex_lipid_class.c_str());
             registered_lipid_classes.insert({ex_lipid_class, registered_lipid_classes.size()});
         }
-        lipid_class_pos.insert({lipid, registered_lipid_classes[ex_lipid_class]});
+        lipid_class_pos.insert({lipid, registered_lipid_classes.at(ex_lipid_class)});
     }
 
     // set up matrix for multiple linear regression
     Matrix stat_matrix;
     stat_matrix.reset(valid_lipidomes, registered_lipid_classes.size());
     for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        Lipidome* lipidome = lipid_space->selected_lipidomes.at(r);
 
-        if (lipidome->study_variables[target_variable].missing) continue;
-        if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+        if (lipidome->study_variables.at(target_variable).missing) continue;
+        if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
 
         for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
-            int index = lipidome->selected_lipid_indexes[i];
-            if (contains_val(lipid_class_pos, lipidome->lipids[index])){
-                stat_matrix(rr, lipid_class_pos[lipidome->lipids[index]]) += lipidome->normalized_intensities[index];
+            int index = lipidome->selected_lipid_indexes.at(i);
+            if (contains_val(lipid_class_pos, lipidome->lipids.at(index))){
+                stat_matrix(rr, lipid_class_pos.at(lipidome->lipids.at(index))) += lipidome->normalized_intensities.at(index);
             }
         }
         rr++;
@@ -443,8 +443,8 @@ void Statistics::updateBarPlotClasses(){
 
     for (int t = 0; t < nom_counter; ++t){
         for (int c = 0; c < stat_matrix.cols; c++){
-            series_titles.push_back(lipid_class_names->at(c).toStdString() + (nom_counter > 1 ? " / " + nominal_values[t] : ""));
-            data_series[t].push_back(Array());
+            series_titles.push_back(lipid_class_names->at(c).toStdString() + (nom_counter > 1 ? " / " + nominal_values.at(t) : ""));
+            data_series.at(t).push_back(Array());
         }
     }
 
@@ -453,24 +453,24 @@ void Statistics::updateBarPlotClasses(){
         for (int r = 0; r < stat_matrix.rows; ++r){ // for all values of a study variable
             for (int c = 0; c < stat_matrix.cols; c++){
                 if (stat_matrix(r, c) > 1e-15){
-                    data_series[target_indexes[r]][c].push_back(stat_matrix(r, c));
+                    data_series.at(target_indexes.at(r)).at(c).push_back(stat_matrix(r, c));
                 }
             }
         }
     }
     else {
         for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-            Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+            Lipidome* lipidome = lipid_space->selected_lipidomes.at(r);
 
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
 
             for (int index : lipidome->selected_lipid_indexes){
-                if (contains_val(lipid_class_pos, lipidome->lipids[index])){
-                    string lipid_category = lipidome->lipids[index]->get_lipid_string(CATEGORY);
-                    int c = lipid_class_pos[lipidome->lipids[index]];
-                    data_series[0][c].push_back(stat_matrix(rr, c));
+                if (contains_val(lipid_class_pos, lipidome->lipids.at(index))){
+                    string lipid_category = lipidome->lipids.at(index)->get_lipid_string(CATEGORY);
+                    int c = lipid_class_pos.at(lipidome->lipids.at(index));
+                    data_series.at(0).at(c).push_back(stat_matrix(rr, c));
                 }
             }
             rr++;
@@ -485,7 +485,7 @@ void Statistics::updateBarPlotClasses(){
     if (is_nominal || (secondary_type == NominalSecondary)){
         for (auto nominal_value : nominal_values){
             string color_key = ((is_nominal || (secondary_type == NoSecondary)) ? target_variable : secondary_target_variable) + "_" + nominal_value;
-            colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
+            colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#F6A611"));
         }
     }
     else {
@@ -497,13 +497,13 @@ void Statistics::updateBarPlotClasses(){
 
     int series_iter = 0;
     for (uint cat_it = 0; cat_it < data_series.size(); ++cat_it){
-        auto category_data_series = data_series[cat_it];
+        auto category_data_series = data_series.at(cat_it);
         for (uint lipid_it = 0; lipid_it < category_data_series.size(); ++lipid_it){
-            auto single_series = category_data_series[lipid_it];
+            auto single_series = category_data_series.at(lipid_it);
             barplot_data->at(lipid_it).push_back(Array());
 
             for (auto value : single_series){
-                series[series_iter].push_back(value);
+                series.at(series_iter).push_back(value);
                 barplot_data->at(lipid_it).back().push_back(value);
             }
             ++series_iter;
@@ -538,19 +538,19 @@ void Statistics::updateBarPlot(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
         return;
     }
 
 
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    string secondary_target_variable = GlobalData::gui_string_var.at("secondary_var");
     SecondaryType secondary_type = NoSecondary;
     if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
-        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+        secondary_type = (lipid_space->study_variable_values.at(secondary_target_variable).study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
     }
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
 
     if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level != LipidSpeciesLevel){
         chart->setVisible(false);
@@ -572,38 +572,38 @@ void Statistics::updateBarPlot(){
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
             valid_lipidomes++;
 
-            string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+            string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
             if (uncontains_val(nominal_target_values, nominal_value)){
                 nominal_target_values.insert({nominal_value, nom_counter++});
                 nominal_values.push_back(nominal_value);
             }
-            target_indexes.push_back(nominal_target_values[nominal_value]);
-            if (secondary_type != NoSecondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+            target_indexes.push_back(nominal_target_values.at(nominal_value));
+            if (secondary_type != NoSecondary) target_values.push_back(lipidome->study_variables.at(secondary_target_variable).numerical_value);
 
 
         }
     }
     else {
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
             valid_lipidomes++;
 
-            target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
+            target_values.push_back(lipidome->study_variables.at(target_variable).numerical_value);
 
             if (secondary_type == NominalSecondary){
-                string nominal_value = lipidome->study_variables[secondary_target_variable].nominal_value;
+                string nominal_value = lipidome->study_variables.at(secondary_target_variable).nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                     nominal_values.push_back(nominal_value);
                 }
-                target_indexes.push_back(nominal_target_values[nominal_value]);
+                target_indexes.push_back(nominal_target_values.at(nominal_value));
             }
         }
         if (secondary_type != NominalSecondary) nom_counter += 1;
@@ -611,14 +611,14 @@ void Statistics::updateBarPlot(){
 
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
-    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
 
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
+        LipidAdduct* lipid = lipid_space->global_lipidome->lipids.at(i);
         if (uncontains_val(lipid_map, lipid)){
             lipid_map.insert({lipid, lipid_map.size()});
-            lipid_name_map.insert({translations[lipid_space->global_lipidome->species[i]], lipid_name_map.size()});
+            lipid_name_map.insert({translations.at(lipid_space->global_lipidome->species.at(i)), lipid_name_map.size()});
         }
     }
 
@@ -626,16 +626,16 @@ void Statistics::updateBarPlot(){
     Matrix stat_matrix;
     stat_matrix.reset(valid_lipidomes, lipid_map.size());
     for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        Lipidome* lipidome = lipid_space->selected_lipidomes.at(r);
 
-        if (lipidome->study_variables[target_variable].missing) continue;
-        if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+        if (lipidome->study_variables.at(target_variable).missing) continue;
+        if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
 
         for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
-            int index = lipidome->selected_lipid_indexes[i];
-            if (contains_val(lipid_map, lipidome->lipids[index])){
-                stat_matrix(rr, lipid_map[lipidome->lipids[index]]) = lipidome->normalized_intensities[index];
+            int index = lipidome->selected_lipid_indexes.at(i);
+            if (contains_val(lipid_map, lipidome->lipids.at(index))){
+                stat_matrix(rr, lipid_map.at(lipidome->lipids.at(index))) = lipidome->normalized_intensities.at(index);
             }
         }
         rr++;
@@ -647,8 +647,8 @@ void Statistics::updateBarPlot(){
 
     for (int t = 0; t < nom_counter; ++t){
         for (int c = 0; c < stat_matrix.cols; c++){
-            series_titles.push_back(lipid_names->at(c).toStdString() + (nom_counter > 1 ? " / " + nominal_values[t] : ""));
-            data_series[t].push_back(Array());
+            series_titles.push_back(lipid_names->at(c).toStdString() + (nom_counter > 1 ? " / " + nominal_values.at(t) : ""));
+            data_series.at(t).push_back(Array());
         }
     }
 
@@ -657,24 +657,24 @@ void Statistics::updateBarPlot(){
         for (int r = 0; r < stat_matrix.rows; ++r){ // for all values of a study variable
             for (int c = 0; c < stat_matrix.cols; c++){
                 if (stat_matrix(r, c) > 1e-15){
-                    data_series[target_indexes[r]][c].push_back(stat_matrix(r, c));
+                    data_series.at(target_indexes.at(r)).at(c).push_back(stat_matrix(r, c));
                 }
             }
         }
     }
     else {
         for (uint r = 0, rr = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-            Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+            Lipidome* lipidome = lipid_space->selected_lipidomes.at(r);
 
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
 
             for (int index : lipidome->selected_lipid_indexes){
-                if (contains_val(lipid_map, lipidome->lipids[index])){
-                    string lipid_category = lipidome->lipids[index]->get_lipid_string(CATEGORY);
-                    int c = lipid_map[lipidome->lipids[index]];
-                    data_series[0][c].push_back(stat_matrix(rr, c));
+                if (contains_val(lipid_map, lipidome->lipids.at(index))){
+                    string lipid_category = lipidome->lipids.at(index)->get_lipid_string(CATEGORY);
+                    int c = lipid_map.at(lipidome->lipids.at(index));
+                    data_series.at(0).at(c).push_back(stat_matrix(rr, c));
                 }
             }
             rr++;
@@ -689,7 +689,7 @@ void Statistics::updateBarPlot(){
     if (is_nominal || (secondary_type == NominalSecondary)){
         for (auto nominal_value : nominal_values){
             string color_key = ((is_nominal || (secondary_type == NoSecondary)) ? target_variable : secondary_target_variable) + "_" + nominal_value;
-            colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
+            colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#F6A611"));
         }
     }
     else {
@@ -701,13 +701,13 @@ void Statistics::updateBarPlot(){
 
     int series_iter = 0;
     for (uint cat_it = 0; cat_it < data_series.size(); ++cat_it){
-        auto category_data_series = data_series[cat_it];
+        auto category_data_series = data_series.at(cat_it);
         for (uint lipid_it = 0; lipid_it < category_data_series.size(); ++lipid_it){
-            auto single_series = category_data_series[lipid_it];
+            auto single_series = category_data_series.at(lipid_it);
             barplot_data->at(lipid_it).push_back(Array());
 
             for (auto value : single_series){
-                series[series_iter].push_back(value);
+                series.at(series_iter).push_back(value);
                 barplot_data->at(lipid_it).back().push_back(value);
             }
             ++series_iter;
@@ -778,19 +778,19 @@ void Statistics::updateSpeciesCV(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished){
         return;
     }
 
 
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    string secondary_target_variable = GlobalData::gui_string_var.at("secondary_var");
     SecondaryType secondary_type = NoSecondary;
     if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
-        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+        secondary_type = (lipid_space->study_variable_values.at(secondary_target_variable).study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
     }
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
 
     if (lipid_space->selected_lipidomes.size() < 1 || secondary_type != NoSecondary || GlobalData::stat_level != LipidSpeciesLevel){
         chart->setVisible(false);
@@ -808,10 +808,10 @@ void Statistics::updateSpeciesCV(){
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
-            string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+            string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
             if (uncontains_val(nominal_target_values, nominal_value)){
                 nominal_target_values.insert({nominal_value, nom_counter++});
                 nominal_values.push_back(nominal_value);
@@ -827,19 +827,19 @@ void Statistics::updateSpeciesCV(){
 
     // set up lipid map for the several nominal values
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        Lipidome* lipidome = lipid_space->selected_lipidomes.at(r);
 
-        if (lipidome->study_variables[target_variable].missing) continue;
-        if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+        if (lipidome->study_variables.at(target_variable).missing) continue;
+        if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
         for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
-            int index = lipidome->selected_lipid_indexes[i];
-            int rr = is_nominal ? nominal_target_values[lipidome->study_variables[target_variable].nominal_value] : 0;
+            int index = lipidome->selected_lipid_indexes.at(i);
+            int rr = is_nominal ? nominal_target_values.at(lipidome->study_variables.at(target_variable).nominal_value) : 0;
 
-            if (uncontains_val(lipid_map[rr], lipidome->lipids[index])){
-                lipid_map[rr].insert({lipidome->lipids[index], Array()});
+            if (uncontains_val(lipid_map.at(rr), lipidome->lipids.at(index))){
+                lipid_map.at(rr).insert({lipidome->lipids.at(index), Array()});
             }
-            lipid_map[rr][lipidome->lipids[index]].push_back(lipidome->normalized_intensities[index]);
+            lipid_map.at(rr).at(lipidome->lipids.at(index)).push_back(lipidome->normalized_intensities.at(index));
         }
     }
 
@@ -851,29 +851,29 @@ void Statistics::updateSpeciesCV(){
     double max_value = -INFINITY;
 
     for (uint i = 0; i < nominal_values.size(); ++i){
-        auto nominal_value = nominal_values[i];
-        auto lipid_cat_map = lipid_map[i];
+        auto nominal_value = nominal_values.at(i);
+        auto lipid_cat_map = lipid_map.at(i);
         for (auto kv : lipid_cat_map){
 
             if (kv.second.size() <= 1) continue;
             double value = kv.second.stdev() / kv.second.mean() * 100;
-            series[i].push_back(value);
+            series.at(i).push_back(value);
             min_value = __min(min_value, value);
             max_value = __max(max_value, value);
         }
 
-        categories.push_back(QString("%1 (%2)").arg(nominal_value.c_str()).arg(series[i].size()));
+        categories.push_back(QString("%1 (%2)").arg(nominal_value.c_str()).arg(series.at(i).size()));
         series_titles.push_back(nominal_value);
     }
     if (is_nominal){
         for (auto nominal_value : nominal_values){
             string color_key = ((is_nominal || (secondary_type == NoSecondary)) ? target_variable : secondary_target_variable) + "_" + nominal_value;
-            colors.push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
+            colors.push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#F6A611"));
         }
     }
     else {
-        categories.push_back(QString("Selected lipids (%1)").arg(lipid_map[0].size()));
-        series_titles.push_back("Selected lipids (" + std::to_string(lipid_map[0].size()) + ")");
+        categories.push_back(QString("Selected lipids (%1)").arg(lipid_map.at(0).size()));
+        series_titles.push_back("Selected lipids (" + std::to_string(lipid_map.at(0).size()) + ")");
         colors.push_back(QColor("#F6A611"));
     }
 
@@ -885,7 +885,7 @@ void Statistics::updateSpeciesCV(){
 
 
     Histogramplot* histogramplot = new Histogramplot(chart);
-    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
+    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var.at("bar_number") : 20;
     histogramplot->add(series, categories, &colors, num_bars);
     histogramplot->borders.setX(0);
     chart->xrange.setX(0);
@@ -911,6 +911,7 @@ void Statistics::updateSpeciesCV(){
 
 
 void Statistics::updateFAD(){
+
     chart->clear();
     chart->setTitle("");
     chart->setVisible(true);
@@ -921,7 +922,7 @@ void Statistics::updateFAD(){
     stat_results.clear();
 
     string numerical_string = "Fatty acyls";
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
 
     if (GlobalData::stat_level != FattyAcylLipid){
         chart->setVisible(false);
@@ -932,7 +933,7 @@ void Statistics::updateFAD(){
 
     if (!do_continue || GlobalData::FAD_lipid_classes.empty()) return;
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
 
 
     // fa->cat->value(s)
@@ -948,7 +949,7 @@ void Statistics::updateFAD(){
     vector<QString> *fa_names_list = new vector<QString>();
 
     if (is_nominal){
-        for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
+        for (auto &kv : lipid_space->study_variable_values.at(target_variable).nominal_values){
             if (kv.second){
                 nominal_target_values.insert({kv.first, categories->size()});
                 nominal_target_count.insert({kv.first, 0});
@@ -957,7 +958,7 @@ void Statistics::updateFAD(){
                 lipidome_map.insert({kv.first, map<Lipidome*, int>()});
 
                 string color_key = target_variable + "_" + kv.first;
-                colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#F6A611"));
+                colors->push_back(contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#F6A611"));
             }
         }
 
@@ -970,26 +971,26 @@ void Statistics::updateFAD(){
     }
 
     for (auto lipidome : lipid_space->selected_lipidomes){
-        if (lipidome->study_variables[target_variable].missing) continue;
+        if (lipidome->study_variables.at(target_variable).missing) continue;
 
-        string nominal = is_nominal ? lipidome->study_variables[target_variable].nominal_value : numerical_string;
-        lipidome_map[nominal].insert({lipidome, nominal_target_count[nominal]++});
+        string nominal = is_nominal ? lipidome->study_variables.at(target_variable).nominal_value : numerical_string;
+        lipidome_map.at(nominal).insert({lipidome, nominal_target_count.at(nominal)++});
     }
 
 
     for (auto lipidome : lipid_space->selected_lipidomes){
-        if (uncontains_val(lipidome->study_variables, target_variable) || lipidome->study_variables[target_variable].missing) continue;
+        if (uncontains_val(lipidome->study_variables, target_variable) || lipidome->study_variables.at(target_variable).missing) continue;
 
-        string nominal = is_nominal ? lipidome->study_variables[target_variable].nominal_value : numerical_string;
-        if (uncontains_val(lipidome_map, nominal) || uncontains_val(lipidome_map[nominal], lipidome)) continue;
+        string nominal = is_nominal ? lipidome->study_variables.at(target_variable).nominal_value : numerical_string;
+        if (uncontains_val(lipidome_map, nominal) || uncontains_val(lipidome_map.at(nominal), lipidome)) continue;
 
-        uint array_pos = lipidome_map[nominal][lipidome];
+        uint array_pos = lipidome_map.at(nominal).at(lipidome);
         for (uint index : lipidome->selected_lipid_indexes){
             if (index >= lipidome->lipids.size() || index >= lipidome->normalized_intensities.size()) continue;
-            LipidAdduct *lipid = lipidome->lipids[index];
-            double value = lipidome->normalized_intensities[index];
+            LipidAdduct *lipid = lipidome->lipids.at(index);
+            double value = lipidome->normalized_intensities.at(index);
 
-            if (uncontains_val(GlobalData::FAD_lipid_classes, lipidome->classes[index])) continue;
+            if (uncontains_val(GlobalData::FAD_lipid_classes, lipidome->classes.at(index))) continue;
 
             for (auto fa : lipid->lipid->fa_list){
                 if (fa->num_carbon == 0 || fa->lipid_FA_bond_type == LCB_REGULAR || fa->lipid_FA_bond_type == LCB_EXCEPTION) continue;
@@ -998,13 +999,13 @@ void Statistics::updateFAD(){
                 if (uncontains_val(fa_dict, fa_string)){
                     fa_dict.insert({fa_string, fa_names_list->size()});
                     fa_names_list->push_back(fa_string.c_str());
-                    fatty_acids_values->push_back(vector<Array>(categories->size(), Array(nominal_target_count[nominal], 0)));
+                    fatty_acids_values->push_back(vector<Array>(categories->size(), Array(nominal_target_count.at(nominal), 0)));
                 }
                 if (uncontains_val(fa_dict, fa_string) || fa_dict.at(fa_string) >= (int)fatty_acids_values->size()) continue;
                 vector<Array> &vec = fatty_acids_values->at(fa_dict.at(fa_string));
-                uint vec_pos = is_nominal ? nominal_target_values.at(lipidome->study_variables[target_variable].nominal_value) : 0;
+                uint vec_pos = is_nominal ? nominal_target_values.at(lipidome->study_variables.at(target_variable).nominal_value) : 0;
 
-                if (vec_pos < vec.size() && array_pos < vec.at(vec_pos).size()) vec.at(vec_pos)[array_pos] += value;
+                if (vec_pos < vec.size() && array_pos < vec.at(vec_pos).size()) vec.at(vec_pos).at(array_pos) += value;
             }
         }
     }
@@ -1041,8 +1042,8 @@ void Statistics::updateHistogram(){
     stat_results.clear();
 
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == LipidomeLevel);
+    string target_variable = GlobalData::gui_string_var.at("study_var");
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == LipidomeLevel);
 
     chart->setVisible(do_continue);
     if (!do_continue) return;
@@ -1054,21 +1055,21 @@ void Statistics::updateHistogram(){
     int nom_counter = 0;
     vector<string> nominal_values;
 
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    string secondary_target_variable = GlobalData::gui_string_var.at("secondary_var");
     bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
 
     for (auto lipidome : lipid_space->selected_lipidomes){
-        if (lipidome->study_variables[target_variable].missing) continue;
-        if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+        if (lipidome->study_variables.at(target_variable).missing) continue;
+        if (has_secondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
-        string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+        string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
         if (uncontains_val(nominal_target_values, nominal_value)){
             nominal_target_values.insert({nominal_value, nom_counter++});
             nominal_values.push_back(nominal_value);
             series_titles.push_back(nominal_value);
         }
-        target_indexes.push_back(nominal_target_values[nominal_value]);
-        if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+        target_indexes.push_back(nominal_target_values.at(nominal_value));
+        if (has_secondary) target_values.push_back(lipidome->study_variables.at(secondary_target_variable).numerical_value);
     }
 
     Matrix statistics_matrix(lipid_space->statistics_matrix);
@@ -1076,7 +1077,7 @@ void Statistics::updateHistogram(){
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
     for (int r = 0; r < statistics_matrix.rows; ++r){
-        if (!lipid_space->selected_lipidomes[r]->study_variables[target_variable].missing) lipidomes_to_keep.push_back(r);
+        if (!lipid_space->selected_lipidomes.at(r)->study_variables.at(target_variable).missing) lipidomes_to_keep.push_back(r);
     }
     Matrix tmp;
     tmp.rewrite(statistics_matrix, lipidomes_to_keep);
@@ -1086,7 +1087,7 @@ void Statistics::updateHistogram(){
     series.resize(nom_counter);
     if (has_secondary){
         for (uint r = 0; r < target_indexes.size(); ++r){
-            series[target_indexes[r]].push_back(target_values[r]);
+            series.at(target_indexes.at(r)).push_back(target_values.at(r));
         }
     }
     else {
@@ -1098,7 +1099,7 @@ void Statistics::updateHistogram(){
                 if (!isnan(val) && !isinf(val)) sum += val;
             }
             if (statistics_matrix.cols > 1 || sum > 1e-15){
-                series[target_indexes[r]].push_back(sum);
+                series.at(target_indexes.at(r)).push_back(sum);
             }
         }
     }
@@ -1107,13 +1108,13 @@ void Statistics::updateHistogram(){
     vector<QString> categories;
     vector<QColor> colors;
     for (uint i = 0; i < nominal_values.size(); ++i){
-        categories.push_back(QString(nominal_values[i].c_str()) + QString(" (%1)").arg(series[i].size()));
-        string color_key = target_variable + "_" + nominal_values[i];
-        QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : Qt::white;
+        categories.push_back(QString(nominal_values.at(i).c_str()) + QString(" (%1)").arg(series.at(i).size()));
+        string color_key = target_variable + "_" + nominal_values.at(i);
+        QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : Qt::white;
         colors.push_back(color);
     }
 
-    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
+    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var.at("bar_number") : 20;
     histogramplot->add(series, categories, &colors, num_bars);
     chart->add(histogramplot);
 
@@ -1158,8 +1159,8 @@ void Statistics::updateROCCurve(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
-    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == LipidomeLevel);
+    string target_variable = GlobalData::gui_string_var.at("study_var");
+    bool do_continue = (lipid_space != 0) && contains_val(lipid_space->study_variable_values, target_variable) && lipid_space->analysis_finished && (lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable) && (lipid_space->selected_lipidomes.size() > 1) && (GlobalData::stat_level == LipidomeLevel);
 
     chart->setVisible(do_continue);
     if (!do_continue){
@@ -1174,20 +1175,20 @@ void Statistics::updateROCCurve(){
     int nom_counter = 0;
     vector<string> nominal_values;
 
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    string secondary_target_variable = GlobalData::gui_string_var.at("secondary_var");
     bool has_secondary = contains_val(lipid_space->study_variable_values, secondary_target_variable);
 
     for (auto lipidome : lipid_space->selected_lipidomes){
-        if (lipidome->study_variables[target_variable].missing) continue;
-        if (has_secondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+        if (lipidome->study_variables.at(target_variable).missing) continue;
+        if (has_secondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
-        string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+        string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
         if (uncontains_val(nominal_target_values, nominal_value)){
             nominal_target_values.insert({nominal_value, nom_counter++});
             nominal_values.push_back(nominal_value);
         }
-        target_indexes.push_back(nominal_target_values[nominal_value]);
-        if (has_secondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+        target_indexes.push_back(nominal_target_values.at(nominal_value));
+        if (has_secondary) target_values.push_back(lipidome->study_variables.at(secondary_target_variable).numerical_value);
 
 
     }
@@ -1204,7 +1205,7 @@ void Statistics::updateROCCurve(){
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
     for (int r = 0; r < statistics_matrix.rows; ++r){
-        if (!lipid_space->selected_lipidomes[r]->study_variables[target_variable].missing) lipidomes_to_keep.push_back(r);
+        if (!lipid_space->selected_lipidomes.at(r)->study_variables.at(target_variable).missing) lipidomes_to_keep.push_back(r);
     }
     Matrix tmp;
     tmp.rewrite(statistics_matrix, lipidomes_to_keep);
@@ -1215,7 +1216,7 @@ void Statistics::updateROCCurve(){
 
     if (has_secondary){
         for (uint r = 0; r < target_indexes.size(); ++r){
-            series[target_indexes[r]].push_back(target_values[r]);
+            series.at(target_indexes.at(r)).push_back(target_values.at(r));
         }
     }
     else {
@@ -1228,7 +1229,7 @@ void Statistics::updateROCCurve(){
                 if (!isnan(val) && !isinf(val)) sum += val;
             }
             if (statistics_matrix.cols > 1 || sum > 1e-15){
-                series[target_indexes[r]].push_back(sum);
+                series.at(target_indexes.at(r)).push_back(sum);
             }
         }
     }
@@ -1237,7 +1238,7 @@ void Statistics::updateROCCurve(){
     double dist = 0;
     double pos_max = 0;
 
-    ks_separation_value(series[0], series[1], dist, pos_max, &ROC);
+    ks_separation_value(series.at(0), series.at(1), dist, pos_max, &ROC);
 
     Lineplot *lineplot = new Lineplot(chart);
     Lineplot *diagonalplot = new Lineplot(chart);
@@ -1245,24 +1246,24 @@ void Statistics::updateROCCurve(){
 
     double auc = 0, fp = 0;
 
-    bool flip = Boxplot::median(series[0], 0, series[0].size()) > Boxplot::median(series[1], 0, series[1].size());
+    bool flip = Boxplot::median(series.at(0), 0, series.at(0).size()) > Boxplot::median(series.at(1), 0, series.at(1).size());
     if (flip) swap(ROC.first, ROC.second);
 
 
 
-    if (ROC.second[0] != 1){
-        ROC.first.insert(ROC.first.begin(), ROC.first[0]);
+    if (ROC.second.at(0) != 1){
+        ROC.first.insert(ROC.first.begin(), ROC.first.at(0));
         ROC.second.insert(ROC.second.begin(), 1);
     }
-    if (ROC.first[0] != 1){
+    if (ROC.first.at(0) != 1){
         ROC.first.insert(ROC.first.begin(), 1);
         ROC.second.insert(ROC.second.begin(), 1);
     }
-    if (ROC.first[ROC.first.size() - 1] != 0){
+    if (ROC.first.at(ROC.first.size() - 1) != 0){
         ROC.first.push_back(0);
         ROC.second.push_back(ROC.second.back());
     }
-    if (ROC.second[ROC.second.size() - 1] != 0){
+    if (ROC.second.at(ROC.second.size() - 1) != 0){
         ROC.first.push_back(0);
         ROC.second.push_back(0);
     }
@@ -1274,9 +1275,9 @@ void Statistics::updateROCCurve(){
 
 
     for (uint i = 0; i < ROC.first.size() - 1; ++i){
-        lines.push_back({{ROC.first[i], ROC.second[i]}, {ROC.first[i + 1], ROC.second[i + 1]}});
-        auc += (ROC.second[i] - fp) * ROC.first[i];
-        fp = ROC.second[i];
+        lines.push_back({{ROC.first.at(i), ROC.second.at(i)}, {ROC.first.at(i + 1), ROC.second.at(i + 1)}});
+        auc += (ROC.second.at(i) - fp) * ROC.first.at(i);
+        fp = ROC.second.at(i);
     }
     lineplot->add(lines, "", QColor("#209fdf"));
 
@@ -1324,10 +1325,10 @@ void Statistics::updateBoxPlot(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
 
     if (lipid_space->selected_lipidomes.size() <= 1 || GlobalData::stat_level != LipidomeLevel){
         chart->setVisible(false);
@@ -1343,19 +1344,19 @@ void Statistics::updateBoxPlot(){
     vector<string> nominal_values;
     vector<Lipidome*> selected_lipidomes_for_boxplot;
 
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    string secondary_target_variable = GlobalData::gui_string_var.at("secondary_var");
     SecondaryType secondary_type = NoSecondary;
     if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
-        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+        secondary_type = (lipid_space->study_variable_values.at(secondary_target_variable).study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
     }
     Array S;
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
-            string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+            string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
             selected_lipidomes_for_boxplot.push_back(lipidome);
 
             if (uncontains_val(nominal_target_values, nominal_value)){
@@ -1363,28 +1364,28 @@ void Statistics::updateBoxPlot(){
                 nominal_values.push_back(nominal_value);
                 series_titles.push_back(nominal_value);
             }
-            target_indexes.push_back(nominal_target_values[nominal_value]);
-            if (secondary_type != NoSecondary) target_values.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+            target_indexes.push_back(nominal_target_values.at(nominal_value));
+            if (secondary_type != NoSecondary) target_values.push_back(lipidome->study_variables.at(secondary_target_variable).numerical_value);
 
 
         }
     }
     else {
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
-            target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
+            target_values.push_back(lipidome->study_variables.at(target_variable).numerical_value);
             if (secondary_type == NominalSecondary){
-                string nominal_value = lipidome->study_variables[secondary_target_variable].nominal_value;
+                string nominal_value = lipidome->study_variables.at(secondary_target_variable).nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                     nominal_values.push_back(nominal_value);
                 }
-                target_indexes.push_back(nominal_target_values[nominal_value]);
+                target_indexes.push_back(nominal_target_values.at(nominal_value));
             }
             else if (secondary_type == NumericalSecondary){
-                S.push_back(lipidome->study_variables[secondary_target_variable].numerical_value);
+                S.push_back(lipidome->study_variables.at(secondary_target_variable).numerical_value);
             }
         }
     }
@@ -1394,7 +1395,7 @@ void Statistics::updateBoxPlot(){
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
     for (int r = 0; r < statistics_matrix.rows; ++r){
-        if (!lipid_space->selected_lipidomes[r]->study_variables[target_variable].missing) lipidomes_to_keep.push_back(r);
+        if (!lipid_space->selected_lipidomes.at(r)->study_variables.at(target_variable).missing) lipidomes_to_keep.push_back(r);
     }
     Matrix tmp;
     tmp.rewrite(statistics_matrix, lipidomes_to_keep);
@@ -1409,10 +1410,10 @@ void Statistics::updateBoxPlot(){
         series.resize(nom_counter);
         if (secondary_type != NoSecondary){
             for (uint r = 0; r < target_indexes.size(); ++r){
-                series[target_indexes[r]].push_back(target_values[r]);
-                flat_data["Sample"].push_back(QString(selected_lipidomes_for_boxplot[r]->cleaned_name.c_str()));
-                flat_data["Category"].push_back(QString(nominal_values[target_indexes[r]].c_str()));
-                flat_data["Value"].push_back(target_values[r]);
+                series.at(target_indexes.at(r)).push_back(target_values.at(r));
+                flat_data.at("Sample").push_back(QString(selected_lipidomes_for_boxplot.at(r)->cleaned_name.c_str()));
+                flat_data.at("Category").push_back(QString(nominal_values.at(target_indexes.at(r)).c_str()));
+                flat_data.at("Value").push_back(target_values.at(r));
             }
         }
         else {
@@ -1424,20 +1425,20 @@ void Statistics::updateBoxPlot(){
                     if (!isnan(val) && !isinf(val)) sum += val;
                 }
                 if (statistics_matrix.cols > 1 || sum > 1e-15){
-                    series[target_indexes[r]].push_back(sum);
-                    flat_data["Sample"].push_back(QString(selected_lipidomes_for_boxplot[r]->cleaned_name.c_str()));
-                    flat_data["Category"].push_back(QString(nominal_values[target_indexes[r]].c_str()));
-                    flat_data["Value"].push_back(sum);
+                    series.at(target_indexes.at(r)).push_back(sum);
+                    flat_data.at("Sample").push_back(QString(selected_lipidomes_for_boxplot.at(r)->cleaned_name.c_str()));
+                    flat_data.at("Category").push_back(QString(nominal_values.at(target_indexes.at(r)).c_str()));
+                    flat_data.at("Value").push_back(sum);
                 }
             }
         }
 
         Boxplot* boxplot = new Boxplot(chart, show_data);
         for (uint i = 0; i < nominal_values.size(); ++i){
-            Array &single_series = series[i];
-            QString category = QString(nominal_values[i].c_str()) + QString(" (%1)").arg(series[i].size());
-            string color_key = target_variable + "_" + nominal_values[i];
-            QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : Qt::white;
+            Array &single_series = series.at(i);
+            QString category = QString(nominal_values.at(i).c_str()) + QString(" (%1)").arg(series.at(i).size());
+            string color_key = target_variable + "_" + nominal_values.at(i);
+            QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : Qt::white;
 
             boxplot->add(single_series, category, color);
         }
@@ -1448,9 +1449,9 @@ void Statistics::updateBoxPlot(){
         if (nom_counter == 2){
             double accuracy = compute_accuracy(series);
             stat_results.push_back({"accuracy", accuracy});
-            double p_student = p_value_student(series[0], series[1]);
-            double p_welch = p_value_welch(series[0], series[1]);
-            double p_ks = p_value_kolmogorov_smirnov(series[0], series[1]);
+            double p_student = p_value_student(series.at(0), series.at(1));
+            double p_welch = p_value_welch(series.at(0), series.at(1));
+            double p_ks = p_value_kolmogorov_smirnov(series.at(0), series.at(1));
             stat_results.push_back({"p_value(Student)", p_student});
             stat_results.push_back({"p_value(Welch)", p_welch});
             stat_results.push_back({"p_value(KS)", p_ks});
@@ -1494,9 +1495,9 @@ void Statistics::updateBoxPlot(){
 
             vector< pair<double, double> > data;
             for (uint i = 0; i < S.size(); ++i){
-                data.push_back({S[i], target_values[i]});
-                series[0].push_back(S[i]);
-                series[1].push_back(target_values[i]);
+                data.push_back({S.at(i), target_values.at(i)});
+                series.at(0).push_back(S.at(i));
+                series.at(1).push_back(target_values.at(i));
             }
             scatterplot->add(data, target_variable.c_str());
 
@@ -1507,9 +1508,9 @@ void Statistics::updateBoxPlot(){
                 series.resize(S.size() * 2);
 
                 for (uint i = 0; i < S.size(); ++i){
-                    data[target_indexes[i]].push_back({S[i], target_values[i]});
-                    series[target_indexes[i] * 2].push_back(S[i]);
-                    series[target_indexes[i] * 2 + 1].push_back(target_values[i]);
+                    data.at(target_indexes.at(i)).push_back({S.at(i), target_values.at(i)});
+                    series.at(target_indexes.at(i) * 2).push_back(S.at(i));
+                    series.at(target_indexes.at(i) * 2 + 1).push_back(target_values.at(i));
                 }
 
                 for (auto nominal_value : nominal_values){
@@ -1517,17 +1518,17 @@ void Statistics::updateBoxPlot(){
                     series_titles.push_back(secondary_target_variable + " / " + nominal_value + " (measured)");
 
                     string color_key = secondary_target_variable + "_" + nominal_value;
-                    QColor c = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
-                    scatterplot->add(data[nominal_target_values[nominal_value]], nominal_value.c_str(), c);
+                    QColor c = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#209fdf");
+                    scatterplot->add(data.at(nominal_target_values.at(nominal_value)), nominal_value.c_str(), c);
                 }
             }
             else {
                 vector< pair<double, double> > data;
                 series.resize(2);
                 for (uint i = 0; i < S.size(); ++i){
-                    data.push_back({S[i], target_values[i]});
-                    series[0].push_back(S[i]);
-                    series[1].push_back(target_values[i]);
+                    data.push_back({S.at(i), target_values.at(i)});
+                    series.at(0).push_back(S.at(i));
+                    series.at(1).push_back(target_values.at(i));
                 }
                 series_titles.push_back(secondary_target_variable);
                 series_titles.push_back(target_variable);
@@ -1542,9 +1543,9 @@ void Statistics::updateBoxPlot(){
         double mx = 0, my = 0, ny = 0;
         // computing the study variable mean based on missing values of lipids
         for (uint r = 0; r < S.size(); ++r){
-            if (S[r] <= 1e-15) continue;
-            mx += S[r];
-            my += target_values[r];
+            if (S.at(r) <= 1e-15) continue;
+            mx += S.at(r);
+            my += target_values.at(r);
             ny += 1;
         }
         mx /= ny;
@@ -1553,31 +1554,31 @@ void Statistics::updateBoxPlot(){
         // estimate slope and intercept factors for linear regression
         double slope_num = 0, slope_denom = 0;
         for (uint r = 0; r < S.size(); ++r){
-            slope_num += (S[r] - mx) * (target_values[r] - my);
-            slope_denom += sq(S[r] - mx);
+            slope_num += (S.at(r) - mx) * (target_values.at(r) - my);
+            slope_denom += sq(S.at(r) - mx);
         }
         double slope = slope_num / slope_denom;
         double intercept = my - slope * mx;
 
         double SQR = 0, SQT = 0;
         for (uint r = 0; r < S.size(); ++r){
-            SQR += sq(target_values[r] - (slope * S[r] + intercept));
-            SQT += sq(target_values[r] - my);
+            SQR += sq(target_values.at(r) - (slope * S.at(r) + intercept));
+            SQT += sq(target_values.at(r) - my);
         }
         double R2 = 1. - SQR / SQT;
         stat_results.push_back({"R^2", R2});
         // store the weights of the linear regression for export
         if (secondary_type != NumericalSecondary && coefficiants.size() == lipid_space->statistics_lipids.size() + 1){
             for (uint i = 0; i < lipid_space->statistics_lipids.size(); ++i){
-                stat_results.push_back({QString("weight %1").arg(lipid_space->statistics_lipids[i].c_str()).toStdString(), coefficiants[i]});
+                stat_results.push_back({QString("weight %1").arg(lipid_space->statistics_lipids.at(i).c_str()).toStdString(), coefficiants.at(i)});
             }
-            stat_results.push_back({"weight constant", coefficiants[coefficiants.size() - 1]});
+            stat_results.push_back({"weight constant", coefficiants.at(coefficiants.size() - 1)});
         }
 
         // draw the regression line as a function
         FunctionPlot *regression_function = new FunctionPlot(chart);
         QString rg_name = QString().asprintf("Regression model (R<sup>2</sup> = %0.3f)", R2);
-        regression_function->add([](double x, vector<double> par){ return par[0] * x + par[1];}, {slope, intercept}, rg_name, QColor("#99ca53"));
+        regression_function->add([](double x, vector<double> par){ return par.at(0) * x + par.at(1);}, {slope, intercept}, rg_name, QColor("#99ca53"));
         chart->add(regression_function);
 
         QString sign = intercept >= 0 ? "+" : "-";
@@ -1619,12 +1620,12 @@ void Statistics::updatePCA(){
     flat_data.clear();
     stat_results.clear();
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
 
-    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca || lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable || GlobalData::stat_level != LipidomeLevel){
+    if (lipid_space->selected_lipidomes.size() <= 1 || lipid_space->statistics_matrix.cols < lipid_space->cols_for_pca || lipid_space->study_variable_values.at(target_variable).study_variable_type != NominalStudyVariable || GlobalData::stat_level != LipidomeLevel){
         chart->setVisible(false);
         return;
     }
@@ -1636,40 +1637,40 @@ void Statistics::updatePCA(){
     int nom_counter = 0;
     vector<string> nominal_values;
 
-    string secondary_target_variable = GlobalData::gui_string_var["secondary_var"];
+    string secondary_target_variable = GlobalData::gui_string_var.at("secondary_var");
     SecondaryType secondary_type = NoSecondary;
     if (contains_val(lipid_space->study_variable_values, secondary_target_variable)){
-        secondary_type = (lipid_space->study_variable_values[secondary_target_variable].study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
+        secondary_type = (lipid_space->study_variable_values.at(secondary_target_variable).study_variable_type == NominalStudyVariable) ? NominalSecondary : NumericalSecondary;
     }
 
     if (is_nominal){
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
-            string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+            string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
 
             if (uncontains_val(nominal_target_values, nominal_value)){
                 nominal_target_values.insert({nominal_value, nom_counter++});
                 nominal_values.push_back(nominal_value);
             }
-            target_indexes.push_back(nominal_target_values[nominal_value]);
+            target_indexes.push_back(nominal_target_values.at(nominal_value));
 
 
         }
     }
     else {
         for (auto lipidome : lipid_space->selected_lipidomes){
-            if (lipidome->study_variables[target_variable].missing) continue;
-            if (secondary_type != NoSecondary && lipidome->study_variables[secondary_target_variable].missing) continue;
+            if (lipidome->study_variables.at(target_variable).missing) continue;
+            if (secondary_type != NoSecondary && lipidome->study_variables.at(secondary_target_variable).missing) continue;
 
             if (secondary_type == NominalSecondary){
-                string nominal_value = lipidome->study_variables[secondary_target_variable].nominal_value;
+                string nominal_value = lipidome->study_variables.at(secondary_target_variable).nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                     nominal_values.push_back(nominal_value);
                 }
-                target_indexes.push_back(nominal_target_values[nominal_value]);
+                target_indexes.push_back(nominal_target_values.at(nominal_value));
             }
         }
     }
@@ -1679,7 +1680,7 @@ void Statistics::updatePCA(){
     // if any lipidome has a missing study variable, discard the lipidome from the statistic
     Indexes lipidomes_to_keep;
     for (int r = 0; r < statistics_matrix.rows; ++r){
-        if (!lipid_space->selected_lipidomes[r]->study_variables[target_variable].missing) lipidomes_to_keep.push_back(r);
+        if (!lipid_space->selected_lipidomes.at(r)->study_variables.at(target_variable).missing) lipidomes_to_keep.push_back(r);
     }
     Matrix tmp;
     tmp.rewrite(statistics_matrix, lipidomes_to_keep);
@@ -1697,12 +1698,12 @@ void Statistics::updatePCA(){
         vector< vector<QString> > data_labels(nominal_values.size());
 
         for (int i = 0; i < pca.rows; ++i){
-            all_data[target_indexes[i]].push_back({pca(i, GlobalData::PC1), pca(i, GlobalData::PC2)});
-            data_labels[target_indexes[i]].push_back(lipid_space->selected_lipidomes[i]->cleaned_name.c_str());
+            all_data.at(target_indexes.at(i)).push_back({pca(i, GlobalData::PC1), pca(i, GlobalData::PC2)});
+            data_labels.at(target_indexes.at(i)).push_back(lipid_space->selected_lipidomes.at(i)->cleaned_name.c_str());
         }
 
         vector< pair<string, int> > sorted_nominal_values;
-        for (uint i = 0; i < nominal_values.size(); ++i) sorted_nominal_values.push_back({nominal_values[i], i});
+        for (uint i = 0; i < nominal_values.size(); ++i) sorted_nominal_values.push_back({nominal_values.at(i), i});
         sort(sorted_nominal_values.begin(), sorted_nominal_values.end(), [](const pair<string, int> &a, const pair<string, int> &b) -> bool {
             return a < b;
         });
@@ -1710,18 +1711,18 @@ void Statistics::updatePCA(){
 
         series.resize(sorted_nominal_values.size() * 2);
         for (uint i = 0; i < sorted_nominal_values.size(); ++i){
-            series_titles.push_back(sorted_nominal_values[i].first + " - PC" + std::to_string(GlobalData::PC1 + 1));
-            series_titles.push_back(sorted_nominal_values[i].first + " - PC" + std::to_string(GlobalData::PC1 + 2));
+            series_titles.push_back(sorted_nominal_values.at(i).first + " - PC" + std::to_string(GlobalData::PC1 + 1));
+            series_titles.push_back(sorted_nominal_values.at(i).first + " - PC" + std::to_string(GlobalData::PC1 + 2));
 
 
-            string color_key = target_variable + "_" + sorted_nominal_values[i].first;
-            QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
-            QString group_label = QStringLiteral("%1 (%2)").arg(sorted_nominal_values[i].first.c_str()).arg(all_data[sorted_nominal_values[i].second].size());
-            scatterplot->add(all_data[sorted_nominal_values[i].second], group_label, color, &data_labels[sorted_nominal_values[i].second]);
+            string color_key = target_variable + "_" + sorted_nominal_values.at(i).first;
+            QColor color = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#209fdf");
+            QString group_label = QStringLiteral("%1 (%2)").arg(sorted_nominal_values.at(i).first.c_str()).arg(all_data.at(sorted_nominal_values.at(i).second).size());
+            scatterplot->add(all_data.at(sorted_nominal_values.at(i).second), group_label, color, &data_labels.at(sorted_nominal_values.at(i).second));
 
-            for (auto &p : all_data[sorted_nominal_values[i].second]){
-                series[i * 2].push_back(p.first);
-                series[i * 2 + 1].push_back(p.second);
+            for (auto &p : all_data.at(sorted_nominal_values.at(i).second)){
+                series.at(i * 2).push_back(p.first);
+                series.at(i * 2 + 1).push_back(p.second);
             }
         }
     }
@@ -1730,7 +1731,7 @@ void Statistics::updatePCA(){
         vector<QString> data_labels;
         for (int i = 0; i < pca.rows; ++i){
             data.push_back({pca(i, 0), pca(i, 1)});
-            data_labels.push_back(lipid_space->selected_lipidomes[i]->cleaned_name.c_str());
+            data_labels.push_back(lipid_space->selected_lipidomes.at(i)->cleaned_name.c_str());
         }
         QString group_label = QStringLiteral("Global (%1)").arg(data.size());
         scatterplot->add(data, group_label, QColor("#209fdf"), &data_labels);
@@ -1739,8 +1740,8 @@ void Statistics::updatePCA(){
 
     Array vars;
     LipidSpace::compute_PCA_variances(pca, vars);
-    chart->setXLabel(QStringLiteral("Principal component %1: %2%").arg(GlobalData::PC1 + 1).arg(vars[GlobalData::PC1] * 100., 0, 'G', 3));
-    chart->setYLabel(QStringLiteral("Principal component %1: %2%").arg(GlobalData::PC2 + 1).arg(vars[GlobalData::PC2] * 100., 0, 'G', 3));
+    chart->setXLabel(QStringLiteral("Principal component %1: %2%").arg(GlobalData::PC1 + 1).arg(vars.at(GlobalData::PC1) * 100., 0, 'G', 3));
+    chart->setYLabel(QStringLiteral("Principal component %1: %2%").arg(GlobalData::PC2 + 1).arg(vars.at(GlobalData::PC2) * 100., 0, 'G', 3));
     chart->setTitle("Principal Component Analysis");
 
 
@@ -1787,10 +1788,10 @@ void Statistics::updatePVal(){
         return;
     }
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
-    if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
+    if (lipid_space->study_variable_values.at(target_variable).study_variable_type != NominalStudyVariable) return;
 
 
 
@@ -1800,9 +1801,9 @@ void Statistics::updatePVal(){
     map<string, string> lipidome_to_nominal_value;
 
     for (auto lipidome : lipid_space->selected_lipidomes){
-        if (lipidome->study_variables[target_variable].missing) continue;
+        if (lipidome->study_variables.at(target_variable).missing) continue;
 
-        string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+        string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
 
         if (GlobalData::condition_mode_enrichment == StandardMode){
             if (uncontains_val(nominal_value_positions, nominal_value)) nominal_value_positions.insert({nominal_value, nominal_value_positions.size()});
@@ -1829,14 +1830,14 @@ void Statistics::updatePVal(){
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     map<string, int> lipidome_name_map;
-    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
+        LipidAdduct* lipid = lipid_space->global_lipidome->lipids.at(i);
         if (uncontains_val(lipid_map, lipid)){
             lipid_map.insert({lipid, lipid_map.size()});
-            string lipid_name = lipid_space->global_lipidome->species[i];
-            if (contains_val(translations, lipid_name)) lipid_name = translations[lipid_name];
+            string lipid_name = lipid_space->global_lipidome->species.at(i);
+            if (contains_val(translations, lipid_name)) lipid_name = translations.at(lipid_name);
             lipid_name_map.insert({lipid_name, lipid_name_map.size()});
         }
     }
@@ -1844,11 +1845,11 @@ void Statistics::updatePVal(){
     stat_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
     stat_matrix += NAN;
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        Lipidome* lipidome = lipid_space->selected_lipidomes.at(r);
         lipidome_name_map.insert({lipidome->cleaned_name, r});
         for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                stat_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+            if (contains_val(lipid_map, lipidome->lipids.at(i))){
+                stat_matrix(r, lipid_map.at(lipidome->lipids.at(i))) = lipidome->normalized_intensities.at(i);
             }
         }
     }
@@ -1870,21 +1871,21 @@ void Statistics::updatePVal(){
             string nom_value = kv_val.second;
             if (GlobalData::condition_mode_enrichment == StandardMode && uncontains_val(nominal_value_positions, nom_value)) continue;
 
-            int nominal_position = (GlobalData::condition_mode_enrichment == StandardMode) ? nominal_value_positions[nom_value] : -1;
+            int nominal_position = (GlobalData::condition_mode_enrichment == StandardMode) ? nominal_value_positions.at(nom_value) : -1;
 
             if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
 
 
-            Array &fill_array = GlobalData::condition_mode_enrichment == SelectionMode ? (contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array) : arrays[nominal_position];
+            Array &fill_array = GlobalData::condition_mode_enrichment == SelectionMode ? (contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array) : arrays.at(nominal_position);
             if (uncontains_val(lipidome_name_map, lipidome_name)) continue;
-            int lipidome_row = lipidome_name_map[lipidome_name];
+            int lipidome_row = lipidome_name_map.at(lipidome_name);
 
             double stat_value = stat_matrix(lipidome_row, lipid_col);
             if (!isnan(stat_value)){
-                flat_data["Lipid species"].push_back(lipid_name.c_str());
-                flat_data["Lipidome"].push_back(lipidome_name.c_str());
-                flat_data["Condition"].push_back(nom_value.c_str());
-                flat_data["Quantity"].push_back(stat_value);
+                flat_data.at("Lipid species").push_back(lipid_name.c_str());
+                flat_data.at("Lipidome").push_back(lipidome_name.c_str());
+                flat_data.at("Condition").push_back(nom_value.c_str());
+                flat_data.at("Quantity").push_back(stat_value);
                 fill_array.push_back(stat_value);
             }
         }
@@ -1900,12 +1901,12 @@ void Statistics::updatePVal(){
         }
         else {
             for (int i = arrays.size() - 1; i >= 0; --i){
-                if (arrays[i].size() < 2) arrays.erase(arrays.begin() + i);
+                if (arrays.at(i).size() < 2) arrays.erase(arrays.begin() + i);
             }
             if (nominal_value_positions.size() == 2){
-                if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
-                else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
-                else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+                if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays.at(0), arrays.at(1));
+                else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays.at(0), arrays.at(1));
+                else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays.at(0), arrays.at(1));
             }
             else if (nominal_value_positions.size() > 2) {
                 p_value = p_value_anova(arrays);
@@ -1924,7 +1925,7 @@ void Statistics::updatePVal(){
     vector<QString> categories{""};
     vector<QColor> colors{"#85b3ce"};
 
-    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var["bar_number"] : 20;
+    double num_bars = contains_val(GlobalData::gui_num_var, "bar_number") ? GlobalData::gui_num_var.at("bar_number") : 20;
     histogramplot->add(series, categories, &colors, num_bars, 0, 1);
     histogramplot->borders.setX(0);
     histogramplot->borders.setY(1);
@@ -1978,10 +1979,10 @@ void Statistics::updateVolcano(){
         return;
     }
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
-    if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
+    if (lipid_space->study_variable_values.at(target_variable).study_variable_type != NominalStudyVariable) return;
 
     // setup array for target variable values, if nominal then each with incrementing number
     map<string, string> lipidome_to_nominal_value;
@@ -1992,9 +1993,9 @@ void Statistics::updateVolcano(){
     string second_conditions = "";
 
     for (auto lipidome : lipid_space->selected_lipidomes){
-        if (lipidome->study_variables[target_variable].missing) continue;
+        if (lipidome->study_variables.at(target_variable).missing) continue;
 
-        string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+        string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
 
         if (GlobalData::condition_mode_enrichment == StandardMode){
             if (uncontains_val(nominal_value_positions, nominal_value)){
@@ -2048,14 +2049,14 @@ void Statistics::updateVolcano(){
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
     map<string, int> lipidome_name_map;
-    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
     // setting up lipid to column in matrix map
     for (uint i = 0; i < lipid_space->global_lipidome->lipids.size(); ++i){
-        LipidAdduct* lipid = lipid_space->global_lipidome->lipids[i];
+        LipidAdduct* lipid = lipid_space->global_lipidome->lipids.at(i);
         if (uncontains_val(lipid_map, lipid)){
             lipid_map.insert({lipid, lipid_map.size()});
-            string lipid_name = lipid_space->global_lipidome->species[i];
-            if (contains_val(translations, lipid_name)) lipid_name = translations[lipid_name];
+            string lipid_name = lipid_space->global_lipidome->species.at(i);
+            if (contains_val(translations, lipid_name)) lipid_name = translations.at(lipid_name);
             lipid_name_map.insert({lipid_name, lipid_name_map.size()});
         }
     }
@@ -2063,11 +2064,11 @@ void Statistics::updateVolcano(){
     stat_matrix.reset(lipid_space->selected_lipidomes.size(), lipid_map.size());
     stat_matrix += NAN;
     for (uint r = 0; r < lipid_space->selected_lipidomes.size(); ++r){
-        Lipidome* lipidome = lipid_space->selected_lipidomes[r];
+        Lipidome* lipidome = lipid_space->selected_lipidomes.at(r);
         lipidome_name_map.insert({lipidome->cleaned_name, r});
         for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            if (contains_val(lipid_map, lipidome->lipids[i])){
-                stat_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+            if (contains_val(lipid_map, lipidome->lipids.at(i))){
+                stat_matrix(r, lipid_map.at(lipidome->lipids.at(i))) = lipidome->normalized_intensities.at(i);
             }
         }
     }
@@ -2094,20 +2095,20 @@ void Statistics::updateVolcano(){
             string nom_value = kv_val.second;
             if (GlobalData::condition_mode_enrichment == StandardMode && uncontains_val(nominal_value_positions, nom_value)) continue;
 
-            int nominal_position = (GlobalData::condition_mode_enrichment == StandardMode) ? nominal_value_positions[nom_value] : -1;
+            int nominal_position = (GlobalData::condition_mode_enrichment == StandardMode) ? nominal_value_positions.at(nom_value) : -1;
 
             if (GlobalData::condition_mode_enrichment == SelectionMode && uncontains_val(GlobalData::first_enrichment_classes, nom_value) && uncontains_val(GlobalData::second_enrichment_classes, nom_value)) continue;
 
-            Array &fill_array = GlobalData::condition_mode_enrichment == SelectionMode ? (contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array) : arrays[nominal_position];
+            Array &fill_array = GlobalData::condition_mode_enrichment == SelectionMode ? (contains_val(GlobalData::first_enrichment_classes, nom_value) ? first_array : second_array) : arrays.at(nominal_position);
             if (uncontains_val(lipidome_name_map, lipidome_name)) continue;
-            int lipidome_row = lipidome_name_map[lipidome_name];
+            int lipidome_row = lipidome_name_map.at(lipidome_name);
 
             double stat_value = stat_matrix(lipidome_row, lipid_col);
             if (!isnan(stat_value)){
-                flat_data["Lipid species"].push_back(lipid_name.c_str());
-                flat_data["Lipidome"].push_back(lipidome_name.c_str());
-                flat_data["Condition"].push_back(nom_value.c_str());
-                flat_data["Quantity"].push_back(stat_value);
+                flat_data.at("Lipid species").push_back(lipid_name.c_str());
+                flat_data.at("Lipidome").push_back(lipidome_name.c_str());
+                flat_data.at("Condition").push_back(nom_value.c_str());
+                flat_data.at("Quantity").push_back(stat_value);
                 fill_array.push_back(stat_value);
             }
         }
@@ -2128,12 +2129,12 @@ void Statistics::updateVolcano(){
         else {
 
             for (int i = arrays.size() - 1; i >= 0; --i){
-                if (arrays[i].size() < 2) arrays.erase(arrays.begin() + i);
+                if (arrays.at(i).size() < 2) arrays.erase(arrays.begin() + i);
             }
             if (nominal_value_positions.size() == 2){
-                if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays[0], arrays[1]);
-                else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays[0], arrays[1]);
-                else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays[0], arrays[1]);
+                if (GlobalData::enrichment_test == "student") p_value = p_value_student(arrays.at(0), arrays.at(1));
+                else if (GlobalData::enrichment_test == "welch") p_value = p_value_welch(arrays.at(0), arrays.at(1));
+                else if (GlobalData::enrichment_test == "ks") p_value = p_value_kolmogorov_smirnov(arrays.at(0), arrays.at(1));
             }
             else if (nominal_value_positions.size() > 2) {
                 p_value = p_value_anova(arrays);
@@ -2141,7 +2142,7 @@ void Statistics::updateVolcano(){
             else continue;
 
             if (nominal_value_positions.size() == 2){
-                fc = arrays[1].mean() / arrays[0].mean();
+                fc = arrays.at(1).mean() / arrays.at(0).mean();
             }
             else {
                 Array cv_array;
@@ -2185,44 +2186,44 @@ void Statistics::updateVolcano(){
 
 
         for (int i = 0; i < (int)p_values.size(); ++i){
-            double p_value = p_values[i];
-            double fc = fold_changes[i];
+            double p_value = p_values.at(i);
+            double fc = fold_changes.at(i);
 
             double log_p_value = -log10(p_value);
             double log_fc = log2(fc);
 
             if (alpha_level < p_value){
                 pval_fc_non.push_back({log_fc, log_p_value});
-                fc_non_lipids.push_back(p_val_lipids[i]);
+                fc_non_lipids.push_back(p_val_lipids.at(i));
 
-                series[2].push_back(p_value);
-                series[3].push_back(fc);
+                series.at(2).push_back(p_value);
+                series.at(3).push_back(fc);
             }
             else {
                 if (log_fc <= -log_fc_level){
                     pval_fc_down.push_back({log_fc, log_p_value});
-                    fc_down_lipids.push_back(p_val_lipids[i]);
-                    GlobalData::enrichment_list.push_back(p_val_lipids[i].toStdString());
+                    fc_down_lipids.push_back(p_val_lipids.at(i));
+                    GlobalData::enrichment_list.push_back(p_val_lipids.at(i).toStdString());
 
-                    series[0].push_back(p_value);
-                    series[1].push_back(fc);
+                    series.at(0).push_back(p_value);
+                    series.at(1).push_back(fc);
                 }
 
                 else if (log_fc_level <= log_fc){
                     pval_fc_up.push_back({log_fc, log_p_value});
-                    fc_up_lipids.push_back(p_val_lipids[i]);
-                    GlobalData::enrichment_list.push_back(p_val_lipids[i].toStdString());
+                    fc_up_lipids.push_back(p_val_lipids.at(i));
+                    GlobalData::enrichment_list.push_back(p_val_lipids.at(i).toStdString());
 
-                    series[4].push_back(p_value);
-                    series[5].push_back(fc);
+                    series.at(4).push_back(p_value);
+                    series.at(5).push_back(fc);
                 }
 
                 else {
                     pval_fc_non.push_back({log_fc, log_p_value});
-                    fc_non_lipids.push_back(p_val_lipids[i]);
+                    fc_non_lipids.push_back(p_val_lipids.at(i));
 
-                    series[2].push_back(p_value);
-                    series[3].push_back(fc);
+                    series.at(2).push_back(p_value);
+                    series.at(3).push_back(fc);
                 }
             }
             max_x = max(max_x, fabs(log_fc));
@@ -2239,35 +2240,35 @@ void Statistics::updateVolcano(){
         log_fc_level = (pow(2, log_fc_level) - 1.) / (pow(2, log_fc_level) + 1);
 
         for (int i = 0; i < (int)p_values.size(); ++i){
-            double p_value = p_values[i];
-            double fc = fold_changes[i];
+            double p_value = p_values.at(i);
+            double fc = fold_changes.at(i);
 
             double log_p_value = -log10(p_value);
             double log_fc = fc;
 
             if (alpha_level < p_value){
                 pval_fc_non.push_back({log_fc, log_p_value});
-                fc_non_lipids.push_back(p_val_lipids[i]);
+                fc_non_lipids.push_back(p_val_lipids.at(i));
 
-                series[0].push_back(p_value);
-                series[1].push_back(fc);
+                series.at(0).push_back(p_value);
+                series.at(1).push_back(fc);
             }
             else {
                 if (log_fc_level <= log_fc){
                     pval_fc_reg.push_back({log_fc, log_p_value});
-                    fc_reg_lipids.push_back(p_val_lipids[i]);
-                    GlobalData::enrichment_list.push_back(p_val_lipids[i].toStdString());
+                    fc_reg_lipids.push_back(p_val_lipids.at(i));
+                    GlobalData::enrichment_list.push_back(p_val_lipids.at(i).toStdString());
 
-                    series[2].push_back(p_value);
-                    series[3].push_back(fc);
+                    series.at(2).push_back(p_value);
+                    series.at(3).push_back(fc);
                 }
 
                 else {
                     pval_fc_non.push_back({log_fc, log_p_value});
-                    fc_non_lipids.push_back(p_val_lipids[i]);
+                    fc_non_lipids.push_back(p_val_lipids.at(i));
 
-                    series[0].push_back(p_value);
-                    series[1].push_back(fc);
+                    series.at(0).push_back(p_value);
+                    series.at(1).push_back(fc);
                 }
             }
             max_x = max(max_x, fabs(log_fc));
@@ -2280,9 +2281,9 @@ void Statistics::updateVolcano(){
     if (GlobalData::condition_mode_enrichment == SelectionMode){
 
         string color_key = target_variable + "_" + *GlobalData::first_enrichment_classes.begin();
-        QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+        QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#209fdf");
         color_key = target_variable + "_" + *GlobalData::second_enrichment_classes.begin();
-        QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+        QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#209fdf");
 
         scatterplot = new Scatterplot(chart, true);
         scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
@@ -2290,9 +2291,9 @@ void Statistics::updateVolcano(){
         scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(second_conditions.c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
         chart->add(scatterplot);
 
-        for (auto lipid_name : fc_down_lipids) volcano_data["down"].push_back(lipid_name.toStdString());
-        for (auto lipid_name : fc_non_lipids) volcano_data["non"].push_back(lipid_name.toStdString());
-        for (auto lipid_name : fc_up_lipids) volcano_data["up"].push_back(lipid_name.toStdString());
+        for (auto lipid_name : fc_down_lipids) volcano_data.at("down").push_back(lipid_name.toStdString());
+        for (auto lipid_name : fc_non_lipids) volcano_data.at("non").push_back(lipid_name.toStdString());
+        for (auto lipid_name : fc_up_lipids) volcano_data.at("up").push_back(lipid_name.toStdString());
 
         line_plot = new Lineplot(chart, true);
         boundaries.push_back({{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}});
@@ -2303,20 +2304,20 @@ void Statistics::updateVolcano(){
     else {
 
         if (nominal_value_positions.size() == 2){
-            string color_key = target_variable + "_" + nominal_values[0];
-            QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
-            color_key = target_variable + "_" + nominal_values[1];
-            QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+            string color_key = target_variable + "_" + nominal_values.at(0);
+            QColor color_down = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#209fdf");
+            color_key = target_variable + "_" + nominal_values.at(1);
+            QColor color_up = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#209fdf");
 
             scatterplot = new Scatterplot(chart, true);
             scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
-            scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values[0].c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
-            scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values[1].c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
+            scatterplot->add(pval_fc_down, QString("Sig. up regulated %1 (%2)").arg(nominal_values.at(0).c_str()).arg(pval_fc_down.size()), color_down, &fc_down_lipids);
+            scatterplot->add(pval_fc_up, QString("Sig. up regulated %1 (%2)").arg(nominal_values.at(1).c_str()).arg(pval_fc_up.size()), color_up, &fc_up_lipids);
             chart->add(scatterplot);
 
-            for (auto lipid_name : fc_down_lipids) volcano_data["down"].push_back(lipid_name.toStdString());
-            for (auto lipid_name : fc_non_lipids) volcano_data["non"].push_back(lipid_name.toStdString());
-            for (auto lipid_name : fc_up_lipids) volcano_data["up"].push_back(lipid_name.toStdString());
+            for (auto lipid_name : fc_down_lipids) volcano_data.at("down").push_back(lipid_name.toStdString());
+            for (auto lipid_name : fc_non_lipids) volcano_data.at("non").push_back(lipid_name.toStdString());
+            for (auto lipid_name : fc_up_lipids) volcano_data.at("up").push_back(lipid_name.toStdString());
 
             line_plot = new Lineplot(chart, true);
             boundaries.push_back({{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}});
@@ -2324,16 +2325,16 @@ void Statistics::updateVolcano(){
             boundaries.push_back({{log_fc_level, -1e5}, {log_fc_level, 1e5}});
         }
         else {
-            string color_key = target_variable + "_" + nominal_values[0];
-            QColor color_reg = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables[color_key] : QColor("#209fdf");
+            string color_key = target_variable + "_" + nominal_values.at(0);
+            QColor color_reg = contains_val(GlobalData::colorMapStudyVariables, color_key) ? GlobalData::colorMapStudyVariables.at(color_key) : QColor("#209fdf");
 
             scatterplot = new Scatterplot(chart, true);
             scatterplot->add(pval_fc_non, QString("Not regulated (%1)").arg(pval_fc_non.size()), "#dddddd", &fc_non_lipids);
             scatterplot->add(pval_fc_reg, QString("Sig. regulated (%1)").arg(pval_fc_reg.size()), color_reg, &fc_reg_lipids);
             chart->add(scatterplot);
 
-            for (auto lipid_name : fc_non_lipids) volcano_data["non"].push_back(lipid_name.toStdString());
-            for (auto lipid_name : fc_reg_lipids) volcano_data["reg"].push_back(lipid_name.toStdString());
+            for (auto lipid_name : fc_non_lipids) volcano_data.at("non").push_back(lipid_name.toStdString());
+            for (auto lipid_name : fc_reg_lipids) volcano_data.at("reg").push_back(lipid_name.toStdString());
 
             line_plot = new Lineplot(chart, true);
             boundaries.push_back({{-1e5, -log10(alpha_level)}, {1e5, -log10(alpha_level)}});
@@ -2378,10 +2379,12 @@ void Statistics::updateEnrichment(){
     flat_data.clear();
     stat_results.clear();
 
+    if (GlobalData::main_tab_index != LipidSpaceEnrichmentTab) return;
+
     if (GlobalData::condition_mode_enrichment != LipidSpeciesListMode){
-        string target_variable = GlobalData::gui_string_var["study_var"];
+        string target_variable = GlobalData::gui_string_var.at("study_var");
         if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
-        if (lipid_space->study_variable_values[target_variable].study_variable_type != NominalStudyVariable) return;
+        if (lipid_space->study_variable_values.at(target_variable).study_variable_type != NominalStudyVariable) return;
     }
 
 
@@ -2394,11 +2397,11 @@ void Statistics::updateEnrichment(){
     }
     else {
         vector<string> target_list;
-        map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+        map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
         map<string, bool> &selection_map = lipid_space->selection[SPECIES_ITEM];
         for (auto &kv : selection_map){
             if (kv.second){
-                if (contains_val(translations, kv.first)) target_list.push_back(translations[kv.first]);
+                if (contains_val(translations, kv.first)) target_list.push_back(translations.at(kv.first));
                 else target_list.push_back(kv.first);
             }
         }
@@ -2413,7 +2416,7 @@ void Statistics::updateEnrichment(){
         if (GlobalData::enrichment_correction == "bh") multiple_correction_bh(p_values);
         else if (GlobalData::enrichment_correction == "bonferoni") multiple_correction_bonferoni(p_values);
 
-        for (uint i = 0; i < results.size(); ++i) results[i].pvalue = p_values[i];
+        for (uint i = 0; i < results.size(); ++i) results.at(i).pvalue = p_values.at(i);
     }
 
     cout << results.size() << endl;
@@ -2481,5 +2484,6 @@ void Statistics::updateEnrichment(){
     Lineplot *lineplot = new Lineplot(chart);
     lineplot->add(pvalue_line, "", QColor("#209fdf"));
     chart->add(lineplot);
+
 }
 

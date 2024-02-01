@@ -18,8 +18,6 @@
 using namespace std;
 using namespace std::chrono;
 
-enum ProcessType {LipidAnalysis, FeatureAnalysis, CompleteFeatureAnalysis, NoAnalysis};
-
 class LipidSpace : public QThread {
     Q_OBJECT
 
@@ -50,7 +48,6 @@ public:
     vector<Lipidome*> selected_lipidomes;
     map<string, SortVector<string, double> > lipid_sortings;
     Matrix global_distances;
-    ProcessType process_type;
     string target_variable;
     set<string> registered_lipid_classes;
     Matrix statistics_matrix;

@@ -28,6 +28,7 @@ set<string> GlobalData::second_enrichment_classes;
 set<string> GlobalData::enrichment_domains;
 ConditionModeEnrichment GlobalData::condition_mode_enrichment = StandardMode;
 vector<string> GlobalData::enrichment_list;
+LipidSpaceTab GlobalData::main_tab_index = LipidSpaceHomeTab;
 
 map<string, string> GlobalData::gui_string_var{{"species_selection", ""}, {"study_var", ""}, {"secondary_var", ""}};
 map<string, double> GlobalData::gui_num_var{{"pie_tree_depth", 3}, {"dendrogram_height", 100}, {"pie_size", 100}, {"translate", 1}, {"label_size", 18}, {"tick_size", 10}, {"legend_size", 14}, {"dont_less_3_message", 0}, {"bar_number", 20}, {"table_zoom", 10}};

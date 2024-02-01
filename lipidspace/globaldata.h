@@ -44,6 +44,7 @@ public:
     static set<string> enrichment_domains;
     static ConditionModeEnrichment condition_mode_enrichment;
     static vector<string> enrichment_list;
+    static LipidSpaceTab main_tab_index;
 };
 
 

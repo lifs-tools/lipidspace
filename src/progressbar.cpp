@@ -40,16 +40,16 @@ void Progressbar::set_max(int m){
 
 
 void Progressbar::set_current(int c){
-    ui->progressBar->setValue(c);
+    if (c < ui->progressBar->maximum()) ui->progressBar->setValue(c);
 }
 
 void Progressbar::closeWindow(bool successful){
     if (successful){
-        refreshCanvas();
+        emit refreshCanvas();
     }
     else {
-        interrupt();
+        emit interrupt();
     }
-    accept();
+    emit accept();
 
 }

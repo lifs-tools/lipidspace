@@ -44,10 +44,10 @@ ChangeColorDialog::ChangeColorDialog(QWidget *parent) : QDialog(parent), ui(new 
             if (!contains_val(GlobalData::colorMapStudyVariables, study_variable)) continue;
 
             QTreeWidgetItem *item = new QTreeWidgetItem();
-            items.insert({item, &GlobalData::colorMapStudyVariables[study_variable]});
+            items.insert({item, &GlobalData::colorMapStudyVariables.at(study_variable)});
             item->setText(0, kv_nom.first.c_str());
             study_variable_item->addChild(item);
-            item->setBackground(1, QColor(GlobalData::colorMapStudyVariables[study_variable]));
+            item->setBackground(1, QColor(GlobalData::colorMapStudyVariables.at(study_variable)));
         }
     }
 }

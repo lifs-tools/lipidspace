@@ -42,7 +42,7 @@ FilterDialog::FilterDialog(pair<StudyVariableFilter, vector<double>> &_filter, Q
             if (!filter.second.empty()){
                 QString line = QString::number(filter.second[0]);
                 for (int i = 1; i < (int)filter.second.size(); ++i){
-                    line += ", " + QString::number(filter.second[i]);
+                    line += ", " + QString::number(filter.second.at(i));
                 }
                 ui->equalEdit->setText(line);
             }

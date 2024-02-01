@@ -178,7 +178,6 @@ public:
     double dendrogram_y_factor;
     double dendrogram_height;
     double dendrogram_y_offset;
-    string study_variable;
     double x_min_d;
     double x_max_d;
     double y_min_d;
@@ -312,7 +311,6 @@ public slots:
     void hoverOver();
     void setSwap(int source);
     void reloadPoints();
-    void setStudyVariable(string);
     void clear();
     void highlightPoints(QListWidget *);
     void moveToPoint(QListWidgetItem*);

@@ -22,14 +22,14 @@ void SelectLipidomes::init(){
     LipidSpace* lipid_space = lipidSpaceGUI->lipid_space;
 
     map<Lipidome*, int> lipidome_to_canvas_position;
-    for (uint i = 0; i < lipidSpaceGUI->canvases.size(); ++i) lipidome_to_canvas_position.insert({lipidSpaceGUI->canvases[i]->lipidome, i});
+    for (uint i = 0; i < lipidSpaceGUI->canvases.size(); ++i) lipidome_to_canvas_position.insert({lipidSpaceGUI->canvases.at(i)->lipidome, i});
 
 
     // add global item
     QTreeWidgetItem *global_item = new QTreeWidgetItem();
-    global_item->setText(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipid_space->global_lipidome]]->pointSet->title);
-    global_item->setCheckState(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipid_space->global_lipidome]]->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
-    item_to_canvas_position.insert({global_item, lipidome_to_canvas_position[lipid_space->global_lipidome]});
+    global_item->setText(0, lipidSpaceGUI->canvases.at(lipidome_to_canvas_position.at(lipid_space->global_lipidome))->pointSet->title);
+    global_item->setCheckState(0, lipidSpaceGUI->canvases.at(lipidome_to_canvas_position.at(lipid_space->global_lipidome))->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
+    item_to_canvas_position.insert({global_item, lipidome_to_canvas_position.at(lipid_space->global_lipidome)});
     ui->lipidomesTreeWidget->addTopLevelItem(global_item);
 
 
@@ -43,14 +43,14 @@ void SelectLipidomes::init(){
         ui->lipidomesTreeWidget->addTopLevelItem(group_item);
 
         for (auto lipidome : kv.second) {
-            if (uncontains_val(lipidome_to_canvas_position, lipidome) || lipidome_to_canvas_position[lipidome] >= (int)lipidSpaceGUI->canvases.size()) continue;
+            if (uncontains_val(lipidome_to_canvas_position, lipidome) || lipidome_to_canvas_position.at(lipidome) >= (int)lipidSpaceGUI->canvases.size()) continue;
 
             QTreeWidgetItem *item = new QTreeWidgetItem();
-            item->setText(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipidome]]->pointSet->title);
-            item_to_canvas_position.insert({item, lipidome_to_canvas_position[lipidome]});
+            item->setText(0, lipidSpaceGUI->canvases.at(lipidome_to_canvas_position.at(lipidome))->pointSet->title);
+            item_to_canvas_position.insert({item, lipidome_to_canvas_position.at(lipidome)});
             group_item->addChild(item);
 
-            item->setCheckState(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipidome]]->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
+            item->setCheckState(0, lipidSpaceGUI->canvases.at(lipidome_to_canvas_position.at(lipidome))->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
         }
     }
 
@@ -60,10 +60,10 @@ void SelectLipidomes::init(){
     for (auto lipidome : lipid_space->selected_lipidomes){
         if (uncontains_val(lipidome_to_canvas_position, lipidome)) continue;
         QTreeWidgetItem *item = new QTreeWidgetItem();
-        item->setText(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipidome]]->pointSet->title);
+        item->setText(0, lipidSpaceGUI->canvases.at(lipidome_to_canvas_position.at(lipidome))->pointSet->title);
 
-        item->setCheckState(0, lipidSpaceGUI->canvases[lipidome_to_canvas_position[lipidome]]->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
-        item_to_canvas_position.insert({item, lipidome_to_canvas_position[lipidome]});
+        item->setCheckState(0, lipidSpaceGUI->canvases.at(lipidome_to_canvas_position.at(lipidome))->marked_for_selected_view ? Qt::Checked : Qt::Unchecked);
+        item_to_canvas_position.insert({item, lipidome_to_canvas_position.at(lipidome)});
         ui->lipidomesTreeWidget->addTopLevelItem(item);
     }
 }
@@ -133,7 +133,7 @@ void SelectLipidomes::ok(){
     bool do_update = false;
     LipidSpaceGUI* lipidSpaceGUI = (LipidSpaceGUI*)parentWidget();
     for (auto &kv : item_to_canvas_position){
-        Canvas *canvas = lipidSpaceGUI->canvases[kv.second];
+        Canvas *canvas = lipidSpaceGUI->canvases.at(kv.second);
         bool checked_state = kv.first->checkState(0) == Qt::Checked;
         if (canvas->marked_for_selected_view != checked_state){
             canvas->marked_for_selected_view = checked_state;

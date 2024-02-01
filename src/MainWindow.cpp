@@ -12,7 +12,6 @@ using namespace std;
 int main(int argc, char** argv) {
     Analytics analytics;
 
-
     if (argc == 1){
         QApplication application(argc, argv);
         Logging::write_log("LipidSpace " + GlobalData::LipidSpace_version + " was launched");

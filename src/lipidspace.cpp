@@ -7,7 +7,7 @@ void LipidSpace::create_dendrogram(){
     lipid_sortings.clear();
 
     set<DendrogramNode*> nodes;
-    for (int i = 0; i < hausdorff_distances.rows; ++i) nodes.insert(new DendrogramNode(i, &study_variable_values, selected_lipidomes[i]));
+    for (int i = 0; i < hausdorff_distances.rows; ++i) nodes.insert(new DendrogramNode(i, &study_variable_values, selected_lipidomes.at(i)));
     for (auto node : nodes) node->update_distances(nodes, hausdorff_distances);
 
     while (nodes.size() > 1){
@@ -58,15 +58,15 @@ void LipidSpace::create_dendrogram(){
             string variable_name = kv.first;
             StudyVariable &study_variable = kv.second;
             if (study_variable.study_variable_type == NominalStudyVariable){
-                if (!study_variable_values[variable_name].nominal_values[study_variable.nominal_value]){
+                if (!study_variable_values.at(variable_name).nominal_values.at(study_variable.nominal_value)){
                     select_lipidome = false;
                     break;
                 }
             }
             else {
                 double numerical_value = study_variable.numerical_value;
-                auto filter = study_variable_values[variable_name].numerical_filter.first;
-                auto filter_values = study_variable_values[variable_name].numerical_filter.second;
+                auto filter = study_variable_values.at(variable_name).numerical_filter.first;
+                auto filter_values = study_variable_values.at(variable_name).numerical_filter.second;
                 switch (filter){
 
                     case LessFilter: // inverse logic, Less tells us, what to keep, greater we filter out
@@ -105,7 +105,7 @@ void LipidSpace::create_dendrogram(){
         }
 
 
-        if (select_lipidome && contains_val(selection[3], lipidome_name) && selection[3][lipidome_name]){
+        if (select_lipidome && contains_val(selection[3], lipidome_name) && selection[3].at(lipidome_name)){
             lipidomes_for_feature_selection.push_back(lipidome);
         }
     }
@@ -113,10 +113,10 @@ void LipidSpace::create_dendrogram(){
     // setting up lipid to column in matrix map
     for (auto lipidome : lipidomes_for_feature_selection){
         for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            LipidAdduct* lipid = lipidome->lipids[i];
+            LipidAdduct* lipid = lipidome->lipids.at(i);
             if (uncontains_val(lipid_map, lipid)){
                 lipid_map.insert({lipid, lipid_map.size()});
-                lipid_name_map.insert({lipidome->species[i], lipid_name_map.size()});
+                lipid_name_map.insert({lipidome->species.at(i), lipid_name_map.size()});
             }
         }
     }
@@ -124,9 +124,9 @@ void LipidSpace::create_dendrogram(){
     // set up matrix for multiple linear regression
     global_matrix.reset(lipidomes_for_feature_selection.size(), lipid_map.size());
     for (uint r = 0; r < lipidomes_for_feature_selection.size(); ++r){
-        Lipidome* lipidome = lipidomes_for_feature_selection[r];
+        Lipidome* lipidome = lipidomes_for_feature_selection.at(r);
         for (uint i = 0; i < lipidome->lipids.size(); ++i){
-            global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+            global_matrix(r, lipid_map.at(lipidome->lipids.at(i))) = lipidome->normalized_intensities.at(i);
         }
     }
 
@@ -136,7 +136,7 @@ void LipidSpace::create_dendrogram(){
     for (int c = 0; c < global_matrix.cols; c++){
         double m = 0;
         double n = 0;
-        double* row = &(global_matrix.m[c * global_matrix.rows]);
+        double* row = &(global_matrix.m.at(c * global_matrix.rows));
         for (int r = 0; r < global_matrix.rows; ++r){
             if (row[r] <= 1e-15) continue;
             m += row[r];
@@ -152,7 +152,7 @@ void LipidSpace::create_dendrogram(){
     for (auto kv : lipid_name_map){
         int c = kv.second;
         Array values;
-        double* row = &(global_matrix.m[c * global_matrix.rows]);
+        double* row = &(global_matrix.m.at(c * global_matrix.rows));
         for (int r = 0; r < global_matrix.rows; ++r){
             if (row[r] > 1e-15) values.push_back(row[r]);
 
@@ -166,7 +166,7 @@ void LipidSpace::create_dendrogram(){
     }
     CVs.sort_desc();
     lipid_sortings.insert({"Coefficient of Variation (Desc)", SortVector<string, double>()});
-    vector<pair<string, double>> &CVh = lipid_sortings["Coefficient of Variation (Desc)"];
+    vector<pair<string, double>> &CVh = lipid_sortings.at("Coefficient of Variation (Desc)");
     for (auto cv : CVs) CVh.push_back({cv.second, cv.first});
 
 
@@ -179,25 +179,23 @@ void LipidSpace::create_dendrogram(){
         SortVector<double, string> regression_result;
         map<string, double> nominal_target_values;
         int nom_counter = 0;
-        bool is_nominal = study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+        if (uncontains_val(study_variable_values, target_variable)) return;
 
-        if (uncontains_val(study_variable_values, target_variable)){
-            return;
-        }
+        bool is_nominal = study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
 
         // setup array for target variable values, if nominal then each with incrementing number
         if (is_nominal){
             for (auto lipidome : lipidomes_for_feature_selection){
-                string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+                string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                 }
-                target_values.push_back(nominal_target_values[nominal_value]);
+                target_values.push_back(nominal_target_values.at(nominal_value));
             }
         }
         else {
             for (auto lipidome : lipidomes_for_feature_selection){
-                target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
+                target_values.push_back(lipidome->study_variables.at(target_variable).numerical_value);
             }
         }
 
@@ -212,7 +210,7 @@ void LipidSpace::create_dendrogram(){
                 for (int r = 0; r < global_matrix.rows; ++r){
                     if (global_matrix(r, c) <= 1e-15) continue;
                     num_lipid_in_lipidomes += 1;
-                    arrays[target_values[r]].push_back(global_matrix(r, c));
+                    arrays.at(target_values.at(r)).push_back(global_matrix(r, c));
                 }
 
                 double acc = compute_accuracy(arrays);
@@ -222,22 +220,22 @@ void LipidSpace::create_dendrogram(){
                 regression_result.push_back({score, kv.first});
             }
             else {
-                double mx = mx_values[c];
+                double mx = mx_values.at(c);
                 double my = 0, ny = 0;
                 // computing the study variable mean based on missing values of lipids
                 for (int r = 0; r < global_matrix.rows; ++r){
                     if (global_matrix(r, c) <= 1e-15) continue;
-                    my += target_values[r];
+                    my += target_values.at(r);
                     ny += 1;
                 }
                 my /= ny;
 
                 // estimate slope and intercept factors for linear regression
                 double slope_num = 0, slope_denom = 0;
-                double* row = &(global_matrix.m[c * global_matrix.rows]);
+                double* row = &(global_matrix.m.at(c * global_matrix.rows));
                 for (int r = 0; r < global_matrix.rows; ++r){
                     if (global_matrix(r, c) <= 1e-15) continue;
-                    slope_num += (row[r] - mx) * (target_values[r] - my);
+                    slope_num += (row[r] - mx) * (target_values.at(r) - my);
                     slope_denom += sq(row[r] - mx);
                 }
                 double slope = slope_num / slope_denom;
@@ -247,8 +245,8 @@ void LipidSpace::create_dendrogram(){
                 double SQR = 0, SQT = 0;
                 for (int r = 0; r < global_matrix.rows; ++r){
                     if (global_matrix(r, c) <= 1e-15) continue;
-                    SQR += sq(target_values[r] - (slope * row[r] + intercept));
-                    SQT += sq(target_values[r] - my);
+                    SQR += sq(target_values.at(r) - (slope * row[r] + intercept));
+                    SQT += sq(target_values.at(r) - my);
                 }
                 double R2 = 1. - SQR / SQT;
                 regression_result.push_back({R2, kv.first});
@@ -260,7 +258,7 @@ void LipidSpace::create_dendrogram(){
         regression_result.sort_desc();
         string target_regression_classification = target_variable + (is_nominal ? " classification" : " regression") + " (Desc)";
         lipid_sortings.insert({target_regression_classification, SortVector<string, double>()});
-        SortVector<string, double> &regression_vector = lipid_sortings[target_regression_classification];
+        SortVector<string, double> &regression_vector = lipid_sortings.at(target_regression_classification);
         for (auto kv_reg : regression_result) regression_vector.push_back({kv_reg.second, kv_reg.first});
 
     }
@@ -277,10 +275,9 @@ LipidSpace::LipidSpace() {
     unboundend_distance = false;
     without_quant = false;
     global_lipidome = new Lipidome("global_lipidome", "");
-    progress = 0;
+    progress = nullptr;
     analysis_finished = false;
-    dendrogram_root = 0;
-    process_type = NoAnalysis;
+    dendrogram_root = nullptr;
     target_variable = "";
     study_variable_values.insert({FILE_STUDY_VARIABLE_NAME, StudyVariableSet(FILE_STUDY_VARIABLE_NAME, NominalStudyVariable)});
     group_lipidomes.insert({FILE_STUDY_VARIABLE_NAME, vector<Lipidome*>()});
@@ -312,7 +309,7 @@ LipidSpace::LipidSpace() {
 
 LipidSpace::LipidSpace(LipidSpace *ls){
     progress = ls->progress;
-    dendrogram_root = 0;
+    dendrogram_root = nullptr;
 
     for (auto kv : ls->class_matrix) class_matrix.insert({kv.first, pair<int, int>{kv.second.first, kv.second.second}});
     for (auto kv : ls->all_lipids) all_lipids.insert({kv.first, new LipidAdduct(kv.second)});
@@ -324,7 +321,7 @@ LipidSpace::LipidSpace(LipidSpace *ls){
     map<Lipidome*, Lipidome*> lipidome_map;
     for (auto lipidome : ls->lipidomes){
         Lipidome *new_lipidome = new Lipidome(lipidome);
-        for (auto species : new_lipidome->species) new_lipidome->lipids.push_back(all_lipids[species]);
+        for (auto species : new_lipidome->species) new_lipidome->lipids.push_back(all_lipids.at(species));
         lipidomes.push_back(new_lipidome);
         lipidome_map.insert({lipidome, new_lipidome});
     }
@@ -341,9 +338,8 @@ LipidSpace::LipidSpace(LipidSpace *ls){
     for (int i = 0; i < 4; ++i){
         for (auto kv : ls->selection[i]) selection[i].insert({kv.first, kv.second});
     }
-    for (auto lipidome : ls->selected_lipidomes) selected_lipidomes.push_back(lipidome_map[lipidome]);
+    for (auto lipidome : ls->selected_lipidomes) selected_lipidomes.push_back(lipidome_map.at(lipidome));
     global_distances.rewrite(ls->global_distances);
-    process_type = ls->process_type;
     target_variable = ls->target_variable;
     for (auto value : ls->registered_lipid_classes) registered_lipid_classes.insert(value);
 }
@@ -747,8 +743,8 @@ void LipidSpace::lipid_similarity(LipidAdduct* lipid1, LipidAdduct* lipid2, int&
     if (uncontains_val(class_matrix, key)){
         throw LipidSpaceException("Error: key '" + key + "' not in precomputed class matrix. Please check the log message.", LipidNotRegistered);
     }
-    union_num = class_matrix[key].first;
-    inter_num = class_matrix[key].second;
+    union_num = class_matrix.at(key).first;
+    inter_num = class_matrix.at(key).second;
 
     if (lipid1->lipid->info->level <= CLASS || lipid2->lipid->info->level <= CLASS) return;
 
@@ -909,7 +905,7 @@ void LipidSpace::reassembleSelection(){
         if (kv.second.study_variable_type == NominalStudyVariable){
             if (uncontains_val(delete_nominal_study_variables, kv.first)) delete_nominal_study_variables.insert({kv.first, set<string>()});
             for (auto kv_nom : kv.second.nominal_values){
-                delete_nominal_study_variables[kv.first].insert(kv_nom.first);
+                delete_nominal_study_variables.at(kv.first).insert(kv_nom.first);
             }
         }
     }
@@ -918,19 +914,19 @@ void LipidSpace::reassembleSelection(){
     for (auto lipidome : lipidomes){
         for (auto kv : lipidome->study_variables){
             if (contains_val(delete_nominal_study_variables, kv.first) && kv.second.study_variable_type == NominalStudyVariable){
-                delete_nominal_study_variables[kv.first].erase(kv.second.nominal_value);
+                delete_nominal_study_variables.at(kv.first).erase(kv.second.nominal_value);
             }
         }
     }
 
     // delete remaining study_variable values or even whole study_variables
     for (auto kv : delete_nominal_study_variables){
-        if (kv.second.size() == study_variable_values[kv.first].nominal_values.size()){ // delete whole study_variable
+        if (kv.second.size() == study_variable_values.at(kv.first).nominal_values.size()){ // delete whole study_variable
             study_variable_values.erase(kv.first);
         }
         else { // delete just the values
-            for (auto study_variable_value : delete_nominal_study_variables[kv.first]){
-                study_variable_values[kv.first].nominal_values.erase(study_variable_value);
+            for (auto study_variable_value : delete_nominal_study_variables.at(kv.first)){
+                study_variable_values.at(kv.first).nominal_values.erase(study_variable_value);
             }
         }
     }
@@ -965,11 +961,11 @@ void LipidSpace::reassembleSelection(){
     }
 
     for (auto lipid_name : lipid_names_to_delete){
-        if (contains_val(lipid_name_translations[NORMALIZED_NAME], lipid_name_translations[TRANSLATED_NAME][lipid_name])){
-            lipid_name_translations[NORMALIZED_NAME].erase(lipid_name_translations[TRANSLATED_NAME][lipid_name]);
+        if (contains_val(lipid_name_translations[NORMALIZED_NAME], lipid_name_translations[TRANSLATED_NAME].at(lipid_name))){
+            lipid_name_translations[NORMALIZED_NAME].erase(lipid_name_translations[TRANSLATED_NAME].at(lipid_name));
         }
-        if (contains_val(lipid_name_translations[NORMALIZED_NAME], lipid_name_translations[IMPORT_NAME][lipid_name])){
-            lipid_name_translations[NORMALIZED_NAME].erase(lipid_name_translations[IMPORT_NAME][lipid_name]);
+        if (contains_val(lipid_name_translations[NORMALIZED_NAME], lipid_name_translations[IMPORT_NAME].at(lipid_name))){
+            lipid_name_translations[NORMALIZED_NAME].erase(lipid_name_translations[IMPORT_NAME].at(lipid_name));
         }
 
         lipid_name_translations[TRANSLATED_NAME].erase(lipid_name);
@@ -1029,7 +1025,7 @@ void LipidSpace::load_list(string lipid_list_file){
         if (study_variable_values.size() > 1){
             throw LipidSpaceException("Study variables have been loaded. Lists do not supported any study variable import routine. Please reset LipidSpace.", StudyVariableNotRegistered);
         }
-        study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values.insert({lipidome->study_variables[FILE_STUDY_VARIABLE_NAME].nominal_value, true});
+        study_variable_values.at(FILE_STUDY_VARIABLE_NAME).nominal_values.insert({lipidome->study_variables.at(FILE_STUDY_VARIABLE_NAME).nominal_value, true});
 
 
         lipidomes.push_back(lipidome);
@@ -1069,7 +1065,7 @@ void LipidSpace::compute_PCA_variances(Matrix &m, Array &a){
         total_var += var;
     }
     total_var = 1. / total_var;
-    for (int c = 0; c < m.cols; c++) a[c] *= total_var;
+    for (int c = 0; c < m.cols; c++) a.at(c) *= total_var;
 }
 
 
@@ -1099,16 +1095,16 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
             if (y >= 0){
                 const double* m1col = m1.data() + (y * rows);
                 dist1 = compute_l2_norm(m1col, m2col, rows);
-                if (dist1 < U[y]) U[y] = dist1;
+                if (dist1 < U.at(y)) U.at(y) = dist1;
             }
 
             if (z < m1.cols) {
                 const double* m1col = m1.data() + (z * rows);
                 dist2 = compute_l2_norm(m1col, m2col, rows);
-                if (dist2 < U[z]) U[z] = dist2;
+                if (dist2 < U.at(z)) U.at(z) = dist2;
             }
             double dist = __min(dist1, dist2);
-            if (dist < V[x]) V[x] = dist;
+            if (dist < V.at(x)) V.at(x) = dist;
             cmin = __min(cmin, dist);
 
             if (cmin <= cmax){
@@ -1121,7 +1117,7 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
 
     Indexes Ai;
     for (uint i = 0; i < U.size(); ++i){
-        if (U[i] > cmax) Ai.push_back(i);
+        if (U.at(i) > cmax) Ai.push_back(i);
     }
 
     isp = m2.cols >> 1;
@@ -1135,13 +1131,13 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
             if (y >= 0){
                 const double* m2col = m2.data() + (y * rows);
                 dist1 = compute_l2_norm(m1col, m2col, rows);
-                if (dist1 < V[y]) V[y] = dist1;
+                if (dist1 < V.at(y)) V.at(y) = dist1;
             }
 
             if (z < m2.cols) {
                 const double* m2col = m2.data() + (z * rows);
                 dist2 = compute_l2_norm(m1col, m2col, rows);
-                if (dist2 < V[z]) V[z] = dist2;
+                if (dist2 < V.at(z)) V.at(z) = dist2;
             }
 
             cmin = __min(__min(dist1, dist2), cmin);
@@ -1156,7 +1152,7 @@ double LipidSpace::compute_hausdorff_distance(Matrix &m1, Matrix &m2){
 
     Indexes Bi;
     for (uint i = 0; i < V.size(); ++i){
-        if (V[i] > cmax) Bi.push_back(i);
+        if (V.at(i) > cmax) Bi.push_back(i);
     }
 
     isp = m1.cols >> 1;
@@ -1227,7 +1223,7 @@ void LipidSpace::compute_hausdorff_matrix(){
         int i = (int)(pairs[ii] >> 32);
         int j = (int)(pairs[ii] & MASK32);
 
-        double hd = sqrt(compute_hausdorff_distance(*matrixes[i], *matrixes[j]));
+        double hd = sqrt(compute_hausdorff_distance(*matrixes.at(i), *matrixes.at(j)));
         hausdorff_distances(i, j) = hd;
         hausdorff_distances(j, i) = hd;
     }
@@ -1250,11 +1246,11 @@ void LipidSpace::report_hausdorff_matrix(string output_folder){
     int n = hausdorff_distances.rows;
     off << "ID";
     for (int i = 0; i < n; ++i){
-        off << "\t" << selected_lipidomes[i]->cleaned_name;
+        off << "\t" << selected_lipidomes.at(i)->cleaned_name;
     } off << endl;
 
     for (int i = 0; i < n; ++i){
-        off << selected_lipidomes[i]->cleaned_name;
+        off << selected_lipidomes.at(i)->cleaned_name;
         for (int j = 0; j < n; ++j){
             off << "\t" << hausdorff_distances(i, j);
         } off << endl;
@@ -1284,7 +1280,7 @@ int LipidSpace::compute_global_distance_matrix(){
 
     for (auto lipidome : lipidomes){
         // check if lipidome was (de)selected for analysis
-        if (!selection[SAMPLE_ITEM][lipidome->cleaned_name]){
+        if (!selection[SAMPLE_ITEM].at(lipidome->cleaned_name)){
             continue;
         }
 
@@ -1292,16 +1288,16 @@ int LipidSpace::compute_global_distance_matrix(){
         bool filtered_out = false;
         for (auto kv : lipidome->study_variables){
             if (kv.second.study_variable_type == NominalStudyVariable){
-                if (uncontains_val(study_variable_values, kv.first) || uncontains_val(study_variable_values[kv.first].nominal_values, kv.second.nominal_value) || !study_variable_values[kv.first].nominal_values[kv.second.nominal_value]) {
+                if (uncontains_val(study_variable_values, kv.first) || uncontains_val(study_variable_values.at(kv.first).nominal_values, kv.second.nominal_value) || !study_variable_values.at(kv.first).nominal_values.at(kv.second.nominal_value)) {
                     filtered_out = true;
                     break;
                 }
             }
             else {
                 if (uncontains_val(study_variable_values, kv.first)) continue;
-                vector<double> &filter_values = study_variable_values[kv.first].numerical_filter.second;
+                vector<double> &filter_values = study_variable_values.at(kv.first).numerical_filter.second;
                 double numerical_value = kv.second.numerical_value;
-                switch (study_variable_values[kv.first].numerical_filter.first){
+                switch (study_variable_values.at(kv.first).numerical_filter.first){
 
                     case LessFilter: // inverse logic, Less tells us, what to keep, greater we filter out
                         if (filter_values.size() < 1) continue;
@@ -1346,9 +1342,9 @@ int LipidSpace::compute_global_distance_matrix(){
             // check if entities already exist in their corresponding sets,
             // check if entity is selected and add them if it is
             if (contains_val(registered_lipids, lipid_species)) continue;
-            if (!selection[SPECIES_ITEM][lipid_species]) continue;
-            if (!selection[CLASS_ITEM][lipid_class]) continue;
-            if (!selection[CATEGORY_ITEM][lipid_category]) continue;
+            if (!selection[SPECIES_ITEM].at(lipid_species)) continue;
+            if (!selection[CLASS_ITEM].at(lipid_class)) continue;
+            if (!selection[CATEGORY_ITEM].at(lipid_category)) continue;
             registered_lipids.insert(lipid_species);
 
             // add lipid data to global lipidome
@@ -1447,14 +1443,14 @@ void LipidSpace::separate_matrixes(){
     for (auto lipidome : selected_lipidomes){
         Indexes selected_lipid_indexes;
         for (int i = 0; i < (int)lipidome->species.size(); ++i){
-            string lipid_species = lipidome->species[i];
-            lipidome->normalized_intensities.push_back(lipidome->original_intensities[i]);
-            if (!(selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species))) continue;
+            string lipid_species = lipidome->species.at(i);
+            lipidome->normalized_intensities.push_back(lipidome->original_intensities.at(i));
+            if (!(selection[SPECIES_ITEM].at(lipid_species) && contains_val(lipid_indexes, lipid_species))) continue;
             selected_lipid_indexes.push_back(lipid_indexes.at(lipid_species));
             lipidome->selected_lipid_indexes.push_back(i);
-            lipidome->visualization_intensities.push_back(lipidome->original_intensities[i]);
-            lipidome->PCA_intensities.push_back(lipidome->original_intensities[i]);
-            if (contains_val(global_lipid_intensities, lipid_species)) global_lipid_intensities[lipid_species].push_back(lipidome->original_intensities[i]);
+            lipidome->visualization_intensities.push_back(lipidome->original_intensities.at(i));
+            lipidome->PCA_intensities.push_back(lipidome->original_intensities.at(i));
+            if (contains_val(global_lipid_intensities, lipid_species)) global_lipid_intensities.at(lipid_species).push_back(lipidome->original_intensities.at(i));
         }
         if (selected_lipid_indexes.size() > 0){
             lipidome->m.rewrite(global_lipidome->m, selected_lipid_indexes);
@@ -1464,29 +1460,29 @@ void LipidSpace::separate_matrixes(){
         }
         l++;
     }
-    for (int i = (int)remove_lipidomes.size() - 1; i >= 0; --i) selected_lipidomes.erase(selected_lipidomes.begin() + remove_lipidomes[i]);
+    for (int i = (int)remove_lipidomes.size() - 1; i >= 0; --i) selected_lipidomes.erase(selected_lipidomes.begin() + remove_lipidomes.at(i));
 
 
     // compute mean intensities for global lipidome
     for (uint i = 0; i < global_lipidome->lipids.size(); ++i){
-        string lipid_species = global_lipidome->species[i];
-        global_lipidome->original_intensities[i] = global_lipid_intensities[lipid_species].mean();
-        global_lipidome->normalized_intensities[i] = global_lipid_intensities[lipid_species].mean();
+        string lipid_species = global_lipidome->species.at(i);
+        global_lipidome->original_intensities.at(i) = global_lipid_intensities.at(lipid_species).mean();
+        global_lipidome->normalized_intensities.at(i) = global_lipid_intensities.at(lipid_species).mean();
     }
 
     for (auto &kv_study_var : study_variable_values){
-        for (auto kv : study_variable_values[kv_study_var.first].nominal_values){
+        for (auto kv : study_variable_values.at(kv_study_var.first).nominal_values){
             if (!kv.second) continue;
 
             string var_value = kv.first;
             Lipidome* group_lipidome = new Lipidome("'" + kv_study_var.first + "' group lipidome - " + var_value, "");
             set<int> selected_lipid_indexes_set;
             for (auto lipidome : selected_lipidomes){
-                if (lipidome->study_variables[kv_study_var.first].nominal_value != var_value) continue;
+                if (lipidome->study_variables.at(kv_study_var.first).nominal_value != var_value) continue;
 
                 for (int i = 0; i < (int)lipidome->species.size(); ++i){
-                    string lipid_species = lipidome->species[i];
-                    if (!(selection[SPECIES_ITEM][lipid_species] && contains_val(lipid_indexes, lipid_species))) continue;
+                    string lipid_species = lipidome->species.at(i);
+                    if (!(selection[SPECIES_ITEM].at(lipid_species) && contains_val(lipid_indexes, lipid_species))) continue;
                     selected_lipid_indexes_set.insert(lipid_indexes.at(lipid_species));
                 }
             }
@@ -1497,10 +1493,10 @@ void LipidSpace::separate_matrixes(){
                 Indexes selected_lipid_indexes;
                 for (int i : selected_lipid_indexes_set){
                     selected_lipid_indexes.push_back(i);
-                    group_lipidome->lipids.push_back(global_lipidome->lipids[i]);
-                    group_lipidome->species.push_back(global_lipidome->species[i]);
-                    group_lipidome->classes.push_back(global_lipidome->classes[i]);
-                    group_lipidome->categories.push_back(global_lipidome->categories[i]);
+                    group_lipidome->lipids.push_back(global_lipidome->lipids.at(i));
+                    group_lipidome->species.push_back(global_lipidome->species.at(i));
+                    group_lipidome->classes.push_back(global_lipidome->classes.at(i));
+                    group_lipidome->categories.push_back(global_lipidome->categories.at(i));
 
                 }
                 int n = group_lipidome->lipids.size();
@@ -1512,7 +1508,7 @@ void LipidSpace::separate_matrixes(){
                 group_lipidome->m.rewrite(global_lipidome->m, selected_lipid_indexes);
 
                 if (uncontains_val(group_lipidomes, kv_study_var.first)) group_lipidomes.insert({kv_study_var.first, vector<Lipidome*>()});
-                group_lipidomes[kv_study_var.first].push_back(group_lipidome);
+                group_lipidomes.at(kv_study_var.first).push_back(group_lipidome);
             }
         }
     }
@@ -1536,10 +1532,10 @@ void LipidSpace::normalize_intensities(){
 
     if (global_lipidome->lipids.size() >= 3){
         for (int i = 0; i < n; ++i){
-            global_mean += global_lipidome->m.m[i];
+            global_mean += global_lipidome->m.m.at(i);
         }
         global_mean /= (double)n;
-        for (int i = 0; i < n; ++i) global_stdev += sq(global_lipidome->m.m[i] - global_mean);
+        for (int i = 0; i < n; ++i) global_stdev += sq(global_lipidome->m.m.at(i) - global_mean);
         global_stdev = sqrt(global_stdev / (double)n);
     }
     else {
@@ -1561,7 +1557,7 @@ void LipidSpace::normalize_intensities(){
         for (auto lipidome : selected_lipidomes){
 
             for (uint i = 0; i < lipidome->PCA_intensities.size(); ++i){
-                lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
+                lipidome->PCA_intensities.at(i) = global_stdev * (lipidome->PCA_intensities.at(i) - values_mean) / values_std;
             }
         }
     }
@@ -1576,11 +1572,11 @@ void LipidSpace::normalize_intensities(){
             double values_std = data.stdev();
             if (values_std < 1e-19) continue;
             for (uint i = 0; i < lipidome->normalized_intensities.size(); ++i){
-                lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
+                lipidome->normalized_intensities.at(i) = global_stdev * lipidome->normalized_intensities.at(i) / values_std;
             }
 
             for (uint i = 0; i < lipidome->PCA_intensities.size(); ++i){
-                lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
+                lipidome->PCA_intensities.at(i) = global_stdev * (lipidome->PCA_intensities.at(i) - values_mean) / values_std;
                 //lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
             }
         }
@@ -1608,11 +1604,11 @@ void LipidSpace::normalize_intensities(){
                 if (uncontains_val(lipidome->study_variables, fv) || lipidome->study_variables.at(fv).nominal_value != kv.first) continue;
 
                 for (int i = 0; i < (int)lipidome->normalized_intensities.size(); ++i){
-                    lipidome->normalized_intensities[i] = global_stdev * lipidome->normalized_intensities[i] / values_std;
+                    lipidome->normalized_intensities.at(i) = global_stdev * lipidome->normalized_intensities.at(i) / values_std;
                 }
 
                 for (int i = 0; i < (int)lipidome->PCA_intensities.size(); ++i){
-                    lipidome->PCA_intensities[i] = global_stdev * (lipidome->PCA_intensities[i] - values_mean) / values_std;
+                    lipidome->PCA_intensities.at(i) = global_stdev * (lipidome->PCA_intensities.at(i) - values_mean) / values_std;
                     //lipidome->visualization_intensities[i] = 100. * lipidome->visualization_intensities[i] / values_std;
                 }
             }
@@ -1622,17 +1618,17 @@ void LipidSpace::normalize_intensities(){
 
     for (auto lipidome : selected_lipidomes){
         for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
-            int index = lipidome->selected_lipid_indexes[i];
-            max_value = max(max_value, lipidome->normalized_intensities[index]);
+            int index = lipidome->selected_lipid_indexes.at(i);
+            max_value = max(max_value, lipidome->normalized_intensities.at(index));
         }
     }
 
 
     for (auto lipidome : selected_lipidomes){
         for (int i = 0; i < (int)lipidome->visualization_intensities.size(); ++i){
-            int index = lipidome->selected_lipid_indexes[i];
+            int index = lipidome->selected_lipid_indexes.at(i);
             //lipidome->visualization_intensities[i] = max(10 * log(lipidome->normalized_intensities[index] / max_value + 1.), 0.2);
-            lipidome->visualization_intensities[i] = max(10 * sqrt(sqrt(lipidome->normalized_intensities[index] / max_value)), 0.2);
+            lipidome->visualization_intensities.at(i) = max(10 * sqrt(sqrt(lipidome->normalized_intensities.at(index) / max_value)), 0.2);
         }
     }
 
@@ -1652,47 +1648,36 @@ void LipidSpace::normalize_intensities(){
             for (auto lipid_species : global_lipidome->species) group_vis_intensities.insert({lipid_species, Array()});
 
             for (auto lipidome : selected_lipidomes){
-                if (uncontains_val(lipidome->study_variables, group_kv.first) || "'" + group_kv.first + "' group lipidome - " + lipidome->study_variables[group_kv.first].nominal_value != group_lipidome->cleaned_name) continue;
+                if (uncontains_val(lipidome->study_variables, group_kv.first) || "'" + group_kv.first + "' group lipidome - " + lipidome->study_variables.at(group_kv.first).nominal_value != group_lipidome->cleaned_name) continue;
 
 
 
                 for (uint i = 0; i < lipidome->selected_lipid_indexes.size(); ++i){
-                    string lipid_species = lipidome->species[lipidome->selected_lipid_indexes[i]];
-                    group_vis_intensities[lipid_species].push_back(lipidome->visualization_intensities[i]);
-                    global_vis_intensities[lipid_species].push_back(lipidome->visualization_intensities[i]);
-                }
+                    string lipid_species = lipidome->species.at(lipidome->selected_lipid_indexes.at(i));
+                    group_vis_intensities.at(lipid_species).push_back(lipidome->visualization_intensities.at(i));
+                    global_vis_intensities.at(lipid_species).push_back(lipidome->visualization_intensities.at(i));
 
-                for (uint i = 0; i < lipidome->normalized_intensities.size(); ++i){
-                    string lipid_species = lipidome->species[i];
-                    group_norm_intensities[lipid_species].push_back(lipidome->normalized_intensities[i]);
-                    global_norm_intensities[lipid_species].push_back(lipidome->normalized_intensities[i]);
+                    group_norm_intensities.at(lipid_species).push_back(lipidome->normalized_intensities.at(i));
+                    global_norm_intensities.at(lipid_species).push_back(lipidome->normalized_intensities.at(i));
                 }
             }
 
 
             for (uint i = 0; i < group_lipidome->selected_lipid_indexes.size(); ++i){
-                int index = group_lipidome->selected_lipid_indexes[i];
-                string lipid_species = group_lipidome->species[index];
-                group_lipidome->visualization_intensities[i] = group_vis_intensities[lipid_species].mean();
-            }
-
-            for (uint i = 0; i < group_lipidome->normalized_intensities.size(); ++i){
-                string lipid_species = group_lipidome->species[i];
-                group_lipidome->normalized_intensities[i] = group_norm_intensities[lipid_species].mean();
+                int index = group_lipidome->selected_lipid_indexes.at(i);
+                string lipid_species = group_lipidome->species.at(index);
+                group_lipidome->visualization_intensities.at(i) = group_vis_intensities.at(lipid_species).mean();
+                group_lipidome->normalized_intensities.at(i) = group_norm_intensities.at(lipid_species).mean();
             }
         }
     }
 
 
     for (uint i = 0; i < global_lipidome->selected_lipid_indexes.size(); ++i){
-        int index = global_lipidome->selected_lipid_indexes[i];
-        string lipid_species = global_lipidome->species[index];
-        global_lipidome->visualization_intensities[i] = global_vis_intensities[lipid_species].mean();
-    }
-
-    for (uint i = 0; i < global_lipidome->normalized_intensities.size(); ++i){
-        string lipid_species = global_lipidome->species[i];
-        global_lipidome->normalized_intensities[i] = global_norm_intensities[lipid_species].mean();
+        int index = global_lipidome->selected_lipid_indexes.at(i);
+        string lipid_species = global_lipidome->species.at(index);
+        global_lipidome->visualization_intensities.at(i) = global_vis_intensities.at(lipid_species).mean();
+        global_lipidome->normalized_intensities.at(i) = global_norm_intensities.at(lipid_species).mean();
     }
 }
 
@@ -1771,11 +1756,11 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         loaded_lipidomes.resize(sample_number, 0);
                     }
                     if (loaded_lipidomes.at(sample_number - 1)){
-                        loaded_lipidomes[sample_number - 1]->file_name = sample_name;
-                        loaded_lipidomes[sample_number - 1]->cleaned_name = sample_name;
+                        loaded_lipidomes.at(sample_number - 1)->file_name = sample_name;
+                        loaded_lipidomes.at(sample_number - 1)->cleaned_name = sample_name;
                     }
                     else {
-                        loaded_lipidomes[sample_number - 1] = new Lipidome(sample_name, mzTabM_file);
+                        loaded_lipidomes.at(sample_number - 1) = new Lipidome(sample_name, mzTabM_file);
                     }
                 }
 
@@ -1793,7 +1778,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
 
                     if ((int)loaded_lipidomes.size() < sample_number){
                         loaded_lipidomes.resize(sample_number, 0);
-                        loaded_lipidomes[sample_number - 1] = new Lipidome("-", mzTabM_file);
+                        loaded_lipidomes.at(sample_number - 1) = new Lipidome("-", mzTabM_file);
                     }
 
                     int content_number = extract_number(sample_data->at(1), line_num);
@@ -1811,8 +1796,8 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         if (uncontains_val(study_variable_names, content_number)){
                             study_variable_names.insert({content_number, key});
                         }
-                        else if (study_variable_names[content_number] != key){
-                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", different study variable key than already used, '" + study_variable_names[content_number] + "' vs. '" + key + "'", CorruptedFileFormat);
+                        else if (study_variable_names.at(content_number) != key){
+                            throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", different study variable key than already used, '" + study_variable_names.at(content_number) + "' vs. '" + key + "'", CorruptedFileFormat);
                         }
 
                         // is custom value a number?
@@ -1820,18 +1805,18 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                         if (is_double(value)){
                             bool is_not_missing = false;
                             double val = QString(value.c_str()).toDouble(&is_not_missing);
-                            loaded_lipidomes[sample_number - 1]->study_variables.insert({key, StudyVariable(key, val, !is_not_missing)});
+                            loaded_lipidomes.at(sample_number - 1)->study_variables.insert({key, StudyVariable(key, val, !is_not_missing)});
                             ft = NumericalStudyVariable;
                         }
                         else {
-                            loaded_lipidomes[sample_number - 1]->study_variables.insert({key, StudyVariable(key, value, contains_val(NA_VALUES, value))});
+                            loaded_lipidomes.at(sample_number - 1)->study_variables.insert({key, StudyVariable(key, value, contains_val(NA_VALUES, value))});
                         }
 
                         if (uncontains_val(study_study_variable_types, key)){
                             study_study_variable_types.insert({key, ft});
                         }
                         else {
-                            if (study_study_variable_types[key] != ft){
+                            if (study_study_variable_types.at(key) != ft){
                                 throw LipidSpaceException("Error in line " + std::to_string(line_num) + ", key of study variable '" + key + "' is already registered with different data type (string, number).", CorruptedFileFormat);
                             }
                         }
@@ -1845,7 +1830,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                             study_variable_names.insert({-1, key});
                         }
                         string value = content_tokens->at(2);
-                        loaded_lipidomes[sample_number - 1]->study_variables.insert({key, StudyVariable(key, strip(value, '"'))});
+                        loaded_lipidomes.at(sample_number - 1)->study_variables.insert({key, StudyVariable(key, strip(value, '"'))});
                     }
                     else if (content_name == "tissue"){
                         if (content_tokens->size() < 3 || content_tokens->at(2).size() == 0){
@@ -1856,7 +1841,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                             study_variable_names.insert({-2, key});
                         }
                         string value = content_tokens->at(2);
-                        loaded_lipidomes[sample_number - 1]->study_variables.insert({key, StudyVariable(key, strip(value, '"'))});
+                        loaded_lipidomes.at(sample_number - 1)->study_variables.insert({key, StudyVariable(key, strip(value, '"'))});
                     }
 
                     delete content_tokens;
@@ -1896,7 +1881,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                 LipidAdduct *l = 0;
 
                 for (uint i = 0; i < tokens->size(); ++i){
-                    StudyVariable &f = headers[i];
+                    StudyVariable &f = headers.at(i);
                     string value = tokens->at(i);
 
                     // found abundance
@@ -1977,7 +1962,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
             // add new values into existing study variables
             for (auto lipidome : loaded_lipidomes){
                 for (auto kv : lipidome->study_variables){
-                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    StudyVariableSet &fs = study_variable_values.at(kv.first);
                     if (kv.second.study_variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
@@ -1994,7 +1979,7 @@ void LipidSpace::load_mzTabM(string mzTabM_file){
                     if (uncontains_val(study_variable_values, kv.first)){
                         study_variable_values.insert({kv.first, StudyVariableSet(kv.first, kv.second.study_variable_type)});
                     }
-                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    StudyVariableSet &fs = study_variable_values.at(kv.first);
                     if (kv.second.study_variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
@@ -2092,7 +2077,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             study_variable_names_nominal.push_back(study_variable);
 
             if (mapping_data != 0 && contains_val(mapping_data->at(NominalStudyVariable), study_variable)){
-                Mapping &m = mapping_data->at(NominalStudyVariable)[study_variable];
+                Mapping &m = mapping_data->at(NominalStudyVariable).at(study_variable);
                 if (m.action == RenameAction || m.action == MappingTo) study_variable = m.mapping;
             }
             registered_study_variables.insert(study_variable);
@@ -2101,7 +2086,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             string study_variable = fth->headers.at(fi);
             study_variable_names_numerical.push_back(study_variable);
             if (mapping_data != 0 && contains_val(mapping_data->at(NumericalStudyVariable), study_variable)){
-                Mapping &m = mapping_data->at(NumericalStudyVariable)[study_variable];
+                Mapping &m = mapping_data->at(NumericalStudyVariable).at(study_variable);
                 if (m.action == RenameAction || m.action == MappingTo) study_variable = m.mapping;
             }
             registered_study_variables.insert(study_variable);
@@ -2121,7 +2106,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             string sample_name = "";
             for (int i = 0; i < (int)sample_columns.size(); ++i){
                 if (sample_name.length()) sample_name += "_";
-                sample_name += tokens.at(sample_columns[i]);
+                sample_name += tokens.at(sample_columns.at(i));
             }
             string lipid_table_name = tokens.at(lipid_species_column);
 
@@ -2147,21 +2132,21 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                 loaded_lipidomes.push_back(lipidome);
             }
             else {
-                lipidome = lipidome_map[sample_name];
+                lipidome = lipidome_map.at(sample_name);
             }
 
             // handle study variables
             for (int i = 0; i < (int)study_variable_columns_nominal.size(); ++i){
-                string study_variable_name = study_variable_names_nominal[i];
-                string study_variable_value = tokens.at(study_variable_columns_nominal[i]);
+                string study_variable_name = study_variable_names_nominal.at(i);
+                string study_variable_value = tokens.at(study_variable_columns_nominal.at(i));
 
                 if (contains_val(NA_VALUES, study_variable_value)) study_variable_value = NO_VALUE_CHAR;
 
                 if (mapping_data != 0 && contains_val(mapping_data->at(NominalStudyVariable), study_variable_name) && contains_val(mapping_data->at(NominalValue), study_variable_name + "/" + study_variable_value)){
-                    Mapping &mn = mapping_data->at(NominalStudyVariable)[study_variable_name];
+                    Mapping &mn = mapping_data->at(NominalStudyVariable).at(study_variable_name);
                     if (mn.action == RenameAction || mn.action == MappingTo) study_variable_name = mn.mapping;
 
-                    Mapping &mv = mapping_data->at(NominalValue)[study_variable_name + "/" + study_variable_value];
+                    Mapping &mv = mapping_data->at(NominalValue).at(study_variable_name + "/" + study_variable_value);
                     if (mv.action == RenameAction || mv.action == MappingTo) study_variable_value = mv.mapping;
                 }
                 lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, contains_val(NA_VALUES, study_variable_value))});
@@ -2169,11 +2154,11 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             }
             for (int i = 0; i < (int)study_variable_columns_numerical.size(); ++i){
                 bool is_not_missing = false;
-                string study_variable_name = study_variable_names_numerical[i];
-                double study_variable_value = QString(tokens.at(study_variable_columns_numerical[i]).c_str()).toDouble(&is_not_missing);
+                string study_variable_name = study_variable_names_numerical.at(i);
+                double study_variable_value = QString(tokens.at(study_variable_columns_numerical.at(i)).c_str()).toDouble(&is_not_missing);
 
                 if (mapping_data != 0 && contains_val(mapping_data->at(NumericalStudyVariable), study_variable_name)){
-                    Mapping &m = mapping_data->at(NumericalStudyVariable)[study_variable_name];
+                    Mapping &m = mapping_data->at(NumericalStudyVariable).at(study_variable_name);
                     if (m.action == RenameAction || m.action == MappingTo) study_variable_name = m.mapping;
                 }
 
@@ -2224,11 +2209,11 @@ void LipidSpace::load_flat_table(ImportData *import_data){
 
                 if (contains_val(all_lipids, lipid_name)){
                     delete l;
-                    l = all_lipids[lipid_name];
+                    l = all_lipids.at(lipid_name);
                 }
                 else if (contains_val(lipid_map, lipid_name)){
                     delete l;
-                    l = lipid_map[lipid_name];
+                    l = lipid_map.at(lipid_name);
                 }
                 else {
                     lipid_map.insert({lipid_name, l});
@@ -2250,7 +2235,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
 
             }
             else {
-                l = load_lipids[lipid_table_name];
+                l = load_lipids.at(lipid_table_name);
                 lipid_name = l->get_lipid_string();
             }
 
@@ -2310,7 +2295,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
                     study_variable_values.insert({study_variable_name, StudyVariableSet(study_variable_name, NumericalStudyVariable)});
-                    if (is_not_missing) study_variable_values[study_variable_name].numerical_values.insert(study_variable_value);
+                    if (is_not_missing) study_variable_values.at(study_variable_name).numerical_values.insert(study_variable_value);
 
                     for (auto lipidome : lipidomes){
                         lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
@@ -2338,7 +2323,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
                     study_variable_values.insert({study_variable_name, StudyVariableSet(study_variable_name, NominalStudyVariable)});
-                    study_variable_values[study_variable_name].nominal_values.insert({study_variable_value, true});
+                    study_variable_values.at(study_variable_name).nominal_values.insert({study_variable_value, true});
 
                     for (auto lipidome : lipidomes){
                         lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
@@ -2379,7 +2364,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
             for (auto lipidome : loaded_lipidomes){
                 for (auto kv : lipidome->study_variables){
 
-                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    StudyVariableSet &fs = study_variable_values.at(kv.first);
                     if (kv.second.study_variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
@@ -2398,7 +2383,7 @@ void LipidSpace::load_flat_table(ImportData *import_data){
                         study_variable_values.insert({kv.first, StudyVariableSet(kv.first, kv.second.study_variable_type)});
                     }
 
-                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    StudyVariableSet &fs = study_variable_values.at(kv.first);
                     if (kv.second.study_variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
@@ -2517,12 +2502,12 @@ void LipidSpace::load_column_table(ImportData *import_data){
                         break;
 
                     case LipidColumn:
-                        if (lipids[lipid_counter]){
+                        if (lipids.at(lipid_counter)){
                             string val = tokens.at(i);
                             if (!contains_val(NA_VALUES, val)){
                                 double value = atof(val.c_str());
                                 if (value > 0){
-                                    measurement_lipids.push_back(lipids[lipid_counter]);
+                                    measurement_lipids.push_back(lipids.at(lipid_counter));
                                     intensities.push_back(value);
                                 }
                             }
@@ -2532,17 +2517,17 @@ void LipidSpace::load_column_table(ImportData *import_data){
 
                     case StudyVariableColumnNominal:
                         {
-                            string study_variable_name = study_variables_names_nominal[study_variable_counter_nominal];
+                            string study_variable_name = study_variables_names_nominal.at(study_variable_counter_nominal);
                             string study_variable_value = tokens.at(i);
                             string study_variable_key = study_variable_name + "/" + study_variable_value;
 
                             if (contains_val(NA_VALUES, study_variable_value)) study_variable_value = NO_VALUE_CHAR;
 
                             if (mapping_data != 0 && contains_val(mapping_data->at(NominalStudyVariable), study_variable_name) && contains_val(mapping_data->at(NominalValue), study_variable_key)){
-                                Mapping &mn = mapping_data->at(NominalStudyVariable)[study_variable_name];
+                                Mapping &mn = mapping_data->at(NominalStudyVariable).at(study_variable_name);
                                 if (mn.action == RenameAction || mn.action == MappingTo) study_variable_name = mn.mapping;
 
-                                Mapping &mv = mapping_data->at(NominalValue)[study_variable_key];
+                                Mapping &mv = mapping_data->at(NominalValue).at(study_variable_key);
                                 if (mv.action == RenameAction || mv.action == MappingTo) study_variable_value = mv.mapping;
                             }
 
@@ -2555,12 +2540,12 @@ void LipidSpace::load_column_table(ImportData *import_data){
 
                     case StudyVariableColumnNumerical:
                         {
-                            string study_variable_name = study_variables_names_numerical[study_variable_counter_numerical];
+                            string study_variable_name = study_variables_names_numerical.at(study_variable_counter_numerical);
                             bool is_not_missing = false;
                             double study_variable_value = QString(tokens.at(i).c_str()).toDouble(&is_not_missing);
 
                             if (mapping_data != 0 && contains_val(mapping_data->at(NumericalStudyVariable), study_variable_name)){
-                                Mapping &m = mapping_data->at(NumericalStudyVariable)[study_variable_name];
+                                Mapping &m = mapping_data->at(NumericalStudyVariable).at(study_variable_name);
                                 if (m.action == RenameAction || m.action == MappingTo) study_variable_name = m.mapping;
                             }
                             study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
@@ -2595,7 +2580,7 @@ void LipidSpace::load_column_table(ImportData *import_data){
         registered_study_variables.insert(FILE_STUDY_VARIABLE_NAME);
         for (auto study_variable : study_variables_names_numerical){
             if (mapping_data != 0 && contains_val(mapping_data->at(NumericalStudyVariable), study_variable)){
-                Mapping &m = mapping_data->at(NumericalStudyVariable)[study_variable];
+                Mapping &m = mapping_data->at(NumericalStudyVariable).at(study_variable);
                 if (m.action == RenameAction || m.action == MappingTo) study_variable = m.mapping;
                 else if (m.action == RegisterNewNaN || m.action  == RegisterNewDefault) continue;
             }
@@ -2603,7 +2588,7 @@ void LipidSpace::load_column_table(ImportData *import_data){
         }
         for (auto study_variable : study_variables_names_nominal){
             if (mapping_data != 0 && contains_val(mapping_data->at(NominalStudyVariable), study_variable)){
-                Mapping &m = mapping_data->at(NominalStudyVariable)[study_variable];
+                Mapping &m = mapping_data->at(NominalStudyVariable).at(study_variable);
                 if (m.action == RenameAction || m.action == MappingTo) study_variable = m.mapping;
                 else if (m.action == RegisterNewNaN || m.action  == RegisterNewDefault) continue;
             }
@@ -2631,7 +2616,7 @@ void LipidSpace::load_column_table(ImportData *import_data){
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
                     study_variable_values.insert({study_variable_name, StudyVariableSet(study_variable_name, NumericalStudyVariable)});
-                    if (is_not_missing) study_variable_values[study_variable_name].numerical_values.insert(study_variable_value);
+                    if (is_not_missing) study_variable_values.at(study_variable_name).numerical_values.insert(study_variable_value);
 
                     for (auto lipidome : lipidomes){
                         lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
@@ -2659,7 +2644,7 @@ void LipidSpace::load_column_table(ImportData *import_data){
                     bool is_not_missing = (kv.second.action == RegisterNewDefault);
 
                     study_variable_values.insert({study_variable_name, StudyVariableSet(study_variable_name, NominalStudyVariable)});
-                    study_variable_values[study_variable_name].nominal_values.insert({study_variable_value, true});
+                    study_variable_values.at(study_variable_name).nominal_values.insert({study_variable_value, true});
 
                     for (auto lipidome : lipidomes){
                         lipidome->study_variables.insert({study_variable_name, StudyVariable(study_variable_name, study_variable_value, !is_not_missing)});
@@ -2698,7 +2683,7 @@ void LipidSpace::load_column_table(ImportData *import_data){
             // add new values into existing study variables
             for (auto lipidome : loaded_lipidomes){
                 for (auto kv : lipidome->study_variables){
-                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    StudyVariableSet &fs = study_variable_values.at(kv.first);
                     if (kv.second.study_variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
@@ -2720,7 +2705,7 @@ void LipidSpace::load_column_table(ImportData *import_data){
                         study_variable_values.insert({kv.first, StudyVariableSet(kv.first, kv.second.study_variable_type)});
                     }
 
-                    StudyVariableSet &fs = study_variable_values[kv.first];
+                    StudyVariableSet &fs = study_variable_values.at(kv.first);
                     if (kv.second.study_variable_type == NumericalStudyVariable){
                         fs.numerical_values.insert(kv.second.numerical_value);
                     }
@@ -2841,7 +2826,7 @@ void LipidSpace::load_row_table(ImportData *import_data){
                         doublettes.insert({header, 1});
                     }
                     else {
-                        header += "." + std::to_string(++doublettes[header]);
+                        header += "." + std::to_string(++doublettes.at(header));
                     }
 
                     selection[3].insert({header, true});
@@ -2871,7 +2856,7 @@ void LipidSpace::load_row_table(ImportData *import_data){
                 }
                 if (l){
                     for (int i = 0; i < (int)quant_data.size(); ++i){
-                        string val = quant_data[i];
+                        string val = quant_data.at(i);
                         if (!contains_val(NA_VALUES, val)){
                             Lipidome* lipidome = loaded_lipidomes.at(i);
                             lipidome->lipids.push_back(l);
@@ -2920,7 +2905,7 @@ void LipidSpace::load_row_table(ImportData *import_data){
         // when all lipidomes are loaded successfully
         // they will be added to the global lipidome set
         for (auto lipidome : loaded_lipidomes){
-            study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values.insert({lipidome->study_variables[FILE_STUDY_VARIABLE_NAME].nominal_value, true});
+            study_variable_values.at(FILE_STUDY_VARIABLE_NAME).nominal_values.insert({lipidome->study_variables.at(FILE_STUDY_VARIABLE_NAME).nominal_value, true});
 
             lipidomes.push_back(lipidome);
             selection[3].insert({lipidome->cleaned_name, true});
@@ -3029,7 +3014,7 @@ LipidAdduct* LipidSpace::load_lipid(string lipid_name, map<string, LipidAdduct*>
     if (contains_val(all_lipids, lipid_unique_name)){
         delete l;
         from_repository = true;
-        l = all_lipids[lipid_unique_name];
+        l = all_lipids.at(lipid_unique_name);
     }
 
     if (uncontains_val(lipid_set, lipid_unique_name)){
@@ -3110,6 +3095,7 @@ void LipidSpace::run_analysis(){
 
 
 void LipidSpace::lipid_analysis(bool report_progress){
+
     if (lipidomes.size() == 0){
         if (progress && !progress->stop_progress && report_progress){
             progress->finish();
@@ -3125,7 +3111,7 @@ void LipidSpace::lipid_analysis(bool report_progress){
     analysis_finished = false;
     if (dendrogram_root){
         delete dendrogram_root;
-        dendrogram_root = 0;
+        dendrogram_root = nullptr;
     }
     selected_lipidomes.clear();
     dendrogram_sorting.clear();
@@ -3170,6 +3156,7 @@ void LipidSpace::lipid_analysis(bool report_progress){
         global_lipidome->m.reset(selected_lipidomes.size(), global_lipidome->lipids.size());
     }
 
+
     // cutting the global PCA matrix back to a matrix for each lipidome
     if (!progress || !progress->stop_progress){
         separate_matrixes();
@@ -3201,9 +3188,6 @@ void LipidSpace::lipid_analysis(bool report_progress){
     }
 
 
-
-
-
     if (!progress || !progress->stop_progress){
         // for statistics
         statistics_matrix.reset(0, 0);
@@ -3211,26 +3195,26 @@ void LipidSpace::lipid_analysis(bool report_progress){
         map<string, int> lipid_name_map;
         // setting up lipid to column in matrix map
         for (uint i = 0; i < global_lipidome->lipids.size(); ++i){
-            LipidAdduct* lipid = global_lipidome->lipids[i];
+            LipidAdduct* lipid = global_lipidome->lipids.at(i);
             if (uncontains_val(lipid_map, lipid)){
                 lipid_map.insert({lipid, lipid_map.size()});
-                lipid_name_map.insert({global_lipidome->species[i], lipid_name_map.size()});
+                lipid_name_map.insert({global_lipidome->species.at(i), lipid_name_map.size()});
             }
         }
 
         // set up matrix for multiple linear regression
         statistics_matrix.reset(selected_lipidomes.size(), lipid_map.size());
         for (uint r = 0; r < selected_lipidomes.size(); ++r){
-            Lipidome* lipidome = selected_lipidomes[r];
+            Lipidome* lipidome = selected_lipidomes.at(r);
             for (uint i = 0; i < lipidome->lipids.size(); ++i){
-                if (contains_val(lipid_map, lipidome->lipids[i])){
-                    statistics_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+                if (contains_val(lipid_map, lipidome->lipids.at(i))){
+                    statistics_matrix(r, lipid_map.at(lipidome->lipids.at(i))) = lipidome->normalized_intensities.at(i);
                 }
             }
         }
 
         statistics_lipids.resize(lipid_name_map.size());
-        for (auto kv : lipid_name_map) statistics_lipids[kv.second] = kv.first;
+        for (auto kv : lipid_name_map) statistics_lipids.at(kv.second) = kv.first;
 
     }
 
@@ -3239,7 +3223,7 @@ void LipidSpace::lipid_analysis(bool report_progress){
     analysis_finished = true;
 
     if (progress && !progress->stop_progress && report_progress){
-        progress->finish();
+        emit progress->finish();
         Logging::write_log("Finished analysis with a union of " + std::to_string(global_lipidome->lipids.size()) + " lipids among " + std::to_string(selected_lipidomes.size()) + " lipidome" + (selected_lipidomes.size() > 1 ? "s" : "") + " in total.");
     }
 }
@@ -3253,10 +3237,10 @@ void LipidSpace::feature_analysis(bool report_progress){
     int nom_counter = 0;
     map<LipidAdduct*, int> lipid_map;
     map<string, int> lipid_name_map;
-    Matrix global_matrix;
-    vector< Gene* >genes;
+    Matrix feature_matrix;
+    vector<Gene*> genes;
     Array missing_values;
-    bool is_nominal = study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    bool is_nominal = study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
 
     if (uncontains_val(study_variable_values, target_variable)){
         if (progress && !progress->stop_progress && report_progress){
@@ -3265,7 +3249,6 @@ void LipidSpace::feature_analysis(bool report_progress){
         return;
     }
     Logging::write_log("Started feature analysis");
-
 
 
     // select lipidomes for feature selection
@@ -3278,15 +3261,15 @@ void LipidSpace::feature_analysis(bool report_progress){
             string study_variable_name = kv.first;
             StudyVariable &study_variable = kv.second;
             if (study_variable.study_variable_type == NominalStudyVariable){
-                if (!study_variable_values[study_variable_name].nominal_values[study_variable.nominal_value]){
+                if (!study_variable_values.at(study_variable_name).nominal_values.at(study_variable.nominal_value)){
                     select_lipidome = false;
                     break;
                 }
             }
             else {
                 double numerical_value = study_variable.numerical_value;
-                auto filter = study_variable_values[study_variable_name].numerical_filter.first;
-                auto filter_values = study_variable_values[study_variable_name].numerical_filter.second;
+                auto filter = study_variable_values.at(study_variable_name).numerical_filter.first;
+                auto filter_values = study_variable_values.at(study_variable_name).numerical_filter.second;
                 switch (filter){
 
                     case LessFilter: // inverse logic, Less tells us, what to keep, greater we filter out
@@ -3324,12 +3307,10 @@ void LipidSpace::feature_analysis(bool report_progress){
             }
         }
 
-        if (select_lipidome && contains_val(selection[3], lipidome_name) && selection[3][lipidome_name]){
+        if (select_lipidome && contains_val(selection[3], lipidome_name) && selection[3].at(lipidome_name)){
             lipidomes_for_feature_selection.push_back(lipidome);
         }
     }
-
-
 
     // perform the principal component analysis
     if (!progress || !progress->stop_progress){
@@ -3338,209 +3319,198 @@ void LipidSpace::feature_analysis(bool report_progress){
         // setup array for target variable values, if nominal then each with incrementing number
         if (is_nominal){
             for (auto lipidome : lipidomes_for_feature_selection){
-                string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+                if (lipidome == nullptr || uncontains_val(lipidome->study_variables, target_variable) || lipidome->study_variables.at(target_variable).missing) continue;
+
+                string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
 
                 if (uncontains_val(nominal_target_values, nominal_value)){
                     nominal_target_values.insert({nominal_value, nom_counter++});
                 }
-                target_values.push_back(nominal_target_values[nominal_value]);
+                target_values.push_back(nominal_target_values.at(nominal_value));
             }
         }
         else {
             for (auto lipidome : lipidomes_for_feature_selection){
-                target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
+                if (lipidome == nullptr || uncontains_val(lipidome->study_variables, target_variable) || lipidome->study_variables.at(target_variable).missing) continue;
+                target_values.push_back(lipidome->study_variables.at(target_variable).numerical_value);
             }
         }
 
         // setting up lipid to column in matrix map
         for (auto lipidome : lipidomes_for_feature_selection){
             for (uint i = 0; i < lipidome->lipids.size(); ++i){
-                LipidAdduct* lipid = lipidome->lipids[i];
-                if (uncontains_val(lipid_map, lipid) && contains_val(lipidome->study_variables, target_variable) && !lipidome->study_variables[target_variable].missing){
+                LipidAdduct* lipid = lipidome->lipids.at(i);
+                if (uncontains_val(lipid_map, lipid) && contains_val(lipidome->study_variables, target_variable) && !lipidome->study_variables.at(target_variable).missing){
                     lipid_map.insert({lipid, lipid_map.size()});
-                    lipid_name_map.insert({lipidome->species[i], lipid_name_map.size()});
+                    lipid_name_map.insert({lipidome->species.at(i), lipid_name_map.size()});
                 }
             }
         }
 
 
         if (is_nominal && nom_counter <= 1){
-            if (progress && !progress->stop_progress && report_progress){
-                progress->finish();
+            if (progress != nullptr && report_progress){
+                emit progress->finish();
             }
             return;
         }
 
+
         // set up matrix for multiple linear regression
-        global_matrix.reset(lipidomes_for_feature_selection.size(), lipid_map.size());
+        feature_matrix.reset(lipidomes_for_feature_selection.size(), lipid_map.size());
+
         for (uint r = 0; r < lipidomes_for_feature_selection.size(); ++r){
-            Lipidome* lipidome = lipidomes_for_feature_selection[r];
+            Lipidome* lipidome = lipidomes_for_feature_selection.at(r);
 
             for (uint i = 0; i < lipidome->lipids.size(); ++i){
                 if (without_quant){
-                    global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i] > 1e-15;
+                    feature_matrix(r, lipid_map.at(lipidome->lipids.at(i))) = lipidome->normalized_intensities.at(i) > 1e-15;
                 }
                 else {
-                    global_matrix(r, lipid_map[lipidome->lipids[i]]) = lipidome->normalized_intensities[i];
+                    feature_matrix(r, lipid_map.at(lipidome->lipids.at(i))) = lipidome->normalized_intensities.at(i);
                 }
             }
         }
 
         // counting missing values per lipid
-        missing_values.resize(global_matrix.cols, 0);
-        for (int c = 0; c < global_matrix.cols; ++c){
-            double* row = &(global_matrix.m[c * global_matrix.rows]);
+        for (int c = 0; c < feature_matrix.cols; ++c){
+            double* row = &(feature_matrix.m.at(c * feature_matrix.rows));
             int missing = 0;
-            for (int r = 0; r < global_matrix.rows; ++r){
+            for (int r = 0; r < feature_matrix.rows; ++r){
                 missing += row[r] <= 1e-15;
             }
-            missing_values[c] = missing;
+            missing_values.push_back(missing);
         }
     }
 
     if (is_nominal && !without_quant){
-        global_matrix.scale();
+        feature_matrix.scale();
     }
 
-
-
     // determining the upper number of features to consider
-    int n = global_matrix.cols;// - !is_nominal; // -1 because we added a column of constant values 1, 1, 1, 1, ...
+    int n = feature_matrix.cols;// - !is_nominal; // -1 because we added a column of constant values 1, 1, 1, 1, ...
     int n_features = n;
-    if (n > 1) n = min(n_features - 2, (int)sqrt(n) * 2);
+    if (n > 2) n = min(n_features - 2, (int)sqrt(n) * 2);
 
     // perform the principal component analysis
     if (!progress || !progress->stop_progress){
         // set the step size for the next analyses
-        if (progress && report_progress){
-            progress->prepare(n * n_features);
+        if (progress != nullptr && report_progress){
+            progress->prepare(n);
         }
 
-        genes.resize(n + 1, 0);
-        genes[0] = new Gene(n_features + 1);
-        genes[0]->score = is_nominal ? 0 : INFINITY;
+        genes.push_back(new Gene(n_features + 1));
+        genes.back()->score = is_nominal ? 0 : INFINITY;
 
 
-        if (progress && report_progress){
-            progress->increment();
-        }
     }
+
 
     // implementation of sequential forward lipid (feature) selection
     for(int i = 1; i <= n && (!progress || !progress->stop_progress); ++i){
-        if (progress->stop_progress) break;
-        Gene* best = 0;
-        int pos = 0;
-        double best_score = is_nominal ? 0 : INFINITY;
-        Gene* last = genes[i - 1];
-        while (pos < n_features && (!progress || !progress->stop_progress)){
-            if (progress->stop_progress) break;
-            if (!last->gene_code[pos]){
-                Gene* new_gene = new Gene(last);
-                new_gene->gene_code[pos] = true;
+
+        Gene* best = nullptr;
+        Gene* last = genes.back();
+
+        for (int pos = 0; pos < n_features && (!progress || !progress->stop_progress) && last != nullptr; ++pos){
+
+            if (!last->gene_code.at(pos)){
+                Gene new_gene(last);
+                new_gene.gene_code.at(pos) = true;
 
                 Indexes lipid_indexes;
-                new_gene->get_indexes(lipid_indexes);
+                new_gene.get_indexes(lipid_indexes);
                 Matrix sub_lipids;
-                sub_lipids.rewrite(global_matrix, {}, lipid_indexes);
+                sub_lipids.rewrite(feature_matrix, {}, lipid_indexes);
 
                 double missing_lipids = 0;
-                for (auto feature_index : lipid_indexes) missing_lipids += missing_values[feature_index];
-                double cnt_lipids = lipid_indexes.size() * global_matrix.rows;
+                for (auto feature_index : lipid_indexes) missing_lipids += missing_values.at(feature_index);
+                double cnt_lipids = lipid_indexes.size() * feature_matrix.rows;
 
                 if (is_nominal){
                     Array summed_values;
                     summed_values.resize(sub_lipids.rows);
 
                     for (int c = 0; c < sub_lipids.cols; c++){
-                    double *col = &(sub_lipids.m[c * sub_lipids.rows]);
+                        double *col = &(sub_lipids.m.at(c * sub_lipids.rows));
                         for (int r = 0; r < sub_lipids.rows; ++r){
-                            summed_values[r] += col[r];
+                            summed_values.at(r) += col[r];
                         }
                     }
 
                     vector<Array> arrays(nom_counter);
-                    for (int r = 0; r < sub_lipids.rows; ++r) arrays[target_values[r]].push_back(summed_values[r]);
+                    for (int r = 0; r < sub_lipids.rows; ++r) arrays.at(target_values.at(r)).push_back(summed_values.at(r));
                     double acc = compute_accuracy(arrays);
-                    acc = __abs(1. / (double)nom_counter - acc) + 1. / (double)nom_counter;
-                    new_gene->score = acc * (cnt_lipids - missing_lipids) / cnt_lipids;
+                    acc = abs(1. / (double)nom_counter - acc) + 1. / (double)nom_counter;
 
+                    new_gene.score = acc * (cnt_lipids - missing_lipids) / cnt_lipids;
                     // search for maximal nominal score
-                    if (!best || best_score < new_gene->score || best_score == INFINITY){
-                        best = new_gene;
-                        best_score = new_gene->score;
-                    }
-                    else {
-                        delete new_gene;
+                    if (best == nullptr || best->score < new_gene.score){
+                        if (best != nullptr) delete best;
+                        best = new Gene(&new_gene);
                     }
                 }
-
-
                 else {
                     Array constants(sub_lipids.rows, 1);
                     sub_lipids.add_column(constants);
 
                     Array coefficiants;
                     coefficiants.compute_coefficiants(sub_lipids, target_values);    // estimating coefficiants
-                    new_gene->score = compute_aic(sub_lipids, coefficiants, target_values);  // computing aic
-                    new_gene->score *= sqrt(1 + missing_lipids);
+                    new_gene.score = compute_aic(sub_lipids, coefficiants, target_values);  // computing aic
+                    new_gene.score *= sqrt(1 + missing_lipids);
 
                     // search for minimal numerical score
-                    if (!best || best_score > new_gene->score){
-                        best = new_gene;
-                        best_score = new_gene->score;
+                    if (best == nullptr || best->score > new_gene.score){
+                        if (best != nullptr) delete best;
+                        best = new Gene(&new_gene);
                     }
-                    else {
-                        delete new_gene;
-                    }
-
                 }
-
-            }
-            ++pos;
-            if (progress && report_progress){
-                progress->increment();
             }
         }
 
-        genes[i] = best;
-    }
 
+        if (progress != nullptr && report_progress){
+            emit progress->increment();
+        }
+
+        if (best != nullptr) genes.push_back(best);
+    }
 
     if (!progress || !progress->stop_progress){
         // find the feature subset with the lowest best_score
-        int best_pos = 0;
+        Gene *best_gene = nullptr;
         if (is_nominal){
             double best_score = 0;
-            for (uint i = 1; i < genes.size(); ++i){
-                if (best_score < genes[i]->score){
-                    best_score = genes[i]->score;
-                    best_pos = i;
+            for (auto gene : genes){
+                if (gene != nullptr && best_score < gene->score){
+                    best_score = gene->score;
+                    best_gene = gene;
                 }
             }
         }
         else {
             double best_score = INFINITY;
-            for (uint i = 1; i < genes.size(); ++i){
-                if (best_score == INFINITY || best_score > genes[i]->score){
-                    best_score = genes[i]->score;
-                    best_pos = i;
+            for (auto gene : genes){
+                if (gene != nullptr && (best_score == INFINITY || best_score > gene->score)){
+                    best_score = gene->score;
+                    best_gene = gene;
                 }
             }
         }
 
 
 
-
         // do the selection
         for (auto &kv : selection[0]){
-            kv.second = contains_val(lipid_name_map, kv.first) ? genes[best_pos]->gene_code[lipid_name_map[kv.first]] : false;
+            kv.second = (best_gene != nullptr && contains_val(lipid_name_map, kv.first) && lipid_name_map.at(kv.first) < (int)best_gene->gene_code.size()) ? best_gene->gene_code.at(lipid_name_map.at(kv.first)) : false;
         }
+
 
         // cleanup
         for (auto gene : genes){
             if (gene) delete gene;
         }
+
 
         if (progress && !progress->stop_progress && report_progress){
             progress->finish();
@@ -3592,24 +3562,24 @@ void LipidSpace::complete_feature_analysis(){
             int nom_counter = 0;
             vector<string> nominal_values;
 
-            bool is_nominal = study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+            bool is_nominal = study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
             if (is_nominal){
                 for (auto lipidome : selected_lipidomes){
-                    if (lipidome->study_variables[target_variable].missing) continue;
+                    if (lipidome->study_variables.at(target_variable).missing) continue;
 
-                    string nominal_value = lipidome->study_variables[target_variable].nominal_value;
+                    string nominal_value = lipidome->study_variables.at(target_variable).nominal_value;
                     if (uncontains_val(nominal_target_values, nominal_value)){
                         nominal_target_values.insert({nominal_value, nom_counter++});
                         nominal_values.push_back(nominal_value);
                     }
-                    target_indexes.push_back(nominal_target_values[nominal_value]);
+                    target_indexes.push_back(nominal_target_values.at(nominal_value));
                 }
             }
             else {
                 for (auto lipidome : selected_lipidomes){
-                    if (lipidome->study_variables[target_variable].missing) continue;
+                    if (lipidome->study_variables.at(target_variable).missing) continue;
 
-                    target_values.push_back(lipidome->study_variables[target_variable].numerical_value);
+                    target_values.push_back(lipidome->study_variables.at(target_variable).numerical_value);
                 }
             }
 
@@ -3619,7 +3589,7 @@ void LipidSpace::complete_feature_analysis(){
             // if any lipidome has a missing study variable, discard the lipidome from the statistic
             Indexes lipidomes_to_keep;
             for (int r = 0; r < stat_matrix.rows; ++r){
-                if (!selected_lipidomes[r]->study_variables[target_variable].missing) lipidomes_to_keep.push_back(r);
+                if (!selected_lipidomes.at(r)->study_variables.at(target_variable).missing) lipidomes_to_keep.push_back(r);
             }
             Matrix tmp;
             tmp.rewrite(stat_matrix, lipidomes_to_keep);
@@ -3639,7 +3609,7 @@ void LipidSpace::complete_feature_analysis(){
                         if (!isnan(val) && !isinf(val)) sum += val;
                     }
                     if (stat_matrix.cols > 1 || sum > 1e-15){
-                        series[target_indexes[r]].push_back(sum);
+                        series.at(target_indexes.at(r)).push_back(sum);
                     }
                 }
                 if (progress && progress->stop_progress) break;
@@ -3667,8 +3637,8 @@ void LipidSpace::complete_feature_analysis(){
                 double mx = 0, my = 0, ny = 0;
                 // computing the study variable mean based on missing values of lipids
                 for (uint r = 0; r < S.size(); ++r){
-                    mx += S[r];
-                    my += target_values[r];
+                    mx += S.at(r);
+                    my += target_values.at(r);
                     ny += 1;
                 }
                 mx /= ny;
@@ -3678,16 +3648,16 @@ void LipidSpace::complete_feature_analysis(){
                 // estimate slope and intercept factors for linear regression
                 double slope_num = 0, slope_denom = 0;
                 for (uint r = 0; r < S.size(); ++r){
-                    slope_num += (S[r] - mx) * (target_values[r] - my);
-                    slope_denom += sq(S[r] - mx);
+                    slope_num += (S.at(r) - mx) * (target_values.at(r) - my);
+                    slope_denom += sq(S.at(r) - mx);
                 }
                 double slope = slope_num / slope_denom;
                 double intercept = my - slope * mx;
 
                 double SQR = 0, SQT = 0;
                 for (uint r = 0; r < S.size(); ++r){
-                    SQR += sq(target_values[r] - (slope * S[r] + intercept));
-                    SQT += sq(target_values[r] - my);
+                    SQR += sq(target_values.at(r) - (slope * S.at(r) + intercept));
+                    SQT += sq(target_values.at(r) - my);
                 }
                 complete_feature_analysis_table.back().push_back(1. - SQR / SQT);
             }
@@ -3698,11 +3668,11 @@ void LipidSpace::complete_feature_analysis(){
         }
 
         if (progress){
-            progress->increment();
+            emit progress->increment();
         }
     }
     if (progress && !progress->stop_progress){
-        progress->finish();
+        emit progress->finish();
     }
 }
 
@@ -3711,17 +3681,17 @@ void LipidSpace::complete_feature_analysis(){
 
 
 void LipidSpace::run(){
-    if (process_type == LipidAnalysis){
+    if (progress != nullptr && (progress->process_type == LipidAnalysis || progress->process_type == LipidAnalysisInitial)){
         analytics("lipid-analysis");
         lipid_analysis();
     }
 
-    else if (process_type == FeatureAnalysis && target_variable != ""){
+    else if (progress != nullptr && progress->process_type == FeatureAnalysis && target_variable != ""){
         analytics("feature-analysis");
         feature_analysis();
     }
 
-    else if (process_type == CompleteFeatureAnalysis){
+    else if (progress != nullptr && progress->process_type == CompleteFeatureAnalysis){
         analytics("complete-feature-analysis");
 
         complete_feature_analysis_table.clear();
@@ -3746,8 +3716,6 @@ void LipidSpace::run(){
 
         lipid_space_clone.progress = 0;
     }
-
-    process_type = NoAnalysis;
 }
 
 
@@ -3763,90 +3731,90 @@ bool LipidSpace::load_session(string session_file_name){
         }
     }
 
-    if (container["selection"].size() != 4){
+    if (container.at("selection").size() != 4){
         throw LipidException("Error: field 'selection' has not 4 entries.");
     }
 
-    keep_sn_position = container["keep_sn_position"];
-    ignore_unknown_lipids = container["ignore_unknown_lipids"];
-    ignore_doublette_lipids = container["ignore_doublette_lipids"];
-    unboundend_distance = container["unboundend_distance"];
-    cols_for_pca = container["cols_for_pca"];
-    without_quant = container["without_quant"];
+    keep_sn_position = container.at("keep_sn_position");
+    ignore_unknown_lipids = container.at("ignore_unknown_lipids");
+    ignore_doublette_lipids = container.at("ignore_doublette_lipids");
+    unboundend_distance = container.at("unboundend_distance");
+    cols_for_pca = container.at("cols_for_pca");
+    without_quant = container.at("without_quant");
 
     vector<Lipidome*> lipidome_index;
-    for (string lipid_species : container["all_lipids"]){
+    for (string lipid_species : container.at("all_lipids")){
         all_lipids.insert({lipid_species, parser.parse(lipid_species)});
     }
 
-    for (auto c : container["lipidomes"]){
+    for (auto c : container.at("lipidomes")){
         Lipidome* lipidome = new Lipidome(c, all_lipids);
         lipidomes.push_back(lipidome);
         lipidome_index.push_back(lipidome);
     }
 
-    if (container["lipid_name_translations"].size() != 3){
+    if (container.at("lipid_name_translations").size() != 3){
         throw LipidException("Error: translation table has not three entries in file '" + session_file_name + "'.");
     }
-    for (auto &kv : container["lipid_name_translations"][0].items()) lipid_name_translations[0].insert({kv.key(), kv.value()});
-    for (auto &kv : container["lipid_name_translations"][1].items()) lipid_name_translations[1].insert({kv.key(), kv.value()});
-    for (auto &kv : container["lipid_name_translations"][2].items()) lipid_name_translations[2].insert({kv.key(), kv.value()});
+    for (auto &kv : container.at("lipid_name_translations")[0].items()) lipid_name_translations[0].insert({kv.key(), kv.value()});
+    for (auto &kv : container.at("lipid_name_translations")[1].items()) lipid_name_translations[1].insert({kv.key(), kv.value()});
+    for (auto &kv : container.at("lipid_name_translations")[2].items()) lipid_name_translations[2].insert({kv.key(), kv.value()});
 
     delete global_lipidome;
-    global_lipidome = new Lipidome(container["global_lipidome"], all_lipids);
+    global_lipidome = new Lipidome(container.at("global_lipidome"), all_lipids);
 
-    for (auto &kv : container["group_lipidomes"].items()){
+    for (auto &kv : container.at("group_lipidomes").items()){
         group_lipidomes.insert({kv.key(), vector<Lipidome*>()});
-        vector<Lipidome*> &vector_lipidome_group = group_lipidomes[kv.key()];
+        vector<Lipidome*> &vector_lipidome_group = group_lipidomes.at(kv.key());
         for (auto c : kv.value()) vector_lipidome_group.push_back(new Lipidome(c, all_lipids));
     }
 
-    for (auto val : container["dendrogram_points"]) dendrogram_points.push_back(val);
-    for (auto val : container["dendrogram_sorting"]) dendrogram_sorting.push_back(val);
+    for (auto val : container.at("dendrogram_points")) dendrogram_points.push_back(val);
+    for (auto val : container.at("dendrogram_sorting")) dendrogram_sorting.push_back(val);
 
-    hausdorff_distances.load(container["hausdorff_distances"]);
+    hausdorff_distances.load(container.at("hausdorff_distances"));
 
-    analysis_finished = container["analysis_finished"];
+    analysis_finished = container.at("analysis_finished");
 
     for (int i = 0; i < 4; ++i){
-        for (auto &kv : container["selection"][i].items()) selection[i].insert({(string)kv.key(), (bool)kv.value()});
+        for (auto &kv : container.at("selection")[i].items()) selection[i].insert({(string)kv.key(), (bool)kv.value()});
     }
 
-    for (int i : container["selected_lipidomes"]) selected_lipidomes.push_back(lipidome_index[i]);
+    for (int i : container.at("selected_lipidomes")) selected_lipidomes.push_back(lipidome_index.at(i));
 
-    global_distances.load(container["global_distances"]);
+    global_distances.load(container.at("global_distances"));
 
-    target_variable = container["target_variable"];
+    target_variable = container.at("target_variable");
 
-    for (auto val : container["registered_lipid_classes"]) registered_lipid_classes.insert(val);
+    for (auto val : container.at("registered_lipid_classes")) registered_lipid_classes.insert(val);
 
-    statistics_matrix.load(container["statistics_matrix"]);
+    statistics_matrix.load(container.at("statistics_matrix"));
 
-    for (auto val : container["statistics_lipids"]) statistics_lipids.push_back(val);
+    for (auto val : container.at("statistics_lipids")) statistics_lipids.push_back(val);
 
-    for (auto &kv : container["lipid_sortings"].items()){
+    for (auto &kv : container.at("lipid_sortings").items()){
         lipid_sortings.insert({kv.key(), SortVector<string, double>()});
-        SortVector<string, double> &sv = lipid_sortings[kv.key()];
+        SortVector<string, double> &sv = lipid_sortings.at(kv.key());
         for (auto &v : kv.value()) sv.push_back({(string)v[0], (double)v[1]});
     }
 
     study_variable_values.clear();
-    for (auto &kv : container["study_variable_values"].items()){
+    for (auto &kv : container.at("study_variable_values").items()){
         study_variable_values.insert({kv.key(), StudyVariableSet(kv.value())});
     }
 
-    dendrogram_root = new DendrogramNode(container["dendrogram_root"]);
+    dendrogram_root = new DendrogramNode(container.at("dendrogram_root"));
 
     if (contains_val(container, "colorMap")){
         GlobalData::colorMap.clear();
-        for (auto &kv : container["colorMap"].items()){
+        for (auto &kv : container.at("colorMap").items()){
             GlobalData::colorMap.insert({kv.key(), QColor(kv.value()[0], kv.value()[1], kv.value()[2])});
         }
     }
 
     if (contains_val(container, "colorMapStudyVariables")){
         GlobalData::colorMapStudyVariables.clear();
-        for (auto &kv : container["colorMapStudyVariables"].items()){
+        for (auto &kv : container.at("colorMapStudyVariables").items()){
             GlobalData::colorMapStudyVariables.insert({kv.key(), QColor(kv.value()[0], kv.value()[1], kv.value()[2])});
         }
 
@@ -3860,75 +3828,75 @@ bool LipidSpace::load_session(string session_file_name){
 
 bool LipidSpace::save_session(string session_file_name){
     json container;
-    container["keep_sn_position"] = keep_sn_position;
-    container["ignore_unknown_lipids"] = ignore_unknown_lipids;
-    container["ignore_doublette_lipids"] = ignore_doublette_lipids;
-    container["unboundend_distance"] = unboundend_distance;
-    container["cols_for_pca"] = cols_for_pca;
-    container["without_quant"] = without_quant;
-    for (auto &kv : all_lipids) container["all_lipids"] += kv.first;
+    container.at("keep_sn_position") = keep_sn_position;
+    container.at("ignore_unknown_lipids") = ignore_unknown_lipids;
+    container.at("ignore_doublette_lipids") = ignore_doublette_lipids;
+    container.at("unboundend_distance") = unboundend_distance;
+    container.at("cols_for_pca") = cols_for_pca;
+    container.at("without_quant") = without_quant;
+    for (auto &kv : all_lipids) container.at("all_lipids") += kv.first;
 
     map<Lipidome*, int> lipidome_to_index;
     for (int i = 0; i < (int)lipidomes.size(); ++i){
-        auto lipidome = lipidomes[i];
+        auto lipidome = lipidomes.at(i);
         lipidome_to_index.insert({lipidome, i});
-        lipidome->save(container["lipidomes"][i]);
+        lipidome->save(container.at("lipidomes")[i]);
     }
 
-    for (auto &kv : lipid_name_translations[0]) container["lipid_name_translations"][0][kv.first] = kv.second;
-    for (auto &kv : lipid_name_translations[1]) container["lipid_name_translations"][1][kv.first] = kv.second;
-    for (auto &kv : lipid_name_translations[2]) container["lipid_name_translations"][2][kv.first] = kv.second;
+    for (auto &kv : lipid_name_translations[0]) container.at("lipid_name_translations")[0].at(kv.first) = kv.second;
+    for (auto &kv : lipid_name_translations[1]) container.at("lipid_name_translations")[1].at(kv.first) = kv.second;
+    for (auto &kv : lipid_name_translations[2]) container.at("lipid_name_translations")[2].at(kv.first) = kv.second;
 
-    global_lipidome->save(container["global_lipidome"]);
+    global_lipidome->save(container.at("global_lipidome"));
 
     for (auto &kv : group_lipidomes){
         for (int i = 0; i < (int)kv.second.size(); ++i){
-            kv.second[i]->save(container["group_lipidomes"][kv.first][i]);
+            kv.second.at(i)->save(container.at("group_lipidomes").at(kv.first)[i]);
         }
     }
 
-    for (auto val : dendrogram_points) container["dendrogram_points"] += val;
-    for (auto val : dendrogram_sorting) container["dendrogram_sorting"] += val;
+    for (auto val : dendrogram_points) container.at("dendrogram_points") += val;
+    for (auto val : dendrogram_sorting) container.at("dendrogram_sorting") += val;
 
-    hausdorff_distances.save(container["hausdorff_distances"]);
-    container["analysis_finished"] = analysis_finished;
+    hausdorff_distances.save(container.at("hausdorff_distances"));
+    container.at("analysis_finished") = analysis_finished;
 
     for (int i = 0; i < 4; ++i){
-        for (auto &kv : selection[i]) container["selection"][i][kv.first] = kv.second;
+        for (auto &kv : selection[i]) container.at("selection")[i].at(kv.first) = kv.second;
     }
 
     for (auto lipidome : selected_lipidomes){
-        container["selected_lipidomes"] += lipidome_to_index[lipidome];
+        container.at("selected_lipidomes") += lipidome_to_index.at(lipidome);
     }
 
-    global_distances.save(container["global_distances"]);
+    global_distances.save(container.at("global_distances"));
 
-    container["target_variable"] = target_variable;
+    container.at("target_variable") = target_variable;
 
-    for (auto val : registered_lipid_classes) container["registered_lipid_classes"] += val;
+    for (auto val : registered_lipid_classes) container.at("registered_lipid_classes") += val;
 
-    statistics_matrix.save(container["statistics_matrix"]);
+    statistics_matrix.save(container.at("statistics_matrix"));
 
-    for (auto val : statistics_lipids) container["statistics_lipids"] += val;
+    for (auto val : statistics_lipids) container.at("statistics_lipids") += val;
 
     for (auto &kv : lipid_sortings){
-        for (auto &p : kv.second) container["lipid_sortings"][kv.first] += {p.first, p.second};
+        for (auto &p : kv.second) container.at("lipid_sortings").at(kv.first) += {p.first, p.second};
     }
 
-    for (auto &kv : study_variable_values) kv.second.save(container["study_variable_values"][kv.first]);
+    for (auto &kv : study_variable_values) kv.second.save(container.at("study_variable_values").at(kv.first));
 
-    dendrogram_root->save(container["dendrogram_root"]);
+    dendrogram_root->save(container.at("dendrogram_root"));
 
     for (auto &kv : GlobalData::colorMap){
-        container["colorMap"][kv.first] += kv.second.red();
-        container["colorMap"][kv.first] += kv.second.green();
-        container["colorMap"][kv.first] += kv.second.blue();
+        container.at("colorMap").at(kv.first) += kv.second.red();
+        container.at("colorMap").at(kv.first) += kv.second.green();
+        container.at("colorMap").at(kv.first) += kv.second.blue();
     }
 
     for (auto &kv : GlobalData::colorMapStudyVariables){
-        container["colorMapStudyVariables"][kv.first] += kv.second.red();
-        container["colorMapStudyVariables"][kv.first] += kv.second.green();
-        container["colorMapStudyVariables"][kv.first] += kv.second.blue();
+        container.at("colorMapStudyVariables").at(kv.first) += kv.second.red();
+        container.at("colorMapStudyVariables").at(kv.first) += kv.second.green();
+        container.at("colorMapStudyVariables").at(kv.first) += kv.second.blue();
     }
 
 

@@ -110,6 +110,9 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     lipid_for_deselect = "";
     raw_data_model = new RawDataModel(lipid_space, ui->tableView);
     ui->tableView->setModel(raw_data_model);
+    complete_feature_analysis_file_name = "";
+    species_selection_tmp = "";
+    study_var_tmp = "";
 
     ui->normalizationComboBox->setStyleSheet("background-color: white; background: white;");
     ui->speciesComboBox->setStyleSheet("background-color: white; background: white;");
@@ -217,7 +220,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxEnrichment, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStatLevel, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStatLevel);
-    connect(this, &LipidSpaceGUI::studyVariableChanged, ui->dendrogramView, &Canvas::setStudyVariable);
+    connect(this, &LipidSpaceGUI::studyVariableChanged, ui->dendrogramView, &Canvas::updateDendrogram);
     connect(ui->speciesList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->classList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
     connect(ui->categoryList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
@@ -308,10 +311,21 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     updating = false;
     ui->frame->setVisible(false);
     table_transposed = false;
-
-    progressbar = new Progressbar(this);
     progress = new Progress();
     lipid_space->progress = progress;
+
+    progress_dialog = new QProgressDialog("Analysis in progress...", "Cancel", 0, 100, this);
+
+
+    connect(progress, &Progress::finish, progress_dialog, &QProgressDialog::reset);
+    connect(progress, &Progress::finish, this, &LipidSpaceGUI::processFinished);
+    connect(progress, &Progress::set_max, progress_dialog, &QProgressDialog::setMaximum);
+    connect(progress, &Progress::set_current, progress_dialog, &QProgressDialog::setValue);
+    connect(progress, &Progress::error, progress_dialog, &QProgressDialog::cancel);
+
+
+    //progressbar = new Progressbar(this);
+    /*
     connect(progress, &Progress::finish, progressbar, &Progressbar::finish);
     connect(progress, &Progress::set_current, progressbar, &Progressbar::set_current);
     connect(progress, &Progress::set_max, progressbar, &Progressbar::set_max);
@@ -319,6 +333,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(progressbar, &Progressbar::interrupt, progress, &Progress::interrupt);
     connect(progressbar, &Progressbar::resetAnalysis, this, &LipidSpaceGUI::resetAnalysis);
     progressbar->setModal(true);
+    */
     ui->dendrogramView->setDendrogramData(lipid_space);
     ui->dendrogramView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->dendrogramView, &Canvas::rightClick, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
@@ -443,13 +458,13 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(11) = StudyVariableColumnNominal;
     ct->at(12) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Sheet1", COLUMN_PIVOT_TABLE, ct));
-    */
 
 
     for (string domain : lipid_space->ontology_enrichment->domains){
         ui->domainCheckboxList->addItem(domain.c_str(), QVariant(), true);
         GlobalData::enrichment_domains.insert(domain);
     }
+    */
 
     changeConditionMode(0);
 }
@@ -459,7 +474,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 LipidSpaceGUI::~LipidSpaceGUI(){
     delete ui;
     delete progress;
-    delete progressbar;
+    //delete progressbar;
     delete dragLayer;
     delete select_tiles_information;
     delete raw_data_model;
@@ -502,14 +517,20 @@ void LipidSpaceGUI::openExampleDataset(){
 
 
 void LipidSpaceGUI::completeFeatureAnalysis(){
-    QString file_name = QFileDialog::getSaveFileName(this, "Export feature analysis table", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
-    if (!file_name.length()) return;
+    species_selection_tmp = GlobalData::gui_string_var.at("species_selection");
+    study_var_tmp = GlobalData::gui_string_var.at("study_var");
 
-    lipid_space->process_type = CompleteFeatureAnalysis;
-    progress->reset();
+    complete_feature_analysis_file_name = QFileDialog::getSaveFileName(this, "Export feature analysis table", GlobalData::last_folder, "Worksheet *.xlsx (*.xlsx);;Data Table *.csv (*.csv);;Data Table *.tsv (*.tsv)");
+    if (!complete_feature_analysis_file_name.length()) return;
+
+    progress->reset(CompleteFeatureAnalysis);
     lipid_space->start();
-    progressbar->exec();
+    progress_dialog->open(progress, SLOT(interrupt()));
+}
 
+
+
+void LipidSpaceGUI::finishCompleteFeatureAnalysis(){
     if (lipid_space->complete_feature_analysis_table.size() == 0 || lipid_space->complete_feature_analysis_lipids.size() == 0) return;
 
 
@@ -521,14 +542,14 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
     }
 
     try {
-        if (QFile::exists(file_name)){
-            QFile::remove(file_name);
+        if (QFile::exists(complete_feature_analysis_file_name)){
+            QFile::remove(complete_feature_analysis_file_name);
         }
 
-        if (file_name.toLower().endsWith("csv") || file_name.toLower().endsWith("tsv")){
-            string sep = file_name.toLower().endsWith("csv") ? "," : "\t";
+        if (complete_feature_analysis_file_name.toLower().endsWith("csv") || complete_feature_analysis_file_name.toLower().endsWith("tsv")){
+            string sep = complete_feature_analysis_file_name.toLower().endsWith("csv") ? "," : "\t";
 
-            ofstream off(file_name.toStdString().c_str());
+            ofstream off(complete_feature_analysis_file_name.toStdString().c_str());
 
             // export study variables in first column
             vector<string> fv;
@@ -539,15 +560,15 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
             } off << endl;
 
             for (uint r = 0; r < lipid_space->complete_feature_analysis_table.size(); ++r){
-                off << fv[r];
-                for (auto val : lipid_space->complete_feature_analysis_table[r]) off << sep << val;
+                off << fv.at(r);
+                for (auto val : lipid_space->complete_feature_analysis_table.at(r)) off << sep << val;
                 off << endl;
             }
 
         }
-        else if (file_name.toLower().endsWith("xlsx")) {
+        else if (complete_feature_analysis_file_name.toLower().endsWith("xlsx")) {
             XLDocument doc;
-            doc.create(file_name.toStdString());
+            doc.create(complete_feature_analysis_file_name.toStdString());
             auto wbk = doc.workbook();
             wbk.addWorksheet("StudyVariableCorrelations");
             wbk.deleteSheet("Sheet1");
@@ -564,15 +585,15 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
             for (uint r = 0; r < lipid_space->complete_feature_analysis_table.size(); ++r){
                 uint col = 1;
                 uint row = r + 2;
-                wks.cell(row, col++).value() = fv[r];
-                for (auto val : lipid_space->complete_feature_analysis_table[r]) wks.cell(row, col++).value() = val;
+                wks.cell(row, col++).value() = fv.at(r);
+                for (auto val : lipid_space->complete_feature_analysis_table.at(r)) wks.cell(row, col++).value() = val;
             }
 
             // all selected lipids for each study variable
             for (uint i = 0; i < fv.size(); ++i){
-                wbk.addWorksheet(fv[i]);
-                auto wks_sv = doc.workbook().worksheet(fv[i]);
-                auto &selected_lipids = lipid_space->complete_feature_analysis_lipids[i];
+                wbk.addWorksheet(fv.at(i));
+                auto wks_sv = doc.workbook().worksheet(fv.at(i));
+                auto &selected_lipids = lipid_space->complete_feature_analysis_lipids.at(i);
                 int lip = 1;
                 for (auto lipid_name : selected_lipids){
                     wks_sv.cell(lip++, 1).value() = lipid_name;
@@ -583,13 +604,13 @@ void LipidSpaceGUI::completeFeatureAnalysis(){
 
         }
         else {
-            QMessageBox::information(this, "Export error", "Unknown export format for file '" + file_name + "'.");
+            QMessageBox::information(this, "Export error", "Unknown export format for file '" + complete_feature_analysis_file_name + "'.");
             return;
         }
-        QMessageBox::information(this, "Export completed", "The export is completed into the file '" + file_name + "'.");
+        QMessageBox::information(this, "Export completed", "The export is completed into the file '" + complete_feature_analysis_file_name + "'.");
     }
     catch(exception &){
-        QMessageBox::critical(this, "Error during export", "An error occurred during the export into the file '" + file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
+        QMessageBox::critical(this, "Error during export", "An error occurred during the export into the file '" + complete_feature_analysis_file_name + "'. Is your hard disk drive full by chance or do you have enough permissions to write files into this folder?");
     }
 }
 
@@ -623,27 +644,22 @@ void LipidSpaceGUI::setStudyVariable(int c){
     ui->studyVariableComboBoxStat->setCurrentIndex(c);
     ui->studyVariableComboBoxEnrichment->setCurrentIndex(c);
     string target_variable = ui->studyVariableComboBox->currentText().toStdString();
-    GlobalData::gui_string_var["study_var"] = target_variable;
+    GlobalData::gui_string_var.at("study_var") = target_variable;
     setSecondarySorting();
-    GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
+    GlobalData::gui_string_var.at("secondary_var") = ui->secondaryComboBox->currentText().toStdString();
+
 
     ui->firstConditionCheckBoxList->clear();
     ui->secondConditionCheckBoxList->clear();
 
-    if (uncontains_val(lipid_space->study_variable_values, target_variable)) {
-        connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
-        connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
-        connect(ui->studyVariableComboBoxEnrichment, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
-        connect(ui->secondaryComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::updateSecondarySorting);
-        return;
-    }
-
-    GlobalData::first_enrichment_classes.clear();
-    GlobalData::second_enrichment_classes.clear();
-    for (auto &kv : lipid_space->study_variable_values[target_variable].nominal_values){
-        if (kv.second){
-            ui->firstConditionCheckBoxList->addItem(kv.first.c_str());
-            ui->secondConditionCheckBoxList->addItem(kv.first.c_str());
+    if (contains_val(lipid_space->study_variable_values, target_variable)) {
+        GlobalData::first_enrichment_classes.clear();
+        GlobalData::second_enrichment_classes.clear();
+        for (auto &kv : lipid_space->study_variable_values.at(target_variable).nominal_values){
+            if (kv.second){
+                ui->firstConditionCheckBoxList->addItem(kv.first.c_str());
+                ui->secondConditionCheckBoxList->addItem(kv.first.c_str());
+            }
         }
     }
 
@@ -658,7 +674,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
     statisticsPCA.updatePCA();
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();
-    studyVariableChanged(ui->studyVariableComboBox->currentText().toStdString());
+    studyVariableChanged();
 
     connect(ui->studyVariableComboBox, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
     connect(ui->studyVariableComboBoxStat, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &LipidSpaceGUI::setStudyVariable);
@@ -710,7 +726,7 @@ void LipidSpaceGUI::openTable(){
 
 
 void LipidSpaceGUI::updateSecondarySorting(int){
-    GlobalData::gui_string_var["secondary_var"] = ui->secondaryComboBox->currentText().toStdString();
+    GlobalData::gui_string_var.at("secondary_var") = ui->secondaryComboBox->currentText().toStdString();
     statisticsBoxPlot.updateBoxPlot();
     statisticsFAD.updateFAD();
     statisticsBarPlot.updateBarPlot();
@@ -722,9 +738,9 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (uncontains_val(lipid_space->study_variable_values, target_variable)) return;
-    if (lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable || ui->secondaryComboBox->currentIndex() == 0){
+    if (lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable || ui->secondaryComboBox->currentIndex() == 0){
         ui->studyVariableComboBoxStatLevel->setEnabled(true);
     }
     else {
@@ -738,10 +754,10 @@ void LipidSpaceGUI::updateSecondarySorting(int){
 
 void LipidSpaceGUI::setSecondarySorting(){
     ui->secondaryComboBox->clear();
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
-    bool is_nominal = lipid_space->study_variable_values[target_variable].study_variable_type == NominalStudyVariable;
+    bool is_nominal = lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
     if (is_nominal){
         ui->secondaryComboBox->addItem("Selected lipid species");
         for (auto kv : lipid_space->study_variable_values){
@@ -777,13 +793,13 @@ void LipidSpaceGUI::updateSelectionView(){
         sortings[i].insert({ALPHABETICALLY_ASC, SortVector<string, double>()});
         sortings[i].insert({ALPHABETICALLY_DESC, SortVector<string, double>()});
 
-        SortVector<string, double> &sorting = sortings[i][ALPHABETICALLY_ASC];
+        SortVector<string, double> &sorting = sortings[i].at(ALPHABETICALLY_ASC);
         sorting.reserve(lipid_space->selection[i].size());
         for (auto &kv : lipid_space->selection[i]) sorting.push_back({kv.first, 0});
         sorting.sort_asc();
 
 
-        SortVector<string, double> &sorting_desc = sortings[i][ALPHABETICALLY_DESC];
+        SortVector<string, double> &sorting_desc = sortings[i].at(ALPHABETICALLY_DESC);
         sorting_desc.reserve(lipid_space->selection[i].size());
         for (auto &kv : lipid_space->selection[i]) sorting_desc.push_back({kv.first, 0});
         sorting_desc.sort_desc();
@@ -799,17 +815,17 @@ void LipidSpaceGUI::updateSelectionView(){
         sorting.reserve(lipid_space->lipidomes.size());
         for (auto lipidome : lipid_space->lipidomes) sorting.push_back({lipidome->file_name, lipidome->cleaned_name});
         sorting.sort_asc();
-        for (auto p : sorting) sortings[3]["Origin (ASC)"].push_back({p.second, 0});
+        for (auto p : sorting) sortings[3].at("Origin (ASC)").push_back({p.second, 0});
         sorting.sort_desc();
-        for (auto p : sorting) sortings[3]["Origin (DESC)"].push_back({p.second, 0});
+        for (auto p : sorting) sortings[3].at("Origin (DESC)").push_back({p.second, 0});
 
 
     }
     sortings[0].insert(lipid_space->lipid_sortings.begin(), lipid_space->lipid_sortings.end());
     for (int i = 0; i < 4; ++i){
-        sorting_boxes[i]->clear();
+        sorting_boxes.at(i)->clear();
         for (auto& kv : sortings[i]){
-            sorting_boxes[i]->addItem(kv.first.c_str());
+            sorting_boxes.at(i)->addItem(kv.first.c_str());
         }
     }
 
@@ -871,57 +887,57 @@ void LipidSpaceGUI::updateView(int){
     map<string, set<string>> category_to_class;
 
     // load new data
-    SortVector<string, double> &sort_species_labels = sortings[0][sorting_boxes[0]->currentText().toStdString()];
-    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+    SortVector<string, double> &sort_species_labels = sortings[0].at(sorting_boxes.at(0)->currentText().toStdString());
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
     for (int i = 0; i < (int)sort_species_labels.size(); ++i){
-        string lipid_name = sort_species_labels[i].first;
-        ListItem *item = new ListItem(translations[lipid_name], SPECIES_ITEM, ui->speciesList, lipid_name);
-        item->length = sort_species_labels[i].second;
-        item->setCheckState(lipid_space->selection[0][lipid_name] ? Qt::Checked : Qt::Unchecked);
+        string lipid_name = sort_species_labels.at(i).first;
+        ListItem *item = new ListItem(translations.at(lipid_name), SPECIES_ITEM, ui->speciesList, lipid_name);
+        item->length = sort_species_labels.at(i).second;
+        item->setCheckState(lipid_space->selection[0].at(lipid_name) ? Qt::Checked : Qt::Unchecked);
         ui->speciesList->addItem(item);
     }
 
     map<string, int> sort_category;
-    SortVector<string, double> &sort_category_labels = sortings[2][sorting_boxes[2]->currentText().toStdString()];
+    SortVector<string, double> &sort_category_labels = sortings[2].at(sorting_boxes.at(2)->currentText().toStdString());
     for (int i = 0; i < (int)sort_category_labels.size(); ++i){
-        sort_category.insert({sort_category_labels[i].first, i});
-        string category_name = sort_category_labels[i].first;
+        sort_category.insert({sort_category_labels.at(i).first, i});
+        string category_name = sort_category_labels.at(i).first;
         if (uncontains_val(category_to_class, category_name)){
             category_to_class.insert({category_name, set<string>()});
         }
         ListItem *item = new ListItem(category_name, CATEGORY_ITEM, ui->categoryList);
-        item->setCheckState(lipid_space->selection[2][category_name] ? Qt::Checked : Qt::Unchecked);
+        item->setCheckState(lipid_space->selection[2].at(category_name) ? Qt::Checked : Qt::Unchecked);
         ui->categoryList->addItem(item);
     }
 
 
     map<string, int> sort_class;
-    SortVector<string, double> &sort_class_labels = sortings[1][sorting_boxes[1]->currentText().toStdString()];
+    SortVector<string, double> &sort_class_labels = sortings[1].at(sorting_boxes.at(1)->currentText().toStdString());
     for (int i = 0; i < (int)sort_class_labels.size(); ++i){
-        sort_class.insert({sort_class_labels[i].first, i});
-        string class_name = sort_class_labels[i].first;
+        sort_class.insert({sort_class_labels.at(i).first, i});
+        string class_name = sort_class_labels.at(i).first;
 
         LipidCategory lipid_category = Headgroup::get_category(class_name);
         if ((lipid_category != NO_CATEGORY || lipid_category != UNDEFINED) && contains_val(CategoryString, lipid_category)){
             string lipid_category_str = CategoryString.at(lipid_category);
             if (contains_val(category_to_class, lipid_category_str)){
-                category_to_class[lipid_category_str].insert(class_name);
+                category_to_class.at(lipid_category_str).insert(class_name);
             }
         }
 
         Headgroup hg(class_name);
         ListItem *item = new ListItem(class_name, CLASS_ITEM, ui->classList);
-        item->setCheckState(lipid_space->selection[1][class_name] ? Qt::Checked : Qt::Unchecked);
+        item->setCheckState(lipid_space->selection[1].at(class_name) ? Qt::Checked : Qt::Unchecked);
         ui->classList->addItem(item);
     }
 
     map<string, int> sort_sample;
-    SortVector<string, double> &sort_sample_labels = sortings[3][sorting_boxes[3]->currentText().toStdString()];
+    SortVector<string, double> &sort_sample_labels = sortings[3].at(sorting_boxes.at(3)->currentText().toStdString());
     for (int i = 0; i < (int)sort_sample_labels.size(); ++i){
-        sort_sample.insert({sort_sample_labels[i].first, i});
-        string sample_name = sort_sample_labels[i].first;
+        sort_sample.insert({sort_sample_labels.at(i).first, i});
+        string sample_name = sort_sample_labels.at(i).first;
         ListItem *item = new ListItem(sample_name, SAMPLE_ITEM, ui->sampleList);
-        item->setCheckState(lipid_space->selection[3][sample_name] ? Qt::Checked : Qt::Unchecked);
+        item->setCheckState(lipid_space->selection[3].at(sample_name) ? Qt::Checked : Qt::Unchecked);
         ui->sampleList->addItem(item);
     }
 
@@ -955,7 +971,7 @@ void LipidSpaceGUI::updateView(int){
     connect(ui->treeWidget, &QTreeWidget::itemChanged, this, &LipidSpaceGUI::studyVariableItemChanged);
     connect(ui->sampleList, &QListWidget::itemChanged, this, &LipidSpaceGUI::itemChanged);
 
-    GlobalData::gui_string_var["species_selection"] = ui->speciesComboBox->currentText().toStdString();
+    GlobalData::gui_string_var.at("species_selection") = ui->speciesComboBox->currentText().toStdString();
 
 
     ui->FAtreeWidget->clear();
@@ -1093,6 +1109,34 @@ void LipidSpaceGUI::FADchangeItem(QTreeWidgetItem *item, int column){
 void LipidSpaceGUI::loadTable(ImportData *import_data){
     loadTable(import_data, true);
 }
+
+
+
+void LipidSpaceGUI::processFinished(){
+    switch(progress->process_type){
+        case LipidAnalysis:
+            visualizeFinishedAnalysis();
+            break;
+
+        case LipidAnalysisInitial:
+            updateColorMap();
+            visualizeFinishedAnalysis();
+            break;
+
+        case FeatureAnalysis:
+            finishFeatureAnalysis();
+            break;
+
+        case CompleteFeatureAnalysis:
+            finishCompleteFeatureAnalysis();
+            break;
+
+        default:
+            break;
+    }
+}
+
+
 
 
 void LipidSpaceGUI::changeConditionMode(int mode){
@@ -1257,11 +1301,11 @@ void LipidSpaceGUI::updateColorMap(){
     for (auto lipid_class : lipid_space->global_lipidome->classes){
         if (uncontains_val(GlobalData::colorMap, lipid_class)){
             if (contains_val(colorMap_tmp, lipid_class)){
-                GlobalData::colorMap.insert({lipid_class, colorMap_tmp[lipid_class]});
+                GlobalData::colorMap.insert({lipid_class, colorMap_tmp.at(lipid_class)});
             }
             else {
                 int pos = (color_counter++) % GlobalData::COLORS.size();
-                GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS[pos]});
+                GlobalData::colorMap.insert({lipid_class, GlobalData::COLORS.at(pos)});
             }
         }
     }
@@ -1273,10 +1317,10 @@ void LipidSpaceGUI::updateColorMap(){
                 string study_variable = study_variable_prefix + kv_nom.first;
                 if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable)){
                     if (contains_val(colorMapStudyVariables_tmp, study_variable)){
-                        GlobalData::colorMapStudyVariables.insert({study_variable, colorMapStudyVariables_tmp[study_variable]});
+                        GlobalData::colorMapStudyVariables.insert({study_variable, colorMapStudyVariables_tmp.at(study_variable)});
                     }
                     else {
-                        GlobalData::colorMapStudyVariables.insert({study_variable, GlobalData::COLORS[study_variable_counter++ % GlobalData::COLORS.size()]});
+                        GlobalData::colorMapStudyVariables.insert({study_variable, GlobalData::COLORS.at(study_variable_counter++ % GlobalData::COLORS.size())});
                     }
                 }
             }
@@ -1285,19 +1329,19 @@ void LipidSpaceGUI::updateColorMap(){
             string study_variable_le = kv.first + "_le";
             if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable_le)){
                 if (contains_val(colorMapStudyVariables_tmp, study_variable_le)){
-                    GlobalData::colorMapStudyVariables.insert({study_variable_le, colorMapStudyVariables_tmp[study_variable_le]});
+                    GlobalData::colorMapStudyVariables.insert({study_variable_le, colorMapStudyVariables_tmp.at(study_variable_le)});
                 }
                 else {
-                    GlobalData::colorMapStudyVariables.insert({study_variable_le, GlobalData::COLORS[study_variable_counter++ % GlobalData::COLORS.size()]});
+                    GlobalData::colorMapStudyVariables.insert({study_variable_le, GlobalData::COLORS.at(study_variable_counter++ % GlobalData::COLORS.size())});
                 }
             }
             string study_variable_gr = kv.first + "_gr";
             if (uncontains_val(GlobalData::colorMapStudyVariables, study_variable_gr)){
                 if (contains_val(colorMapStudyVariables_tmp, study_variable_gr)){
-                    GlobalData::colorMapStudyVariables.insert({study_variable_gr, colorMapStudyVariables_tmp[study_variable_gr]});
+                    GlobalData::colorMapStudyVariables.insert({study_variable_gr, colorMapStudyVariables_tmp.at(study_variable_gr)});
                 }
                 else {
-                    GlobalData::colorMapStudyVariables.insert({study_variable_gr, GlobalData::COLORS[study_variable_counter++ % GlobalData::COLORS.size()]});
+                    GlobalData::colorMapStudyVariables.insert({study_variable_gr, GlobalData::COLORS.at(study_variable_counter++ % GlobalData::COLORS.size())});
                 }
             }
         }
@@ -1308,12 +1352,18 @@ void LipidSpaceGUI::updateColorMap(){
 
 
 void LipidSpaceGUI::startFeatureAnalysis(){
+    species_selection_tmp = GlobalData::gui_string_var.at("species_selection");
+    study_var_tmp = GlobalData::gui_string_var.at("study_var");
     lipid_space->target_variable = ui->studyVariableComboBox->currentText().toStdString();
-    lipid_space->process_type = FeatureAnalysis;
 
-    progress->reset();
+    progress->reset(FeatureAnalysis);
     lipid_space->start();
-    progressbar->exec();
+    progress_dialog->open(progress, SLOT(interrupt()));
+}
+
+
+
+void LipidSpaceGUI::finishFeatureAnalysis(){
     ui->itemsTabWidget->setCurrentIndex(0);
     if (GlobalData::condition_mode_enrichment == LipidSpeciesListMode){
         statisticsEnrichment.updateEnrichment();
@@ -1329,14 +1379,15 @@ void LipidSpaceGUI::checkBenford(){
 
 
 void LipidSpaceGUI::runAnalysis(bool initial_run){
-    string species_selection = GlobalData::gui_string_var["species_selection"];
-    string study_var = GlobalData::gui_string_var["study_var"];
-    set<QString> selected_tiles;
+
+    species_selection_tmp = GlobalData::gui_string_var.at("species_selection");
+    study_var_tmp = GlobalData::gui_string_var.at("study_var");
+
+    selected_tiles.clear();
 
     // clear all windows with canvases
     ui->dendrogramView->clear();
     lipid_space->analysis_finished = false;
-    lipid_space->process_type = LipidAnalysis;
     ui->startAnalysisPushButton->setEnabled(false);
     disconnect(this, SIGNAL(transforming(QRectF)), 0, 0);
     disconnect(this, SIGNAL(updateCanvas()), 0, 0);
@@ -1354,18 +1405,16 @@ void LipidSpaceGUI::runAnalysis(bool initial_run){
     canvases.clear();
     updateGUI();
 
-
     // (re)start analysis
-    progress->reset();
+    progress->reset(initial_run ? LipidAnalysisInitial : LipidAnalysis);
     lipid_space->start();
-    progressbar->exec(); // waiting for the progress bar to finish
-
-    if (initial_run) updateColorMap();
-    visualizeFinishedAnalysis(selected_tiles, species_selection, study_var);
+    progress_dialog->open(progress, SLOT(interrupt()));
 }
 
 
-void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, string species_selection, string study_var){
+
+
+void LipidSpaceGUI::visualizeFinishedAnalysis(){
 
     if (GlobalData::benford_warning){
         QMessageBox::warning(this, "Warning", "Please be aware that your current raw data do not conform to Benfords law. For further details, please have a look in the logs (Help → Log messages).");
@@ -1374,9 +1423,9 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
     }
     if (!lipid_space->analysis_finished) return;
 
-    if (lipid_space->study_variable_values.size() > 1 || lipid_space->study_variable_values[FILE_STUDY_VARIABLE_NAME].nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
+    if (lipid_space->study_variable_values.size() > 1 || lipid_space->study_variable_values.at(FILE_STUDY_VARIABLE_NAME).nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
 
-    if (lipid_space->global_lipidome->lipids.size() < 3 && !GlobalData::gui_num_var["dont_less_3_message"]){
+    if (lipid_space->global_lipidome->lipids.size() < 3 && !GlobalData::gui_num_var.at("dont_less_3_message")){
         QMessageBox msg;
         msg.setWindowTitle("LipidSpace Analysis");
         msg.setWindowFlags(Qt::WindowStaysOnTopHint);
@@ -1384,7 +1433,7 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
         QCheckBox *check_box = new QCheckBox("Don't show this again");
         msg.setCheckBox(check_box);
         msg.exec();
-        GlobalData::gui_num_var["dont_less_3_message"] = check_box->isChecked();
+        GlobalData::gui_num_var.at("dont_less_3_message") = check_box->isChecked();
     }
 
 
@@ -1501,13 +1550,13 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(set<QString> &selected_tiles, stri
     statisticsPVal.updatePVal();
     statisticsVolcano.updateVolcano();
 
-    int pos = ui->speciesComboBox->findText(species_selection.c_str());
+    int pos = ui->speciesComboBox->findText(species_selection_tmp.c_str());
     if (pos >= 0) ui->speciesComboBox->setCurrentIndex(pos);
-    pos = ui->studyVariableComboBox->findText(study_var.c_str());
+    pos = ui->studyVariableComboBox->findText(study_var_tmp.c_str());
     if (pos >= 0) ui->studyVariableComboBox->setCurrentIndex(pos);
-    pos = ui->studyVariableComboBoxStat->findText(study_var.c_str());
+    pos = ui->studyVariableComboBoxStat->findText(study_var_tmp.c_str());
     if (pos >= 0) ui->studyVariableComboBoxStat->setCurrentIndex(pos);
-    pos = ui->studyVariableComboBoxEnrichment->findText(study_var.c_str());
+    pos = ui->studyVariableComboBoxEnrichment->findText(study_var_tmp.c_str());
     if (pos >= 0) ui->studyVariableComboBoxEnrichment->setCurrentIndex(pos);
     if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
 
@@ -1539,7 +1588,7 @@ void LipidSpaceGUI::itemChanged(QListWidgetItem *item){
     ListItemType lit = list_item->type;
     string entity = list_item->system_name;
     if (contains_val(lipid_space->selection[(int)lit], entity)){
-        lipid_space->selection[(int)lit][entity] = (item->checkState() == Qt::Checked);
+        lipid_space->selection[(int)lit].at(entity) = (item->checkState() == Qt::Checked);
     }
     else {
         Logging::write_log("Error: selection element '" + entity + "' was not found in the seletion map.");
@@ -1558,8 +1607,8 @@ void LipidSpaceGUI::studyVariableItemChanged(QTreeWidgetItem *item, int col){
     if (study_variable.length() == 0) return;
     if (contains_val(lipid_space->study_variable_values, study_variable)){
         string study_variable_value = item->text(col).toStdString();
-        if (contains_val(lipid_space->study_variable_values[study_variable].nominal_values, study_variable_value)){
-            lipid_space->study_variable_values[study_variable].nominal_values[study_variable_value] = (item->checkState(col) == Qt::Checked);
+        if (contains_val(lipid_space->study_variable_values.at(study_variable).nominal_values, study_variable_value)){
+            lipid_space->study_variable_values.at(study_variable).nominal_values.at(study_variable_value) = (item->checkState(col) == Qt::Checked);
         }
         else {
             Logging::write_log("Error: Study variable value element '" + study_variable_value + "' was not found in the study variable values map.");
@@ -1586,8 +1635,8 @@ void LipidSpaceGUI::studyVariableItemDoubleClicked(QTreeWidgetItem *item, int){
     if (tree_item->study_variable.length() != 0) return;
     string study_variable = tree_item->text(0).toStdString();
     if (contains_val(lipid_space->study_variable_values, study_variable)){
-        if (lipid_space->study_variable_values[study_variable].study_variable_type == NumericalStudyVariable){
-            FilterDialog fd(lipid_space->study_variable_values[study_variable].numerical_filter);
+        if (lipid_space->study_variable_values.at(study_variable).study_variable_type == NumericalStudyVariable){
+            FilterDialog fd(lipid_space->study_variable_values.at(study_variable).numerical_filter);
             fd.setModal(true);
             fd.exec();
             updateSelectionView();
@@ -1625,8 +1674,8 @@ void LipidSpaceGUI::swapLipidomes(int source, int target){
     if (source == target) return;
     if (target < source) swap(source, target);
 
-    swap(canvases[source]->canvas_id, canvases[target]->canvas_id);
-    swap(canvases[source], canvases[target]);
+    swap(canvases.at(source)->canvas_id, canvases.at(target)->canvas_id);
+    swap(canvases.at(source), canvases.at(target));
 
     updateGUI();
 }
@@ -1695,7 +1744,7 @@ void LipidSpaceGUI::setSelectedTilesMode(){
 
 
 void LipidSpaceGUI::toggleLipidNameTranslation(){
-    GlobalData::gui_num_var["translate"] = ui->actionTranslate->isChecked() ? TRANSLATED_NAME : IMPORT_NAME;
+    GlobalData::gui_num_var.at("translate") = ui->actionTranslate->isChecked() ? TRANSLATED_NAME : IMPORT_NAME;
     fill_table();
     updateView(0);
     updateGUI();
@@ -1854,7 +1903,7 @@ void LipidSpaceGUI::openSelectLipidomes(){
 void LipidSpaceGUI::openSelectPC(){
     SelectPC selectPC(this);
     for (int i = (lipid_space->selected_lipidomes.size() > 1); i < (int)canvases.size(); ++i){
-        connect(&selectPC, SIGNAL(reloadPoints()), canvases[i], SLOT(reloadPoints()));
+        connect(&selectPC, SIGNAL(reloadPoints()), canvases.at(i), SLOT(reloadPoints()));
     }
     selectPC.setModal(true);
     selectPC.exec();
@@ -1874,7 +1923,7 @@ void LipidSpaceGUI::openSetPCnum(){
 
 
 void LipidSpaceGUI::setPieTree(int depth){
-    GlobalData::gui_num_var["pie_tree_depth"] = depth;
+    GlobalData::gui_num_var.at("pie_tree_depth") = depth;
     ui->dendrogramView->updateDendrogram();
 }
 
@@ -1885,13 +1934,13 @@ void LipidSpaceGUI::setNormalization(int){
 
 
 void LipidSpaceGUI::setDendrogramHeight(int height){
-    GlobalData::gui_num_var["dendrogram_height"] = height;
+    GlobalData::gui_num_var.at("dendrogram_height") = height;
     ui->dendrogramView->setDendrogramHeight();
 }
 
 
 void LipidSpaceGUI::setPieSize(int size){
-    GlobalData::gui_num_var["pie_size"] = size;
+    GlobalData::gui_num_var.at("pie_size") = size;
     ui->dendrogramView->updateDendrogram();
 }
 
@@ -1919,9 +1968,11 @@ void LipidSpaceGUI::setKnubbel(){
 
 
 
-void LipidSpaceGUI::tab_changed(int){
+void LipidSpaceGUI::tab_changed(int tab_index){
+    GlobalData::main_tab_index = (LipidSpaceTab)tab_index;
     int delta_y = ui->FAtreeWidget->mapToGlobal(QPoint(0, 0)).y() - ui->secondaryComboBox->mapToGlobal(QPoint(0, 0)).y();
     ui->FAtreeWidget->setGeometry(ui->FAtreeWidget->pos().x(), ui->FAtreeWidget->y() - delta_y, ui->FAtreeWidget->width(), ui->FAtreeWidget->height());
+    if ((LipidSpaceTab)tab_index == LipidSpaceEnrichmentTab) statisticsEnrichment.updateEnrichment();
 }
 
 
@@ -2143,8 +2194,8 @@ void LipidSpaceGUI::openMzTabM(QString file_name){
 
 
 void LipidSpaceGUI::loadSession(){
-    string species_selection = GlobalData::gui_string_var["species_selection"];
-    string study_var = GlobalData::gui_string_var["study_var"];
+    species_selection_tmp = GlobalData::gui_string_var.at("species_selection");
+    study_var_tmp = GlobalData::gui_string_var.at("study_var");
 
     if (lipid_space->analysis_finished){
         QMessageBox::StandardButton reply;
@@ -2163,7 +2214,7 @@ void LipidSpaceGUI::loadSession(){
         ui->normalizationComboBox->clear();
         ui->normalizationComboBox->addItem("No normalization", "no");
         GlobalData::normalization = "no";
-    connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
+        connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
         ui->normalizationComboBox->addItem("Relative normalization", "relative");
 
         if (lipid_space->load_session(file_name.toStdString())){
@@ -2196,10 +2247,10 @@ void LipidSpaceGUI::loadSession(){
             connect(ui->actionSingle_linkage_clustering, &QAction::triggered, this, &LipidSpaceGUI::setSingleLinkage);
 
 
-            set<QString> selected_tiles;
+            selected_tiles.clear();
             updateSelectionView();
             checkBenford();
-            visualizeFinishedAnalysis(selected_tiles, species_selection, study_var);
+            visualizeFinishedAnalysis();
         }
         else {
             QMessageBox::warning(this, "Load session", "An error occurred, session file could not be read.");
@@ -2470,7 +2521,7 @@ void LipidSpaceGUI::ShowContextMenuLipidome(Canvas *canvas, QPoint pos){
 
 
         for(int i = 0; i < (int)lipids_for_selection_menu.size(); ++i){
-            auto l = lipids_for_selection_menu[i];
+            auto l = lipids_for_selection_menu.at(i);
             QAction *action_select = new QAction(l.c_str(), this);
             action_selectLipids->addAction(action_select);
             connect(action_select, &QAction::triggered, [=](){ spaceLipidsSelect(i, true); });
@@ -2503,14 +2554,14 @@ void LipidSpaceGUI::spaceLipidsSelect(int index, bool do_select){
     if (index < 0){
         for (auto l : lipids_for_selection_menu){
             if (contains_val(lipid_space->selection[0], l)){
-                lipid_space->selection[0][l] = do_select;
+                lipid_space->selection[0].at(l) = do_select;
             }
         }
     }
     else if (index < (int)lipids_for_selection_menu.size()) {
-        auto l = lipids_for_selection_menu[index];
+        auto l = lipids_for_selection_menu.at(index);
         if (contains_val(lipid_space->selection[0], l)){
-            lipid_space->selection[0][l] = do_select;
+            lipid_space->selection[0].at(l) = do_select;
         }
     }
 
@@ -2556,8 +2607,8 @@ void LipidSpaceGUI::export_table(){
         int rows = raw_data_model->rows;
 
         wks_data.cell(1, 1).value() = "Sample";
-        for (int col = 0; col < cols; ++col) wks_data.cell(1, 2 + col).value() = raw_data_model->column_headers[col].toStdString();
-        for (int row = 0; row < rows; ++row) wks_data.cell(2 + row, 1).value() = raw_data_model->row_headers[row].toStdString();
+        for (int col = 0; col < cols; ++col) wks_data.cell(1, 2 + col).value() = raw_data_model->column_headers.at(col).toStdString();
+        for (int row = 0; row < rows; ++row) wks_data.cell(2 + row, 1).value() = raw_data_model->row_headers.at(row).toStdString();
 
         for (int col = 0; col < cols; ++col){
             for (int row = 0; row < rows; ++row){
@@ -2607,13 +2658,13 @@ void LipidSpaceGUI::export_list(){
     }
 
     ofstream output_stream(outputFile.toStdString().c_str());
-    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
 
-    vector<pair<string, double>> &sort_species_labels = sortings[selection][sorting_boxes[selection]->currentText().toStdString()];
+    vector<pair<string, double>> &sort_species_labels = sortings[selection].at(sorting_boxes.at(selection)->currentText().toStdString());
     map<string, bool> &selection_map = lipid_space->selection[selection];
     for (int i = 0; i < (int)sort_species_labels.size(); ++i){
-        string label = sort_species_labels[i].first;
-        if (selection_map[label]) output_stream << translations[label] << endl;
+        string label = sort_species_labels.at(i).first;
+        if (selection_map.at(label)) output_stream << translations.at(label) << endl;
 
     }
 
@@ -2724,7 +2775,7 @@ void LipidSpaceGUI::ShowContextMenuStatisticsPCA(const QPoint pos){
 void LipidSpaceGUI::ShowContextMenuStatisticsPVal(const QPoint pos){
     if (statisticsPVal.chart->chart_plots.size() == 0) return;
 
-    string target_variable = GlobalData::gui_string_var["study_var"];
+    string target_variable = GlobalData::gui_string_var.at("study_var");
     if (uncontains_val(lipid_space->study_variable_values, target_variable)) return;
 
     QMenu *menu = new QMenu(this);
@@ -2765,11 +2816,11 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
     QAction *actionSelectLipid = 0;
 
     map<string, string> &translations = lipid_space->lipid_name_translations[NORMALIZED_NAME];
-    bool hover_over_lipid = hovered_box_plot_lipid.length() > 0 && contains_val(translations, hovered_box_plot_lipid) && contains_val(lipid_space->selection[0], translations[hovered_box_plot_lipid]);
+    bool hover_over_lipid = hovered_box_plot_lipid.length() > 0 && contains_val(translations, hovered_box_plot_lipid) && contains_val(lipid_space->selection[0], translations.at(hovered_box_plot_lipid));
 
     if (hover_over_lipid){
-        lipid_for_deselect = translations[hovered_box_plot_lipid];
-        bool deselect = lipid_space->selection[0][lipid_for_deselect];
+        lipid_for_deselect = translations.at(hovered_box_plot_lipid);
+        bool deselect = lipid_space->selection[0].at(lipid_for_deselect);
         actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(hovered_box_plot_lipid.c_str()), this);
         menu->addSeparator();
     }
@@ -2820,9 +2871,9 @@ void LipidSpaceGUI::ShowContextMenuStatisticsVolcano(const QPoint pos){
 
 void LipidSpaceGUI::changeVolcanoSelection(bool select, string mode){
     if (uncontains_val(statisticsVolcano.volcano_data, mode)) return;
-    for (auto lipid_name : statisticsVolcano.volcano_data[mode]){
+    for (auto lipid_name : statisticsVolcano.volcano_data.at(mode)){
         if (contains_val(lipid_space->selection[0], lipid_name)){
-            lipid_space->selection[0][lipid_name] = select;
+            lipid_space->selection[0].at(lipid_name) = select;
         }
     }
     updateSelectionView();
@@ -2905,11 +2956,11 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
     QAction *actionSelectLipid = 0;
 
     map<string, string> &translations = lipid_space->lipid_name_translations[NORMALIZED_NAME];
-    bool hover_over_lipid = hovered_box_plot_lipid.length() > 0 && contains_val(translations, hovered_box_plot_lipid) && contains_val(lipid_space->selection[0], translations[hovered_box_plot_lipid]);
+    bool hover_over_lipid = hovered_box_plot_lipid.length() > 0 && contains_val(translations, hovered_box_plot_lipid) && contains_val(lipid_space->selection[0], translations.at(hovered_box_plot_lipid));
 
     if (hover_over_lipid){
-        lipid_for_deselect = translations[hovered_box_plot_lipid];
-        bool deselect = lipid_space->selection[0][lipid_for_deselect];
+        lipid_for_deselect = translations.at(hovered_box_plot_lipid);
+        bool deselect = lipid_space->selection[0].at(lipid_for_deselect);
         actionSelectLipid = new QAction(QString("%1elect %2").arg(deselect ? "Des" : "S").arg(hovered_box_plot_lipid.c_str()), this);
     }
 
@@ -2948,7 +2999,7 @@ void LipidSpaceGUI::ShowContextMenuStatisticsBarPlot(const QPoint pos){
 
 void LipidSpaceGUI::deselectHoveredLipid(){
     if (lipid_for_deselect.length() > 0 && contains_val(lipid_space->selection[0], lipid_for_deselect)){
-        lipid_space->selection[0][lipid_for_deselect] = !lipid_space->selection[0][lipid_for_deselect];
+        lipid_space->selection[0].at(lipid_for_deselect) = !lipid_space->selection[0].at(lipid_for_deselect);
         updateSelectionView();
         lipid_for_deselect = "";
     }
@@ -3247,7 +3298,7 @@ void RawDataModel::reload(){
     row_sizes.resize(rows);
 
 
-    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var["translate"]];
+    map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
 
     set<string> present_lipids;
     set<string> present_lipidomes;
@@ -3268,7 +3319,7 @@ void RawDataModel::reload(){
     for (auto kv : lipid_space->all_lipids){
         column_map.insert({kv.first, column_map.size()});
         if (contains_val(present_lipids, kv.first)) present_columns.insert(column_headers.size());
-        column_headers.push_back(translations[kv.first].c_str());
+        column_headers.push_back(translations.at(kv.first).c_str());
     }
 
 
@@ -3277,9 +3328,9 @@ void RawDataModel::reload(){
     // getting header data for lipidomes and data
     #pragma omp parallel for
     for (uint r = 0; r < lipid_space->lipidomes.size(); ++r){
-        auto lipidome = lipid_space->lipidomes[r];
-        row_headers[r] = lipidome->cleaned_name.c_str();
-        row_sizes[r] = __max(row_sizes[r], (double)fm.horizontalAdvance(row_headers[r]));
+        auto lipidome = lipid_space->lipidomes.at(r);
+        row_headers.at(r) = lipidome->cleaned_name.c_str();
+        row_sizes.at(r) = __max(row_sizes.at(r), (double)fm.horizontalAdvance(row_headers.at(r)));
 
         #pragma omp critical
         {
@@ -3288,25 +3339,25 @@ void RawDataModel::reload(){
 
         for (auto kv : lipidome->study_variables){
             if (!kv.second.missing && contains_val(column_map, kv.first)){
-                int c = column_map[kv.first];
+                int c = column_map.at(kv.first);
                 if (kv.second.study_variable_type == NumericalStudyVariable){
-                    raw_data[r][c] = kv.second.numerical_value;
+                    raw_data.at(r).at(c) = kv.second.numerical_value;
                 }
                 else if (kv.second.study_variable_type == NominalStudyVariable){
-                    raw_data[r][c] = kv.second.nominal_value.c_str();
-                    column_sizes[c] = __max(column_sizes[c], (double)fm.horizontalAdvance(raw_data[r][c].toString()));
+                    raw_data.at(r).at(c) = kv.second.nominal_value.c_str();
+                    column_sizes.at(c) = __max(column_sizes.at(c), (double)fm.horizontalAdvance(raw_data.at(r).at(c).toString()));
                 }
             }
         }
 
         for (uint i = 0; i < lipidome->species.size(); ++i){
-            int c = column_map[lipidome->species[i]];
-            raw_data[r][c] = lipidome->original_intensities[i];
+            int c = column_map.at(lipidome->species.at(i));
+            raw_data.at(r).at(c) = lipidome->original_intensities.at(i);
         }
     }
 
     for (uint c = 0; c < column_headers.size(); c++){
-        column_sizes[c] = __max(column_sizes[c], (double)fm.horizontalAdvance(column_headers[c]));
+        column_sizes.at(c) = __max(column_sizes.at(c), (double)fm.horizontalAdvance(column_headers.at(c)));
     }
 
     QModelIndex topLeft = index(0, 0);
@@ -3334,17 +3385,17 @@ QVariant RawDataModel::data(const QModelIndex &index, int role) const {
         return (contains_val(present_rows, index.row()) && contains_val(present_columns, index.column())) ? QColor(Qt::black) : QColor(180, 180, 180);
     }
     else if (role == Qt::DisplayRole) {
-        return transposed ? raw_data[index.column()][index.row()] : raw_data[index.row()][index.column()];
+        return transposed ? raw_data.at(index.column()).at(index.row()) : raw_data.at(index.row()).at(index.column());
     }
     else if (role == Qt::FontRole){
-        return QFont("Helvetica", GlobalData::gui_num_var["table_zoom"]);
+        return QFont("Helvetica", GlobalData::gui_num_var.at("table_zoom"));
     }
     return QVariant();
 }
 
 
 QVariant RawDataModel::getData(int row, int col){
-    return transposed ? raw_data[col][row] : raw_data[row][col];
+    return transposed ? raw_data.at(col).at(row) : raw_data.at(row).at(col);
 }
 
 
@@ -3367,9 +3418,9 @@ void RawDataModel::updateTable(){
     emit layoutChanged();
 
     QTableView *t = (QTableView *)parent();
-    double font_zoom = (double)GlobalData::gui_num_var["table_zoom"] / 7.5;
-    for (int i = 0; i < rows; ++i) t->setRowHeight(i, GlobalData::gui_num_var["table_zoom"] * 2);
-    for (int i = 0; i < cols; ++i) t->setColumnWidth(i, (double)column_sizes[i] * font_zoom);
+    double font_zoom = (double)GlobalData::gui_num_var.at("table_zoom") / 7.5;
+    for (int i = 0; i < rows; ++i) t->setRowHeight(i, GlobalData::gui_num_var.at("table_zoom") * 2);
+    for (int i = 0; i < cols; ++i) t->setColumnWidth(i, (double)column_sizes.at(i) * font_zoom);
 }
 
 
@@ -3385,14 +3436,14 @@ QVariant RawDataModel::headerData(int section, Qt::Orientation orientation, int 
 
     if (role == Qt::DisplayRole){
         if (orientation == Qt::Horizontal && (int)column_headers.size() > section) {
-            return column_headers[section];
+            return column_headers.at(section);
         }
         if (orientation == Qt::Vertical && (int)row_headers.size() > section) {
-            return row_headers[section];
+            return row_headers.at(section);
         }
     }
     else if (role == Qt::FontRole){
-        return QFont("Helvetica", GlobalData::gui_num_var["table_zoom"]);
+        return QFont("Helvetica", GlobalData::gui_num_var.at("table_zoom"));
     }
     return QVariant();
 }

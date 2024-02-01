@@ -78,7 +78,7 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
         rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
     }
     else {
-        rect = new HoverRectItem(QString("%1\np-value: %2").arg(_label).arg(value, 0, 'f', 1), _label.toStdString());
+        rect = new HoverRectItem(QString("%1\np-value: %2").arg(_label).arg(value, 0, 'f', 4), _label.toStdString());
     }
     rect->setZValue(100);
     rect->setAcceptHoverEvents(true);
@@ -134,7 +134,7 @@ HoverRectItem::HoverRectItem(QString _label, string _lipid_name, QGraphicsItem *
 
 void HoverRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event){
     QGraphicsRectItem::hoverEnterEvent(event);
-    QToolTip::showText(QCursor::pos(), label);
+    QToolTip::showText(QCursor::pos(), label, nullptr, {}, 10000);
     hover_signal.sendSignalEnter(lipid_name);
 }
 
@@ -184,7 +184,7 @@ void Barplot::update_chart(){
     int stars_width = fm.horizontalAdvance("***");
 
     for (uint b = 0; b < bars.size(); ++b){
-        vector< BarBox* > *bar_set = bars[b];
+        vector< BarBox* > *bar_set = bars.at(b);
         for (uint s = 0; s < bar_set->size(); ++s){
             BarBox *bar = bar_set->at(s);
             if (visible && (bar->value > 0) && chart->xrange.x() <= b && b < chart->xrange.y()){
@@ -293,7 +293,7 @@ void Barplot::update_chart(){
         }
 
         if (b >= stat_test_lines.size()) continue;
-        StatTestLine &stat_test_line = stat_test_lines[b];
+        StatTestLine &stat_test_line = stat_test_lines.at(b);
         QPen stat_pen;
         if (show_pvalues && stat_test_line.pvalue <= 0.05 && bar_set->size() >= 2 && chart->xrange.x() <= b && b < chart->xrange.y()){
             double xs = b;
@@ -452,7 +452,7 @@ void Barplot::recompute_hights(){
     double ymax = -INFINITY;
     double all_group_max = 0;
     for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b){
-        auto bar_set = bars[b];
+        auto bar_set = bars.at(b);
         double group_max = 0;
         for (auto bar : *bar_set){
             ymax = __max(ymax, bar->value + bar->error);
@@ -460,7 +460,7 @@ void Barplot::recompute_hights(){
             group_max = __max(group_max, bar->value + bar->error);
             if (bar->data_cloud && bar->data_cloud->data.size()) ymax = __max(ymax, bar->data_cloud->data.back().first);
         }
-        if (update_stat_lines) stat_test_lines[b].line_y = group_max;
+        if (update_stat_lines) stat_test_lines.at(b).line_y = group_max;
     }
 
     QGraphicsSimpleTextItem stars;
@@ -472,8 +472,8 @@ void Barplot::recompute_hights(){
         ymax = __max(chart->yrange.x() * pow(growth, chart->chart_box_inner.height()), ymax);
         if (update_stat_lines){
             for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b){
-                double exponent = log(stat_test_lines[b].line_y / chart->yrange.x()) / log(growth);
-                stat_test_lines[b].line_y = chart->yrange.x() * pow(growth, exponent + stars_offset);
+                double exponent = log(stat_test_lines.at(b).line_y / chart->yrange.x()) / log(growth);
+                stat_test_lines.at(b).line_y = chart->yrange.x() * pow(growth, exponent + stars_offset);
             }
         }
     }
@@ -482,7 +482,7 @@ void Barplot::recompute_hights(){
         double offset = (h / (chart->chart_box_inner.height() - 2 * stars_offset) * chart->chart_box_inner.height() - h) / 2.;
         ymax = __max(all_group_max + 2 * offset, ymax);
         if (update_stat_lines){
-            for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b) stat_test_lines[b].line_y += offset;
+            for (int b = chart->xrange.x(); b < chart->xrange.y(); ++b) stat_test_lines.at(b).line_y += offset;
         }
     }
     chart->yrange = QPointF(y_log_scale ? min_log_value : 0, ymax * 1.01);
@@ -515,7 +515,7 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
     double ymin = chart->yrange.x();
     double ymax = chart->yrange.y();
     for (uint si = 0; si < data->size(); ++si){
-        uint s = sorted_indexes[si].second;
+        uint s = sorted_indexes.at(si).second;
         auto data_set = data->at(s);
         auto *bar_set = new vector<BarBox*>();
         bars.push_back(bar_set);
@@ -525,7 +525,7 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
         double group_max = 0;
         for (uint c = 0; c < data_set.size(); c++){
             if (!label_coloring) color = (colors != 0) ? colors->at(c) : Qt::white;
-            auto values = data_set[c];
+            auto values = data_set.at(c);
             int n = values.size();
 
             double mean = 0;
@@ -536,7 +536,7 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
                 error = values.stdev();
             }
             else {
-                mean = values.empty() ? 0 : values[0];
+                mean = values.empty() ? 0 : values.front();
             }
             if (isnan(mean) || isinf(mean)) mean = 0;
             if (isnan(error) || isinf(error)) error = 0;
@@ -556,8 +556,8 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
                 double sigma = Y.sample_stdev();
 
                 for (int i = 0; i < n; ++i){
-                    X[i] = randnum() * 0.002 - 0.001;
-                    Y[i] = (Y[i] - mue) / sigma;
+                    X.at(i) = randnum() * 0.002 - 0.001;
+                    Y.at(i) = (Y.at(i) - mue) / sigma;
                 }
                 double max_x = 0;
 
@@ -573,8 +573,8 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
                 const __m256d o_three = {0.30482918, 0.30482918, 0.30482918, 0.30482918};
                 for (int i = 0; i < n; ++i){
                     __m256d fx4 = {0., 0., 0., 0., };
-                    __m256d xi = {X[i], X[i], X[i], X[i]};
-                    __m256d yi = {Y[i], Y[i], Y[i], Y[i]};
+                    __m256d xi = {X.at(i), X.at(i), X.at(i), X.at(i)};
+                    __m256d yi = {Y.at(i), Y.at(i), Y.at(i), Y.at(i)};
                     for (int j = 0; j < n4; j += 4){
 
                         __m256d xj = *(__m256d*)(X.data() + j);
@@ -598,17 +598,17 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
                         fx4 = fx4 + x_diff * d;
                     }
                     double fx = fx4[0] + fx4[1] + fx4[2] + fx4[3];
-                    xx[i] = X[i] - fx / sq(sq(0.30482918 * (-sq(fx)) - 1.));
-                    max_x = max(max_x, abs(xx[i]));
+                    xx.at(i) = X.at(i) - fx / sq(sq(0.30482918 * (-sq(fx)) - 1.));
+                    max_x = max(max_x, abs(xx.at(i)));
                 }
 
                 for (int i = 0; i < n; ++i){
-                    orig_data.push_back({values[i], xx[i] / max_x});
-                    ymax = max(ymax, values[i]);
+                    orig_data.push_back({values.at(i), xx.at(i) / max_x});
+                    ymax = max(ymax, values.at(i));
                 }
             }
             else  {
-                orig_data.push_back({n == 0 ? 0 : values[0], 0});
+                orig_data.push_back({n == 0 ? 0 : (values.empty() ? 0 : values.front()), 0});
             }
 
             bar_set->push_back(new BarBox(chart, mean, error, labels->at(s), color, &orig_data));
@@ -618,8 +618,8 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
         }
 
         if (data_set.size() == 2){
-            if (data_set[0].size() && data_set[1].size()) {
-                stat_test_lines.push_back(StatTestLine(chart, p_value_welch(data_set[0], data_set[1]), group_max));
+            if (data_set.at(0).size() && data_set.at(1).size()) {
+                stat_test_lines.push_back(StatTestLine(chart, p_value_welch(data_set.at(0), data_set.at(1)), group_max));
             }
             else {
                 stat_test_lines.push_back(StatTestLine(chart, 1, group_max));
@@ -657,8 +657,8 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
     uint lc_n = chart->legend_categories.size();
     for (uint i = 0; i < lc_n; ++i){
         for (uint j = 0; j < lc_n - 1 - i; ++j){
-            if (chart->legend_categories[j].category_string.toStdString() > chart->legend_categories[j + 1].category_string.toStdString()){
-                swap(chart->legend_categories[j], chart->legend_categories[j + 1]);
+            if (chart->legend_categories.at(j).category_string.toStdString() > chart->legend_categories.at(j + 1).category_string.toStdString()){
+                swap(chart->legend_categories.at(j), chart->legend_categories.at(j + 1));
                 for (auto bar_set : bars){
                     swap(bar_set->at(j), bar_set->at(j + 1));
                 }
@@ -725,7 +725,7 @@ void Boxplot::update_chart(){
     const double whisker_len = 0.25;
 
     for (uint b = 0; b < boxes.size(); ++b){
-        auto &box = boxes[b];
+        auto &box = boxes.at(b);
         double x1 = b - whisker_len;
         double y1 = box.median + (box.upper_extreme - box.median) * animation_length;
         double x2 = b + whisker_len;
@@ -791,10 +791,10 @@ double Boxplot::median(vector<double> &lst, int begin, int end){
 
     int count = end - begin;
     if (count & 1) {
-        return lst[(count >> 1) + begin];
+        return lst.at((count >> 1) + begin);
     } else {
-        double right = lst[(count >> 1) + begin];
-        double left = lst[(count >> 1) - 1 + begin];
+        double right = lst.at((count >> 1) + begin);
+        double left = lst.at((count >> 1) - 1 + begin);
         return (right + left) / 2.0;
     }
 }
@@ -816,8 +816,8 @@ void Boxplot::add(Array &array, QString category, QColor color){
     double sigma = Y.sample_stdev();
 
     for (int i = 0; i < n; ++i){
-        X[i] = randnum() * 0.002 - 0.001;
-        Y[i] = (Y[i] - mue) / sigma;
+        X.at(i) = randnum() * 0.002 - 0.001;
+        Y.at(i) = (Y.at(i) - mue) / sigma;
     }
     double max_x = 0;
     Array xx(n, 0);
@@ -826,21 +826,21 @@ void Boxplot::add(Array &array, QString category, QColor color){
         for (int j = 0; j < n; ++j){
             if (i == j) continue;
 
-            double d = sq(X[i] - X[j]) + sq(Y[i] - Y[j]);
-            fx += (X[j] - X[i]) * exp(-d);
+            double d = sq(X.at(i) - X.at(j)) + sq(Y.at(i) - Y.at(j));
+            fx += (X.at(j) - X.at(i)) * exp(-d);
         }
-        xx[i] = X[i] - fx * exp(-sq(fx));
+        xx.at(i) = X.at(i) - fx * exp(-sq(fx));
     }
     for (int i = 0; i < n; ++i){
-        X[i] = xx[i];
-        max_x = max(max_x, abs(X[i]));
+        X.at(i) = xx.at(i);
+        max_x = max(max_x, abs(X.at(i)));
     }
 
 
 
     SortVector<double, double> data_points;
     for (int i = 0; i < n; ++i){
-        data_points.push_back({array[i], X[i] / max_x * 0.2});
+        data_points.push_back({array.at(i), X.at(i) / max_x * 0.2});
     }
 
 
@@ -872,9 +872,9 @@ void Boxplot::add(Array &array, QString category, QColor color){
     uint lc_n = chart->legend_categories.size();
     for (uint i = 0; i < lc_n; ++i){
         for (uint j = 0; j < lc_n - 1 - i; ++j){
-            if (chart->legend_categories[j].category_string.toStdString() > chart->legend_categories[j + 1].category_string.toStdString()){
-                swap(chart->legend_categories[j], chart->legend_categories[j + 1]);
-                swap(boxes[j], boxes[j + 1]);
+            if (chart->legend_categories.at(j).category_string.toStdString() > chart->legend_categories.at(j + 1).category_string.toStdString()){
+                swap(chart->legend_categories.at(j), chart->legend_categories.at(j + 1));
+                swap(boxes.at(j), boxes.at(j + 1));
             }
         }
     }
@@ -918,7 +918,7 @@ void Lineplot::update_chart(){
     double animation_length = chart->animation * lines.size();
 
     for (uint i = 0; i < lines.size(); ++i){
-        auto &line = lines[i];
+        auto &line = lines.at(i);
         double x1 = line.x1;
         double y1 = line.y1;
         double x2 = line.x2;
@@ -1198,7 +1198,7 @@ void Scatterplot::update_chart(){
         double animation_length = chart->animation * points.size();
 
         for (uint i = 0; i < points.size(); ++i){
-            auto p = points[i];
+            auto p = points.at(i);
             double x = p->x;
             double y = p->y;
             chart->translate(x, y);
@@ -1251,7 +1251,7 @@ void Scatterplot::add(vector< pair<double, double> > &data, QString category, QC
     double ymin = chart->yrange.x();
     double ymax = chart->yrange.y();
     for (uint i = 0; i < data.size(); ++i){
-        auto xy_point = data[i];
+        auto xy_point = data.at(i);
         QString data_label = data_labels ? data_labels->at(i) : "";
 
         xmin = min(xmin, xy_point.first);
@@ -1392,19 +1392,19 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
     double bar_size = (all_max - all_min) / num_bars;
     int max_hist = 0;
     for (uint a = 0; a < arrays.size(); ++a){
-        auto &array = arrays[a];
-        QString category = categories[a];
+        auto &array = arrays.at(a);
+        QString category = categories.at(a);
         QColor color = colors ? colors->at(a) : Qt::red;
 
         vector<int> counts(num_bars + 1, 0);
         for (auto val : array){
             int pos = max(0, __min((int)num_bars, __max(int(0), int((val - all_min) / bar_size))));
-            max_hist = max(max_hist, ++counts[pos]);
+            max_hist = max(max_hist, ++counts.at(pos));
         }
 
 
         for (uint i = 0; i <= num_bars; ++i){
-            if (counts[i]) boxes.push_back(HistogramBox(this, all_min + bar_size * (double)i, bar_size, counts[i], color, true));
+            if (counts.at(i)) boxes.push_back(HistogramBox(this, all_min + bar_size * (double)i, bar_size, counts.at(i), color, true));
         }
 
         chart->legend_categories.push_back(LegendCategory(category, color, &chart->scene));
@@ -1413,8 +1413,8 @@ void Histogramplot::add(vector<Array> &arrays, vector<QString> &categories, vect
     uint lc_n = chart->legend_categories.size();
     for (uint i = 0; i < lc_n; ++i){
         for (uint j = 0; j < lc_n - 1 - i; ++j){
-            if (chart->legend_categories[j].category_string.toStdString() > chart->legend_categories[j + 1].category_string.toStdString()){
-                swap(chart->legend_categories[j], chart->legend_categories[j + 1]);
+            if (chart->legend_categories.at(j).category_string.toStdString() > chart->legend_categories.at(j + 1).category_string.toStdString()){
+                swap(chart->legend_categories.at(j), chart->legend_categories.at(j + 1));
             }
         }
     }
