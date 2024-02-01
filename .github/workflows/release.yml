@@ -145,7 +145,7 @@ jobs:
 
     - name: Copy mingw libgomp-1 DLL (TODO should be used from mingw64/bin)
       run: |
-        copy "libraries/Qt/bin/win64/libgomp-1.dll" "Build/LipidSpace"
+        copy .\libraries\Qt\bin\win64\libgomp-1.dll "Build/LipidSpace"
       shell: cmd
 
     - name: Copy Qt DLLs
