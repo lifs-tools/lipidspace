@@ -121,9 +121,9 @@ jobs:
       run: |
         make
 
-    - name: Ensure that .\release\LipidSpace.exe exists
+    - name: Ensure that .\release\LipidSpaceGH.exe exists
       run: |
-        if not exist ".\release\LipidSpace.exe" exit 1
+        if not exist ".\release\LipidSpaceGH.exe" exit 1
       shell: cmd
 
     - name: Create Distribution Build Directory
@@ -140,7 +140,7 @@ jobs:
         copy .\examples\Example-Dataset.xlsx "Build/LipidSpace/examples"
         copy .\examples\ThreeStudies.xlsx "Build/LipidSpace/examples"
         copy LICENSE* "Build/LipidSpace"
-        copy .\release\LipidSpace.exe "Build/LipidSpace"
+        copy .\release\LipidSpaceGH.exe "Build/LipidSpace/LipidSpace.exe"
       shell: cmd
 
     - name: Copy Qt DLLs
