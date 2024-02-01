@@ -143,6 +143,11 @@ jobs:
         copy .\release\LipidSpaceGH.exe "Build/LipidSpace/LipidSpace.exe"
       shell: cmd
 
+    - name: Copy mingw libgomp-1 DLL (TODO should be used from mingw64/bin)
+      run: |
+        copy "libraries/Qt/bin/win64/libgomp-1.dll" "Build/LipidSpace"
+      shell: cmd
+
     - name: Copy Qt DLLs
       run: |
         powershell Copy-Item "${{ runner.workspace }}/Qt/${{ env.QT_VERSION }}/mingw_64/plugins/platforms" -Destination "Build/LipidSpace" -Recurse -force
