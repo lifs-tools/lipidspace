@@ -2389,14 +2389,12 @@ void Statistics::updateEnrichment(){
 
 
     OntologyEnrichment *ontology_enrichment = lipid_space->ontology_enrichment;
-    vector<OntologyResult> results;
 
+    vector<string> target_list;
     if (GlobalData::condition_mode_enrichment != LipidSpeciesListMode){
-        if (GlobalData::enrichment_list.empty()) return;
-        ontology_enrichment->enrichment_analysis(GlobalData::enrichment_list, results);
+        for (string target : GlobalData::enrichment_list) target_list.push_back(target);
     }
     else {
-        vector<string> target_list;
         map<string, string> &translations = lipid_space->lipid_name_translations[(int)GlobalData::gui_num_var.at("translate")];
         map<string, bool> &selection_map = lipid_space->selection[SPECIES_ITEM];
         for (auto &kv : selection_map){
@@ -2405,9 +2403,11 @@ void Statistics::updateEnrichment(){
                 else target_list.push_back(kv.first);
             }
         }
-        if (target_list.empty()) return;
-        ontology_enrichment->enrichment_analysis(target_list, results);
     }
+    if (target_list.empty()) return;
+
+    vector<OntologyResult> results;
+    ontology_enrichment->enrichment_analysis(target_list, results);
 
     if (GlobalData::enrichment_correction == "bh" || GlobalData::enrichment_correction == "bonferoni"){
         Array p_values;
@@ -2419,7 +2419,6 @@ void Statistics::updateEnrichment(){
         for (uint i = 0; i < results.size(); ++i) results.at(i).pvalue = p_values.at(i);
     }
 
-    cout << results.size() << endl;
 
     sort(results.begin(), results.end(), [](const OntologyResult &a, OntologyResult &b) -> bool {
         return a.pvalue < b.pvalue;
@@ -2432,7 +2431,7 @@ void Statistics::updateEnrichment(){
     vector< vector< Array > > *barplot_data = new vector< vector<Array> >();
 
 
-
+    int ii = 0;
     for (auto &result : results){
         double pvalue = result.pvalue;
         if (pvalue <= 0 || 0.999999 < pvalue) continue;
@@ -2455,13 +2454,19 @@ void Statistics::updateEnrichment(){
             hexRGB = "#ffff00";
         }
 
-        if (pvalue > M_LOG10_005){
+        if (ii++ == 0 && pvalue > M_LOG10_005){
             cout << result.term->term_id << " " << result.term->name << endl;
-            if (result.target_events.size() > 0){
-                for (auto lipid_name : result.target_events){
-                    cout << lipid_name << ", ";
+
+            map<string, map<string, vector<string> > > &lipid_paths = result.term->lipid_paths;
+            for (auto target : target_list){
+                if (contains_val(lipid_paths, target)){
+                    cout << target << ": " << endl;
+                    for (auto &kv : lipid_paths.at(target)){
+                        for (auto term : kv.second){
+                            cout << term << ", ";
+                        } cout << endl << endl;
+                    }
                 }
-                cout << endl << endl;
             }
         }
 

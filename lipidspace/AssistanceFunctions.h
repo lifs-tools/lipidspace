@@ -125,6 +125,7 @@ public:
     string name;
     vector<string> relations;
     string domain;
+    map<string, map<string, vector<string> > > lipid_paths;
 
     OntologyTerm(string _term_id, string _name, set<string> &_relations);
     OntologyTerm(string _term_id, string _name, set<string> &_relations, string _domain);
@@ -157,7 +158,7 @@ public:
     void set_background_lipids(vector<string> &lipid_list);
     void compute_event_occurrance(vector<string> &lipid_list, map<string, set<string>> &occ_list);
     void enrichment_analysis(vector<string> &target_list, vector<OntologyResult> &result_list);
-    void recursive_event_adding(string lipid_input_name, string term_id, set<string> &visited_terms, map<string, set<string>> &occ_list, int recursion = 0);
+    void recursive_event_adding(string lipid_input_name, string term_id, set<string> &visited_terms, map<string, set<string>> &occ_list, int recursion = 0, vector<string> *path = nullptr);
 };
 
 

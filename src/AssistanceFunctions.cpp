@@ -179,31 +179,66 @@ OntologyEnrichment::~OntologyEnrichment(){
 
 
 void OntologyEnrichment::set_background_lipids(vector<string> &lipid_list){
-    for (auto &kv : search_terms) kv.second.clear();
+    for (auto &kv : search_terms){
+        kv.second.clear();
+        ontology_terms.at(kv.first)->lipid_paths.clear();
+    }
     compute_event_occurrance(lipid_list, search_terms);
+
+    for (auto &kv : search_terms){
+        for (auto &paths : ontology_terms.at(kv.first)->lipid_paths){
+            kv.second.insert(paths.first);
+        }
+    }
+
     num_background = (int)lipid_list.size();
 }
 
 
 
-void OntologyEnrichment::recursive_event_adding(string lipid_input_name, string term_id, set<string> &visited_terms, map<string, set<string>> &occ_list, int recursion){
+void OntologyEnrichment::recursive_event_adding(string lipid_input_name, string term_id, set<string> &visited_terms, map<string, set<string>> &occ_list, int recursion, vector<string> *path){
     if (recursion > 0) return;
 
+    bool delete_path = false;
+    if (path == nullptr){
+        delete_path = true;
+        path = new vector<string>();
+    }
+
+
+    /*
     if (contains_val(occ_list, term_id)){
-        //if (lipid_input_name == "LPE 18:0" && contains_val(ontology_terms, term_id)) cout << "add: " << ontology_terms[term_id]->term_id << ": " << ontology_terms[term_id]->name << endl;
         occ_list.at(term_id).insert(lipid_input_name);
     }
+    */
 
-    if (uncontains_val(ontology_terms, term_id)) return;
+    if (contains_val(ontology_terms, term_id)){
+        OntologyTerm *term = ontology_terms.at(term_id);
+        path->push_back(term_id);
 
-    int next_recursion = recursion + contains_val(domains, ontology_terms.at(term_id)->domain);
-    for (string parent_term_id : ontology_terms.at(term_id)->relations){
-        if (uncontains_val(visited_terms, parent_term_id)){
-            visited_terms.insert(parent_term_id);
-
-            recursive_event_adding(lipid_input_name, parent_term_id, visited_terms, occ_list, next_recursion);
+        if (uncontains_val(term->lipid_paths, lipid_input_name)){
+            term->lipid_paths.insert({lipid_input_name, map<string, vector<string> >()});
+            map<string, vector<string> > &lipid_paths = term->lipid_paths.at(lipid_input_name);
+            if (uncontains_val(lipid_paths, path->front())) lipid_paths.insert({path->front(), vector<string>()});
+            vector<string> &lipid_path = lipid_paths.at(path->front());
+            for (string path_id : *path) lipid_path.push_back(path_id);
         }
+
+
+
+        int next_recursion = recursion + contains_val(domains, term->domain);
+        for (string parent_term_id : term->relations){
+            if (uncontains_val(visited_terms, parent_term_id)){
+                visited_terms.insert(parent_term_id);
+
+                recursive_event_adding(lipid_input_name, parent_term_id, visited_terms, occ_list, next_recursion, path);
+            }
+        }
+        path->pop_back();
     }
+
+
+    if (delete_path) delete path;
 }
 
 
@@ -254,30 +289,6 @@ void OntologyEnrichment::compute_event_occurrance(vector<string> &lipid_list, ma
                 }
             }
             delete lipid;
-
-
-            /*
-            while (!term_queue.empty()){
-                string term_id = term_queue.front();
-                term_queue.pop();
-                if (contains_val(occ_list, term_id)){
-
-                    if (lipid_name == "PG 18:1_18:2" && contains_val(ontology_terms, term_id)) cout << "add: " << ontology_terms[term_id]->term_id << ": " << ontology_terms[term_id]->name << endl;
-                    occ_list.at(term_id).insert(lipid_input_name);
-                }
-                visited_terms.insert(term_id);
-
-                if (uncontains_val(ontology_terms, term_id)){
-                    continue;
-                }
-                for (string parent_term_id : ontology_terms[term_id]->relations){
-                    if (uncontains_val(visited_terms, parent_term_id)){
-                        term_queue.push(parent_term_id);
-                        visited_terms.insert(parent_term_id);
-                    }
-                }
-            }
-            */
         }
         catch (exception &){
 
@@ -286,12 +297,53 @@ void OntologyEnrichment::compute_event_occurrance(vector<string> &lipid_list, ma
 }
 
 
+int intersection_count(set<string> &s1, set<string> &s2){
+    int intersections = 0;
+    auto p1 = s1.begin();
+    auto p2 = s2.begin();
+
+
+    while (p1 != s1.end() && p2 != s2.end()){
+        int comp = (*p1).compare((*p2));
+        if (comp == 0){
+            intersections++;
+            p1++;
+            p2++;
+        }
+        else if (comp < 0) p1++;
+        else p2++;
+    }
+    return intersections;
+}
+
+
 
 void OntologyEnrichment::enrichment_analysis(vector<string> &target_list, vector<OntologyResult> &result_list){
     if (num_background == 0) return;
 
+    set<string> target_set;
+    for (auto target : target_list) target_set.insert(target);
+
+    for (auto &kv : search_terms){
+        string term_id = kv.first;
+
+        if (kv.second.size() == 0 || uncontains_val(ontology_terms, term_id) || uncontains_val(GlobalData::enrichment_domains, ontology_terms.at(term_id)->domain)) continue;
+
+        int target_number = intersection_count(kv.second, target_set);
+
+        double p_hyp = exact_fischer(num_background, kv.second.size(), (int)target_list.size(), target_number);
+        result_list.push_back(OntologyResult{ontology_terms.at(term_id), num_background, (int)kv.second.size(), (int)target_list.size(), set<string>(), p_hyp});
+        //for (auto lipid_name : search_target_terms.at(kv.first)) result_list.back().target_events.insert(lipid_name);
+    }
+
+
+    /*
     map<string, set<string>> search_target_terms;
     for (auto &kv : search_terms) search_target_terms.insert({kv.first, set<string>()});
+
+
+
+
     compute_event_occurrance(target_list, search_target_terms);
 
 
@@ -305,6 +357,7 @@ void OntologyEnrichment::enrichment_analysis(vector<string> &target_list, vector
         result_list.push_back(OntologyResult{ontology_terms.at(term_id), num_background, (int)kv.second.size(), (int)target_list.size(), set<string>(), p_hyp});
         for (auto lipid_name : search_target_terms.at(kv.first)) result_list.back().target_events.insert(lipid_name);
     }
+    */
 }
 
 

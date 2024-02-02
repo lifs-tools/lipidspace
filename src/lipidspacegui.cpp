@@ -459,12 +459,12 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(12) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Sheet1", COLUMN_PIVOT_TABLE, ct));
 
+    */
 
     for (string domain : lipid_space->ontology_enrichment->domains){
         ui->domainCheckboxList->addItem(domain.c_str(), QVariant(), true);
         GlobalData::enrichment_domains.insert(domain);
     }
-    */
 
     changeConditionMode(0);
 }
