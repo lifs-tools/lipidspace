@@ -6,7 +6,17 @@ versionAtLeast(QT_VERSION, 6.0.0) {
 }
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
+unix:!macx {
+    QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
+}
+
+win32 {
+    QMAKE_CXXFLAGS += -fopenmp -march=native -Wno-unknown-pragmas
+}
+
+macx {
+    QMAKE_CXXFLAGS += -mavx -Wno-unknown-pragmas
+}
 
 
 # The following define makes your compiler emit warnings if you use
@@ -24,27 +34,41 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 
 QMAKE_CXXFLAGS_RELEASE += -O3
 
-unix {
+unix:!macx {
     LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/linux64/libcppGoslin.so $$PWD/libraries/OpenBLAS/bin/linux64/libopenblas.so $$PWD/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a
+    INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+    DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+
+    INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
+    DEPENDPATH += $$PWD/libraries/OpenBLAS/include
+
+    INCLUDEPATH += $$PWD/libraries/cppgoslin
+    DEPENDPATH += $$PWD/libraries/cppgoslin
 }
 
 win32 {
     LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll
+    INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+    DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
+
+    INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
+    DEPENDPATH += $$PWD/libraries/OpenBLAS/include
+
+    INCLUDEPATH += $$PWD/libraries/cppgoslin
+    DEPENDPATH += $$PWD/libraries/cppgoslin
 }
 
 macx {
-    #LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
+    LIBS += $$PWD/libraries/cppgoslin/bin/osx/libcppGoslin.so $$PWD/libraries/OpenBLAS/bin/osx/libopenblas.a $$PWD/libraries/OpenXLSX/bin/osx/libOpenXLSX.a
+    INCLUDEPATH += $$PWD/libraries/OpenXLSX/include
+    DEPENDPATH += $$PWD/libraries/OpenXLSX/include
+
+    INCLUDEPATH += /opt/homebrew/opt/openblas/include
+    DEPENDPATH += /opt/homebrew/opt/openblas/include
+
+    INCLUDEPATH += $$PWD/libraries/cppgoslin
+    DEPENDPATH += $$PWD/libraries/cppgoslin
 }
-
-INCLUDEPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
-DEPENDPATH += -fopenmp $$PWD/libraries/OpenXLSX/include
-
-INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
-DEPENDPATH += $$PWD/libraries/OpenBLAS/include
-
-INCLUDEPATH += $$PWD/libraries/cppgoslin
-DEPENDPATH += $$PWD/libraries/cppgoslin
-
 
 SOURCES += \
     src/about.cpp \

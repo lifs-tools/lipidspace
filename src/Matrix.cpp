@@ -444,7 +444,29 @@ void Matrix::inverse(Matrix &X, bool symmetric){
     delete[] WORK;
 }
 
+// mac ARM64
+#if WTF_CPU_ARM64
+double Matrix::vector_vector_mult(int n, const double *x, const double *y){
+    int i, n8 = n & ~7;
+    double sum;
+    double* vector_sum = {0., 0., 0., 0.};
 
+    for (i = 0; i < n8; i += 8) {
+        double vector_x1 = _mm256_loadu_pd(&x[i]);
+        double vector_y1 = _mm256_loadu_pd(&y[i]);
+        double vector_x2 = double(&x[i + 4]);
+        double vector_y2 = double(&y[i + 4]);
+        vector_sum += vector_x1 * vector_y1;
+        vector_sum += vector_x2 * vector_y2;
+    }
+    vector_sum[0] += vector_sum[1];
+    vector_sum[2] += vector_sum[3];
+    vector_sum[0] += vector_sum[2];
+    for (sum = 0.0; i < n; ++i) sum += x[i] * y[i];
+    sum += vector_sum[0];
+    return sum;
+}
+#else
 double Matrix::vector_vector_mult(int n, const double *x, const double *y){
     int i, n8 = n & ~7;
     double sum;
@@ -463,8 +485,9 @@ double Matrix::vector_vector_mult(int n, const double *x, const double *y){
     vector_sum[0] += vector_sum[2];
     for (sum = 0.0; i < n; ++i) sum += x[i] * y[i];
     sum += vector_sum[0];
-	return sum;
+    return sum;
 }
+#endif
 
 
 

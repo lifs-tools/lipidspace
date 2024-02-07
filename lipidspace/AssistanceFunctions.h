@@ -31,8 +31,10 @@
 #include <iomanip>
 #include <algorithm>
 #include <math.h>
+// do not include x86 intrinsics on ARM64
+#ifndef WTF_CPU_ARM64
 #include <immintrin.h>
-
+#endif
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
 #define __max(a,b) (((a) > (b)) ? (a) : (b))
@@ -278,7 +280,20 @@ bool test_benford(Array &a);
 bool test_benford(Matrix &m);
 bool test_benford(vector<Lipidome*> &l);
 
-
+// mac ARM64
+#if WTF_CPU_ARM64
+inline double compute_l2_norm(const double *a, const double *b, const int rows){
+    double* dist = {0., 0., 0., 0.};
+    for (int r = 0; r < rows; r += 4){
+        double val1 = a[r];
+        double val2 = b[r];
+        double sub = val1 - val2;
+        dist += sub * sub;
+    }
+    dist += dist**2;
+    return dist[0] + dist[3];
+}
+#else
 inline double compute_l2_norm(const double *a, const double *b, const int rows){
     __m256d dist = {0., 0., 0., 0.};
     for (int r = 0; r < rows; r += 4){
@@ -290,8 +305,7 @@ inline double compute_l2_norm(const double *a, const double *b, const int rows){
     dist = _mm256_hadd_pd(dist, dist);
     return dist[0] + dist[3];
 }
-
-
+#endif
 
 
 template <class T, class U>
