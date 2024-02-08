@@ -80,7 +80,13 @@ jobs:
       uses: egor-tensin/setup-mingw@v2.2.0
       with:
         platform: x64
-        version: 12.2.0
+        version: 11.2.0
+    - name: Attach mingw to Build
+      uses: actions/upload-artifact@v4
+      # action zips automatically
+      with:
+        name: "mingw64"
+        path: "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64"
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
@@ -119,7 +125,7 @@ jobs:
 
     - name: Build LipidSpace
       run: |
-        make
+        make -j8
 
     - name: Ensure that .\release\LipidSpaceGH.exe exists
       run: |
