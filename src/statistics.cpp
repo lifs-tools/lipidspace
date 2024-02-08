@@ -2489,6 +2489,8 @@ void Statistics::updateEnrichment(){
     Lineplot *lineplot = new Lineplot(chart);
     lineplot->add(pvalue_line, "", QColor("#209fdf"));
     chart->add(lineplot);
+    GlobalData::update_enrichment = false;
+    cout << target_list.size() << endl;
 
 }
 

@@ -431,7 +431,15 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->conditionModeLabel->setToolTip("To obtain a target list of lipids, three modes are available. In 'Standard mode', each nominal value from the study variable is taken as its own condition. In 'Selection mode', the user can assign nominal values to a reference or test condition. When selecting 'Lipid species list selection', the lipid species list on the left-hand side will directly by taken.");
 
 
+    for (string domain : lipid_space->ontology_enrichment->domains){
+        ui->domainCheckboxList->addItem(domain.c_str(), QVariant(), true);
+        GlobalData::enrichment_domains.insert(domain);
+    }
 
+    changeConditionMode(0);
+
+
+    /*
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
     ct->at(0) = SampleColumn;
@@ -441,7 +449,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
 
 
-    /*
     string file_name = QCoreApplication::applicationDirPath().toStdString() + "/PFD.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(330, LipidColumn);
     ct->at(0) = SampleColumn;
@@ -460,13 +467,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     loadTable(new ImportData(file_name, "Sheet1", COLUMN_PIVOT_TABLE, ct));
 
     */
-
-    for (string domain : lipid_space->ontology_enrichment->domains){
-        ui->domainCheckboxList->addItem(domain.c_str(), QVariant(), true);
-        GlobalData::enrichment_domains.insert(domain);
-    }
-
-    changeConditionMode(0);
 }
 
 
@@ -662,6 +662,7 @@ void LipidSpaceGUI::setStudyVariable(int c){
             }
         }
     }
+    GlobalData::update_enrichment = true;
 
     statisticsEnrichment.clean();
     statisticsBoxPlot.updateBoxPlot();
@@ -975,6 +976,7 @@ void LipidSpaceGUI::updateView(int){
 
 
     ui->FAtreeWidget->clear();
+    GlobalData::update_enrichment = true;
 
     QTreeWidgetItem *all_categories = new QTreeWidgetItem();
     all_categories->setText(0, "All lipid categories");
@@ -1972,7 +1974,7 @@ void LipidSpaceGUI::tab_changed(int tab_index){
     GlobalData::main_tab_index = (LipidSpaceTab)tab_index;
     int delta_y = ui->FAtreeWidget->mapToGlobal(QPoint(0, 0)).y() - ui->secondaryComboBox->mapToGlobal(QPoint(0, 0)).y();
     ui->FAtreeWidget->setGeometry(ui->FAtreeWidget->pos().x(), ui->FAtreeWidget->y() - delta_y, ui->FAtreeWidget->width(), ui->FAtreeWidget->height());
-    if ((LipidSpaceTab)tab_index == LipidSpaceEnrichmentTab) statisticsEnrichment.updateEnrichment();
+    if ((LipidSpaceTab)tab_index == LipidSpaceEnrichmentTab && GlobalData::update_enrichment) statisticsEnrichment.updateEnrichment();
 }
 
 

@@ -22,6 +22,7 @@ string GlobalData::enrichment_correction = "bh";
 string GlobalData::enrichment_test = "student";
 double GlobalData::enrichment_sig = 0.05;
 double GlobalData::enrichment_log_fc = 1.;
+bool GlobalData::update_enrichment = false;
 set<string> GlobalData::FAD_lipid_classes;
 set<string> GlobalData::first_enrichment_classes;
 set<string> GlobalData::second_enrichment_classes;

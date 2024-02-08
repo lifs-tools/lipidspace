@@ -15,63 +15,126 @@ namespace {
 
 
 
-OntologyTerm::OntologyTerm(string _term_id, string _name, set<string> &_relations){
+OntologyTerm::OntologyTerm(string _term_id, string _name, vector<string> &_relations, string _domain){
     term_id = _term_id;
     name = _name;
     for (auto rel : _relations) relations.push_back(rel);
-    domain = "";
+    domain = _domain;
 }
 
 
+void fast_split(char* text, int len, char delimiter, vector<string_view> &list){
+    if (len == 0) return;
 
-OntologyTerm::OntologyTerm(string _term_id, string _name, set<string> &_relations, string _domain) : OntologyTerm(_term_id, _name, _relations){
-    domain = _domain;
+    int last_pos = 0;
+    for (int i = 0; i < len; ++i){
+        if (text[i] == delimiter){
+            list.push_back(string_view(text + last_pos, i - last_pos));
+            last_pos = i + 1;
+        }
+    }
+    list.push_back(string_view(text + last_pos, len - last_pos));
 }
 
 
 
 OntologyEnrichment::OntologyEnrichment(LipidParser *l){
-    //ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/LION_LS.obo");
-    ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/complete.obo");
-    if (!infile.good()){
-        Logging::write_log("Error: file 'data/LION_LS.obo' not found.");
-        throw LipidException("Error: file 'data/LION_LS.obo' not found. Please check the log message.");
-    }
-    string line;
-    lipid_parser = l;
+    // inflate ontology file
+    ifstream ifs(QCoreApplication::applicationDirPath().toStdString() + "/data/ontology_mmu.gz", ios::in | ios::binary | ios::ate);
 
+    if (!ifs.good()){
+        Logging::write_log("Error: file '/data/ontology.gz' not found.");
+        throw LipidException("Error: file '/data/ontology.gz' not found. Please check the log message.");
+    }
+
+    // inflate file
+    unsigned fileSize = ifs.tellg();
+    ifs.seekg(0, ios::beg);
+    char* bytes = new char[fileSize];
+    ifs.read(bytes, fileSize);
+    unsigned half_length = fileSize / 2;
+
+    unsigned uncompLength = fileSize;
+    char* uncomp = new char[uncompLength];
+
+    z_stream strm;
+    strm.next_in = (Bytef *)bytes;
+    strm.avail_in = fileSize;
+    strm.total_out = 0;
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+
+    bool done = false;
+
+    if (inflateInit2(&strm, (16 + MAX_WBITS)) != Z_OK) {
+        delete []uncomp;
+        delete []bytes;
+        Logging::write_log("Error: file '/data/ontology.gz' is corrupted (code inflateInit2).");
+        throw LipidException("Error: file '/data/ontology.gz' not found. Please check the log message.");
+    }
+
+    while (!done) {
+        if (strm.total_out >= uncompLength ) {
+            char* uncomp2 = new char[uncompLength + half_length];
+            memcpy( uncomp2, uncomp, uncompLength );
+            uncompLength += half_length ;
+            delete []uncomp;
+            uncomp = uncomp2;
+        }
+
+        strm.next_out = (Bytef *) (uncomp + strm.total_out);
+        strm.avail_out = uncompLength - strm.total_out;
+
+        // Inflate another chunk.
+        int err = inflate (&strm, Z_SYNC_FLUSH);
+        if (err == Z_STREAM_END) done = true;
+        else if (err != Z_OK) break;
+    }
+
+    if (inflateEnd (&strm) != Z_OK) {
+        delete []uncomp;
+        Logging::write_log("Error: file '/data/ontology.gz' is corrupted (code inflateEnd).");
+        throw LipidException("Error: file '/data/ontology.gz' not found. Please check the log message.");
+    }
+    delete []bytes;
+
+
+    lipid_parser = l;
     string term_id = "";
     string name = "";
     bool is_lipid_species = false;
     bool is_lipid_class = false;
     bool is_carbon_chain = false;
     string domain = "";
-    set<string> relations;
+    vector<string> relations;
     vector<string> synonyms;
 
-    while (getline(infile, line)){
+    vector<string_view> lines;
+    fast_split(uncomp, strm.total_out, '\n', lines);
+
+    for (auto line : lines){
         if (!line.length()) continue;
 
         if (line == "[Term]"){
-            if (term_id != "" && name != ""){
+            if (term_id != "" && name != "" && name.find("inding") == string::npos){
 
                 if (contains_val(ontology_terms, term_id)){
                     throw LipidSpaceException("Term id '" + term_id + "' in lipid ontology already defined.");
                 }
-                OntologyTerm *term = domain.length() > 0 ? new OntologyTerm(term_id, name, relations, domain) : new OntologyTerm(term_id, name, relations);
+                OntologyTerm *term = new OntologyTerm(term_id, name, relations, domain);
 
                 if (is_lipid_species){
                     if (uncontains_val(lipids, name)) lipids.insert({name, term});
                 }
                 if (is_lipid_class){
                     for (auto synonym : synonyms){
-                        if (uncontains_val(lipid_classes, synonym)) lipid_classes.insert({synonym, vector<OntologyTerm*>()});
-                        lipid_classes.at(synonym).push_back(term);
+                        if (uncontains_val(lipid_classes, synonym)) lipid_classes.insert({synonym, {term}});
+                        else lipid_classes.at(synonym).push_back(term);
                     }
                 }
                 if (is_carbon_chain){
                     for (auto synonym : synonyms){
-                        if (uncontains_val(carbon_chains, synonym)) lipids.insert({synonym, term});
+                        if (uncontains_val(carbon_chains, synonym)) carbon_chains.insert({synonym, term});
                     }
                 }
 
@@ -99,12 +162,11 @@ OntologyEnrichment::OntologyEnrichment(LipidParser *l){
         else if (line.substr(0, 6) == "name: "){
             name = line.substr(6);
         }
-
         else if (line.substr(0, 6) == "is_a: "){
-            line = line.substr(6);
-            uint pos = line.find(" ! ");
-            string relation = line.substr(0, pos);
-            relations.insert(relation);
+            string sub_line = string(line.substr(6));
+            uint pos = sub_line.find(" ! ");
+            string relation = sub_line.substr(0, pos);
+            relations.push_back(relation);
 
             if (relation == "LS:0000001") is_lipid_class = true;
             else if (relation == "LS:0000002") is_lipid_species = true;
@@ -118,31 +180,30 @@ OntologyEnrichment::OntologyEnrichment(LipidParser *l){
                 line = line.substr(pos + 1);
                 pos = line.find(" ! ");
                 line = line.substr(0, pos);
-                relations.insert(line);
+                relations.push_back(string(line));
             }
         }
 
         else if (line.substr(0, 11) == "namespace: "){
             domain = line.substr(11);
         }
-
-        else if (line.substr(0, 8) == "synonym:"){
-            vector<string>* tokens = goslin::split_string(line, '"', '|');
-            if (tokens->size() >= 2) synonyms.push_back(tokens->at(1));
-            delete tokens;
-        }
-
         else if (line == "is_obsolete: true"){
             term_id = "";
             name = "";
         }
+        else if (line.substr(0, 8) == "synonym:"){
+            vector<string_view> tokens;
+            fast_split((char*)line.data(), line.length(), '"', tokens);
+            if (tokens.size() >= 2) synonyms.push_back(string(tokens.at(1)));
+        }
     }
 
-    if (term_id != "" && name != ""){
+
+    if (term_id != "" && name != "" && name.find("inding") == string::npos){
         if (contains_val(ontology_terms, term_id)){
             throw LipidSpaceException("Term id '" + term_id + "' in lipid ontology already defined.");
         }
-        OntologyTerm *term = domain.length() > 0 ? new OntologyTerm(term_id, name, relations, domain) : new OntologyTerm(term_id, name, relations);
+        OntologyTerm *term = new OntologyTerm(term_id, name, relations, domain);
 
         if (is_lipid_species){
             if (uncontains_val(lipids, name)) lipids.insert({name, term});
@@ -155,7 +216,7 @@ OntologyEnrichment::OntologyEnrichment(LipidParser *l){
         }
         if (is_carbon_chain){
             for (auto synonym : synonyms){
-                if (uncontains_val(carbon_chains, synonym)) lipids.insert({synonym, term});
+                if (uncontains_val(carbon_chains, synonym)) carbon_chains.insert({synonym, term});
             }
         }
 
@@ -169,7 +230,7 @@ OntologyEnrichment::OntologyEnrichment(LipidParser *l){
 
 
     if (contains_val(domains, "external")) domains.erase("external");
-
+    delete []uncomp;
 }
 
 

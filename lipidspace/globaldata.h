@@ -37,6 +37,7 @@ public:
     static string enrichment_test;
     static double enrichment_sig;
     static double enrichment_log_fc;
+    static bool update_enrichment;
     static StatLevel stat_level;
     static set<string> FAD_lipid_classes;
     static set<string> first_enrichment_classes;

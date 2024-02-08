@@ -7,7 +7,7 @@ versionAtLeast(QT_VERSION, 6.0.0) {
 
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -std=c++17 -g -Wno-unknown-pragmas
+QMAKE_CXXFLAGS += -fopenmp -std=c++17 -Wno-unknown-pragmas
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -22,16 +22,15 @@ RC_ICONS = LipidSpace.ico
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-QMAKE_CXXFLAGS_RELEASE += -O3 -g
+QMAKE_CXXFLAGS_RELEASE += -O3
 QMAKE_EXTRA_TARGETS += build buildclean
 
 unix {
-    #LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX"
-    LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX"
+    LIBS += -fopenmp -static-libstdc++ -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX" "-lz"
 }
 
 win32 {
-    LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll
+    LIBS += -fopenmp -static-libstdc++ $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll -lz
 }
 
 macx {
@@ -44,8 +43,8 @@ DEPENDPATH += $$PWD/libraries/OpenXLSX/include
 INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
 DEPENDPATH += $$PWD/libraries/OpenBLAS/include
 
-#INCLUDEPATH += $$PWD/libraries/cppgoslin
-#DEPENDPATH += $$PWD/libraries/cppgoslin
+INCLUDEPATH += $$PWD/libraries/cppgoslin
+DEPENDPATH += $$PWD/libraries/cppgoslin
 
 INCLUDEPATH += $$PWD/libraries/nlohmann
 DEPENDPATH += $$PWD/libraries/nlohmann

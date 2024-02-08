@@ -78,7 +78,7 @@ BarBox::BarBox(Chart *chart, double _value, double _error, QString _label, QColo
         rect = new HoverRectItem(QString("%1\n%2 ± %3").arg(_label).arg(value, 0, 'f', 1).arg(error, 0, 'f', 1), _label.toStdString());
     }
     else {
-        rect = new HoverRectItem(QString("%1\np-value: %2").arg(_label).arg(value, 0, 'f', 4), _label.toStdString());
+        rect = new HoverRectItem(QString("%1\np-value: %2").arg(_label).arg(pow(10., -value), 0, 'e', 3), _label.toStdString());
     }
     rect->setZValue(100);
     rect->setAcceptHoverEvents(true);
@@ -519,7 +519,10 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
         auto data_set = data->at(s);
         auto *bar_set = new vector<BarBox*>();
         bars.push_back(bar_set);
-        bar_map.insert({labels->at(s), bar_set});
+
+        QString label = labels->at(s).split("\n").first();
+
+        bar_map.insert({label, bar_set});
         if (label_coloring) color = colors->at(si);
 
         double group_max = 0;
@@ -639,7 +642,7 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
                 stat_test_lines.push_back(StatTestLine(chart, 1, group_max));
             }
         }
-        chart->add_category(labels->at(s));
+        chart->add_category(label);
     }
 
     chart->xrange = QPointF(0, bars.size());

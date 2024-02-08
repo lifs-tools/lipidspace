@@ -33,12 +33,14 @@
 #include "lipidspace/logging.h"
 #include "nlohmann/json.hpp"
 #include <iostream>
+#include <zlib.h>
 #include <iomanip>
 #include <algorithm>
 #include <math.h>
 #include <immintrin.h>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <string_view>
 
 #define randnum() ((double)rand() / (double)(RAND_MAX))
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
@@ -127,8 +129,7 @@ public:
     string domain;
     map<string, map<string, vector<string> > > lipid_paths;
 
-    OntologyTerm(string _term_id, string _name, set<string> &_relations);
-    OntologyTerm(string _term_id, string _name, set<string> &_relations, string _domain);
+    OntologyTerm(string _term_id, string _name, vector<string> &_relations, string _domain = "");
 };
 
 struct OntologyResult {
