@@ -604,6 +604,7 @@ public slots:
 
 
 signals:
+    void interrupted();
     void set_current(int);
     void set_max(int);
     void finish();

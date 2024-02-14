@@ -878,30 +878,30 @@ StudyVariableSet::StudyVariableSet(json &container){
     }
     numerical_filter = {NoFilter, vector<double>()};
 
-    name = (string)container.at("name");
-    study_variable_type = container.at("study_variable_type");
+    name = (string)container["name"];
+    study_variable_type = container["study_variable_type"];
     if (study_variable_type == NominalStudyVariable){
 
         if (!contains_val(container, "nominal_values")){
             throw LipidException("Error: field 'nominal_values' not found in class 'StudyVariableSet'.");
         }
 
-        for (auto &kv : container.at("nominal_values").items()){
+        for (auto &kv : container["nominal_values"].items()){
             nominal_values.insert({(string)kv.key(), (bool)kv.value()});
         }
         numerical_filter = {NoFilter, vector<double>()};
     }
     else {
         if (contains_val(container, "numerical_values")){
-            for (double val : container.at("numerical_values")) numerical_values.insert(val);
+            for (double val : container["numerical_values"]) numerical_values.insert(val);
         }
 
 
         if (contains_val(container, "numerical_filter")){
-            if (contains_val(container.at("numerical_filter"), "key")) numerical_filter.first = container.at("numerical_filter").at("key");
+            if (contains_val(container["numerical_filter"], "key")) numerical_filter.first = container["numerical_filter"]["key"];
 
-            if (contains_val(container.at("numerical_filter"), "value")){
-                for (auto val : container.at("numerical_filter").at("value")) numerical_filter.second.push_back(val);
+            if (contains_val(container["numerical_filter"], "value")){
+                for (auto val : container["numerical_filter"]["value"]) numerical_filter.second.push_back(val);
             }
         }
     }
@@ -910,17 +910,17 @@ StudyVariableSet::StudyVariableSet(json &container){
 
 
 void StudyVariableSet::save(json &container){
-    container.at("name") = name;
-    container.at("study_variable_type") = study_variable_type;
+    container["name"] = name;
+    container["study_variable_type"] = study_variable_type;
     if (study_variable_type == NominalStudyVariable){
         for (auto &kv : nominal_values){
-            container.at("nominal_values").at(kv.first) = kv.second;
+            container["nominal_values"][kv.first] = kv.second;
         }
     }
     else {
-        for (double val : numerical_values) container.at("numerical_values") += val;
-        container.at("numerical_filter").at("key") = numerical_filter.first;
-        for (double val: numerical_filter.second) container.at("numerical_filter").at("value") += val;
+        for (double val : numerical_values) container["numerical_values"] += val;
+        container["numerical_filter"]["key"] = numerical_filter.first;
+        for (double val: numerical_filter.second) container["numerical_filter"]["value"] += val;
     }
 }
 
@@ -967,21 +967,21 @@ StudyVariable::StudyVariable (json &container){
         }
     }
 
-    name = container.at("name");
-    study_variable_type = container.at("study_variable_type");
-    numerical_value = (double)container.at("numerical_value");
-    nominal_value = (string)container.at("nominal_value");
-    missing = (bool)container.at("missing");
+    name = container["name"];
+    study_variable_type = container["study_variable_type"];
+    numerical_value = (double)container["numerical_value"];
+    nominal_value = (string)container["nominal_value"];
+    missing = (bool)container["missing"];
 }
 
 
 
 void StudyVariable::save(json &container){
-    container.at("name") = name;
-    container.at("study_variable_type") = study_variable_type;
-    container.at("numerical_value") = numerical_value;
-    container.at("nominal_value") = nominal_value;
-    container.at("missing") = missing;
+    container["name"] = name;
+    container["study_variable_type"] = study_variable_type;
+    container["numerical_value"] = numerical_value;
+    container["nominal_value"] = nominal_value;
+    container["missing"] = missing;
 }
 
 
@@ -1203,11 +1203,11 @@ Lipidome::Lipidome (json &container, map<string, LipidAdduct*> &all_lipids){
     }
 
 
-    file_name = (string)container.at("file_name");
-    cleaned_name = (string)container.at("cleaned_name");
-    lipidome_name = (string)container.at("lipidome_name");
-    suffix = (string)container.at("suffix");
-    for (string lipid_species : container.at("species")){
+    file_name = (string)container["file_name"];
+    cleaned_name = (string)container["cleaned_name"];
+    lipidome_name = (string)container["lipidome_name"];
+    suffix = (string)container["suffix"];
+    for (string lipid_species : container["species"]){
         if (!contains_val(all_lipids, lipid_species)){
             throw LipidException("Error: lipid '" + lipid_species + "' in lipidome not registered in lipidome '" + cleaned_name + "'.");
         }
@@ -1217,56 +1217,56 @@ Lipidome::Lipidome (json &container, map<string, LipidAdduct*> &all_lipids){
         classes.push_back(l->get_lipid_string(CLASS));
         categories.push_back(l->get_lipid_string(CATEGORY));
     }
-    for (double val : container.at("original_intensities")){
+    for (double val : container["original_intensities"]){
         original_intensities.push_back(val);
     }
     if (contains_val(container, "visualization_intensities")){
-        for (double val : container.at("visualization_intensities")){
+        for (double val : container["visualization_intensities"]){
             visualization_intensities.push_back(val);
         }
     }
     if (contains_val(container, "selected_lipid_indexes")){
-        for (double val : container.at("selected_lipid_indexes")){
+        for (double val : container["selected_lipid_indexes"]){
             selected_lipid_indexes.push_back(val);
         }
     }
     if (contains_val(container, "normalized_intensities")){
-        for (double val : container.at("normalized_intensities")){
+        for (double val : container["normalized_intensities"]){
             normalized_intensities.push_back(val);
         }
     }
     if (contains_val(container, "PCA_intensities")){
-        for (double val : container.at("PCA_intensities")){
+        for (double val : container["PCA_intensities"]){
             PCA_intensities.push_back(val);
         }
     }
 
-    for (auto &kv : container.at("study_variables").items()){
+    for (auto &kv : container["study_variables"].items()){
         study_variables.insert({(string)kv.key(), StudyVariable(kv.value())});
     }
 
-    m.load(container.at("m"));
+    m.load(container["m"]);
 }
 
 
 void Lipidome::save(json &container){
-    container.at("file_name") = file_name;
-    container.at("cleaned_name") = cleaned_name;
-    container.at("lipidome_name") = lipidome_name;
-    container.at("suffix") = suffix;
+    container["file_name"] = file_name;
+    container["cleaned_name"] = cleaned_name;
+    container["lipidome_name"] = lipidome_name;
+    container["suffix"] = suffix;
 
-    for (auto lipid_species : species) container.at("species") += lipid_species;
+    for (auto lipid_species : species) container["species"] += lipid_species;
     for (auto &kv : study_variables){
-        kv.second.save(container.at("study_variables").at(kv.first));
+        kv.second.save(container["study_variables"][kv.first]);
     }
 
-    for (int val : selected_lipid_indexes) container.at("selected_lipid_indexes") += val;
-    for (double val : original_intensities) container.at("original_intensities") += val;
-    for (double val : visualization_intensities) container.at("visualization_intensities") += val;
-    for (double val : normalized_intensities) container.at("normalized_intensities") += val;
-    for (double val : PCA_intensities) container.at("PCA_intensities") += val;
+    for (int val : selected_lipid_indexes) container["selected_lipid_indexes"] += val;
+    for (double val : original_intensities) container["original_intensities"] += val;
+    for (double val : visualization_intensities) container["visualization_intensities"] += val;
+    for (double val : normalized_intensities) container["normalized_intensities"] += val;
+    for (double val : PCA_intensities) container["PCA_intensities"] += val;
 
-    m.save(container.at("m"));
+    m.save(container["m"]);
 
 }
 
@@ -1394,21 +1394,21 @@ DendrogramNode::DendrogramNode(json &container){
     }
 
     if (contains_val(container, "indexes")){
-        for (auto val : container.at("indexes")) indexes.insert((int)val);
+        for (auto val : container["indexes"]) indexes.insert((int)val);
     }
 
-    order = container.at("order");
-    distance = container.at("distance");
-    x_left = container.at("x_left");
-    x_right = container.at("x_right");
-    y = container.at("y");
-    depth = container.at("depth");
+    order = container["order"];
+    distance = container["distance"];
+    x_left = container["x_left"];
+    x_right = container["x_right"];
+    y = container["y"];
+    depth = container["depth"];
 
-    left_child = container.at("left_child").is_number() ? 0 : new DendrogramNode(container.at("left_child"));
-    right_child = container.at("right_child").is_number() ? 0 : new DendrogramNode(container.at("right_child"));
+    left_child = container["left_child"].is_number() ? 0 : new DendrogramNode(container["left_child"]);
+    right_child = container["right_child"].is_number() ? 0 : new DendrogramNode(container["right_child"]);
 
     if (contains_val(container, "study_variable_count_nominal")){
-        for (auto &kv : container.at("study_variable_count_nominal").items()){
+        for (auto &kv : container["study_variable_count_nominal"].items()){
             study_variable_count_nominal.insert({(string)kv.key(), map<string, int>()});
             map<string, int> &m = study_variable_count_nominal.at(kv.key());
             for (auto &kv2 : kv.value().items()) m.insert({(string)kv2.key(), (int)kv2.value()});
@@ -1416,7 +1416,7 @@ DendrogramNode::DendrogramNode(json &container){
     }
 
     if (contains_val(container, "study_variable_numerical")){
-        for (auto &kv : container.at("study_variable_numerical").items()){
+        for (auto &kv : container["study_variable_numerical"].items()){
             study_variable_numerical.insert({(string)kv.key(), vector<double>()});
             vector<double> &v = study_variable_numerical.at(kv.key());
             for (double val : kv.value()) v.push_back(val);
@@ -1424,7 +1424,7 @@ DendrogramNode::DendrogramNode(json &container){
     }
 
     if (contains_val(container, "study_variable_numerical_thresholds")){
-        for (auto &kv : container.at("study_variable_numerical_thresholds").items()){
+        for (auto &kv : container["study_variable_numerical_thresholds"].items()){
             study_variable_numerical_thresholds.insert({(string)kv.key(), (double)kv.value()});
         }
     }
@@ -1432,33 +1432,33 @@ DendrogramNode::DendrogramNode(json &container){
 
 
 void DendrogramNode::save(json &container){
-    for (auto val : indexes) container.at("indexes") += val;
+    for (auto val : indexes) container["indexes"] += val;
 
-    container.at("order") = order;
-    container.at("distance") = distance;
-    container.at("x_left") = x_left;
-    container.at("x_right") = x_right;
-    container.at("y") = y;
-    container.at("depth") = depth;
+    container["order"] = order;
+    container["distance"] = distance;
+    container["x_left"] = x_left;
+    container["x_right"] = x_right;
+    container["y"] = y;
+    container["depth"] = depth;
 
-    if (left_child) left_child->save(container.at("left_child"));
-    else container.at("left_child") = 0;
+    if (left_child) left_child->save(container["left_child"]);
+    else container["left_child"] = 0;
 
-    if (right_child) right_child->save(container.at("right_child"));
-    else container.at("right_child") = 0;
+    if (right_child) right_child->save(container["right_child"]);
+    else container["right_child"] = 0;
 
     for (auto &kv : study_variable_count_nominal){
         for (auto &kv2 : kv.second){
-            container.at("study_variable_count_nominal").at(kv.first).at(kv2.first) = kv2.second;
+            container["study_variable_count_nominal"][kv.first][kv2.first] = kv2.second;
         }
     }
 
     for (auto &kv : study_variable_numerical){
-        for (double val : kv.second) container.at("study_variable_numerical").at(kv.first) += val;
+        for (double val : kv.second) container["study_variable_numerical"][kv.first] += val;
     }
 
     for (auto &kv : study_variable_numerical_thresholds){
-        container.at("study_variable_numerical_thresholds").at(kv.first) = kv.second;
+        container["study_variable_numerical_thresholds"][kv.first] = kv.second;
     }
 }
 

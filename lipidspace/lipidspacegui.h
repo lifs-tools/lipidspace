@@ -197,6 +197,8 @@ signals:
 public slots:
     void quitProgram();
     void processFinished();
+    void processError(QString error_string);
+    void processInterrupted();
     void openLists();
     void openTable();
     void openMzTabM();

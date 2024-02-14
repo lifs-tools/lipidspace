@@ -514,7 +514,7 @@ void Statistics::updateBarPlotClasses(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
     barplot->add(barplot_data, categories, lipid_class_names, colors);
     chart->add(barplot);
-    chart->setYLabel("Summed abundance [A.U.]");
+    chart->setYLabel(stat_matrix.cols > 1 ? "Summed lipid abundance [A.U.]" : "Lipid abundance [A.U.]");
 
 
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
@@ -718,7 +718,7 @@ void Statistics::updateBarPlot(){
     Barplot *barplot = new Barplot(chart, log_scale, show_data, show_pvalues);
     barplot->add(barplot_data, categories, lipid_names, colors);
     chart->add(barplot);
-    chart->setYLabel("Abundance [A.U.]");
+    chart->setYLabel("Lipid abundance [A.U.]");
 
     connect(barplot, &Barplot::enterLipid, this, &Statistics::lipidEntered);
     connect(barplot, &Barplot::exitLipid, this, &Statistics::lipidExited);
@@ -965,6 +965,7 @@ void Statistics::updateFAD(){
     }
     else {
         nominal_target_values.insert({numerical_string, categories->size()});
+        nominal_target_count.insert({numerical_string, 0});
         categories->push_back(numerical_string.c_str());
         lipidome_map.insert({numerical_string, map<Lipidome*, int>()});
         colors->push_back(QColor("#F6A611"));
@@ -976,7 +977,6 @@ void Statistics::updateFAD(){
         string nominal = is_nominal ? lipidome->study_variables.at(target_variable).nominal_value : numerical_string;
         lipidome_map.at(nominal).insert({lipidome, nominal_target_count.at(nominal)++});
     }
-
 
     for (auto lipidome : lipid_space->selected_lipidomes){
         if (uncontains_val(lipidome->study_variables, target_variable) || lipidome->study_variables.at(target_variable).missing) continue;
@@ -1121,7 +1121,7 @@ void Statistics::updateHistogram(){
     double accuracy = compute_accuracy(series);
     stat_results.push_back({"accuracy", accuracy});
     chart->setTitle(QString("accuracy = %1").arg(QString::number(accuracy, 'g', 3)));
-    chart->setXLabel("Abundance [A.U.]");
+    chart->setXLabel(statistics_matrix.cols > 1 ? "Aggregated lipid abundance [A.U.]" : "Lipid abundance [A.U.]");
     chart->setYLabel("# of lipidomes");
 }
 
@@ -1470,7 +1470,7 @@ void Statistics::updateBoxPlot(){
             }
         }
 
-        chart->setYLabel("Abundance [A.U.]");
+        chart->setYLabel((secondary_type == NoSecondary) ? (statistics_matrix.cols > 1 ? "Aggregated lipid abundance [A.U.]" : "Lipid abundance [A.U.]") : secondary_target_variable.c_str());
     }
     else {
 
@@ -1536,6 +1536,8 @@ void Statistics::updateBoxPlot(){
             }
 
         }
+        chart->setXLabel((secondary_type != NumericalSecondary) ? (statistics_matrix.cols > 2 ? "Aggregated lipid abundance [A.U.]" : "Lipid abundance [A.U.]") : secondary_target_variable.c_str()); // > 2 because we add a constants column into the stat matrix
+        chart->setYLabel(target_variable.c_str());
         chart->add(scatterplot);
 
 
@@ -1543,7 +1545,7 @@ void Statistics::updateBoxPlot(){
         double mx = 0, my = 0, ny = 0;
         // computing the study variable mean based on missing values of lipids
         for (uint r = 0; r < S.size(); ++r){
-            if (S.at(r) <= 1e-15) continue;
+            //if (S.at(r) <= 1e-15) continue;
             mx += S.at(r);
             my += target_values.at(r);
             ny += 1;

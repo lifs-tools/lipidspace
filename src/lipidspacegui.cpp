@@ -3,6 +3,7 @@
 
 
 
+
 DragLayer::DragLayer(LipidSpaceGUI *_lipid_space_gui, QWidget *parent) : QWidget(parent) {
     lipid_space_gui = _lipid_space_gui;
 
@@ -113,6 +114,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     complete_feature_analysis_file_name = "";
     species_selection_tmp = "";
     study_var_tmp = "";
+
 
     ui->normalizationComboBox->setStyleSheet("background-color: white; background: white;");
     ui->speciesComboBox->setStyleSheet("background-color: white; background: white;");
@@ -315,25 +317,16 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     lipid_space->progress = progress;
 
     progress_dialog = new QProgressDialog("Analysis in progress...", "Cancel", 0, 100, this);
-
+    progress_dialog->reset();
 
     connect(progress, &Progress::finish, progress_dialog, &QProgressDialog::reset);
     connect(progress, &Progress::finish, this, &LipidSpaceGUI::processFinished);
+    connect(progress, &Progress::interrupted, this, &LipidSpaceGUI::processInterrupted);
     connect(progress, &Progress::set_max, progress_dialog, &QProgressDialog::setMaximum);
     connect(progress, &Progress::set_current, progress_dialog, &QProgressDialog::setValue);
-    connect(progress, &Progress::error, progress_dialog, &QProgressDialog::cancel);
+    connect(progress, &Progress::error, this, &LipidSpaceGUI::processError);
 
 
-    //progressbar = new Progressbar(this);
-    /*
-    connect(progress, &Progress::finish, progressbar, &Progressbar::finish);
-    connect(progress, &Progress::set_current, progressbar, &Progressbar::set_current);
-    connect(progress, &Progress::set_max, progressbar, &Progressbar::set_max);
-    connect(progress, &Progress::error, progressbar, &Progressbar::errorClose);
-    connect(progressbar, &Progressbar::interrupt, progress, &Progress::interrupt);
-    connect(progressbar, &Progressbar::resetAnalysis, this, &LipidSpaceGUI::resetAnalysis);
-    progressbar->setModal(true);
-    */
     ui->dendrogramView->setDendrogramData(lipid_space);
     ui->dendrogramView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->dendrogramView, &Canvas::rightClick, this, &LipidSpaceGUI::ShowContextMenuDendrogram);
@@ -447,26 +440,31 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ct->at(2) = StudyVariableColumnNominal;
     ct->at(3) = StudyVariableColumnNominal;
     loadTable(new ImportData(file_name, "Data", COLUMN_PIVOT_TABLE, ct));
-
-
-    string file_name = QCoreApplication::applicationDirPath().toStdString() + "/PFD.xlsx";
-    vector<TableColumnType> *ct = new vector<TableColumnType>(330, LipidColumn);
-    ct->at(0) = SampleColumn;
-    ct->at(1) = IgnoreColumn;
-    ct->at(2) = IgnoreColumn;
-    ct->at(3) = StudyVariableColumnNominal;
-    ct->at(4) = StudyVariableColumnNominal;
-    ct->at(5) = StudyVariableColumnNumerical;
-    ct->at(6) = StudyVariableColumnNumerical;
-    ct->at(7) = IgnoreColumn;
-    ct->at(8) = IgnoreColumn;
-    ct->at(9) = IgnoreColumn;
-    ct->at(10) = IgnoreColumn;
-    ct->at(11) = StudyVariableColumnNominal;
-    ct->at(12) = StudyVariableColumnNominal;
-    loadTable(new ImportData(file_name, "Sheet1", COLUMN_PIVOT_TABLE, ct));
-
     */
+
+
+    string file_name = QCoreApplication::applicationDirPath().toStdString() + "/PFD_BloodData.xlsx";
+    vector<TableColumnType> *ct = new vector<TableColumnType>(966, IgnoreColumn);
+    ct->at(0) = SampleColumn;
+
+    for (int i = 1; i < 134; ++i) ct->at(i) = StudyVariableColumnNumerical;
+    ct->at(1) = StudyVariableColumnNominal;
+    ct->at(6) = StudyVariableColumnNominal;
+    ct->at(7) = StudyVariableColumnNominal;
+    ct->at(16) = StudyVariableColumnNominal;
+    ct->at(42) = IgnoreColumn;
+    ct->at(123) = IgnoreColumn;
+    ct->at(124) = IgnoreColumn;
+    ct->at(125) = StudyVariableColumnNominal;
+    ct->at(126) = StudyVariableColumnNominal;
+    ct->at(129) = IgnoreColumn;
+    ct->at(130) = StudyVariableColumnNominal;
+    ct->at(131) = StudyVariableColumnNominal;
+    ct->at(132) = StudyVariableColumnNominal;
+    ct->at(133) = StudyVariableColumnNominal;
+    for (int i = 134; i < 451; ++i) ct->at(i) = LipidColumn;
+    loadTable(new ImportData(file_name, "PFD_Bianca_Lipidomics", COLUMN_PIVOT_TABLE, ct));
+
 }
 
 
@@ -474,7 +472,6 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 LipidSpaceGUI::~LipidSpaceGUI(){
     delete ui;
     delete progress;
-    //delete progressbar;
     delete dragLayer;
     delete select_tiles_information;
     delete raw_data_model;
@@ -631,6 +628,12 @@ void LipidSpaceGUI::setStatLevel(int c){
 
     ui->FAtreeWidget->setVisible(GlobalData::stat_level == FattyAcylLipid);
     ui->FATreeLabel->setVisible(GlobalData::stat_level == FattyAcylLipid);
+
+    ui->secondaryComboBox->setVisible(GlobalData::stat_level == LipidomeLevel);
+    ui->secondaryLabel->setVisible(GlobalData::stat_level == LipidomeLevel);
+    if (GlobalData::stat_level != LipidomeLevel){
+        ui->secondaryComboBox->setCurrentIndex(0);
+    }
 }
 
 
@@ -740,14 +743,6 @@ void LipidSpaceGUI::updateSecondarySorting(int){
     statisticsVolcano.updateVolcano();
 
     string target_variable = GlobalData::gui_string_var.at("study_var");
-    if (uncontains_val(lipid_space->study_variable_values, target_variable)) return;
-    if (lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable || ui->secondaryComboBox->currentIndex() == 0){
-        ui->studyVariableComboBoxStatLevel->setEnabled(true);
-    }
-    else {
-        ui->studyVariableComboBoxStatLevel->setCurrentIndex(0);
-        ui->studyVariableComboBoxStatLevel->setEnabled(false);
-    }
 }
 
 
@@ -756,25 +751,33 @@ void LipidSpaceGUI::updateSecondarySorting(int){
 void LipidSpaceGUI::setSecondarySorting(){
     ui->secondaryComboBox->clear();
     string target_variable = GlobalData::gui_string_var.at("study_var");
+    string secondary_variable = GlobalData::gui_string_var.at("secondary_var");
     if (!lipid_space || uncontains_val(lipid_space->study_variable_values, target_variable) || !lipid_space->analysis_finished) return;
 
     bool is_nominal = lipid_space->study_variable_values.at(target_variable).study_variable_type == NominalStudyVariable;
+    ui->secondaryComboBox->addItem("Selected lipid species");
+    int i = 1;
+    int pos = -1;
     if (is_nominal){
-        ui->secondaryComboBox->addItem("Selected lipid species");
         for (auto kv : lipid_space->study_variable_values){
             if (kv.second.study_variable_type == NumericalStudyVariable){
                 ui->secondaryComboBox->addItem(kv.first.c_str());
+                if (kv.first == secondary_variable) pos = i;
+                i++;
             }
         }
     }
     else {
-        ui->secondaryComboBox->addItem("Selected lipid species");
         for (auto kv : lipid_space->study_variable_values){
             if (target_variable != kv.first && kv.first != FILE_STUDY_VARIABLE_NAME){
                 ui->secondaryComboBox->addItem(kv.first.c_str());
+                if (kv.first == secondary_variable) pos = i;
+                i++;
             }
         }
     }
+
+    if (pos != -1) ui->secondaryComboBox->setCurrentIndex(pos);
 }
 
 
@@ -1140,6 +1143,22 @@ void LipidSpaceGUI::processFinished(){
 
 
 
+void LipidSpaceGUI::processError(QString error_message){
+    if (error_message.length() > 0) QMessageBox::warning(this, "Analysis aborted", error_message);
+    emit progress_dialog->cancel();
+    emit progress_dialog->reset();
+    visualizeFinishedAnalysis();
+}
+
+
+
+void LipidSpaceGUI::processInterrupted(){
+    progress_dialog->reset();
+    if (progress->process_type == LipidAnalysis || progress->process_type == LipidAnalysisInitial) resetAnalysis();
+}
+
+
+
 
 void LipidSpaceGUI::changeConditionMode(int mode){
     // show all labels
@@ -1417,15 +1436,22 @@ void LipidSpaceGUI::runAnalysis(bool initial_run){
 
 
 void LipidSpaceGUI::visualizeFinishedAnalysis(){
+    if (!lipid_space->analysis_finished){
+        updateGUI();
+        if (lipid_space->lipidomes.empty() || lipid_space->global_lipidome->lipids.empty()) ui->viewsTabWidget->setCurrentIndex(0);
+        else if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
+        return;
+    }
 
     if (GlobalData::benford_warning){
         QMessageBox::warning(this, "Warning", "Please be aware that your current raw data do not conform to Benfords law. For further details, please have a look in the logs (Help → Log messages).");
         Logging::write_log("Your data does not conform to Benfords law. The law says that for real datsets with empirical or measured data ranging over several orders the distribution of the first digit frequency is reciprocal, not equally distributed. Deviations from the rule may be caused by several factors:\n - The data is in low orders of magnitude range\n - The data contains only few data points\n - Incorrect data imputation was previously performed\nIn any case, please check your raw data manually in the 'Raw data table' tab for abnormalities before continuing your analysis.");
         GlobalData::benford_warning = false;
     }
-    if (!lipid_space->analysis_finished) return;
 
     if (lipid_space->study_variable_values.size() > 1 || lipid_space->study_variable_values.at(FILE_STUDY_VARIABLE_NAME).nominal_values.size() > 1) ui->startAnalysisPushButton->setEnabled(true);
+
+
 
     if (lipid_space->global_lipidome->lipids.size() < 3 && !GlobalData::gui_num_var.at("dont_less_3_message")){
         QMessageBox msg;
@@ -1560,7 +1586,8 @@ void LipidSpaceGUI::visualizeFinishedAnalysis(){
     if (pos >= 0) ui->studyVariableComboBoxStat->setCurrentIndex(pos);
     pos = ui->studyVariableComboBoxEnrichment->findText(study_var_tmp.c_str());
     if (pos >= 0) ui->studyVariableComboBoxEnrichment->setCurrentIndex(pos);
-    if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
+    if (lipid_space->lipidomes.empty() || lipid_space->global_lipidome->lipids.empty()) ui->viewsTabWidget->setCurrentIndex(0);
+    else if (ui->viewsTabWidget->currentIndex() == 0) ui->viewsTabWidget->setCurrentIndex(2);
 
     // reset splitters for statistics tile view
     int h = (double)(ui->splitterStat->height()) * 0.5;
@@ -1696,6 +1723,7 @@ void LipidSpaceGUI::resetAnalysis(){
     LipidSpace::cols_for_pca = LipidSpace::cols_for_pca_init;
 
     ui->dendrogramView->resetDendrogram();
+
     ui->frame->setVisible(false);
     fill_table();
     updateGUI();
@@ -1993,7 +2021,11 @@ void LipidSpaceGUI::updateGUI(){
     updating = true;
 
     QTabBar *bar = ui->viewsTabWidget->tabBar();
-    for (int t = 1; t <= 5; ++t) bar->setTabEnabled(t, lipid_space->lipidomes.size() > 0);
+    bar->setTabEnabled((int)LipidSpaceTileTab, lipid_space->lipidomes.size() > 0 && lipid_space->global_lipidome->lipids.size() > 2);
+    bar->setTabEnabled((int)LipidSpaceDendrogramTab, lipid_space->lipidomes.size() > 0 && !lipid_space->global_lipidome->lipids.empty());
+    bar->setTabEnabled((int)LipidSpaceStatisticsTab, lipid_space->lipidomes.size() > 0 && !lipid_space->global_lipidome->lipids.empty());
+    bar->setTabEnabled((int)LipidSpaceEnrichmentTab, lipid_space->lipidomes.size() > 0 && !lipid_space->global_lipidome->lipids.empty());
+    bar->setTabEnabled((int)LipidSpaceRawTab, lipid_space->lipidomes.size() > 0);
 
     ui->studyVariableComboBox->clear();
     ui->studyVariableComboBoxStat->clear();

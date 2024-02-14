@@ -262,7 +262,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="homeTab">
         <property name="font">
@@ -811,7 +811,7 @@
            <widget class="QLabel" name="FATreeLabel">
             <property name="geometry">
              <rect>
-              <x>760</x>
+              <x>600</x>
               <y>20</y>
               <width>121</width>
               <height>18</height>
@@ -827,7 +827,7 @@
         <widget class="FADTreeWidget" name="FAtreeWidget">
          <property name="geometry">
           <rect>
-           <x>760</x>
+           <x>600</x>
            <y>485</y>
            <width>170</width>
            <height>26</height>
