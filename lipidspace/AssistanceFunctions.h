@@ -624,6 +624,7 @@ public:
     double y;
     pair<double, DendrogramNode*> min_distance;
     int depth = 0;
+    map<string, double> nominal_purities;
 
 
     map<string, map<string, int>> study_variable_count_nominal;
@@ -637,6 +638,7 @@ public:
 
     ~DendrogramNode();
     double* execute(int i, Array* points, vector<int>* sorted_ticks);
+    void compute_purity(DendrogramNode* root);
     void update_distances(set<DendrogramNode*> &nodes, Matrix &m);
     int get_linkages(vector<vector<double>> &linkages, int &index);
     void save(json &container);

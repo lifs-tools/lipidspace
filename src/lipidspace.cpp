@@ -42,6 +42,8 @@ void LipidSpace::create_dendrogram(){
     dendrogram_root = *nodes.begin();
     double* ret = dendrogram_root->execute(0, &dendrogram_points, &dendrogram_sorting);
     delete []ret;
+    dendrogram_root->compute_purity(dendrogram_root);
+    for (auto &kv : dendrogram_root->nominal_purities) cout << kv.first << " " << kv.second << endl;
 
     // determining importance of lipids based on goodness of separating
     // study variables applying simple 1D linear regression

@@ -1346,6 +1346,7 @@ DendrogramNode::DendrogramNode(int index, map<string, StudyVariableSet> *study_v
     for (auto kv : *study_variable_values){
         if (kv.second.study_variable_type == NominalStudyVariable){
             study_variable_count_nominal.insert({kv.first, map<string, int>()});
+            nominal_purities.insert({kv.first, 1e100});
             for (auto kv_nom : kv.second.nominal_values){
                 study_variable_count_nominal.at(kv.first).insert({kv_nom.first, 0});
             }
@@ -1465,7 +1466,7 @@ void DendrogramNode::save(json &container){
 
 
 double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_ticks){
-    if (left_child == 0){
+    if (left_child == nullptr){
         order = cnt;
         sorted_ticks->push_back(*indexes.begin());
         return new double[3]{(double)cnt, 0, (double)cnt + 1};
@@ -1503,8 +1504,11 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     // count study variables
     for (auto kv : left_child->study_variable_count_nominal){
         study_variable_count_nominal.insert({kv.first, map<string, int>()});
+        nominal_purities.insert({kv.first, 1e100});
+
         for (auto kv2 : kv.second){
-            study_variable_count_nominal.at(kv.first).insert({kv2.first, kv2.second + right_child->study_variable_count_nominal.at(kv.first).at(kv2.first)});
+            int category_count = kv2.second + right_child->study_variable_count_nominal.at(kv.first).at(kv2.first);
+            study_variable_count_nominal.at(kv.first).insert({kv2.first, category_count});
         }
     }
 
@@ -1527,6 +1531,52 @@ double* DendrogramNode::execute(int cnt, Array* points, vector<int>* sorted_tick
     }
     return new double[3]{(x_left + x_right) / 2., y, (double)cnt};
 }
+
+
+void DendrogramNode::compute_purity(DendrogramNode* root){
+    if (left_child == nullptr){
+        for (auto &kv : study_variable_count_nominal){
+            string category = "";
+            for (auto &kv2 : kv.second){
+                if (kv2.second > 0){
+                    category = kv2.first;
+                    break;
+                }
+            }
+            if (contains_val(root->study_variable_count_nominal, kv.first) && contains_val(root->study_variable_count_nominal.at(kv.first), category)){
+                double total_category_count = (double)root->study_variable_count_nominal.at(kv.first).at(category);
+                nominal_purities.at(kv.first) = - pow(2. / total_category_count - 1., 2) + 1.;
+            }
+        }
+        return;
+    }
+
+    left_child->compute_purity(root);
+    right_child->compute_purity(root);
+
+    for (auto &kv : left_child->study_variable_count_nominal){
+        study_variable_count_nominal.insert({kv.first, map<string, int>()});
+
+        int num_empty_categories = 0;
+        double purity = 0;
+        double children_purity = left_child->nominal_purities.at(kv.first) + right_child->nominal_purities.at(kv.first);
+        for (auto &kv2 : kv.second){
+            int category_count = kv2.second + right_child->study_variable_count_nominal.at(kv.first).at(kv2.first);
+            study_variable_count_nominal.at(kv.first).insert({kv2.first, category_count});
+            num_empty_categories += category_count == 0;
+            double total_category_count = (double)root->study_variable_count_nominal.at(kv.first).at(kv2.first);
+            purity += -pow(2. * (double)category_count / total_category_count - 1., 2) + 1.;
+        }
+        // mixed node
+        if (num_empty_categories < (int)study_variable_count_nominal.at(kv.first).size() - 1){
+            nominal_purities.at(kv.first) = children_purity;
+        }
+        else {
+            nominal_purities.at(kv.first) = min(children_purity, purity);
+        }
+    }
+}
+
 
 
 
