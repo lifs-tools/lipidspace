@@ -33,6 +33,11 @@ components:
                         $ref: "#/components/schemas/TableColumnType"
                 Table:
                     type: string
+                RequestedSpaces:
+                    description: Array of requested spaces. If empty or undefined, all spaces are calculated. Use 'global' to select the global lipid space.
+                    type: array
+                    items:
+                        type: string
             required:
                 - TableType
                 - TableColumnTypes
@@ -46,10 +51,14 @@ components:
                     type: array
                     items:
                         type: string
+                ImportedLipidNames:
+                    type: array
+                    items:
+                        type: string
                 Intensities:
                     type: array
                     items:
-                        type: integer
+                        type: number
                 X:
                     type: array
                     items:
@@ -61,6 +70,7 @@ components:
             required:
                 - LipidomeName
                 - LipidNames
+                - ImportedLipidNames
                 - Intensities
                 - X
                 - Y
@@ -70,17 +80,24 @@ components:
             items:
                 $ref: "#/components/schemas/LipidSpace"
 
-        LipidomeDistanceMatrixRow:
+        MatrixRow:
             type: array
             items:
                 type: number
+
+        LinkageMatrix:
+            type: array
+            items:
+                type: array
+                items:
+                    $ref: "#/components/schemas/MatrixRow"
 
         LipidomeDistanceMatrix:
             type: array
             items:
                 type: array
                 items:
-                    $ref: "#/components/schemas/LipidomeDistanceMatrixRow"
+                    $ref: "#/components/schemas/MatrixRow"
 
         LipidSpacePcaResponse:
             type: object
@@ -89,9 +106,12 @@ components:
                     $ref: "#/components/schemas/LipidSpaces"
                 LipidomeDistanceMatrix:
                     $ref: "#/components/schemas/LipidomeDistanceMatrix"
+                LinkageMatrix:
+                    $ref: "#/components/schemas/LinkageMatrix"
             required:
                 - LipidSpaces
                 - LipidomeDistanceMatrix
+                - LinkageMatrix
 
 paths:
     /pca:
