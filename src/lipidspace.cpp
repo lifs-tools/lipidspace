@@ -269,8 +269,8 @@ void LipidSpace::create_dendrogram(){
 
 
 
-LipidSpace::LipidSpace() {
-    ontology_enrichment = new OntologyEnrichment(&parser);
+LipidSpace::LipidSpace(bool with_ontology_enrichment) {
+    ontology_enrichment = with_ontology_enrichment ? new OntologyEnrichment(&parser) : nullptr;
     keep_sn_position = true;
     ignore_unknown_lipids = false;
     ignore_doublette_lipids = false;
@@ -3230,7 +3230,7 @@ std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nan
 
     }
 
-    if (report_progress){
+    if (report_progress && ontology_enrichment){
         ontology_enrichment->set_background_lipids(global_lipidome->species);
     }
 

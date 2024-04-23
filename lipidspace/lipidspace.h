@@ -57,7 +57,7 @@ public:
     OntologyEnrichment *ontology_enrichment;
 
 
-    LipidSpace();
+    LipidSpace(bool with_ontology_enrichment = true);
     ~LipidSpace();
     LipidSpace(LipidSpace *ls);
     void run_analysis();

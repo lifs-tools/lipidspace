@@ -173,7 +173,7 @@ public:
 
 
                     // setup LipidSpace
-                    LipidSpace lipid_space;
+                    LipidSpace lipid_space(false);
                     lipid_space.ignore_unknown_lipids = true;
                     lipid_space.ignore_doublette_lipids = true;
 
