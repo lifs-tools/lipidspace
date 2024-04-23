@@ -19,8 +19,8 @@ components:
                 - SampleColumn
                 - QuantColumn
                 - LipidColumn
-                - FeatureColumnNumerical
-                - FeatureColumnNominal
+                - StudyVariableColumnNumerical
+                - StudyVariableColumnNominal
                 - IgnoreColumn
         LipidSpacePcaRequest:
             type: object
@@ -59,14 +59,17 @@ components:
                     type: array
                     items:
                         type: number
+                        format: double
                 X:
                     type: array
                     items:
                         type: number
+                        format: double
                 Y:
                     type: array
                     items:
                         type: number
+                        format: double
             required:
                 - LipidomeName
                 - LipidNames
@@ -84,6 +87,7 @@ components:
             type: array
             items:
                 type: number
+                format: double
 
         LinkageMatrix:
             type: array
