@@ -34,7 +34,7 @@ components:
                 Table:
                     type: string
                 RequestedSpaces:
-                    description: Array of requested spaces. If empty or undefined, all spaces are calculated. Use 'global' to select the global lipid space.
+                    description: Array of requested spaces. If empty or undefined, all spaces are calculated. Use 'global' to select the global lipid space. Use 'LipidomeDistanceMatrix' to include the lipidome distance matrix in the response.
                     type: array
                     items:
                         type: string
