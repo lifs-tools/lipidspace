@@ -88,16 +88,13 @@ components:
         LinkageMatrix:
             type: array
             items:
-                type: array
-                items:
-                    $ref: "#/components/schemas/MatrixRow"
+                $ref: "#/components/schemas/MatrixRow"
+
 
         LipidomeDistanceMatrix:
             type: array
             items:
-                type: array
-                items:
-                    $ref: "#/components/schemas/MatrixRow"
+                $ref: "#/components/schemas/MatrixRow"
 
         LipidSpacePcaResponse:
             type: object
