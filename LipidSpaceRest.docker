@@ -15,9 +15,11 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libstdc++6 \
     openssl \
     libssl-dev \
+    zlib1g-dev \
+    zlib1g \
  && rm -rf /var/lib/apt/lists/*
 VOLUME /tmp
-COPY . /lipidspace 
+COPY . /lipidspace
 WORKDIR /lipidspace
 RUN qmake6 LipidSpaceRest.pro
 RUN make clean && make release -j$((`nproc`+1))
