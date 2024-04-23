@@ -212,7 +212,7 @@ public:
     bool mouseOver = false;
 
     explicit FADTreeWidget(QWidget *parent = 0);
-    void enterEvent(QEvent* event) override;
+    void enterEvent(QEnterEvent* event) override;
     void leaveEvent(QEvent* event) override;
 
 signals:

@@ -667,7 +667,7 @@ FADTreeWidget::FADTreeWidget(QWidget *parent) : QTreeWidget(parent){
 }
 
 
-void FADTreeWidget::enterEvent(QEvent *event){
+void FADTreeWidget::enterEvent(QEnterEvent *event){
     emit hoverEnter(event);
 }
 
