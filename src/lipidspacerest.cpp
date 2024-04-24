@@ -18,6 +18,51 @@ using namespace httplib;
 
 vector<string> dict_keys{"TableType", "TableColumnTypes", "Table"};
 
+// https://datatracker.ietf.org/doc/html/rfc7807 - Problem Details for HTTP APIs
+class ProblemDetails
+{
+public:
+    std::optional<QString> type;
+    QString title;
+    int status;
+    QString detail;
+    std::optional<QString> instance;
+
+    ProblemDetails(std::optional<QString> type, QString title, int status, QString detail, std::optional<QString> instance)
+    {
+        this->type = type;
+        this->title = title;
+        this->status = status;
+        this->detail = detail;
+        this->instance = instance;
+    }
+
+    ProblemDetails(std::string title, int status, std::string detail)
+    {
+        this->type = std::nullopt;
+        this->title = QString::fromStdString(title);
+        this->status = status;
+        this->detail = QString::fromStdString(detail);
+        this->instance = std::nullopt;
+    }
+
+    std::string to_json()
+    {
+        // create a json string
+        // type is a URI reference and should only be included if it is not null and not empty
+        // title is a short, human-readable summary of the problem type and always required to be provided
+        // status is the HTTP status code and always required to be provided
+        // detail is a human-readable explanation specific to this occurrence of the problem and always required to be provided
+        // instance is a URI reference that identifies the specific occurrence of the problem and should only be included if it is not null and not empty
+        std::string type_str = this->type.has_value() ? "\"type\": \"" + this->type.value().toStdString() + "\", " : "";
+        std::string title_str = "\"title\": \"" + this->title.toStdString() + "\", ";
+        std::string status_str = "\"status\": " + QString::number(this->status).toStdString() + ", ";
+        std::string detail_str = "\"detail\": \"" + this->detail.toStdString() + "\", ";
+        std::string instance_str = this->instance.has_value() ? "\"instance\": \"" + this->instance.value().toStdString() + "\", " : "";
+        return "{" + type_str + title_str + status_str + detail_str + instance_str + "}";
+    }
+};
+
 class LipidSpaceRest
 {
 public:
@@ -32,7 +77,24 @@ public:
         // stop(SIGINT);
         qInfo("Starting LipidSpaceRest server version='%s' on host='%s' port='%d' tmp_folder='%s' debug='%s'", GlobalData::LipidSpace_version.c_str(), host.c_str(), port, temp_folder.c_str(), debug ? "true" : "false");
         // register handlers
+        // Health Endpoint
+        svr.Get("/lipidspace/v1/health", [](const Request &req, Response &res) {
+            if (req.get_header_value("Accept") == "application/json"){
+                res.status = 200;
+                res.set_content("{\"status\": \"UP\"}", "application/json");
+                return;
+            }
+            else
+            {
 
+                ProblemDetails pd = ProblemDetails("Unsupported accept media type", 415, "Unsupported accept media type header: '" + req.get_header_value("Accept") + "'! Please use 'Content-Type=application/json'!");
+                res.status = pd.status;
+                res.body = pd.to_json();
+                qWarning() << pd.detail;
+                return;
+            }
+        });
+        // PCA Endpoint
         svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res){
             if (req.get_header_value("Content-Type") == "application/json"){
                 if (GlobalData::debug) {
@@ -45,7 +107,7 @@ public:
                 if (!QDir().mkpath(dirPath))
                 {
                     res.status = 500;
-                    res.reason = ("Failed to create temporary directory for call id " + callId).toStdString();
+                    res.body = ProblemDetails("Failed to create temporary directory", 500, "Failed to create temporary directory for call id='" + callId.toStdString() + "'").to_json();
                     return;
                 }
                 QByteArray qbytes = QByteArray(req.body.c_str());
@@ -60,15 +122,17 @@ public:
                 {
                     qWarning() << "Malformed JSON: '" << req.body.c_str() << "'";
                     res.status = 400;
-                    res.reason = "Malformed JSON";
+                    res.body = ProblemDetails("Malformed JSON", res.status, "Malformed JSON received in request body!").to_json();
+                    return;
                 }
                 else {
                     // check if request is an object
                     if (!pcaRequest.isObject())
                     {
-                        res.status = 400;
-                        res.reason = "Malformed JSON, not a dictionary";
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("Malformed JSON", 400, "Malformed JSON received in request body: not a dictionary!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
 
@@ -77,9 +141,10 @@ public:
                     {
                         if (!pcaRequest.object().contains(key.c_str()))
                         {
-                        res.status = 400;
-                        res.reason = "Malformed JSON, key '" + key + "' not a dictionary";
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("Malformed JSON", 400, "Malformed JSON received in request body: key '" + key + "' is not a dictionary!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                         }
                     }
@@ -87,44 +152,49 @@ public:
                     // check if request contains valid table type
                     if (!pcaRequest["TableType"].isString())
                     {
-                        res.status = 400;
-                        res.reason = "Malformed JSON, 'TableType' value is not a string";
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("Malformed JSON", 400, "Malformed JSON received in request body: 'TableType' value is not a string!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
 
                     // check if request contains valid table type
                     if (uncontains_val(TableTypeMap, pcaRequest["TableType"].toString().toStdString()))
                     {
-                        res.status = 400;
-                        res.reason = "Malformed JSON, '" + pcaRequest["TableType"].toString().toStdString() + "'is not a valid table type";
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("Malformed JSON", 400, "Malformed JSON received in request body: '" + pcaRequest["TableType"].toString().toStdString() + "'is not a valid table type!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
 
                     // check if table column types are valid
                     if (!pcaRequest["TableColumnTypes"].isArray())
                     {
-                        res.status = 400;
-                        res.reason = "Malformed JSON, 'TableColumnTypes' value is not an array";
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("Malformed JSON", 400, "Malformed JSON, 'TableColumnTypes' value is not an array!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
                     for (auto value : pcaRequest["TableColumnTypes"].toArray())
                     {
                         if (!value.isString())
                         {
-                        res.status = 400;
-                        res.reason = "Malformed JSON, 'TableColumnTypes' array contains a non string";
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("Malformed JSON", 400, "Malformed JSON, 'TableColumnTypes' array contains a non string!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                         }
 
                         if (uncontains_val(TableColumnTypeMap, value.toString().toStdString()))
                         {
-                        res.status = 400;
-                        res.reason = "Malformed JSON, '" + value.toString().toStdString() + "' is not a valid table column type";
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("Malformed JSON", 400, "Malformed JSON, '" + value.toString().toStdString() + "' is not a valid table column type!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                         }
                     }
@@ -132,9 +202,10 @@ public:
                     // check if table is of string type
                     if (!pcaRequest["Table"].isString())
                     {
-                        res.status = 400;
-                        res.reason = "Malformed JSON, 'Table' value is not a string";
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("Malformed JSON", 400, "Malformed JSON, 'Table' value is not a string!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
 
@@ -192,16 +263,18 @@ public:
                     }
                     catch (LipidSpaceException &e)
                     {
-                        res.status = 400;
-                        res.reason = string("An error occurred during LipidSpace ImportData, '") + e.what() + string("'");
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("LipidSpace import error: ImportData", 400, string("An error occurred during LipidSpace ImportData, '") + e.what() + string("'!"));
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
                     catch (std::exception &e)
                     {
-                        res.status = 500;
-                        res.reason = string("A server error occurred during LipidSpace ImportData, '") + e.what() + string("'");
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("LipidSpace server error", 500, string("A server error occurred during LipidSpace ImportData, '") + e.what() + string("'!"));
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
 
@@ -215,16 +288,18 @@ public:
                     }
                     catch (LipidSpaceException &e)
                     {
-                        res.status = 400;
-                        res.reason = string("An error occurred during LipidSpace load_row_table, '") + e.what() + string("'");
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("LipidSpace import error: load_row_table", 400, string("An error occurred during LipidSpace load_row_table, '") + e.what() + string("'!"));
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
                     catch (std::exception &e)
                     {
-                        res.status = 500;
-                        res.reason = string("A server error occurred during LipidSpace load_row_table, '") + e.what() + string("'");
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("LipidSpace server error: load_row_table", 500, string("A server error occurred during LipidSpace load_row_table, '") + e.what() + string("'!"));
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
                     if (import_data) delete import_data;
@@ -239,32 +314,36 @@ public:
                     }
                     catch (LipidSpaceException &e)
                     {
-                        res.status = 400;
-                        res.reason = string("An error occurred during LipidSpace analysis, '") + e.what() + string("'");
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("LipidSpace analysis error", 400, string("An error occurred during LipidSpace analysis, '") + e.what() + string("'!"));
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
                     catch (std::exception &e)
                     {
-                        res.status = 500;
-                        res.reason = string("A server error occurred during LipidSpace analysis, '") + e.what() + string("'");
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("LipidSpace server error", 500, string("A server error occurred during LipidSpace analysis, '") + e.what() + string("'!"));
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
 
                     // check if enough lipids and lipidomes are provided for the analysis
                     if (lipid_space.lipidomes.size() < 1)
                     {
-                        res.status = 400;
-                        res.reason = string("An error occurred during LipidSpace analysis, no lipidome was provided");
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("LipidSpace analysis error", 400, "An error occurred during LipidSpace analysis, no lipidome was provided!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
                     if (lipid_space.global_lipidome->lipids.size() < 3)
                     {
-                        res.status = 400;
-                        res.reason = string("An error occurred during LipidSpace analysis, less than 3 lipids in total were provided");
-                        qWarning() << res.reason.c_str();
+                        ProblemDetails pd = ProblemDetails("LipidSpace analysis error", 400, "An error occurred during LipidSpace analysis, less than 3 lipids in total were provided!");
+                        res.status = pd.status;
+                        res.body = pd.to_json();
+                        qWarning() << pd.detail;
                         return;
                     }
 
@@ -350,9 +429,11 @@ public:
             }
             else
             {
-                qWarning() << "Unsupported content type: '" << req.get_header_value("Content-Type").c_str() << "'";
-                res.status = 415;
-                res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
+                ProblemDetails pd = ProblemDetails("Unsupported content type", 415, "Unsupported content type: '" + req.get_header_value("Content-Type") + "'! Please use 'Content-Type=application/json'!");
+                res.status = pd.status;
+                res.body = pd.to_json();
+                qWarning() << pd.detail;
+                return;
             }
         });
 

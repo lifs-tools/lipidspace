@@ -163,10 +163,17 @@ Start the LipidSpaceRest server from your terminal:
 LD_LIBRARY_PATH="libraries/cppgoslin/bin/linux64/" ./LipidSpaceRest
 ```
 
+Using curl to check if the server is running:
+
+```
+curl -X GET -v -H 'Accept: application/json' localhost:8888/lipidspace/v1/health
+
+```
+
 Using curl to send an example request to the server:
 
 ```
-curl -X POST -v -H 'Content-Type: application/json' --data-binary "@examples/Rest/Plasma-Singapore-Short.json" localhost:8888/lipidspace/v1/pca
+curl -X POST -v -H 'Content-Type: application/json' -H 'Accept: application/json' --data-binary "@examples/Rest/Plasma-Singapore-Short.json" localhost:8888/lipidspace/v1/pca
 ```
 
 Which should return:
