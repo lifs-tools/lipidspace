@@ -7,6 +7,24 @@ servers:
 
 components:
     schemas:
+        ProblemDetails:
+            type: object
+            properties:
+                type:
+                    type: string
+                title:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                detail:
+                    type: string
+                instance:
+                    type: string
+            required:
+                - title
+                - status
+                - detail
         TableType:
             type: string
             enum:
@@ -138,10 +156,22 @@ paths:
                                             - UP
                 "400":
                     description: Invalid request or malformed JSON
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/ProblemDetails"
                 "415":
                     description: Unsupported content type
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/ProblemDetails"
                 "500":
                     description: Server error
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/ProblemDetails"
     /pca:
         post:
             summary: Post lipidome quantity table to LipidSpace
@@ -166,7 +196,19 @@ paths:
                                 $ref: "#/components/schemas/LipidSpacePcaResponse"
                 "400":
                     description: Invalid request or malformed JSON
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/ProblemDetails"
                 "415":
                     description: Unsupported content type
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/ProblemDetails"
                 "500":
                     description: Server error
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/ProblemDetails"
