@@ -15,7 +15,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libstdc++6 \
     openssl \
     libssl-dev \
-    wget \
     zlib1g-dev \
     zlib1g \
  && rm -rf /var/lib/apt/lists/*
@@ -32,6 +31,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libopenblas-base \
     libc6 \
     libstdc++6 \
+    wget \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=build /lipidspace/data /lipidspace/data
 COPY --from=build /lipidspace/LipidSpaceRest /lipidspace/LipidSpaceRest
