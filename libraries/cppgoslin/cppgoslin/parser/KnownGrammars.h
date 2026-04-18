@@ -56,7 +56,6 @@ const string shorthand_grammar = "/* \n\
 /* This is a BNF / ANTLR4 grammar for lipid subspecies identifiers following \n\
  * Liebisch et al. Volume 61, Issue 12, December 2020, Pages 1539-1555. \n\
  */ \n\
- \n\
 grammar Shorthand2020; \n\
  \n\
  \n\
@@ -191,8 +190,10 @@ gl_hg_tg_est : 'TG-EST' | 'TG EST' | 'TAG EST' | 'TAG-EST'; \n\
  \n\
  \n\
  \n\
-pl : pl_species | pl_subspecies | pl_molecular_species; \n\
+pl : pl_species | pl_subspecies | pl_molecular_species | pl_cpa; \n\
 pl_species : pl_hg headgroup_separator fatty_acyl_chain; \n\
+pl_cpa : pl_cpa_head headgroup_separator fatty_acyl_chain; \n\
+pl_cpa_head : 'CPA' | 'cLPA' | 'CLPA'; \n\
 pl_subspecies : pl_single | pl_double | pl_quadro; \n\
 pl_molecular_species : pl_hg_quadro headgroup_separator fa2_unsorted | pl_hg_quadro headgroup_separator fa3_unsorted; \n\
 pl_single : pl_hg_single headgroup_separator fatty_acyl_chain; \n\
@@ -200,7 +201,7 @@ pl_full : pl_hg_single headgroup_separator fatty_acyl_chain2; \n\
 pl_double : pl_full | pl_hg_double_all headgroup_separator fatty_acyl_chain2; \n\
 pl_quadro : pl_hg_quadro headgroup_separator fatty_acyl_chain4; \n\
 pl_hg : pl_hg_double_all | pl_hg_quadro; \n\
-pl_hg_single : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | hg_lpim | 'CPA' | 'LCDPDAG' | 'LDMPE' | 'LMMPE' | 'LPIMIP' | 'LPIN' | 'PE-isoLG'; \n\
+pl_hg_single : 'LPA' | 'LPC' | 'LPE' | 'LPG' | 'LPI' | 'LPS' | hg_lpim | 'LCDPDAG' | 'LDMPE' | 'LMMPE' | 'LPIMIP' | 'LPIN' | 'PE-isoLG'; \n\
 pl_hg_double_all : pl_hg_double_fa | pl_hg_double | hg_pip; \n\
 pl_hg_double_fa : pl_hg_double_fa_hg ROB pl_hg_fa RCB | pl_hg_double_fa_hg ROB pl_hg_alk RCB; \n\
 pl_hg_double_fa_hg : 'PS-N' | 'PE-N'; \n\
@@ -248,11 +249,11 @@ acer_species : acer_hg_pure | acer_hg_pure '(FA)'; \n\
 acer_hg_pure : 'ACer'; \n\
 glyco_sphingo_lipid : 'GA1' | 'Ga1' | 'GA2' | 'Ga2' | \n\
  'GB3' | 'Gb3' | 'GB4' | 'Gb4' | \n\
- 'GD1' | 'Gd1' | 'GD2' | 'Gd2' | 'GD3' | 'Gd3' | \n\
+ 'GD0a' | 'Gd0a' | 'GD1' | 'Gd1' | 'GD2' | 'Gd2' | 'GD3' | 'Gd3' | 'GD1a' | 'Gd1a' | 'GD1b' | 'Gd1b' | 'GD1a-AC' | 'Gd1a-AC' | \n\
  'GM1' | 'Gm1' | 'GM2' | 'Gm2' | 'GM3' | 'Gm3' | 'GM4' | 'Gm4' | \n\
  'GP1' | 'Gp1' | \n\
- 'GQ1' | 'Gq1' | \n\
- 'GT1' | 'Gt1' | 'GT2' | 'Gt2' | 'GT3' | 'Gt3'; \n\
+ 'GQ1' | 'Gq1' | 'GQ1b' | 'Gq1b' | 'GQ1-AC' | 'Gq1-AC' |  \n\
+ 'GT1' | 'Gt1' | 'GT1b' | 'Gt1b' | 'GT2' | 'Gt2' | 'GT3' | 'Gt3' | 'GT1b-AC' | 'Gt1b-AC' | 'GT3-AC' | 'Gt3-AC'; \n\
 /* \n\
 acer_hg : acer_hg_pure | acer_med '-' acer_hg_pure; \n\
 acer_med : med; \n\
@@ -263,11 +264,11 @@ acer_med : med; \n\
 /* sterol lipids */ \n\
 sterol : st | st_ester; \n\
 st : st_hg headgroup_separator sterol_definition; \n\
-st_ester : st_hg_ester headgroup_separator sterol_definition sorted_fa_separator fatty_acyl_chain | st_hg_ester headgroup_separator fatty_acyl_chain; \n\
-sterol_definition : fatty_acyl_chain; \n\
-st_hg : 'ST' | 'BA' | 'FC' | 'SG' | 'ASG'; \n\
+st_ester : st_hg_ester headgroup_separator sterol_ester_definition sorted_fa_separator fatty_acyl_chain | st_hg_ester headgroup_separator fatty_acyl_chain; \n\
+sterol_definition : '27:1;O' | '27:2;O' | '28:2;O' | '28:3;O' | '29:2;O' | '30:2;O' | '28:1;O' | '29:1;O' | '27:0;O;S' | '27:1;O;S' | '28:1;O;S' | '28:2;O;S' | '29:1;O;S' | '27:1;O;Hex' | '28:1;O;Hex' | '28:2;O;Hex'; \n\
+sterol_ester_definition : '27:1' | '27:2' | '28:1' | '28:2' | '28:3' | '29:1' | '29:2' | '30:2'; \n\
+st_hg : 'ST'; // | 'BA' | 'FC' | 'SG' | 'ASG'; \n\
 st_hg_ester : 'SE' | 'CE'; \n\
- \n\
  \n\
  \n\
 /* separators */ \n\
@@ -285,9 +286,9 @@ SOB: '['; \n\
 SCB: ']'; \n\
  \n\
 APOSTROPH : '\\'' | '′'; \n\
-sorted_fa_separator : SLASH; \n\
+sorted_fa_separator : SLASH | BACKSLASH | SPACE SLASH SPACE | SPACE BACKSLASH SPACE; \n\
 adduct_separator : SPACE; \n\
-unsorted_fa_separator : UNDERSCORE; \n\
+unsorted_fa_separator : UNDERSCORE | SPACE UNDERSCORE SPACE; \n\
 plasmalogen_separator : DASH; \n\
 headgroup_separator : SPACE; \n\
 carbon_db_separator : COLON; \n\
@@ -357,14 +358,14 @@ adduct_set : adduct_element | adduct_element adduct_set; \n\
 adduct_element : element | element number | number element | plus_minus element | plus_minus element number | plus_minus number element; \n\
  \n\
 fa2 : fa2_unsorted | fa2_sorted; \n\
-fa2_unsorted: fa DASH fa | fa UNDERSCORE fa; \n\
-fa2_sorted: fa SLASH fa | fa BACKSLASH fa; \n\
+fa2_unsorted: fa unsorted_fa_separator fa; \n\
+fa2_sorted: fa sorted_fa_separator fa; \n\
 fa3 : fa3_unsorted | fa3_sorted; \n\
-fa3_unsorted: fa DASH fa DASH fa | fa UNDERSCORE fa UNDERSCORE fa; \n\
-fa3_sorted: fa SLASH fa SLASH fa | fa BACKSLASH fa BACKSLASH fa; \n\
+fa3_unsorted: fa unsorted_fa_separator fa unsorted_fa_separator fa; \n\
+fa3_sorted: fa sorted_fa_separator fa sorted_fa_separator fa; \n\
 fa4 : fa4_unsorted | fa4_sorted; \n\
-fa4_unsorted: fa DASH fa DASH fa DASH fa | fa UNDERSCORE fa UNDERSCORE fa UNDERSCORE fa; \n\
-fa4_sorted: fa SLASH fa SLASH fa SLASH fa | fa BACKSLASH fa BACKSLASH fa BACKSLASH fa; \n\
+fa4_unsorted: fa unsorted_fa_separator fa unsorted_fa_separator fa unsorted_fa_separator fa; \n\
+fa4_sorted: fa sorted_fa_separator fa sorted_fa_separator fa sorted_fa_separator fa; \n\
  \n\
 /* glycerolipid rules (7 classes) */ \n\
 gl : sqml | mgl | dgl | sgl | tgl; \n\
@@ -447,11 +448,11 @@ sl_species : lcb; \n\
 sl_subspecies : lcb sorted_fa_separator fa; \n\
  \n\
 hg_lslc : hg_lsl | hg_lsl heavy_hg; \n\
-hg_lsl : 'LCB' | 'LCBP' | 'LHexCer' | 'LHex2Cer' | 'LHex3Cer' | 'LSM' | 'LIPC' | 'So' | 'Sa' | 'SPH' | 'Sph' | 'LCB' | 'S1P' | 'SPH-P' | 'SIP' | 'Sa1P' | 'SPA1P' | 'SPA'; \n\
+hg_lsl : 'LCB' | 'LCBP' | 'LHexCer' | 'LHex2Cer' | 'LHex3Cer' | 'LSM' | 'LIPC' | 'So' | 'Sa' | 'SPH' | 'Sph' | 'S1P' | 'SPH-P' | 'SIP' | 'Sa1P' | 'SPA1P' | 'SPA' | 'SPB' | 'SPBP'; \n\
 hg_so_lslc : hg_so_lsl | hg_so_lsl heavy_hg; \n\
 hg_so_lsl : 'So' | 'Sa' | 'Sa1P' | 'S1P'; \n\
 hg_dslc : hg_dsl | hg_dsl heavy_hg; \n\
-hg_dsl : 'Cer' | 'CerP' | 'EPC' | 'HexCer' | 'Hex2Cer' | 'Hex3Cer' | 'IPC' | 'MIP2C' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SM' | 'FMC-5' | 'FMC-6' | 'CerPE' | 'PE-Cer' | glyco_sphingo_lipid; \n\
+hg_dsl : 'Cer' | 'CerP' | 'EPC' | 'HexCer' | 'Hex2Cer' | 'Hex3Cer' | 'IPC' | 'MIP2C' | 'M(IP)2C' | 'MIPC' | 'SHexCer' | 'SM' | 'FMC-5' | 'FMC-6' | 'CerPE' | 'PE-Cer' | 'PI-Cer' | glyco_sphingo_lipid; \n\
  glyco_sphingo_lipid : 'GA1' | 'Ga1' | 'GA2' | 'Ga2' | \n\
  'GB3' | 'Gb3' | 'GB4' | 'Gb4' | \n\
  'GD1' | 'Gd1' | 'GD2' | 'Gd2' | 'GD3' | 'Gd3' | \n\
@@ -479,31 +480,45 @@ hg_stes : 'ChE' | 'CE' | 'ChoE' | 'CholE'; \n\
 /* mediator lipids (1 class) */ \n\
 mediatorc : mediator_iso | mediator_iso heavy_hg; \n\
 mediator_iso : mediator | med_iso mediator; \n\
-mediator : unstructured_mediator | trivial_mediator | mediator_functional_group mediator_fa | mediator_functional_group mediator_fa mediator_suffix | mediator_functional_group trivial_mediator; \n\
-med_iso : med_iso_positions med_iso_suffix | med_iso_positions med_iso_suffix '-' | med_iso_positions '-' med_iso_suffix | med_iso_positions '-' med_iso_suffix '-'; \n\
+mediator : unstructured_mediator | trivial_mediator | prostaglandin | mediator_functional_group mediator_fa | mediator_functional_group mediator_fa mediator_suffix | mediator_functional_group trivial_mediator | mediator_functional_group prostaglandin; \n\
+med_iso : med_iso_positions med_iso_suffix | med_iso_positions med_iso_suffix mediator_func_group_separator | med_iso_positions mediator_func_group_separator med_iso_suffix | med_iso_positions mediator_func_group_separator med_iso_suffix mediator_func_group_separator; \n\
 med_iso_suffix : 'iso'; \n\
 med_iso_positions : number | number ',' med_iso_positions; \n\
 mediator_fa : mediator_carbon mediator_db; \n\
-mediator_carbon : 'H' | 'O' | 'E' | 'Do'; \n\
-mediator_db : 'M' | 'D' | 'Tr' | 'T' | 'P' | 'H'; \n\
+mediator_carbon : 'H' | 'O' | 'E' | 'Do' | 'D'; \n\
+mediator_db : 'M' | 'D' | 'Tr' | 'tr' | 'T' | 'P' | 'H'; \n\
 mediator_suffix: 'E'; \n\
-mediator_functional_group : mediator_functional_group_clear | mediator_functional_group_clear '-' | mediator_tetranor mediator_functional_group_clear | mediator_tetranor mediator_functional_group_clear '-'; \n\
+mediator_functional_group : mediator_functional_group mediator_functional_group | mediator_functional_group mediator_func_group_separator mediator_functional_group | mediator_double_bond_positions_full mediator_func_group_separator | mediator_functional_group_clear | mediator_functional_group_clear mediator_func_group_separator | mediator_tetranor mediator_functional_group_clear | mediator_tetranor mediator_functional_group_clear mediator_func_group_separator; \n\
 mediator_tetranor : 'tetranor-' | 'Tetranor-'; \n\
-mediator_functional_group_clear: mediator_full_function | mediator_function_unknown_pos; \n\
+mediator_functional_group_clear: mediator_full_function | mediator_function_unknown_pos | mediator_db_function; \n\
 mediator_function_unknown_pos : mediator_functions; \n\
-mediator_functions : mediator_mono_functions | mediator_di_functions; \n\
-mediator_mono_functions: 'H' | 'Oxo' | 'oxo' | 'OXO' | 'Hp' | 'NO2'; \n\
-mediator_di_functions: 'E' | 'Ep' | 'DH' | 'DiH' | 'diH'; \n\
-mediator_full_function : mediator_position_group '-' mediator_mono_functions | mediator_di_pos '-' mediator_di_functions; \n\
-mediator_di_pos: mediator_position_group ',' mediator_position_group | mediator_position_group '_' mediator_position_group | mediator_position_group '(' mediator_position_group ')'; \n\
-mediator_position_group : mediator_position | mediator_position mediator_position_isotope | mediator_position '(' mediator_position_isotope ')'; \n\
+mediator_functions : mediator_mono_functions | mediator_di_functions | mediator_tri_functions; \n\
+mediator_mono_functions: 'H' | 'Oxo' | 'oxo' | 'OXO' | 'keto' | 'Hp' | 'HP' | 'NO2' | 'K' | 'k' | 'hydroxy' | 'd' | 'deoxy' | 'beta' | 'iso'; \n\
+mediator_di_functions: 'E' | 'Ep' | 'EP' | 'DH' | 'DiH' | 'diH' | 'dihydro' | 'dh'; \n\
+mediator_tri_functions : 'TriH' | 'triH' | 'trihydroxy'; \n\
+mediator_full_function : mediator_position_group mediator_func_group_separator mediator_mono_functions | mediator_di_pos mediator_func_group_separator mediator_di_functions | mediator_tri_pos mediator_func_group_separator mediator_tri_functions | mediator_position_group mediator_mono_functions | mediator_position_group mediator_mono_functions | mediator_di_pos mediator_di_functions | mediator_tri_pos mediator_tri_functions | mediator_position_group mediator_mono_functions; \n\
+mediator_db_function : mediator_double_bond_positions mediator_func_group_separator mediator_mono_functions; \n\
+mediator_double_bond_positions_full : '(' mediator_double_bond_positions ')'; \n\
+mediator_double_bond_positions : mediator_double_bond_position | mediator_double_bond_positions ',' mediator_double_bond_position; \n\
+mediator_double_bond_position : mediator_double_bond_pos mediator_double_bond_ct; \n\
+mediator_double_bond_pos : number; \n\
+mediator_double_bond_ct : cistrans; \n\
+mediator_di_pos: mediator_position_group mediator_separator mediator_position_group | mediator_position_group '(' mediator_position_group ')' | '(' mediator_position_group mediator_separator mediator_position_group ')'; \n\
+mediator_tri_pos: mediator_position_group mediator_separator mediator_position_group mediator_separator mediator_position_group | '(' mediator_position_group mediator_separator mediator_position_group mediator_separator mediator_position_group ')'; \n\
+mediator_position_group : mediator_position | mediator_position mediator_position_isotope | mediator_position '(' mediator_position_isotope ')' |  '(' mediator_position mediator_position_isotope ')'; \n\
 mediator_position : number; \n\
 mediator_position_isotope : 'S' | 'R'; \n\
+mediator_separator : ',' | '-' | '_'; \n\
+mediator_func_group_separator : ' ' | '-'; \n\
  \n\
-trivial_mediator : 'AA' | 'LA' | 'ALA' | 'DHA' | 'EPA' | 'Linoleic acid' | 'Arachidonic acid' | 'TXB1' | 'TXB2' | 'TXB3' | 'Resolvin D1' | 'Resolvin D2' | 'Resolvin D3' | 'Resolvin D5' | 'LTB4' | 'Mar1' | 'Maresin 1' | 'Palmitic acid' | 'PDX' | 'PGB2' | 'PGD2' | 'PGE2' | 'PGF2alpha' | 'PGF1alpha' | 'OA' | 'Oleic acid' | 'iPF2alpha-VI'; \n\
+trivial_mediator : 'AA' | 'ARA' | 'LA' | 'ALA' | 'DHA' | 'EPA' | 'Linoleic acid' | 'Arachidonic acid' | 'TXB1' | 'TXB2' | 'TXB3' | 'Resolvin D1' | 'Resolvin D2' | 'Resolvin D3' | 'Resolvin D5' | 'Resolvin E1' | 'Resolvin E2' | 'LTB4' | 'Mar1' | 'Maresin 1' | 'Palmitic acid' | 'PDX' | 'OA' | 'Oleic acid' | 'iPF2alpha-VI' | 'PGEM' | 'PGE-M'; \n\
  \n\
 unstructured_mediator : 'alpha-LA' | 'LTC4' | 'LTD4' | 'PGI2'; \n\
  \n\
+prostaglandin : 'PG' prostaglandin_type prostaglandin_number | 'PG' prostaglandin_type prostaglandin_number prostaglandin_alpha; \n\
+prostaglandin_type : 'B' | 'D' | 'E' | 'F' | 'J' | 'K'; \n\
+prostaglandin_number : '1' | '2' | '3'; \n\
+prostaglandin_alpha: 'alpha' | ' alpha' | '-alpha' | 'a'; \n\
  \n\
  \n\
 /* saccharolipids rules (3 classes) */ \n\
@@ -566,9 +581,9 @@ ROB: '('; \n\
 RCB: ')'; \n\
 FRAGMENT_SEPARATOR : ' - '; \n\
  \n\
-sorted_fa_separator : SLASH | BACKSLASH; \n\
 adduct_separator : SPACE; \n\
-unsorted_fa_separator : DASH | UNDERSCORE; \n\
+sorted_fa_separator : SLASH | BACKSLASH | SPACE SLASH SPACE | SPACE BACKSLASH SPACE; \n\
+unsorted_fa_separator : DASH | UNDERSCORE | SPACE DASH SPACE | SPACE UNDERSCORE SPACE; \n\
 plasmalogen_separator : headgroup_separator | DASH | DASH SPACE; \n\
 headgroup_separator : SPACE; \n\
 carbon_db_separator : COLON; \n\
@@ -644,15 +659,15 @@ hg_fa: 'FA' | 'WE' | 'CoA' | 'CAR' | 'FAHFA' | 'CoA'; \n\
  \n\
  \n\
 fa2 : fa2_unsorted | fa2_sorted; \n\
-fa2_unsorted: fa DASH fa | fa UNDERSCORE fa; \n\
-fa2_sorted: fa SLASH fa | fa BACKSLASH fa; \n\
+fa2_unsorted: fa unsorted_fa_separator fa; \n\
+fa2_sorted: fa sorted_fa_separator fa; \n\
 fa3 : fa3_unsorted | fa3_sorted; \n\
-fa3_unsorted: fa DASH fa DASH fa | fa UNDERSCORE fa UNDERSCORE fa; \n\
-fa3_sorted: fa SLASH fa SLASH fa | fa BACKSLASH fa BACKSLASH fa; \n\
+fa3_unsorted: fa unsorted_fa_separator fa unsorted_fa_separator fa; \n\
+fa3_sorted: fa sorted_fa_separator fa sorted_fa_separator fa; \n\
 fa4 : fa4_unsorted | fa4_sorted; \n\
-fa4_unsorted: fa DASH fa DASH fa DASH fa | fa UNDERSCORE fa UNDERSCORE fa UNDERSCORE fa; \n\
-fa4_sorted: fa SLASH fa SLASH fa SLASH fa | fa BACKSLASH fa BACKSLASH fa BACKSLASH fa; \n\
-lcb_fa_sorted: lcb SLASH fa | lcb BACKSLASH fa; \n\
+fa4_unsorted: fa unsorted_fa_separator fa unsorted_fa_separator fa unsorted_fa_separator fa; \n\
+fa4_sorted: fa sorted_fa_separator fa sorted_fa_separator fa sorted_fa_separator fa; \n\
+lcb_fa_sorted: lcb sorted_fa_separator fa; \n\
 species_fa : fa; \n\
  \n\
 /* glycerolipid rules */ \n\
@@ -709,8 +724,8 @@ hg_threepl: 'SLBPA' | 'PS-NAc' | 'NAPE'; \n\
  \n\
 /* sphingolipid rules */ \n\
 sl: lsl | dsl; \n\
-lsl: hg_lslc round_open_bracket lcb round_close_bracket | hg_lslc lcb | sphinga; \n\
-dsl: hg_dslc dsl_species | hg_dslc dsl_subspecies; \n\
+lsl: hg_lslc round_open_bracket lcb round_close_bracket | hg_lslc lcb | sphinga | hg_lsl_pure; \n\
+dsl: hg_dslc dsl_species | hg_dslc dsl_subspecies | hg_dslc c_type; \n\
 dsl_species: round_open_bracket lcb round_close_bracket | lcb; \n\
 dsl_subspecies: round_open_bracket lcb_fa_sorted round_close_bracket | lcb_fa_sorted; \n\
  \n\
@@ -727,6 +742,7 @@ sphinga_C_lcb : 'C' sphinga_lcb_len; \n\
 sphinga_lcb_len : number; \n\
 sphinga_bracket_lcb : round_open_bracket lcb round_close_bracket | lcb; \n\
  \n\
+c_type : 'C' carbon | 'C' carbon carbon_db_separator db; \n\
  \n\
  \n\
 hg_dslc: hg_dsl_global | hg_dsl_global headgroup_separator; \n\
@@ -754,9 +770,8 @@ greek : 'alpha' | 'beta' | 'α' | 'β'; \n\
  \n\
  \n\
 hg_lslc: hg_lsl | hg_lsl headgroup_separator; \n\
-hg_lsl: 'SPH' | 'Sph' | 'S1P' | 'HexSph' | 'SPC' | 'SPH-P' | 'LysoSM' | 'SIP'; \n\
- \n\
- \n\
+hg_lsl_pure : hg_lsl; \n\
+hg_lsl: 'SPH' | 'Sph' | 'S1P' | 'HexSph' | 'SPC' | 'SPH-P' | 'LysoSM' | 'SIP' | 'GlcSph' | 'GalSph'; \n\
  \n\
 /* polyketides */ \n\
 pk : pk_hg pk_fa; \n\
@@ -838,7 +853,8 @@ RCB: ')'; \n\
 SOB: '['; \n\
 SCB: ']'; \n\
  \n\
-fa_separator: UNDERSCORE | SLASH | BACKSLASH | DASH; \n\
+sorted_fa_separator : SLASH | BACKSLASH | SPACE SLASH SPACE | SPACE BACKSLASH SPACE; \n\
+unsorted_fa_separator : DASH | UNDERSCORE | SPACE DASH SPACE | SPACE UNDERSCORE SPACE; \n\
 adduct_separator : SPACE; \n\
 headgroup_separator: SPACE; \n\
 fa_mod_separator: SPACE; \n\
@@ -890,9 +906,13 @@ grammar SwissLipids; \n\
  \n\
  \n\
 /* first rule is always start rule */ \n\
-lipid : lipid_pure EOF | lipid_pure adduct_info EOF; \n\
+lipid : lipid_pure EOF | lipid_pure adduct_info EOF | lipid_pure variants EOF; \n\
 lipid_pure : fatty_acid | gl | pl | sl | st; \n\
  \n\
+variants : variant | variant variants; \n\
+variant : adduct_separator abc | abc | adduct_separator npos | npos; \n\
+abc : '(a)' | '(b)' | '(c)' | '(d)' | '(e)' | '(f)' | '(g)'; \n\
+npos : '(n' number ')' | '[sn' number ']' | '[' number '_sn' number ']'; \n\
  \n\
 /* adduct information */ \n\
 adduct_info : adduct_sep | adduct_separator adduct_sep; \n\
@@ -903,8 +923,9 @@ adduct_element : element | element number | number element | plus_minus element 
  \n\
  \n\
 /* fatty acyl rules */ \n\
-fa : fa_core | fa_lcb_prefix fa_core | fa_core fa_lcb_suffix | fa_lcb_prefix fa_core fa_lcb_suffix; \n\
-fa_core : carbon carbon_db_separator db | ether carbon carbon_db_separator db; \n\
+fa : fa_p | fa_p '.'; \n\
+fa_p : fa_core | fa_lcb_prefix fa_core | fa_core fa_lcb_suffix | fa_lcb_prefix fa_core fa_lcb_suffix; \n\
+fa_core : carbon carbon_db_separator db | ether_type carbon carbon_db_separator db; \n\
  \n\
 lcb : lcb_core | fa_lcb_prefix lcb_core | lcb_core fa_lcb_suffix | fa_lcb_prefix lcb_core fa_lcb_suffix; \n\
 lcb_core : hydroxyl carbon carbon_db_separator db; \n\
@@ -917,7 +938,8 @@ db_position : db_single_position | db_position db_position_separator db_position
 db_single_position : db_position_number | db_position_number cistrans; \n\
 db_position_number : number; \n\
 cistrans : 'E' | 'Z'; \n\
-ether : 'O-' | 'P-'; \n\
+ether_type : ether '-' | ether '.'; \n\
+ether : 'O' | 'P'; \n\
 hydroxyl : 'm' | 'd' | 't'; \n\
 fa_lcb_suffix : fa_lcb_suffix_core | fa_lcb_suffix_separator fa_lcb_suffix_core | ROB fa_lcb_suffix_core RCB; \n\
 fa_lcb_suffix_core : fa_lcb_suffix_number fa_lcb_suffix_type | fa_lcb_suffix_number fa_lcb_suffix_separator fa_lcb_suffix_type; \n\
@@ -947,7 +969,7 @@ fa4_unsorted : fa unsorted_fa_separator fa unsorted_fa_separator fa unsorted_fa_
  \n\
 /* fatty acid rules */ \n\
 fatty_acid : fa_hg fa_fa | fa_hg headgroup_separator fa_fa | mediator; \n\
-fa_hg : 'FA' | 'fatty acid' | 'fatty alcohol' | 'NAE' | 'GP-NAE'; \n\
+fa_hg : 'FFA' | 'FA' | 'fatty acid' | 'fatty alcohol' | 'NAE' | 'GP-NAE'; \n\
 fa_fa : ROB fa RCB; \n\
  \n\
  \n\
@@ -975,9 +997,10 @@ med_suffix : 'S' | 'R'; \n\
 /* glycerolipid rules */ \n\
 gl : gl_regular | gl_mono | gl_molecular; \n\
  \n\
-gl_regular : gl_hg gl_fa | gl_hg headgroup_separator gl_fa; \n\
+gl_regular : gl_hg gl_fa | gl_hg headgroup_separator gl_fa | gl_hg_tg gl_half_sub_fa | gl_hg_tg headgroup_separator gl_half_sub_fa; \n\
 gl_fa : ROB fa_species RCB | ROB fa3 RCB; \n\
-gl_hg : 'MG' | 'DG' | 'TG' |  'MAG' | 'DAG' | 'TAG'; \n\
+gl_hg : 'MG' | 'DG' | gl_hg_tg |  'MAG' | 'DAG'; \n\
+gl_hg_tg : 'TG' | 'TAG'; \n\
  \n\
 gl_molecular : gl_molecular_hg gl_molecular_fa | gl_molecular_hg headgroup_separator gl_molecular_fa; \n\
 gl_molecular_fa : ROB fa2 RCB; \n\
@@ -988,7 +1011,7 @@ gl_mono : gl_mono_hg gl_mono_fa | gl_mono_hg headgroup_separator gl_mono_fa; \n\
 gl_mono_fa : ROB fa_species RCB | ROB fa2 RCB; \n\
 gl_mono_hg : 'MHDG' | 'DHDG' | 'MGDG' | 'DGDG'; \n\
  \n\
- \n\
+gl_half_sub_fa : fa_species 'FA' fa_species; \n\
  \n\
  \n\
  \n\
@@ -1013,9 +1036,9 @@ pl_four_hg : 'BMP' | 'LBPA' | 'Lysobisphosphatidate' | 'CL' | 'MLCL' | 'DLCL'; \
  \n\
  \n\
 /* sphingolipid rules */ \n\
-sl : sl_hg sl_lcb | sl_hg headgroup_separator sl_lcb; \n\
+sl : sl_hg sl_lcb | sl_hg headgroup_separator sl_lcb | sl_hg lcb_18_1_fa; \n\
 sl_hg : sl_hg_names | sl_hg_prefix sl_hg_names | sl_hg_names sl_hg_suffix | sl_hg_prefix sl_hg_names sl_hg_suffix; \n\
-sl_hg_names : 'HexCer' | 'Hex2Cer' | 'SM' | 'PE-Cer' | 'Cer' | 'CerP' | 'GD1a' | 'GM1b' | 'GT1b' | 'GQ1b' | 'GT1a' | 'GQ1c' | 'GP1c' | 'GD1c' | 'GD1b' | 'GT1c' | 'IPC' | 'MIPC' | 'M(IP)2C' | 'Gb3Cer' | 'Gb4Cer' | 'Forssman'  | 'MSGG' | 'DSGG' | 'NOR1' | 'NORint' | 'NOR2' | 'Globo-H' | 'Globo-A' | 'SB1a' | 'SM1b' | 'SM1a' | 'Branched-Forssman' | 'Globo-B' | 'Para-Forssman' | 'Globo-Lex-9' | glyco_sphingo_lipid; \n\
+sl_hg_names : 'HexCer' | 'Hex2Cer' | 'SM' | 'PE-Cer' | 'Cer' | 'CER' | 'DCER' | 'LCER' | 'HCER' | 'CerP' | 'GD1a' | 'GM1b' | 'GT1b' | 'GQ1b' | 'GT1a' | 'GQ1c' | 'GP1c' | 'GD1c' | 'GD1b' | 'GT1c' | 'IPC' | 'MIPC' | 'M(IP)2C' | 'Gb3Cer' | 'Gb4Cer' | 'Forssman'  | 'MSGG' | 'DSGG' | 'NOR1' | 'NORint' | 'NOR2' | 'Globo-H' | 'Globo-A' | 'SB1a' | 'SM1b' | 'SM1a' | 'Branched-Forssman' | 'Globo-B' | 'Para-Forssman' | 'Globo-Lex-9' | glyco_sphingo_lipid; \n\
  glyco_sphingo_lipid : 'GA1' | 'Ga1' | 'GA2' | 'Ga2' | \n\
  'GB3' | 'Gb3' | 'GB4' | 'Gb4' | \n\
  'GD1' | 'Gd1' | 'GD2' | 'Gd2' | 'GD3' | 'Gd3' | \n\
@@ -1030,7 +1053,7 @@ sl_hg_suffix : sl_hg_suffix sl_hg_suffix | sl_hg_suffix '/' | ROB sl_hg_suffix R
 sl_lcb : sl_lcb_species | sl_lcb_subspecies; \n\
 sl_lcb_species : ROB lcb RCB; \n\
 sl_lcb_subspecies : ROB lcb sorted_fa_separator fa RCB; \n\
- \n\
+lcb_18_1_fa : fa_fa; \n\
  \n\
  \n\
  \n\
@@ -1058,14 +1081,14 @@ UNDERSCORE : '_'; \n\
 SLASH : '/'; \n\
 BACKSLASH : '\\\\'; \n\
 COMMA: ','; \n\
-ROB: '('; \n\
-RCB: ')'; \n\
+ROB: '(' | '.'; \n\
+RCB: ')' | '.'; \n\
  \n\
-unsorted_fa_separator : UNDERSCORE; \n\
+unsorted_fa_separator : UNDERSCORE | '.'; \n\
 adduct_separator : SPACE; \n\
-sorted_fa_separator : SLASH; \n\
+sorted_fa_separator : SLASH | '.'; \n\
 headgroup_separator : SPACE; \n\
-carbon_db_separator : COLON; \n\
+carbon_db_separator : COLON | '.'; \n\
 db_position_separator : COMMA; \n\
 med_position_separator : COMMA; \n\
 fa_lcb_suffix_separator : DASH; \n\

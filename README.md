@@ -147,13 +147,13 @@ sudo apt install \
   qt6-base-dev-tools \
   libqt6svg6-dev \
   libqt6charts6-dev \
-  libopenblas-base \
   libopenblas-dev \
   libomp-dev \
   mesa-common-dev \
   libglu1-mesa-dev \
   libc6 \
-  libstdc++6
+  libstdc++6 \
+  libssl-dev
 ```
 
 to install the necessary dependencies.
@@ -195,6 +195,31 @@ src/lipidspace.cpp:308:90: error: no matching function for call to ‘LipidAdduc
 ```
 
 Please make sure that you have the latest version of cppgoslin (https://github.com/lifs-tools/cppgoslin) installed on your computer (make && sudo make install).
+
+
+### Building a distribution of the software
+
+In order to create a LipidSpace binary archive for distribution, call:
+
+```bash
+qmake6 LipidSpace.pro
+make build
+```
+
+This will create a LipidSpace.zip archive in the Build/ directory.
+
+
+### Building a distribution source archive
+
+In order to create a LipidSpace source archive for distribution, call:
+
+```bash
+qmake6 LipidSpace.pro
+make dist
+```
+
+This will create a LipidSpace1.0.0.tar.gz archive (or with another version) or zip in this directory.
+
 
 ## Building LipidSpace REST
 
