@@ -43,6 +43,8 @@ macx {
     # Bundle dylibs into Contents/Frameworks and patch install names so the
     # app is self-contained and relocatable.
     OPENSSL_LIB = /opt/homebrew/opt/openssl@3/lib
+    CRYPTO_INSTALL_NAME = $$system(otool -D $$OPENSSL_LIB/libcrypto.3.dylib | tail -1)
+    SSL_INSTALL_NAME    = $$system(otool -D $$OPENSSL_LIB/libssl.3.dylib    | tail -1)
     QMAKE_POST_LINK = \
         mkdir -p $${TARGET}.app/Contents/Frameworks \
         && cp -f $$PWD/libraries/cppgoslin/bin/macarm64/libcppGoslin.dylib $${TARGET}.app/Contents/Frameworks/ \
@@ -55,9 +57,9 @@ macx {
         && install_name_tool -id @rpath/libcrypto.3.dylib $${TARGET}.app/Contents/Frameworks/libcrypto.3.dylib \
         && cp -fL $${OPENSSL_LIB}/libssl.3.dylib $${TARGET}.app/Contents/Frameworks/ \
         && install_name_tool -id @rpath/libssl.3.dylib $${TARGET}.app/Contents/Frameworks/libssl.3.dylib \
-        && install_name_tool -change $$(otool -D $${OPENSSL_LIB}/libcrypto.3.dylib | tail -1) @rpath/libcrypto.3.dylib $${TARGET}.app/Contents/Frameworks/libssl.3.dylib \
-        && install_name_tool -change $$(otool -D $${OPENSSL_LIB}/libssl.3.dylib | tail -1) @rpath/libssl.3.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
-        && install_name_tool -change $$(otool -D $${OPENSSL_LIB}/libcrypto.3.dylib | tail -1) @rpath/libcrypto.3.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
+        && install_name_tool -change $${CRYPTO_INSTALL_NAME} @rpath/libcrypto.3.dylib $${TARGET}.app/Contents/Frameworks/libssl.3.dylib \
+        && install_name_tool -change $${SSL_INSTALL_NAME} @rpath/libssl.3.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
+        && install_name_tool -change $${CRYPTO_INSTALL_NAME} @rpath/libcrypto.3.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
         && mkdir -p $${TARGET}.app/Contents/Resources/data \
         && cp $$PWD/data/classes-matrix.csv $${TARGET}.app/Contents/Resources/data/ \
         && codesign --force --sign - $${TARGET}.app/Contents/Frameworks/libcppGoslin.dylib \
