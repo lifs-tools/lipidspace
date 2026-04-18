@@ -34,7 +34,6 @@
 #include <iomanip>
 #include <algorithm>
 #include <math.h>
-#include <immintrin.h>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
@@ -338,15 +337,12 @@ private:
 
 
 inline double compute_l2_norm(const double *a, const double *b, const int rows){
-    __m256d dist = {0., 0., 0., 0.};
-    for (int r = 0; r < rows; r += 4){
-        __m256d val1 = *(__m256d*)(a + r);
-        __m256d val2 = *(__m256d*)(b + r);
-        __m256d sub = val1 - val2;
-        dist += sub * sub;
+    double dist = 0.0;
+    for (int r = 0; r < rows; ++r){
+        double d = a[r] - b[r];
+        dist += d * d;
     }
-    //dist = _mm256_hadd_pd(dist, dist);
-    return dist[0] + dist[1] + dist[2] + dist[3];
+    return dist;
 }
 
 

@@ -6,7 +6,6 @@
 #include <math.h>
 #include <iostream>
 #include <cassert>
-#include <immintrin.h>
 #include <cblas.h>
 #include <QtCore>
 #include <cmath>

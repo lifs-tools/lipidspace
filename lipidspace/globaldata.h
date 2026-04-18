@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include <QColor>
+#include <QString>
+#include <QCoreApplication>
 #include <lipidspace/AssistanceFunctions.h>
 
 using namespace std;
@@ -40,6 +42,14 @@ public:
     static string pval_test;
     static StatLevel stat_level;
     static set<string> FAD_lipid_classes;
+
+    static QString dataBasePath() {
+#ifdef Q_OS_MACOS
+        return QCoreApplication::applicationDirPath() + "/../Resources";
+#else
+        return QCoreApplication::applicationDirPath();
+#endif
+    }
 };
 
 

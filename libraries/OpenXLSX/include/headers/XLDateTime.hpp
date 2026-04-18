@@ -43,13 +43,14 @@ YM      M9  MM    MM MM       MM    MM   d'  `MM.    MM            MM   d'  `MM.
 
  */
 
-
 #ifndef OPENXLSX_XLDATETIME_HPP
 #define OPENXLSX_XLDATETIME_HPP
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#pragma warning(disable : 4275)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(push)
+#   pragma warning(disable : 4251)
+#   pragma warning(disable : 4275)
+#endif // _MSC_VER
 
 // ===== External Includes ===== //
 #include <ctime>
@@ -64,7 +65,6 @@ namespace OpenXLSX
     class OPENXLSX_EXPORT XLDateTime
     {
     public:
-
         /**
          * @brief Constructor.
          */
@@ -139,8 +139,8 @@ namespace OpenXLSX
          * @return Excel date/time serial number.
          */
         template<typename T,
-                 typename std::enable_if<std::is_floating_point_v<T> >::type* = nullptr>
-        operator T() const // NOLINT
+                 typename = std::enable_if_t<std::is_floating_point_v<T>>>
+        operator T() const    // NOLINT
         {
             return serial();
         }
@@ -149,7 +149,7 @@ namespace OpenXLSX
          * @brief Implicit conversion to std::tm object.
          * @return std::tm object.
          */
-        operator std::tm() const; // NOLINT
+        operator std::tm() const;    // NOLINT
 
         /**
          * @brief Get the date/time in the form of an Excel date/time serial number.
@@ -164,10 +164,12 @@ namespace OpenXLSX
         std::tm tm() const;
 
     private:
-        double m_serial {1.0}; /**<  */
-
-
+        double m_serial { 1.0 }; /**<  */
     };
-} // namespace OpenXLSX
+}    // namespace OpenXLSX
+
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(pop)
+#endif // _MSC_VER
 
 #endif    // OPENXLSX_XLDATETIME_HPP

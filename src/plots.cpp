@@ -527,44 +527,19 @@ void Barplot::add(vector< vector< Array > > *data, vector<QString> *categories, 
             }
             double max_x = 0;
 
-            int n4 = n;
-            while (n4 & 3){
-                X.push_back(0);
-                Y.push_back(0);
-                n4++;
-            }
-
             Array xx(n, 0);
-            const __m256d one = {1., 1., 1., 1.};
-            const __m256d o_three = {0.30482918, 0.30482918, 0.30482918, 0.30482918};
+            const double o_three = 0.30482918;
             for (int i = 0; i < n; ++i){
-                __m256d fx4 = {0., 0., 0., 0., };
-                __m256d xi = {X[i], X[i], X[i], X[i]};
-                __m256d yi = {Y[i], Y[i], Y[i], Y[i]};
-                for (int j = 0; j < n4; j += 4){
-
-                    __m256d xj = *(__m256d*)(X.data() + j);
-                    __m256d yj = *(__m256d*)(Y.data() + j);
-
-                    __m256d x_diff = xi - xj;
-                    __m256d y_diff = yi - yj;
-
-                    __m256d d = {0., 0., 0., 0.};
-                    d = d + x_diff * x_diff;
-                    d = d + y_diff * y_diff;
-
-                    x_diff = xj - xi;
-
-                    d = -d * o_three;
-                    d = d - one;
+                double fx = 0.0;
+                for (int j = 0; j < n; ++j){
+                    double x_diff = X[j] - X[i];
+                    double y_diff = Y[j] - Y[i];
+                    double d = -(x_diff * x_diff + y_diff * y_diff) * o_three - 1.0;
                     d = d * d;
                     d = d * d;
-                    d = one / d;
-
-                    fx4 = fx4 + x_diff * d;
+                    fx += x_diff / d;
                 }
-                double fx = fx4[0] + fx4[1] + fx4[2] + fx4[3];
-                xx[i] = X[i] - fx / sq(sq(0.30482918 * (-sq(fx)) - 1.));
+                xx[i] = X[i] - fx / sq(sq(o_three * (-sq(fx)) - 1.));
                 max_x = max(max_x, abs(xx[i]));
             }
 

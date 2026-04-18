@@ -90,9 +90,9 @@ LSDragClass(LSTreeWidget, QTreeWidget);
 
 void HomeView::resizeEvent(QResizeEvent *) {
     if (!banner) {
-        banner = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LipidSpace-banner.svg");
+        banner = new QGraphicsSvgItem(GlobalData::dataBasePath() + "/data/images/LipidSpace-banner.svg");
         scene()->addItem(banner);
-        LIFS = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS.svg");
+        LIFS = new QGraphicsSvgItem(GlobalData::dataBasePath() + "/data/images/LIFS.svg");
         scene()->addItem(LIFS);
 
 
@@ -102,7 +102,7 @@ void HomeView::resizeEvent(QResizeEvent *) {
 
         citation->setDefaultTextColor(Qt::white);
         scene()->addItem(citation);
-        LIFS_monitor = new QGraphicsSvgItem(QCoreApplication::applicationDirPath() + "/data/images/LIFS-monitor.svg");
+        LIFS_monitor = new QGraphicsSvgItem(GlobalData::dataBasePath() + "/data/images/LIFS-monitor.svg");
         scene()->addItem(LIFS_monitor);
 
 

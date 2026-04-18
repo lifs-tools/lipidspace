@@ -3,6 +3,7 @@
 #include "lipidspace/logging.h"
 #include "lipidspace/globaldata.h"
 #include <QApplication>
+#include <QIcon>
 #include <QMessageBox>
 #include <string>
 
@@ -14,6 +15,16 @@ int main(int argc, char** argv) {
 
     if (argc == 1){
         QApplication application(argc, argv);
+        QIcon appIcon;
+        appIcon.addFile(":/LipidSpace.iconset/icon_32x32.png",          QSize(32,   32));
+        appIcon.addFile(":/LipidSpace.iconset/icon_32x32@2x.png",       QSize(64,   64));
+        appIcon.addFile(":/LipidSpace.iconset/icon_128x128.png",        QSize(128,  128));
+        appIcon.addFile(":/LipidSpace.iconset/icon_128x128@2x.png",     QSize(256,  256));
+        appIcon.addFile(":/LipidSpace.iconset/icon_256x256.png",        QSize(256,  256));
+        appIcon.addFile(":/LipidSpace.iconset/icon_256x256@2x.png",     QSize(512,  512));
+        appIcon.addFile(":/LipidSpace.iconset/icon_512x512.png",        QSize(512,  512));
+        appIcon.addFile(":/LipidSpace.iconset/icon_512x512@2x.png",     QSize(1024, 1024));
+        application.setWindowIcon(appIcon);
         Logging::write_log("LipidSpace " + GlobalData::LipidSpace_version + " was launched");
 
         LipidSpace lipid_space;

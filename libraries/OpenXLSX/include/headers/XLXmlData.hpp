@@ -46,14 +46,14 @@ YM      M9  MM    MM MM       MM    MM   d'  `MM.    MM            MM   d'  `MM.
 #ifndef OPENXLSX_XLXMLDATA_HPP
 #define OPENXLSX_XLXMLDATA_HPP
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#pragma warning(disable : 4275)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(push)
+#   pragma warning(disable : 4251)
+#   pragma warning(disable : 4275)
+#endif // _MSC_VER
 
 // ===== External Includes ===== //
-#include <cstring>
 #include <memory>
-#include <sstream>
 #include <string>
 
 // ===== OpenXLSX Includes ===== //
@@ -63,7 +63,36 @@ YM      M9  MM    MM MM       MM    MM   d'  `MM.    MM            MM   d'  `MM.
 
 namespace OpenXLSX
 {
-    class XLDocument;
+    constexpr const char * XLXmlDefaultVersion = "1.0";
+    constexpr const char * XLXmlDefaultEncoding = "UTF-8";
+    constexpr const bool   XLXmlStandalone = true;
+    constexpr const bool   XLXmlNotStandalone = false;
+    /**
+     * @brief The XLXmlSavingDeclaration class encapsulates the properties of an XML saving declaration,
+     * that can be used in calls to XLXmlData::getRawData to enforce specific settings
+     */
+    class OPENXLSX_EXPORT XLXmlSavingDeclaration {
+    public:
+        // ===== PUBLIC MEMBER FUNCTIONS ===== //
+        XLXmlSavingDeclaration() : m_version(XLXmlDefaultVersion), m_encoding(XLXmlDefaultEncoding), m_standalone(XLXmlNotStandalone) {}
+        XLXmlSavingDeclaration(XLXmlSavingDeclaration const & other) = default; // copy constructor
+        XLXmlSavingDeclaration(std::string version, std::string encoding, bool standalone = XLXmlNotStandalone)
+            : m_version(version), m_encoding(encoding), m_standalone(standalone) {}
+        ~XLXmlSavingDeclaration() {}
+
+        /**
+         * @brief: getter functions: version, encoding, standalone
+         */
+        std::string const & version() const { return m_version; }
+        std::string const & encoding() const { return m_encoding; }
+        bool standalone_as_bool() const { return m_standalone; }
+        std::string const standalone() const { return m_standalone ? "yes" : "no"; }
+    private:
+        // ===== PRIVATE MEMBER VARIABLES ===== //
+        std::string m_version;
+        std::string m_encoding;
+        bool        m_standalone;
+    };
 
     /**
      * @brief The XLXmlData class encapsulates the properties and behaviour of the .xml files in an .xlsx file zip
@@ -102,6 +131,13 @@ namespace OpenXLSX
          * destructor will suffice.
          */
         ~XLXmlData();
+
+        /**
+         * @brief check whether class is linked to a valid XML document
+         * @return true if the class should have a link to valid data
+         * @return false if accessing any other properties / methods could cause a segmentation fault
+         */
+        bool valid() const { return m_xmlDoc != nullptr; }
 
         /**
          * @brief Copy constructor. The m_xmlDoc data member is a XMLDocument object, which is non-copyable. Hence,
@@ -143,9 +179,10 @@ namespace OpenXLSX
          * @brief Get the raw data for the underlying XML document. This function will retrieve the raw XML text data
          * from the underlying XMLDocument object. This will mainly be used when saving data to the .xlsx package
          * using the save function in the XLDocument class.
+         * @param savingDeclaration @optional specify an XML saving declaration to use
          * @return A std::string with the raw XML text data.
          */
-        std::string getRawData() const;
+        std::string getRawData(XLXmlSavingDeclaration savingDeclaration = XLXmlSavingDeclaration{}) const;
 
         /**
          * @brief Access the parent XLDocument object.
@@ -189,6 +226,12 @@ namespace OpenXLSX
          */
         const XMLDocument* getXmlDocument() const;
 
+        /**
+         * @brief Test whether there is an XML file linked to this object
+         * @return true if there is no underlying XML file, otherwise false
+         */
+        bool empty() const;
+
     private:
         // ===== PRIVATE MEMBER VARIABLES ===== //
 
@@ -200,5 +243,8 @@ namespace OpenXLSX
     };
 }    // namespace OpenXLSX
 
-#pragma warning(pop)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(pop)
+#endif // _MSC_VER
+
 #endif    // OPENXLSX_XLXMLDATA_HPP

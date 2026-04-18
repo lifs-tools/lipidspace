@@ -1,7 +1,7 @@
 QT       += core widgets network
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -std=c++17 -Wno-unknown-pragmas
+QMAKE_CXXFLAGS += -std=c++17 -Wno-unknown-pragmas
 
 
 # The following define makes your compiler emit warnings if you use
@@ -17,16 +17,54 @@ RC_ICONS = LipidSpace.ico
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-unix {
+unix:!macx {
+    QMAKE_CXXFLAGS += -fopenmp
     LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX" "-lssl" "-lcrypto"
 }
 
 win32 {
+    QMAKE_CXXFLAGS += -fopenmp
     LIBS += -std=c++17 -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll $$PWD\libraries\openssl\bin\win64\libssl.so $$PWD\libraries\openssl\bin\win64\libcrypto.so
 }
 
 macx {
-    #LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
+    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp
+    INCLUDEPATH += $$system(xcrun --show-sdk-path)/System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers
+    INCLUDEPATH += /opt/homebrew/opt/libomp/include
+    INCLUDEPATH += /opt/homebrew/opt/openssl@3/include
+    LIBS += -L$$PWD/libraries/cppgoslin/bin/macarm64 -lcppGoslin
+    LIBS += -L$$PWD/libraries/OpenXLSX/bin/macarm64 -lOpenXLSX
+    LIBS += -framework Accelerate
+    LIBS += -L/opt/homebrew/opt/libomp/lib -lomp
+    LIBS += -L/opt/homebrew/opt/openssl@3/lib -lssl -lcrypto
+    QMAKE_RPATHDIR += @executable_path/../Frameworks
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 14.0
+
+    # Bundle dylibs into Contents/Frameworks and patch install names so the
+    # app is self-contained and relocatable.
+    OPENSSL_LIB = /opt/homebrew/opt/openssl@3/lib
+    QMAKE_POST_LINK = \
+        mkdir -p $${TARGET}.app/Contents/Frameworks \
+        && cp -f $$PWD/libraries/cppgoslin/bin/macarm64/libcppGoslin.dylib $${TARGET}.app/Contents/Frameworks/ \
+        && install_name_tool -id @rpath/libcppGoslin.dylib $${TARGET}.app/Contents/Frameworks/libcppGoslin.dylib \
+        && install_name_tool -change libcppGoslin.dylib @rpath/libcppGoslin.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
+        && cp -f /opt/homebrew/opt/libomp/lib/libomp.dylib $${TARGET}.app/Contents/Frameworks/ \
+        && install_name_tool -id @rpath/libomp.dylib $${TARGET}.app/Contents/Frameworks/libomp.dylib \
+        && install_name_tool -change /opt/homebrew/opt/libomp/lib/libomp.dylib @rpath/libomp.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
+        && cp -fL $${OPENSSL_LIB}/libcrypto.3.dylib $${TARGET}.app/Contents/Frameworks/ \
+        && install_name_tool -id @rpath/libcrypto.3.dylib $${TARGET}.app/Contents/Frameworks/libcrypto.3.dylib \
+        && cp -fL $${OPENSSL_LIB}/libssl.3.dylib $${TARGET}.app/Contents/Frameworks/ \
+        && install_name_tool -id @rpath/libssl.3.dylib $${TARGET}.app/Contents/Frameworks/libssl.3.dylib \
+        && install_name_tool -change $$(otool -D $${OPENSSL_LIB}/libcrypto.3.dylib | tail -1) @rpath/libcrypto.3.dylib $${TARGET}.app/Contents/Frameworks/libssl.3.dylib \
+        && install_name_tool -change $$(otool -D $${OPENSSL_LIB}/libssl.3.dylib | tail -1) @rpath/libssl.3.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
+        && install_name_tool -change $$(otool -D $${OPENSSL_LIB}/libcrypto.3.dylib | tail -1) @rpath/libcrypto.3.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
+        && mkdir -p $${TARGET}.app/Contents/Resources/data \
+        && cp $$PWD/data/classes-matrix.csv $${TARGET}.app/Contents/Resources/data/ \
+        && codesign --force --sign - $${TARGET}.app/Contents/Frameworks/libcppGoslin.dylib \
+        && codesign --force --sign - $${TARGET}.app/Contents/Frameworks/libomp.dylib \
+        && codesign --force --sign - $${TARGET}.app/Contents/Frameworks/libcrypto.3.dylib \
+        && codesign --force --sign - $${TARGET}.app/Contents/Frameworks/libssl.3.dylib \
+        && codesign --force --sign - $${TARGET}.app/Contents/MacOS/$${TARGET}
 }
 
 INCLUDEPATH += $$PWD/libraries/OpenXLSX/include

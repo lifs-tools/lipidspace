@@ -6,7 +6,7 @@ SelectWorksheet::SelectWorksheet(string file_name, string &_sheet, QWidget *pare
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     setFixedSize(width(), height());
     
-    XLDocument doc(file_name.c_str());
+    XLDocument doc(file_name);
    
     auto wb = doc.workbook();
     for (const auto& name : wb.worksheetNames()) ui->comboBox->addItem(name.c_str());

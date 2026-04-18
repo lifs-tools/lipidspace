@@ -46,32 +46,40 @@ YM      M9  MM    MM MM       MM    MM   d'  `MM.    MM            MM   d'  `MM.
 #ifndef OPENXLSX_XLDOCUMENT_HPP
 #define OPENXLSX_XLDOCUMENT_HPP
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#pragma warning(disable : 4275)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(push)
+#   pragma warning(disable : 4251)
+#   pragma warning(disable : 4275)
+#endif // _MSC_VER
 
 // ===== External Includes ===== //
-#include <algorithm>
-#include <fstream>
-#include <iostream>
+#include <algorithm> // std::find_if
 #include <list>
-#include <map>
 #include <string>
 
 // ===== OpenXLSX Includes ===== //
+#include "IZipArchive.hpp"
 #include "OpenXLSX-Exports.hpp"
 #include "XLCommandQuery.hpp"
+#include "XLComments.hpp"
 #include "XLContentTypes.hpp"
-#include "XLException.hpp"
+#include "XLDrawing.hpp"
 #include "XLProperties.hpp"
 #include "XLRelationships.hpp"
 #include "XLSharedStrings.hpp"
+#include "XLStyles.hpp"
+#include "XLTables.hpp"
 #include "XLWorkbook.hpp"
 #include "XLXmlData.hpp"
 #include "XLZipArchive.hpp"
 
 namespace OpenXLSX
 {
+    constexpr const unsigned int pugi_parse_settings = pugi::parse_default | pugi::parse_ws_pcdata; // TBD: | pugi::parse_comments
+
+    constexpr const bool XLForceOverwrite = true;    // readability constant for 2nd parameter of XLDocument::saveAs
+    constexpr const bool XLDoNotOverwrite = false;   //  "
+
     /**
      * @brief The XLDocumentProperties class is an enumeration of the possible properties (metadata) that can be set
      * for a XLDocument object (and .xlsx file)
@@ -118,13 +126,14 @@ namespace OpenXLSX
         /**
          * @brief Constructor. The default constructor with no arguments.
          */
-        XLDocument() = default;
+        explicit XLDocument(const IZipArchive& zipArchive = XLZipArchive());
 
         /**
          * @brief Constructor. An alternative constructor, taking the path to the .xlsx file as an argument.
          * @param docPath A std::string with the path to the .xlsx file.
+         * @param zipArchive
          */
-        explicit XLDocument(const std::string& docPath);
+        explicit XLDocument(const std::string& docPath, const IZipArchive& zipArchive = XLZipArchive());
 
         /**
          * @brief Copy constructor
@@ -159,6 +168,16 @@ namespace OpenXLSX
         XLDocument& operator=(XLDocument&& other) noexcept = default;
 
         /**
+         * @brief ensure that warnings are shown (default setting)
+         */
+        void showWarnings();
+
+        /**
+         * @brief ensure that warnings are suppressed where this parameter is supported (currently only XLStyles)
+         */
+        void suppressWarnings();
+
+        /**
          * @brief Open the .xlsx file with the given path
          * @param fileName The path of the .xlsx file to open
          */
@@ -167,8 +186,19 @@ namespace OpenXLSX
         /**
          * @brief Create a new .xlsx file with the given name.
          * @param fileName The path of the new .xlsx file.
+         * @param forceOverwrite If not true (XLForceOverwrite) and fileName exists, create will throw an exception
+         * @throw XLException (OpenXLSX failed checks)
+         * @throw ZipRuntimeError (zippy failed archive / file access)
          */
-        void create(const std::string& fileName);
+        void create(const std::string& fileName, bool forceOverwrite);
+
+        /**
+         * @brief Create a new .xlsx file with the given name. Legacy interface, invokes create( fileName, XLForceOverwrite )
+         * @param fileName The path of the new .xlsx file.
+         * @deprecated use instead void create(const std::string& fileName, bool forceOverwrite)
+         * @warning Overwriting an existing file is retained as legacy behavior, but can lead to data loss!
+         */
+        [[deprecated]] void create(const std::string& fileName);
 
         /**
          * @brief Close the current document
@@ -177,22 +207,35 @@ namespace OpenXLSX
 
         /**
          * @brief Save the current document using the current filename, overwriting the existing file.
-         * @return true if successful; otherwise false.
+         * @throw XLException (OpenXLSX failed checks)
+         * @throw ZipRuntimeError (zippy failed archive / file access)
          */
         void save();
 
         /**
          * @brief Save the document with a new name. If a file exists with that name, it will be overwritten.
          * @param fileName The path of the file
-         * @return true if successful; otherwise false.
+         * @param forceOverwrite If not true (XLForceOverwrite) and fileName exists, saveAs will throw an exception
+         * @throw XLException (OpenXLSX failed checks)
+         * @throw ZipRuntimeError (zippy failed archive / file access)
          */
-        void saveAs(const std::string& fileName);
+        void saveAs(const std::string& fileName, bool forceOverwrite);
+
+        /**
+         * @brief Save the document with a new name. Legacy interface, invokes saveAs( fileName, XLForceOverwrite )
+         * @param fileName The path of the file
+         * @deprecated use instead void saveAs(const std::string& fileName, bool forceOverwrite)
+         * @warning Overwriting an existing file is retained as legacy behavior, but can lead to data loss!
+         */
+        [[deprecated]] void saveAs(const std::string& fileName);
 
         /**
          * @brief Get the filename of the current document, e.g. "spreadsheet.xlsx".
          * @return A std::string with the filename.
+         * @note 2024-06-03: function can't return as reference to const because filename as a substr of m_filePath can be a temporary
+         * @note 2024-07-28: Removed const from return type
          */
-        const std::string& name() const;
+        std::string name() const;
 
         /**
          * @brief Get the full path of the current document, e.g. "drive/blah/spreadsheet.xlsx"
@@ -221,12 +264,6 @@ namespace OpenXLSX
         void setProperty(XLProperty prop, const std::string& value);
 
         /**
-         * @brief
-         * @return
-         */
-        explicit operator bool() const;
-
-        /**
          * @brief Delete the property from the document
          * @param theProperty The property to delete from the document
          */
@@ -234,9 +271,93 @@ namespace OpenXLSX
 
         /**
          * @brief
-         * @param command
+         * @return
          */
-        void execCommand(const XLCommand& command);
+        explicit operator bool() const;
+
+        /**
+         * @brief
+         * @return
+         */
+        bool isOpen() const;
+
+        /**
+         * @brief return a handle on the workbook's styles
+         * @return a reference to m_styles
+         */
+        XLStyles& styles();
+
+        /**
+         * @brief determine whether a worksheet relationships file exists for sheetXmlNo
+         * @param sheetXmlNo check for this sheet number # (xl/worksheets/_reals/sheet#.xml.rels)
+         * @return true if relationships file exists
+         */
+        bool hasSheetRelationships(uint16_t sheetXmlNo) const;
+
+        /**
+         * @brief determine whether a worksheet vml drawing file exists for sheetXmlNo
+         * @param sheetXmlNo check for this sheet number # (xl/drawings/vmlDrawing#.xml)
+         * @return true if vml drawing file exists
+         */
+        bool hasSheetVmlDrawing(uint16_t sheetXmlNo) const;
+
+        /**
+         * @brief determine whether a worksheet comments file exists for sheetXmlNo
+         * @param sheetXmlNo check for this sheet number # (xl/comments#.xml)
+         * @return true if comments file exists
+         */
+        bool hasSheetComments(uint16_t sheetXmlNo) const;
+
+        /**
+         * @brief determine whether a worksheet table(s) file exists for sheetXmlNo
+         * @param sheetXmlNo check for this sheet number # (xl/tables/table#.xml)
+         * @return true if table(s) file exists
+         */
+        bool hasSheetTables(uint16_t sheetXmlNo) const;
+
+        /**
+         * @brief fetch the worksheet relationships for sheetXmlNo, create the file if it does not exist
+         * @param sheetXmlNo fetch for this sheet #
+         * @return an XLRelationships object initialized with the sheet relationships
+         */
+        XLRelationships sheetRelationships(uint16_t sheetXmlNo);
+
+        /**
+         * @brief fetch the worksheet VML drawing for sheetXmlNo, create the file if it does not exist
+         * @param sheetXmlNo fetch for this sheet #
+         * @return an XLVmlDrawing object initialized with the sheet drawing
+         */
+        XLVmlDrawing sheetVmlDrawing(uint16_t sheetXmlNo);
+
+        /**
+         * @brief fetch the worksheet comments for sheetXmlNo, create the file if it does not exist
+         * @param sheetXmlNo fetch for this sheet #
+         * @return an XLComments object initialized with the sheet comments
+         */
+        XLComments sheetComments(uint16_t sheetXmlNo);
+
+        /**
+         * @brief fetch the worksheet tables for sheetXmlNo, create the file if it does not exist
+         * @param sheetXmlNo fetch for this sheet #
+         * @return an XLTables object initialized with the sheet tables
+         */
+        XLTables sheetTables(uint16_t sheetXmlNo);
+
+    public:
+        /**
+         * @brief validate whether sheetName is a valid Excel worksheet name
+         * @param sheetName the desired name
+         * @param throwOnInvalid (default: false) if true, invalid sheetName will throw exception
+         * @return true if sheetName can be used, otherwise false
+         */
+        bool validateSheetName(std::string sheetName, bool throwOnInvalid = false);
+
+        /**
+         * @brief
+         * @param command
+         * @return for XLCommandType::SetSheetActive: execution success, otherwise always true
+         */
+        bool execCommand(const XLCommand& command);
 
         /**
          * @brief
@@ -252,6 +373,24 @@ namespace OpenXLSX
          */
         XLQuery execQuery(const XLQuery& query);
 
+        /**
+         * @brief configure an alternative XML saving declaration to be used with pugixml
+         * @param savingDeclaration An XLXmlSavingDeclaration object with the configuration to use
+         * @return
+         */
+        void setSavingDeclaration(XLXmlSavingDeclaration const& savingDeclaration);
+
+        /**
+         * @brief
+         * @return
+         */
+        const XLSharedStrings& sharedStrings() const { return m_sharedStrings; }
+
+        /**
+         * @brief rewrite the shared strings cache (and update all cells referencing an index from the shared strings), dropping unused strings
+         * @note potentially time-intensive (on documents with many strings or many cells referring shared strings)
+         */
+        void cleanupSharedStrings();
 
         //----------------------------------------------------------------------------------------------------------------------
         //           Protected Member Functions
@@ -266,18 +405,20 @@ namespace OpenXLSX
         std::string extractXmlFromArchive(const std::string& path);
 
         /**
-         * @brief
-         * @param path
-         * @return
+         * @brief fetch the XLXmlData object as stored in m_data, throw XLInternalError if path is not found
+         * @param path The relative path of the file.
+         * @param doNotThrow if true, will return a nullptr if path is not found
+         * @return a pointer to the XLXmlData object stored in m_data (or nullptr, see doNotThrow)
          */
-        XLXmlData* getXmlData(const std::string& path);
+        XLXmlData* getXmlData(const std::string& path, bool doNotThrow = false);
 
         /**
-         * @brief
+         * @brief const overload of getXmlData
          * @param path
+         * @param doNotThrow
          * @return
          */
-        const XLXmlData* getXmlData(const std::string& path) const;
+        const XLXmlData* getXmlData(const std::string& path, bool doNotThrow = false) const;
 
         /**
          * @brief
@@ -291,8 +432,11 @@ namespace OpenXLSX
         //----------------------------------------------------------------------------------------------------------------------
 
     private:
-        std::string m_filePath {}; /**< The path to the original file*/
-        std::string m_realPath {}; /**<  */
+        bool m_suppressWarnings {true}; /**< If true, will suppress output of warnings where supported */
+
+        std::string m_filePath {};      /**< The path to the original file*/
+
+        XLXmlSavingDeclaration m_xmlSavingDeclaration;  /**< The xml saving declaration that will be passed to pugixml before generating the XML output data*/
 
         mutable std::list<XLXmlData>    m_data {};              /**<  */
         mutable std::deque<std::string> m_sharedStringCache {}; /**<  */
@@ -303,11 +447,59 @@ namespace OpenXLSX
         XLContentTypes  m_contentTypes {};     /**< A pointer to the content types object*/
         XLAppProperties m_appProperties {};    /**< A pointer to the App properties object */
         XLProperties    m_coreProperties {};   /**< A pointer to the Core properties object*/
+        XLStyles        m_styles {};           /**< A pointer to the document styles object*/
         XLWorkbook      m_workbook {};         /**< A pointer to the workbook object */
-        XLZipArchive    m_archive {};          /**<  */
+        IZipArchive     m_archive {};          /**<  */
     };
+
+
+    //----------------------------------------------------------------------------------------------------------------------
+    //           Global utility functions
+    //----------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * @brief Get a hexadecimal representation of size bytes, starting at data
+     * @param data A pointer to the data bytes to format
+     * @param size The amount of data bytes to format
+     * @return A string with the base-16 representation of the data bytes
+     * @note 2024-08-18 BUGFIX: replaced char array with std::string, as ISO C++ standard does not permit variable size arrays
+     */
+    OPENXLSX_EXPORT std::string BinaryAsHexString(const void *data, const size_t size);
+
+    /**
+     * @brief Calculate the two-byte XLSX password hash for password
+     * @param password the string to hash
+     * @return the two byte value calculated according to the XLSX password hashing algorithm
+     */
+    OPENXLSX_EXPORT uint16_t ExcelPasswordHash (std::string password);
+    /**
+     * @brief Same as ExcelPasswordHash but format the output as a 4-digit hexadecimal string
+     * @param password the string to hash
+     * @return a string that can be stored in OOXML as a password hash
+     */
+    OPENXLSX_EXPORT std::string ExcelPasswordHashAsString (std::string password);
+
+    /**
+     * @brief eliminate from pathA leading subdirectories shared with pathB and find a path from pathB to pathA destination
+     * @param pathA return a relative path to here
+     * @param pathB escape this path via "../" until the common branch with pathA is reached
+     * @return a string that leads via a relative path from pathA to pathB
+     * @throw XLInternalError if pathA and pathB have no common leading (sub)directory
+     */
+    std::string getPathARelativeToPathB(std::string const& pathA, std::string const& pathB);
+
+    /**
+     * @brief eliminate from path any . and .. subdirectories by ignoring them (.) or escaping to the parent directory (..)
+     * @param path the path to normalize in this way
+     * @return a normalized path (no longer contains . or .. entries)
+     * @throw XLInternalError upon invalid path - e.g. containing "//" or trying to escape via ".." beyond the context of path
+     */
+    std::string eliminateDotAndDotDotFromPath(const std::string& path);
 
 }    // namespace OpenXLSX
 
-#pragma warning(pop)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(pop)
+#endif // _MSC_VER
+
 #endif    // OPENXLSX_XLDOCUMENT_HPP

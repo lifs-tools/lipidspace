@@ -126,3 +126,43 @@ jobs:
         tag: ${{ github.ref }}
         overwrite: true
         file_glob: true
+
+  build-macos-arm64:
+    runs-on: macos-14
+    env:
+        BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
+        RELEASE_VERSION: ${{ github.ref_name }}
+        OS: "macOS-ARM64"
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        lfs: 'true'
+
+    - name: Install dependencies
+      run: |
+        brew install qt libomp openssl@3 cmake
+
+    - name: Build LipidSpace
+      run: |
+        export PATH="/opt/homebrew/opt/qt/bin:$PATH"
+        qmake6 LipidSpace.pro
+        make release
+
+    - name: Package app bundle
+      run: |
+        mkdir -p Build
+        ditto -c -k --sequesterRsrc --keepParent \
+          LipidSpace.app \
+          Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      # only upload binaries on release creation, not on manual trigger
+      if: github.event_name != 'workflow_dispatch'
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
+        asset_name: LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
+        tag: ${{ github.ref }}
+        overwrite: true
+        file_glob: true

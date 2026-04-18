@@ -46,14 +46,14 @@ YM      M9  MM    MM MM       MM    MM   d'  `MM.    MM            MM   d'  `MM.
 #ifndef OPENXLSX_XLPROPERTIES_HPP
 #define OPENXLSX_XLPROPERTIES_HPP
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#pragma warning(disable : 4275)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(push)
+#   pragma warning(disable : 4251)
+#   pragma warning(disable : 4275)
+#endif // _MSC_VER
 
 // ===== External Includes ===== //
-#include <map>
 #include <string>
-#include <vector>
 
 // ===== OpenXLSX Includes ===== //
 #include "OpenXLSX-Exports.hpp"
@@ -66,6 +66,13 @@ namespace OpenXLSX
      */
     class OPENXLSX_EXPORT XLProperties : public XLXmlFile
     {
+    private:
+        /**
+         * @brief constructor helper function: create core.xml content from template
+         * @param workbook
+         */
+        void createFromTemplate();
+
         //----------------------------------------------------------------------------------------------------------------------
         //           Public Member Functions
         //----------------------------------------------------------------------------------------------------------------------
@@ -161,6 +168,13 @@ namespace OpenXLSX
      */
     class OPENXLSX_EXPORT XLAppProperties : public XLXmlFile
     {
+    private:
+        /**
+         * @brief constructor helper function: create app.xml content from template
+         * @param workbook
+         */
+        void createFromTemplate(XMLDocument const & workbookXml);
+
         //--------------------------------------------------------------------------------------------------------------
         //           Public Member Functions
         //--------------------------------------------------------------------------------------------------------------
@@ -170,6 +184,13 @@ namespace OpenXLSX
          * @brief
          */
         XLAppProperties() = default;
+
+        /**
+         * @brief enable XLAppProperties to re-create a worksheet list in docProps/app.xml <TitlesOfParts> element from workbookXml
+         * @param xmlData
+         * @param workbook
+         */
+        explicit XLAppProperties(XLXmlData* xmlData, XMLDocument const & workbookXml);
 
         /**
          * @brief
@@ -207,6 +228,20 @@ namespace OpenXLSX
          * @return
          */
         XLAppProperties& operator=(XLAppProperties&& other) noexcept = default;
+
+        /**
+         * @brief update the "HeadingPairs" entry for "Worksheets" *and* the "TitlesOfParts" vector size
+         * @param increment change the sheet count by this (negative = decrement)
+         * @throws XLInternalError when sheet count would become < 1
+         */
+        void incrementSheetCount(int16_t increment);
+
+        /**
+         * @brief initialize <TitlesOfParts> to contain all and only entries from workbookSheetNames & ensure HeadingPairs entry for Worksheets has the correct count
+         * @param workbookSheetNames the vector of sheet names as returned by XLWorkbook::sheetNames()
+         * @throws XLInternalError thrown by the underlying sheetNames call upon failure
+         */
+        void alignWorksheets(std::vector<std::string> const & workbookSheetNames);
 
         /**
          * @brief
@@ -294,5 +329,8 @@ namespace OpenXLSX
 
 }    // namespace OpenXLSX
 
-#pragma warning(pop)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(pop)
+#endif // _MSC_VER
+
 #endif    // OPENXLSX_XLPROPERTIES_HPP

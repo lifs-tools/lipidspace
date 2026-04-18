@@ -499,24 +499,7 @@ void Matrix::inverse(Matrix &X, bool symmetric){
 
 
 double Matrix::vector_vector_mult(int n, const double *x, const double *y){
-    int i, n8 = n & ~7;
-    double sum;
-    __m256d vector_sum = {0., 0., 0., 0.};
-
-    for (i = 0; i < n8; i += 8) {
-        __m256d vector_x1 = *(__m256d*)(x + i);
-        __m256d vector_y1 = *(__m256d*)(y + i);
-        __m256d vector_x2 = *(__m256d*)(x + i + 4);
-        __m256d vector_y2 = *(__m256d*)(y + i + 4);
-        vector_sum += vector_x1 * vector_y1;
-        vector_sum += vector_x2 * vector_y2;
-    }
-    vector_sum[0] += vector_sum[1];
-    vector_sum[2] += vector_sum[3];
-    vector_sum[0] += vector_sum[2];
-    for (sum = 0.0; i < n; ++i) sum += x[i] * y[i];
-    sum += vector_sum[0];
-	return sum;
+    return cblas_ddot(n, x, 1, y, 1);
 }
 
 

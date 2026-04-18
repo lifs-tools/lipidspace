@@ -312,7 +312,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     if (GlobalData::linkage == SingleLinkage) ui->actionSingle_linkage_clustering->setChecked(true);
     else if (GlobalData::linkage == AverageLinkage) ui->actionAverage_linkage_clustering->setChecked(true);
     else if (GlobalData::linkage == CompleteLinkage) ui->actionComplete_linkage_clustering->setChecked(true);
-    GlobalData::last_folder = QCoreApplication::applicationDirPath();
+    GlobalData::last_folder = GlobalData::dataBasePath();
 
 
     ui->speciesList->setItemDelegate(new ItemDelegate(ui->speciesList));
@@ -370,7 +370,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
     // check the statistics
-    string analytics_file = QCoreApplication::applicationDirPath().toStdString() + "/data/analytics.txt";
+    string analytics_file = GlobalData::dataBasePath().toStdString() + "/data/analytics.txt";
     ifstream infile(analytics_file, ifstream::in | ifstream::binary | ifstream::ate);
     if (!infile.good() || infile.tellg() == 0){
         QMessageBox::StandardButton button = QMessageBox::information(this, "LipidSpace note", QString("Thank you for choosing LipidSpace.\n\n") +
@@ -401,7 +401,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
 
 
     /*
-    string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
+    string file_name = GlobalData::dataBasePath().toStdString() + "/examples/Example-Dataset.xlsx";
     vector<TableColumnType> *ct = new vector<TableColumnType>(369, LipidColumn);
     ct->at(0) = SampleColumn;
     ct->at(1) = StudyVariableColumnNominal;
@@ -435,13 +435,13 @@ void LipidSpaceGUI::lipid_selection_changed() {
 
 
 void LipidSpaceGUI::sendStatistics(){
-    ofstream off(QCoreApplication::applicationDirPath().toStdString() + "/data/analytics.txt");
+    ofstream off(GlobalData::dataBasePath().toStdString() + "/data/analytics.txt");
     off << (ui->actionsend_statistics->isChecked() ? "1" : "0") << endl;
 }
 
 
 void LipidSpaceGUI::openExampleDataset(){
-    string file_name = QCoreApplication::applicationDirPath().toStdString() + "/examples/Example-Dataset.xlsx";
+    string file_name = GlobalData::dataBasePath().toStdString() + "/examples/Example-Dataset.xlsx";
     if (!QFile::exists(file_name.c_str())){
         QMessageBox::information(this, "Import error", "It seems that the example lipidomics dataset file cannot be found on the disk. Please get in contact with the developers and send a bug report.");
         Logging::write_log("It seems that the example lipidomics dataset file cannot be found on the disk. Please get in contact with the developers and send a bug report.");

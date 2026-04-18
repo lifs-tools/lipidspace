@@ -144,7 +144,7 @@ Mapping::Mapping(string _name, StudyVariableType v_type){
 
 
 void Analytics::analytics(string action) {
-    ifstream infile(QCoreApplication::applicationDirPath().toStdString() + "/data/analytics.txt");
+    ifstream infile(GlobalData::dataBasePath().toStdString() + "/data/analytics.txt");
     int result = 0;
     if (!infile.good()){
         return;
@@ -469,7 +469,7 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
         }
     }
     else {
-        XLDocument doc(file_name.c_str());
+        XLDocument doc(file_name);
 
         auto wks = doc.workbook().worksheet(sheet_name.c_str());
 

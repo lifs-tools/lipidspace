@@ -46,11 +46,14 @@ YM      M9  MM    MM MM       MM    MM   d'  `MM.    MM            MM   d'  `MM.
 #ifndef OPENXLSX_XLRELATIONSHIPS_HPP
 #define OPENXLSX_XLRELATIONSHIPS_HPP
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#pragma warning(disable : 4275)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(push)
+#   pragma warning(disable : 4251)
+#   pragma warning(disable : 4275)
+#endif // _MSC_VER
 
 // ===== External Includes ===== //
+#include <random>       // std::mt19937
 #include <string>
 #include <vector>
 
@@ -61,7 +64,34 @@ YM      M9  MM    MM MM       MM    MM   d'  `MM.    MM            MM   d'  `MM.
 
 namespace OpenXLSX
 {
-    class XLDocument;
+    /**
+     * @brief Enable use of random (relationship) IDs
+     */
+    void UseRandomIDs();
+
+    /**
+     * @brief Disable use of random (relationship) IDs (default behavior)
+     */
+    void UseSequentialIDs();
+
+    /**
+     * @brief Return a 32 bit random value
+     * @return A 32 bit random value
+     */
+    extern std::mt19937 Rand32;
+
+    /**
+     * @brief Return a 64 bit random value (by invoking Rand32 twice)
+     * @return A 64 bit random value
+     */
+    uint64_t Rand64();
+
+    /**
+     * @brief Initialize XLRand32 data source
+     * @param pseudoRandom If true, sequence will be reproducible with a constant seed
+     */
+    void InitRandom(bool pseudoRandom = false);
+
 
     class XLRelationships;
 
@@ -94,9 +124,22 @@ namespace OpenXLSX
         PrinterSettings,
         VBAProject,
         ControlProperties,
+        Comments,
+        Table,
         Unknown
     };
+} //     namespace OpenXLSX
 
+namespace OpenXLSX_XLRelationships { // special namespace to avoid naming conflict with another GetStringFromType function
+    using namespace OpenXLSX;
+    /**
+     * @brief helper function, used only within module and from XLProperties.cpp / XLAppProperties::createFromTemplate
+     * @param type the XLRelationshipType for which to return the correct XML string
+     */
+    std::string GetStringFromType(XLRelationshipType type);
+} //    namespace OpenXLSX_XLRelationships
+
+namespace OpenXLSX {
     /**
      * @brief An encapsulation of a relationship item, i.e. an XML file in the document, its type and an ID number.
      */
@@ -163,6 +206,12 @@ namespace OpenXLSX
          */
         std::string id() const;
 
+        /**
+         * @brief Test if relationship item is empty (== m_relationshipNode->empty())
+         * @return true if this is an empty relationship item
+         */
+        bool empty() const;
+
     private:                                         // ---------- Private Member Variables ---------- //
         std::unique_ptr<XMLNode> m_relationshipNode; /**< An XMLNode object with the relationship item */
     };
@@ -185,8 +234,10 @@ namespace OpenXLSX
         /**
          * @brief
          * @param xmlData
+         * @param pathTo Initialize m_path from this: the path to the relationships file origin of xmlData
+         * @note m_path is used to resolve relative relationship target paths to an absolute
          */
-        explicit XLRelationships(XLXmlData* xmlData);
+        explicit XLRelationships(XLXmlData* xmlData, std::string pathTo);
 
         /**
          * @brief Destructor
@@ -229,9 +280,11 @@ namespace OpenXLSX
         /**
          * @brief Look up a relationship item by Target.
          * @param target The Target string of the relationship item to retrieve.
+         * @param throwIfNotFound Throw an XLException when target is not found, default: true
+         *                        when false, XLRelationshipItem::empty() can be tested on the return value
          * @return An XLRelationshipItem object.
          */
-        XLRelationshipItem relationshipByTarget(const std::string& target) const;
+        XLRelationshipItem relationshipByTarget(const std::string& target, bool throwIfNotFound = true) const;
 
         /**
          * @brief Get the std::map with the relationship items, ordered by ID.
@@ -272,9 +325,24 @@ namespace OpenXLSX
          */
         bool idExists(const std::string& id) const;
 
+        /**
+         * @brief print the XML contents of the relationships document using the underlying XMLNode print function
+         */
+        void print(std::basic_ostream<char>& ostr) const;
+
         // ---------- Protected Member Functions ---------- //
+    protected:
+
+        //----------------------------------------------------------------------------------------------------------------------
+        //           Private Member Variables
+        //----------------------------------------------------------------------------------------------------------------------
+    private:
+        std::string m_path; // the path - within the XLSX file - to the relationships file on which this object is instantiated
     };
 }    // namespace OpenXLSX
 
-#pragma warning(pop)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(pop)
+#endif // _MSC_VER
+
 #endif    // OPENXLSX_XLRELATIONSHIPS_HPP

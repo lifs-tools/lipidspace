@@ -84,7 +84,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     pagesLabel->setGeometry(QRect(width() - 126, 220, 101, 20));
     pagesLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
-    xLabel = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/close-x.png");
+    xLabel = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/close-x.png");
     xLabel->setObjectName(QString::fromUtf8("xLabel"));
     xLabel->setGeometry(QRect(550, 18, 51, 20));
     xLabel->move(width() - 25, 10);
@@ -100,7 +100,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     pagesLabel->setText("1 / 29");
     setVisible(false);
 
-    arrow_bl = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-left.png");
+    arrow_bl = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/arrow-bottom-left.png");
     r = arrow_bl->geometry();
     r.setWidth(arrow_bl->pixmap.size().width());
     r.setHeight(arrow_bl->pixmap.size().height());
@@ -108,7 +108,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_bl->setVisible(false);
     arrows.push_back(arrow_bl);
 
-    arrow_br = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-bottom-right.png");
+    arrow_br = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/arrow-bottom-right.png");
     r = arrow_br->geometry();
     r.setWidth(arrow_br->pixmap.size().width());
     r.setHeight(arrow_br->pixmap.size().height());
@@ -116,7 +116,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_br->setVisible(false);
     arrows.push_back(arrow_br);
 
-    arrow_lt = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-left-top.png");
+    arrow_lt = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/arrow-left-top.png");
     r = arrow_lt->geometry();
     r.setWidth(arrow_lt->pixmap.size().width());
     r.setHeight(arrow_lt->pixmap.size().height());
@@ -124,7 +124,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_lt->setVisible(false);
     arrows.push_back(arrow_lt);
 
-    arrow_lb = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-left-bottom.png");
+    arrow_lb = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/arrow-left-bottom.png");
     r = arrow_lb->geometry();
     r.setWidth(arrow_lb->pixmap.size().width());
     r.setHeight(arrow_lb->pixmap.size().height());
@@ -132,7 +132,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_lb->setVisible(false);
     arrows.push_back(arrow_lb);
 
-    arrow_tl = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-top-left.png");
+    arrow_tl = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/arrow-top-left.png");
     r = arrow_tl->geometry();
     r.setWidth(arrow_tl->pixmap.size().width());
     r.setHeight(arrow_tl->pixmap.size().height());
@@ -140,7 +140,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_tl->setVisible(false);
     arrows.push_back(arrow_tl);
 
-    arrow_tr = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-top-right.png");
+    arrow_tr = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/arrow-top-right.png");
     r = arrow_tr->geometry();
     r.setWidth(arrow_tr->pixmap.size().width());
     r.setHeight(arrow_tr->pixmap.size().height());
@@ -148,7 +148,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_tr->setVisible(false);
     arrows.push_back(arrow_tr);
 
-    arrow_rt = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-right-top.png");
+    arrow_rt = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/arrow-right-top.png");
     r = arrow_rt->geometry();
     r.setWidth(arrow_rt->pixmap.size().width());
     r.setHeight(arrow_rt->pixmap.size().height());
@@ -156,7 +156,7 @@ Tutorial::Tutorial(LipidSpaceGUI * _lipidSpaceGUI, QWidget *parent) : QFrame(par
     arrow_rt->setVisible(false);
     arrows.push_back(arrow_rt);
 
-    arrow_rb = new ImageWidget(this, QCoreApplication::applicationDirPath() + "/data/images/arrow-right-bottom.png");
+    arrow_rb = new ImageWidget(this, GlobalData::dataBasePath() + "/data/images/arrow-right-bottom.png");
     r = arrow_rb->geometry();
     r.setWidth(arrow_rb->pixmap.size().width());
     r.setHeight(arrow_rb->pixmap.size().height());
@@ -1324,7 +1324,7 @@ void Tutorial::second_tutorial_steps(){
                     ct->at(1) = StudyVariableColumnNominal;
                     ct->at(2) = StudyVariableColumnNominal;
                     ct->at(3) = StudyVariableColumnNominal;
-                    string path_to_example = QCoreApplication::applicationDirPath().toStdString();
+                    string path_to_example = GlobalData::dataBasePath().toStdString();
                     lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
                     main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
@@ -1766,7 +1766,7 @@ void Tutorial::third_tutorial_steps(){
                     ct->at(1) = StudyVariableColumnNominal;
                     ct->at(2) = StudyVariableColumnNominal;
                     ct->at(3) = StudyVariableColumnNominal;
-                    string path_to_example = QCoreApplication::applicationDirPath().toStdString();
+                    string path_to_example = GlobalData::dataBasePath().toStdString();
                     lipidSpaceGUI->loadTable(new ImportData(path_to_example + "/examples/Example-Dataset.xlsx", "Data", COLUMN_PIVOT_TABLE, ct));
 
                     main_widgets[lipidSpaceGUI->ui->menuAnalysis] = true;
@@ -2047,7 +2047,7 @@ void Tutorial::fourth_tutorial_steps(){
             move(20, 20);
             if (lipidSpaceGUI->lipid_space->lipidomes.empty()){
                 lipidSpaceGUI->resetAnalysis();
-                string path_to_example = QCoreApplication::applicationDirPath().toStdString();
+                string path_to_example = GlobalData::dataBasePath().toStdString();
 
                 vector<TableColumnType> *ct_1 = new vector<TableColumnType>(201, LipidColumn);
                 ct_1->at(0) = SampleColumn;

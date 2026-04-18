@@ -7,7 +7,7 @@ versionAtLeast(QT_VERSION, 6.0.0) {
 
 
 CONFIG += c++17 debug_and_release
-QMAKE_CXXFLAGS += -fopenmp -std=c++17 -Wno-unknown-pragmas
+QMAKE_CXXFLAGS += -std=c++17 -Wno-unknown-pragmas
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -25,16 +25,46 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 QMAKE_CXXFLAGS_RELEASE += -O3
 QMAKE_EXTRA_TARGETS += build buildclean
 
-unix {
+unix:!macx {
+    QMAKE_CXXFLAGS += -fopenmp
     LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX"
 }
 
 win32 {
+    QMAKE_CXXFLAGS += -fopenmp
     LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll
 }
 
 macx {
-    #LIBS += -fopenmp $$PWD/libraries/cppgoslin/bin/win64/libcppGoslin.dll $$PWD/libraries/OpenBLAS/bin/win64/libopenblas.dll libraries/OpenXLSX/bin/win64/libOpenXLSX.dll
+    ICON = LipidSpace.icns
+    QMAKE_TARGET_BUNDLE_PREFIX = org.lifs-tools
+    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp
+    INCLUDEPATH += $$system(xcrun --show-sdk-path)/System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers
+    INCLUDEPATH += /opt/homebrew/opt/libomp/include
+    LIBS += -L$$PWD/libraries/cppgoslin/bin/macarm64 -lcppGoslin
+    LIBS += -L$$PWD/libraries/OpenXLSX/bin/macarm64 -lOpenXLSX
+    LIBS += -framework Accelerate
+    LIBS += -L/opt/homebrew/opt/libomp/lib -lomp
+    QMAKE_RPATHDIR += @executable_path/../Frameworks
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 14.0
+
+    # Bundle dylibs into Contents/Frameworks and patch install names so the
+    # app is self-contained and relocatable.
+    QMAKE_POST_LINK = \
+        mkdir -p $${TARGET}.app/Contents/Frameworks \
+        && cp -f $$PWD/libraries/cppgoslin/bin/macarm64/libcppGoslin.dylib $${TARGET}.app/Contents/Frameworks/ \
+        && install_name_tool -id @rpath/libcppGoslin.dylib $${TARGET}.app/Contents/Frameworks/libcppGoslin.dylib \
+        && install_name_tool -change libcppGoslin.dylib @rpath/libcppGoslin.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
+        && cp -f /opt/homebrew/opt/libomp/lib/libomp.dylib $${TARGET}.app/Contents/Frameworks/ \
+        && install_name_tool -id @rpath/libomp.dylib $${TARGET}.app/Contents/Frameworks/libomp.dylib \
+        && install_name_tool -change /opt/homebrew/opt/libomp/lib/libomp.dylib @rpath/libomp.dylib $${TARGET}.app/Contents/MacOS/$${TARGET} \
+        && mkdir -p $${TARGET}.app/Contents/Resources/data \
+        && cp $$PWD/data/classes-matrix.csv $${TARGET}.app/Contents/Resources/data/ \
+        && cp -r $$PWD/data/images $${TARGET}.app/Contents/Resources/data/ \
+        && cp -r $$PWD/examples $${TARGET}.app/Contents/Resources/ \
+        && codesign --force --sign - $${TARGET}.app/Contents/Frameworks/libcppGoslin.dylib \
+        && codesign --force --sign - $${TARGET}.app/Contents/Frameworks/libomp.dylib \
+        && codesign --force --sign - $${TARGET}.app/Contents/MacOS/$${TARGET}
 }
 
 INCLUDEPATH += $$PWD/libraries/OpenXLSX/include
@@ -124,10 +154,12 @@ FORMS += \
     ui/studyvariablemapping.ui \
     ui/changecolordialog.ui
 
+RESOURCES += lipidspace.qrc
+
 release:UI_DIR += objects
 release:MOC_DIR += objects
 
-unix {
+unix:!macx {
     build.depends = release
     build.commands += mkdir -p $$PWD/Build
     build.commands += && mkdir -p $$PWD/Build/LipidSpace

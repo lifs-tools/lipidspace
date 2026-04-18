@@ -5,12 +5,15 @@
 #ifndef OPENXLSX_XLROWDATA_HPP
 #define OPENXLSX_XLROWDATA_HPP
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#pragma warning(disable : 4275)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(push)
+#   pragma warning(disable : 4251)
+#   pragma warning(disable : 4275)
+#endif // _MSC_VER
 
 // ===== External Includes ===== //
 #include <deque>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <vector>
@@ -185,6 +188,25 @@ namespace OpenXLSX
          */
         XLRowDataIterator end();
 
+        /**
+         * @brief Templated assignment operator - assign value to all existing cells in the row
+         * @note CAUTION: non-existing cells will not be assigned
+         * @tparam T The type of the value argument.
+         * @param value The value.
+         * @return A reference to the assigned-to object.
+         */
+        template<typename T,
+                 typename = std::enable_if_t<
+                     std::is_integral_v<T> || std::is_floating_point_v<T> || std::is_same_v<std::decay_t<T>, std::string> ||
+                     std::is_same_v<std::decay_t<T>, std::string_view> || std::is_same_v<std::decay_t<T>, const char*> ||
+                     std::is_same_v<std::decay_t<T>, char*> || std::is_same_v<T, XLDateTime>>>
+        XLRowDataRange& operator=(T value)
+        {
+            // forward implementation to templated XLCellValue& XLCellValue::operator=(T value)
+            for (auto it = begin(); it != end(); ++it) it->value() = value;
+            return *this;
+        }
+
     private:
         /**
          * @brief Constructor.
@@ -195,10 +217,15 @@ namespace OpenXLSX
          */
         explicit XLRowDataRange(const XMLNode& rowNode, uint16_t firstColumn, uint16_t lastColumn, const XLSharedStrings& sharedStrings);
 
-        std::unique_ptr<XMLNode> m_rowNode;                   /**< */
-        uint16_t                 m_firstCol { 1 };            /**< The cell reference of the first cell in the range */
-        uint16_t                 m_lastCol { 1 };             /**< The cell reference of the last cell in the range */
-        XLSharedStrings          m_sharedStrings; /**< */
+        /**
+         * @brief Constructor for an empty range.
+         */
+        explicit XLRowDataRange();
+
+        std::unique_ptr<XMLNode> m_rowNode;        /**< */
+        uint16_t                 m_firstCol { 1 }; /**< The cell reference of the first cell in the range */
+        uint16_t                 m_lastCol { 1 };  /**< The cell reference of the last cell in the range */
+        XLSharedStringsRef       m_sharedStrings;  /**< */
     };
 
     /**
@@ -244,11 +271,11 @@ namespace OpenXLSX
          * @throws XLOverflowError if size of container exceeds maximum number of columns.
          */
         template<typename T,
-                 typename std::enable_if<!std::is_same_v<T, XLRowDataProxy> &&
-                                             std::is_base_of_v<typename std::bidirectional_iterator_tag,
-                                                               typename std::iterator_traits<typename T::iterator>::iterator_category>,
-                                         T>::type* = nullptr>
-        XLRowDataProxy& operator=(const T& values)
+                 typename = std::enable_if_t<!std::is_same_v<T, XLRowDataProxy> &&
+                                                 std::is_base_of_v<std::bidirectional_iterator_tag,
+                                                                   typename std::iterator_traits<typename T::iterator>::iterator_category>,
+                                             T>>
+        XLRowDataProxy& operator=(const T& values)    // 2024-04-30: whitespace support
         {
             if (values.size() > MAX_COLS) throw XLOverflowError("Container size exceeds maximum number of columns.");
             if (values.size() == 0) return *this;
@@ -256,12 +283,13 @@ namespace OpenXLSX
             // ===== If the container value_type is XLCellValue, the values can be copied directly.
             if constexpr (std::is_same_v<typename T::value_type, XLCellValue>) {
                 // ===== First, delete the values in the first N columns.
-                deleteCellValues(values.size());
+                deleteCellValues(values.size());    // 2024-04-30: whitespace support
 
                 // ===== Then, prepend new cell nodes to current row node
                 auto colNo = values.size();
                 for (auto value = values.rbegin(); value != values.rend(); ++value) {    // NOLINT
-                    prependCellValue(*value, colNo);
+                    prependCellValue(*value, colNo);    // 2024-04-30: whitespace support: this is safe because only prependCellValue (with
+                                                        // whitespace support) touches the row data
                     --colNo;
                 }
             }
@@ -269,19 +297,38 @@ namespace OpenXLSX
             // ===== If the container value_type is a POD type, use the overloaded operator= on each cell.
             else {
                 auto range = XLRowDataRange(*m_rowNode, 1, values.size(), getSharedStrings());
-                auto dst   = range.begin();
-                auto src   = values.begin();
+                auto dst   = range.begin();    // 2024-04-30: whitespace support: safe because XLRowDataRange::begin invokes whitespace-safe
+                                               // getCellNode for column 1
+                auto src = values.begin();
 
                 while (true) {
                     dst->value() = *src;
                     ++src;
                     if (src == values.end()) break;
-                    ++dst;
+                    ++dst;    // 2024-04-30: whitespace support: XLRowDataIterator::operator++ is whitespace-safe
                 }
             }
 
             return *this;
         }
+
+        // // BEGIN working template header
+        //         template<
+        //             typename T,
+        //             typename std::enable_if<
+        //                 !std::is_same_v< T, XLRowDataProxy >
+        //                  && std::is_base_of_v< XMLNode, T >,
+        //                 T
+        //             >::type* = nullptr
+        //         >
+        // // END working template header
+        //         XLRowDataProxy& operator=(const T& values)
+        //         {
+        // using namespace std::literals::string_literals;
+        // throw XLInternalError( "templated XLRowDataProxy& operator=(const T& values) instantiated for an XMLNode ("s+ typeid(T).name() +
+        // "), this function must be implemented then"s );
+        //
+        //         }
 
         /**
          * @brief Implicit conversion to std::vector of XLCellValues.
@@ -309,12 +356,12 @@ namespace OpenXLSX
          * @tparam Container The container (and value) type to convert the row data to.
          * @return The required container with the row data.
          */
-        template<
-            typename Container,
-            typename std::enable_if<!std::is_same_v<Container, XLRowDataProxy> &&
-                                        std::is_base_of_v<typename std::bidirectional_iterator_tag,
-                                                          typename std::iterator_traits<typename Container::iterator>::iterator_category>,
-                                    Container>::type* = nullptr>
+        template<typename Container,
+                 typename =
+                     std::enable_if_t<!std::is_same_v<Container, XLRowDataProxy> &&
+                                          std::is_base_of_v<std::bidirectional_iterator_tag,
+                                                            typename std::iterator_traits<typename Container::iterator>::iterator_category>,
+                                      Container>>
         explicit operator Container() const
         {
             return convertContainer<Container>();
@@ -364,10 +411,11 @@ namespace OpenXLSX
         std::vector<XLCellValue> getValues() const;
 
         /**
-         * @brief Helper function for getting a pointer to the shared strings repository.
-         * @return A pointer to an XLSharedStrings object.
+         * @brief Helper function for getting a reference to the shared strings repository.
+         * @return A reference to the XLSharedStrings object.
+         * @note needed for templated XLRowDataProxy& operator=
          */
-        XLSharedStrings getSharedStrings() const;
+        const XLSharedStrings& getSharedStrings() const;
 
         /**
          * @brief Convenience function for erasing the first 'count' numbers of values in the row.
@@ -391,13 +439,13 @@ namespace OpenXLSX
          * @return The row data in the required format.
          * @throws bad_variant_access if Container::value type is not XLCellValue and does not match the type contained.
          */
-        template<
-            typename Container,
-            typename std::enable_if<!std::is_same_v<Container, XLRowDataProxy> &&
-                                        std::is_base_of_v<typename std::bidirectional_iterator_tag,
-                                                          typename std::iterator_traits<typename Container::iterator>::iterator_category>,
-                                    Container>::type* = nullptr>
-        Container convertContainer() const
+        template<typename Container,
+                 typename =
+                     std::enable_if_t<!std::is_same_v<Container, XLRowDataProxy> &&
+                                          std::is_base_of_v<std::bidirectional_iterator_tag,
+                                                            typename std::iterator_traits<typename Container::iterator>::iterator_category>,
+                                      Container>>
+        Container convertContainer() const    // 2024-04-30: whitespace support
         {
             Container c;
             auto      it = std::inserter(c, c.end());
@@ -422,5 +470,8 @@ namespace OpenXLSX
 
 }    // namespace OpenXLSX
 
-#pragma warning(pop)
+#ifdef _MSC_VER    // conditionally enable MSVC specific pragmas to avoid other compilers warning about unknown pragmas
+#   pragma warning(pop)
+#endif // _MSC_VER
+
 #endif    // OPENXLSX_XLROWDATA_HPP

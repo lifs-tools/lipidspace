@@ -5,7 +5,7 @@
 LipidSpace is a stand-alone tool to analyze and compare lipidomes by assessing their structural differences. A graph-based comparison of lipid structures allows to calculate distances between lipids and to determine similarities across lipidomes. It allows for a rapid (re)analysis of experiments, identifies lipids responsible for shaping the respective lipidome, and provides methods for quality
 control.
 
-LipidSpace has been built and tested under Windows 10 and Ubuntu 22.04 Linux. It comes with four built-in tutorials to get you started.
+LipidSpace has been built and tested under Windows 10, Ubuntu 22.04 Linux, and macOS 12+ (ARM64 / Apple Silicon). It comes with four built-in tutorials to get you started.
 
 Please check the `LICENSE*` files for more information about individual license terms of embedded libraries.
 
@@ -100,6 +100,39 @@ We're delighted when someone gives us feedback on LipidSpace, even when it is a 
 git clone --recurse-submodules git@github.com:lifs-tools/lipidspace.git
 ```
 
+### macOS (ARM64 / Apple Silicon — M1 and later)
+
+Install [Homebrew](https://brew.sh) if not already present, then install all required dependencies:
+
+```bash
+brew install qt libomp openssl@3 cmake git
+```
+
+Add Qt 6 to your `PATH` (required for `qmake6` to be found). Add this to your `~/.zshrc` or run it in the terminal before building:
+
+```bash
+export PATH="/opt/homebrew/opt/qt/bin:$PATH"
+```
+
+Make sure Xcode Command Line Tools are installed:
+
+```bash
+xcode-select --install
+```
+
+#### Building the OpenXLSX dependency
+
+OpenXLSX must be built from source for ARM64. A build script is provided in the repository root:
+
+```bash
+chmod +x build-openxlsx-macos-arm64.sh
+./build-openxlsx-macos-arm64.sh
+```
+
+This clones OpenXLSX, compiles it as a static library targeting `arm64`, and places the result at `libraries/OpenXLSX/bin/macarm64/libOpenXLSX.a`. The script requires `cmake` and `git` (installed via Homebrew above).
+
+The `libcppGoslin.dylib` for ARM64 is already bundled in the repository at `libraries/cppgoslin/bin/macarm64/`.
+
 ### Linux
 
 Please use the latest QT 6 library.
@@ -134,6 +167,20 @@ qmake6 LipidSpace.pro
 make
 ```
 
+On macOS ARM64, ensure `qmake6` from Homebrew Qt is on your `PATH` (see prerequisites above), then run the same commands:
+
+```bash
+qmake6 LipidSpace.pro
+make
+```
+
+At runtime, `libcppGoslin.dylib` must be accessible. Copy it next to the executable or set `DYLD_LIBRARY_PATH`:
+
+```bash
+cp libraries/cppgoslin/bin/macarm64/libcppGoslin.dylib .
+./LipidSpace
+```
+
 If you experience a build error like the following:
 
 ```
@@ -154,6 +201,13 @@ Please make sure that you have the latest version of cppgoslin (https://github.c
 ```
 qmake6 LipidSpaceRest.pro
 make
+```
+
+On macOS ARM64, the same applies as for LipidSpace above. OpenSSL is provided by Homebrew's `openssl@3` and is referenced automatically by the build system. Copy the bundled dylibs next to the executable before running:
+
+```bash
+cp libraries/cppgoslin/bin/macarm64/libcppGoslin.dylib .
+./LipidSpaceRest
 ```
 
 ### Running the REST server
