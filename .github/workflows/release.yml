@@ -107,6 +107,11 @@ jobs:
 
     - name: Build LipidSpace
       run: |
+        make 
+      shell: cmd
+
+    - name: Package LipidSpace
+      run: |
         win-build.bat
       shell: cmd
 
