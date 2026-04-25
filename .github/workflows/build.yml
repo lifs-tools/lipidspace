@@ -10,7 +10,7 @@ jobs:
 
   build-linux:
     name: Build LipidSpace and LipidSpaceRest (Linux)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
     steps:
