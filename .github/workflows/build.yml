@@ -73,12 +73,6 @@ jobs:
         qmake6 LipidSpace.pro
         make release
 
-    - name: Build LipidSpaceRest
-      run: |
-        export PATH="/opt/homebrew/opt/qt/bin:$PATH"
-        qmake6 LipidSpaceRest.pro
-        make release
-
   docker:
     name: Build, test and push LipidSpace Rest Docker image
     needs: build-linux
