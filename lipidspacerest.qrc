@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/rest">
+        <file alias="openapi.yaml">examples/Rest/lipidspace-openapi.yml</file>
+        <file alias="swagger-ui.html">examples/Rest/swagger-ui.html</file>
+    </qresource>
+</RCC>

@@ -1020,6 +1020,7 @@ void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
             msgBox.setText(e.what());
 
             switch(e.type){
+                case LipidNotRegistered:
                 case LipidUnparsable:
                     {
                         msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
@@ -1037,7 +1038,7 @@ void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
 
                 case FileUnreadable:
                     {
-                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.setInformativeText("Please check your input file and try again. In case you cannot solve the issue, please contact the developers.");
                         msgBox.exec();
                         repeat_loading = false;
                     }
@@ -1060,7 +1061,7 @@ void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
 
                 case NoColumnFound:
                     {
-                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.setInformativeText("Please check your input file and try again. In case you cannot solve the issue, please contact the developers.");
                         msgBox.exec();
                         repeat_loading = false;
                     }
@@ -1068,7 +1069,7 @@ void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
 
                 case ColumnNumMismatch:
                     {
-                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.setInformativeText("Please check your input file and try again. In case you cannot solve the issue, please contact the developers.");
                         msgBox.exec();
                         repeat_loading = false;
                     }
@@ -1076,7 +1077,7 @@ void LipidSpaceGUI::loadTable(ImportData *import_data, bool start_analysis){
 
                 default:
                     {
-                        msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
+                        msgBox.setInformativeText("Please check the log message. In case you cannot solve the issue, please contact the developers.");
                         msgBox.exec();
                         repeat_loading = false;
                     }
@@ -1904,6 +1905,7 @@ void LipidSpaceGUI::openMzTabM(QString file_name){
             msgBox.setText(e.what());
 
             switch(e.type){
+                case LipidNotRegistered:
                 case LipidUnparsable:
                     {
                         msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
@@ -1922,7 +1924,7 @@ void LipidSpaceGUI::openMzTabM(QString file_name){
 
                 case FileUnreadable:
                     {
-                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.setInformativeText("Please check your input file and try again. In case you cannot solve the issue, please contact the developers.");
                         msgBox.exec();
                         repeat_loading = false;
                         start_analysis = false;
@@ -1948,7 +1950,7 @@ void LipidSpaceGUI::openMzTabM(QString file_name){
                 case NoColumnFound:
                 case ColumnNumMismatch:
                     {
-                        msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                        msgBox.setInformativeText("Please check your input file and try again. In case you cannot solve the issue, please contact the developers.");
                         msgBox.exec();
                         repeat_loading = false;
                         start_analysis = false;
@@ -1957,7 +1959,7 @@ void LipidSpaceGUI::openMzTabM(QString file_name){
 
                 default:
                     {
-                        msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
+                        msgBox.setInformativeText("Please check the log message. In case you cannot solve the issue, please contact the developers.");
                         msgBox.exec();
                         repeat_loading = false;
                         start_analysis = false;
@@ -2110,6 +2112,7 @@ void LipidSpaceGUI::openLists(){
                 msgBox.setText(e.what());
 
                 switch(e.type){
+                    case LipidNotRegistered:
                     case LipidUnparsable:
                         {
                             msgBox.setInformativeText("Do you want to continue by ignoring unknown lipid species?");
@@ -2128,7 +2131,7 @@ void LipidSpaceGUI::openLists(){
 
                     case FileUnreadable:
                         {
-                            msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                            msgBox.setInformativeText("Please check your input file and try again. In case you cannot solve the issue, please contact the developers.");
                             msgBox.exec();
                             repeat_loading = false;
                             start_analysis = false;
@@ -2154,7 +2157,7 @@ void LipidSpaceGUI::openLists(){
                     case NoColumnFound:
                     case ColumnNumMismatch:
                         {
-                            msgBox.setInformativeText("Please check your input file and try again. In case, please contact the developers.");
+                            msgBox.setInformativeText("Please check your input file and try again. In case you cannot solve the issue, please contact the developers.");
                             msgBox.exec();
                             repeat_loading = false;
                             start_analysis = false;
@@ -2163,7 +2166,7 @@ void LipidSpaceGUI::openLists(){
 
                     default:
                         {
-                            msgBox.setInformativeText("Please check the log message. In case, please contact the developers.");
+                            msgBox.setInformativeText("Please check the log message. In case you cannot solve the issue, please contact the developers.");
                             msgBox.exec();
                             repeat_loading = false;
                             start_analysis = false;

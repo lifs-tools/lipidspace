@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>LipidSpace.iconset/icon_16x16.png</file>
         <file>LipidSpace.iconset/icon_16x16@2x.png</file>
         <file>LipidSpace.iconset/icon_32x32.png</file>
         <file>LipidSpace.iconset/icon_32x32@2x.png</file>

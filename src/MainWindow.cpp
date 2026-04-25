@@ -16,6 +16,8 @@ int main(int argc, char** argv) {
     if (argc == 1){
         QApplication application(argc, argv);
         QIcon appIcon;
+        appIcon.addFile(":/LipidSpace.iconset/icon_16x16.png",          QSize(16,   16));
+        appIcon.addFile(":/LipidSpace.iconset/icon_16x16@2x.png",       QSize(32,   32));
         appIcon.addFile(":/LipidSpace.iconset/icon_32x32.png",          QSize(32,   32));
         appIcon.addFile(":/LipidSpace.iconset/icon_32x32@2x.png",       QSize(64,   64));
         appIcon.addFile(":/LipidSpace.iconset/icon_128x128.png",        QSize(128,  128));
