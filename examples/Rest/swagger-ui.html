@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LipidSpace REST API – Swagger UI</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  <style>
+    body { margin: 0; background: #fafafa; }
+    #swagger-ui .topbar { background: #1a1a2e; }
+    #swagger-ui .topbar-wrapper .link { display: none; }
+    #banner {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 12px 24px;
+      font-family: sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.02em;
+    }
+    #banner span { opacity: 0.6; font-size: 0.85rem; margin-left: 12px; }
+    #info-bar {
+      background: #e8f4fd;
+      border-left: 4px solid #2196f3;
+      color: #1a1a2e;
+      font-family: sans-serif;
+      font-size: 0.85rem;
+      padding: 8px 24px;
+    }
+    #info-bar code { background: #d0e8fb; padding: 1px 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="banner">
+    LipidSpace REST API
+    <span>Interactive API documentation</span>
+  </div>
+  <div id="info-bar">
+    To try requests against a local server start <code>LipidSpaceREST</code> and set the server
+    dropdown to <code>http://localhost:8888/lipidspace/v1</code>.
+    The production server at <code>https://apps.lifs-tools.org/lipidspace/v1</code> may also be
+    selected.
+  </div>
+  <div id="swagger-ui"></div>
+
+  <script src="https://unpkg.com/js-yaml@4/dist/js-yaml.min.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    // -----------------------------------------------------------------------
+    // Embedded OpenAPI specification (kept in sync with lipidspace-openapi.yml)
+    // -----------------------------------------------------------------------
+    const OPENAPI_YAML = `
+openapi: "3.0.2"
+info:
+    title: LipidSpace REST API
+    version: "1.0"
+    description: |
+        REST API for LipidSpace — a tool for lipidome-wide PCA analysis.
+
+        LipidSpace computes principal component analysis (PCA) on lipidome datasets,
+        returning per-lipidome PCA coordinates, Hausdorff distance matrices between
+        lipidomes, and a hierarchical clustering linkage matrix.
+
+        ### Table formats
+
+        The \`Table\` field is a CSV string with column names on the first row.
+        Newlines must be encoded as \`\\n\` (literal backslash-n, not a real newline).
+        Three table layouts are supported:
+
+        | TableType | Row meaning | Column meaning |
+        |---|---|---|
+        | \`COLUMN_PIVOT_TABLE\` | Sample | Lipid species (one per column) |
+        | \`ROW_PIVOT_TABLE\` | Lipid species | Sample (one per column) |
+        | \`FLAT_TABLE\` | One measurement | Sample + lipid columns |
+
+        ### Column type tags
+
+        Each column in the table must be labelled with a \`TableColumnType\`.
+        The number of labels must match the number of columns.
+servers:
+    - url: https://apps.lifs-tools.org/lipidspace/v1
+      description: Production server
+    - url: http://localhost:8888/lipidspace/v1
+      description: Local development server (default port)
+
+components:
+    schemas:
+        TableType:
+            type: string
+            enum:
+                - ROW_PIVOT_TABLE
+                - COLUMN_PIVOT_TABLE
+                - FLAT_TABLE
+            description: |
+                Layout of the CSV table:
+                - \`ROW_PIVOT_TABLE\`: rows are lipid species, columns are samples
+                - \`COLUMN_PIVOT_TABLE\`: rows are samples, columns are lipid species
+                - \`FLAT_TABLE\`: one lipid measurement per row; sample and lipid identified by dedicated columns
+
+        TableColumnType:
+            type: string
+            enum:
+                - SampleColumn
+                - QuantColumn
+                - LipidColumn
+                - StudyVariableColumnNumerical
+                - StudyVariableColumnNominal
+                - IgnoreColumn
+            description: |
+                Semantic type of a table column:
+                - \`SampleColumn\`: sample identifier
+                - \`QuantColumn\`: quantitative intensity values (used in FLAT_TABLE)
+                - \`LipidColumn\`: lipid species name
+                - \`StudyVariableColumnNumerical\`: continuous study variable (e.g. BMI, age)
+                - \`StudyVariableColumnNominal\`: categorical study variable (e.g. gender, ethnicity)
+                - \`IgnoreColumn\`: column skipped during analysis
+
+        LipidSpacePcaRequest:
+            type: object
+            description: Request payload for the /pca endpoint.
+            required:
+                - TableType
+                - TableColumnTypes
+                - Table
+            properties:
+                TableType:
+                    $ref: "#/components/schemas/TableType"
+                TableColumnTypes:
+                    type: array
+                    description: One entry per column in the table (must match column count exactly).
+                    items:
+                        $ref: "#/components/schemas/TableColumnType"
+                Table:
+                    type: string
+                    description: |
+                        The full CSV table as a single string. The first row must contain
+                        column names. Row separator must be encoded as \\n
+                        (literal backslash-n, not a real newline).
+                RequestedSpaces:
+                    type: array
+                    description: |
+                        Optional filter: only include the named spaces in the response.
+                        Use \`"global"\` for the global lipidome aggregate,
+                        \`"LipidomeDistanceMatrix"\` to include the distance and linkage matrices,
+                        or individual sample names. When omitted all spaces are returned.
+                    items:
+                        type: string
+            example:
+                TableType: COLUMN_PIVOT_TABLE
+                TableColumnTypes:
+                    - SampleColumn
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNominal
+                    - StudyVariableColumnNominal
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNumerical
+                    - StudyVariableColumnNominal
+                    - LipidColumn
+                    - LipidColumn
+                    - LipidColumn
+                    - LipidColumn
+                    - LipidColumn
+                    - LipidColumn
+                    - LipidColumn
+                Table: "Sample,BMI,Age,Gender,Ethnicity,cholesterol (mmol/l),Triglyceride (mmol/l),HDL-C (mmol/l),LDL-C (mmol/l),Fasting Glucose (mmol/L),SBP(mmHg),DBP(mmHg),Smoker,Cer(d18:0/20:0),Cer(d18:0/22:0),Cer(d18:0/24:0),Cer(d18:0/24:1),Cer(d18:1/16:0),Cer(d18:1/18:0),Cer(d18:1/20:0)\\nM11081707,25.6,42,Male,Indian,4.88,0.87,0.97,3.56,4.6,132,95,0,82,325,438,1905,538,147,136\\nM11062901,22.8,53,Female,Chinese,5.03,1.14,1.63,2.89,5.4,105,71,1,66,263,367,2253,555,167,159\\nM11050509,25.9,52,Female,Malay,5.06,0.94,1.39,3.24,5.2,132,91,0,53,237,262,1786,444,183,139\\nM11060206,18.9,56,Female,Chinese,5.47,0.5,2.28,2.58,4.5,165,81,0,44,134,230,1736,297,97,"
+
+        LipidSpace:
+            type: object
+            description: PCA result for a single lipidome (sample, group, or global aggregate).
+            required:
+                - LipidomeName
+                - LipidNames
+                - Intensities
+                - X
+                - Y
+            properties:
+                LipidomeName:
+                    type: string
+                    description: Identifier of the lipidome (sample name, group label, or "global").
+                LipidNames:
+                    type: array
+                    description: Normalised lipid species names in canonical form (cppGoslin notation).
+                    items:
+                        type: string
+                ImportedLipidNames:
+                    type: array
+                    description: Original lipid names as supplied in the input table (parallel to LipidNames). Present when the server resolves import-name translations.
+                    items:
+                        type: string
+                Intensities:
+                    type: array
+                    description: Normalised intensity (abundance) value for each lipid species (parallel to LipidNames).
+                    items:
+                        type: number
+                        format: double
+                X:
+                    type: array
+                    description: First PCA coordinate (PC1) for each lipid species (parallel to LipidNames).
+                    items:
+                        type: number
+                        format: double
+                Y:
+                    type: array
+                    description: Second PCA coordinate (PC2) for each lipid species (parallel to LipidNames).
+                    items:
+                        type: number
+                        format: double
+
+        LipidSpaces:
+            type: array
+            description: Collection of per-lipidome PCA results.
+            items:
+                $ref: "#/components/schemas/LipidSpace"
+
+        LipidomeDistanceMatrixRow:
+            type: array
+            description: One row of pairwise Hausdorff distances.
+            items:
+                type: number
+                format: double
+
+        LipidomeDistanceMatrix:
+            type: array
+            description: Square matrix of pairwise Hausdorff distances between lipidomes.
+            items:
+                $ref: "#/components/schemas/LipidomeDistanceMatrixRow"
+
+        LinkageMatrixRow:
+            type: array
+            description: "One merge step: [index1, index2, distance, cluster_size]"
+            items:
+                type: number
+                format: double
+
+        LinkageMatrix:
+            type: array
+            description: |
+                Hierarchical clustering linkage matrix (compatible with
+                scipy.cluster.hierarchy.linkage output). Each row encodes one
+                agglomerative merge: [index1, index2, distance, cluster_size].
+            items:
+                $ref: "#/components/schemas/LinkageMatrixRow"
+
+        LipidSpacePcaResponse:
+            type: object
+            description: Response returned by the /pca endpoint.
+            required:
+                - LipidSpaces
+                - LipidomeDistanceMatrix
+            properties:
+                LipidSpaces:
+                    $ref: "#/components/schemas/LipidSpaces"
+                LipidomeDistanceMatrix:
+                    $ref: "#/components/schemas/LipidomeDistanceMatrix"
+                LinkageMatrix:
+                    $ref: "#/components/schemas/LinkageMatrix"
+
+paths:
+    /pca:
+        post:
+            summary: Run PCA on a lipidome quantity table
+            operationId: postTablePca
+            description: |
+                Accepts a lipidome abundance table (CSV encoded as a JSON string) together
+                with column-type annotations and returns:
+
+                - Per-lipidome PCA coordinates (\`LipidSpaces\`)
+                - Pairwise Hausdorff distance matrix (\`LipidomeDistanceMatrix\`)
+                - Hierarchical clustering linkage matrix (\`LinkageMatrix\`)
+
+                The server requires \`Content-Type: application/json\`.
+                At least **3 distinct lipid species** across all samples must be provided,
+                and at least **1 sample** must be present, otherwise a \`400\` error is returned.
+            requestBody:
+                required: true
+                content:
+                    "application/json":
+                        schema:
+                            $ref: "#/components/schemas/LipidSpacePcaRequest"
+                        examples:
+                            plasma-singapore-short:
+                                summary: Plasma Singapore cohort (4 samples, 7 ceramide species)
+                                value:
+                                    TableType: COLUMN_PIVOT_TABLE
+                                    TableColumnTypes:
+                                        - SampleColumn
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNominal
+                                        - StudyVariableColumnNominal
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNumerical
+                                        - StudyVariableColumnNominal
+                                        - LipidColumn
+                                        - LipidColumn
+                                        - LipidColumn
+                                        - LipidColumn
+                                        - LipidColumn
+                                        - LipidColumn
+                                        - LipidColumn
+                                    Table: "Sample,BMI,Age,Gender,Ethnicity,cholesterol (mmol/l),Triglyceride (mmol/l),HDL-C (mmol/l),LDL-C (mmol/l),Fasting Glucose (mmol/L),SBP(mmHg),DBP(mmHg),Smoker,Cer(d18:0/20:0),Cer(d18:0/22:0),Cer(d18:0/24:0),Cer(d18:0/24:1),Cer(d18:1/16:0),Cer(d18:1/18:0),Cer(d18:1/20:0)\\nM11081707,25.6,42,Male,Indian,4.88,0.87,0.97,3.56,4.6,132,95,0,82,325,438,1905,538,147,136\\nM11062901,22.8,53,Female,Chinese,5.03,1.14,1.63,2.89,5.4,105,71,1,66,263,367,2253,555,167,159\\nM11050509,25.9,52,Female,Malay,5.06,0.94,1.39,3.24,5.2,132,91,0,53,237,262,1786,444,183,139\\nM11060206,18.9,56,Female,Chinese,5.47,0.5,2.28,2.58,4.5,165,81,0,44,134,230,1736,297,97,"
+                            minimal-three-samples:
+                                summary: Minimal example (3 samples, 3 ceramide species)
+                                value:
+                                    TableType: COLUMN_PIVOT_TABLE
+                                    TableColumnTypes:
+                                        - SampleColumn
+                                        - LipidColumn
+                                        - LipidColumn
+                                        - LipidColumn
+                                    Table: "Sample,Cer(d18:1/16:0),Cer(d18:1/18:0),Cer(d18:1/20:0)\\nS1,538,147,136\\nS2,555,167,159\\nS3,444,183,139"
+            responses:
+                "200":
+                    description: Analysis succeeded.
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/LipidSpacePcaResponse"
+                "400":
+                    description: |
+                        Invalid request. Possible causes:
+                        - Malformed or non-object JSON body
+                        - Missing required field (TableType, TableColumnTypes, Table)
+                        - Unknown TableType or TableColumnType value
+                        - Fewer than 3 lipid species recognised after parsing
+                        - No valid lipidome could be constructed from the table
+                "415":
+                    description: |
+                        Unsupported content type. The request Content-Type header must be
+                        application/json.
+                "500":
+                    description: Unexpected server-side error (e.g. analysis failure, I/O error).
+`;
+
+    // When served from the LipidSpaceRest server use its own /openapi.yaml endpoint
+    // so Swagger UI always shows the live spec.  When opened as a local file fall
+    // back to the YAML string embedded above.
+    const servedOverHttp = window.location.protocol !== 'file:';
+    const openapiUrl = servedOverHttp
+      ? new URL('./openapi.yaml', window.location.href).href
+      : null;
+
+    window.onload = function () {
+      const config = {
+        dom_id: '#swagger-ui',
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: 'StandaloneLayout',
+        deepLinking: true,
+        displayRequestDuration: true,
+        defaultModelsExpandDepth: 2,
+        defaultModelExpandDepth: 2,
+        tryItOutEnabled: true,
+        requestInterceptor: function (request) {
+          if (!request.headers['Content-Type']) {
+            request.headers['Content-Type'] = 'application/json';
+          }
+          return request;
+        }
+      };
+
+      if (openapiUrl) {
+        config.url = openapiUrl;
+      } else {
+        config.spec = jsyaml.load(OPENAPI_YAML);
+      }
+
+      SwaggerUIBundle(config);
+    };
+  </script>
+</body>
+</html>

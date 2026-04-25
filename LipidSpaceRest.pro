@@ -84,6 +84,8 @@ DEPENDPATH += $$PWD/libraries/nlohmann
 INCLUDEPATH += $$PWD/libraries/cpp-httplib
 DEPENDPATH += $$PWD/libraries/cpp-httplib
 
+RESOURCES += lipidspacerest.qrc
+
 SOURCES += \
     src/globaldata.cpp \
     src/Matrix.cpp \

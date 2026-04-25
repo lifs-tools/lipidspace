@@ -4,6 +4,7 @@
 #include <QtGlobal>
 #include <QJsonDocument>
 #include <QByteArray>
+#include <QFile>
 #include <QtCore>
 #include <vector>
 #include <fstream>
@@ -356,11 +357,25 @@ public:
             }
         });
 
-        /*
-        svr.Post("/hi", [](const Request &req, Response &res){
-            res.set_content("Hello World!", "text/plain");
+        svr.Get("/lipidspace/v1/openapi.yaml", [](const Request &, Response &res){
+            QFile file(":/rest/openapi.yaml");
+            if (file.open(QIODevice::ReadOnly)){
+                res.set_content(file.readAll().toStdString(), "application/yaml");
+            } else {
+                res.status = 500;
+                res.reason = "Failed to load embedded OpenAPI spec";
+            }
         });
-        */
+
+        svr.Get("/lipidspace/v1/docs", [](const Request &, Response &res){
+            QFile file(":/rest/swagger-ui.html");
+            if (file.open(QIODevice::ReadOnly)){
+                res.set_content(file.readAll().toStdString(), "text/html; charset=utf-8");
+            } else {
+                res.status = 500;
+                res.reason = "Failed to load embedded Swagger UI";
+            }
+        });
 
         t = thread([&]()
                    { svr.listen(host.c_str(), port); });
