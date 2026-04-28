@@ -36,9 +36,6 @@ public:
 
         svr.Post("/lipidspace/v1/pca", [](const Request &req, Response &res){
             if (req.get_header_value("Content-Type") == "application/json"){
-                if (GlobalData::debug) {
-                    qInfo() << "Received request: '" << req.body.c_str() << "'";
-                }
 
                 QString callId = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
                 // ensure we have a unique directory for each REST call to allow for parallel processing
@@ -55,6 +52,7 @@ public:
                     ofstream request_file(requestFile.toStdString().c_str());
                     request_file << req.body;
                     request_file.flush();
+                    qInfo() << "Saved request to: '" << requestFile.toStdString().c_str() << "'";
                 }
                 QJsonDocument pcaRequest = QJsonDocument::fromJson(qbytes);
                 if (pcaRequest.isNull())
@@ -142,6 +140,9 @@ public:
                     // check which spaces are request, if none, default is all
                     set<string> requested_spaces;
                     if (pcaRequest.object().contains("RequestedSpaces")){
+                        if (GlobalData::debug) {
+                            qInfo() << "RequestedSpaces: '" << pcaRequest["RequestedSpaces"].toArray() << "'";
+                        }
                         for (auto value : pcaRequest["RequestedSpaces"].toArray()) {
                             string requested_space = value.toString().toStdString();
                             requested_spaces.insert(requested_space);
@@ -284,8 +285,15 @@ public:
 
                     // add group lipidomes if requested
                     for (auto &kv : lipid_space.group_lipidomes){
+                        // log available group_lipidomes
+                        if (GlobalData::debug) {
+                            qInfo() << "Available group_lipidomes: '" << kv.first.c_str() << "'";
+                        }
                         if (!requested_spaces.empty() && uncontains_val(requested_spaces, kv.first)) continue;
                         for (auto lipidome : kv.second){
+                            if (GlobalData::debug) {
+                                qInfo() << "Lipidome: '" << lipidome->lipidome_name.c_str() << "'";
+                            }
                             sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json(&imported_lipid_names);
                         }
                     }
