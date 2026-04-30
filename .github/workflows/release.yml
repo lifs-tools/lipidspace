@@ -98,6 +98,11 @@ jobs:
         git.exe config --global author.name "${GITHUB_ACTOR}"
       shell: cmd
 
+    - name: Set up MSVC environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
+
     - name: Prepare QT Project makefiles
       run: |
         qmake6.exe LipidSpace.pro
