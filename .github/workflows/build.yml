@@ -108,13 +108,9 @@ jobs:
         qmake6.exe LipidSpace.pro
       shell: cmd
 
-    - name: Clean LipidSpace
-      run: |
-        win-clean.bat
-      shell: cmd
-
     - name: Build LipidSpace
       run: |
+        if not exist objects mkdir objects
         nmake
       shell: cmd
 
