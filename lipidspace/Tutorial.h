@@ -26,7 +26,9 @@
 #include "lipidspace/AssistanceFunctions.h"
 #include "lipidspace/lipidspacegui.h"
 #include <iostream>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #define instanceof(ptr, base) (dynamic_cast<const base*>(ptr) != nullptr)
 
