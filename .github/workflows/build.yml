@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Build LipidSpace
 
 on:
   push:
@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
+      OS: "Linux"
     steps:
     - uses: actions/checkout@v3
       with:
@@ -46,6 +47,13 @@ jobs:
         qmake6 LipidSpace.pro
         make clean
         make build
+        make dist
+
+    - name: Upload LipidSpace artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LipidSpace-${{ env.OS }}
+        path: Build/LipidSpace.zip
 
     - name: Build LipidSpaceRest
       run: |
@@ -53,11 +61,76 @@ jobs:
         make clean
         make release
 
+  build-windows:
+    name: Build LipidSpace (Windows)
+    runs-on: windows-latest
+    env:
+      BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
+      OS: "Windows"
+      QT_VERSION: "6.5.3"
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        target: "desktop"
+        host: "windows"
+        arch: "win64_msvc2019_64"
+        cache: "true"
+        cache-key-prefix: "install-qt"
+        set-env: "true"
+        dir: ${{ runner.temp }}
+        modules: "core gui printsupport widgets svg svgwidgets network"
+
+    - uses: actions/checkout@v3
+      with:
+        lfs: 'true'
+
+    - name: Set Git user
+      run: |
+        git.exe config --global committer.email "noreply@github.com"
+        git.exe config --global committer.name "GitHub"
+        git.exe config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
+        git.exe config --global author.name "${GITHUB_ACTOR}"
+      shell: cmd
+
+    - name: Prepare QT Project makefiles
+      run: |
+        qmake6.exe LipidSpace.pro
+      shell: cmd
+
+    - name: Clean LipidSpace
+      run: |
+        win-clean.bat
+      shell: cmd
+
+    - name: Build LipidSpace
+      run: |
+        make
+      shell: cmd
+
+    - name: Package LipidSpace
+      run: |
+        win-build.bat
+      shell: cmd
+
+    - name: Upload LipidSpace artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LipidSpace-${{ env.OS }}
+        path: Build/LipidSpace.zip
+
   build-macos-arm64:
-    name: Build LipidSpace and LipidSpaceRest (macOS ARM64)
+    name: Build LipidSpace (macOS ARM64)
     runs-on: macos-14
     env:
       BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
+      OS: "macOS-ARM64"
     steps:
     - uses: actions/checkout@v3
       with:
@@ -73,11 +146,22 @@ jobs:
         qmake6 LipidSpace.pro
         make release
 
+    - name: Package LipidSpace
+      run: |
+        mkdir -p Build
+        ditto -c -k --sequesterRsrc --keepParent \
+          LipidSpace.app \
+          Build/LipidSpace.zip
+
+    - name: Upload LipidSpace artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LipidSpace-${{ env.OS }}
+        path: Build/LipidSpace.zip
+
   docker:
     name: Build, test and push LipidSpace Rest Docker image
     needs: build-linux
-    # build and push only for tags / releases
-    #    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-22.04
     env:
       IMAGE_NAME: 'lifs/lipidspace'
