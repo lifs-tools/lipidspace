@@ -115,7 +115,7 @@ jobs:
 
     - name: Build LipidSpace
       run: |
-        make
+        nmake
       shell: cmd
 
     - name: Package LipidSpace
