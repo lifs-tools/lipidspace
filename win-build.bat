@@ -12,5 +12,7 @@ copy .\examples\Example-Dataset.xlsx "Build/LipidSpace/examples"
 copy .\examples\ThreeStudies.xlsx "Build/LipidSpace/examples"
 copy LICENSE* "Build/LipidSpace"
 copy .\release\LipidSpace.exe "Build/LipidSpace"
-windeployqt6 --no-translations "Build/LipidSpace/LipidSpace.exe"
+windeployqt6 --no-translations --compiler-runtime "Build/LipidSpace/LipidSpace.exe"
+for /f "delims=" %%i in ('where libgomp-1.dll 2^>nul') do copy "%%i" "Build\LipidSpace\" && goto :gomp_done
+:gomp_done
 powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace.zip" -force
