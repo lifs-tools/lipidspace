@@ -111,6 +111,10 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     raw_data_model = new RawDataModel(lipid_space, ui->tableView);
     ui->tableView->setModel(raw_data_model);
 
+    // On macOS, any partial QSS on QComboBox disables native rendering, causing a broken
+    // appearance (arrow-only button, invisible dropdown text on hover). Skip on macOS and
+    // rely on the native style instead.
+#ifndef Q_OS_MAC
     ui->normalizationComboBox->setStyleSheet("background-color: white; background: white;");
     ui->speciesComboBox->setStyleSheet("background-color: white; background: white;");
     ui->classComboBox->setStyleSheet("background-color: white; background: white;");
@@ -118,6 +122,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     ui->sampleComboBox->setStyleSheet("background-color: white; background: white;");
     ui->studyVariableComboBox->setStyleSheet("background-color: white; background: white;");
     ui->studyVariableComboBoxStat->setStyleSheet("background-color: white; background: white;");
+#endif
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);
     statisticsFAD.load_data(lipid_space, ui->statisticsFAD);
