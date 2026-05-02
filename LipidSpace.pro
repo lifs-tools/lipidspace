@@ -70,8 +70,11 @@ macx {
 INCLUDEPATH += $$PWD/libraries/OpenXLSX/include
 DEPENDPATH += $$PWD/libraries/OpenXLSX/include
 
-INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
-DEPENDPATH += $$PWD/libraries/OpenBLAS/include
+# OpenBLAS headers are only needed on non-macOS platforms; macOS uses Accelerate.
+!macx {
+    INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
+    DEPENDPATH += $$PWD/libraries/OpenBLAS/include
+}
 
 INCLUDEPATH += $$PWD/libraries/cppgoslin
 DEPENDPATH += $$PWD/libraries/cppgoslin

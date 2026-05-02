@@ -6,7 +6,19 @@
 #include <math.h>
 #include <iostream>
 #include <cassert>
-#include <cblas.h>
+#ifdef Q_OS_MAC
+// Accelerate provides cblas and LAPACK (dgetrf_/dgetri_) with identical signatures.
+#  include <Accelerate/Accelerate.h>
+#else
+#  include <cblas.h>
+extern "C" {
+    // LU decomposition of a general matrix
+    void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
+
+    // generate inverse of a matrix given its LU decomposition
+    void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
+}
+#endif
 #include <QtCore>
 #include <cmath>
 
@@ -17,14 +29,6 @@ using json = nlohmann::json;
 #define sq(x) ((x) * (x))
 #define mmin(x, y) ((x) < (y) ? (x) : (y))
 #define mmax(x, y) ((x) > (y) ? (x) : (y))
-
-extern "C" {
-    // LU decomoposition of a general matrix
-    void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
-
-    // generate inverse of a matrix given its LU decomposition
-    void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
-}
 
 
 class Matrix;
