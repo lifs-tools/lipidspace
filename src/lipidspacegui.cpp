@@ -114,14 +114,13 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     // On macOS, any partial QSS on QComboBox disables native rendering, causing a broken
     // appearance (arrow-only button, invisible dropdown text on hover). Skip on macOS and
     // rely on the native style instead.
-#ifndef Q_OS_MAC
-    ui->normalizationComboBox->setStyleSheet("background-color: white; background: white;");
-    ui->speciesComboBox->setStyleSheet("background-color: white; background: white;");
-    ui->classComboBox->setStyleSheet("background-color: white; background: white;");
-    ui->categoryComboBox->setStyleSheet("background-color: white; background: white;");
-    ui->sampleComboBox->setStyleSheet("background-color: white; background: white;");
-    ui->studyVariableComboBox->setStyleSheet("background-color: white; background: white;");
-    ui->studyVariableComboBoxStat->setStyleSheet("background-color: white; background: white;");
+#ifndef Q_OS_MACOS
+    for (auto *cb : {
+            ui->normalizationComboBox, ui->speciesComboBox, ui->classComboBox,
+            ui->categoryComboBox,      ui->sampleComboBox,
+            ui->studyVariableComboBox, ui->studyVariableComboBoxStat}) {
+        cb->setStyleSheet("background-color: white;");
+    }
 #endif
 
     statisticsBoxPlot.load_data(lipid_space, ui->statisticsBoxPlot);

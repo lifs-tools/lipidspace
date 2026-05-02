@@ -1,5 +1,18 @@
 #include "lipidspace/Matrix.h"
 
+// BLAS and LAPACK are only consumed by this translation unit.
+#ifdef Q_OS_MACOS
+// Accelerate provides cblas and LAPACK (dgetrf_/dgetri_) with identical
+// calling conventions to OpenBLAS, and uses AMX hardware on Apple Silicon.
+#  include <Accelerate/Accelerate.h>
+#else
+#  include <cblas.h>
+extern "C" {
+    void dgetrf_(int* M, int* N, double* A, int* lda, int* IPIV, int* INFO);
+    void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
+}
+#endif
+
 
 Array::Array() : vector<double>(){
 }

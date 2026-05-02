@@ -20,6 +20,37 @@ RC_ICONS = LipidSpace.ico
 unix:!macx {
     QMAKE_CXXFLAGS += -fopenmp
     LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX" "-lssl" "-lcrypto"
+
+    # Optional CUDA GPU acceleration (Ubuntu 24.04 x86_64, NVIDIA L4 or compatible).
+    # Enable at configure time: qmake CONFIG+=cuda_gpu LipidSpaceRest.pro
+    # For other GPU generations set CUDA_ARCH accordingly, e.g. sm_86 (A10/A30),
+    # sm_80 (A100), sm_90 (H100).
+    cuda_gpu {
+        DEFINES      += USE_CUDA
+        CUDA_DIR      = /usr/local/cuda
+        CUDA_ARCH     = sm_89    # NVIDIA L4 (Ada Lovelace)
+
+        INCLUDEPATH  += $$CUDA_DIR/include
+        LIBS         += -L$$CUDA_DIR/lib64 -lcudart
+
+        CUDA_SOURCES += src/hausdorff_cuda.cu
+
+        cuda.name             = CUDA compiler
+        cuda.input            = CUDA_SOURCES
+        cuda.output           = ${QMAKE_FILE_BASE}_cuda.o
+        cuda.dependency_type  = TYPE_C
+        cuda.variable_out     = OBJECTS
+        cuda.commands         = $$CUDA_DIR/bin/nvcc \
+            -gencode arch=compute_89,code=[sm_89,compute_89] \
+            --compiler-options "-fPIC -O3" \
+            -std=c++17 \
+            -I"$$PWD" \
+            -I"$$CUDA_DIR/include" \
+            -DUSE_CUDA \
+            -c ${QMAKE_FILE_IN} \
+            -o ${QMAKE_FILE_OUT}
+        QMAKE_EXTRA_COMPILERS += cuda
+    }
 }
 
 win32 {
@@ -72,8 +103,11 @@ macx {
 INCLUDEPATH += $$PWD/libraries/OpenXLSX/include
 DEPENDPATH += $$PWD/libraries/OpenXLSX/include
 
-INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
-DEPENDPATH += $$PWD/libraries/OpenBLAS/include
+# OpenBLAS headers are only needed on non-macOS platforms; macOS uses Accelerate.
+!macx {
+    INCLUDEPATH += $$PWD/libraries/OpenBLAS/include
+    DEPENDPATH += $$PWD/libraries/OpenBLAS/include
+}
 
 INCLUDEPATH += $$PWD/libraries/cppgoslin
 DEPENDPATH += $$PWD/libraries/cppgoslin
@@ -98,9 +132,13 @@ HEADERS += \
     lipidspace/Matrix.h \
     lipidspace/lipidspace.h \
     lipidspace/AssistanceFunctions.h \
-    lipidspace/matplotlibcpp.h \\
+    lipidspace/matplotlibcpp.h \
     lipidspace/logging.h \
     libraries/cpp-httplib/httplib.h
+
+cuda_gpu {
+    HEADERS += lipidspace/hausdorff_cuda.cuh
+}
 
 release:UI_DIR += objects
 release:MOC_DIR += objects

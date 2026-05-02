@@ -235,6 +235,20 @@ cp libraries/cppgoslin/bin/macarm64/libcppGoslin.dylib .
 ./LipidSpaceRest
 ```
 
+Optionally, you can build LipidSpaceRest with NVIDIA CUDA Support to accelerate the Hausdorff distance calculation:
+
+```
+qmake6 CONFIG+=cuda_gpu LipidSpaceRest.pro
+```
+
+This requires that you have an NVIDIA L4 family GPU in your system and the NVIDIA CUDA libraries installed.
+
+To change the target GPU architecture, please adjust the following settings in LipidSpaceRest.pro:
+
+```
+CUDA_ARCH     = sm_89    # NVIDIA L4 (Ada Lovelace)
+```
+
 ### Running the REST server
 
 Start the LipidSpaceRest server from your terminal:

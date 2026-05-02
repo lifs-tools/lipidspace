@@ -1,5 +1,9 @@
 #include "lipidspace/lipidspace.h"
 
+#ifdef USE_CUDA
+#  include "lipidspace/hausdorff_cuda.cuh"
+#endif
+
 
 void LipidSpace::create_dendrogram(){
     dendrogram_sorting.clear();
@@ -1207,9 +1211,26 @@ void LipidSpace::compute_hausdorff_matrix(){
 
     hausdorff_distances.reset(n, n);
 
+#ifdef USE_CUDA
+    if (cuda_is_available()) {
+        vector<const double*> ptrs(n);
+        vector<int>           ncols_v(n);
+        for (int i = 0; i < n; ++i) {
+            ptrs[i]    = matrixes[i]->data();
+            ncols_v[i] = matrixes[i]->cols;
+        }
+        // nrows is constant across all matrices (padded pca dims after transpose)
+        const int nrows = matrixes[0]->rows;
+        if (compute_hausdorff_matrix_cuda(ptrs, ncols_v, nrows,
+                                           hausdorff_distances.m.data(), n)) {
+            for (auto m : matrixes) delete m;
+            return;
+        }
+        // CUDA failed — fall through to the CPU path below
+    }
+#endif
 
-    // precompute indexes for of symmetric matrix for faster
-    // and equally distributed access
+    // CPU path: precompute upper-triangle pair indices for balanced OMP scheduling
     int N = (n * (n - 1)) >> 1;
     ulong *pairs = new ulong[N];
     int k = 0;
@@ -1219,7 +1240,6 @@ void LipidSpace::compute_hausdorff_matrix(){
             pairs[k++] = ii | j;
         }
     }
-
 
     #pragma omp parallel for
     for (int ii = 0; ii < N; ++ii){
