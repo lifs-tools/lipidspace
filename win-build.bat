@@ -12,5 +12,5 @@ copy .\examples\Example-Dataset.xlsx "Build/LipidSpace/examples"
 copy .\examples\ThreeStudies.xlsx "Build/LipidSpace/examples"
 copy LICENSE* "Build/LipidSpace"
 copy .\release\LipidSpace.exe "Build/LipidSpace"
-powershell Copy-Item "libraries/Qt/bin/win64"\* -Destination "Build/LipidSpace" -Recurse -force
+windeployqt6 --no-translations "Build/LipidSpace/LipidSpace.exe"
 powershell Compress-Archive "Build/LipidSpace" "Build/LipidSpace.zip" -force
