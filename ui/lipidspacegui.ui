@@ -897,6 +897,8 @@
     <addaction name="actionLoad_session"/>
     <addaction name="actionSave_session"/>
     <addaction name="separator"/>
+    <addaction name="actionReset"/>
+    <addaction name="separator"/>
     <addaction name="actionExport_Results"/>
     <addaction name="actionsend_statistics"/>
     <addaction name="actionQuit"/>
@@ -988,6 +990,14 @@
   <action name="actionQuit">
    <property name="text">
     <string>&amp;Quit</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>R&amp;eset</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+R</string>
    </property>
   </action>
   <action name="actionRemove_all_lipidomes">

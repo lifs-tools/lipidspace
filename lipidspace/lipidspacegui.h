@@ -197,6 +197,7 @@ public slots:
     void loadTable(ImportData *import_data);
     void loadTable(ImportData *import_data, bool start_analysis);
     void resetAnalysis();
+    void resetAll();
     void showMessage(QString message);
     void updateGUI();
     void updateColorMap();

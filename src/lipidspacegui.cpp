@@ -201,6 +201,7 @@ LipidSpaceGUI::LipidSpaceGUI(LipidSpace *_lipid_space, QWidget *parent) : QMainW
     connect(ui->action6_columns, &QAction::triggered, this, &LipidSpaceGUI::set6ColumnLayout);
     connect(ui->actionLoad_session, &QAction::triggered, this, &LipidSpaceGUI::loadSession);
     connect(ui->actionSave_session, &QAction::triggered, this, &LipidSpaceGUI::saveSession);
+    connect(ui->actionReset, &QAction::triggered, this, &LipidSpaceGUI::resetAll);
     connect(ui->actionComplete_feature_analysis, &QAction::triggered, this, &LipidSpaceGUI::completeFeatureAnalysis);
     connect(ui->actionIgnoring_lipid_sn_positions, &QAction::triggered, this, &LipidSpaceGUI::setSnPositions);
     connect(ui->actionManage_lipidomes, &QAction::triggered, this, &LipidSpaceGUI::openManageLipidomesWindow);
@@ -1498,6 +1499,40 @@ void LipidSpaceGUI::resetAnalysis(){
     ui->frame->setVisible(false);
     fill_table();
     updateGUI();
+}
+
+
+void LipidSpaceGUI::resetAll(){
+    if (!lipid_space->lipidomes.empty()){
+        auto reply = QMessageBox::question(
+            this, "Reset",
+            "Reset all data and settings to startup state?",
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No
+        );
+        if (reply != QMessageBox::Yes) return;
+    }
+
+    lipid_space->without_quant = false;
+    lipid_space->unboundend_distance = false;
+    lipid_space->keep_sn_position = true;
+    ui->actionIgnore_quantitative_information->setChecked(false);
+    ui->actionUnbound_lipid_distance_metric->setChecked(false);
+    ui->actionIgnoring_lipid_sn_positions->setChecked(false);
+
+    showGroupLipidomes = false;
+    showGlobalLipidome = true;
+    ui->actionShow_group_lipidomes->setChecked(false);
+    ui->actionShow_global_lipidome->setChecked(true);
+
+    GlobalData::colorMap.clear();
+    GlobalData::colorMapStudyVariables.clear();
+
+    GlobalData::linkage = AverageLinkage;
+    ui->actionComplete_linkage_clustering->setChecked(false);
+    ui->actionSingle_linkage_clustering->setChecked(false);
+    ui->actionAverage_linkage_clustering->setChecked(true);
+
+    resetAnalysis();
 }
 
 
