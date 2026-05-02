@@ -89,9 +89,9 @@ class LSWidget : public QWidget {
 public:
     LSWidget(QWidget *parent = nullptr);
     void dropEvent(QDropEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dragLeaveEvent(QDragLeaveEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
 
 signals:
     void openFiles(const QList<QUrl> &);
@@ -105,9 +105,9 @@ class LSListWidget : public QListWidget {
 public:
     LSListWidget(QWidget *parent = nullptr);
     void dropEvent(QDropEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dragLeaveEvent(QDragLeaveEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
 
 signals:
     void openFiles(const QList<QUrl> &);
@@ -121,9 +121,9 @@ class LSTreeWidget : public QTreeWidget {
 public:
     LSTreeWidget(QWidget *parent = nullptr);
     void dropEvent(QDropEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dragLeaveEvent(QDragLeaveEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
 
 signals:
     void openFiles(const QList<QUrl> &);
@@ -147,9 +147,9 @@ public:
     HomeView(QWidget *parent = nullptr);
     void resizeEvent(QResizeEvent *event) override;
     void dropEvent(QDropEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dragLeaveEvent(QDragLeaveEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
 
 signals:
     void openFiles(const QList<QUrl> &);
@@ -290,15 +290,15 @@ public:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    void resizeEvent(QResizeEvent *);
-    void wheelEvent(QWheelEvent *event);
+    void resizeEvent(QResizeEvent *) override;
+    void wheelEvent(QWheelEvent *event) override;
     void setDendrogramData(LipidSpace *_lipid_space);
     void resetDendrogram();
     void update_alpha();
     void dropEvent(QDropEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dragLeaveEvent(QDragLeaveEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
 
 
 public slots:

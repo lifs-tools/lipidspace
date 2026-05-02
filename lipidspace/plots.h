@@ -135,8 +135,8 @@ public:
     Barplot(Chart *_chart, bool _log_scale = false, bool _show_data = false, bool _show_pvalues = false);
     ~Barplot();
     void add(vector< vector< Array > > *_data, vector<QString> *categories, vector<QString> *labels, vector<QColor> *colors);
-    void update_chart();
-    void clear();
+    void update_chart() override;
+    void clear() override;
     void recompute_hights();
 
 
@@ -195,8 +195,8 @@ public:
     ~Boxplot();
     static double median(vector<double> &lst, int begin, int end);
     void add(Array &data, QString category, QColor color = Qt::white);
-    void update_chart();
-    void clear();
+    void update_chart() override;
+    void clear() override;
 
 public slots:
     void setShowDataPoints(bool data_points);
@@ -237,8 +237,8 @@ public:
     Lineplot(Chart *_chart, bool _is_border = false);
     ~Lineplot();
     void add(vector< pair< pair<double, double>, pair<double, double> > > &lines, QString category, QColor color = QColor("#99ca53"));
-    void update_chart();
-    void clear();
+    void update_chart() override;
+    void clear() override;
 };
 
 
@@ -284,8 +284,8 @@ public:
     Scatterplot(Chart *_chart, bool _lipid_plot = false);
     ~Scatterplot();
     void add(vector< pair<double, double> > &data, QString category, QColor color = QColor("#209fdf"), vector<QString> *data_labels = 0);
-    void update_chart();
-    void clear();
+    void update_chart() override;
+    void clear() override;
     void wheelEvent(QWheelEvent *event) override;
     void highlight_lipids(QPointF);
 
@@ -334,8 +334,8 @@ public:
     Histogramplot(Chart *_chart);
     ~Histogramplot();
     void add(vector<Array> &arrays, vector<QString> &categories, vector<QColor> *colors = 0, uint num_bars = 20, double all_min = INFINITY, double all_max = -INFINITY);
-    void update_chart();
-    void clear();
+    void update_chart() override;
+    void clear() override;
     void wheelEvent(QWheelEvent *event) override;
 };
 
@@ -362,8 +362,8 @@ public:
     FunctionPlot(Chart *_chart);
     ~FunctionPlot();
     void add(std::function<double(double, vector<double>)>, vector<double>, QString category = "", QColor _color = Qt::red);
-    void update_chart();
-    void clear();
+    void update_chart() override;
+    void clear() override;
 };
 
 #endif /* PLOTS_H */

@@ -97,9 +97,9 @@ public:
     void reset_animation();
     void animation_step();
     void dropEvent(QDropEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dragLeaveEvent(QDragLeaveEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
 
 protected:
     void timerEvent(QTimerEvent *event) override;
