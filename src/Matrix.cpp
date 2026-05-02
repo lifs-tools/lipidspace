@@ -535,7 +535,11 @@ void Matrix::mult(Matrix& A, Matrix& B, bool transA, bool transB, double alpha){
     reset(num_cols_A, num_cols_B);
 
 
+#ifdef _MSC_VER
+    #pragma omp parallel for
+#else
     #pragma omp parallel for collapse(2)
+#endif
     for (int i = 0; i < num_cols_A; i += tile_size) {
         for (int j = 0; j < num_cols_B; j += tile_size) {
             int it = min(num_cols_A, i + tile_size);

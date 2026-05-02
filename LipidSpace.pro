@@ -7,7 +7,7 @@ versionAtLeast(QT_VERSION, 6.0.0) {
 
 
 CONFIG += c++17 debug_and_release
-!win32-msvc*: QMAKE_CXXFLAGS += -std=c++17 -Wno-unknown-pragmas
+QMAKE_CXXFLAGS += -std=c++17 -Wno-unknown-pragmas
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -22,7 +22,7 @@ RC_ICONS = LipidSpace.ico
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-!win32-msvc*: QMAKE_CXXFLAGS_RELEASE += -O3
+QMAKE_CXXFLAGS_RELEASE += -O3
 QMAKE_EXTRA_TARGETS += build buildclean
 
 unix:!macx {
@@ -30,19 +30,9 @@ unix:!macx {
     LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX"
 }
 
-win32-msvc* {
-    QMAKE_CXXFLAGS += /openmp
-    LIBS += $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll \
-            $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll \
-            $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll
-}
-
-win32-g++ {
+win32 {
     QMAKE_CXXFLAGS += -fopenmp
-    LIBS += -fopenmp \
-            $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll \
-            $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll \
-            $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll
+    LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libOpenXLSX.dll
 }
 
 macx {
