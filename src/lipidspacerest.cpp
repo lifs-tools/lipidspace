@@ -11,6 +11,7 @@
 #include <QStorageInfo>
 #include <vector>
 #include <fstream>
+#include "cblas.h"
 #include "cppgoslin/cppgoslin.h"
 #include "lipidspace/AssistanceFunctions.h"
 #include "lipidspace/globaldata.h"
