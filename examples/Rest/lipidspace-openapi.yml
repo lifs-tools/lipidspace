@@ -195,6 +195,44 @@ components:
             items:
                 $ref: "#/components/schemas/LinkageMatrixRow"
 
+        HealthStatus:
+            type: string
+            enum:
+                - UP
+                - DOWN
+                - OUT_OF_SERVICE
+                - UNKNOWN
+            description: Spring Boot Actuator health status value.
+
+        HealthComponent:
+            type: object
+            description: Status and optional diagnostic details for a single health component.
+            required:
+                - status
+            properties:
+                status:
+                    $ref: "#/components/schemas/HealthStatus"
+                details:
+                    type: object
+                    description: Component-specific diagnostic key/value pairs.
+                    additionalProperties: true
+
+        ActuatorHealthResponse:
+            type: object
+            description: |
+                Health status response compatible with the Spring Boot Actuator
+                `/actuator/health` endpoint schema.
+            required:
+                - status
+            properties:
+                status:
+                    $ref: "#/components/schemas/HealthStatus"
+                components:
+                    type: object
+                    description: Per-component health status breakdown.
+                    additionalProperties:
+                        $ref: "#/components/schemas/HealthComponent"
+
         LipidSpacePcaResponse:
             type: object
             description: Response returned by the `/pca` endpoint.
@@ -210,6 +248,57 @@ components:
                     $ref: "#/components/schemas/LinkageMatrix"
 
 paths:
+    /actuator/health:
+        servers:
+            - url: https://apps.lifs-tools.org
+              description: Production server
+            - url: http://localhost:8888
+              description: Local development server (default port)
+        get:
+            summary: Application health check
+            operationId: getActuatorHealth
+            description: |
+                Returns the health status of the application in a format compatible with
+                the Spring Boot Actuator `/actuator/health` endpoint schema.
+
+                Reports an overall `status` (`UP` / `DOWN`) and a `diskSpace` component
+                reflecting free storage on the configured temp folder (threshold: 10 MB).
+
+                Returns HTTP 200 when healthy and HTTP 503 when any component is `DOWN`.
+            responses:
+                "200":
+                    description: Application is healthy (`status: UP`).
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/ActuatorHealthResponse"
+                            example:
+                                status: "UP"
+                                components:
+                                    diskSpace:
+                                        status: "UP"
+                                        details:
+                                            total: 499963174912
+                                            free: 134217728000
+                                            threshold: 10485760
+                                            path: "/tmp/lipidspace"
+                "503":
+                    description: Application is unhealthy (`status: DOWN`), e.g. disk space below threshold.
+                    content:
+                        "application/json":
+                            schema:
+                                $ref: "#/components/schemas/ActuatorHealthResponse"
+                            example:
+                                status: "DOWN"
+                                components:
+                                    diskSpace:
+                                        status: "DOWN"
+                                        details:
+                                            total: 499963174912
+                                            free: 1048576
+                                            threshold: 10485760
+                                            path: "/tmp/lipidspace"
+
     /pca:
         post:
             summary: Run PCA on a lipidome quantity table

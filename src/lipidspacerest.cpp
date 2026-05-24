@@ -1,4 +1,5 @@
 #include "httplib.h"
+#include <atomic>
 #include <chrono>
 #include <thread>
 #include <QtGlobal>
@@ -6,6 +7,8 @@
 #include <QByteArray>
 #include <QFile>
 #include <QtCore>
+#include <QDirIterator>
+#include <QStorageInfo>
 #include <vector>
 #include <fstream>
 #include "cppgoslin/cppgoslin.h"
@@ -19,11 +22,71 @@ using namespace httplib;
 
 vector<string> dict_keys{"TableType", "TableColumnTypes", "Table"};
 
+static qint64 dirSize(const QString &path)
+{
+    qint64 total = 0;
+    QDirIterator it(path, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        if (it.fileInfo().isFile())
+            total += it.fileInfo().size();
+    }
+    return total;
+}
+
 class LipidSpaceRest
 {
 public:
     Server svr;
     thread t;
+    thread vacuum_t;
+    atomic<bool> vacuum_running{false};
+
+    void vacuum_loop()
+    {
+        while (vacuum_running.load()) {
+            for (int i = 0; i < GlobalData::rest_vacuum_interval_secs * 10 && vacuum_running.load(); ++i)
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            if (!vacuum_running.load()) break;
+
+            QString base = QString::fromStdString(GlobalData::rest_temp_folder);
+            QFileInfoList entries = QDir(base).entryInfoList(
+                QDir::Dirs | QDir::NoDotAndDotDot,
+                QDir::Time | QDir::Reversed); // oldest first
+
+            QDateTime now = QDateTime::currentDateTimeUtc();
+
+            for (const QFileInfo &entry : entries) {
+                if (!vacuum_running.load()) break;
+
+                qint64 age = entry.lastModified().toUTC().secsTo(now);
+                bool expired = age >= GlobalData::rest_vacuum_max_age_secs;
+                bool active  = age <  GlobalData::rest_vacuum_min_active_secs;
+
+                QStorageInfo storage(base);
+                bool diskLow = storage.isValid()
+                            && storage.bytesFree() < GlobalData::rest_disk_threshold_bytes;
+
+                if (expired || (diskLow && !active)) {
+                    const char *reason = expired ? "max-age" : "disk-pressure";
+                    if (GlobalData::debug) {
+                        QDateTime created  = entry.birthTime().toUTC();
+                        QDateTime modified = entry.lastModified().toUTC();
+                        qint64 size = dirSize(entry.absoluteFilePath());
+                        qInfo("Vacuum: removing dir name='%s' created='%s' modified='%s' size=%lld bytes reason=%s",
+                              qPrintable(entry.fileName()),
+                              qPrintable(created.isValid() ? created.toString(Qt::ISODate) : QString("N/A")),
+                              qPrintable(modified.toString(Qt::ISODate)),
+                              static_cast<long long>(size),
+                              reason);
+                    } else {
+                        qInfo("Vacuum: removing dir '%s' reason=%s", qPrintable(entry.fileName()), reason);
+                    }
+                    QDir(entry.absoluteFilePath()).removeRecursively();
+                }
+            }
+        }
+    }
 
     inline int start(string host, int port, string temp_folder, bool debug)
     {
@@ -385,9 +448,47 @@ public:
             }
         });
 
+        svr.Get("/actuator/health", [](const Request &, Response &res){
+            QString storagePath = GlobalData::rest_temp_folder.empty()
+                ? "."
+                : QString::fromStdString(GlobalData::rest_temp_folder);
+            QStorageInfo storage(storagePath);
+
+            const qint64 threshold = GlobalData::rest_disk_threshold_bytes;
+            bool diskOk = storage.isValid() && storage.bytesFree() >= threshold;
+            QString diskStatus = diskOk ? "UP" : "DOWN";
+
+            QJsonObject diskDetails;
+            diskDetails["total"] = storage.bytesTotal();
+            diskDetails["free"]  = storage.bytesFree();
+            diskDetails["threshold"] = threshold;
+            diskDetails["path"] = storagePath;
+
+            QJsonObject diskComponent;
+            diskComponent["status"]  = diskStatus;
+            diskComponent["details"] = diskDetails;
+
+            QJsonObject components;
+            components["diskSpace"] = diskComponent;
+
+            QJsonObject healthObj;
+            healthObj["status"]     = diskOk ? QString("UP") : QString("DOWN");
+            healthObj["components"] = components;
+
+            QJsonDocument healthDoc(healthObj);
+            res.status = diskOk ? 200 : 503;
+            res.set_content(healthDoc.toJson(QJsonDocument::Compact).toStdString(), "application/json");
+        });
+
         t = thread([&]()
                    { svr.listen(host.c_str(), port); });
-        qInfo() << "Started server! SIGINT (CTRL + c) will stop the server.";
+
+        vacuum_running.store(true);
+        vacuum_t = thread([this]{ vacuum_loop(); });
+        qInfo("Started server with vacuum (interval=%ds max_age=%ds min_active=%ds)! SIGINT (CTRL + c) will stop the server.",
+              GlobalData::rest_vacuum_interval_secs,
+              GlobalData::rest_vacuum_max_age_secs,
+              GlobalData::rest_vacuum_min_active_secs);
         return 0;
     }
 
@@ -399,6 +500,8 @@ public:
             if (svr.is_running())
             {
                 qInfo() << "Stopping server...";
+                vacuum_running.store(false);
+                if (vacuum_t.joinable()) vacuum_t.join();
                 svr.stop();
                 t.join();
                 qInfo() << "Stopped server!";
@@ -447,6 +550,14 @@ int main(int argc, char *argv[])
     parser.addOption(tmpOption);
     QCommandLineOption debugOption({"d", "debug"}, QCoreApplication::translate("main", "Set the server to run in debug mode. Saves incoming and outgoing JSON requests."));
     parser.addOption(debugOption);
+    QCommandLineOption diskThresholdOption({"k", "disk-threshold-mb"}, QCoreApplication::translate("main", "Minimum free disk space in MB on the tmp folder before the health endpoint reports DOWN."), "disk_threshold_mb", "10");
+    parser.addOption(diskThresholdOption);
+    QCommandLineOption vacuumIntervalOption({"i", "vacuum-interval-secs"}, QCoreApplication::translate("main", "Interval in <seconds> between vacuum runs."), "vacuum_interval_secs", "60");
+    parser.addOption(vacuumIntervalOption);
+    QCommandLineOption vacuumMaxAgeOption({"a", "vacuum-max-age-secs"}, QCoreApplication::translate("main", "Maximum age in <seconds> of a tmp directory before it is unconditionally removed."), "vacuum_max_age_secs", "3600");
+    parser.addOption(vacuumMaxAgeOption);
+    QCommandLineOption vacuumMinActiveOption({"m", "vacuum-min-active-secs"}, QCoreApplication::translate("main", "Minimum age in <seconds> a tmp directory must have before it may be removed due to disk pressure."), "vacuum_min_active_secs", "300");
+    parser.addOption(vacuumMinActiveOption);
 
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("LipidSpaceREST");
@@ -474,6 +585,66 @@ int main(int argc, char *argv[])
     if (parser.isSet(debugOption))
     {
         debug = true;
+    }
+
+    if (parser.isSet(diskThresholdOption))
+    {
+        bool ok = false;
+        int mb = parser.value(diskThresholdOption).toInt(&ok);
+        if (ok && mb > 0)
+        {
+            GlobalData::rest_disk_threshold_bytes = static_cast<qint64>(mb) * 1024 * 1024;
+            qInfo() << "Disk threshold set to:" << mb << "MB";
+        }
+        else
+        {
+            qWarning() << "Invalid disk-threshold-mb value '" << parser.value(diskThresholdOption) << "', using default 10 MB";
+        }
+    }
+
+    if (parser.isSet(vacuumIntervalOption))
+    {
+        bool ok = false;
+        int secs = parser.value(vacuumIntervalOption).toInt(&ok);
+        if (ok && secs > 0)
+        {
+            GlobalData::rest_vacuum_interval_secs = secs;
+            qInfo() << "Vacuum interval set to:" << secs << "seconds";
+        }
+        else
+        {
+            qWarning() << "Invalid vacuum-interval-secs value '" << parser.value(vacuumIntervalOption) << "', using default 60s";
+        }
+    }
+
+    if (parser.isSet(vacuumMaxAgeOption))
+    {
+        bool ok = false;
+        int secs = parser.value(vacuumMaxAgeOption).toInt(&ok);
+        if (ok && secs > 0)
+        {
+            GlobalData::rest_vacuum_max_age_secs = secs;
+            qInfo() << "Vacuum max age set to:" << secs << "seconds";
+        }
+        else
+        {
+            qWarning() << "Invalid vacuum-max-age-secs value '" << parser.value(vacuumMaxAgeOption) << "', using default 3600s";
+        }
+    }
+
+    if (parser.isSet(vacuumMinActiveOption))
+    {
+        bool ok = false;
+        int secs = parser.value(vacuumMinActiveOption).toInt(&ok);
+        if (ok && secs >= 0)
+        {
+            GlobalData::rest_vacuum_min_active_secs = secs;
+            qInfo() << "Vacuum min active set to:" << secs << "seconds";
+        }
+        else
+        {
+            qWarning() << "Invalid vacuum-min-active-secs value '" << parser.value(vacuumMinActiveOption) << "', using default 300s";
+        }
     }
 
     lsr.start(host.toStdString(), port, tmp_folder.toStdString(), debug);

@@ -26,6 +26,10 @@ public:
     static int PC1;
     static int PC2;
     static string rest_temp_folder;
+    static qint64 rest_disk_threshold_bytes;
+    static int rest_vacuum_interval_secs;
+    static int rest_vacuum_max_age_secs;
+    static int rest_vacuum_min_active_secs;
     static map<string, QColor> colorMapStudyVariables;
     static map<string, QColor> colorMapCategories;
     static string normalization;
