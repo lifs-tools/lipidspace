@@ -185,6 +185,19 @@ jobs:
       run: |
         curl -X POST -v -H "Content-Type: application/json" --data-binary "@examples/Rest/Plasma-Singapore-Short.json" 127.0.0.1:8888/lipidspace/v1/pca
 
+    - name: Test health endpoint returns UP
+      run: |
+        response=$(curl -s -w '\n%{http_code}' 127.0.0.1:8888/actuator/health)
+        http_code=$(echo "$response" | tail -1)
+        body=$(echo "$response" | head -1)
+        echo "HTTP status: $http_code"
+        echo "Body: $body"
+        if [ "$http_code" != "200" ]; then
+          echo "ERROR: expected HTTP 200, got $http_code"
+          exit 1
+        fi
+        echo "$body" | grep -q '"status":"UP"' || { echo "ERROR: status is not UP"; exit 1; }
+
     - name: Stop REST service container
       run: docker stop LipidSpaceRest
 
