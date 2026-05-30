@@ -2,6 +2,8 @@
 #include <atomic>
 #include <chrono>
 #include <thread>
+#include <QLoggingCategory>
+#include <qlogging.h>
 #include <QtGlobal>
 #include <QJsonDocument>
 #include <QByteArray>
@@ -91,7 +93,9 @@ public:
 
     inline int start(string host, int port, string temp_folder, bool debug)
     {
+#ifdef OPENBLAS_OS_LINUX 
         qInfo("Using %d threads with openBLAS!", openblas_get_num_threads());
+#endif
         GlobalData::rest_temp_folder = temp_folder;
         GlobalData::debug = debug;
         // stop(SIGINT);
@@ -562,7 +566,20 @@ int main(int argc, char *argv[])
 
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("LipidSpaceREST");
-    QCoreApplication::setApplicationVersion(GlobalData::LipidSpace_version.c_str());
+    QCoreApplication::setApplicationVersion(GlobalData::LipidSpace_version.c_str());// Register Qt6 message handler immediately after creating QCoreApplication
+    
+    // Register Qt6 message handler immediately after creating QCoreApplication
+    qInstallMessageHandler([](QtMsgType msgType, const QMessageLogContext &context, 
+                            const QString &message) {
+        // Use integer comparison for severity levels (more portable)
+        int sev = static_cast<int>(msgType);
+        const char* level = (sev <= 1) ? "INFO" : 
+                        (sev == 2) ? "WARN" : "ERROR";
+        
+        std::cerr << "[Qt-" << level << "] [" << context.function << "]"
+                << message.toStdString() << "\n";
+        std::cerr.flush();  // Force immediate flush for Docker logging
+    });
 
     QString host = "0.0.0.0";
     QString tmp_folder = ".";
