@@ -29,7 +29,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libc6 \
     libstdc++6 \
     openssl \
-    libssl-dev \    
+    libssl-dev \
+    wget \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=build /lipidspace/data /lipidspace/data
 COPY --from=build /lipidspace/LipidSpaceRest /lipidspace/LipidSpaceRest
