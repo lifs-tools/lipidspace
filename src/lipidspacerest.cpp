@@ -112,6 +112,7 @@ public:
                 {
                     res.status = 500;
                     res.reason = ("Failed to create temporary directory for call id " + callId).toStdString();
+                    qWarning("Failed to create temporary directory: '%s'", qPrintable(dirPath));
                     return;
                 }
                 QByteArray qbytes = QByteArray(req.body.c_str());
@@ -594,10 +595,25 @@ int main(int argc, char *argv[])
         qInfo() << "Host set to: " << host.toStdString().c_str();
     }
 
+    if (parser.isSet(portOption))
+    {
+        bool ok = false;
+        int p = parser.value(portOption).toInt(&ok);
+        if (ok && p > 0 && p <= 65535)
+        {
+            port = p;
+            qInfo() << "Port set to:" << port;
+        }
+        else
+        {
+            qWarning() << "Invalid port value '" << parser.value(portOption) << "', using default 8888";
+        }
+    }
+
     if (parser.isSet(tmpOption))
     {
         tmp_folder = parser.value(tmpOption);
-        qInfo() << "Tmp folder set to: '" << host.toStdString().c_str() << "'";
+        qInfo() << "Tmp folder set to: '" << tmp_folder.toStdString().c_str() << "'";
     }
 
     if (parser.isSet(debugOption))

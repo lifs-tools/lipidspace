@@ -38,6 +38,6 @@ COPY --from=build /lipidspace/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a /usr/
 RUN ldconfig
 WORKDIR /lipidspace
 EXPOSE 8888/tcp
-ENTRYPOINT ["./LipidSpaceRest"]
+ENTRYPOINT ["./LipidSpaceRest", "--tmp_folder", "/tmp"]
 #CMD ["--help"]
 
