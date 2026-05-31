@@ -570,16 +570,19 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion(GlobalData::LipidSpace_version.c_str());// Register Qt6 message handler immediately after creating QCoreApplication
     
     // Register Qt6 message handler immediately after creating QCoreApplication
-    qInstallMessageHandler([](QtMsgType msgType, const QMessageLogContext &context, 
+    qInstallMessageHandler([](QtMsgType msgType, const QMessageLogContext &context,
                             const QString &message) {
-        // Use integer comparison for severity levels (more portable)
-        int sev = static_cast<int>(msgType);
-        const char* level = (sev <= 1) ? "INFO" : 
-                        (sev == 2) ? "WARN" : "ERROR";
-        
-        std::cerr << "[Qt-" << level << "] [" << context.function << "]"
-                << message.toStdString() << "\n";
-        std::cerr.flush();  // Force immediate flush for Docker logging
+        // QtInfoMsg=4, QtDebugMsg=0, QtWarningMsg=1, QtCriticalMsg=2, QtFatalMsg=3
+        const char* level = (msgType == QtInfoMsg)     ? "INFO"  :
+                            (msgType == QtDebugMsg)    ? "DEBUG" :
+                            (msgType == QtWarningMsg)  ? "WARN"  : "ERROR";
+        // context.function is nullptr in release builds (QT_NO_MESSAGELOGCONTEXT)
+        if (context.function)
+            std::cerr << "[Qt-" << level << "] [" << context.function << "] ";
+        else
+            std::cerr << "[Qt-" << level << "] ";
+        std::cerr << message.toStdString() << "\n";
+        std::cerr.flush();
     });
 
     QString host = "0.0.0.0";
