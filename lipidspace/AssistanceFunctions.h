@@ -450,7 +450,7 @@ public:
     Lipidome(Lipidome *lipidome);
     Lipidome(json &container, map<string, LipidAdduct*> &all_lipids);
     void save(json &container);
-    string to_json(map<string, string> *imported_lipid_names = 0);
+    string to_json(map<string, string> *imported_lipid_names = 0, int pca_dimensions = 2);
 };
 
 

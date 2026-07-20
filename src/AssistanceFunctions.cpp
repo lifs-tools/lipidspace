@@ -651,7 +651,7 @@ void Lipidome::save(json &container){
 
 
 
-string Lipidome::to_json(map<string, string> *imported_lipid_names){
+string Lipidome::to_json(map<string, string> *imported_lipid_names, int pca_dimensions){
     stringstream s;
 
     s << "{\"LipidomeName\": \"" << replace_all(cleaned_name, "\"", "") << "\", ";
@@ -698,6 +698,25 @@ string Lipidome::to_json(map<string, string> *imported_lipid_names){
         s << m(r, 1);
     }
     s << "]";
+
+    // Optionally expose more than the default 2 PCA dimensions. X and Y above are
+    // kept unchanged (columns 0 and 1) so existing clients see identical output; the
+    // full requested coordinates (column-major, one array per dimension, matching the
+    // X/Y layout) are added under "PcaCoordinates" only when more than 2 are requested.
+    int pca_dims = pca_dimensions < m.cols ? pca_dimensions : m.cols;
+    if (pca_dims > 2) {
+        s << ", \"PcaCoordinates\": [";
+        for (int c = 0; c < pca_dims; ++c) {
+            if (c) s << ", ";
+            s << "[";
+            for (int r = 0; r < m.rows; ++r) {
+                if (r) s << ", ";
+                s << m(r, c);
+            }
+            s << "]";
+        }
+        s << "]";
+    }
 
     s << "}";
     return s.str();

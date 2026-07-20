@@ -20,6 +20,10 @@ using namespace std::chrono;
 
 enum ProcessType {LipidAnalysis, FeatureAnalysis, CompleteFeatureAnalysis, NoAnalysis};
 
+// Lipidome-to-lipidome distance: structural Hausdorff (point clouds) or the Atlas
+// fingerprint (Hellinger between compositional module histograms).
+enum DistanceMetric {HausdorffMetric, HellingerMetric};
+
 class LipidSpace : public QThread {
     Q_OBJECT
 
@@ -36,6 +40,7 @@ public:
     bool ignore_doublette_lipids;
     bool unboundend_distance;
     bool without_quant;
+    DistanceMetric distance_metric;
     vector<Lipidome*> lipidomes;
     map<string, string> lipid_name_translations[3];
     Lipidome* global_lipidome;
@@ -70,6 +75,8 @@ public:
     void fatty_acyl_similarity(FattyAcid* f1, FattyAcid* f2, int& union_num, int& inter_num);
     double compute_hausdorff_distance(Matrix &m1, Matrix &m2);
     void compute_hausdorff_matrix();
+    void compute_fingerprint_distance_matrix(int K = 20, double temperature = 1.0, bool soft = true);
+    void compute_lipidome_distance_matrix();
     void report_hausdorff_matrix(string output_folder);
     int compute_global_distance_matrix();
     void separate_matrixes();

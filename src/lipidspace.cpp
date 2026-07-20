@@ -280,6 +280,7 @@ LipidSpace::LipidSpace() {
     ignore_doublette_lipids = false;
     unboundend_distance = false;
     without_quant = false;
+    distance_metric = HausdorffMetric;
     global_lipidome = new Lipidome("global_lipidome", "");
     progress = 0;
     analysis_finished = false;
@@ -325,6 +326,7 @@ LipidSpace::LipidSpace(LipidSpace *ls){
     ignore_doublette_lipids = ls->ignore_doublette_lipids;
     unboundend_distance = ls->unboundend_distance;
     without_quant = ls->without_quant;
+    distance_metric = ls->distance_metric;
     map<Lipidome*, Lipidome*> lipidome_map;
     for (auto lipidome : ls->lipidomes){
         Lipidome *new_lipidome = new Lipidome(lipidome);
@@ -1255,6 +1257,54 @@ void LipidSpace::compute_hausdorff_matrix(){
     for (auto matrix : matrixes) delete matrix;
 }
 
+
+/**
+ * Compute fingerprint-based distance matrix using Jensen–Shannon Divergence (JSD) on soft-assigned module histograms.
+ * 
+ * This implements the Atlas Phase 0 approach:
+ * 1. Build K modules via k-means on the frozen PCA frame
+ * 2. For each lipidome, generate a fingerprint (soft-assigned histogram over modules)
+ * 3. Compute JSD distance between all pairs of fingerprints
+ * 
+ * @param K Number of modules/clusters (default 20, validated range: 20-50)
+ * @param temperature Softmax temperature parameter (default 1.0)
+ * @param soft Use soft (true) or hard (false) assignment (default true)
+ */
+void LipidSpace::compute_fingerprint_distance_matrix(int K, double temperature, bool soft) {
+    vector<Matrix*> matrixes;
+    
+    vector<Array*> weights;
+    // Create fingerprint inputs from each lipidome (frame coords + abundance weights)
+    for (auto lipidome : selected_lipidomes) {
+        matrixes.push_back(&lipidome->m);
+        weights.push_back(&lipidome->original_intensities);
+    }
+    
+    // global_lipidome->m is the frozen frame: (lipids x PCA dimensions).
+    
+    // Compute fingerprint distances
+    hausdorff_distances.compute_fingerprint_distance_matrix(
+        matrixes, weights, global_lipidome->m, K, temperature, soft
+    );
+    
+    // matrixes reference lipidome members directly; nothing to delete
+}
+
+
+void LipidSpace::compute_lipidome_distance_matrix() {
+    // Select the lipidome-to-lipidome distance: structural Hausdorff on the point
+    // clouds (default) or the Atlas fingerprint (Hellinger between compositional
+    // module histograms). Both populate hausdorff_distances.
+    switch (distance_metric) {
+        case HellingerMetric:
+            compute_fingerprint_distance_matrix();
+            break;
+        case HausdorffMetric:
+        default:
+            compute_hausdorff_matrix();
+            break;
+    }
+}
 
 
 void LipidSpace::store_results(string output_folder){
@@ -3118,7 +3168,7 @@ void LipidSpace::run_analysis(){
     normalize_intensities();
 
     if (selected_lipidomes.size() > 1){
-        compute_hausdorff_matrix();
+        compute_lipidome_distance_matrix();
         create_dendrogram();
     }
 
@@ -3203,7 +3253,7 @@ void LipidSpace::lipid_analysis(bool report_progress){
 
     if (!progress || !progress->stop_progress){
         if (selected_lipidomes.size() > 1){
-            compute_hausdorff_matrix();
+            compute_lipidome_distance_matrix();
             if (progress && report_progress){
                 progress->increment();
             }

@@ -225,6 +225,20 @@ public:
 
 
 
+                    // number of PCA dimensions to return; default 2 keeps existing
+                    // REST clients and the Qt application byte-compatible
+                    int pca_dimensions = 2;
+                    if (pcaRequest.object().contains("PcaDimensions")){
+                        if (!pcaRequest["PcaDimensions"].isDouble()){
+                            res.status = 400;
+                            res.reason = "Malformed JSON, 'PcaDimensions' is not an integer";
+                            qWarning() << res.reason.c_str();
+                            return;
+                        }
+                        pca_dimensions = pcaRequest["PcaDimensions"].toInt(2);
+                        if (pca_dimensions < 2) pca_dimensions = 2;
+                    }
+
                     // store table on the disk
                     QString table_file_name = dirPath + "/table_file.csv";
                     ofstream table_file(table_file_name.toStdString().c_str());
@@ -247,6 +261,25 @@ public:
                     LipidSpace lipid_space;
                     lipid_space.ignore_unknown_lipids = true;
                     lipid_space.ignore_doublette_lipids = true;
+
+                    // lipidome distance: "hausdorff" (default) or "hellinger" (Atlas fingerprint)
+                    if (pcaRequest.object().contains("DistanceMetric")){
+                        if (!pcaRequest["DistanceMetric"].isString()){
+                            res.status = 400;
+                            res.reason = "Malformed JSON, 'DistanceMetric' is not a string";
+                            qWarning() << res.reason.c_str();
+                            return;
+                        }
+                        string dm = pcaRequest["DistanceMetric"].toString().toStdString();
+                        if (dm == "hellinger") lipid_space.distance_metric = HellingerMetric;
+                        else if (dm == "hausdorff") lipid_space.distance_metric = HausdorffMetric;
+                        else {
+                            res.status = 400;
+                            res.reason = "Invalid 'DistanceMetric' (use 'hausdorff' or 'hellinger')";
+                            qWarning() << res.reason.c_str();
+                            return;
+                        }
+                    }
 
 
                     stringstream sstream;
@@ -349,7 +382,7 @@ public:
                     // add global lipidome if requested
                     if (requested_spaces.empty() || contains_val(requested_spaces, "global")){
                         cnt++;
-                        sstream << lipid_space.global_lipidome->to_json(&imported_lipid_names);
+                        sstream << lipid_space.global_lipidome->to_json(&imported_lipid_names, pca_dimensions);
                     }
 
                     // add group lipidomes if requested
@@ -363,7 +396,7 @@ public:
                             if (GlobalData::debug) {
                                 qInfo() << "Lipidome: '" << lipidome->lipidome_name.c_str() << "'";
                             }
-                            sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json(&imported_lipid_names);
+                            sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json(&imported_lipid_names, pca_dimensions);
                         }
                     }
 
@@ -371,7 +404,7 @@ public:
                     for (auto lipidome : lipid_space.lipidomes)
                     {
                         if (requested_spaces.empty() || contains_val(requested_spaces, lipidome->lipidome_name)){
-                            sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json(&imported_lipid_names);
+                            sstream << (cnt++ > 0 ? ", " : "") << lipidome->to_json(&imported_lipid_names, pca_dimensions);
                         }
                     }
 

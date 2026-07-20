@@ -93,6 +93,24 @@ components:
                         or individual sample names. When omitted all spaces are returned.
                     items:
                         type: string
+                PcaDimensions:
+                    type: integer
+                    default: 2
+                    minimum: 2
+                    description: |
+                        Number of PCA dimensions to return per lipidome. Defaults to `2`
+                        (only `X`/`Y`), which keeps existing clients unchanged. When greater
+                        than 2, each lipidome additionally includes a `PcaCoordinates` array.
+                        Capped at the number of computed principal components.
+                DistanceMetric:
+                    type: string
+                    enum: [hausdorff, hellinger]
+                    default: hausdorff
+                    description: |
+                        Lipidome-to-lipidome distance used for `LipidomeDistanceMatrix` and the
+                        clustering linkage: `hausdorff` (default, structural point-cloud distance)
+                        or `hellinger` (the Atlas fingerprint — Hellinger distance between
+                        compositional module histograms).
             example:
                 TableType: "COLUMN_PIVOT_TABLE"
                 TableColumnTypes:
@@ -159,6 +177,17 @@ components:
                     items:
                         type: number
                         format: double
+                PcaCoordinates:
+                    type: array
+                    description: |
+                        Present only when the request sets `PcaDimensions` > 2. One array per
+                        requested PCA dimension (column-major, same layout as `X`/`Y`); element
+                        `0` equals `X`, element `1` equals `Y`.
+                    items:
+                        type: array
+                        items:
+                            type: number
+                            format: double
 
         LipidSpaces:
             type: array

@@ -1,4 +1,7 @@
 #include "lipidspace/Matrix.h"
+#include <random>
+#include <algorithm>
+#include <vector>
 
 // BLAS and LAPACK are only consumed by this translation unit.
 #ifdef Q_OS_MACOS
@@ -602,4 +605,300 @@ void Matrix::covariance_matrix(Matrix &covar){
 
 double* Matrix::data(){
     return m.data();
+}
+
+
+// ============================================================================
+// Fingerprint methods for Atlas
+// Based on docs/atlas-phase0/evaluate.py
+// ============================================================================
+
+/**
+ * K-means clustering on the rows of this matrix.
+ * Each row is a data point in cols-dimensional space.
+ * 
+ * @param K Number of clusters
+ * @param centers Output: K x cols matrix of cluster centers
+ * @param max_iter Maximum iterations
+ * @param seed Random seed for reproducibility
+ */
+void Matrix::kmeans(int K, Matrix& centers, int max_iter, unsigned long seed) {
+    assert(rows > 0 && cols > 0);
+    assert(K > 0 && K <= rows);
+    
+    // Initialize random number generator
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution<int> dist(0, rows - 1);
+    
+    // Step 1: k-means++ initialization (Arthur & Vassilvitskii), matching the default
+    // init strategy sklearn uses in the Python harness: the first center is a uniformly
+    // random point; each subsequent center is sampled with probability proportional to
+    // its squared distance to the nearest already-chosen center.
+    std::uniform_real_distribution<double> unit(0.0, 1.0);
+    centers.reset(K, cols);
+    {
+        int first = dist(gen);
+        for (int c = 0; c < cols; ++c) centers(0, c) = (*this)(first, c);
+    }
+    std::vector<double> d2(rows, INFINITY);  // squared distance to the nearest center
+    for (int k = 1; k < K; ++k) {
+        double total = 0.0;
+        for (int i = 0; i < rows; ++i) {
+            double dist_sq = 0.0;
+            for (int c = 0; c < cols; ++c) {
+                double diff = (*this)(i, c) - centers(k - 1, c);
+                dist_sq += diff * diff;
+            }
+            if (dist_sq < d2[i]) d2[i] = dist_sq;
+            total += d2[i];
+        }
+        double target = unit(gen) * total;
+        double acc = 0.0;
+        int chosen = rows - 1;
+        for (int i = 0; i < rows; ++i) {
+            acc += d2[i];
+            if (acc >= target) { chosen = i; break; }
+        }
+        for (int c = 0; c < cols; ++c) centers(k, c) = (*this)(chosen, c);
+    }
+    
+    // Step 2: Iterate
+    std::vector<int> assignments(rows);
+    for (int iter = 0; iter < max_iter; ++iter) {
+        // Assign each point to nearest center
+        bool changed = false;
+        for (int i = 0; i < rows; ++i) {
+            double min_dist = INFINITY;
+            int best_k = 0;
+            for (int k = 0; k < K; ++k) {
+                double dist = 0.0;
+                for (int c = 0; c < cols; ++c) {
+                    double diff = (*this)(i, c) - centers(k, c);
+                    dist += diff * diff;
+                }
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    best_k = k;
+                }
+            }
+            if (assignments[i] != best_k) {
+                assignments[i] = best_k;
+                changed = true;
+            }
+        }
+        
+        if (!changed) break;
+        
+        // Update centers
+        std::vector<int> counts(K, 0);
+        std::vector<std::vector<double>> sums(K, std::vector<double>(cols, 0.0));
+        
+        for (int i = 0; i < rows; ++i) {
+            int k = assignments[i];
+            counts[k]++;
+            for (int c = 0; c < cols; ++c) {
+                sums[k][c] += (*this)(i, c);
+            }
+        }
+        
+        for (int k = 0; k < K; ++k) {
+            if (counts[k] > 0) {
+                for (int c = 0; c < cols; ++c) {
+                    centers(k, c) = sums[k][c] / counts[k];
+                }
+            }
+            // If empty cluster, reinitialize to random point
+            else {
+                int idx = dist(gen);
+                for (int c = 0; c < cols; ++c) {
+                    centers(k, c) = (*this)(idx, c);
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * Generate a fingerprint for a single lipidome.
+ * 
+ * The fingerprint is a histogram over K modules, where each lipid's contribution
+ * is weighted by its abundance and soft-assigned to modules based on distance.
+ * 
+ * @param centers K x dims matrix of module centers (from kmeans on frame)
+ * @param weights Array of lipid weights (abundances)
+ * @param fingerprint Output: Array of length K (the fingerprint vector)
+ * @param s Global temperature parameter (computed from frame)
+ * @param soft If true, use soft assignment; if false, use hard assignment
+ */
+void Matrix::generate_fingerprint(Matrix& centers, Array& weights, Array& fingerprint,
+                                  double s, bool soft) {
+    int K = centers.rows;
+    int D = cols;          // (lipids x dims): columns are PCA dimensions
+    int n_lipids = rows;   // rows are lipids (points in the frame)
+    
+    fingerprint.resize(K);
+    for (int k = 0; k < K; ++k) fingerprint[k] = 0.0;
+    
+    // For each lipid (row) in this lipidome matrix
+    for (int i = 0; i < n_lipids; ++i) {
+        double weight = (i < (int)weights.size()) ? weights[i] : 1.0;
+        if (weight <= 0) continue;
+        
+        // Find distances from this lipid's position to all centers
+        std::vector<double> dists(K);
+        
+        for (int k = 0; k < K; ++k) {
+            double dist_sq = 0.0;
+            for (int c = 0; c < D; ++c) {
+                double diff = (*this)(i, c) - centers(k, c);
+                dist_sq += diff * diff;
+            }
+            dists[k] = sqrt(dist_sq);
+        }
+        
+        if (soft) {
+            // per-lipid soft assignment (softmax over centers), then abundance-weighted
+            double sum_exp = 0.0;
+            for (int k = 0; k < K; ++k) {
+                dists[k] = exp(-(dists[k] * dists[k]) / (2 * s * s));
+                sum_exp += dists[k];
+            }
+            if (sum_exp > 0) {
+                for (int k = 0; k < K; ++k) {
+                    fingerprint[k] += weight * dists[k] / sum_exp;
+                }
+            }
+        } else {
+            // Hard assignment: find nearest center
+            int best_k = 0;
+            for (int k = 1; k < K; ++k) {
+                if (dists[k] < dists[best_k]) best_k = k;
+            }
+            fingerprint[best_k] += weight;
+        }
+    }
+    
+    // Normalize fingerprint to sum to 1 (compositional)
+    double sum = fingerprint.sum();
+    if (sum > 0) {
+        for (int k = 0; k < K; ++k) {
+            fingerprint[k] /= sum;
+        }
+    }
+}
+
+
+/**
+ * Hellinger distance between two probability distributions:
+ *   H(p, q) = ||sqrt(p) - sqrt(q)||_2 / sqrt(2),  in [0, 1].
+ * A proper metric and a numerically stable proxy for the (square-root) Jensen-Shannon
+ * distance used by the Atlas Phase 0 fingerprints (docs/atlas-phase0/evaluate.py).
+ * 
+ * @param a First probability distribution
+ * @param b Second probability distribution
+ * @return Hellinger distance (a metric in [0, 1])
+ */
+double Matrix::hellinger_distance(Array& a, Array& b) {
+    assert(a.size() == b.size());
+    
+    double sum_sq = 0.0;
+    for (size_t i = 0; i < a.size(); ++i) {
+        double diff = sqrt(a[i]) - sqrt(b[i]);
+        sum_sq += diff * diff;
+    }
+    
+    // Hellinger distance = sqrt(0.5 * sum(...))
+    // But we return the Euclidean distance on square roots divided by sqrt(2)
+    // which equals the Hellinger distance
+    return sqrt(sum_sq) / sqrt(2.0);
+}
+
+
+/**
+ * Compute pairwise JSD distances between all lipidomes based on fingerprints.
+ * 
+ * This follows the approach from docs/atlas-phase0/evaluate.py:
+ * 1. Build K modules via k-means on the frozen frame
+ * 2. For each lipidome, generate a fingerprint (soft-assigned histogram over modules)
+ * 3. Compute JSD distance between all pairs of fingerprints
+ * 
+ * @param lipidome_matrixes Vector of lipidome matrices (each: lipids x dims)
+ * @param frame The frozen PCA frame (lipids x dims)
+ * @param K Number of modules/clusters
+ * @param temperature Softmax temperature for soft assignment
+ * @param soft Use soft (true) or hard (false) assignment
+ */
+void Matrix::compute_fingerprint_distance_matrix(vector<Matrix*>& lipidome_matrixes,
+                                              vector<Array*>& lipidome_weights, 
+                                              Matrix& frame, 
+                                              int K, 
+                                              double temperature, 
+                                              bool soft) {
+    int n = lipidome_matrixes.size();
+    
+    // Step 1: build modules via k-means on the frame.
+    
+    // frame is (lipids x dims): rows are lipid points, cols are PCA dimensions.
+    // k-means clusters the lipid points directly -- no transpose needed.
+    if (K > frame.rows) K = frame.rows;
+    if (K < 1) K = 1;
+    
+    Matrix centers;
+    frame.kmeans(K, centers);  // centers: K x dims
+    
+    // Step 2: Compute global temperature parameter s
+    // s = temperature * median of min distances from frame lipids to centers + epsilon
+    double s = temperature;
+    if (soft) {
+        Array min_dists(frame.rows, 0.0);
+        for (int i = 0; i < frame.rows; ++i) {
+            double min_dist_sq = INFINITY;
+            for (int k = 0; k < K; ++k) {
+                double dist_sq = 0.0;
+                for (int c = 0; c < frame.cols; ++c) {
+                    double diff = frame(i, c) - centers(k, c);
+                    dist_sq += diff * diff;
+                }
+                if (dist_sq < min_dist_sq) min_dist_sq = dist_sq;
+            }
+            min_dists[i] = sqrt(min_dist_sq);
+        }
+        // Find median
+        std::vector<double> sorted_dists(min_dists.begin(), min_dists.end());
+        std::sort(sorted_dists.begin(), sorted_dists.end());
+        size_t mid = sorted_dists.size() / 2;
+        double median_dist = (sorted_dists.size() % 2 == 0) ? 
+            (sorted_dists[mid-1] + sorted_dists[mid]) / 2.0 : sorted_dists[mid];
+        s = temperature * median_dist + 1e-9;
+    }
+    
+    // Step 3: Generate fingerprints for each lipidome
+    vector<Array> fingerprints(n);
+    
+    for (int i = 0; i < n; ++i) {
+        Matrix* lip_matrix = lipidome_matrixes[i];
+        // lip_matrix structure: rows=lipids, cols=dims
+        
+        // per-lipidome abundance weights (fall back to uniform when absent)
+        Array uniform;
+        Array& weights = (i < (int)lipidome_weights.size() && lipidome_weights[i])
+                         ? *lipidome_weights[i] : uniform;
+        
+        // Generate the fingerprint directly into the output slot (no copy).
+        lip_matrix->generate_fingerprint(centers, weights, fingerprints[i], s, soft);
+    }
+    
+    // Step 4: Compute pairwise JSD distances
+    this->reset(n, n);
+    
+    #pragma omp parallel for
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            double dist = hellinger_distance(fingerprints[i], fingerprints[j]);
+            (*this)(i, j) = dist;
+            (*this)(j, i) = dist;
+        }
+        (*this)(i, i) = 0.0;  // Distance to self is 0
+    }
 }

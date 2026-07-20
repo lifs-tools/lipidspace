@@ -11,6 +11,7 @@
 #include <numeric>
 #include <algorithm>
 #include <utility>
+#include <random>
 #include "lambda_lanczos_util.hpp"
 #include "lambda_lanczos_tridiagonal.hpp"
 
@@ -49,35 +50,67 @@ inline auto eigenvector(const std::vector<T>& alpha,
  *
  * "Partially specialization of function" is not allowed,
  * so here it is mimicked by wrapping the "init" function with a class template.
+ *
+ * Uses Mersenne Twister RNG with configurable seed for reproducible behavior.
  */
 template <typename T>
 struct VectorRandomInitializer {
 public:
+  static unsigned long seed;
+
   /**
    * @brief Initialize given vector randomly in the range of [-1, 1].
    *
    * For complex type, the real and imaginary part of each element will be initialized in
    * the range of [-1, 1].
    */
-  static void init(std::vector<T>& v){
-    size_t n = v.size();
-    for(size_t i = 0; i < n; ++i) {
-      v[i] = 1;
+  static void init(std::vector<T>& v) {
+    std::mt19937 gen(seed);
+    std::uniform_real_distribution<double> dis(-1.0, 1.0);
+    for(size_t i = 0; i < v.size(); ++i) {
+      v[i] = static_cast<T>(dis(gen));
     }
   }
+
+  /**
+   * @brief Set the global random seed for reproducible initialization.
+   * @param s The seed value to use.
+   */
+  static void set_seed(unsigned long s) {
+    seed = s;
+  }
 };
+
+// Default seed for reproducible behavior
+template <typename T>
+unsigned long VectorRandomInitializer<T>::seed = 42;
 
 
 template <typename T>
 struct VectorRandomInitializer<std::complex<T>> {
 public:
+  static unsigned long seed;
+
   static void init(std::vector<std::complex<T>>& v) {
-    size_t n = v.size();
-    for(size_t i = 0; i < n; ++i) {
-      v[i] = std::complex<T>(1, 1);
+    std::mt19937 gen(seed);
+    std::uniform_real_distribution<T> dis(-1.0, 1.0);
+    for(size_t i = 0; i < v.size(); ++i) {
+      v[i] = std::complex<T>(dis(gen), dis(gen));
     }
   }
+
+  /**
+   * @brief Set the global random seed for reproducible initialization.
+   * @param s The seed value to use.
+   */
+  static void set_seed(unsigned long s) {
+    seed = s;
+  }
 };
+
+// Default seed for reproducible behavior
+template <typename T>
+unsigned long VectorRandomInitializer<std::complex<T>>::seed = 42;
 
 
 /**
