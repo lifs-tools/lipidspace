@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LipidSpace Atlas — Design Sketch</title>
+<style>
+  :root {
+    --paper:   #f5f7f6;
+    --surface: #ffffff;
+    --surface-2: #eef2f1;
+    --ink:     #16201f;
+    --muted:   #576462;
+    --faint:   #7d8a88;
+    --line:    #dce3e1;
+    --line-strong: #c4cecb;
+    --accent:  #0c7480;
+    --accent-strong: #094f58;
+    --accent-wash: #e2f0f1;
+    --amber:   #b0521f;
+    --amber-wash: #f6e9e0;
+    --good:    #2f7d4f;
+    --shadow:  0 1px 2px rgba(20,32,31,.05), 0 8px 24px -12px rgba(20,32,31,.18);
+
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+    --measure: 70ch;
+    --wide: 1040px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:   #0d1413;
+      --surface: #131c1b;
+      --surface-2: #182322;
+      --ink:     #e7ece9;
+      --muted:   #9aa8a5;
+      --faint:   #77857f;
+      --line:    #24302e;
+      --line-strong: #33423f;
+      --accent:  #40b8c4;
+      --accent-strong: #7ad6de;
+      --accent-wash: #10312f;
+      --amber:   #e0925c;
+      --amber-wash: #2c2018;
+      --good:    #63c088;
+      --shadow:  0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #0d1413;
+    --surface: #131c1b;
+    --surface-2: #182322;
+    --ink:     #e7ece9;
+    --muted:   #9aa8a5;
+    --faint:   #77857f;
+    --line:    #24302e;
+    --line-strong: #33423f;
+    --accent:  #40b8c4;
+    --accent-strong: #7ad6de;
+    --accent-wash: #10312f;
+    --amber:   #e0925c;
+    --amber-wash: #2c2018;
+    --good:    #63c088;
+    --shadow:  0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"] {
+    --paper:   #f5f7f6;
+    --surface: #ffffff;
+    --surface-2: #eef2f1;
+    --ink:     #16201f;
+    --muted:   #576462;
+    --faint:   #7d8a88;
+    --line:    #dce3e1;
+    --line-strong: #c4cecb;
+    --accent:  #0c7480;
+    --accent-strong: #094f58;
+    --accent-wash: #e2f0f1;
+    --amber:   #b0521f;
+    --amber-wash: #f6e9e0;
+    --good:    #2f7d4f;
+    --shadow:  0 1px 2px rgba(20,32,31,.05), 0 8px 24px -12px rgba(20,32,31,.18);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ---- top bar ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+    padding: .7rem clamp(1rem, 4vw, 2.5rem);
+    background: color-mix(in srgb, var(--paper) 86%, transparent);
+    backdrop-filter: saturate(1.4) blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .wordmark { font-family: var(--font-mono); font-size: .82rem; letter-spacing: .04em; display: flex; align-items: baseline; gap: .5ch; }
+  .wordmark b { color: var(--ink); font-weight: 600; }
+  .wordmark .sep { color: var(--faint); }
+  .wordmark .mark { color: var(--accent); font-weight: 600; }
+  .theme-toggle {
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .03em;
+    color: var(--muted); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 6px; padding: .34rem .6rem; cursor: pointer;
+  }
+  .theme-toggle:hover { border-color: var(--line-strong); color: var(--ink); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- layout ---- */
+  main { padding: 0 clamp(1rem, 4vw, 2.5rem) 6rem; }
+  .col { max-width: var(--measure); margin-inline: auto; }
+  .wide { max-width: var(--wide); margin-inline: auto; }
+
+  header.hero { max-width: var(--wide); margin: clamp(2.2rem, 6vw, 4.5rem) auto clamp(1.5rem, 4vw, 2.5rem); }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: .74rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 1rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.05; margin: 0 0 1rem;
+    font-weight: 650; letter-spacing: -.02em; text-wrap: balance; max-width: 20ch;
+  }
+  .hero .lede { font-size: clamp(1.05rem, 2.2vw, 1.28rem); color: var(--muted); margin: 0; max-width: 60ch; text-wrap: pretty; }
+  .hero .meta {
+    font-family: var(--font-mono); font-size: .74rem; color: var(--faint);
+    letter-spacing: .02em; margin-top: 1.6rem; display: flex; flex-wrap: wrap; gap: .4rem 1.4rem;
+    border-top: 1px solid var(--line); padding-top: 1rem;
+  }
+  .hero .meta span b { color: var(--muted); font-weight: 600; }
+
+  section { margin-top: clamp(2.6rem, 6vw, 4rem); }
+  h2 {
+    font-size: 1.5rem; line-height: 1.15; letter-spacing: -.015em; font-weight: 640;
+    margin: 0 0 .3rem; text-wrap: balance;
+  }
+  h2 .num { font-family: var(--font-mono); font-size: .82rem; color: var(--accent); font-weight: 600; margin-right: .7ch; letter-spacing: 0; }
+  h3 { font-size: 1.08rem; font-weight: 640; letter-spacing: -.01em; margin: 2rem 0 .3rem; }
+  .section-intro { color: var(--muted); margin: .2rem 0 1.4rem; }
+  p { margin: 0 0 1rem; }
+  p, li { text-wrap: pretty; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  strong { font-weight: 640; }
+  code {
+    font-family: var(--font-mono); font-size: .86em;
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 5px; padding: .08em .38em;
+  }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.3rem; }
+  li { margin-bottom: .45rem; }
+  li::marker { color: var(--faint); }
+
+  /* ---- callouts ---- */
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    background: var(--surface); border-radius: 8px;
+    padding: 1rem 1.2rem; margin: 1.4rem 0; box-shadow: var(--shadow);
+  }
+  .callout.rec { border-left-color: var(--accent); }
+  .callout.warn { border-left-color: var(--amber); }
+  .callout .k {
+    font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--accent); display: block; margin-bottom: .4rem;
+  }
+  .callout.warn .k { color: var(--amber); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ---- diagram: lanes of nodes ---- */
+  .diagram {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.4rem; margin: 1.6rem 0; box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  .lane { margin-bottom: 1.4rem; }
+  .lane:last-child { margin-bottom: 0; }
+  .lane-label {
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--faint); margin-bottom: .7rem;
+    display: flex; align-items: center; gap: .6ch;
+  }
+  .lane-label .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .lane-label.offline .dot { background: var(--amber); }
+  .flow { display: flex; align-items: stretch; gap: .5rem; flex-wrap: wrap; min-width: min-content; }
+  .node {
+    flex: 1 1 0; min-width: 150px;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px;
+    padding: .7rem .8rem;
+  }
+  .node.accent { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: var(--accent-wash); }
+  .node .t { font-weight: 640; font-size: .92rem; display: block; margin-bottom: .15rem; }
+  .node .d { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+  .node code { font-size: .72rem; background: transparent; border: 0; padding: 0; color: var(--accent-strong); }
+  .arrow { align-self: center; color: var(--faint); font-size: 1.1rem; flex: 0 0 auto; padding: 0 .1rem; }
+
+  .boundary {
+    display: flex; align-items: center; gap: .7ch;
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .08em;
+    color: var(--faint); text-transform: uppercase;
+    margin: 1.2rem 0;
+  }
+  .boundary::before, .boundary::after { content: ""; height: 1px; background: var(--line-strong); flex: 1; }
+
+  /* ---- steps ---- */
+  ol.steps { list-style: none; padding: 0; counter-reset: step; margin: 1.4rem 0; }
+  ol.steps > li {
+    position: relative; padding: .1rem 0 1.1rem 3rem; margin: 0;
+    border-left: 1px solid var(--line); margin-left: 1rem;
+  }
+  ol.steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  ol.steps > li::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: -0.85rem; top: 0;
+    width: 1.7rem; height: 1.7rem; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--accent); color: var(--accent);
+    font-family: var(--font-mono); font-size: .78rem; font-weight: 600;
+    display: grid; place-items: center;
+  }
+  ol.steps > li.opt::before { border-color: var(--amber); color: var(--amber); border-style: dashed; }
+  ol.steps .st { font-weight: 640; }
+  ol.steps .sd { color: var(--muted); font-size: .93rem; }
+
+  /* ---- tables ---- */
+  .table-wrap { overflow-x: auto; margin: 1.4rem 0; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; background: var(--surface); }
+  th, td { text-align: left; padding: .7rem .9rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono); font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--faint); font-weight: 600; background: var(--surface-2);
+    position: sticky; top: 0;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td code, th code { font-size: .8rem; }
+  td.mono, .num-cell { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .tag { font-family: var(--font-mono); font-size: .68rem; padding: .1rem .45rem; border-radius: 5px; letter-spacing: .02em; white-space: nowrap; }
+  .tag.ls { background: var(--accent-wash); color: var(--accent-strong); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+  .tag.lc { background: var(--amber-wash); color: var(--amber); border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent); }
+
+  /* ---- api list ---- */
+  .api { display: grid; gap: .6rem; margin: 1.4rem 0; }
+  .api .ep {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 9px;
+    padding: .8rem 1rem; display: grid; grid-template-columns: auto 1fr; gap: .2rem 1rem; align-items: baseline;
+  }
+  .api .sig { font-family: var(--font-mono); font-size: .82rem; }
+  .api .verb { color: var(--good); font-weight: 600; }
+  .api .path { color: var(--ink); }
+  .api .desc { color: var(--muted); font-size: .9rem; grid-column: 2; }
+  .api .ctx { grid-column: 1; }
+
+  /* ---- phases ---- */
+  .phase {
+    display: grid; grid-template-columns: auto 1fr; gap: 0 1.2rem;
+    padding: 1.1rem 0; border-top: 1px solid var(--line);
+  }
+  .phase:first-of-type { border-top: 0; }
+  .phase .pn {
+    font-family: var(--font-mono); font-size: .8rem; font-weight: 600; color: var(--accent);
+    background: var(--accent-wash); border-radius: 7px; padding: .3rem .55rem; height: max-content;
+    white-space: nowrap;
+  }
+  .phase .pt { font-weight: 640; margin: 0 0 .2rem; }
+  .phase .pg { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+  .phase p { margin: .35rem 0 0; color: var(--muted); font-size: .95rem; }
+
+  /* ---- decision ledger ---- */
+  .ledger { display: grid; gap: .55rem; margin: 1.2rem 0; }
+  .ledger .row {
+    display: grid; grid-template-columns: auto 1fr; gap: .1rem .9rem; align-items: baseline;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .7rem .9rem;
+  }
+  .ledger .row .state {
+    font-family: var(--font-mono); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase;
+    padding: .16rem .5rem; border-radius: 20px; height: max-content; white-space: nowrap;
+  }
+  .ledger .row.set .state { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); border: 1px solid color-mix(in srgb, var(--good) 34%, transparent); }
+  .ledger .row.open .state { background: var(--amber-wash); color: var(--amber); border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent); }
+  .ledger .row.future .state { background: var(--surface-2); color: var(--faint); border: 1px solid var(--line-strong); }
+  .ledger .row .what { font-weight: 640; font-size: .95rem; }
+  .ledger .row .how { grid-column: 2; color: var(--muted); font-size: .9rem; }
+
+  .footnote { color: var(--faint); font-size: .82rem; border-top: 1px solid var(--line); margin-top: 3rem; padding-top: 1rem; }
+  .footnote a { color: var(--muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .node, .callout, .phase, .ledger .row { transition: border-color .2s ease; }
+  }
+  @media (max-width: 560px) {
+    .api .ep { grid-template-columns: 1fr; }
+    .api .desc, .api .ctx { grid-column: 1; }
+    .phase, .ledger .row { grid-template-columns: 1fr; gap: .5rem; }
+    .ledger .row .how { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="wordmark"><b>LipidSpace</b> <span class="sep">/</span> <span class="mark">Atlas</span></div>
+    <button class="theme-toggle" id="tt" type="button" aria-label="Toggle colour theme">◐ theme</button>
+  </div>
+
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Design sketch · engine-side extension</p>
+      <h1>A structural background model for lipidome retrieval</h1>
+      <p class="lede">A fixed structure-aware embedding of lipids, a shared vocabulary of structural modules, and a fixed-length fingerprint per lipidome — so any lipidome, from the database or a single upload, can be placed among all the others in one query, incrementally, without recomputing the world.</p>
+      <div class="meta">
+        <span><b>Owner</b> LipidSpace (C++/Qt + REST)</span>
+        <span><b>Consumer</b> LipidCompass (ArangoDB)</span>
+        <span><b>Corpus</b> ~150 datasets · human/mouse · plasma/brain-biased</span>
+        <span><b>Gate</b> leave-one-dataset-out metadata recovery</span>
+        <span><b>Status</b> Phase 0 validated — GO</span>
+      </div>
+    </header>
+
+    <div class="col">
+
+      <section id="summary">
+        <h2><span class="num">01</span>What this is, in one paragraph</h2>
+        <p>LipidSpace today derives a lipid embedding by PCA over the lipid&times;lipid Tanimoto distance matrix of <em>the current analysis</em> (<code>compute_global_distance_matrix</code>, <code>cols_for_pca = 7</code>), compares lipidomes by <strong>Hausdorff distance</strong> between the resulting point clouds, and clusters them. That is accurate but batch: adding one lipidome can shift the PCA frame, invalidating every coordinate, every pairwise Hausdorff distance, and the dendrogram — the O(L²)+O(N²) recompute you already know as "exceedingly slow, not incremental."</p>
+        <p>The Atlas keeps LipidSpace's structural lipid distance but <strong>freezes the coordinate frame once</strong> over a reference lipid universe, defines a shared vocabulary of <strong>K structural modules</strong> in that frame, and represents each lipidome as a <strong>fixed-length compositional fingerprint</strong> over those modules. Fingerprints are independent of one another, so placing a new lipidome costs the size of that one lipidome plus an index lookup — never a global recompute. Hausdorff is retained as an exact re-ranking step over a short candidate list, not as the primary index.</p>
+        <div class="callout rec">
+          <span class="k">Recommendation</span>
+          <p>Build it entirely inside LipidSpace and expose it over the existing REST service. LipidSpace owns every primitive this needs — cppgoslin parsing, the Tanimoto distance, the Lanczos PCA, the Hausdorff kernel. Keeping it here yields a self-contained, publishable feature and avoids a LipidSpace&rarr;LipidCompass dependency. LipidCompass becomes a <em>consumer</em>: it persists fingerprints and metadata, and calls the Atlas endpoints.</p>
+        </div>
+        <div class="callout">
+          <span class="k">Decisions recorded in this revision</span>
+          <p>Lipid distance = LipidSpace Tanimoto. Frame &amp; module vocabulary built from <strong>SwissLipids as structural support</strong>; resolution and weighting calibrated from <strong>observed data as the measure</strong>. K is an output of class-stratified adaptive splitting to a resolution ε. Class-based module distinction accepted biochemically, with a pathway/hop-distance correction noted for later. Cadence separates frequent incremental adds from rare versioned refits. The validation gate is leave-one-dataset-out on the ~150-dataset corpus. Full ledger in §12.</p>
+        </div>
+      </section>
+
+      <section id="decision">
+        <h2><span class="num">02</span>Where the logic lives</h2>
+        <p class="section-intro">The capability lives in LipidSpace so it ships as a standalone, publishable feature with no dependency back into LipidCompass. Here is the boundary.</p>
+      </section>
+    </div>
+
+    <div class="wide">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Concern</th><th>LipidSpace (engine)</th><th>LipidCompass (data + app)</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Frozen lipid frame</strong><br><span class="tag ls">core science</span></td>
+              <td>Fit once from SwissLipids + observed lipids; project new lipids in. Reuses <code>Matrix::PCA</code> + Tanimoto.</td>
+              <td>Supplies the observed-lipid set that weights the frame.</td>
+            </tr>
+            <tr>
+              <td><strong>Module vocabulary (K)</strong><br><span class="tag ls">core science</span></td>
+              <td>Adaptive split over the frozen frame to a resolution ε; serialized in the atlas artifact.</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><strong>Fingerprint computation</strong><br><span class="tag ls">core science</span></td>
+              <td>Names &rarr; project &rarr; module assignment &rarr; normalized histogram. The interchange contract.</td>
+              <td>Receives / stores fingerprints as vectors (sample- and dataset-level).</td>
+            </tr>
+            <tr>
+              <td><strong>Nearest-lipidome retrieval</strong><br><span class="tag ls">built-in</span> <span class="tag lc">or DB-native</span></td>
+              <td>Brute-force cosine now; optional FAISS index later. Fully portable.</td>
+              <td>Alternatively store fingerprints in ArangoDB and query with its vector index (FAISS/IVF).</td>
+            </tr>
+            <tr>
+              <td><strong>Metadata &amp; controlled vocab</strong><br><span class="tag lc">data owner</span></td>
+              <td>Consumes labels for reporting; does not own them.</td>
+              <td>Species / tissue / disease / cell type via NCBITaxon, UBERON, MONDO, CL.</td>
+            </tr>
+            <tr>
+              <td><strong>Persistence of the atlas</strong><br><span class="tag lc">data owner</span></td>
+              <td>Emits a versioned, portable artifact bundle.</td>
+              <td>Stores bundle + per-sample and per-dataset fingerprints; serves the app.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="callout">
+        <span class="k">Interchange contract</span>
+        <p>The <strong>fingerprint vector</strong> (length K, normalized) plus the <strong>atlas version id</strong> are the only things that cross the boundary. That single decision makes the index pluggable: LipidSpace can answer <code>/fit</code> self-contained for the paper, and LipidCompass can also do ANN natively in ArangoDB against the same vectors — no duplicated science, no circular dependency.</p>
+      </div>
+
+      <section id="architecture">
+        <h2><span class="num">03</span>Architecture</h2>
+        <p class="section-intro">One expensive offline build produces three fixed artifacts. Everything online reads them and never writes back to them.</p>
+      </section>
+    </div>
+
+    <div class="wide">
+      <div class="diagram" role="img" aria-label="Offline build produces three fixed artifacts; the online query path reads them to fingerprint and place a lipidome.">
+        <div class="lane">
+          <div class="lane-label offline"><span class="dot"></span>Offline · build once per atlas version</div>
+          <div class="flow">
+            <div class="node"><span class="t">Reference lipids</span><span class="d">SwissLipids + LIPID MAPS COMP_DB support + observed lipids, parsed via cppgoslin</span></div>
+            <span class="arrow" aria-hidden="true">▸</span>
+            <div class="node"><span class="t">Tanimoto matrix</span><span class="d">L&times;L structural distance, <code>1 − inter/union</code></span></div>
+            <span class="arrow" aria-hidden="true">▸</span>
+            <div class="node"><span class="t">Lanczos PCA</span><span class="d">Freeze frame → lipid coordinates (d swept, ≥7)</span></div>
+            <span class="arrow" aria-hidden="true">▸</span>
+            <div class="node"><span class="t">Adaptive split</span><span class="d">per-class modules to resolution ε, freq-weighted</span></div>
+          </div>
+        </div>
+
+        <div class="boundary">three fixed artifacts</div>
+
+        <div class="lane">
+          <div class="flow">
+            <div class="node accent"><span class="t">① Frozen frame</span><span class="d">lipid → coordinate table + Nyström projector for unseen lipids</span></div>
+            <div class="node accent"><span class="t">② Module vocabulary</span><span class="d">K centroids, the shared "codebook"</span></div>
+            <div class="node accent"><span class="t">③ Reference fingerprints</span><span class="d">every background lipidome + optional ANN index + dataset map</span></div>
+          </div>
+        </div>
+
+        <div class="boundary">read-only</div>
+
+        <div class="lane">
+          <div class="lane-label"><span class="dot"></span>Online · per query lipidome</div>
+          <div class="flow">
+            <div class="node"><span class="t">Parse + project</span><span class="d">names → coordinates in the frozen frame</span></div>
+            <span class="arrow" aria-hidden="true">▸</span>
+            <div class="node"><span class="t">Fingerprint</span><span class="d">assign to modules → normalized histogram</span></div>
+            <span class="arrow" aria-hidden="true">▸</span>
+            <div class="node"><span class="t">Retrieve</span><span class="d">cosine / JSD vs reference → top-k neighbours</span></div>
+            <span class="arrow" aria-hidden="true">▸</span>
+            <div class="node"><span class="t">Re-rank + place</span><span class="d">exact Hausdorff on top-k; map coordinates</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+
+      <section id="fingerprint">
+        <h2><span class="num">04</span>Modules &amp; the fingerprint</h2>
+
+        <h3>The module vocabulary and its resolution</h3>
+        <p>Modules are the shared codebook: K structural neighbourhoods in the frozen frame, computed once. Two data sources play distinct, non-interchangeable roles.</p>
+        <ul>
+          <li><strong>Support — SwissLipids + LIPID MAPS COMP_DB.</strong> Build the frame and modules over the union of two enumerated combinatorial databases, so coverage spans structural space evenly and a new upload rarely falls outside it. LIPID MAPS COMP_DB (a flat TSV of 64,891 species across 163 classes: <code>headgroup, abbrev, mass, formula, chain_type</code>, generated from <em>commonly occurring</em> acyl/alkyl chains) is the biologically-tempered core — the common-chain basis bakes the "ignore rare combinations" principle into the support itself, not only into the frequency weighting — while SwissLipids adds breadth and finer isomeric resolution. Harmonize their class systems via goslin and bring both to a consistent resolution (species). Because each database's per-class species count ≈ that class's combinatorial isomer count, adaptive splitting hands each class modules in proportion to its structural richness — a triacylglycerol region earns many, a glycosphingolipid region few — with no hand-tuned per-class formula.</li>
+          <li><strong>Measure — observed data</strong> (Lipidome Projector reference + the LipidCompass corpus). Calibrate resolution here. Weight the SwissLipids points by observed frequency so rare enumerated combinations stay in the support (a query lipid can still land there) but never force a spurious module. <strong>Temper</strong> the weight — presence across datasets rather than raw abundance, or frequency<sup>α</sup> with a uniform floor — so resolution follows real data without collapsing in sparse regions; sweep the temper in Phase 0.</li>
+        </ul>
+        <p><strong>K is an output, not an input.</strong> Pick a target within-module structural spread ε and let each class split (x-means / g-means, or a hierarchical cut at height ε) until it reaches ε. The parameter-derived complexity score — chain count, carbon / double-bond / hydroxylation ranges, bond-type and branching modifiers, all already parsed by cppgoslin — serves as a <em>floor</em> for under-measured-but-combinatorially-rich classes and as a <em>diagnostic</em>: a class that is theoretically rich yet earns few modules is flagging under-sampling in the reference set. COMP_DB tabulates this score directly as its per-class species count — TG 10,480 ≫ the 2-chain glycerophospholipids at ~2,864 each ≫ complex glycosphingolipids at ~8 — so the floor is looked up, not estimated.</p>
+
+        <h3>From a lipidome to a vector</h3>
+        <p>For a lipidome with lipids <code>lᵢ</code> and normalized abundances <code>aᵢ</code>, and modules <code>k = 1..K</code>:</p>
+        <ul>
+          <li><strong>Hard assignment:</strong> <code>f[k] = Σ aᵢ</code> over lipids whose nearest centroid is <code>k</code>.</li>
+          <li><strong>Soft assignment (preferred):</strong> <code>f[k] = Σ aᵢ · wᵢₖ</code>, where <code>wᵢₖ</code> is a softmax over distances to the nearest few centroids. This blunts the boundary sensitivity that otherwise makes results swing with K.</li>
+          <li><strong>Normalize compositionally:</strong> scale <code>f</code> to sum to one; optionally centre-log-ratio transform so downstream cosine/Euclidean respects that the data is a composition, not counts.</li>
+        </ul>
+        <p>The result is a length-K vector, identical in shape for every lipidome regardless of which lipids it contains. Two lipidomes that share <em>no identical species</em> but distribute their mass into the same structural modules land close together — the structure-awareness that plain name overlap cannot give you.</p>
+
+        <h3>Two units: sample and dataset</h3>
+        <p>A dataset holds up to several hundred samples measured on one instrument and protocol, across one or more batches (consecutive MS runs), spanning treatments or sample groups, sometimes replicated. Fingerprint at the <strong>sample</strong> level for fine placement and aggregate to the <strong>dataset</strong> level for the background map. Collapse technical replicates before fingerprinting so they do not inflate apparent density. Multiple samples per dataset also make per-dataset eigenlipids concretely computable — see §08.</p>
+
+        <div class="callout">
+          <span class="k">Abundance, done right</span>
+          <p>LipidSpace currently injects intensity as an extra Hausdorff coordinate (<code>add_column(PCA_intensities)</code>). In the fingerprint, abundance is the histogram weight — its natural role — so quantitative and structural information combine cleanly instead of competing on one appended axis.</p>
+        </div>
+      </section>
+
+      <section id="fit">
+        <h2><span class="num">05</span>The "fit a new lipidome" operation</h2>
+        <p class="section-intro">Database entry or user upload — the path is identical, at the chosen unit (sample or dataset aggregate, §04). Steps 1–2 already exist in LipidSpace; only the middle is new.</p>
+        <ol class="steps">
+          <li><span class="st">Ingest &amp; parse.</span> <span class="sd">Read the lipidome from mzTab-M via the existing <code>load_mzTabM</code> import; parse names with cppgoslin at any nomenclature level.</span></li>
+          <li><span class="st">Project into the frozen frame.</span> <span class="sd">Known lipids read from the coordinate table; unseen lipids get Nyström-projected from their Tanimoto distances to the reference set, then cached.</span></li>
+          <li><span class="st">Compute the fingerprint.</span> <span class="sd">Soft-assign to modules, weight by normalized abundance, normalize.</span></li>
+          <li><span class="st">Retrieve neighbours.</span> <span class="sd">Cosine / Jensen–Shannon / Bray–Curtis against the reference fingerprints; brute-force now, ANN when the corpus is large.</span></li>
+          <li class="opt"><span class="st">Re-rank exactly (optional).</span> <span class="sd">Run the existing Hausdorff on the top-k candidates only, in the frozen frame — the validated measure, at O(k) not O(N).</span></li>
+          <li><span class="st">Place &amp; report.</span> <span class="sd">Project into the dataset-level map; return neighbours, distances, metadata, coordinates, and a confidence (distance threshold or permutation p-value) so out-of-distribution uploads say "no confident match." With this corpus that confidence is required, not optional — see §10.</span></li>
+        </ol>
+      </section>
+
+      <section id="complexity">
+        <h2><span class="num">06</span>What this buys — cost model</h2>
+      </section>
+    </div>
+
+    <div class="wide">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Operation</th><th>Atlas</th><th>Current LipidSpace</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Build the model</td><td class="num-cell">O(L²) Tanimoto + PCA + split, <em>once per version</em></td><td class="num-cell">— (implicit, every analysis)</td></tr>
+            <tr><td>Add a dataset (few-day cadence)</td><td class="num-cell">O(size) fingerprint + index insert, fixed vocabulary</td><td class="num-cell">O(L² + N²) full recompute</td></tr>
+            <tr><td>Refit frame + modules (rare)</td><td class="num-cell">rebuild + re-fingerprint corpus, O(N·size) linear</td><td class="num-cell">n/a</td></tr>
+            <tr><td>Fit / place one query</td><td class="num-cell">O(size) + O(log N) ANN <span style="color:var(--faint)">(+ O(k) Hausdorff)</span></td><td class="num-cell">O(N) new Hausdorff + re-embed</td></tr>
+            <tr><td>Coordinate stability</td><td class="num-cell">fixed within a version</td><td class="num-cell">shifts whenever lipids change</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col">
+      <section id="api">
+        <h2><span class="num">07</span>REST surface</h2>
+        <p class="section-intro">Extends <code>lipidspacerest.cpp</code>, alongside the existing <code>/lipidspace/v1/pca</code>. All model artifacts are addressed by an <code>atlas</code> version id for reproducibility.</p>
+        <div class="api">
+          <div class="ep">
+            <div class="sig ctx"><span class="verb">POST</span> <span class="path">/atlas/v1/build</span></div>
+            <div class="desc">Admin / offline. Reference lipids (SwissLipids + observed) → frozen frame + modules + reference fingerprints; emits the versioned artifact bundle.</div>
+          </div>
+          <div class="ep">
+            <div class="sig ctx"><span class="verb">POST</span> <span class="path">/atlas/v1/fingerprint</span></div>
+            <div class="desc">Lipidome (names + intensities) → length-K fingerprint, optionally with per-module eigenlipid summaries. Sample- or dataset-level.</div>
+          </div>
+          <div class="ep">
+            <div class="sig ctx"><span class="verb">POST</span> <span class="path">/atlas/v1/fit</span></div>
+            <div class="desc">Lipidome → nearest reference datasets, distances, map coordinates, metadata, and calibrated confidence / OOD flag.</div>
+          </div>
+          <div class="ep">
+            <div class="sig ctx"><span class="verb">GET</span> <span class="path">/atlas/v1/background</span></div>
+            <div class="desc">The global dataset map (fingerprint UMAP) + metadata, for the overview visualization.</div>
+          </div>
+          <div class="ep">
+            <div class="sig ctx"><span class="verb">POST</span> <span class="path">/atlas/v1/preserve</span></div>
+            <div class="desc">Optional. Module-preservation test for a multi-sample dataset — the functional/co-abundance similarity lens.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="eigenlipids">
+        <h2><span class="num">08</span>The Eigenlipid bridge</h2>
+        <p>Eigenlipids (WGCNA for lipids) group lipids into <em>modules</em> by <strong>co-abundance correlation across samples</strong> and summarize each with its first principal component. They overlap with this design on the "modules → fixed-length vector" mechanic but differ on the axis that matters: co-abundance modules are dataset-dependent and need many samples, so they cannot form a transferable background or fingerprint a single lipidome. Structure modules can. The two are complementary, and the design absorbs the eigenlipid idea rather than competing with it:</p>
+        <ul>
+          <li><strong>Structure-defined modules, eigenlipid summaries.</strong> Keep the fixed structural modules as the vocabulary; for datasets <em>with replicates</em>, additionally summarize each module by an eigenlipid (first PC of that module's abundance submatrix). This is now concretely feasible, not hypothetical — every dataset carries up to several hundred samples on a single protocol, exactly the within-dataset replication an eigenlipid needs. Where a dataset spans several batches, block on or regress out batch first so a module's first PC captures biology, not run-to-run drift. Single-sample queries fall back to the histogram.</li>
+          <li><strong>Two similarity lenses.</strong> Report structural/compositional similarity (fingerprint distance) and functional similarity (module preservation) side by side; disagreement is informative.</li>
+          <li><strong>A stated open problem.</strong> The 2026 review flags module transferability as a limitation and asks for new eigenlipid-generation strategies. Structure-informed module definition is a credible answer — a clean framing for the standalone LipidSpace publication.</li>
+        </ul>
+        <div class="callout warn">
+          <span class="k">Naming</span>
+          <p>Adopt the field's vocabulary: call the structural regions <strong>modules</strong>. It aligns with what lipidomics readers already know and makes the eigenlipid relationship explicit rather than incidental.</p>
+        </div>
+      </section>
+
+      <section id="operations">
+        <h2><span class="num">09</span>Operations &amp; reproducibility</h2>
+        <h3>Add vs refit — two cadences, not one</h3>
+        <p>The few-day cadence is <strong>adding data</strong>, not refitting the vocabulary. Adding a dataset: parse it, Nyström-project any new lipids into the existing frozen frame, assign to existing modules, fingerprint, insert into the index — cheap, incremental, and fingerprints stay comparable to everything already stored. <strong>Refitting</strong> the frame and modules (re-run Tanimoto + PCA + splitting over the grown universe) is a rare, deliberate version bump that re-fingerprints the whole corpus — only O(N·size), linear, but it breaks cross-version comparability, so reserve it for a slow cadence or a coverage-triggered event.</p>
+        <h3>Determinism</h3>
+        <p>A database and a paper both need deterministic results. Seed the splitting and any randomized projection; seed the Hausdorff sampler (<code>compute_hausdorff_distance</code> currently starts from <code>rand()</code>) if it is used in the re-rank. Stamp every result with the <code>atlas</code> version id, and treat a frame refit as a deliberate, announced version bump — never a silent side effect of new data.</p>
+      </section>
+
+      <section id="phase0">
+        <h2><span class="num">10</span>Phase 0 — corpus, protocol, gate</h2>
+        <p class="section-intro">The GO/NO-GO. It runs in Python, offline, against the existing corpus and the Hausdorff output you already trust — before any C++ is written.</p>
+
+        <h3>The corpus</h3>
+        <p>~150 datasets; each is one instrument and protocol carrying up to several hundred samples across one or more batches (consecutive MS runs) and across treatments or groups, sometimes replicated — and batch labels are only sometimes recorded. It is biased: human and mouse dominate species, blood plasma and brain dominate tissue. It is usable as a background <em>provided</em> the confidence handling and imbalance-aware validation below — and note the geometry itself is insulated from this bias because the frame and modules come from SwissLipids, not from observed frequency.</p>
+
+        <p>All ~150 datasets are available as <strong>mzTab-M</strong>, which LipidSpace already imports (<code>load_mzTabM</code>) for lipid names and per-assay quantities — so the ingest path exists on day one. mzTab-M's <code>ms_run</code> metadata is the natural source for the batch labels where they exist, and its <code>study_variable</code> entries carry the treatment/group structure; extending the current basic import to capture both is small and well-scoped.</p>
+
+        <h3>Nested technical structure: platform, batch, sample</h3>
+        <p>The technical hierarchy is dataset (one instrument and protocol) ⊃ batch (consecutive MS runs) ⊃ sample, and batch labels are only sometimes recorded. Two technical effects live at different levels. The <strong>platform/protocol effect</strong> is dataset-aligned — constant within a dataset, so perfectly confounded with dataset identity and not separable by design. The <strong>batch effect</strong> varies between runs <em>within</em> a dataset; where labelled it can be corrected before fingerprinting, and where not it is absorbed by compositional normalization and, for the primary gate, dwarfed by the plasma-vs-brain contrast. The central Phase 0 diagnostic remains <strong>cross-dataset tissue coherence</strong>: plasma from lab A should sit with plasma from lab B, not with brain from lab A. If dataset/platform identity dominates instead, the technical signal is winning, and compositional normalization plus a shared lipid-class vocabulary are needed before anything else.</p>
+
+        <h3>Protocol — leave-one-dataset-out, never leave-one-sample-out</h3>
+        <p>Hold out an entire dataset (all its samples), fingerprint it fresh against the remaining 149, and check whether its neighbours share its tissue and species. Holding out whole datasets is mandatory: samples within a dataset share the platform (and often a batch), so leave-one-sample-out would leak that technical signature and inflate the score. LODO reproduces the production "fit a new lipidome" operation exactly, and 150 datasets support it.</p>
+
+        <h3>Metrics — imbalance-robust, strong contrast first</h3>
+        <p>Aggregate accuracy is inflated by the human/plasma majority. Use balanced accuracy, macro-F1, and per-class recall, and report minority cells separately as under-powered. Make the primary gate the strong, well-populated contrast — <strong>tissue: plasma vs brain</strong>, whose lipid profiles are biochemically very different. Treat human-vs-mouse as a weak contrast (both mammals) and secondary.</p>
+
+        <h3>Confidence is required, not optional</h3>
+        <p>A biased background returns a confidently wrong nearest neighbour for any query unlike anything it holds — a plant, a rare tissue. Calibrate a distance-threshold / permutation OOD score in Phase 0 so "where does it fit" can answer "nothing close enough."</p>
+
+        <h3>Read Hausdorff as a check, the fingerprint as a floor</h3>
+        <p>Compute reference Hausdorff <em>in the frozen frame</em> and use agreement (Mantel / ARI) only as a consistency cross-check — it is a data-dependent, outlier-dominated, abundance-as-dimension measure, so disagreement may mean the fingerprint is behaving better. Metadata recovery via LODO is the gate. And structural-only fingerprints are a deliberate lower bound (the pathway term is deferred, §12), so read the numbers as a floor, not a ceiling.</p>
+
+        <h3>Sweep, and require a plateau</h3>
+        <p>Sweep ε, frame dimensionality d (7 was tuned for a single analysis; a support-scale frame likely needs more), hard-vs-soft assignment, the frequency temper, and the distance metric, and confirm the frame and modules are stable whether built on COMP_DB, SwissLipids, or their union — cross-database agreement is itself a robustness signal. Commit to an implementation only where results sit on a <strong>stable plateau</strong>, not a knife-edge optimum. If no plateau emerges, the structural fingerprint alone is insufficient and the pathway correction moves up the roadmap.</p>
+
+        <h3>First-run evidence — GO</h3>
+        <p>Run on the live corpus: 179 datasets (188 mzTab-M files, unit-harmonized to per-sample relative composition), one LipidSpace <code>/pca</code> call for the 2D frame and the 179×179 Hausdorff, then k-means modules + compositional fingerprints under leave-one-dataset-out. The fingerprint recovers tissue and species and separates the strong contrasts <strong>at least as well as LipidSpace's own Hausdorff</strong>, on a stable plateau (K = 20–50, soft assignment, JSD / Bray–Curtis).</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>LODO metric</th><th>random</th><th>Hausdorff (ceiling)</th><th>fingerprint</th></tr></thead>
+            <tbody>
+              <tr><td>tissue precision@5</td><td class="num-cell">0.09</td><td class="num-cell">0.24</td><td class="num-cell">0.30–0.36</td></tr>
+              <tr><td>species precision@5</td><td class="num-cell">0.29</td><td class="num-cell">0.47</td><td class="num-cell">0.53–0.58</td></tr>
+              <tr><td>plasma vs brain (bal-acc)</td><td class="num-cell">0.50</td><td class="num-cell">0.71</td><td class="num-cell">0.71–0.87</td></tr>
+              <tr><td>plasma vs liver (bal-acc)</td><td class="num-cell">0.50</td><td class="num-cell">0.50</td><td class="num-cell">0.70–0.85</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout warn">
+          <span class="k">Dimensionality tested — and ruled out</span>
+          <p>We added a <code>PcaDimensions</code> parameter to <code>/pca</code> and re-ran in 7D: results are unchanged (tissue p@5 0.29–0.35, plasma/brain 0.70–0.87), because <strong>83% of the frame's variance lives in the first two PCs</strong> and the Hausdorff ceiling was already computed internally in 7D. So dimensionality is <em>not</em> the ceiling — the remaining levers are class-stratified modules, explicit batch handling, and a richer lipid distance. Mantel agreement stays weak (0.11–0.32) because the fingerprint captures biology the Hausdorff misses. Full numbers and scripts in <code>docs/atlas-phase0/</code>.</p>
+        </div>
+      </section>
+
+      <section id="roadmap">
+        <h2><span class="num">11</span>Path to implementation</h2>
+        <div class="phase">
+          <div class="pn">0</div>
+          <div>
+            <div class="pg">prototype · python · offline</div>
+            <p class="pt">Validation harness</p>
+            <p>Leave-one-dataset-out retrieval on the 150-dataset corpus with imbalance-robust metrics; cross-dataset tissue coherence; OOD calibration; sweep of ε, d, assignment, temper, and metric. Decides the operating point on a stable plateau, and whether eigenlipids earn their place. GO/NO-GO gate.</p>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="pn">1</div>
+          <div>
+            <div class="pg">lipidspace · c++</div>
+            <p class="pt">Freeze the frame</p>
+            <p>Refactor <code>compute_global_distance_matrix</code> into fit-once + project (Nyström) over the SwissLipids-based support. Serialize artifacts ① and ②. No behaviour change to existing analyses.</p>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="pn">2</div>
+          <div>
+            <div class="pg">lipidspace · c++ + rest</div>
+            <p class="pt">Fingerprint + fit</p>
+            <p>Adaptive module vocabulary, sample- and dataset-level fingerprints, brute-force retrieval with OOD confidence, and the <code>/atlas</code> endpoints. Ingest reuses the existing mzTab-M import (<code>load_mzTabM</code>), extended to also capture <code>ms_run</code> (batch) and <code>study_variable</code> (group). LipidCompass begins consuming <code>/fit</code>.</p>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="pn">3</div>
+          <div>
+            <div class="pg">scale · lipidspace or arangodb</div>
+            <p class="pt">Index + map</p>
+            <p>ANN when the corpus grows (FAISS IVF in LipidSpace, or ArangoDB's IVF index over the same vectors) and the dataset-level UMAP map.</p>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="pn">4</div>
+          <div>
+            <div class="pg">enrichment</div>
+            <p class="pt">Eigenlipid lens</p>
+            <p>Per-module eigenlipid summaries from the multi-sample datasets and module-preservation as the second similarity lens.</p>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="pn">5</div>
+          <div>
+            <div class="pg">future</div>
+            <p class="pt">Pathway correction</p>
+            <p>Post-hoc pathway / hop-distance correction bridging structurally-distant but metabolically-adjacent lipids across classes — orthogonal to the structural modules. Left for future implementation.</p>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="pn">6</div>
+          <div>
+            <div class="pg">publication</div>
+            <p class="pt">Standalone LipidSpace update</p>
+            <p>Ship as an engine feature; position structure-informed modules as a new eigenlipid-generation strategy addressing the transferability limitation.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="decisions">
+        <h2><span class="num">12</span>Decision ledger</h2>
+        <p class="section-intro">What is settled, what Phase 0 must resolve, and what is deliberately deferred.</p>
+        <div class="ledger">
+          <div class="row set"><span class="state">settled</span><span class="what">Lipid distance</span><span class="how">LipidSpace's own Tanimoto (<code>1 − inter/union</code>). No SMILES, any nomenclature level, already in C++.</span></div>
+          <div class="row set"><span class="state">settled</span><span class="what">Frame &amp; module source</span><span class="how">SwissLipids + LIPID MAPS COMP_DB (common-chain, 64,891 species / 163 classes) as structural support, goslin-harmonized to species level; observed data as the measure that weights and resolves it.</span></div>
+          <div class="row set"><span class="state">settled</span><span class="what">Ingest format</span><span class="how">mzTab-M for all datasets and queries; reuses LipidSpace's existing <code>load_mzTabM</code>, extended to capture ms_run (batch) and study_variable (group).</span></div>
+          <div class="row set"><span class="state">settled</span><span class="what">K</span><span class="how">Output of class-stratified adaptive splitting to resolution ε; complexity score as floor and diagnostic.</span></div>
+          <div class="row set"><span class="state">settled</span><span class="what">Class-based modules</span><span class="how">Biochemically acceptable; cross-class kinship handled later by pathway correction, not structural cross-class modules.</span></div>
+          <div class="row set"><span class="state">settled</span><span class="what">Cadence</span><span class="how">Frequent incremental adds against a fixed vocabulary; rare, versioned frame/module refits.</span></div>
+          <div class="row set"><span class="state">settled</span><span class="what">Validation gate</span><span class="how">Leave-one-dataset-out metadata recovery, imbalance-robust, plasma/brain primary; Hausdorff is a check; commit on a plateau.</span></div>
+          <div class="row open"><span class="state">phase 0</span><span class="what">ε, d, assignment, temper, metric</span><span class="how">Pick the operating point on the stable plateau from the sweep.</span></div>
+          <div class="row open"><span class="state">phase 0</span><span class="what">Primary retrieval unit</span><span class="how">Sample-level vs dataset-level aggregate as the thing "where does it fit" retrieves.</span></div>
+          <div class="row open"><span class="state">phase 0</span><span class="what">Batch handling</span><span class="how">Platform is dataset-aligned; batch is sub-dataset and only partially labelled. Whether compositional normalization + shared vocabulary suffice, and where to apply batch correction when labels exist.</span></div>
+          <div class="row open"><span class="state">phase 3</span><span class="what">Build language for UMAP / FAISS</span><span class="how">C++ in-engine vs a thin offline Python builder — decide when scale demands it.</span></div>
+          <div class="row future"><span class="state">future</span><span class="what">Pathway / hop-distance correction</span><span class="how">A post-hoc correction relating metabolically-adjacent lipids across classes; noted, orthogonal to structural modules.</span></div>
+          <div class="row future"><span class="state">future</span><span class="what">Reference-frame refresh policy</span><span class="how">When and how often to bump the frame as SwissLipids and the corpus grow.</span></div>
+        </div>
+      </section>
+
+      <p class="footnote">Design sketch for discussion. Grounded in the current LipidSpace engine (<code>src/lipidspace.cpp</code>, <code>src/Matrix.cpp</code>, <code>src/hausdorff_cuda.cu</code>, <code>src/lipidspacerest.cpp</code>) and the Lipidome Projector embedding concept. Corpus: ~150 datasets, human/mouse and plasma/brain biased, each one instrument/protocol with up to several hundred samples. References: LIPID MAPS Computational Database (COMP_DB, 64,891 species / 163 classes) · SwissLipids · Eigenlipids review, J. Lipid Res. 2026 · WGCNA (Zhang &amp; Horvath, 2005) · ArangoDB vector index (FAISS/IVF, HNSW request <a href="https://github.com/arangodb/arangodb/issues/15614">#15614</a> open).</p>
+
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var btn = document.getElementById('tt');
+      var root = document.documentElement;
+      btn.addEventListener('click', function () {
+        var cur = root.getAttribute('data-theme');
+        if (!cur) {
+          cur = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        root.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+      });
+    })();
+  </script>
+</body>
+</html>
