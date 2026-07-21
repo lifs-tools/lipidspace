@@ -239,6 +239,37 @@ with the brute-force NN replaced by an ANN index (FAISS / ArangoDB IVF) over the
 vectors, and the frozen frame seeded from SwissLipids/COMP_DB support with Nyström projection of
 novel query lipids (currently a query's out-of-frame lipids are dropped; demo coverage = 1.0).
 
+## Support frame + Nystrom projection (C++)
+
+The Atlas frame can be seeded from a broad reference set so it outlives the measured corpus,
+and query/dataset lipids outside the frame are projected in rather than dropped.
+
+- **Nystrom out-of-sample projection**: the frame's PCA transform (per-column mean/inv-stdev of
+  the L×L Tanimoto matrix + sign-aligned eigenvectors) is captured at build and reproduces the
+  engine's frame coordinates to ~1e-12 (a build-time round-trip self-check). A novel lipid's
+  Tanimoto distance row to the reference lipids is scaled and projected through it. Fitting
+  held-out datasets with their full lipid lists projects exactly the out-of-frame lipids
+  (e.g. 23 of 272), keeps coverage at 1.0, and leaves predictions stable.
+
+- **Support frame** (`FrameOnlySamples`): a support pseudo-sample carrying SwissLipids / LIPID
+  MAPS species-level lipids (sent sparsely as a `FLAT_TABLE`) defines the frame but is excluded
+  from the stored datasets and calibration.
+
+  | Frame | Reference lipids | Frame size | Build | Round-trip | plasma-query confidence |
+  |---|---|---|---|---|---|
+  | Corpus only | - | 2,476 | ~7 s | - | 0.07-0.74 |
+  | + LIPID MAPS species | 3,159 | 4,786 | 24 s | 9.4e-13 | 0.22-0.76 |
+  | + SwissLipids ∪ LIPID MAPS | ~11k | 11,163 | 158 s (~4 GB peak) | 1.7e-12 | 0.52-0.75 |
+
+  The union frame (11,163 lipids) builds in ~2.6 min at ~4 GB, the transform stays exact at
+  scale, and the broader structural background raises confidence on correct matches. Out-of-frame
+  corpus lipids (~23/272) are Nystrom-projected regardless, so coverage stays 1.0.
+
+  Note: `capture_transform` currently recomputes the covariance + eigenvectors (a second PCA);
+  for large frames this roughly doubles the frame-build cost and could be avoided by capturing
+  the transform inside `run_analysis`'s PCA. Harnesses: `support_frame_build.py`,
+  `atlas_nystrom_test.py`.
+
 ## Files
 `ingest.py` (mzTab → relative profiles) · `lsclient.py` (LipidSpace frame + Hausdorff) ·
 `evaluate.py` (Python modules/fingerprints/metrics) · `cpp_eval.py` (C++ port validation via REST) · `batch_check.py` (batch-vs-biology) · `vocab_sweep.py` (shared-vocabulary sweep) · `weight_sweep.py` (rank/presence) · `wasserstein_check.py` (structural Wasserstein / centroid) · `ood_check.py` (confidence / OOD) · `class_modules.py` (class-stratified modules) · `atlas.py` / `atlas_build.py` / `atlas_fit.py` (incremental Atlas reference) · `corpus.json`, `lsresult.json`.
