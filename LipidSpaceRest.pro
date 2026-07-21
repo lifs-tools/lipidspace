@@ -10,6 +10,11 @@ QMAKE_CXXFLAGS += -std=c++17 -Wno-unknown-pragmas
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
+# Enable cpp-httplib transparent gzip (Content-Encoding / Accept-Encoding). Lets clients
+# store and exchange the Atlas artifact as gzipped JSON and shrinks all REST payloads.
+# Backward-compatible: httplib only (de)compresses when the peer opts in via the headers.
+DEFINES += CPPHTTPLIB_ZLIB_SUPPORT
+
 RC_ICONS = LipidSpace.ico
 
 # You can also make your code fail to compile if it uses deprecated APIs.
@@ -19,7 +24,7 @@ RC_ICONS = LipidSpace.ico
 
 unix:!macx {
     QMAKE_CXXFLAGS += -fopenmp
-    LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX" "-lssl" "-lcrypto"
+    LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX" "-lssl" "-lcrypto" "-lz"
 
     # Optional CUDA GPU acceleration (Ubuntu 24.04 x86_64, NVIDIA L4 or compatible).
     # Enable at configure time: qmake CONFIG+=cuda_gpu LipidSpaceRest.pro
@@ -68,6 +73,7 @@ macx {
     LIBS += -framework Accelerate
     LIBS += -L/opt/homebrew/opt/libomp/lib -lomp
     LIBS += -L/opt/homebrew/opt/openssl@3/lib -lssl -lcrypto
+    LIBS += -lz
     QMAKE_RPATHDIR += @executable_path/../Frameworks
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 14.0
 
