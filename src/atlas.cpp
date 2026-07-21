@@ -42,7 +42,8 @@ static double quantile_sorted(const vector<double> &sorted, double q) {
 }
 
 
-void Atlas::build(LipidSpace &ls, int K_, const string &label_variable_, bool soft_) {
+void Atlas::build(LipidSpace &ls, int K_, const string &label_variable_, bool soft_,
+                  const set<string> &frame_only) {
     soft = soft_;
     label_variable = label_variable_;
 
@@ -69,6 +70,7 @@ void Atlas::build(LipidSpace &ls, int K_, const string &label_variable_, bool so
     fingerprints.clear();
     meta.clear();
     for (auto lipidome : ls.selected_lipidomes) {
+        if (frame_only.count(lipidome->cleaned_name)) continue;   // frame-defining only
         Array fp;
         lipidome->m.generate_fingerprint(centers, lipidome->original_intensities, fp, bandwidth, soft);
         datasets.push_back(lipidome->cleaned_name);

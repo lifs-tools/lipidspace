@@ -579,10 +579,16 @@ public:
 
             int K = body.value("Modules", 20);
             string label_variable = body.value("LabelVariable", string());
+            set<string> frame_only;
+            if (body.contains("FrameOnlySamples") && body["FrameOnlySamples"].is_array()) {
+                for (auto &v : body["FrameOnlySamples"]) {
+                    if (v.is_string()) frame_only.insert(v.get<string>());
+                }
+            }
 
             Atlas atlas;
             try {
-                atlas.build(lipid_space, K, label_variable);
+                atlas.build(lipid_space, K, label_variable, true, frame_only);
             } catch (std::exception &e) {
                 res.status = 500; res.reason = string("Atlas build error: ") + e.what(); return;
             }

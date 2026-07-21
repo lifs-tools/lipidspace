@@ -4,6 +4,7 @@
 #include "lipidspace/Matrix.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -56,7 +57,11 @@ public:
     double roundtrip_error = 0.0;                // build self-check: max |reprojected - stored| coord
 
     // Build the atlas from a completed LipidSpace analysis (frame = global_lipidome->m).
-    void build(LipidSpace &ls, int K, const string &label_variable, bool soft = true);
+    // Samples in frame_only define the frame (their lipids enter the PCA space + modules)
+    // but are NOT stored as datasets or used for calibration -- used to seed a broad
+    // support frame (SwissLipids / LIPID MAPS) that outlives the measured corpus.
+    void build(LipidSpace &ls, int K, const string &label_variable, bool soft = true,
+               const set<string> &frame_only = set<string>());
 
     // Capture the frame's PCA transform from ls.global_distances for Nystrom projection.
     void capture_transform(LipidSpace &ls);

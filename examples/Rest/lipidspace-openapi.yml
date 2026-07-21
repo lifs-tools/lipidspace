@@ -435,6 +435,12 @@ paths:
                 - `Modules` (integer, default 20): number of k-means modules K.
                 - `LabelVariable` (string): a nominal study-variable name to use for the
                   majority-vote prediction at fit time (e.g. `"tissue"`).
+                - `FrameOnlySamples` (array of strings): sample names that define the frame
+                  (their lipids enter the PCA space and modules) but are excluded from the
+                  stored datasets and calibration. Use a support pseudo-sample carrying a broad
+                  reference set (SwissLipids / LIPID MAPS) to build a stable support frame that
+                  outlives the measured corpus. A sparse `FLAT_TABLE` is recommended for large
+                  reference sets.
 
                 Requires `Content-Type: application/json` and at least 3 lipid species.
             requestBody:
@@ -452,6 +458,9 @@ paths:
                                 Table: { type: string }
                                 Modules: { type: integer, default: 20 }
                                 LabelVariable: { type: string }
+                                FrameOnlySamples:
+                                    type: array
+                                    items: { type: string }
             responses:
                 "200":
                     description: Atlas built. Body is the atlas artifact (persist it for `/atlas/fit`).
