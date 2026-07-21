@@ -70,17 +70,23 @@ void Atlas::build(LipidSpace &ls, int K_, const string &label_variable_, bool so
     fingerprints.clear();
     meta.clear();
     for (auto lipidome : ls.selected_lipidomes) {
-        if (frame_only.count(lipidome->cleaned_name)) continue;   // frame-defining only
+        // Identify datasets and frame-only samples by the raw sample name (lipidome_name), NOT
+        // cleaned_name -- the latter carries a " - <file>" suffix from the loader (e.g. the REST
+        // temp file "table_file"), which would break caller-side joins on the sample name and stop
+        // FrameOnlySamples (passed as raw sample names) from matching. cleaned_name kept as a fallback.
+        if (frame_only.count(lipidome->lipidome_name) || frame_only.count(lipidome->cleaned_name))
+            continue;   // frame-defining only
         Array fp;
         lipidome->m.generate_fingerprint(centers, lipidome->original_intensities, fp, bandwidth, soft);
-        datasets.push_back(lipidome->cleaned_name);
+        datasets.push_back(lipidome->lipidome_name);
         fingerprints.push_back(fp);
 
         map<string, string> mv;
         for (auto &kv : lipidome->study_variables) {
-            if (kv.second.study_variable_type == NominalStudyVariable) {
-                mv[kv.first] = kv.second.nominal_value;
-            }
+            if (kv.first == FILE_STUDY_VARIABLE_NAME) continue;              // loader "Origin", not a label
+            if (kv.second.study_variable_type != NominalStudyVariable) continue;
+            if (NA_VALUES.count(kv.second.nominal_value)) continue;         // skip missing / NA labels
+            mv[kv.first] = kv.second.nominal_value;
         }
         meta.push_back(mv);
     }

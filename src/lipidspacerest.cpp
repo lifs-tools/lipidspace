@@ -669,7 +669,7 @@ public:
                 json r = project
                     ? atlas.fit_projected(lipid_space, lipidome, ref_lipids, k, label_vars)
                     : atlas.fit(lipidome->species, lipidome->original_intensities, k, label_vars);
-                r["query"] = lipidome->cleaned_name;
+                r["query"] = lipidome->lipidome_name;   // raw sample name (no " - <file>" suffix)
                 results.push_back(r);
             }
             for (auto &kv : ref_map) if (kv.second) delete kv.second;
