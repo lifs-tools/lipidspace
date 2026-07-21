@@ -125,6 +125,7 @@ SOURCES += \
     src/Matrix.cpp \
     src/AssistanceFunctions.cpp \
     src/lipidspace.cpp \
+    src/atlas.cpp \
     src/logging.cpp \
     src/lipidspacerest.cpp
 HEADERS += \
@@ -132,6 +133,7 @@ HEADERS += \
     lipidspace/Matrix.h \
     lipidspace/lipidspace.h \
     lipidspace/AssistanceFunctions.h \
+    lipidspace/atlas.h \
     lipidspace/matplotlibcpp.h \
     lipidspace/logging.h \
     libraries/cpp-httplib/httplib.h

@@ -18,12 +18,90 @@
 #include "lipidspace/AssistanceFunctions.h"
 #include "lipidspace/globaldata.h"
 #include "lipidspace/lipidspace.h"
+#include "lipidspace/atlas.h"
 #include "lipidspace/logging.h"
 
 using namespace std;
 using namespace httplib;
 
 vector<string> dict_keys{"TableType", "TableColumnTypes", "Table"};
+
+
+// Load a LipidSpace from a REST table spec (shared by /atlas/build and /atlas/fit).
+// Writes the table to dirPath, imports and parses it, and optionally runs the full
+// analysis (needed to freeze a frame; fit only needs the parsed query lipids).
+// Returns true on success; on failure sets res and returns false.
+static bool atlas_load_table(LipidSpace &ls, json &body, const QString &dirPath,
+                             bool do_run_analysis, Response &res) {
+    for (const char *key : {"TableType", "TableColumnTypes", "Table"}) {
+        if (!body.contains(key)) {
+            res.status = 400;
+            res.reason = string("Malformed JSON, missing key '") + key + "'";
+            return false;
+        }
+    }
+    if (!body["TableType"].is_string() || !body["TableColumnTypes"].is_array() || !body["Table"].is_string()) {
+        res.status = 400;
+        res.reason = "Malformed JSON, invalid table field types";
+        return false;
+    }
+    string tt = body["TableType"].get<string>();
+    if (TableTypeMap.find(tt) == TableTypeMap.end()) {
+        res.status = 400;
+        res.reason = "Malformed JSON, invalid TableType '" + tt + "'";
+        return false;
+    }
+    TableType table_type = TableTypeMap.at(tt);
+
+    vector<TableColumnType> *column_types = new vector<TableColumnType>();
+    for (auto &v : body["TableColumnTypes"]) {
+        if (!v.is_string() || TableColumnTypeMap.find(v.get<string>()) == TableColumnTypeMap.end()) {
+            delete column_types;
+            res.status = 400;
+            res.reason = "Malformed JSON, invalid TableColumnTypes entry";
+            return false;
+        }
+        column_types->push_back(TableColumnTypeMap.at(v.get<string>()));
+    }
+
+    QString table_file_name = dirPath + "/table_file.csv";
+    {
+        ofstream table_file(table_file_name.toStdString().c_str());
+        table_file << body["Table"].get<string>();
+        table_file.flush();
+    }
+
+    ls.ignore_unknown_lipids = true;
+    ls.ignore_doublette_lipids = true;
+
+    ImportData *import_data = 0;
+    try {
+        import_data = new ImportData(table_file_name.toStdString(), "", table_type, column_types);
+    } catch (LipidSpaceException &e) {
+        res.status = 400; res.reason = string("ImportData error: ") + e.what(); return false;
+    } catch (std::exception &e) {
+        res.status = 500; res.reason = string("ImportData error: ") + e.what(); return false;
+    }
+    try {
+        ls.load_table(import_data);
+    } catch (LipidSpaceException &e) {
+        delete import_data; res.status = 400; res.reason = string("load_table error: ") + e.what(); return false;
+    } catch (std::exception &e) {
+        delete import_data; res.status = 500; res.reason = string("load_table error: ") + e.what(); return false;
+    }
+    delete import_data;
+
+    if (do_run_analysis) {
+        try {
+            ls.run_analysis();
+        } catch (LipidSpaceException &e) {
+            res.status = 400; res.reason = string("analysis error: ") + e.what(); return false;
+        } catch (std::exception &e) {
+            res.status = 500; res.reason = string("analysis error: ") + e.what(); return false;
+        }
+    }
+    return true;
+}
 
 static qint64 dirSize(const QString &path)
 {
@@ -465,6 +543,107 @@ public:
                 res.status = 415;
                 res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
             }
+        });
+
+        // Build an Atlas: freeze a structural frame + modules, fingerprint every dataset,
+        // calibrate confidence, and return the portable atlas artifact as JSON.
+        svr.Post("/lipidspace/v1/atlas/build", [](const Request &req, Response &res){
+            if (req.get_header_value("Content-Type") != "application/json") {
+                res.status = 415;
+                res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
+                return;
+            }
+            QString callId = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
+            QString dirPath = QString::fromStdString(GlobalData::rest_temp_folder) + "/" + callId + "/";
+            if (!QDir().mkpath(dirPath)) {
+                res.status = 500;
+                res.reason = "Failed to create temporary directory";
+                return;
+            }
+            json body;
+            try {
+                body = json::parse(req.body);
+            } catch (std::exception &e) {
+                res.status = 400; res.reason = "Malformed JSON"; return;
+            }
+
+            LipidSpace lipid_space;
+            if (!atlas_load_table(lipid_space, body, dirPath, true, res)) return;
+
+            if (lipid_space.selected_lipidomes.size() < 1) {
+                res.status = 400; res.reason = "No lipidomes were provided for the atlas"; return;
+            }
+            if (lipid_space.global_lipidome->lipids.size() < 3) {
+                res.status = 400; res.reason = "Fewer than 3 lipids in total; cannot build a frame"; return;
+            }
+
+            int K = body.value("Modules", 20);
+            string label_variable = body.value("LabelVariable", string());
+
+            Atlas atlas;
+            try {
+                atlas.build(lipid_space, K, label_variable);
+            } catch (std::exception &e) {
+                res.status = 500; res.reason = string("Atlas build error: ") + e.what(); return;
+            }
+
+            json out;
+            atlas.to_json(out);
+            res.status = 200;
+            res.set_content(out.dump(), "application/json");
+        });
+
+        // Fit query lipidome(s) against a prebuilt Atlas: return nearest datasets, an
+        // optional predicted label, a calibrated confidence, an OOD flag, and frame coverage.
+        svr.Post("/lipidspace/v1/atlas/fit", [](const Request &req, Response &res){
+            if (req.get_header_value("Content-Type") != "application/json") {
+                res.status = 415;
+                res.reason = "Unsupported content type. Please use 'Content-Type=application/json'";
+                return;
+            }
+            QString callId = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
+            QString dirPath = QString::fromStdString(GlobalData::rest_temp_folder) + "/" + callId + "/";
+            if (!QDir().mkpath(dirPath)) {
+                res.status = 500;
+                res.reason = "Failed to create temporary directory";
+                return;
+            }
+            json body;
+            try {
+                body = json::parse(req.body);
+            } catch (std::exception &e) {
+                res.status = 400; res.reason = "Malformed JSON"; return;
+            }
+
+            if (!body.contains("Atlas") || !body["Atlas"].is_object()) {
+                res.status = 400; res.reason = "Malformed JSON, missing 'Atlas' object"; return;
+            }
+            Atlas atlas;
+            try {
+                atlas.from_json(body["Atlas"]);
+            } catch (std::exception &e) {
+                res.status = 400; res.reason = string("Invalid Atlas: ") + e.what(); return;
+            }
+
+            int k = body.value("NumNeighbors", 5);
+
+            LipidSpace lipid_space;
+            if (!atlas_load_table(lipid_space, body, dirPath, false, res)) return;
+
+            if (lipid_space.lipidomes.size() < 1) {
+                res.status = 400; res.reason = "No query lipidomes were provided"; return;
+            }
+
+            json results = json::array();
+            for (auto lipidome : lipid_space.lipidomes) {
+                json r = atlas.fit(lipidome->species, lipidome->original_intensities, k);
+                r["query"] = lipidome->cleaned_name;
+                results.push_back(r);
+            }
+            json out;
+            out["results"] = results;
+            res.status = 200;
+            res.set_content(out.dump(), "application/json");
         });
 
         svr.Get("/lipidspace/v1/openapi.yaml", [](const Request &, Response &res){

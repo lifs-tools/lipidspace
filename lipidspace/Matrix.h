@@ -1,3 +1,6 @@
+#ifndef MATRIX_H
+#define MATRIX_H
+
 #include "lipidspace/lambda_lanczos.hpp"
 #include "cppgoslin/cppgoslin.h"
 #include "nlohmann/json.hpp"
@@ -147,3 +150,5 @@ public:
 signals:
     void increment();
 };
+
+#endif /* MATRIX_H */

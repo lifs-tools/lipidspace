@@ -411,3 +411,161 @@ paths:
                         `application/json`.
                 "500":
                     description: Unexpected server-side error (e.g. analysis failure, I/O error).
+
+    /atlas/build:
+        post:
+            summary: Build an incremental Atlas from a set of lipidome datasets
+            operationId: postAtlasBuild
+            description: |
+                Freezes a structural **frame** (each lipid's PCA coordinates over the
+                Tanimoto lipid-distance space), fits **K** fixed k-means modules over that
+                frame, fingerprints every dataset (an abundance-weighted, compositionally
+                normalised histogram over the modules), and calibrates a confidence / OOD
+                threshold from the atlas's own nearest-neighbour distance distribution.
+
+                Returns the portable **atlas artifact** as JSON (`frame`, `centers`,
+                `datasets`, `fingerprints`, `meta`, `nn_ref`, calibration). The caller
+                persists it and passes it back to `/atlas/fit`. Building once is O(datasets);
+                a dataset can later be added by fingerprinting it alone (O(size)) — no
+                refit of the frame or modules is required.
+
+                The request reuses the `/pca` table fields (`TableType`, `TableColumnTypes`,
+                `Table`). Additional optional fields:
+
+                - `Modules` (integer, default 20): number of k-means modules K.
+                - `LabelVariable` (string): a nominal study-variable name to use for the
+                  majority-vote prediction at fit time (e.g. `"tissue"`).
+
+                Requires `Content-Type: application/json` and at least 3 lipid species.
+            requestBody:
+                required: true
+                content:
+                    "application/json":
+                        schema:
+                            type: object
+                            required: [TableType, TableColumnTypes, Table]
+                            properties:
+                                TableType: { type: string }
+                                TableColumnTypes:
+                                    type: array
+                                    items: { type: string }
+                                Table: { type: string }
+                                Modules: { type: integer, default: 20 }
+                                LabelVariable: { type: string }
+            responses:
+                "200":
+                    description: Atlas built. Body is the atlas artifact (persist it for `/atlas/fit`).
+                    content:
+                        "application/json":
+                            schema:
+                                type: object
+                                properties:
+                                    dims: { type: integer }
+                                    K: { type: integer }
+                                    bandwidth: { type: number }
+                                    ood_threshold: { type: number }
+                                    label_variable: { type: string }
+                                    frame:
+                                        type: object
+                                        additionalProperties:
+                                            type: array
+                                            items: { type: number }
+                                    centers:
+                                        type: array
+                                        items:
+                                            type: array
+                                            items: { type: number }
+                                    datasets:
+                                        type: array
+                                        items: { type: string }
+                                    fingerprints:
+                                        type: array
+                                        items:
+                                            type: array
+                                            items: { type: number }
+                                    meta:
+                                        type: array
+                                        items:
+                                            type: object
+                                            additionalProperties: { type: string }
+                                    nn_ref:
+                                        type: array
+                                        items: { type: number }
+                "400":
+                    description: Invalid request (bad table, fewer than 3 species, or no lipidomes).
+                "415":
+                    description: Unsupported content type. Use `application/json`.
+                "500":
+                    description: Unexpected server-side error.
+
+    /atlas/fit:
+        post:
+            summary: Fit query lipidome(s) against a prebuilt Atlas
+            operationId: postAtlasFit
+            description: |
+                Fingerprints one or more query lipidomes against a prebuilt atlas (passed
+                inline as `Atlas`) and returns, per query: the nearest datasets with their
+                metadata, an optional predicted label (majority vote over `LabelVariable`),
+                a **confidence** in `[0, 1]` (the fraction of atlas datasets whose nearest
+                neighbour is farther than this query's), an **`ood`** flag (nearest-neighbour
+                distance above the calibrated threshold), and **`coverage`** (the fraction of
+                query lipids that fell inside the frozen frame).
+
+                The query table reuses the `/pca` fields (`TableType`, `TableColumnTypes`,
+                `Table`). Additional fields:
+
+                - `Atlas` (object, required): an atlas artifact from `/atlas/build`.
+                - `NumNeighbors` (integer, default 5): neighbours to return / vote over.
+
+                Fitting is O(query size + datasets) and does not modify the atlas.
+            requestBody:
+                required: true
+                content:
+                    "application/json":
+                        schema:
+                            type: object
+                            required: [Atlas, TableType, TableColumnTypes, Table]
+                            properties:
+                                Atlas: { type: object }
+                                TableType: { type: string }
+                                TableColumnTypes:
+                                    type: array
+                                    items: { type: string }
+                                Table: { type: string }
+                                NumNeighbors: { type: integer, default: 5 }
+            responses:
+                "200":
+                    description: Fit succeeded.
+                    content:
+                        "application/json":
+                            schema:
+                                type: object
+                                properties:
+                                    results:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                query: { type: string }
+                                                prediction: { type: string }
+                                                vote: { type: number }
+                                                confidence: { type: number }
+                                                nn_distance: { type: number }
+                                                ood: { type: boolean }
+                                                coverage: { type: number }
+                                                neighbors:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            dataset: { type: string }
+                                                            distance: { type: number }
+                                                            metadata:
+                                                                type: object
+                                                                additionalProperties: { type: string }
+                "400":
+                    description: Invalid request (missing/invalid `Atlas`, bad table, or no query lipidomes).
+                "415":
+                    description: Unsupported content type. Use `application/json`.
+                "500":
+                    description: Unexpected server-side error.
