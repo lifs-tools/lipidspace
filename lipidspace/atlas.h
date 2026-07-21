@@ -11,6 +11,8 @@ using namespace std;
 using json = nlohmann::json;
 
 class LipidSpace;
+class Lipidome;
+class LipidAdduct;
 
 /**
  * Incremental Atlas: a frozen structural frame (lipid -> PCA coords), fixed k-means
@@ -42,15 +44,46 @@ public:
     vector<map<string, string>> meta;            // per dataset: nominal study variables
     vector<double> nn_ref;                        // sorted nearest-neighbour distances
 
+    // --- Nystrom out-of-sample projection (the frame's PCA transform) ---
+    // Lets a query lipid that is NOT already in the frame be projected into frame
+    // coordinates from its Tanimoto distance row to the reference lipids, instead of
+    // being dropped. frame coord[i][k] = sum_c eigenvectors(c,k) * z[i][c], where
+    // z[i][c] = (D[i][c] - col_mean[c]) * col_inv_stdev[c] is the column-scaled distance.
+    vector<string> ref_names;                    // reference (frame) lipids, distance-column order
+    vector<double> col_mean;                     // per-column mean of the L x L distance matrix
+    vector<double> col_inv_stdev;                // per-column inverse population stdev (Matrix::scale)
+    Matrix eigenvectors;                         // L x dims projection basis (column k = eigenvector k)
+    double roundtrip_error = 0.0;                // build self-check: max |reprojected - stored| coord
+
     // Build the atlas from a completed LipidSpace analysis (frame = global_lipidome->m).
     void build(LipidSpace &ls, int K, const string &label_variable, bool soft = true);
+
+    // Capture the frame's PCA transform from ls.global_distances for Nystrom projection.
+    void capture_transform(LipidSpace &ls);
+
+    // Project a novel lipid (given its Tanimoto distance row to the reference lipids)
+    // into frame coordinates via the captured transform.
+    void nystrom_project(const vector<double> &dist_row, vector<double> &coords_out) const;
 
     // Fingerprint a parsed query lipidome using the frozen frame + modules.
     bool fingerprint_query(const vector<string> &species, const Array &weights,
                            Array &out_fp, double &coverage);
 
+    // Fingerprint a query, projecting lipids not in the frame via Nystrom. ref_lipids are the
+    // parsed reference lipids (ref_names order); ls provides the Tanimoto lipid_similarity.
+    bool fingerprint_query_projected(LipidSpace &ls, Lipidome *query,
+                                     const vector<LipidAdduct*> &ref_lipids,
+                                     Array &out_fp, double &coverage, int &n_projected);
+
+    // Rank a query fingerprint: neighbours, prediction, confidence, OOD flag, coverage.
+    json rank(Array &fp, double coverage, int k);
+
     // Fit a query lipidome -> neighbours, prediction, confidence, OOD flag, coverage.
     json fit(const vector<string> &species, const Array &weights, int k);
+
+    // Fit with Nystrom projection of query lipids not already in the frame.
+    json fit_projected(LipidSpace &ls, Lipidome *query,
+                       const vector<LipidAdduct*> &ref_lipids, int k);
 
     void to_json(json &j);
     void from_json(json &j);

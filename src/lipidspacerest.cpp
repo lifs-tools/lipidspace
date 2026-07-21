@@ -634,12 +634,34 @@ public:
                 res.status = 400; res.reason = "No query lipidomes were provided"; return;
             }
 
+            // Parse the atlas reference lipids once, for Nystrom projection of any query
+            // lipids not already present in the frozen frame. A dedicated LipidSpace owns
+            // the parsed references (its all_lipids stays empty), so they free cleanly.
+            bool project = !atlas.ref_names.empty() && atlas.eigenvectors.rows > 0;
+            LipidSpace ref_ls;
+            vector<LipidAdduct*> ref_lipids;
+            map<string, LipidAdduct*> ref_map;
+            if (project) {
+                ref_ls.ignore_unknown_lipids = true;
+                ref_ls.ignore_doublette_lipids = true;
+                for (auto &name : atlas.ref_names) {
+                    LipidAdduct *rl = nullptr;
+                    try { rl = ref_ls.load_lipid(name, ref_map); }
+                    catch (std::exception &) { rl = nullptr; }
+                    ref_lipids.push_back(rl);
+                }
+            }
+
             json results = json::array();
             for (auto lipidome : lipid_space.lipidomes) {
-                json r = atlas.fit(lipidome->species, lipidome->original_intensities, k);
+                json r = project
+                    ? atlas.fit_projected(lipid_space, lipidome, ref_lipids, k)
+                    : atlas.fit(lipidome->species, lipidome->original_intensities, k);
                 r["query"] = lipidome->cleaned_name;
                 results.push_back(r);
             }
+            for (auto &kv : ref_map) if (kv.second) delete kv.second;
+
             json out;
             out["results"] = results;
             res.status = 200;

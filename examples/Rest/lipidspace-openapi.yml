@@ -508,8 +508,14 @@ paths:
                 metadata, an optional predicted label (majority vote over `LabelVariable`),
                 a **confidence** in `[0, 1]` (the fraction of atlas datasets whose nearest
                 neighbour is farther than this query's), an **`ood`** flag (nearest-neighbour
-                distance above the calibrated threshold), and **`coverage`** (the fraction of
-                query lipids that fell inside the frozen frame).
+                distance above the calibrated threshold), **`coverage`** (the fraction of query
+                lipids placed in the frame), and **`projected_lipids`** (how many were placed by
+                Nystrom out-of-sample projection rather than direct frame lookup).
+
+                Query lipids already present in the frozen frame are looked up directly; those
+                that are not are projected into frame coordinates from their Tanimoto distance
+                row to the reference lipids, so a query is no longer limited to the exact lipids
+                the atlas was built on.
 
                 The query table reuses the `/pca` fields (`TableType`, `TableColumnTypes`,
                 `Table`). Additional fields:
@@ -553,6 +559,7 @@ paths:
                                                 nn_distance: { type: number }
                                                 ood: { type: boolean }
                                                 coverage: { type: number }
+                                                projected_lipids: { type: integer }
                                                 neighbors:
                                                     type: array
                                                     items:

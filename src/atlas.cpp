@@ -97,6 +97,78 @@ void Atlas::build(LipidSpace &ls, int K_, const string &label_variable_, bool so
     }
     sort(nn_ref.begin(), nn_ref.end());
     ood_threshold = quantile_sorted(nn_ref, 0.95);
+
+    capture_transform(ls);
+}
+
+
+void Atlas::capture_transform(LipidSpace &ls) {
+    Lipidome *g = ls.global_lipidome;
+    Matrix &D = ls.global_distances;   // raw L x L Tanimoto distance matrix (pre-PCA)
+    int L = (int)g->species.size();
+    if (D.rows != L || D.cols != L || dims <= 0) {   // frame too small for a PCA transform
+        ref_names.clear(); col_mean.clear(); col_inv_stdev.clear();
+        eigenvectors.reset(0, 0); roundtrip_error = 0.0;
+        return;
+    }
+    ref_names = g->species;
+
+    // Per-column mean and inverse population stdev, matching Matrix::scale exactly.
+    col_mean.assign(L, 0.0);
+    col_inv_stdev.assign(L, 0.0);
+    for (int c = 0; c < L; ++c) {
+        double mean = 0.0;
+        for (int r = 0; r < L; ++r) mean += D(r, c);
+        mean /= (double)L;
+        double ss = 0.0;
+        for (int r = 0; r < L; ++r) ss += sq(mean - D(r, c));
+        col_mean[c] = mean;
+        col_inv_stdev[c] = sqrt((double)L / ss);
+    }
+
+    // Recompute the eigenvectors the same way run_analysis's PCA did (deterministic,
+    // seeded Lanczos), so they are consistent with the stored frame coords g->m.
+    Matrix Z(D);                 // copy the raw distances
+    Z.scale();                   // column z-transform (same as PCA)
+    Matrix cov;
+    Z.covariance_matrix(cov);    // cov = Z^T Z / (L-1), L x L
+    Array evals;
+    cov.compute_eigen_data(evals, eigenvectors, dims);   // eigenvectors: L x dims
+
+    // Sign-align each eigenvector so its projection reproduces the stored frame coords.
+    for (int k = 0; k < dims; ++k) {
+        double s = 0.0;
+        for (int i = 0; i < L; ++i) {
+            double proj = 0.0;
+            for (int c = 0; c < L; ++c) proj += eigenvectors.at(c, k) * Z.at(i, c);
+            s += proj * g->m.at(i, k);
+        }
+        if (s < 0.0) for (int c = 0; c < L; ++c) eigenvectors(c, k) = -eigenvectors.at(c, k);
+    }
+
+    // Round-trip self-check: reproject every reference lipid and compare to g->m.
+    roundtrip_error = 0.0;
+    for (int i = 0; i < L; ++i) {
+        for (int k = 0; k < dims; ++k) {
+            double proj = 0.0;
+            for (int c = 0; c < L; ++c) proj += eigenvectors.at(c, k) * Z.at(i, c);
+            roundtrip_error = max(roundtrip_error, fabs(proj - g->m.at(i, k)));
+        }
+    }
+}
+
+
+void Atlas::nystrom_project(const vector<double> &dist_row, vector<double> &coords_out) const {
+    int L = (int)ref_names.size();
+    coords_out.assign(dims, 0.0);
+    for (int k = 0; k < dims; ++k) {
+        double acc = 0.0;
+        for (int c = 0; c < L; ++c) {
+            double z = (dist_row[c] - col_mean[c]) * col_inv_stdev[c];
+            acc += eigenvectors.at(c, k) * z;
+        }
+        coords_out[k] = acc;
+    }
 }
 
 
@@ -123,16 +195,8 @@ bool Atlas::fingerprint_query(const vector<string> &species, const Array &weight
 }
 
 
-json Atlas::fit(const vector<string> &species, const Array &weights, int k) {
+json Atlas::rank(Array &fp, double coverage, int k) {
     json result;
-
-    Array fp;
-    double coverage = 0.0;
-    if (!fingerprint_query(species, weights, fp, coverage)) {
-        result["error"] = "no query lipids fell in the frozen frame";
-        result["coverage"] = coverage;
-        return result;
-    }
 
     int N = (int)fingerprints.size();
     vector<pair<double, int>> dist(N);
@@ -183,6 +247,88 @@ json Atlas::fit(const vector<string> &species, const Array &weights, int k) {
 }
 
 
+json Atlas::fit(const vector<string> &species, const Array &weights, int k) {
+    Array fp;
+    double coverage = 0.0;
+    if (!fingerprint_query(species, weights, fp, coverage)) {
+        json result;
+        result["error"] = "no query lipids fell in the frozen frame";
+        result["coverage"] = coverage;
+        return result;
+    }
+    return rank(fp, coverage, k);
+}
+
+
+bool Atlas::fingerprint_query_projected(LipidSpace &ls, Lipidome *query,
+                                        const vector<LipidAdduct*> &ref_lipids,
+                                        Array &out_fp, double &coverage, int &n_projected) {
+    int L = (int)ref_names.size();
+    int n_total = (int)query->species.size();
+    vector<vector<double>> coords_list;
+    vector<double> weights_list;
+    n_projected = 0;
+
+    for (int i = 0; i < n_total; ++i) {
+        double w = (i < (int)query->original_intensities.size()) ? query->original_intensities[i] : 1.0;
+        if (w <= 0) continue;
+
+        auto it = frame.find(query->species[i]);
+        if (it != frame.end()) {
+            coords_list.push_back(it->second);
+            weights_list.push_back(w);
+            continue;
+        }
+        // Not in the frame: Nystrom-project from its Tanimoto distance row to the references.
+        LipidAdduct *q = (i < (int)query->lipids.size()) ? query->lipids[i] : nullptr;
+        if (q == nullptr || ref_lipids.empty()) continue;
+
+        vector<double> dist_row(L);
+        for (int c = 0; c < L; ++c) {
+            if (ref_lipids[c] == nullptr) { dist_row[c] = 1.0; continue; }
+            int un = 0, in = 0;
+            ls.lipid_similarity(q, ref_lipids[c], un, in);
+            dist_row[c] = (un > 0) ? (1.0 - (double)in / (double)un) : 1.0;
+        }
+        vector<double> coords;
+        nystrom_project(dist_row, coords);
+        coords_list.push_back(coords);
+        weights_list.push_back(w);
+        ++n_projected;
+    }
+
+    coverage = n_total > 0 ? (double)coords_list.size() / (double)n_total : 0.0;
+    if (coords_list.empty()) return false;
+
+    Matrix qm((int)coords_list.size(), dims);
+    Array qw;
+    qw.resize(coords_list.size());
+    for (int r = 0; r < (int)coords_list.size(); ++r) {
+        for (int c = 0; c < dims; ++c) qm(r, c) = coords_list[r][c];
+        qw[r] = weights_list[r];
+    }
+    qm.generate_fingerprint(centers, qw, out_fp, bandwidth, soft);
+    return true;
+}
+
+
+json Atlas::fit_projected(LipidSpace &ls, Lipidome *query,
+                          const vector<LipidAdduct*> &ref_lipids, int k) {
+    Array fp;
+    double coverage = 0.0;
+    int n_projected = 0;
+    if (!fingerprint_query_projected(ls, query, ref_lipids, fp, coverage, n_projected)) {
+        json result;
+        result["error"] = "no query lipids could be placed in the frame";
+        result["coverage"] = coverage;
+        return result;
+    }
+    json r = rank(fp, coverage, k);
+    r["projected_lipids"] = n_projected;
+    return r;
+}
+
+
 void Atlas::to_json(json &j) {
     j["dims"] = dims;
     j["K"] = K;
@@ -218,6 +364,19 @@ void Atlas::to_json(json &j) {
     j["meta"] = jm;
 
     j["nn_ref"] = nn_ref;
+
+    // Nystrom projection transform
+    j["roundtrip_error"] = roundtrip_error;
+    j["ref_names"] = ref_names;
+    j["col_mean"] = col_mean;
+    j["col_inv_stdev"] = col_inv_stdev;
+    json jev = json::array();
+    for (int r = 0; r < eigenvectors.rows; ++r) {
+        json row = json::array();
+        for (int c = 0; c < eigenvectors.cols; ++c) row.push_back(eigenvectors.at(r, c));
+        jev.push_back(row);
+    }
+    j["eigenvectors"] = jev;
 }
 
 
@@ -256,4 +415,21 @@ void Atlas::from_json(json &j) {
     for (auto &mv : j.at("meta")) meta.push_back(mv.get<map<string, string>>());
 
     nn_ref = j.at("nn_ref").get<vector<double>>();
+
+    // Nystrom projection transform (optional; absent in older atlases)
+    roundtrip_error = j.value("roundtrip_error", 0.0);
+    ref_names = j.value("ref_names", vector<string>());
+    col_mean = j.value("col_mean", vector<double>());
+    col_inv_stdev = j.value("col_inv_stdev", vector<double>());
+    if (j.contains("eigenvectors") && j["eigenvectors"].is_array() && !j["eigenvectors"].empty()) {
+        json &jev = j.at("eigenvectors");
+        int R = (int)jev.size();
+        int C = (int)jev[0].size();
+        eigenvectors.reset(R, C);
+        for (int r = 0; r < R; ++r) {
+            for (int c = 0; c < C; ++c) eigenvectors(r, c) = jev[r][c].get<double>();
+        }
+    } else {
+        eigenvectors.reset(0, 0);
+    }
 }
