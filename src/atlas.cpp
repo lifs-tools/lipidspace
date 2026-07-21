@@ -197,7 +197,7 @@ bool Atlas::fingerprint_query(const vector<string> &species, const Array &weight
 }
 
 
-json Atlas::rank(Array &fp, double coverage, int k) {
+json Atlas::rank(Array &fp, double coverage, int k, const set<string> &label_vars) {
     json result;
 
     int N = (int)fingerprints.size();
@@ -209,7 +209,7 @@ json Atlas::rank(Array &fp, double coverage, int k) {
 
     int kk = min(k, N);
     json neighbors = json::array();
-    map<string, int> votes;
+    map<string, map<string, int>> votes;   // study variable -> value -> count
     for (int r = 0; r < kk; ++r) {
         int idx = dist[r].second;
         json nb;
@@ -217,9 +217,8 @@ json Atlas::rank(Array &fp, double coverage, int k) {
         nb["distance"] = dist[r].first;
         nb["metadata"] = meta[idx];
         neighbors.push_back(nb);
-        if (!label_variable.empty()) {
-            auto it = meta[idx].find(label_variable);
-            if (it != meta[idx].end()) votes[it->second]++;
+        for (auto &kv : meta[idx]) {
+            if (label_vars.empty() || label_vars.count(kv.first)) votes[kv.first][kv.second]++;
         }
     }
 
@@ -234,22 +233,35 @@ json Atlas::rank(Array &fp, double coverage, int k) {
     result["ood"] = nn > ood_threshold;
     result["coverage"] = coverage;
 
-    if (!votes.empty()) {
+    // Per-variable majority-vote predictions over the neighbours. Covers every nominal study
+    // variable present (tissue, species, disease, cell type, custom CV terms), or the requested
+    // subset in label_vars.
+    json predictions = json::object();
+    for (auto &var : votes) {
         string pred;
-        int best = -1, total = 0;
-        for (auto &kv : votes) {
-            total += kv.second;
-            if (kv.second > best) { best = kv.second; pred = kv.first; }
+        int best = -1;
+        for (auto &vc : var.second) {
+            if (vc.second > best) { best = vc.second; pred = vc.first; }
         }
-        result["prediction"] = pred;
-        result["vote"] = kk > 0 ? (double)best / (double)kk : 0.0;
+        json p;
+        p["prediction"] = pred;
+        p["vote"] = kk > 0 ? (double)best / (double)kk : 0.0;
+        predictions[var.first] = p;
+    }
+    result["predictions"] = predictions;
+
+    // Backward-compatible top-level prediction for the default label variable.
+    if (!label_variable.empty() && predictions.contains(label_variable)) {
+        result["prediction"] = predictions[label_variable]["prediction"];
+        result["vote"] = predictions[label_variable]["vote"];
         result["label_variable"] = label_variable;
     }
     return result;
 }
 
 
-json Atlas::fit(const vector<string> &species, const Array &weights, int k) {
+json Atlas::fit(const vector<string> &species, const Array &weights, int k,
+                const set<string> &label_vars) {
     Array fp;
     double coverage = 0.0;
     if (!fingerprint_query(species, weights, fp, coverage)) {
@@ -258,7 +270,7 @@ json Atlas::fit(const vector<string> &species, const Array &weights, int k) {
         result["coverage"] = coverage;
         return result;
     }
-    return rank(fp, coverage, k);
+    return rank(fp, coverage, k, label_vars);
 }
 
 
@@ -315,7 +327,8 @@ bool Atlas::fingerprint_query_projected(LipidSpace &ls, Lipidome *query,
 
 
 json Atlas::fit_projected(LipidSpace &ls, Lipidome *query,
-                          const vector<LipidAdduct*> &ref_lipids, int k) {
+                          const vector<LipidAdduct*> &ref_lipids, int k,
+                          const set<string> &label_vars) {
     Array fp;
     double coverage = 0.0;
     int n_projected = 0;
@@ -325,7 +338,7 @@ json Atlas::fit_projected(LipidSpace &ls, Lipidome *query,
         result["coverage"] = coverage;
         return result;
     }
-    json r = rank(fp, coverage, k);
+    json r = rank(fp, coverage, k, label_vars);
     r["projected_lipids"] = n_projected;
     return r;
 }

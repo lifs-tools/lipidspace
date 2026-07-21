@@ -531,6 +531,11 @@ paths:
 
                 - `Atlas` (object, required): an atlas artifact from `/atlas/build`.
                 - `NumNeighbors` (integer, default 5): neighbours to return / vote over.
+                - `LabelVariables` (array of strings, optional): which nominal study variables to
+                  predict by majority vote (e.g. `["tissue","species","disease"]`). Omit to predict
+                  every nominal study variable stored in the atlas. Each is returned under
+                  `predictions`; the build-time default `LabelVariable` is also echoed at the top
+                  level as `prediction`/`vote`.
 
                 Fitting is O(query size + datasets) and does not modify the atlas.
             requestBody:
@@ -564,6 +569,13 @@ paths:
                                                 query: { type: string }
                                                 prediction: { type: string }
                                                 vote: { type: number }
+                                                predictions:
+                                                    type: object
+                                                    additionalProperties:
+                                                        type: object
+                                                        properties:
+                                                            prediction: { type: string }
+                                                            vote: { type: number }
                                                 confidence: { type: number }
                                                 nn_distance: { type: number }
                                                 ood: { type: boolean }

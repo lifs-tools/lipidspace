@@ -99,8 +99,9 @@ Fingerprints one or more query lipidomes against a prebuilt atlas.
 | Field | Type | Notes |
 |---|---|---|
 | `Atlas` | object | An atlas artifact from `/atlas/build`. |
-| `TableType`, `TableColumnTypes`, `Table` | | The query table (same encoding as build). No study-variable columns needed — the label is predicted. |
+| `TableType`, `TableColumnTypes`, `Table` | | The query table (same encoding as build). No study-variable columns needed — the labels are predicted. |
 | `NumNeighbors` | int | Optional, default `5`. Neighbours returned / voted over. |
+| `LabelVariables` | string[] | Optional. Which nominal study variables to predict, e.g. `["tissue","species","disease"]`. Omit to predict **every** nominal variable stored in the atlas (each dataset can carry many — tissue, species, disease, cell type, custom CV terms). |
 
 ### Response — one entry per query lipidome
 
@@ -108,7 +109,8 @@ Fingerprints one or more query lipidomes against a prebuilt atlas.
 |---|---|
 | `query` | query sample name |
 | `neighbors[]` | `{ dataset, distance, metadata }`, nearest first |
-| `prediction`, `vote` | majority label over the neighbours (present only if `LabelVariable` was set at build) and its fraction |
+| `predictions` | `{ variable: { prediction, vote } }` — a majority-vote label + fraction for each predicted nominal study variable (tissue, species, disease, …). |
+| `prediction`, `vote` | convenience echo of `predictions[LabelVariable]` for the build-time default label variable. |
 | `nn_distance` | distance to the nearest dataset |
 | `confidence` | in `[0,1]`: the fraction of atlas datasets whose own nearest neighbour is **farther** than this query's. High = this query sits as tightly as the tightest datasets. |
 | `ood` | `true` if `nn_distance` exceeds the calibrated threshold (95th percentile of `nn_ref`) — treat as out-of-distribution. |

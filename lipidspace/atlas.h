@@ -80,15 +80,19 @@ public:
                                      const vector<LipidAdduct*> &ref_lipids,
                                      Array &out_fp, double &coverage, int &n_projected);
 
-    // Rank a query fingerprint: neighbours, prediction, confidence, OOD flag, coverage.
-    json rank(Array &fp, double coverage, int k);
+    // Rank a query fingerprint: neighbours, per-variable predictions, confidence, OOD, coverage.
+    // label_vars selects which nominal study variables to predict; empty = every variable
+    // present in the neighbours' metadata (tissue, species, disease, cell type, custom CV terms).
+    json rank(Array &fp, double coverage, int k, const set<string> &label_vars = set<string>());
 
-    // Fit a query lipidome -> neighbours, prediction, confidence, OOD flag, coverage.
-    json fit(const vector<string> &species, const Array &weights, int k);
+    // Fit a query lipidome -> neighbours, predictions, confidence, OOD flag, coverage.
+    json fit(const vector<string> &species, const Array &weights, int k,
+             const set<string> &label_vars = set<string>());
 
     // Fit with Nystrom projection of query lipids not already in the frame.
     json fit_projected(LipidSpace &ls, Lipidome *query,
-                       const vector<LipidAdduct*> &ref_lipids, int k);
+                       const vector<LipidAdduct*> &ref_lipids, int k,
+                       const set<string> &label_vars = set<string>());
 
     void to_json(json &j);
     void from_json(json &j);

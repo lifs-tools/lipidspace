@@ -632,6 +632,12 @@ public:
             }
 
             int k = body.value("NumNeighbors", 5);
+            set<string> label_vars;   // which nominal study variables to predict; empty = all
+            if (body.contains("LabelVariables") && body["LabelVariables"].is_array()) {
+                for (auto &v : body["LabelVariables"]) {
+                    if (v.is_string()) label_vars.insert(v.get<string>());
+                }
+            }
 
             LipidSpace lipid_space;
             if (!atlas_load_table(lipid_space, body, dirPath, false, res)) return;
@@ -661,8 +667,8 @@ public:
             json results = json::array();
             for (auto lipidome : lipid_space.lipidomes) {
                 json r = project
-                    ? atlas.fit_projected(lipid_space, lipidome, ref_lipids, k)
-                    : atlas.fit(lipidome->species, lipidome->original_intensities, k);
+                    ? atlas.fit_projected(lipid_space, lipidome, ref_lipids, k, label_vars)
+                    : atlas.fit(lipidome->species, lipidome->original_intensities, k, label_vars);
                 r["query"] = lipidome->cleaned_name;
                 results.push_back(r);
             }
