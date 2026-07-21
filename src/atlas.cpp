@@ -100,7 +100,94 @@ void Atlas::build(LipidSpace &ls, int K_, const string &label_variable_, bool so
     sort(nn_ref.begin(), nn_ref.end());
     ood_threshold = quantile_sorted(nn_ref, 0.95);
 
+    compute_overview();
     capture_transform(ls);
+}
+
+
+void Atlas::compute_overview() {
+    int N = (int)fingerprints.size();
+    embedding.clear();
+    order.clear();
+    if (N < 1) {
+        return;
+    }
+
+    // Full N x N Hellinger distance matrix between the dataset fingerprints.
+    vector<vector<double>> D(N, vector<double>(N, 0.0));
+    for (int i = 0; i < N; ++i) {
+        for (int j = i + 1; j < N; ++j) {
+            double d = Matrix::hellinger_distance(fingerprints[i], fingerprints[j]);
+            D[i][j] = D[j][i] = d;
+        }
+    }
+
+    // Average-linkage clustering leaf order (adjacent leaves merged early => similar).
+    {
+        vector<vector<int>> leaves(N);
+        vector<vector<double>> cd = D;
+        vector<int> sz(N, 1);
+        vector<char> alive(N, 1);
+        for (int i = 0; i < N; ++i) leaves[i].push_back(i);
+        int root = 0;
+        for (int step = 0; step < N - 1; ++step) {
+            double best = numeric_limits<double>::infinity();
+            int bi = -1, bj = -1;
+            for (int i = 0; i < N; ++i) {
+                if (!alive[i]) continue;
+                for (int j = i + 1; j < N; ++j) {
+                    if (alive[j] && cd[i][j] < best) { best = cd[i][j]; bi = i; bj = j; }
+                }
+            }
+            if (bi < 0) break;
+            for (int k = 0; k < N; ++k) {
+                if (alive[k] && k != bi && k != bj) {
+                    double nd = (sz[bi] * cd[bi][k] + sz[bj] * cd[bj][k]) / (double)(sz[bi] + sz[bj]);
+                    cd[bi][k] = cd[k][bi] = nd;
+                }
+            }
+            leaves[bi].insert(leaves[bi].end(), leaves[bj].begin(), leaves[bj].end());
+            sz[bi] += sz[bj];
+            alive[bj] = 0;
+            root = bi;
+        }
+        order = leaves[root];
+    }
+
+    // Classical MDS (PCoA): 2D coords from the top-2 eigenvectors of the double-centred matrix.
+    embedding.assign(N, vector<double>(2, 0.0));
+    if (N >= 3) {
+        vector<double> rowmean(N, 0.0);
+        double grand = 0.0;
+        vector<vector<double>> D2(N, vector<double>(N));
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                double v = D[i][j] * D[i][j];
+                D2[i][j] = v;
+                rowmean[i] += v;
+                grand += v;
+            }
+        }
+        for (int i = 0; i < N; ++i) rowmean[i] /= (double)N;
+        grand /= (double)N * (double)N;
+
+        Matrix B(N, N);
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                B(i, j) = -0.5 * (D2[i][j] - rowmean[i] - rowmean[j] + grand);
+            }
+        }
+        Array evals;
+        Matrix evecs;
+        B.compute_eigen_data(evals, evecs, 2);
+        for (int k = 0; k < 2 && k < evecs.cols; ++k) {
+            double lambda = (k < (int)evals.size() && evals[k] > 0.0) ? evals[k] : 0.0;
+            double s = sqrt(lambda);
+            for (int i = 0; i < N; ++i) embedding[i][k] = evecs.at(i, k) * s;
+        }
+    } else {
+        for (int i = 0; i < N; ++i) embedding[i][0] = (double)i;
+    }
 }
 
 
@@ -392,6 +479,17 @@ void Atlas::to_json(json &j) {
         jev.push_back(row);
     }
     j["eigenvectors"] = jev;
+
+    // Global overview
+    json jemb = json::array();
+    for (auto &e : embedding) {
+        json row = json::array();
+        row.push_back(e.size() > 0 ? e[0] : 0.0);
+        row.push_back(e.size() > 1 ? e[1] : 0.0);
+        jemb.push_back(row);
+    }
+    j["embedding"] = jemb;
+    j["order"] = order;
 }
 
 
@@ -447,4 +545,14 @@ void Atlas::from_json(json &j) {
     } else {
         eigenvectors.reset(0, 0);
     }
+
+    embedding.clear();
+    if (j.contains("embedding") && j["embedding"].is_array()) {
+        for (auto &row : j["embedding"]) {
+            double x = row.size() > 0 ? row[0].get<double>() : 0.0;
+            double y = row.size() > 1 ? row[1].get<double>() : 0.0;
+            embedding.push_back({x, y});
+        }
+    }
+    order = j.value("order", vector<int>());
 }

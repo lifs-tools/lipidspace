@@ -45,6 +45,12 @@ public:
     vector<map<string, string>> meta;            // per dataset: nominal study variables
     vector<double> nn_ref;                        // sorted nearest-neighbour distances
 
+    // --- Global overview (for the Atlas Explorer view) ---
+    // A classical-MDS 2D layout of the datasets from their fingerprint (Hellinger) distances, and an
+    // average-linkage leaf order, both precomputed once so GET /atlas/overview is a pass-through.
+    vector<vector<double>> embedding;             // N x 2 MDS coordinates (dataset map)
+    vector<int> order;                            // clustering leaf order (indices into datasets)
+
     // --- Nystrom out-of-sample projection (the frame's PCA transform) ---
     // Lets a query lipid that is NOT already in the frame be projected into frame
     // coordinates from its Tanimoto distance row to the reference lipids, instead of
@@ -65,6 +71,9 @@ public:
 
     // Capture the frame's PCA transform from ls.global_distances for Nystrom projection.
     void capture_transform(LipidSpace &ls);
+
+    // Compute the global overview (MDS embedding + clustering leaf order) from the fingerprints.
+    void compute_overview();
 
     // Project a novel lipid (given its Tanimoto distance row to the reference lipids)
     // into frame coordinates via the captured transform.

@@ -72,6 +72,7 @@ The atlas artifact. Notable fields:
 | `datasets`, `fingerprints`, `meta` | per-dataset name, fingerprint, and nominal study variables |
 | `nn_ref`, `ood_threshold` | calibration |
 | `ref_names`, `col_mean`, `col_inv_stdev`, `eigenvectors` | the Nyström projection transform |
+| `embedding`, `order` | global overview: N×2 classical-MDS coords of the datasets + an average-linkage clustering leaf order (for an "atlas explorer" map + clustermap) |
 | `roundtrip_error` | build self-check: max &#124;reprojected − stored&#124; frame coord. Expect ~`1e-12`. A large value means the transform is inconsistent — treat the atlas as suspect. |
 
 ### Minimal example (COLUMN_PIVOT_TABLE)

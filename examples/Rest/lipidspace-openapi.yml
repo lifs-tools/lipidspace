@@ -500,6 +500,16 @@ paths:
                                     nn_ref:
                                         type: array
                                         items: { type: number }
+                                    embedding:
+                                        type: array
+                                        description: N x 2 classical-MDS coordinates of the datasets (Atlas Explorer map), dataset index order.
+                                        items:
+                                            type: array
+                                            items: { type: number }
+                                    order:
+                                        type: array
+                                        description: Average-linkage clustering leaf order (indices into datasets) for the overview clustermap.
+                                        items: { type: integer }
                 "400":
                     description: Invalid request (bad table, fewer than 3 species, or no lipidomes).
                 "415":
