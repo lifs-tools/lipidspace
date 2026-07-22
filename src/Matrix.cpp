@@ -740,11 +740,7 @@ void Matrix::generate_fingerprint(Matrix& centers, Array& weights, Array& finger
     fingerprint.resize(K);
     for (int k = 0; k < K; ++k) fingerprint[k] = 0.0;
 
-    if (contributions) {
-        contributions->reset(n_lipids, K);
-        for (int i = 0; i < n_lipids; ++i)
-            for (int k = 0; k < K; ++k) (*contributions)(i, k) = 0.0;
-    }
+    if (contributions) contributions->reset(n_lipids, K);   // reset() zero-fills the store
 
     // For each lipid (row) in this lipidome matrix
     for (int i = 0; i < n_lipids; ++i) {
