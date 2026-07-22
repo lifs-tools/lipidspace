@@ -639,6 +639,13 @@ public:
                 }
             }
 
+            int top_n_dominant = body.value("TopNDominantLipids", 10);
+            int top_n_lipids   = body.value("TopNLipids", 10);
+            int top_n_modules  = body.value("TopNModules", 5);
+            if (top_n_dominant < 0) top_n_dominant = 10;
+            if (top_n_lipids   < 0) top_n_lipids   = 10;
+            if (top_n_modules  < 0) top_n_modules  = 5;
+
             LipidSpace lipid_space;
             if (!atlas_load_table(lipid_space, body, dirPath, false, res)) return;
 
@@ -667,8 +674,10 @@ public:
             json results = json::array();
             for (auto lipidome : lipid_space.lipidomes) {
                 json r = project
-                    ? atlas.fit_projected(lipid_space, lipidome, ref_lipids, k, label_vars)
-                    : atlas.fit(lipidome->species, lipidome->original_intensities, k, label_vars);
+                    ? atlas.fit_projected(lipid_space, lipidome, ref_lipids, k, label_vars,
+                                          top_n_dominant, top_n_lipids, top_n_modules)
+                    : atlas.fit(lipidome->species, lipidome->original_intensities, k, label_vars,
+                                top_n_dominant, top_n_lipids, top_n_modules);
                 r["query"] = lipidome->lipidome_name;   // raw sample name (no " - <file>" suffix)
                 results.push_back(r);
             }

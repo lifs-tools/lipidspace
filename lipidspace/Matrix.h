@@ -105,8 +105,8 @@ public:
     
     // Fingerprint methods for Atlas
     void kmeans(int K, Matrix& centers, int max_iter = 100, unsigned long seed = 42);
-    void generate_fingerprint(Matrix& centers, Array& weights, Array& fingerprint, 
-                              double s = 1.0, bool soft = true);
+    void generate_fingerprint(Matrix& centers, Array& weights, Array& fingerprint,
+                              double s, bool soft, Matrix* contributions = nullptr);
     static double hellinger_distance(Array& a, Array& b);
     void compute_fingerprint_distance_matrix(vector<Matrix*>& lipidome_matrixes,
                                               vector<Array*>& lipidome_weights, 

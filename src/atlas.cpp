@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <limits>
 
 using namespace std;
@@ -321,7 +322,8 @@ void Atlas::nystrom_project(const vector<double> &dist_row, vector<double> &coor
 
 
 bool Atlas::fingerprint_query(const vector<string> &species, const Array &weights,
-                              Array &out_fp, double &coverage) {
+                              Array &out_fp, double &coverage,
+                              vector<string> *placed_names, Matrix *contributions) {
     vector<int> present;
     for (int i = 0; i < (int)species.size(); ++i) {
         bool has_weight = (i >= (int)weights.size()) || weights[i] > 0;
@@ -337,8 +339,9 @@ bool Atlas::fingerprint_query(const vector<string> &species, const Array &weight
         const vector<double> &coords = frame.at(species[present[r]]);
         for (int c = 0; c < dims; ++c) qm(r, c) = coords[c];
         qw[r] = (present[r] < (int)weights.size()) ? weights[present[r]] : 1.0;
+        if (placed_names) placed_names->push_back(species[present[r]]);
     }
-    qm.generate_fingerprint(centers, qw, out_fp, bandwidth, soft);
+    qm.generate_fingerprint(centers, qw, out_fp, bandwidth, soft, contributions);
     return true;
 }
 
@@ -407,26 +410,34 @@ json Atlas::rank(Array &fp, double coverage, int k, const set<string> &label_var
 
 
 json Atlas::fit(const vector<string> &species, const Array &weights, int k,
-                const set<string> &label_vars) {
+                const set<string> &label_vars,
+                int top_n_dominant, int top_n_lipids, int top_n_modules) {
     Array fp;
     double coverage = 0.0;
-    if (!fingerprint_query(species, weights, fp, coverage)) {
+    vector<string> placed;
+    Matrix C;
+    if (!fingerprint_query(species, weights, fp, coverage, &placed, &C)) {
         json result;
         result["error"] = "no query lipids fell in the frozen frame";
         result["coverage"] = coverage;
         return result;
     }
-    return rank(fp, coverage, k, label_vars);
+    json result = rank(fp, coverage, k, label_vars);
+    result["contributions"] = attribute(placed, C, fp, result["neighbors"], result["predictions"],
+                                         top_n_dominant, top_n_lipids, top_n_modules);
+    return result;
 }
 
 
 bool Atlas::fingerprint_query_projected(LipidSpace &ls, Lipidome *query,
                                         const vector<LipidAdduct*> &ref_lipids,
-                                        Array &out_fp, double &coverage, int &n_projected) {
+                                        Array &out_fp, double &coverage, int &n_projected,
+                                        vector<string> *placed_names, Matrix *contributions) {
     int L = (int)ref_names.size();
     int n_total = (int)query->species.size();
     vector<vector<double>> coords_list;
     vector<double> weights_list;
+    vector<string> names_list;
     n_projected = 0;
 
     for (int i = 0; i < n_total; ++i) {
@@ -437,6 +448,7 @@ bool Atlas::fingerprint_query_projected(LipidSpace &ls, Lipidome *query,
         if (it != frame.end()) {
             coords_list.push_back(it->second);
             weights_list.push_back(w);
+            names_list.push_back(query->species[i]);
             continue;
         }
         // Not in the frame: Nystrom-project from its Tanimoto distance row to the references.
@@ -454,6 +466,7 @@ bool Atlas::fingerprint_query_projected(LipidSpace &ls, Lipidome *query,
         nystrom_project(dist_row, coords);
         coords_list.push_back(coords);
         weights_list.push_back(w);
+        names_list.push_back(query->species[i]);
         ++n_projected;
     }
 
@@ -467,18 +480,22 @@ bool Atlas::fingerprint_query_projected(LipidSpace &ls, Lipidome *query,
         for (int c = 0; c < dims; ++c) qm(r, c) = coords_list[r][c];
         qw[r] = weights_list[r];
     }
-    qm.generate_fingerprint(centers, qw, out_fp, bandwidth, soft);
+    qm.generate_fingerprint(centers, qw, out_fp, bandwidth, soft, contributions);
+    if (placed_names) *placed_names = names_list;
     return true;
 }
 
 
 json Atlas::fit_projected(LipidSpace &ls, Lipidome *query,
                           const vector<LipidAdduct*> &ref_lipids, int k,
-                          const set<string> &label_vars) {
+                          const set<string> &label_vars,
+                          int top_n_dominant, int top_n_lipids, int top_n_modules) {
     Array fp;
     double coverage = 0.0;
     int n_projected = 0;
-    if (!fingerprint_query_projected(ls, query, ref_lipids, fp, coverage, n_projected)) {
+    vector<string> placed;
+    Matrix C;
+    if (!fingerprint_query_projected(ls, query, ref_lipids, fp, coverage, n_projected, &placed, &C)) {
         json result;
         result["error"] = "no query lipids could be placed in the frame";
         result["coverage"] = coverage;
@@ -486,7 +503,99 @@ json Atlas::fit_projected(LipidSpace &ls, Lipidome *query,
     }
     json r = rank(fp, coverage, k, label_vars);
     r["projected_lipids"] = n_projected;
+    r["contributions"] = attribute(placed, C, fp, r["neighbors"], r["predictions"],
+                                    top_n_dominant, top_n_lipids, top_n_modules);
     return r;
+}
+
+
+json Atlas::attribute(const vector<string> &lipid_names, Matrix &C, Array &fp,
+                      const json &neighbors, const json &predictions,
+                      int top_n_dominant, int top_n_lipids, int top_n_modules) {
+    json out;
+    int n = (int)lipid_names.size();
+    int Kc = (int)fp.size();
+
+    // dominant lipids: row sums of C are the compositional weights.
+    json jdom = json::array();
+    if (top_n_dominant > 0 && n > 0) {
+        vector<pair<double, int>> w(n);
+        for (int i = 0; i < n; ++i) {
+            double s = 0.0;
+            for (int k = 0; k < Kc && k < C.cols; ++k) s += C(i, k);
+            w[i] = make_pair(s, i);
+        }
+        int td = min(top_n_dominant, n);
+        partial_sort(w.begin(), w.begin() + td, w.end(), greater<pair<double, int>>());
+        for (int r = 0; r < td; ++r) {
+            json e; e["lipid"] = lipid_names[w[r].second]; e["weight"] = w[r].first;
+            jdom.push_back(e);
+        }
+    }
+    out["dominant_lipids"] = jdom;
+
+    json byvar = json::object();
+    for (auto it = predictions.begin(); it != predictions.end(); ++it) {
+        const string var = it.key();
+        string pred = it.value().value("prediction", string());
+
+        // voting neighbours = those carrying var == pred; collect their fingerprints.
+        vector<Array*> qs;
+        for (auto &nb : neighbors) {
+            if (!nb.contains("metadata")) continue;
+            const json &md = nb["metadata"];
+            if (!md.contains(var) || md[var].get<string>() != pred) continue;
+            string dname = nb.value("dataset", string());
+            for (int di = 0; di < (int)datasets.size(); ++di)
+                if (datasets[di] == dname) { qs.push_back(&fingerprints[di]); break; }
+        }
+
+        vector<double> BC(Kc, 0.0);
+        for (Array *q : qs)
+            for (int k = 0; k < Kc && k < (int)q->size(); ++k)
+                BC[k] += sqrt(fp[k] * (*q)[k]);
+
+        json jmods = json::array();
+        if (top_n_modules > 0) {
+            vector<pair<double, int>> mk(Kc);
+            for (int k = 0; k < Kc; ++k) mk[k] = make_pair(BC[k], k);
+            int tm = min(top_n_modules, Kc);
+            partial_sort(mk.begin(), mk.begin() + tm, mk.end(), greater<pair<double, int>>());
+            for (int r = 0; r < tm; ++r) {
+                int k = mk[r].second;
+                json m; m["module"] = k; m["score"] = mk[r].first;
+                m["exemplars"] = (k < (int)module_exemplars.size()) ? module_exemplars[k] : vector<string>();
+                jmods.push_back(m);
+            }
+        }
+
+        json jlips = json::array();
+        if (top_n_lipids > 0 && n > 0) {
+            vector<double> contrib(n, 0.0);
+            double total = 0.0;
+            for (int i = 0; i < n; ++i) {
+                double s = 0.0;
+                for (int k = 0; k < Kc && k < C.cols; ++k)
+                    if (fp[k] > 0.0) s += C(i, k) * (BC[k] / fp[k]);
+                contrib[i] = s; total += s;
+            }
+            vector<pair<double, int>> ci(n);
+            for (int i = 0; i < n; ++i) ci[i] = make_pair(contrib[i], i);
+            int tl = min(top_n_lipids, n);
+            partial_sort(ci.begin(), ci.begin() + tl, ci.end(), greater<pair<double, int>>());
+            for (int r = 0; r < tl; ++r) {
+                int i = ci[r].second;
+                json e; e["lipid"] = lipid_names[i]; e["score"] = contrib[i];
+                e["share"] = total > 0.0 ? contrib[i] / total : 0.0;
+                jlips.push_back(e);
+            }
+        }
+
+        json v; v["prediction"] = pred; v["lipids"] = jlips; v["modules"] = jmods;
+        byvar[var] = v;
+    }
+    out["by_variable"] = byvar;
+    return out;
 }
 
 

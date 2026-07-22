@@ -90,13 +90,15 @@ public:
 
     // Fingerprint a parsed query lipidome using the frozen frame + modules.
     bool fingerprint_query(const vector<string> &species, const Array &weights,
-                           Array &out_fp, double &coverage);
+                           Array &out_fp, double &coverage,
+                           vector<string> *placed_names = nullptr, Matrix *contributions = nullptr);
 
     // Fingerprint a query, projecting lipids not in the frame via Nystrom. ref_lipids are the
     // parsed reference lipids (ref_names order); ls provides the Tanimoto lipid_similarity.
     bool fingerprint_query_projected(LipidSpace &ls, Lipidome *query,
                                      const vector<LipidAdduct*> &ref_lipids,
-                                     Array &out_fp, double &coverage, int &n_projected);
+                                     Array &out_fp, double &coverage, int &n_projected,
+                                     vector<string> *placed_names = nullptr, Matrix *contributions = nullptr);
 
     // Rank a query fingerprint: neighbours, per-variable predictions, confidence, OOD, coverage.
     // label_vars selects which nominal study variables to predict; empty = every variable
@@ -105,12 +107,19 @@ public:
 
     // Fit a query lipidome -> neighbours, predictions, confidence, OOD flag, coverage.
     json fit(const vector<string> &species, const Array &weights, int k,
-             const set<string> &label_vars = set<string>());
+             const set<string> &label_vars = set<string>(),
+             int top_n_dominant = 10, int top_n_lipids = 10, int top_n_modules = 5);
 
     // Fit with Nystrom projection of query lipids not already in the frame.
     json fit_projected(LipidSpace &ls, Lipidome *query,
                        const vector<LipidAdduct*> &ref_lipids, int k,
-                       const set<string> &label_vars = set<string>());
+                       const set<string> &label_vars = set<string>(),
+                       int top_n_dominant = 10, int top_n_lipids = 10, int top_n_modules = 5);
+
+    // Build the per-query contributions block (dominant lipids + per-variable attribution).
+    json attribute(const vector<string> &lipid_names, Matrix &contributions, Array &fp,
+                   const json &neighbors, const json &predictions,
+                   int top_n_dominant, int top_n_lipids, int top_n_modules);
 
     void to_json(json &j);
     void from_json(json &j);

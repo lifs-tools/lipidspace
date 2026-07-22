@@ -732,14 +732,20 @@ void Matrix::kmeans(int K, Matrix& centers, int max_iter, unsigned long seed) {
  * @param soft If true, use soft assignment; if false, use hard assignment
  */
 void Matrix::generate_fingerprint(Matrix& centers, Array& weights, Array& fingerprint,
-                                  double s, bool soft) {
+                                  double s, bool soft, Matrix* contributions) {
     int K = centers.rows;
     int D = cols;          // (lipids x dims): columns are PCA dimensions
     int n_lipids = rows;   // rows are lipids (points in the frame)
-    
+
     fingerprint.resize(K);
     for (int k = 0; k < K; ++k) fingerprint[k] = 0.0;
-    
+
+    if (contributions) {
+        contributions->reset(n_lipids, K);
+        for (int i = 0; i < n_lipids; ++i)
+            for (int k = 0; k < K; ++k) (*contributions)(i, k) = 0.0;
+    }
+
     // For each lipid (row) in this lipidome matrix
     for (int i = 0; i < n_lipids; ++i) {
         double weight = (i < (int)weights.size()) ? weights[i] : 1.0;
@@ -766,7 +772,9 @@ void Matrix::generate_fingerprint(Matrix& centers, Array& weights, Array& finger
             }
             if (sum_exp > 0) {
                 for (int k = 0; k < K; ++k) {
-                    fingerprint[k] += weight * dists[k] / sum_exp;
+                    double ck = weight * dists[k] / sum_exp;
+                    fingerprint[k] += ck;
+                    if (contributions) (*contributions)(i, k) = ck;
                 }
             }
         } else {
@@ -776,15 +784,20 @@ void Matrix::generate_fingerprint(Matrix& centers, Array& weights, Array& finger
                 if (dists[k] < dists[best_k]) best_k = k;
             }
             fingerprint[best_k] += weight;
+            if (contributions) (*contributions)(i, best_k) = weight;
         }
     }
-    
+
     // Normalize fingerprint to sum to 1 (compositional)
     double sum = fingerprint.sum();
     if (sum > 0) {
         for (int k = 0; k < K; ++k) {
             fingerprint[k] /= sum;
         }
+    }
+    if (contributions && sum > 0) {
+        for (int i = 0; i < n_lipids; ++i)
+            for (int k = 0; k < K; ++k) (*contributions)(i, k) /= sum;
     }
 }
 
