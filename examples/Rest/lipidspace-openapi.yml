@@ -510,6 +510,19 @@ paths:
                                         type: array
                                         description: Average-linkage clustering leaf order (indices into datasets) for the overview clustermap.
                                         items: { type: integer }
+                                    module_exemplars:
+                                        type: array
+                                        description: Per module, the frame lipids nearest its center (K lists).
+                                        items:
+                                            type: array
+                                            items: { type: string }
+                                    class_baseline:
+                                        type: array
+                                        description: Global mean fingerprint (K values).
+                                        items: { type: number }
+                                    class_signatures:
+                                        type: object
+                                        description: Per nominal variable/value mean fingerprint (the class signature).
                 "400":
                     description: Invalid request (bad table, fewer than 3 species, or no lipidomes).
                 "415":
@@ -563,6 +576,18 @@ paths:
                                     items: { type: string }
                                 Table: { type: string }
                                 NumNeighbors: { type: integer, default: 5 }
+                                TopNDominantLipids:
+                                    type: integer
+                                    default: 10
+                                    description: Number of top-abundance query lipids to return (0 = omit).
+                                TopNLipids:
+                                    type: integer
+                                    default: 10
+                                    description: Number of top attributing lipids per predicted variable (0 = omit).
+                                TopNModules:
+                                    type: integer
+                                    default: 5
+                                    description: Number of top driving modules per predicted variable (0 = omit).
             responses:
                 "200":
                     description: Fit succeeded.
@@ -601,6 +626,9 @@ paths:
                                                             metadata:
                                                                 type: object
                                                                 additionalProperties: { type: string }
+                                                contributions:
+                                                    type: object
+                                                    description: Dominant lipids and per-predicted-variable attribution (lipids + modules).
                 "400":
                     description: Invalid request (missing/invalid `Atlas`, bad table, or no query lipidomes).
                 "415":

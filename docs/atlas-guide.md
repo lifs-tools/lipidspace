@@ -103,6 +103,9 @@ Fingerprints one or more query lipidomes against a prebuilt atlas.
 | `TableType`, `TableColumnTypes`, `Table` | | The query table (same encoding as build). No study-variable columns needed — the labels are predicted. |
 | `NumNeighbors` | int | Optional, default `5`. Neighbours returned / voted over. |
 | `LabelVariables` | string[] | Optional. Which nominal study variables to predict, e.g. `["tissue","species","disease"]`. Omit to predict **every** nominal variable stored in the atlas (each dataset can carry many — tissue, species, disease, cell type, custom CV terms). |
+| `TopNDominantLipids` | int | Optional, default `10`. Size of `contributions.dominant_lipids` (`0` = omit). |
+| `TopNLipids` | int | Optional, default `10`. Attributing lipids per predicted variable (`0` = omit). |
+| `TopNModules` | int | Optional, default `5`. Driving modules per predicted variable (`0` = omit). |
 
 ### Response — one entry per query lipidome
 
@@ -134,6 +137,24 @@ jq -n --slurpfile a atlas.json '{
 }' | curl -sS http://localhost:8888/lipidspace/v1/atlas/fit \
       -H 'Content-Type: application/json' --data-binary @- | jq .results[0]
 ```
+
+### Contributions
+
+Each result also carries a `contributions` block explaining *why* the query landed where it did. It is
+decomposed from the same fingerprint, so the attribution is exact rather than a heuristic:
+
+| Field | Meaning |
+|---|---|
+| `dominant_lipids` | `[{ lipid, weight }]` — the query's highest-abundance species (compositional weight). |
+| `by_variable` | `{ variable: { prediction, lipids, modules } }` — one entry per predicted variable (mirrors `predictions`). |
+| `by_variable[V].lipids` | `[{ lipid, score, share }]` — the query lipids that most drove `V`'s prediction; `share` sums to ~1. |
+| `by_variable[V].modules` | `[{ module, score, exemplars }]` — the modules driving the match, each with representative frame lipids. |
+
+Sizes are controlled by `TopNDominantLipids` / `TopNLipids` / `TopNModules` (defaults `10` / `10` / `5`; `0` omits a section).
+
+The build artifact additionally carries `module_exemplars` (the frame lipids nearest each module centre),
+`class_baseline` (the global mean fingerprint), and `class_signatures` (per label value mean fingerprint —
+the global signature of e.g. `tissue = plasma`, read against `class_baseline`).
 
 ---
 
