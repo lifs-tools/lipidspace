@@ -51,6 +51,11 @@ public:
     vector<vector<double>> embedding;             // N x 2 MDS coordinates (dataset map)
     vector<int> order;                            // clustering leaf order (indices into datasets)
 
+    // --- Contributions (build-time, query-independent) ---
+    vector<vector<string>> module_exemplars;                    // K x E frame-lipid names nearest each center
+    vector<double> class_baseline;                              // K: global mean fingerprint
+    map<string, map<string, vector<double>>> class_signatures;  // variable -> value -> K mean fingerprint
+
     // --- Nystrom out-of-sample projection (the frame's PCA transform) ---
     // Lets a query lipid that is NOT already in the frame be projected into frame
     // coordinates from its Tanimoto distance row to the reference lipids, instead of
@@ -74,6 +79,10 @@ public:
 
     // Compute the global overview (MDS embedding + clustering leaf order) from the fingerprints.
     void compute_overview();
+
+    // Precompute build-time contribution data (exemplars per module, class baseline + signatures).
+    void compute_module_exemplars(int exemplars_per_module = 6);
+    void compute_class_signatures();
 
     // Project a novel lipid (given its Tanimoto distance row to the reference lipids)
     // into frame coordinates via the captured transform.

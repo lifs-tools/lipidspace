@@ -106,6 +106,8 @@ void Atlas::build(LipidSpace &ls, int K_, const string &label_variable_, bool so
     sort(nn_ref.begin(), nn_ref.end());
     ood_threshold = quantile_sorted(nn_ref, 0.95);
 
+    compute_module_exemplars(6);
+    compute_class_signatures();
     compute_overview();
     capture_transform(ls);
 }
@@ -194,6 +196,57 @@ void Atlas::compute_overview() {
     } else {
         for (int i = 0; i < N; ++i) embedding[i][0] = (double)i;
     }
+}
+
+
+void Atlas::compute_module_exemplars(int E) {
+    module_exemplars.assign(K, vector<string>());
+    if (frame.empty() || centers.rows < K) return;
+    for (int k = 0; k < K; ++k) {
+        vector<pair<double, string>> d;
+        d.reserve(frame.size());
+        for (auto &kv : frame) {
+            const vector<double> &coord = kv.second;
+            double s = 0.0;
+            for (int c = 0; c < dims && c < (int)coord.size(); ++c) {
+                double diff = coord[c] - centers(k, c);
+                s += diff * diff;
+            }
+            d.push_back(make_pair(s, kv.first));
+        }
+        int e = min((int)d.size(), E);
+        partial_sort(d.begin(), d.begin() + e, d.end());
+        vector<string> names;
+        for (int i = 0; i < e; ++i) names.push_back(d[i].second);
+        module_exemplars[k] = names;
+    }
+}
+
+
+void Atlas::compute_class_signatures() {
+    int N = (int)fingerprints.size();
+    class_baseline.assign(K, 0.0);
+    class_signatures.clear();
+    if (N == 0) return;
+    for (int i = 0; i < N; ++i)
+        for (int k = 0; k < K && k < (int)fingerprints[i].size(); ++k)
+            class_baseline[k] += fingerprints[i][k];
+    for (int k = 0; k < K; ++k) class_baseline[k] /= (double)N;
+
+    map<string, map<string, int>> counts;
+    for (int i = 0; i < N; ++i) {
+        for (auto &kv : meta[i]) {
+            vector<double> &sig = class_signatures[kv.first][kv.second];
+            if ((int)sig.size() != K) sig.assign(K, 0.0);
+            for (int k = 0; k < K && k < (int)fingerprints[i].size(); ++k) sig[k] += fingerprints[i][k];
+            counts[kv.first][kv.second]++;
+        }
+    }
+    for (auto &var : class_signatures)
+        for (auto &val : var.second) {
+            int c = counts[var.first][val.first];
+            if (c > 0) for (int k = 0; k < K; ++k) val.second[k] /= (double)c;
+        }
 }
 
 
@@ -496,6 +549,19 @@ void Atlas::to_json(json &j) {
     }
     j["embedding"] = jemb;
     j["order"] = order;
+
+    // Contributions (build-time)
+    json jme = json::array();
+    for (auto &ex : module_exemplars) jme.push_back(ex);
+    j["module_exemplars"] = jme;
+    j["class_baseline"] = class_baseline;
+    json jcs = json::object();
+    for (auto &var : class_signatures) {
+        json jv = json::object();
+        for (auto &val : var.second) jv[val.first] = val.second;
+        jcs[var.first] = jv;
+    }
+    j["class_signatures"] = jcs;
 }
 
 
@@ -561,4 +627,14 @@ void Atlas::from_json(json &j) {
         }
     }
     order = j.value("order", vector<int>());
+
+    module_exemplars.clear();
+    if (j.contains("module_exemplars"))
+        for (auto &ex : j["module_exemplars"]) module_exemplars.push_back(ex.get<vector<string>>());
+    class_baseline = j.value("class_baseline", vector<double>());
+    class_signatures.clear();
+    if (j.contains("class_signatures"))
+        for (auto it = j["class_signatures"].begin(); it != j["class_signatures"].end(); ++it)
+            for (auto vt = it.value().begin(); vt != it.value().end(); ++vt)
+                class_signatures[it.key()][vt.key()] = vt.value().get<vector<double>>();
 }
