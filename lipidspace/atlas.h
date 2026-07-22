@@ -103,7 +103,10 @@ public:
     // Rank a query fingerprint: neighbours, per-variable predictions, confidence, OOD, coverage.
     // label_vars selects which nominal study variables to predict; empty = every variable
     // present in the neighbours' metadata (tissue, species, disease, cell type, custom CV terms).
-    json rank(Array &fp, double coverage, int k, const set<string> &label_vars = set<string>());
+    // neighbor_indices, if given, is filled with the k nearest datasets' indices (nearest first),
+    // so callers can attribute against fingerprints[idx]/meta[idx] without a name lookup.
+    json rank(Array &fp, double coverage, int k, const set<string> &label_vars = set<string>(),
+              vector<int> *neighbor_indices = nullptr);
 
     // Fit a query lipidome -> neighbours, predictions, confidence, OOD flag, coverage.
     json fit(const vector<string> &species, const Array &weights, int k,
@@ -117,8 +120,10 @@ public:
                        int top_n_dominant = 10, int top_n_lipids = 10, int top_n_modules = 5);
 
     // Build the per-query contributions block (dominant lipids + per-variable attribution).
+    // neighbor_indices are the ranked neighbour dataset indices (from rank), used to read
+    // fingerprints[idx]/meta[idx] directly instead of resolving neighbours by name.
     json attribute(const vector<string> &lipid_names, Matrix &contributions, Array &fp,
-                   const json &neighbors, const json &predictions,
+                   const vector<int> &neighbor_indices, const json &predictions,
                    int top_n_dominant, int top_n_lipids, int top_n_modules);
 
     void to_json(json &j);

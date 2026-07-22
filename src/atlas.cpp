@@ -346,7 +346,8 @@ bool Atlas::fingerprint_query(const vector<string> &species, const Array &weight
 }
 
 
-json Atlas::rank(Array &fp, double coverage, int k, const set<string> &label_vars) {
+json Atlas::rank(Array &fp, double coverage, int k, const set<string> &label_vars,
+                 vector<int> *neighbor_indices) {
     json result;
 
     int N = (int)fingerprints.size();
@@ -358,9 +359,11 @@ json Atlas::rank(Array &fp, double coverage, int k, const set<string> &label_var
 
     int kk = min(k, N);
     json neighbors = json::array();
+    if (neighbor_indices) neighbor_indices->clear();
     map<string, map<string, int>> votes;   // study variable -> value -> count
     for (int r = 0; r < kk; ++r) {
         int idx = dist[r].second;
+        if (neighbor_indices) neighbor_indices->push_back(idx);
         json nb;
         nb["dataset"] = datasets[idx];
         nb["distance"] = dist[r].first;
@@ -422,8 +425,9 @@ json Atlas::fit(const vector<string> &species, const Array &weights, int k,
         result["coverage"] = coverage;
         return result;
     }
-    json result = rank(fp, coverage, k, label_vars);
-    result["contributions"] = attribute(placed, C, fp, result["neighbors"], result["predictions"],
+    vector<int> nbr_idx;
+    json result = rank(fp, coverage, k, label_vars, &nbr_idx);
+    result["contributions"] = attribute(placed, C, fp, nbr_idx, result["predictions"],
                                          top_n_dominant, top_n_lipids, top_n_modules);
     return result;
 }
@@ -501,16 +505,17 @@ json Atlas::fit_projected(LipidSpace &ls, Lipidome *query,
         result["coverage"] = coverage;
         return result;
     }
-    json r = rank(fp, coverage, k, label_vars);
+    vector<int> nbr_idx;
+    json r = rank(fp, coverage, k, label_vars, &nbr_idx);
     r["projected_lipids"] = n_projected;
-    r["contributions"] = attribute(placed, C, fp, r["neighbors"], r["predictions"],
+    r["contributions"] = attribute(placed, C, fp, nbr_idx, r["predictions"],
                                     top_n_dominant, top_n_lipids, top_n_modules);
     return r;
 }
 
 
 json Atlas::attribute(const vector<string> &lipid_names, Matrix &C, Array &fp,
-                      const json &neighbors, const json &predictions,
+                      const vector<int> &neighbor_indices, const json &predictions,
                       int top_n_dominant, int top_n_lipids, int top_n_modules) {
     json out;
     int n = (int)lipid_names.size();
@@ -539,15 +544,11 @@ json Atlas::attribute(const vector<string> &lipid_names, Matrix &C, Array &fp,
         const string var = it.key();
         string pred = it.value().value("prediction", string());
 
-        // voting neighbours = those carrying var == pred; collect their fingerprints.
+        // voting neighbours = those carrying var == pred; read their fingerprints by index.
         vector<Array*> qs;
-        for (auto &nb : neighbors) {
-            if (!nb.contains("metadata")) continue;
-            const json &md = nb["metadata"];
-            if (!md.contains(var) || md[var].get<string>() != pred) continue;
-            string dname = nb.value("dataset", string());
-            for (int di = 0; di < (int)datasets.size(); ++di)
-                if (datasets[di] == dname) { qs.push_back(&fingerprints[di]); break; }
+        for (int idx : neighbor_indices) {
+            auto mit = meta[idx].find(var);
+            if (mit != meta[idx].end() && mit->second == pred) qs.push_back(&fingerprints[idx]);
         }
 
         vector<double> BC(Kc, 0.0);

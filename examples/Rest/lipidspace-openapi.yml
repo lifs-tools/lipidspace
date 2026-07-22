@@ -276,6 +276,66 @@ components:
                 LinkageMatrix:
                     $ref: "#/components/schemas/LinkageMatrix"
 
+        LipidWeight:
+            type: object
+            description: A query lipid and its compositional abundance weight.
+            properties:
+                lipid: { type: string }
+                weight: { type: number }
+
+        LipidContribution:
+            type: object
+            description: A query lipid's attribution to a prediction — its raw score and share of the total.
+            properties:
+                lipid: { type: string }
+                score: { type: number }
+                share: { type: number }
+
+        ModuleContribution:
+            type: object
+            description: A module driving a prediction, with its representative frame lipids.
+            properties:
+                module: { type: integer }
+                score: { type: number }
+                exemplars:
+                    type: array
+                    items: { type: string }
+
+        VariableAttribution:
+            type: object
+            description: Attribution for one predicted variable — the predicted value and the lipids/modules that drove it.
+            properties:
+                prediction: { type: string }
+                lipids:
+                    type: array
+                    items: { $ref: "#/components/schemas/LipidContribution" }
+                modules:
+                    type: array
+                    items: { $ref: "#/components/schemas/ModuleContribution" }
+
+        AtlasContributions:
+            type: object
+            description: Per-query explanation of a fit result — dominant lipids plus per-predicted-variable attribution.
+            properties:
+                dominant_lipids:
+                    type: array
+                    description: Highest-abundance query lipids.
+                    items: { $ref: "#/components/schemas/LipidWeight" }
+                by_variable:
+                    type: object
+                    description: Attribution per predicted variable; keys mirror `predictions`.
+                    additionalProperties:
+                        $ref: "#/components/schemas/VariableAttribution"
+
+        ClassSignatures:
+            type: object
+            description: Per nominal variable, per value, the mean fingerprint (K module weights) — the class signature.
+            additionalProperties:
+                type: object
+                additionalProperties:
+                    type: array
+                    items: { type: number }
+
 paths:
     /actuator/health:
         servers:
@@ -296,7 +356,7 @@ paths:
                 Returns HTTP 200 when healthy and HTTP 503 when any component is `DOWN`.
             responses:
                 "200":
-                    description: Application is healthy (`status: UP`).
+                    description: "Application is healthy (`status: UP`)."
                     content:
                         "application/json":
                             schema:
@@ -312,7 +372,7 @@ paths:
                                             threshold: 10485760
                                             path: "/tmp/lipidspace"
                 "503":
-                    description: Application is unhealthy (`status: DOWN`), e.g. disk space below threshold.
+                    description: "Application is unhealthy (`status: DOWN`), e.g. disk space below threshold."
                     content:
                         "application/json":
                             schema:
@@ -521,8 +581,7 @@ paths:
                                         description: Global mean fingerprint (K values).
                                         items: { type: number }
                                     class_signatures:
-                                        type: object
-                                        description: Per nominal variable/value mean fingerprint (the class signature).
+                                        $ref: "#/components/schemas/ClassSignatures"
                 "400":
                     description: Invalid request (bad table, fewer than 3 species, or no lipidomes).
                 "415":
@@ -627,8 +686,7 @@ paths:
                                                                 type: object
                                                                 additionalProperties: { type: string }
                                                 contributions:
-                                                    type: object
-                                                    description: Dominant lipids and per-predicted-variable attribution (lipids + modules).
+                                                    $ref: "#/components/schemas/AtlasContributions"
                 "400":
                     description: Invalid request (missing/invalid `Atlas`, bad table, or no query lipidomes).
                 "415":
