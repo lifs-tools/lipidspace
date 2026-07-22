@@ -300,6 +300,10 @@ components:
                 exemplars:
                     type: array
                     items: { type: string }
+                query_lipids:
+                    type: array
+                    description: The query lipids assigned to this module (largest membership first).
+                    items: { $ref: "#/components/schemas/LipidWeight" }
 
         VariableAttribution:
             type: object

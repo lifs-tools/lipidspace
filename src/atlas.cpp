@@ -566,6 +566,18 @@ json Atlas::attribute(const vector<string> &lipid_names, Matrix &C, Array &fp,
                 int k = mk[r].second;
                 json m; m["module"] = k; m["score"] = mk[r].first;
                 m["exemplars"] = (k < (int)module_exemplars.size()) ? module_exemplars[k] : vector<string>();
+                // Query lipids assigned to this module: largest membership C(i,k) first, top 6.
+                vector<pair<double, int>> ql;
+                for (int i = 0; i < n; ++i)
+                    if (k < C.cols && C(i, k) > 0.0) ql.push_back(make_pair(C(i, k), i));
+                int qn = min((int)ql.size(), 6);
+                partial_sort(ql.begin(), ql.begin() + qn, ql.end(), greater<pair<double, int>>());
+                json jql = json::array();
+                for (int qi = 0; qi < qn; ++qi) {
+                    json e; e["lipid"] = lipid_names[ql[qi].second]; e["weight"] = ql[qi].first;
+                    jql.push_back(e);
+                }
+                m["query_lipids"] = jql;
                 jmods.push_back(m);
             }
         }

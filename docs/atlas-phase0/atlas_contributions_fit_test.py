@@ -60,6 +60,15 @@ for v, blk in byv.items():
     ssum = sum(l["share"] for l in blk["lipids"])
     if blk["lipids"] and abs(ssum - 1.0) > 0.02: fail.append(f"{v} shares sum {ssum} != 1")
     if any(len(m["exemplars"]) == 0 for m in blk["modules"]): fail.append(f"{v} a module has no exemplars")
+    for m in blk["modules"]:
+        ql = m.get("query_lipids", [])
+        if not ql:
+            fail.append(f"{v} module {m['module']} has no query_lipids")
+        qws = [x["weight"] for x in ql]
+        if qws != sorted(qws, reverse=True):
+            fail.append(f"{v} module {m['module']} query_lipids not sorted desc")
+        if any(x["lipid"] not in q for x in ql):
+            fail.append(f"{v} module {m['module']} query_lipids not drawn from the query")
 
 # top-N params honored
 res2 = fit(q, TopNDominantLipids=2, TopNLipids=1, TopNModules=2)
