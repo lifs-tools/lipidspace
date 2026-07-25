@@ -49,15 +49,33 @@ jobs:
         make build
         make dist
 
+    - name: Run unit tests (QtTest)
+      run: |
+        qmake6 tests/tests.pro
+        make
+        make check
+
     - name: Upload LipidSpace artifact
       uses: actions/upload-artifact@v4
       with:
         name: LipidSpace-${{ env.OS }}
         path: Build/LipidSpace.zip
 
-    - name: Build LipidSpaceRest
+    - name: Install CUDA 12.8 toolkit
       run: |
-        qmake6 LipidSpaceRest.pro
+        distro=ubuntu$(. /etc/os-release; echo "$VERSION_ID" | tr -d .)
+        wget -q https://developer.download.nvidia.com/compute/cuda/repos/${distro}/x86_64/cuda-keyring_1.1-1_all.deb
+        sudo dpkg -i cuda-keyring_1.1-1_all.deb
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends cuda-nvcc-12-8 cuda-cudart-dev-12-8
+        sudo ln -sfn /usr/local/cuda-12.8 /usr/local/cuda
+        /usr/local/cuda/bin/nvcc --version
+
+    - name: Build LipidSpaceRest (CUDA 12.8 GPU acceleration)
+      # GitHub runners have no GPU, so this validates the CUDA compile only;
+      # the binary uses the CPU fallback at runtime here.
+      run: |
+        qmake6 CONFIG+=cuda_gpu LipidSpaceRest.pro
         make clean
         make release
 
@@ -134,6 +152,13 @@ jobs:
         export PATH="/opt/homebrew/opt/qt/bin:$PATH"
         qmake6 LipidSpace.pro
         make release
+
+    - name: Run unit tests (QtTest)
+      run: |
+        export PATH="/opt/homebrew/opt/qt/bin:$PATH"
+        qmake6 tests/tests.pro
+        make
+        make check
 
     - name: Package LipidSpace
       run: |

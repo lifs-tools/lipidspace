@@ -93,13 +93,17 @@ void Atlas::build(LipidSpace &ls, int K_, const string &label_variable_, bool so
     }
 
     // Calibration: each dataset's nearest-neighbour distance to another dataset.
+    // Precompute the full N x N Hellinger matrix once (adaptive scalar/GEMM backend),
+    // then take per-row minima excluding the zero diagonal.
     int N = (int)fingerprints.size();
+    Matrix Hnn;
+    Hnn.hellinger_matrix_auto(fingerprints);
     nn_ref.clear();
     for (int i = 0; i < N; ++i) {
         double best = numeric_limits<double>::infinity();
         for (int j = 0; j < N; ++j) {
             if (i == j) continue;
-            double d = Matrix::hellinger_distance(fingerprints[i], fingerprints[j]);
+            double d = Hnn(i, j);
             if (d < best) best = d;
         }
         if (best < numeric_limits<double>::infinity()) nn_ref.push_back(best);
@@ -122,14 +126,14 @@ void Atlas::compute_overview() {
         return;
     }
 
-    // Full N x N Hellinger distance matrix between the dataset fingerprints.
+    // Full N x N Hellinger distance matrix between the dataset fingerprints
+    // (adaptive scalar/GEMM backend).
+    Matrix Hm;
+    Hm.hellinger_matrix_auto(fingerprints);
     vector<vector<double>> D(N, vector<double>(N, 0.0));
-    for (int i = 0; i < N; ++i) {
-        for (int j = i + 1; j < N; ++j) {
-            double d = Matrix::hellinger_distance(fingerprints[i], fingerprints[j]);
-            D[i][j] = D[j][i] = d;
-        }
-    }
+    for (int i = 0; i < N; ++i)
+        for (int j = 0; j < N; ++j)
+            D[i][j] = Hm(i, j);
 
     // Average-linkage clustering leaf order (adjacent leaves merged early => similar).
     {

@@ -1,0 +1,12 @@
+# qmake / make build artifacts for the test suites
+Makefile
+Makefile.*
+*.o
+moc_*.cpp
+moc_*.h
+moc_predefs.h
+*.moc
+target_wrapper.sh
+.qmake.stash
+# test executables (one per subdir, matching the TARGET name)
+tst_matrix_blas/tst_matrix_blas

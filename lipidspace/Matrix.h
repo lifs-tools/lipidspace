@@ -96,6 +96,9 @@ public:
     void pad_cols_4();
     void mult(Matrix& A, Matrix& B, bool transA = false, bool transB = false, double alpha = 1.0);
     void covariance_matrix(Matrix &covar);
+    // SYRK covariance: C = Z^T Z / (cols-1), symmetric, via a single BLAS dsyrk
+    // (half the flops of the dgemm path). Parity-tested vs covariance_matrix().
+    void covariance_matrix_syrk(Matrix &covar);
     void compute_eigen_data(Array &eigenvalues, Matrix& eigenvectors, int top_n);
     void PCA(Matrix &pca, int dimensions = 2);
     void add_column(Array &col);
@@ -107,7 +110,17 @@ public:
     void kmeans(int K, Matrix& centers, int max_iter = 100, unsigned long seed = 42);
     void generate_fingerprint(Matrix& centers, Array& weights, Array& fingerprint,
                               double s = 1.0, bool soft = true, Matrix* contributions = nullptr);
-    static double hellinger_distance(Array& a, Array& b);
+    static double hellinger_distance(const Array& a, const Array& b);
+    // BLAS/GEMM pairwise Hellinger distance matrix. Fills *this (n x n) with the
+    // Hellinger distance between every pair of fingerprints. Numerically equivalent
+    // to looping hellinger_distance() over all pairs (see tests/tst_matrix_blas).
+    void hellinger_matrix(const vector<Array>& fingerprints);
+    // Packaged OpenMP-parallel scalar pairwise Hellinger matrix (the pre-BLAS path),
+    // retained as the CPU fast path at small K and as the parity oracle's sibling.
+    void hellinger_matrix_scalar(const vector<Array>& fingerprints);
+    // Adaptive dispatch: GEMM when a GPU BLAS backend is active or K is large enough
+    // to amortize the N*N Gram; otherwise the OpenMP scalar path (faster at small K).
+    void hellinger_matrix_auto(const vector<Array>& fingerprints);
     void compute_fingerprint_distance_matrix(vector<Matrix*>& lipidome_matrixes,
                                               vector<Array*>& lipidome_weights, 
                                               Matrix& frame, 

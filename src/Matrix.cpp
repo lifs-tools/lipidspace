@@ -603,6 +603,28 @@ void Matrix::covariance_matrix(Matrix &covar){
 }
 
 
+/**
+ * SYRK covariance: C = factor * Z^T Z with factor = 1/(cols-1). Since Z^T Z is
+ * symmetric, a single BLAS dsyrk computes one triangle at half the flops of the
+ * general dgemm in covariance_matrix(); the other triangle is mirrored. Numerically
+ * equivalent to covariance_matrix() (parity-tested in tests/tst_matrix_blas).
+ * Windows keeps the dgemm path (its BLAS build routes GEMM through a tiled fallback).
+ */
+void Matrix::covariance_matrix_syrk(Matrix &covar){
+    covar.reset(cols, cols);
+    double factor = 1. / ((double)cols - 1);
+#ifndef _WIN32
+    cblas_dsyrk(CblasColMajor, CblasLower, CblasTrans, cols, rows, factor, data(), rows, 0.0, covar.data(), cols);
+    // Mirror the computed lower triangle into the upper to complete the symmetric matrix.
+    for (int i = 0; i < cols; ++i)
+        for (int j = 0; j < i; ++j)
+            covar(j, i) = covar(i, j);
+#else
+    covar.mult(*this, *this, true, false, factor);
+#endif
+}
+
+
 double* Matrix::data(){
     return m.data();
 }
@@ -808,7 +830,7 @@ void Matrix::generate_fingerprint(Matrix& centers, Array& weights, Array& finger
  * @param b Second probability distribution
  * @return Hellinger distance (a metric in [0, 1])
  */
-double Matrix::hellinger_distance(Array& a, Array& b) {
+double Matrix::hellinger_distance(const Array& a, const Array& b) {
     assert(a.size() == b.size());
     
     double sum_sq = 0.0;
@@ -821,6 +843,112 @@ double Matrix::hellinger_distance(Array& a, Array& b) {
     // But we return the Euclidean distance on square roots divided by sqrt(2)
     // which equals the Hellinger distance
     return sqrt(sum_sq) / sqrt(2.0);
+}
+
+
+/**
+ * BLAS/GEMM reformulation of the pairwise Hellinger distance matrix.
+ *
+ * Let S be the (n x K) matrix of element-wise square roots of the fingerprints,
+ * S(i,k) = sqrt(p_i[k]). Then the Gram matrix G = S * S^T holds the Bhattacharyya
+ * coefficients, G(i,j) = sum_k sqrt(p_i[k] * p_j[k]) = <sqrt(p_i), sqrt(p_j)>, and
+ *
+ *     sum_k (sqrt(p_i[k]) - sqrt(p_j[k]))^2 = G(i,i) + G(j,j) - 2*G(i,j),
+ *     H(i,j) = sqrt( G(i,i) + G(j,j) - 2*G(i,j) ) / sqrt(2).
+ *
+ * This reproduces hellinger_distance() exactly (the general Gram form, not the
+ * sqrt(1 - BC) shortcut, so it also holds for un-normalized fingerprints), while
+ * replacing the O(n^2 * K) scalar double-loop with a single BLAS dgemm (via mult()).
+ * On macOS this dispatches to Accelerate, on Linux to OpenBLAS, and — once the
+ * covariance/GEMM path is compiled with cuBLAS — to the GPU.
+ *
+ * The scalar hellinger_distance() stays in place as the parity oracle
+ * (tests/tst_matrix_blas).
+ */
+void Matrix::hellinger_matrix(const vector<Array>& fingerprints){
+    int n = (int)fingerprints.size();
+    reset(n, n);
+    if (n == 0) return;
+    int K = (int)fingerprints[0].size();
+
+    // S (n x K): element-wise square roots of the fingerprints.
+    Matrix S;
+    S.reset(n, K);
+    for (int i = 0; i < n; ++i){
+        const Array& fp = fingerprints[i];
+        int kk = mmin(K, (int)fp.size());
+        for (int k = 0; k < kk; ++k) S(i, k) = sqrt(fp[k]);
+    }
+
+    // Gram matrix G = S * S^T (n x n) through the BLAS dgemm path.
+    Matrix G;
+    G.mult(S, S, false, true);
+
+    // Recover Hellinger distances from the Gram matrix.
+    const double inv_sqrt2 = 1.0 / sqrt(2.0);
+    #pragma omp parallel for
+    for (int i = 0; i < n; ++i){
+        (*this)(i, i) = 0.0;
+        for (int j = i + 1; j < n; ++j){
+            double v = G(i, i) + G(j, j) - 2.0 * G(i, j);
+            if (v < 0.0) v = 0.0;   // clamp tiny negative round-off
+            double d = sqrt(v) * inv_sqrt2;
+            (*this)(i, j) = d;
+            (*this)(j, i) = d;
+        }
+    }
+}
+
+
+/**
+ * Packaged OpenMP-parallel scalar pairwise Hellinger matrix -- the pre-BLAS path,
+ * identical in result to hellinger_matrix() but built from the scalar
+ * hellinger_distance(). Kept as the CPU fast path at small K (see the benchmark
+ * crossover in tests/tst_matrix_blas) and as a parity sibling of the GEMM path.
+ */
+void Matrix::hellinger_matrix_scalar(const vector<Array>& fingerprints){
+    int n = (int)fingerprints.size();
+    reset(n, n);
+    #pragma omp parallel for
+    for (int i = 0; i < n; ++i){
+        for (int j = i + 1; j < n; ++j){
+            double d = hellinger_distance(fingerprints[i], fingerprints[j]);
+            (*this)(i, j) = d;
+            (*this)(j, i) = d;
+        }
+        (*this)(i, i) = 0.0;
+    }
+}
+
+
+// Minimum fingerprint dimensionality (K) at which the GEMM path is expected to beat
+// the OpenMP scalar loop on CPU. Below this the pairwise matrix is memory-bandwidth
+// bound (skinny rank-K Gram) and the scalar loop wins; above it the GEMM's arithmetic
+// intensity pays off. The measured crossover is ~K=46 on Apple M-series / 10 threads
+// (tests/tst_matrix_blas benchmark_hellinger_backends); 64 leaves a safety margin.
+#define HELLINGER_GEMM_MIN_K 64
+
+// Placeholder for a future GPU BLAS backend. Once Matrix::mult() gains a cuBLAS path,
+// the dispatcher should prefer the GEMM formulation unconditionally on GPU hosts
+// (where the N*N Gram is cheap and no OpenMP scalar equivalent exists).
+static inline bool hellinger_gemm_is_gpu_accelerated() {
+    return false;
+}
+
+/**
+ * Adaptive dispatch for the N x N Hellinger matrix. Chooses the GEMM path when a GPU
+ * BLAS backend is active or when K is large enough to amortize the Gram; otherwise the
+ * OpenMP scalar path, which is faster at the Atlas default K=20 on CPU. Both paths are
+ * numerically equivalent and parity-tested against the scalar oracle.
+ */
+void Matrix::hellinger_matrix_auto(const vector<Array>& fingerprints){
+    int n = (int)fingerprints.size();
+    int K = n > 0 ? (int)fingerprints[0].size() : 0;
+    if (hellinger_gemm_is_gpu_accelerated() || K >= HELLINGER_GEMM_MIN_K) {
+        hellinger_matrix(fingerprints);        // BLAS GEMM (Accelerate / OpenBLAS / cuBLAS)
+    } else {
+        hellinger_matrix_scalar(fingerprints); // OpenMP scalar (faster at small K on CPU)
+    }
 }
 
 
@@ -898,16 +1026,6 @@ void Matrix::compute_fingerprint_distance_matrix(vector<Matrix*>& lipidome_matri
         lip_matrix->generate_fingerprint(centers, weights, fingerprints[i], s, soft);
     }
     
-    // Step 4: Compute pairwise JSD distances
-    this->reset(n, n);
-    
-    #pragma omp parallel for
-    for (int i = 0; i < n; ++i) {
-        for (int j = i + 1; j < n; ++j) {
-            double dist = hellinger_distance(fingerprints[i], fingerprints[j]);
-            (*this)(i, j) = dist;
-            (*this)(j, i) = dist;
-        }
-        (*this)(i, i) = 0.0;  // Distance to self is 0
-    }
+    // Step 4: pairwise Hellinger distances via the adaptive scalar/GEMM backend.
+    hellinger_matrix_auto(fingerprints);
 }
