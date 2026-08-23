@@ -72,21 +72,31 @@ if "%WINDEPLOYQT%"=="" (
     exit /b 1
 )
 
-REM libgomp is not part of windeployqt's compiler-runtime set, so take it from
-REM the same MinGW toolchain that compiled the exe. Do not search PATH for it:
-REM that picks up whichever GCC happens to come first and can ship a libgomp
-REM built by a different compiler than the rest of the application.
+REM The MinGW runtime must come from the compiler that built the exe, so locate
+REM it next to g++ rather than letting windeployqt supply it.
+REM
+REM windeployqt --compiler-runtime copies libstdc++-6.dll and friends out of the
+REM *Qt* installation's bin directory, which carries its own MinGW runtime. When
+REM Qt was built by a different MinGW than the one compiling LipidSpace - as on
+REM the CI runner, where Qt 6.5.3 ships the MinGW 11.2 runtime while the exe is
+REM compiled by GCC 15.2 in C:\mingw64 - the packaged application dies at
+REM startup with "the procedure entry point _ZNSi5seekgESt4fposI9_MbstatetE
+REM could not be located". mbstate_t changed from int to the _Mbstatet struct in
+REM newer mingw-w64, so the older libstdc++ simply does not export the symbols
+REM the newer compiler emitted calls to.
 set "MINGW_BIN="
 for /f "delims=" %%g in ('where g++ 2^>nul') do (
     if "!MINGW_BIN!"=="" for %%p in ("%%g") do set "MINGW_BIN=%%~dpp"
 )
 if "%MINGW_BIN%"=="" (
-    echo ERROR: g++ is not on PATH, cannot locate libgomp-1.dll.
+    echo ERROR: g++ is not on PATH, cannot locate the MinGW runtime.
     exit /b 1
 )
-if not exist "%MINGW_BIN%libgomp-1.dll" (
-    echo ERROR: libgomp-1.dll not found in %MINGW_BIN%
-    exit /b 1
+for %%r in (libstdc++-6.dll libgcc_s_seh-1.dll libwinpthread-1.dll libgomp-1.dll) do (
+    if not exist "%MINGW_BIN%%%r" (
+        echo ERROR: %%r not found in %MINGW_BIN%
+        exit /b 1
+    )
 )
 
 echo Packaging %EXE%
@@ -103,8 +113,6 @@ copy /y "libraries\cppgoslin\bin\win64\*.dll" "Build\LipidSpace\"     || goto :f
 copy /y "libraries\OpenBLAS\bin\win64\*.dll" "Build\LipidSpace\"      || goto :fail
 REM OpenXLSX is linked statically - nothing to copy.
 
-copy /y "%MINGW_BIN%libgomp-1.dll" "Build\LipidSpace\"               || goto :fail
-
 REM No --release: windeployqt detects release/debug from the binary itself (it
 REM reports "64 bit, release executable"). Passing --release explicitly makes it
 REM classify the MinGW-built Qt plugins as non-matching and drop every one of
@@ -112,7 +120,16 @@ REM them, so it then reports "Unable to find the platform plugin" even though
 REM plugins\platforms\qwindows.dll is right there. Known MinGW-only behaviour,
 REM see msys2/MINGW-packages#6272. Locally on Qt 6.11.0 both forms select the
 REM same 12 plugins, so dropping the flag costs nothing.
-"%WINDEPLOYQT%" --no-translations --compiler-runtime "Build\LipidSpace\LipidSpace.exe" || goto :deployfail
+REM
+REM No --compiler-runtime either: that copies the runtime out of the Qt
+REM installation, which is the wrong MinGW whenever Qt was built by a different
+REM one than the compiler in use. The runtime is copied from %MINGW_BIN% below
+REM instead, after windeployqt, so ours is the copy that survives.
+"%WINDEPLOYQT%" --no-translations "Build\LipidSpace\LipidSpace.exe" || goto :deployfail
+
+for %%r in (libstdc++-6.dll libgcc_s_seh-1.dll libwinpthread-1.dll libgomp-1.dll) do (
+    copy /y "%MINGW_BIN%%%r" "Build\LipidSpace\" || goto :fail
+)
 
 copy /y "data\classes-matrix.csv" "Build\LipidSpace\data\"           || goto :fail
 powershell -NoProfile -Command "Copy-Item 'data/images' -Destination 'Build/LipidSpace/data' -Recurse -Force" || goto :fail
@@ -120,6 +137,13 @@ copy /y "examples\Example-Dataset.xlsx" "Build\LipidSpace\examples\" || goto :fa
 copy /y "examples\ThreeStudies.xlsx" "Build\LipidSpace\examples\"    || goto :fail
 copy /y "LICENSE*" "Build\LipidSpace\"                               || goto :fail
 copy /y "dist\README.txt" "Build\LipidSpace\"                        || goto :fail
+
+REM Refuse to ship a bundle whose imports do not resolve against the DLLs beside
+REM it. A mismatched runtime aborts the application before main() with a modal
+REM "procedure entry point ... could not be located" dialog, which is invisible
+REM to CI - the zip uploads happily and only fails on a user's machine.
+powershell -NoProfile -ExecutionPolicy Bypass -File "tools\check-windows-bundle.ps1" ^
+    -BundleDir "Build\LipidSpace" -Objdump "%MINGW_BIN%objdump.exe" || goto :fail
 
 REM Sanity check: the Qt platform plugin is what decides whether the packaged
 REM application starts at all, so refuse to ship a bundle without it.
