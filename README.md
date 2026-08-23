@@ -133,10 +133,14 @@ LipidSpace is built with **Qt 6 and the MinGW toolchain**. MSVC is not supported
 
 ### Setting up the toolchain
 
+You need [Git for Windows](https://git-scm.com/download/win) to clone the repository, and Qt with its MinGW toolchain to build. Nothing else — `powershell` and `objdump` are already there once those two are installed.
+
 Install Qt with the [Qt Online Installer](https://www.qt.io/download-qt-installer) and select, under the Qt 6 version you want:
 
 * **MinGW 64-bit** (the Qt build itself), and
 * under *Developer and Designer Tools* → **MinGW 13.1.0 64-bit** (the compiler).
+
+Take the compiler from the Qt installer rather than a separate MinGW distribution. Qt and the compiler that builds against it should be the same generation, and the pairing the installer offers is a known-good one.
 
 Then put both on your `PATH`, adjusting the Qt version to what you installed:
 
@@ -169,13 +173,36 @@ Qt Creator works too — open `LipidSpace.pro` directly. It builds into a shadow
 .\win-build.bat
 ```
 
-This assembles `Build\LipidSpace\` and zips it to `Build\LipidSpace.zip`. It locates the freshly built executable (in-tree or in a Qt Creator shadow build), copies the bundled DLLs, runs `windeployqt` to pull in Qt and its plugins, and adds the data files, examples and licences. Pass an explicit path if you want to package a specific binary:
+This assembles `Build\LipidSpace\` and zips it to `Build\LipidSpace.zip`. It locates the freshly built executable (in-tree or in a Qt Creator shadow build), copies the bundled DLLs and the MinGW runtime, runs `windeployqt` to pull in Qt and its plugins, adds the data files, examples and licences, and verifies the result before zipping. Pass an explicit path if you want to package a specific binary:
 
 ```bat
 .\win-build.bat path\to\LipidSpace.exe
 ```
 
-`windeployqt` is deliberately taken from the directory holding `qmake`, not from `PATH`, so the deployed Qt plugins always match the Qt the executable was built against.
+It needs `powershell` (present on any supported Windows) and `objdump` (ships with MinGW).
+
+#### Where each piece comes from, and why it matters
+
+Windows machines routinely carry more than one Qt and more than one MinGW. Picking the wrong one produces a package that builds green and then fails on a user's machine, so `win-build.bat` resolves both deliberately rather than taking whatever `PATH` offers first:
+
+| Piece | Taken from | If it comes from elsewhere |
+|---|---|---|
+| `windeployqt` | the directory holding `qmake` | reports "Unable to find the platform plugin" and deploys nothing |
+| `libstdc++-6.dll`, `libgcc_s_seh-1.dll`, `libwinpthread-1.dll`, `libgomp-1.dll` | the directory holding `g++` | the application dies at startup with "The procedure entry point … could not be located" |
+
+The runtime in particular must come from the compiler, **not** from Qt. `windeployqt --compiler-runtime` would copy it out of the Qt installation, which carries whichever MinGW built Qt — older than yours whenever Qt and the compiler were installed separately. The script therefore does not pass that flag and copies the four DLLs itself, after `windeployqt` has run.
+
+Both choices are enforced rather than trusted. Before zipping, [`tools/check-windows-bundle.ps1`](tools/check-windows-bundle.ps1) reads the import and export tables of every binary in the bundle and fails if anything imports a symbol that a DLL shipped beside it does not export:
+
+```
+Bundle check OK: 27 binaries, all imports from bundled DLLs resolve.
+```
+
+You can run it against any unpacked bundle:
+
+```bat
+powershell -File tools\check-windows-bundle.ps1 -BundleDir Build\LipidSpace
+```
 
 To clean up all build output:
 
@@ -189,6 +216,7 @@ Tested on Ubuntu 22.04 and 24.04.
 
 ```bash
 sudo apt install \
+  git \
   build-essential \
   libfontconfig1 \
   qt6-base-dev \
@@ -202,6 +230,8 @@ sudo apt install \
   libc6 \
   libstdc++6
 ```
+
+This is the complete list — `qt6-base-dev-tools` provides `qmake6`, and everything else LipidSpace needs is vendored. It is the same set CI installs, so it is exercised on every push.
 
 Add `libssl-dev` as well if you intend to build LipidSpace REST.
 
@@ -243,16 +273,16 @@ Put Qt 6 on your `PATH` so `qmake6` is found — add this to `~/.zshrc` or run i
 export PATH="/opt/homebrew/opt/qt/bin:$PATH"
 ```
 
-### Building the OpenXLSX dependency
+### Rebuilding the OpenXLSX dependency (not normally needed)
 
-The macOS archive is not committed to the repository and has to be built once:
+`libraries/OpenXLSX/bin/macarm64/libOpenXLSX.a` is committed like the Windows and Linux archives, so a plain checkout builds without this step. It is here for when the vendored OpenXLSX is updated:
 
 ```bash
 chmod +x build-openxlsx-macos-arm64.sh
 ./build-openxlsx-macos-arm64.sh
 ```
 
-The script checks out the exact OpenXLSX revision the vendored headers came from, builds it as a static `arm64` library, writes it to `libraries/OpenXLSX/bin/macarm64/libOpenXLSX.a`, and then verifies that the archive and the headers agree by reading the example dataset. Do not point it at a different upstream revision without also replacing `libraries/OpenXLSX/include/` — see [`libraries/OpenXLSX/PROVENANCE.md`](libraries/OpenXLSX/PROVENANCE.md).
+The script checks out the exact OpenXLSX revision the vendored headers came from, builds it as a static `arm64` library, writes it to `libraries/OpenXLSX/bin/macarm64/libOpenXLSX.a`, and then verifies that the archive and the headers agree by reading the example dataset. Do not point it at a different upstream revision without also replacing `libraries/OpenXLSX/include/` — see [`libraries/OpenXLSX/PROVENANCE.md`](libraries/OpenXLSX/PROVENANCE.md). `cmake` and `git` are only needed for this step.
 
 ### Building
 
@@ -381,6 +411,21 @@ Make sure you have the latest version of [cppgoslin](https://github.com/lifs-too
 <details><summary><b>Windows: <code>windeployqt</code> reports "Unable to find the platform plugin"</b></summary>
 <p>
 Usually this means a second Qt or MinGW installation is ahead of the intended one on <code>PATH</code>. Check <code>where qmake6</code>, <code>where g++</code> and <code>where windeployqt6</code>, and note that <code>win-build.bat</code> prints the exact <code>windeployqt</code> and <code>qmake</code> it selected. Do not add <code>--release</code> to the <code>windeployqt</code> call — with MinGW builds it causes exactly this error by discarding every plugin.
+</p>
+</details>
+
+<details><summary><b>Windows: "The procedure entry point ... could not be located in the dynamic link library"</b></summary>
+<p>
+
+A dialog like this on startup, typically naming a mangled C++ symbol such as <code>_ZNSi5seekgESt4fposI9_MbstatetE</code>:
+
+The <code>libstdc++-6.dll</code> next to the executable is older than the MinGW that compiled it, so the symbols the compiler emitted calls to are not there. Copy the four runtime DLLs from the <code>bin</code> directory of the <code>g++</code> that built the application — <code>libstdc++-6.dll</code>, <code>libgcc_s_seh-1.dll</code>, <code>libwinpthread-1.dll</code>, <code>libgomp-1.dll</code> — over the ones in the bundle.
+
+Repackaging with <code>win-build.bat</code> does this correctly and refuses to produce a zip that would fail this way. To check an existing bundle:
+
+```bat
+powershell -File tools\check-windows-bundle.ps1 -BundleDir path\to\LipidSpace
+```
 </p>
 </details>
 
