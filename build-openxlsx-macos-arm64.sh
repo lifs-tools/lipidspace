@@ -19,12 +19,18 @@ done
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT_DIR="$SCRIPT_DIR/libraries/OpenXLSX/bin/macarm64"
 WORK_DIR="$(mktemp -d)"
-REPO_URL="https://github.com/troldal/OpenXLSX.git"
+REPO_URL="https://codeberg.org/troldal/OpenXLSX.git"
 
-# The project carries post-v0.3.2 headers (XLSheet.hpp, XLColor.hpp, XLDateTime.hpp
-# differ from v0.3.2). We clone master and overlay the project's own headers so
-# the compiled library is ABI-compatible with what LipidSpace includes.
-OPENXLSX_TAG="master"
+# The revision the headers in libraries/OpenXLSX/include/ were taken from. All
+# 32 vendored headers match this commit exactly. Keep it in sync with
+# libraries/OpenXLSX/PROVENANCE.md - headers and library must always come from
+# one revision, or XLDocument segfaults on the first open.
+#
+# This used to clone master and overlay the vendored headers onto it. That
+# cannot work: master's XLDocument.cpp calls m_archive.addEntryAndCommit(),
+# which the vendored headers do not declare, so the build fails outright.
+# Checking out the matching revision is both simpler and correct.
+OPENXLSX_REV="9d673a34e59e156cc3477a8fdb70d55a91bb8646"
 
 echo "==> Working directory: $WORK_DIR"
 echo "==> Output: $OUTPUT_DIR"
@@ -32,20 +38,11 @@ echo "==> Output: $OUTPUT_DIR"
 cleanup() { rm -rf "$WORK_DIR"; }
 trap cleanup EXIT
 
-echo "==> Cloning OpenXLSX $OPENXLSX_TAG..."
-git clone --quiet --depth 1 --branch "$OPENXLSX_TAG" "$REPO_URL" "$WORK_DIR/OpenXLSX"
+echo "==> Cloning OpenXLSX at $OPENXLSX_REV..."
+git clone --quiet "$REPO_URL" "$WORK_DIR/OpenXLSX"
 
 cd "$WORK_DIR/OpenXLSX"
-
-# Overlay the project's own headers so the compiled library matches exactly what
-# LipidSpace includes. This ensures ABI compatibility on the macOS build.
-echo "==> Overlaying project headers onto cloned source..."
-cp "$SCRIPT_DIR/libraries/OpenXLSX/include/headers/"*.hpp \
-   "$WORK_DIR/OpenXLSX/OpenXLSX/headers/"
-cp "$SCRIPT_DIR/libraries/OpenXLSX/include/OpenXLSX.hpp" \
-   "$WORK_DIR/OpenXLSX/OpenXLSX/"
-cp "$SCRIPT_DIR/libraries/OpenXLSX/include/OpenXLSX-Exports.hpp" \
-   "$WORK_DIR/OpenXLSX/OpenXLSX/"
+git checkout --quiet "$OPENXLSX_REV"
 
 echo "==> Configuring CMake (arm64, static, Release)..."
 cmake -S . -B build \
@@ -80,6 +77,15 @@ cp "$LIB_PATH" "$OUTPUT_DIR/libOpenXLSX.a"
 echo ""
 echo "==> Done. Verifying:"
 file "$OUTPUT_DIR/libOpenXLSX.a"
+
+# LipidSpace.pro already links this path; nothing further to configure. Confirm
+# the archive and the vendored headers agree before relying on it - a mismatch
+# links cleanly and then segfaults on the first XLSX open.
 echo ""
-echo "Add to your PATH for qmake:"
-echo "  LIBS += -L\$\$PWD/libraries/OpenXLSX/bin/macarm64 -lOpenXLSX"
+echo "==> Checking the archive against the vendored headers..."
+clang++ -std=c++17 -O2 \
+    -I "$SCRIPT_DIR/libraries/OpenXLSX/include" \
+    "$SCRIPT_DIR/tests/xlsx_smoke.cpp" \
+    "$OUTPUT_DIR/libOpenXLSX.a" \
+    -o "$WORK_DIR/xlsx_smoke"
+"$WORK_DIR/xlsx_smoke" "$SCRIPT_DIR/examples/Example-Dataset.xlsx"
