@@ -111,10 +111,25 @@ jobs:
         git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
         git config --global author.name "${GITHUB_ACTOR}"
 
+    # bash rather than the default pwsh, and linked with -static:
+    #   * the runner carries more than one MinGW installation, so a dynamically
+    #     linked throwaway binary can pick up a mismatched libstdc++-6.dll at
+    #     launch (actions/runner-images#6412, #11102). LipidSpace.exe itself is
+    #     unaffected because windeployqt ships its runtime alongside it.
+    #   * set -x leaves a trace, so a failure here is diagnosable from the log
+    #     instead of just an exit code.
     - name: Check vendored OpenXLSX headers match the vendored archive
+      shell: bash
       run: |
-        g++ -std=c++17 -I libraries/OpenXLSX/include tests/xlsx_smoke.cpp `
-          libraries/OpenXLSX/bin/win64/libOpenXLSX.a -o xlsx_smoke.exe
+        set -x
+        command -v g++ || { echo "ERROR: g++ is not on PATH"; exit 1; }
+        g++ --version | head -1
+        ls -l libraries/OpenXLSX/bin/win64/libOpenXLSX.a examples/Example-Dataset.xlsx
+        g++ -std=c++17 -O2 -static \
+          -I libraries/OpenXLSX/include \
+          tests/xlsx_smoke.cpp \
+          libraries/OpenXLSX/bin/win64/libOpenXLSX.a \
+          -o xlsx_smoke.exe || { echo "ERROR: smoke test failed to build"; exit 1; }
         ./xlsx_smoke.exe examples/Example-Dataset.xlsx
 
     - name: Prepare QT Project makefiles
