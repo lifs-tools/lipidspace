@@ -11,12 +11,20 @@ jobs:
     runs-on: "ubuntu-latest"
     env:
         BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
-        RELEASE_VERSION: ${{ github.ref_name }}
+        # The git tag the release was cut from, e.g. "v1.2.1". LipidSpace.pro
+        # compiles this into the binary as LIPIDSPACE_VERSION, so the About box,
+        # the window title and the REST service all report the released version
+        # instead of a hard-coded string. On a manual workflow_dispatch there is
+        # no release payload and this falls back to the branch name.
+        RELEASE_VERSION: ${{ github.event.release.tag_name || github.ref_name }}
         OS: "Linux"
     steps:
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
+        # Needed so the tag is present for `git describe` if RELEASE_VERSION
+        # is ever empty.
+        fetch-depth: 0
     - name: Set Git user
       run: |
         git config --global committer.email "noreply@github.com"
@@ -67,7 +75,12 @@ jobs:
     runs-on: "windows-latest"
     env:
         BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
-        RELEASE_VERSION: ${{ github.ref_name }}
+        # The git tag the release was cut from, e.g. "v1.2.1". LipidSpace.pro
+        # compiles this into the binary as LIPIDSPACE_VERSION, so the About box,
+        # the window title and the REST service all report the released version
+        # instead of a hard-coded string. On a manual workflow_dispatch there is
+        # no release payload and this falls back to the branch name.
+        RELEASE_VERSION: ${{ github.event.release.tag_name || github.ref_name }}
         OS: "Windows"
         QT_VERSION: "6.5.3"
     steps:
@@ -90,6 +103,9 @@ jobs:
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
+        # Needed so the tag is present for `git describe` if RELEASE_VERSION
+        # is ever empty.
+        fetch-depth: 0
     - name: Set Git user
       run: |
         git config --global committer.email "noreply@github.com"
@@ -97,11 +113,17 @@ jobs:
         git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
         git config --global author.name "${GITHUB_ACTOR}"
 
+    - name: Check vendored OpenXLSX headers match the vendored archive
+      run: |
+        g++ -std=c++17 -I libraries/OpenXLSX/include tests/xlsx_smoke.cpp `
+          libraries/OpenXLSX/bin/win64/libOpenXLSX.a -o xlsx_smoke.exe
+        ./xlsx_smoke.exe examples/Example-Dataset.xlsx
+
     - name: Prepare QT Project makefiles
       run: qmake6 LipidSpace.pro
 
     - name: Build LipidSpace
-      run: mingw32-make
+      run: mingw32-make release
 
     - name: Package LipidSpace
       run: |
@@ -129,12 +151,20 @@ jobs:
     runs-on: macos-14
     env:
         BUILD_DATE: ${{ github.run_id }}.${{ github.run_attempt }}
-        RELEASE_VERSION: ${{ github.ref_name }}
+        # The git tag the release was cut from, e.g. "v1.2.1". LipidSpace.pro
+        # compiles this into the binary as LIPIDSPACE_VERSION, so the About box,
+        # the window title and the REST service all report the released version
+        # instead of a hard-coded string. On a manual workflow_dispatch there is
+        # no release payload and this falls back to the branch name.
+        RELEASE_VERSION: ${{ github.event.release.tag_name || github.ref_name }}
         OS: "macOS-ARM64"
     steps:
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
+        # Needed so the tag is present for `git describe` if RELEASE_VERSION
+        # is ever empty.
+        fetch-depth: 0
 
     - name: Install dependencies
       run: |
@@ -164,3 +194,85 @@ jobs:
         tag: ${{ github.ref }}
         overwrite: true
         file_glob: true
+
+  docker:
+    name: Build, test and push LipidSpace Rest Docker image
+    needs: build-linux
+    runs-on: ubuntu-22.04
+    env:
+      IMAGE_NAME: 'lifs/lipidspace'
+      REGISTRY_NAME: 'docker.lifs-tools.org'
+      # The released version is the image tag, rather than the run id that the
+      # CI build (.github/workflows/build.yml) uses for its throwaway images.
+      RELEASE_VERSION: ${{ github.event.release.tag_name || github.ref_name }}
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        lfs: 'true'
+        fetch-depth: 0
+
+    - name: Login to LIFS Tools registry
+      uses: docker/login-action@v1
+      with:
+        registry: docker.lifs-tools.org
+        username: ${{ secrets.LIFS_TOOLS_DOCKER_REGISTRY_USER }}
+        password: ${{ secrets.LIFS_TOOLS_DOCKER_REGISTRY_PW }}
+
+    # RELEASE_VERSION is passed in as a build argument because git is not
+    # installed in the build image, so version.pri cannot derive the version
+    # itself and would fall back to LIPIDSPACE_FALLBACK_VERSION.
+    - name: Build the Docker image
+      run: |
+        docker build . \
+          --file LipidSpaceRest.docker \
+          --build-arg RELEASE_VERSION=${{ env.RELEASE_VERSION }} \
+          --tag ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
+
+    # Guards against the image being built without the build argument, which
+    # would silently ship a binary reporting LIPIDSPACE_FALLBACK_VERSION.
+    - name: Test the image reports the released version
+      run: |
+        reported=$(docker run --rm ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }} --version)
+        echo "Reported: $reported"
+        case "$reported" in
+          *"${{ env.RELEASE_VERSION }}"*) ;;
+          *) echo "ERROR: expected version '${{ env.RELEASE_VERSION }}'"; exit 1 ;;
+        esac
+
+    - name: Start REST service container
+      run: docker run --detach --name LipidSpaceRest -p8888:8888 --rm ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
+
+    - name: Test response is expected
+      run: |
+        curl -X POST -v -H "Content-Type: application/json" --data-binary "@examples/Rest/Plasma-Singapore-Short.json" 127.0.0.1:8888/lipidspace/v1/pca
+
+    - name: Test health endpoint returns UP
+      run: |
+        response=$(curl -s -w '\n%{http_code}' 127.0.0.1:8888/actuator/health)
+        http_code=$(echo "$response" | tail -1)
+        body=$(echo "$response" | head -1)
+        echo "HTTP status: $http_code"
+        echo "Body: $body"
+        if [ "$http_code" != "200" ]; then
+          echo "ERROR: expected HTTP 200, got $http_code"
+          exit 1
+        fi
+        echo "$body" | grep -q '"status":"UP"' || { echo "ERROR: status is not UP"; exit 1; }
+
+    - name: Stop REST service container
+      run: docker stop LipidSpaceRest
+
+    - name: Push Docker image
+      # only push on release creation, not on manual trigger
+      if: github.event_name != 'workflow_dispatch'
+      run: docker push ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
+
+    # 'latest' should not move backwards when an older patch release is cut,
+    # and should never point at a pre-release.
+    - name: Tag and push as latest
+      if: github.event_name != 'workflow_dispatch' && github.event.release.prerelease == false
+      run: |
+        docker tag ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }} \
+                   ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:latest
+        docker push ${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:latest

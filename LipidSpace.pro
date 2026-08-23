@@ -9,6 +9,8 @@ versionAtLeast(QT_VERSION, 6.0.0) {
 CONFIG += c++17 debug_and_release
 QMAKE_CXXFLAGS += -std=c++17 -Wno-unknown-pragmas
 
+include(version.pri)
+
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -32,7 +34,16 @@ unix:!macx {
 
 win32 {
     QMAKE_CXXFLAGS += -fopenmp
-    LIBS += -fopenmp $$PWD\libraries\cppgoslin\bin\win64\libcppGoslin.dll $$PWD\libraries\OpenBLAS\bin\win64\libopenblas.dll $$PWD\libraries\OpenXLSX\bin\win64\libopenXLSX.dll
+    LIBS += -fopenmp
+    LIBS += -L$$PWD/libraries/cppgoslin/bin/win64 -lcppGoslin
+    LIBS += -L$$PWD/libraries/OpenBLAS/bin/win64 -lopenblas
+
+    # OpenXLSX is linked statically, as it is on Linux and macOS. Linking it as a
+    # DLL let the vendored headers drift away from the binary: IZipArchive is a
+    # header-only type-erased interface, so a mismatch is invisible to the linker
+    # and segfaults on the first XLSX open. See libraries/OpenXLSX/PROVENANCE.md.
+    # Named by full path so a stray import library cannot be picked up instead.
+    LIBS += $$PWD/libraries/OpenXLSX/bin/win64/libOpenXLSX.a
 }
 
 macx {
