@@ -105,7 +105,14 @@ REM OpenXLSX is linked statically - nothing to copy.
 
 copy /y "%MINGW_BIN%libgomp-1.dll" "Build\LipidSpace\"               || goto :fail
 
-"%WINDEPLOYQT%" --release --no-translations --compiler-runtime "Build\LipidSpace\LipidSpace.exe" || goto :deployfail
+REM No --release: windeployqt detects release/debug from the binary itself (it
+REM reports "64 bit, release executable"). Passing --release explicitly makes it
+REM classify the MinGW-built Qt plugins as non-matching and drop every one of
+REM them, so it then reports "Unable to find the platform plugin" even though
+REM plugins\platforms\qwindows.dll is right there. Known MinGW-only behaviour,
+REM see msys2/MINGW-packages#6272. Locally on Qt 6.11.0 both forms select the
+REM same 12 plugins, so dropping the flag costs nothing.
+"%WINDEPLOYQT%" --no-translations --compiler-runtime "Build\LipidSpace\LipidSpace.exe" || goto :deployfail
 
 copy /y "data\classes-matrix.csv" "Build\LipidSpace\data\"           || goto :fail
 powershell -NoProfile -Command "Copy-Item 'data/images' -Destination 'Build/LipidSpace/data' -Recurse -Force" || goto :fail
