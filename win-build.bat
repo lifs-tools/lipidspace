@@ -42,15 +42,33 @@ if not exist "%EXE%" (
     exit /b 1
 )
 
-REM windeployqt6 on a Qt installer setup, windeployqt via install-qt-action.
-set "WINDEPLOYQT="
-where windeployqt6 >nul 2>&1 && set "WINDEPLOYQT=windeployqt6"
-if "%WINDEPLOYQT%"=="" (
-    where windeployqt >nul 2>&1 && set "WINDEPLOYQT=windeployqt"
+REM windeployqt must come from the same Qt installation that built the exe, so
+REM resolve it next to qmake rather than taking whichever one PATH offers first.
+REM On the CI runner C:\mingw64\bin is ahead of Qt on PATH and ships its own
+REM windeployqt6.exe belonging to a different Qt; that one looks for plugins
+REM under its own prefix and fails with "Unable to find the platform plugin".
+REM Whichever qmake generated the Makefile is by definition the right Qt.
+set "QMAKE_EXE="
+for /f "delims=" %%q in ('where qmake6 2^>nul') do (
+    if "!QMAKE_EXE!"=="" set "QMAKE_EXE=%%q"
 )
-if "%WINDEPLOYQT%"=="" (
-    echo ERROR: neither windeployqt6 nor windeployqt is on PATH.
+if "%QMAKE_EXE%"=="" (
+    for /f "delims=" %%q in ('where qmake 2^>nul') do (
+        if "!QMAKE_EXE!"=="" set "QMAKE_EXE=%%q"
+    )
+)
+if "%QMAKE_EXE%"=="" (
+    echo ERROR: neither qmake6 nor qmake is on PATH.
     echo        Run this from a Qt command prompt, or add ^<qt^>\bin to PATH.
+    exit /b 1
+)
+for %%p in ("%QMAKE_EXE%") do set "QT_BIN=%%~dpp"
+
+set "WINDEPLOYQT="
+if exist "%QT_BIN%windeployqt6.exe" set "WINDEPLOYQT=%QT_BIN%windeployqt6.exe"
+if "%WINDEPLOYQT%"=="" if exist "%QT_BIN%windeployqt.exe" set "WINDEPLOYQT=%QT_BIN%windeployqt.exe"
+if "%WINDEPLOYQT%"=="" (
+    echo ERROR: no windeployqt next to %QMAKE_EXE%
     exit /b 1
 )
 
@@ -87,7 +105,7 @@ REM OpenXLSX is linked statically - nothing to copy.
 
 copy /y "%MINGW_BIN%libgomp-1.dll" "Build\LipidSpace\"               || goto :fail
 
-%WINDEPLOYQT% --release --no-translations --compiler-runtime "Build\LipidSpace\LipidSpace.exe" || goto :fail
+"%WINDEPLOYQT%" --release --no-translations --compiler-runtime "Build\LipidSpace\LipidSpace.exe" || goto :deployfail
 
 copy /y "data\classes-matrix.csv" "Build\LipidSpace\data\"           || goto :fail
 powershell -NoProfile -Command "Copy-Item 'data/images' -Destination 'Build/LipidSpace/data' -Recurse -Force" || goto :fail
@@ -109,6 +127,15 @@ powershell -NoProfile -Command "Compress-Archive -Path 'Build/LipidSpace' -Desti
 echo.
 echo Packaged Build\LipidSpace.zip
 exit /b 0
+
+:deployfail
+echo.
+echo ERROR: windeployqt failed.
+echo   windeployqt: %WINDEPLOYQT%
+echo   qmake:       %QMAKE_EXE%
+echo   platform plugins next to that Qt:
+dir /b "%QT_BIN%..\plugins\platforms" 2>nul || echo     ^(no plugins\platforms directory - wrong Qt installation^)
+exit /b 1
 
 :fail
 echo.
