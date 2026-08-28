@@ -5,3 +5,5 @@ Makefile*
 objects/
 LipidSpace
 LipidSpaceRest
+LipidSpace.app
+LipidSpaceRest.app
