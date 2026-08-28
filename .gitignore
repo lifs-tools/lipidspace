@@ -7,3 +7,11 @@ LipidSpace
 LipidSpaceRest
 LipidSpace.app
 LipidSpaceRest.app
+
+.DS_Store
+.agents/
+.claude/
+.qmake.stash
+LipidSpace.zip
+release/
+skills-lock.json
