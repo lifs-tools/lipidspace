@@ -1,4 +1,6 @@
-FROM ubuntu:24.04 AS build
+# CUDA 12.8 devel base (nvcc + static cudart) so LipidSpaceRest can be built with
+# GPU acceleration. Compute-capability targets are set in LipidSpaceRest.pro (cuda_gpu).
+FROM nvidia/cuda:12.8.0-devel-ubuntu24.04 AS build
 MAINTAINER Nils Hoffmann <n.hoffmann@fz-juelich.de>
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
@@ -19,7 +21,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 VOLUME /tmp
 COPY . /lipidspace
 WORKDIR /lipidspace
-RUN qmake6 LipidSpaceRest.pro
+RUN qmake6 CONFIG+=cuda_gpu LipidSpaceRest.pro
 RUN make clean && make release -j$((`nproc`+1))
 
 FROM ubuntu:24.04 AS main
@@ -38,6 +40,10 @@ COPY --from=build /lipidspace/LipidSpaceRest /lipidspace/LipidSpaceRest
 COPY --from=build /lipidspace/libraries/cppgoslin/bin/linux64/libcppGoslin.so /usr/local/lib/libcppGoslin.so
 COPY --from=build /lipidspace/libraries/OpenXLSX/bin/linux64/libOpenXLSX.a /usr/local/lib/libOpenXLSX.a
 RUN ldconfig
+# Let the NVIDIA Container Toolkit inject the driver (libcuda.so.1) + compute capability
+# when the container is started with `--gpus all`. With no GPU the binary falls back to CPU.
+ENV NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
 WORKDIR /lipidspace
 EXPOSE 8888/tcp
 ENTRYPOINT ["./LipidSpaceRest", "--tmp_folder", "/tmp"]

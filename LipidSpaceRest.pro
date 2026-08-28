@@ -26,17 +26,26 @@ unix:!macx {
     QMAKE_CXXFLAGS += -fopenmp
     LIBS += -fopenmp -Wl,-rpath="'\\\${ORIGIN}'" "-L$$PWD/libraries/cppgoslin/bin/linux64" "-lcppGoslin" "-L$$PWD/libraries/OpenBLAS/bin/linux64" "-lopenblas" "-L$$PWD/libraries/OpenXLSX/bin/linux64" "-lOpenXLSX" "-lssl" "-lcrypto" "-lz"
 
-    # Optional CUDA GPU acceleration (Ubuntu 24.04 x86_64, NVIDIA L4 or compatible).
-    # Enable at configure time: qmake CONFIG+=cuda_gpu LipidSpaceRest.pro
-    # For other GPU generations set CUDA_ARCH accordingly, e.g. sm_86 (A10/A30),
-    # sm_80 (A100), sm_90 (H100).
+    # Optional CUDA GPU acceleration (Linux x86_64). Enable at configure time:
+    #     qmake CONFIG+=cuda_gpu LipidSpaceRest.pro
+    #
+    # Fat binary: native SASS for our data-centre fleet + one PTX image for forward
+    # compatibility (the driver JIT-compiles it on any GPU newer than the PTX arch).
+    #   T4 = sm_75 · A100 = sm_80 · A40 = sm_86 · L4 = sm_89 · H100/H200 = sm_90
+    #   B200 / GB200 / B300 (data-centre Blackwell) = sm_100  — requires CUDA Toolkit >= 12.8
+    # Build with the newest toolkit that covers all target archs (>= 12.8 for Blackwell);
+    # if building with CUDA < 12.8, delete the two sm_100 / compute_100 lines below
+    # (Blackwell then still runs, JIT-compiled from the compute_90 PTX, just not native SASS).
+    #
+    # Static CUDA runtime (--cudart=static + libcudart_static): the deployed binary needs
+    # only the NVIDIA driver (libcuda.so.1) on the target host — NOT the CUDA toolkit.
     cuda_gpu {
         DEFINES      += USE_CUDA
         CUDA_DIR      = /usr/local/cuda
-        CUDA_ARCH     = sm_89    # NVIDIA L4 (Ada Lovelace)
 
         INCLUDEPATH  += $$CUDA_DIR/include
-        LIBS         += -L$$CUDA_DIR/lib64 -lcudart
+        # Static cudart + its support libs; libcuda.so.1 (the driver) is resolved at runtime.
+        LIBS         += -L$$CUDA_DIR/lib64 -lcudart_static -lculibos -lrt -lpthread -ldl
 
         CUDA_SOURCES += src/hausdorff_cuda.cu
 
@@ -46,7 +55,14 @@ unix:!macx {
         cuda.dependency_type  = TYPE_C
         cuda.variable_out     = OBJECTS
         cuda.commands         = $$CUDA_DIR/bin/nvcc \
-            -gencode arch=compute_89,code=[sm_89,compute_89] \
+            -gencode arch=compute_75,code=sm_75 \
+            -gencode arch=compute_80,code=sm_80 \
+            -gencode arch=compute_86,code=sm_86 \
+            -gencode arch=compute_89,code=sm_89 \
+            -gencode arch=compute_90,code=sm_90 \
+            -gencode arch=compute_100,code=sm_100 \
+            -gencode arch=compute_100,code=compute_100 \
+            --cudart=static \
             --compiler-options "-fPIC -O3" \
             -std=c++17 \
             -I"$$PWD" \
