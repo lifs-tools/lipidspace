@@ -38,6 +38,16 @@ win32 {
 macx {
     ICON = LipidSpace.icns
     QMAKE_TARGET_BUNDLE_PREFIX = org.lifs-tools
+
+    # CFBundleShortVersionString / CFBundleVersion are single-sourced from
+    # GlobalData::LipidSpace_version, so Finder, the DMG name and the About
+    # dialog can never disagree. Falls back to 0.0.0 if the pattern changes.
+    LS_VERSION_LINES = $$cat($$PWD/src/globaldata.cpp, lines)
+    LS_VERSION_LINE = $$find(LS_VERSION_LINES, LipidSpace_version)
+    LS_VERSION_LINE = $$first(LS_VERSION_LINE)
+    VERSION = $$replace(LS_VERSION_LINE, '.*= "v?([0-9.]+)";.*', \\1)
+    isEmpty(VERSION): VERSION = 0.0.0
+    QMAKE_INFO_PLIST = $$PWD/macos/Info.plist
     QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp
     INCLUDEPATH += $$system(xcrun --show-sdk-path)/System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers
     INCLUDEPATH += /opt/homebrew/opt/libomp/include

@@ -6,7 +6,9 @@ objects/
 LipidSpace
 LipidSpaceRest
 LipidSpace.app
+LipidSpace.app/*
 LipidSpaceRest.app
+LipidSpaceRest.app/*
 
 .DS_Store
 .agents/
@@ -15,3 +17,9 @@ LipidSpaceRest.app
 LipidSpace.zip
 release/
 skills-lock.json
+
+# --- macOS release artifacts and signing material -----------------------
+Build/
+*.dmg
+*.p12
+*.p8

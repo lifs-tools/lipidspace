@@ -209,6 +209,81 @@ make build
 This will create a LipidSpace.zip archive in the Build/ directory.
 
 
+### Signing and notarizing the macOS build (maintainers)
+
+macOS refuses to launch downloaded applications that are not signed with a
+Developer ID certificate and notarized by Apple. The whole flow is automated by
+`macos/sign-and-notarize.sh`; what follows is the one-time setup it needs.
+
+**1. Developer ID Application certificate.** In Xcode, go to *Settings >
+Accounts*, select the team, *Manage Certificates… > + > Developer ID
+Application*. Only the Account Holder of the Apple Developer account may create
+these, and the number of them is limited. Verify and note the team ID:
+
+```bash
+security find-identity -v -p codesigning
+# 1) ABC123...  "Developer ID Application: Your Name (TEAMID)"
+```
+
+Export the identity (certificate **and** private key) as a `.p12` from Keychain
+Access and keep it somewhere safe — it is needed for CI, and losing the private
+key means burning another certificate slot.
+
+**2. Notarization credentials.** For local releases, create an app-specific
+password at <https://appleid.apple.com> (*Sign-In and Security > App-Specific
+Passwords*) and store it in the keychain once:
+
+```bash
+xcrun notarytool store-credentials "lipidspace-notary" \
+  --apple-id "you@example.org" --team-id "TEAMID" --password "xxxx-xxxx-xxxx-xxxx"
+```
+
+**3. Build and release.**
+
+```bash
+export PATH="/opt/homebrew/opt/qt/bin:$PATH"
+qmake6 LipidSpace.pro
+make release
+NOTARY_PROFILE=lipidspace-notary macos/sign-and-notarize.sh --deploy
+```
+
+This deploys the Qt frameworks into the bundle, verifies that nothing outside
+the bundle is still linked, signs every binary inside-out with the hardened
+runtime and a secure timestamp, notarizes and staples the app, and writes
+`Build/LipidSpace-<version>.zip` and `Build/LipidSpace-<version>.dmg`. The app
+is stapled before the disk image is built, so the notarization ticket travels
+with it when a user drags it out of the DMG. Useful options: `--sign-only`
+(skip notarization), `--no-dmg`, `--identity`, `--dist-name`,
+`--entitlements`; see `macos/sign-and-notarize.sh --help`.
+
+The bundle version comes from `GlobalData::LipidSpace_version` in
+`src/globaldata.cpp` — `LipidSpace.pro` extracts it into
+`CFBundleShortVersionString`, so bumping the version there is enough.
+
+**4. Continuous delivery.** The release workflow signs and notarizes when these
+repository secrets are present; without them it still publishes an unsigned zip
+and logs a warning.
+
+| Secret | Contents |
+| --- | --- |
+| `MACOS_CERT_P12_BASE64` | `base64 -i certificate.p12` |
+| `MACOS_CERT_PASSWORD` | password used when exporting the `.p12` |
+| `ASC_KEY_P8_BASE64` | `base64 -i AuthKey_XXXX.p8` |
+| `ASC_KEY_ID` | key ID of the App Store Connect API key |
+| `ASC_ISSUER_ID` | issuer ID of the App Store Connect API key |
+
+The App Store Connect API key (App Store Connect > *Users and Access >
+Integrations > Keys*, role *Developer*) is preferred over an Apple ID password
+in CI because it is scoped and does not expire when the password changes.
+
+**Troubleshooting.** If notarization is rejected, the script prints the full
+Apple log; the usual causes are a nested binary signed without the hardened
+runtime or without a timestamp. If the notarized app then crashes on launch
+with a library validation error, re-run with
+`--entitlements macos/entitlements.plist`, where that file grants
+`com.apple.security.cs.disable-library-validation`.
+
+
 ### Building a distribution source archive
 
 In order to create a LipidSpace source archive for distribution, call:
