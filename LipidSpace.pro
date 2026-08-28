@@ -49,6 +49,11 @@ win32 {
 macx {
     ICON = LipidSpace.icns
     QMAKE_TARGET_BUNDLE_PREFIX = org.lifs-tools
+
+    # CFBundleShortVersionString / CFBundleVersion come from ${QMAKE_FULL_VERSION},
+    # which qmake fills from VERSION - already derived in version.pri. Finder, the
+    # DMG name and the About dialog therefore cannot disagree.
+    QMAKE_INFO_PLIST = $$PWD/macos/Info.plist
     QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp
     INCLUDEPATH += $$system(xcrun --show-sdk-path)/System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers
     INCLUDEPATH += /opt/homebrew/opt/libomp/include

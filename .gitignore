@@ -30,3 +30,16 @@ objects/
 /LipidSpace
 /LipidSpaceRest
 !/lipidspace/
+
+# The generated macOS application bundles. qmake assembles these from
+# LipidSpace.app/Contents/... at build time, so nothing inside them belongs in
+# the repository.
+/LipidSpace.app/
+/LipidSpaceRest.app/
+
+# macOS signing material. A leaked Developer ID private key means burning a
+# certificate slot, and the account holder is the only one who can issue
+# another.
+*.dmg
+*.p12
+*.p8

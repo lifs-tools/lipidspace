@@ -181,7 +181,11 @@ jobs:
         make release
 
     - name: Package LipidSpace
+      # macdeployqt copies the Qt frameworks and plugins into the bundle. Without
+      # it the app only runs on machines that have Homebrew Qt in the same prefix.
       run: |
+        export PATH="/opt/homebrew/opt/qt/bin:$PATH"
+        macdeployqt LipidSpace.app -verbose=1
         mkdir -p Build
         ditto -c -k --sequesterRsrc --keepParent \
           LipidSpace.app \
