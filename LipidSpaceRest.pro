@@ -3,6 +3,8 @@ QT       += core widgets network
 CONFIG += c++17 debug_and_release
 QMAKE_CXXFLAGS += -std=c++17 -Wno-unknown-pragmas
 
+include(version.pri)
+
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings

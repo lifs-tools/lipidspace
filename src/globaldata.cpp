@@ -1,5 +1,12 @@
 #include "lipidspace/globaldata.h"
 
+// Defined by LipidSpace.pro from $RELEASE_VERSION (set by the release workflow
+// from the git tag) or from `git describe`. The fallback below only applies when
+// building outside qmake.
+#ifndef LIPIDSPACE_VERSION
+#define LIPIDSPACE_VERSION "v1.2.1"
+#endif
+
 
 int GlobalData::alpha = DEFAULT_ALPHA;
 bool GlobalData::showQuant = true;
@@ -12,7 +19,7 @@ int GlobalData::PC1 = 0;
 int GlobalData::PC2 = 1;
 bool GlobalData::selected_view = false;
 Linkage GlobalData::linkage = AverageLinkage;
-string GlobalData::LipidSpace_version = "v1.2.1";
+string GlobalData::LipidSpace_version = LIPIDSPACE_VERSION;
 string GlobalData::rest_temp_folder = ".";
 qint64 GlobalData::rest_disk_threshold_bytes = 10LL * 1024 * 1024; // 10 MB
 int GlobalData::rest_vacuum_interval_secs  = 60;

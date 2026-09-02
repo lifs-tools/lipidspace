@@ -469,67 +469,92 @@ FileTableHandler::FileTableHandler(string file_name, string sheet_name){
         }
     }
     else {
-        XLDocument doc(file_name);
+        try {
+            Logging::write_log("Opening XLSX file: " + file_name);
+            XLDocument doc(file_name);
+            Logging::write_log("Successfully opened XLSX document, accessing worksheet: " + sheet_name);
+            
+            auto wks = doc.workbook().worksheet(sheet_name.c_str());
+            Logging::write_log("Successfully accessed worksheet, reading data...");
 
-        auto wks = doc.workbook().worksheet(sheet_name.c_str());
-
-        int line_num = 0;
-        for (auto& wks_row : wks.rows()) {
-            if (line_num++ == 0){
-                for (auto cell : wks_row.cells()){
-                    string value = "";
-                    switch(cell.value().type()){
-                        case OpenXLSX::XLValueType::Boolean:
-                            value = (cell.value().get<bool>()) ? "true" : "false";
-                            break;
-                        case OpenXLSX::XLValueType::Integer:
-                        case OpenXLSX::XLValueType::Float:
-                            value = std::to_string(cell.value().get<double>());
-                            break;
-                        case OpenXLSX::XLValueType::String:
-                            value = cell.value().get<string>();
-                            break;
-                        default: break;
+            int line_num = 0;
+            for (auto& wks_row : wks.rows()) {
+                if (line_num++ == 0){
+                    for (auto cell : wks_row.cells()){
+                        string value = "";
+                        switch(cell.value().type()){
+                            case OpenXLSX::XLValueType::Boolean:
+                                value = (cell.value().get<bool>()) ? "true" : "false";
+                                break;
+                            case OpenXLSX::XLValueType::Integer:
+                            case OpenXLSX::XLValueType::Float:
+                                value = std::to_string(cell.value().get<double>());
+                                break;
+                            case OpenXLSX::XLValueType::String:
+                                value = cell.value().get<string>();
+                                break;
+                            default: break;
+                        }
+                        headers.push_back(value);
                     }
-                    headers.push_back(value);
+                }
+                else {
+                    rows.push_back(vector<string>());
+                    vector<string> &row = rows.back();
+                    int empty_cells = 0;
+                    for (auto cell : wks_row.cells()){
+                        string value = "";
+                        switch(cell.value().type()){
+                            case OpenXLSX::XLValueType::Boolean:
+                                value = (cell.value().get<bool>()) ? "true" : "false";
+                                break;
+                            case OpenXLSX::XLValueType::Integer:
+                                value = std::to_string(cell.value().get<int>());
+                                break;
+                            case OpenXLSX::XLValueType::Float:
+                                value = std::to_string(cell.value().get<double>());
+                                break;
+                            case OpenXLSX::XLValueType::String:
+                                value = cell.value().get<string>();
+                                break;
+                            default: break;
+                        }
+                        row.push_back(value);
+                        empty_cells += (value == "");
+                    }
+                    if (row.size() == 0 || empty_cells == wks_row.cells().size()){
+                        rows.pop_back();
+                        break;
+                    }
+
+                    if (row.size() > headers.size()){
+                        throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells (" + std::to_string(row.size()) + ") in line " + std::to_string(line_num) + " than in the header line (" + std::to_string(headers.size()) + ").", ColumnNumMismatch);
+                    }
+                    else if (row.size() < headers.size()){
+                        row.resize(headers.size(), "");
+                    }
                 }
             }
-            else {
-                rows.push_back(vector<string>());
-                vector<string> &row = rows.back();
-                int empty_cells = 0;
-                for (auto cell : wks_row.cells()){
-                    string value = "";
-                    switch(cell.value().type()){
-                        case OpenXLSX::XLValueType::Boolean:
-                            value = (cell.value().get<bool>()) ? "true" : "false";
-                            break;
-                        case OpenXLSX::XLValueType::Integer:
-                            value = std::to_string(cell.value().get<int>());
-                            break;
-                        case OpenXLSX::XLValueType::Float:
-                            value = std::to_string(cell.value().get<double>());
-                            break;
-                        case OpenXLSX::XLValueType::String:
-                            value = cell.value().get<string>();
-                            break;
-                        default: break;
-                    }
-                    row.push_back(value);
-                    empty_cells += (value == "");
-                }
-                if (row.size() == 0 || empty_cells == wks_row.cells().size()){
-                    rows.pop_back();
-                    break;
-                }
-
-                if (row.size() > headers.size()){
-                    throw LipidSpaceException("Error: file '" + file_name + "' has a different number of cells (" + std::to_string(row.size()) + ") in line " + std::to_string(line_num) + " than in the header line (" + std::to_string(headers.size()) + ").", ColumnNumMismatch);
-                }
-                else if (row.size() < headers.size()){
-                    row.resize(headers.size(), "");
-                }
-            }
+        }
+        catch (const OpenXLSX::XLInputError &e) {
+            std::string error_msg = "OpenXLSX Input Error: " + std::string(e.what());
+            Logging::write_log(error_msg);
+            throw LipidSpaceException(error_msg, FileUnreadable);
+        }
+        catch (const OpenXLSX::XLException &e) {
+            std::string error_msg = "OpenXLSX Error: " + std::string(e.what());
+            Logging::write_log(error_msg);
+            throw LipidSpaceException(error_msg, FileUnreadable);
+        }
+        catch (const std::exception &e) {
+            std::string error_msg = "Error loading XLSX file: " + std::string(e.what());
+            Logging::write_log(error_msg);
+            throw LipidSpaceException(error_msg, FileUnreadable);
+        }
+        catch (...) {
+            std::string error_msg = "Unknown error occurred while loading XLSX file: " + file_name;
+            Logging::write_log(error_msg);
+            throw LipidSpaceException(error_msg, FileUnreadable);
         }
     }
 }

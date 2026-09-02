@@ -18,6 +18,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 VOLUME /tmp
 COPY . /lipidspace
 WORKDIR /lipidspace
+
+# The version compiled into the binary and reported by /actuator/health.
+# git is not installed in this image, so version.pri cannot fall back to
+# `git describe` - pass the release tag in explicitly:
+#     docker build --build-arg RELEASE_VERSION=v1.2.1 ...
+# Without it the build uses LIPIDSPACE_FALLBACK_VERSION from version.pri.
+ARG RELEASE_VERSION=""
+ENV RELEASE_VERSION=${RELEASE_VERSION}
+
 RUN qmake6 LipidSpaceRest.pro
 RUN make clean && make release -j$((`nproc`+1))
 
