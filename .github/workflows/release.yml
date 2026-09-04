@@ -140,8 +140,14 @@ jobs:
       shell: cmd
 
     - name: Rename LipidSpace.zip to include RELEASE_VERSION
+      # Backslashes, not forward slashes. MOVE is a cmd.exe builtin that derives
+      # the source directory by splitting at the last backslash; given "Build/..."
+      # it finds none, looks in a path that does not exist and fails with "The
+      # system cannot find the path specified." even though Build\LipidSpace.zip
+      # is right there. That killed the Windows asset in both v1.2.1 and v1.2.2.
+      # COPY and DIR tolerate "/", MOVE never has.
       run: |
-        move Build/LipidSpace.zip Build/LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
+        move Build\LipidSpace.zip Build\LipidSpace-${{ env.RELEASE_VERSION }}-${{ env.OS }}.zip
       shell: cmd
 
     - name: Upload binaries to release
