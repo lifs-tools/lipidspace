@@ -1,7 +1,7 @@
 # LipidSpace
 
 [![CI Status](https://github.com/lifs-tools/lipidspace/actions/workflows/build.yml/badge.svg)](https://github.com/lifs-tools/lipidspace/actions/workflows/build.yml)
-[![DOI 10.5281/zenodo.19866760](https://doi.org/10.5281/zenodo.19866760)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19866760.svg)]([https://doi.org/10.5281/zenodo.22304103](https://doi.org/10.5281/zenodo.19866760))
 
 LipidSpace is a stand-alone tool to analyze and compare lipidomes by assessing their structural differences. A graph-based comparison of lipid structures allows to calculate distances between lipids and to determine similarities across lipidomes. It allows for a rapid (re)analysis of experiments, identifies lipids responsible for shaping the respective lipidome, and provides methods for quality
 control.
